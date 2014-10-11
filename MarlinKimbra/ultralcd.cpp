@@ -398,18 +398,27 @@ static void lcd_tune_menu()
 #if TEMP_SENSOR_0 != 0
     MENU_ITEM_EDIT(int3, MSG_NOZZLE, &target_temperature[0], 0, HEATER_0_MAXTEMP - 15);
 #endif
+
+#ifndef SINGLENOZZLE
 #if TEMP_SENSOR_1 != 0
     MENU_ITEM_EDIT(int3, MSG_NOZZLE1, &target_temperature[1], 0, HEATER_1_MAXTEMP - 15);
 #endif
 #if TEMP_SENSOR_2 != 0
     MENU_ITEM_EDIT(int3, MSG_NOZZLE2, &target_temperature[2], 0, HEATER_2_MAXTEMP - 15);
 #endif
+#if TEMP_SENSOR_3 != 0
+    MENU_ITEM_EDIT(int3, MSG_NOZZLE3, &target_temperature[3], 0, HEATER_3_MAXTEMP - 15);
+#endif
+#endif // SINGLENOZZLE
+
 #if TEMP_SENSOR_BED != 0
     MENU_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP - 15);
 #endif
     MENU_ITEM_EDIT(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255);
     MENU_ITEM_EDIT(int3, MSG_FLOW, &extrudemultiply, 10, 999);
     MENU_ITEM_EDIT(int3, MSG_FLOW0, &extruder_multiply[0], 10, 999);
+
+#ifndef SINGLENOZZLE
 #if TEMP_SENSOR_1 != 0
     MENU_ITEM_EDIT(int3, MSG_FLOW1, &extruder_multiply[1], 10, 999);
 #endif
@@ -419,6 +428,7 @@ static void lcd_tune_menu()
 #if TEMP_SENSOR_3 != 0
     MENU_ITEM_EDIT(int3, MSG_FLOW3, &extruder_multiply[3], 10, 999);
 #endif
+#endif // SINGLENOZZLE
 
 #ifdef BABYSTEPPING
     #ifdef BABYSTEP_XY
@@ -460,7 +470,8 @@ void lcd_preheat_gum0()
     setWatch(); // heater sanity check timer
 }
 
-#if TEMP_SENSOR_1 != 0 && !defined(SINGLENOZZLE) //2nd extruder preheat
+#ifndef SINGLENOZZLE
+#if TEMP_SENSOR_1 != 0 //2nd extruder preheat
 void lcd_preheat_pla1()
 {
     setTargetHotend1(plaPreheatHotendTemp);
@@ -489,7 +500,7 @@ void lcd_preheat_gum1()
 }
 #endif //2nd extruder preheat
 
-#if TEMP_SENSOR_2 != 0 && !defined(SINGLENOZZLE) //3 extruder preheat
+#if TEMP_SENSOR_2 != 0 //3 extruder preheat
 void lcd_preheat_pla2()
 {
     setTargetHotend2(plaPreheatHotendTemp);
@@ -518,7 +529,7 @@ void lcd_preheat_gum2()
 }
 #endif //3 extruder preheat
 
-#if TEMP_SENSOR_3 != 0 && !defined(SINGLENOZZLE) //4 extruder preheat
+#if TEMP_SENSOR_3 != 0 //4 extruder preheat
 void lcd_preheat_pla3()
 {
     setTargetHotend3(plaPreheatHotendTemp);
@@ -546,6 +557,7 @@ void lcd_preheat_gum3()
     setWatch(); // heater sanity check timer
 }
 #endif //4 extruder preheat
+#endif // SINGLENOZZLE
 
 #if TEMP_SENSOR_1 != 0 || TEMP_SENSOR_2 != 0 || TEMP_SENSOR_3 != 0 || !defined(SINGLENOZZLE) //more than one extruder present
 void lcd_preheat_pla0123()
@@ -599,84 +611,92 @@ void lcd_preheat_gum_bedonly()
 
 static void lcd_preheat_pla_menu()
 {
-    START_MENU();
-    MENU_ITEM(back, MSG_PREPARE, lcd_prepare_menu);
-    MENU_ITEM(function, MSG_PREHEAT_PLA0, lcd_preheat_pla0);
-	#ifndef SINGLENOZZLE
-		#if TEMP_SENSOR_1 != 0 //2 extruder preheat
-    		MENU_ITEM(function, MSG_PREHEAT_PLA1, lcd_preheat_pla1);
-		#endif //2 extruder preheat
-		#if TEMP_SENSOR_2 != 0 //3 extruder preheat
-    		MENU_ITEM(function, MSG_PREHEAT_PLA2, lcd_preheat_pla2);
-		#endif //3 extruder preheat
-		#if TEMP_SENSOR_3 != 0 //4 extruder preheat
-    		MENU_ITEM(function, MSG_PREHEAT_PLA3, lcd_preheat_pla3);
-		#endif //4 extruder preheat
-		#if TEMP_SENSOR_1 != 0 || TEMP_SENSOR_2 != 0 || TEMP_SENSOR_3 != 0 //all extruder preheat
-    		MENU_ITEM(function, MSG_PREHEAT_PLA0123, lcd_preheat_pla0123);
-		#endif //all extruder preheat
-	#endif // SINGLENOZZLE
-	#if TEMP_SENSOR_BED != 0
-    	MENU_ITEM(function, MSG_PREHEAT_PLA_BEDONLY, lcd_preheat_pla_bedonly);
-	#endif
-    END_MENU();
+  START_MENU();
+  MENU_ITEM(back, MSG_PREPARE, lcd_prepare_menu);
+  MENU_ITEM(function, MSG_PREHEAT_PLA0, lcd_preheat_pla0);
+
+#ifndef SINGLENOZZLE
+#if TEMP_SENSOR_1 != 0 //2 extruder preheat
+  MENU_ITEM(function, MSG_PREHEAT_PLA1, lcd_preheat_pla1);
+#endif //2 extruder preheat
+#if TEMP_SENSOR_2 != 0 //3 extruder preheat
+  MENU_ITEM(function, MSG_PREHEAT_PLA2, lcd_preheat_pla2);
+#endif //3 extruder preheat
+#if TEMP_SENSOR_3 != 0 //4 extruder preheat
+  MENU_ITEM(function, MSG_PREHEAT_PLA3, lcd_preheat_pla3);
+#endif //4 extruder preheat
+#if TEMP_SENSOR_1 != 0 || TEMP_SENSOR_2 != 0 || TEMP_SENSOR_3 != 0 //all extruder preheat
+  MENU_ITEM(function, MSG_PREHEAT_PLA0123, lcd_preheat_pla0123);
+#endif //all extruder preheat
+#endif // SINGLENOZZLE
+
+#if TEMP_SENSOR_BED != 0
+  MENU_ITEM(function, MSG_PREHEAT_PLA_BEDONLY, lcd_preheat_pla_bedonly);
+#endif
+  END_MENU();
 }
 
 static void lcd_preheat_abs_menu()
 {
-    START_MENU();
-    MENU_ITEM(back, MSG_PREPARE, lcd_prepare_menu);
-    MENU_ITEM(function, MSG_PREHEAT_ABS0, lcd_preheat_abs0);
-	#ifndef SINGLENOZZLE
-		#if TEMP_SENSOR_1 != 0 //2 extruder preheat
-    		MENU_ITEM(function, MSG_PREHEAT_ABS1, lcd_preheat_abs1);
-		#endif //2 extruder preheat
-		#if TEMP_SENSOR_2 != 0 //3 extruder preheat
-    		MENU_ITEM(function, MSG_PREHEAT_ABS2, lcd_preheat_abs2);
-		#endif //3 extruder preheat
-		#if TEMP_SENSOR_3 != 0 //4 extruder preheat
-    		MENU_ITEM(function, MSG_PREHEAT_ABS3, lcd_preheat_abs3);
-		#endif //4 extruder preheat
-		#if TEMP_SENSOR_1 != 0 || TEMP_SENSOR_2 != 0 || TEMP_SENSOR_3 != 0 //all extruder preheat
-    		MENU_ITEM(function, MSG_PREHEAT_ABS0123, lcd_preheat_abs0123);
-		#endif //all extruder preheat
-	#endif // SINGLENOZZLE
-	#if TEMP_SENSOR_BED != 0
-    	MENU_ITEM(function, MSG_PREHEAT_ABS_BEDONLY, lcd_preheat_abs_bedonly);
-	#endif
-    END_MENU();
+  START_MENU();
+  MENU_ITEM(back, MSG_PREPARE, lcd_prepare_menu);
+  MENU_ITEM(function, MSG_PREHEAT_ABS0, lcd_preheat_abs0);
+
+#ifndef SINGLENOZZLE
+#if TEMP_SENSOR_1 != 0 //2 extruder preheat
+	MENU_ITEM(function, MSG_PREHEAT_ABS1, lcd_preheat_abs1);
+#endif //2 extruder preheat
+#if TEMP_SENSOR_2 != 0 //3 extruder preheat
+  MENU_ITEM(function, MSG_PREHEAT_ABS2, lcd_preheat_abs2);
+#endif //3 extruder preheat
+#if TEMP_SENSOR_3 != 0 //4 extruder preheat
+  MENU_ITEM(function, MSG_PREHEAT_ABS3, lcd_preheat_abs3);
+#endif //4 extruder preheat
+#if TEMP_SENSOR_1 != 0 || TEMP_SENSOR_2 != 0 || TEMP_SENSOR_3 != 0 //all extruder preheat
+  MENU_ITEM(function, MSG_PREHEAT_ABS0123, lcd_preheat_abs0123);
+#endif //all extruder preheat
+#endif // SINGLENOZZLE
+
+#if TEMP_SENSOR_BED != 0
+ 	MENU_ITEM(function, MSG_PREHEAT_ABS_BEDONLY, lcd_preheat_abs_bedonly);
+#endif
+  END_MENU();
 }
 
 static void lcd_preheat_gum_menu()
 {
-    START_MENU();
-    MENU_ITEM(back, MSG_PREPARE, lcd_prepare_menu);
-    MENU_ITEM(function, MSG_PREHEAT_GUM0, lcd_preheat_gum0);
-	#ifndef SINGLENOZZLE
-		#if TEMP_SENSOR_1 != 0 //2 extruder preheat
-    		MENU_ITEM(function, MSG_PREHEAT_GUM1, lcd_preheat_gum1);
-		#endif //2 extruder preheat
-		#if TEMP_SENSOR_2 != 0 //3 extruder preheat
-    		MENU_ITEM(function, MSG_PREHEAT_GUM2, lcd_preheat_gum2);
-		#endif //3 extruder preheat
-		#if TEMP_SENSOR_3 != 0 //4 extruder preheat
-    		MENU_ITEM(function, MSG_PREHEAT_GUM3, lcd_preheat_gum3);
-		#endif //3 extruder preheat
-	#endif // SINGLENOZZLE
-	#if TEMP_SENSOR_BED != 0
-    	MENU_ITEM(function, MSG_PREHEAT_GUM_BEDONLY, lcd_preheat_gum_bedonly);
-	#endif
-    END_MENU();
+  START_MENU();
+  MENU_ITEM(back, MSG_PREPARE, lcd_prepare_menu);
+  MENU_ITEM(function, MSG_PREHEAT_GUM0, lcd_preheat_gum0);
+
+#ifndef SINGLENOZZLE
+#if TEMP_SENSOR_1 != 0 //2 extruder preheat
+	MENU_ITEM(function, MSG_PREHEAT_GUM1, lcd_preheat_gum1);
+#endif //2 extruder preheat
+#if TEMP_SENSOR_2 != 0 //3 extruder preheat
+	MENU_ITEM(function, MSG_PREHEAT_GUM2, lcd_preheat_gum2);
+#endif //3 extruder preheat
+#if TEMP_SENSOR_3 != 0 //4 extruder preheat
+	MENU_ITEM(function, MSG_PREHEAT_GUM3, lcd_preheat_gum3);
+#endif //3 extruder preheat
+#endif // SINGLENOZZLE
+
+#if TEMP_SENSOR_BED != 0
+ 	MENU_ITEM(function, MSG_PREHEAT_GUM_BEDONLY, lcd_preheat_gum_bedonly);
+#endif
+  END_MENU();
 }
 
 void lcd_cooldown()
 {
     setTargetHotend0(0);
-	#ifndef SINGLENOZZLE
-    	setTargetHotend1(0);
-    	setTargetHotend2(0);
-    	setTargetHotend3(0);
-	#endif // SINGLENOZZLE
+
+#ifndef SINGLENOZZLE
+    setTargetHotend1(0);
+    setTargetHotend2(0);
+    setTargetHotend3(0);
+#endif // SINGLENOZZLE
+
     setTargetBed(0);
     fanSpeed = 0;
     lcd_return_to_status();
@@ -913,12 +933,19 @@ static void lcd_control_temperature_menu()
 #if TEMP_SENSOR_0 != 0
     MENU_ITEM_EDIT(int3, MSG_NOZZLE, &target_temperature[0], 0, HEATER_0_MAXTEMP - 15);
 #endif
+
+#ifndef SINGLENOZZLE
 #if TEMP_SENSOR_1 != 0
     MENU_ITEM_EDIT(int3, MSG_NOZZLE1, &target_temperature[1], 0, HEATER_1_MAXTEMP - 15);
 #endif
 #if TEMP_SENSOR_2 != 0
     MENU_ITEM_EDIT(int3, MSG_NOZZLE2, &target_temperature[2], 0, HEATER_2_MAXTEMP - 15);
 #endif
+#if TEMP_SENSOR_3 != 0
+    MENU_ITEM_EDIT(int3, MSG_NOZZLE3, &target_temperature[3], 0, HEATER_3_MAXTEMP - 15);
+#endif
+#endif // SINGLENOZZLE
+
 #if TEMP_SENSOR_BED != 0
     MENU_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP - 15);
 #endif
