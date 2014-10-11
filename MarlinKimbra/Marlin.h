@@ -1,0 +1,293 @@
+// Tonokip RepRap firmware rewrite based off of Hydra-mmm firmware.
+// License: GPL
+
+#ifndef MARLIN_H
+#define MARLIN_H
+
+#define  FORCE_INLINE __attribute__((always_inline)) inline
+
+#include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <inttypes.h>
+
+#include <util/delay.h>
+#include <avr/pgmspace.h>
+#include <avr/eeprom.h>
+#include <avr/interrupt.h>
+
+
+#include "fastio.h"
+#include "Configuration.h"
+#include "pins.h"
+
+#ifndef AT90USB
+#define  HardwareSerial_h // trick to disable the standard HWserial
+#endif
+
+#if (ARDUINO >= 100)
+# include "Arduino.h"
+#else
+# include "WProgram.h"
+//Arduino < 1.0.0 does not define this, so we need to do it ourselves
+# define analogInputToDigitalPin(p) ((p) + A0)
+#endif
+
+#ifdef AT90USB
+#include "HardwareSerial.h"
+#endif
+
+#include "MarlinSerial.h"
+
+#ifndef cbi
+#define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
+#endif
+#ifndef sbi
+#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
+#endif
+
+#include "WString.h"
+
+#ifdef AT90USB
+#ifdef BTENABLED
+#define MYSERIAL bt
+#else
+#define MYSERIAL Serial
+#endif // BTENABLED
+#else
+#define MYSERIAL MSerial
+#endif
+
+#define SERIAL_PROTOCOL(x) (MYSERIAL.print(x))
+#define SERIAL_PROTOCOL_F(x,y) (MYSERIAL.print(x,y))
+#define SERIAL_PROTOCOLPGM(x) (serialprintPGM(PSTR(x)))
+#define SERIAL_PROTOCOLLN(x) (MYSERIAL.print(x),MYSERIAL.write('\n'))
+#define SERIAL_PROTOCOLLNPGM(x) (serialprintPGM(PSTR(x)),MYSERIAL.write('\n'))
+
+
+const char errormagic[] PROGMEM ="Error:";
+const char echomagic[] PROGMEM ="echo:";
+#define SERIAL_ERROR_START (serialprintPGM(errormagic))
+#define SERIAL_ERROR(x) SERIAL_PROTOCOL(x)
+#define SERIAL_ERRORPGM(x) SERIAL_PROTOCOLPGM(x)
+#define SERIAL_ERRORLN(x) SERIAL_PROTOCOLLN(x)
+#define SERIAL_ERRORLNPGM(x) SERIAL_PROTOCOLLNPGM(x)
+
+#define SERIAL_ECHO_START (serialprintPGM(echomagic))
+#define SERIAL_ECHO(x) SERIAL_PROTOCOL(x)
+#define SERIAL_ECHOPGM(x) SERIAL_PROTOCOLPGM(x)
+#define SERIAL_ECHOLN(x) SERIAL_PROTOCOLLN(x)
+#define SERIAL_ECHOLNPGM(x) SERIAL_PROTOCOLLNPGM(x)
+
+#define SERIAL_ECHOPAIR(name,value) (serial_echopair_P(PSTR(name),(value)))
+
+void serial_echopair_P(const char *s_P, float v);
+void serial_echopair_P(const char *s_P, double v);
+void serial_echopair_P(const char *s_P, unsigned long v);
+
+
+//Things to write to serial from Program memory. Saves 400 to 2k of RAM.
+FORCE_INLINE void serialprintPGM(const char *str)
+{
+  char ch=pgm_read_byte(str);
+  while(ch)
+  {
+    MYSERIAL.write(ch);
+    ch=pgm_read_byte(++str);
+  }
+}
+
+
+void get_command();
+void process_commands();
+
+void manage_inactivity();
+
+#if defined(DUAL_X_CARRIAGE) && defined(X_ENABLE_PIN) && X_ENABLE_PIN > -1 \
+    && defined(X2_ENABLE_PIN) && X2_ENABLE_PIN > -1
+  #define  enable_x() do { WRITE(X_ENABLE_PIN, X_ENABLE_ON); WRITE(X2_ENABLE_PIN, X_ENABLE_ON); } while (0)
+  #define disable_x() do { WRITE(X_ENABLE_PIN,!X_ENABLE_ON); WRITE(X2_ENABLE_PIN,!X_ENABLE_ON); axis_known_position[X_AXIS] = false; } while (0)
+#elif defined(X_ENABLE_PIN) && X_ENABLE_PIN > -1
+  #define  enable_x() WRITE(X_ENABLE_PIN, X_ENABLE_ON)
+  #define disable_x() { WRITE(X_ENABLE_PIN,!X_ENABLE_ON); axis_known_position[X_AXIS] = false; }
+#else
+  #define enable_x() ;
+  #define disable_x() ;
+#endif
+
+#if defined(Y_ENABLE_PIN) && Y_ENABLE_PIN > -1
+  #ifdef Y_DUAL_STEPPER_DRIVERS
+    #define  enable_y() { WRITE(Y_ENABLE_PIN, Y_ENABLE_ON); WRITE(Y2_ENABLE_PIN,  Y_ENABLE_ON); }
+    #define disable_y() { WRITE(Y_ENABLE_PIN,!Y_ENABLE_ON); WRITE(Y2_ENABLE_PIN, !Y_ENABLE_ON); axis_known_position[Y_AXIS] = false; }
+  #else
+    #define  enable_y() WRITE(Y_ENABLE_PIN, Y_ENABLE_ON)
+    #define disable_y() { WRITE(Y_ENABLE_PIN,!Y_ENABLE_ON); axis_known_position[Y_AXIS] = false; }
+  #endif
+#else
+  #define enable_y() ;
+  #define disable_y() ;
+#endif
+
+#if defined(Z_ENABLE_PIN) && Z_ENABLE_PIN > -1
+  #ifdef Z_DUAL_STEPPER_DRIVERS
+    #define  enable_z() { WRITE(Z_ENABLE_PIN, Z_ENABLE_ON); WRITE(Z2_ENABLE_PIN, Z_ENABLE_ON); }
+    #define disable_z() { WRITE(Z_ENABLE_PIN,!Z_ENABLE_ON); WRITE(Z2_ENABLE_PIN,!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }
+  #else
+    #define  enable_z() WRITE(Z_ENABLE_PIN, Z_ENABLE_ON)
+    #define disable_z() { WRITE(Z_ENABLE_PIN,!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }
+  #endif
+#else
+  #define enable_z() ;
+  #define disable_z() ;
+#endif
+
+#if defined(E0_ENABLE_PIN) && (E0_ENABLE_PIN > -1)
+  #define enable_e0() WRITE(E0_ENABLE_PIN, E_ENABLE_ON)
+  #define disable_e0() WRITE(E0_ENABLE_PIN,!E_ENABLE_ON)
+#else
+  #define enable_e0()  /* nothing */
+  #define disable_e0() /* nothing */
+#endif
+
+#if (DRIVER_EXTRUDERS > 1) && defined(E1_ENABLE_PIN) && (E1_ENABLE_PIN > -1)
+#define enable_e1() WRITE(E1_ENABLE_PIN, E_ENABLE_ON)
+#define disable_e1() WRITE(E1_ENABLE_PIN,!E_ENABLE_ON)
+#else
+#define enable_e1()  /* nothing */
+#define disable_e1() /* nothing */
+#endif
+
+#if (DRIVER_EXTRUDERS > 2) && defined(E2_ENABLE_PIN) && (E2_ENABLE_PIN > -1)
+#define enable_e2() WRITE(E2_ENABLE_PIN, E_ENABLE_ON)
+#define disable_e2() WRITE(E2_ENABLE_PIN,!E_ENABLE_ON)
+#else
+#define enable_e2()  /* nothing */
+#define disable_e2() /* nothing */
+#endif
+
+#if (DRIVER_EXTRUDERS > 3) && defined(E3_ENABLE_PIN) && (E3_ENABLE_PIN > -1)
+#define enable_e3() WRITE(E3_ENABLE_PIN, E_ENABLE_ON)
+#define disable_e3() WRITE(E3_ENABLE_PIN,!E_ENABLE_ON)
+#else
+#define enable_e3()  /* nothing */
+#define disable_e3() /* nothing */
+#endif
+
+
+
+enum AxisEnum {X_AXIS=0, Y_AXIS=1, Z_AXIS=2, E_AXIS=3};
+
+
+void FlushSerialRequestResend();
+void ClearToSend();
+void get_coordinates();
+
+#ifdef DELTA
+float probe_bed(float x, float y);
+void set_delta_constants();
+void home_delta_axis();
+void calibration_report();
+void bed_probe_all();
+void set_default_z_probe_offset();
+void set_delta_constants();
+void save_carriage_positions(int position_num);
+void calculate_delta(float cartesian[3]);
+void adjust_delta(float cartesian[3]);
+void prepare_move_raw();
+extern float delta[3];
+extern float delta_tmp[3];
+extern float delta_tower1_x,delta_tower1_y;
+extern float delta_tower2_x,delta_tower2_y;
+extern float delta_tower3_x,delta_tower3_y;
+#endif
+
+#ifdef SCARA
+void calculate_delta(float cartesian[3]);
+void calculate_SCARA_forward_Transform(float f_scara[3]);
+#endif
+
+void prepare_move();
+void kill();
+void pause();
+void Stop();
+
+bool IsStopped();
+
+void enquecommand(const char *cmd); //put an ASCII command at the end of the current buffer.
+void enquecommand_P(const char *cmd); //put an ASCII command at the end of the current buffer, read from flash
+void prepare_arc_move(char isclockwise);
+void clamp_to_software_endstops(float target[3]);
+
+void refresh_cmd_timeout(void);
+
+#ifdef FAST_PWM_FAN
+void setPwmFrequency(uint8_t pin, int val);
+#endif
+
+#ifndef CRITICAL_SECTION_START
+  #define CRITICAL_SECTION_START  unsigned char _sreg = SREG; cli();
+  #define CRITICAL_SECTION_END    SREG = _sreg;
+#endif //CRITICAL_SECTION_START
+
+extern float homing_feedrate[];
+extern bool axis_relative_modes[];
+extern int feedmultiply;
+extern int extrudemultiply; // Sets extrude multiply factor (in percent) for all extruders
+extern int extruder_multiply[EXTRUDERS]; // sets extrude multiply factor (in percent) for each extruder individually
+extern float volumetric_multiplier[EXTRUDERS]; // reciprocal of cross-sectional area of filament (in square millimeters), stored this way to reduce computational burden in planner
+extern float current_position[NUM_AXIS] ;
+extern float add_homing[3];
+#ifdef NPR2
+extern int old_color; // old color for system NPR2
+#endif
+#ifdef DELTA
+extern float z_probe_offset[3];
+extern float endstop_adj[3];
+extern float tower_adj[6];
+extern float delta_radius;
+extern float delta_diagonal_rod;
+//*extern float Z_MAX_POS;
+//*extern float Z_MAX_LENGTH;
+#endif
+#ifdef SCARA
+extern float axis_scaling[3];  // Build size scaling
+#endif
+
+extern float min_pos[3];
+extern float max_pos[3];
+extern bool axis_known_position[3];
+extern float lastpos[4];
+extern float zprobe_zoffset;
+extern int fanSpeed;
+
+#ifdef BARICUDA
+extern int ValvePressure;
+extern int EtoPPressure;
+#endif
+
+#ifdef FAN_SOFT_PWM
+extern unsigned char fanSpeedSoftPwm;
+#endif
+
+#ifdef FWRETRACT
+extern bool autoretract_enabled;
+extern bool retracted[EXTRUDERS];
+extern float retract_length, retract_length_swap, retract_feedrate, retract_zlift;
+extern float retract_recover_length, retract_recover_length_swap, retract_recover_feedrate;
+#endif
+
+extern unsigned long starttime;
+extern unsigned long stoptime;
+
+// Handling multiple extruders pins
+extern uint8_t active_extruder;
+extern uint8_t active_driver;
+
+#ifdef DIGIPOT_I2C
+extern void digipot_i2c_set_current( int channel, float current );
+extern void digipot_i2c_init();
+#endif
+
+#endif
+
