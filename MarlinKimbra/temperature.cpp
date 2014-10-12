@@ -1492,7 +1492,6 @@ ISR(TIMER0_COMPB_vect)
         raw_temp_3_value += ADC;
       #endif
       temp_state = 10; //change so that Filament Width is also measured
-      temp_count++;
       break;
     case 10: //Prepare FILWIDTH 
      #if defined(FILWIDTH_PIN) && (FILWIDTH_PIN> -1) 
