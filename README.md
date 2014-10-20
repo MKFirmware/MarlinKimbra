@@ -1,23 +1,14 @@
 ==========================
 MarlinKimbra 3D Printer Firmware
 ==========================
-[![Coverity Scan Build Status](https://scan.coverity.com/projects/2224/badge.svg)](https://scan.coverity.com/projects/2224)
+[![Coverity Scan Build Status](https://scan.coverity.com/projects/3291/badge.svg)](https://scan.coverity.com/projects/3291)
 
 Marlin has a GPL license because I believe in open development.
 Please do not use this code in products (3D printers, CNC etc) that are closed source or are crippled by a patent.
 
-[![Flattr this git repo](http://api.flattr.com/button/flattr-badge-large.png)](https://flattr.com/submit/auto?user_id=ErikZalm&url=https://github.com/ErikZalm/Marlin&title=Marlin&language=&tags=github&category=software)
-
 Quick Information
 ===================
-This RepRap firmware is a mashup between <a href="https://github.com/kliment/Sprinter">Sprinter</a>, <a href="https://github.com/simen/grbl/tree">grbl</a> and many original parts.
-
-Derived from Sprinter and Grbl by Erik van der Zalm.
-Sprinters lead developers are Kliment and caru.
-Grbls lead developer is Simen Svale Skogsrud. Sonney Jeon (Chamnit) improved some parts of grbl
-A fork by bkubicek for the Ultimaker was merged, and further development was aided by him.
-Some features have been added by:
-Lampmaker, Bradley Feldman, and others...
+---
 
 
 Features:
@@ -48,11 +39,18 @@ Features:
 *   CoreXY kinematics (www.corexy.com/theory.html)
 *   Delta kinematics
 *   SCARA kinematics
+*   One firmware for all printers, see configurations.h.
 *   Dual X-carriage support for multiple extruder systems
 *   Configurable serial port to support connection of wireless adaptors.
 *   Automatic operation of extruder/cold-end cooling fans based on nozzle temperature
 *   RC Servo Support, specify angle or duration for continuous rotation servos.
-*   Bed Auto Leveling.
+*   Bed Auto Leveling for cartesian and delta printer
+*   Z probe repetability test
+*   Setting step for unit and feedrate for extruders
+*   Real-time filament diameter measurement and control
+*   MKR4 suppport for 4 extruder but only two driver
+*   Singlenozzle support
+*   NPr2 support, multiextruder by NicolaP http://www.3dmakerlab.it/extruder-npr2.html
 
 The default baudrate is 250000. This baudrate has less jitter and hence errors than the usual 115200 baud, but is less supported by drivers and host-environments.
 
@@ -262,8 +260,8 @@ Configuring and compilation:
 Install the arduino software IDE/toolset v23 (Some configurations also work with 1.x.x)
    http://www.arduino.cc/en/Main/Software
 
-Download the Marlin firmware
-   https://github.com/ErikZalm/Marlin/tree/Marlin_v1
+Download the MarlinKimbra firmware
+   https://github.com/MagoKimbra/MarlinKimbra
    Use the "Download Zip" button on the right.
 
 For gen6/gen7 and sanguinololu the Sanguino directory in the Marlin dir needs to be copied to the arduino environment.
@@ -399,10 +397,12 @@ That's it.. enjoy never having to calibrate your Z endstop neither leveling your
 
 MKR4 System Option Notes
 -----------------
-Insert Relé for to double extruder single driver.
+Insert Relé for to double extruder single driver. See pin.h for setting pin.
+
+NPr2 System Option Notes
+-----------------
+soon
 
 Singlenozzle function notes
 -----------------
 If have on hotend and more extruder define SINGLENOZZLE for unic temperature.
-
-
