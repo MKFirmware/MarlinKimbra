@@ -231,7 +231,11 @@ void Config_PrintSettings()
    SERIAL_ECHOPAIR(" Y:",delta_tower3_y);
    SERIAL_ECHOLN("");
    */
-#endif
+#else // no DELTA
+  SERIAL_ECHO_START;
+  SERIAL_ECHOPAIR("Z Probe offset (mm):" ,zprobe_zoffset);
+  SERIAL_ECHOLN("");
+#endif // DELTA
 
 #ifdef PIDTEMP
   SERIAL_ECHO_START;
