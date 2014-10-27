@@ -567,7 +567,7 @@ void plan_buffer_line(const float &x, const float &y, const float &z, const floa
   {
     if (active_extruder!=1)
     {
-      if(degHotend(active_extruder)<extrude_min_temp)
+      if(degHotend(active_extruder)<extrude_min_temp && !debugDryrun())
       {
         position[E_AXIS]=target[E_AXIS]; //behave as if the move really took place, but ignore E part
         SERIAL_ECHO_START;
@@ -577,7 +577,7 @@ void plan_buffer_line(const float &x, const float &y, const float &z, const floa
 #else // NO NPR2
   if(target[E_AXIS]!=position[E_AXIS])
   {
-    if(degHotend(active_extruder)<extrude_min_temp)
+    if(degHotend(active_extruder)<extrude_min_temp && !debugDryrun())
     {
       position[E_AXIS]=target[E_AXIS]; //behave as if the move really took place, but ignore E part
       SERIAL_ECHO_START;

@@ -299,5 +299,12 @@ extern void digipot_i2c_set_current( int channel, float current );
 extern void digipot_i2c_init();
 #endif
 
+// Debug with repetier
+extern uint8_t debugLevel;
+extern inline bool debugDryrun()
+{
+  return ((debugLevel & 8)!=0);
+}
+
 #endif
 

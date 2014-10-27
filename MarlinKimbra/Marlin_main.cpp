@@ -124,6 +124,7 @@
 // M109 - Sxxx Wait for extruder current temp to reach target temp. Waits only when heating
 //        Rxxx Wait for extruder current temp to reach target temp. Waits when heating and cooling
 //        IF AUTOTEMP is enabled, S<mintemp> B<maxtemp> F<factor>. Exit autotemp by any M109 without F
+// M111 - Debug mode
 // M112 - Emergency stop
 // M114 - Output current position to serial port
 // M115 - Capabilities string
@@ -305,6 +306,8 @@ float lastpos[4];
 
 uint8_t active_extruder = 0;
 uint8_t active_driver = 0;
+
+uint8_t debugLevel = 0;
 
 int fanSpeed=0;
 #ifdef SERVO_ENDSTOPS
@@ -3383,9 +3386,8 @@ Sigma_Exit:
 #endif		// ENABLE_AUTO_BED_LEVELING
 
     case 104: // M104
-      if(setTargetedHotend(104)){
-        break;
-      }
+      if(setTargetedHotend(104)) break;
+      if(debugDryrun()) break;
       if (code_seen('S')) setTargetHotend(code_value(), tmp_extruder);
 #ifdef DUAL_X_CARRIAGE
       if (dual_x_carriage_mode == DXC_DUPLICATION_MODE && tmp_extruder == 0)
@@ -3393,16 +3395,26 @@ Sigma_Exit:
 #endif
       setWatch();
       break;
+    case 111: // M111 - Debug mode
+      if (code_seen('S')) debugLevel = code_value();
+      if (debugDryrun()) {
+        SERIAL_ECHOLN("DEBUG DRYRUN ENABLED");
+        setTargetBed(0);
+        for (int8_t cur_extruder = 0; cur_extruder < EXTRUDERS; ++cur_extruder) {
+          setTargetHotend(0, cur_extruder);
+        }
+      }
+      break;
     case 112: //  M112 -Emergency Stop
       kill();
       break;
     case 140: // M140 set bed temp
+      if(debugDryrun()) break;
       if (code_seen('S')) setTargetBed(code_value());
       break;
     case 105 : // M105
-      if(setTargetedHotend(105)){
-        break;
-        }
+      if(setTargetedHotend(105)) break;
+      if(debugDryrun()) break;
       #if defined(TEMP_0_PIN) && TEMP_0_PIN > -1
         SERIAL_PROTOCOLPGM("ok T:");
         SERIAL_PROTOCOL_F(degHotend(tmp_extruder),1);
@@ -3465,9 +3477,8 @@ Sigma_Exit:
       break;
     case 109:
     {// M109 - Wait for extruder heater to reach target.
-      if(setTargetedHotend(109)){
-        break;
-      }
+      if(setTargetedHotend(109)) break;
+      if(debugDryrun()) break;
       LCD_MESSAGEPGM(MSG_HEATING);
       #ifdef AUTOTEMP
         autotemp_enabled=false;
@@ -3558,6 +3569,7 @@ Sigma_Exit:
       break;
     case 190: // M190 - Wait for bed heater to reach target.
     #if defined(TEMP_BED_PIN) && TEMP_BED_PIN > -1
+        if(debugDryrun()) break;
         LCD_MESSAGEPGM(MSG_BED_HEATING);
         if (code_seen('S')) {
           setTargetBed(code_value());
@@ -3770,7 +3782,7 @@ Sigma_Exit:
 
       SERIAL_PROTOCOLLN("");
 #ifdef SCARA
-	  SERIAL_PROTOCOLPGM("SCARA Theta:");
+      SERIAL_PROTOCOLPGM("SCARA Theta:");
       SERIAL_PROTOCOL(delta[X_AXIS]);
       SERIAL_PROTOCOLPGM("   Psi+Theta:");
       SERIAL_PROTOCOL(delta[Y_AXIS]);
