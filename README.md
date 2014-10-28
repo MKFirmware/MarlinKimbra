@@ -69,22 +69,22 @@ Different printer one firmware
 -----------------
 I put in a single firmware all the firmware that I found online for the various printers, especially the one for Delta, I standardized the firmware. There are 4 files one for each type of printer, just edit the file in question and say configuration.h the printer you want to use ...
 
-#define CARTESIAN
-//#define COREXY
-//#define DELTA
-//#define SCARA
+define CARTESIAN
+//define COREXY
+//define DELTA
+//define SCARA
 
 Different axis step per unit for all extruder
 -----------------
-#define DEFAULT_AXIS_STEPS_PER_UNIT     {80,80,3200,625,625,625,625}    // X, Y, Z, E0, E1, E2, E3 default steps per unit
+define DEFAULT_AXIS_STEPS_PER_UNIT     {80,80,3200,625,625,625,625}    // X, Y, Z, E0, E1, E2, E3 default steps per unit
 
 Different feedrate for all extruder
 -----------------
-#define DEFAULT_MAX_FEEDRATE            {300,300,2,100,100,100,100}     // X, Y, Z, E0, E1, E2, E3 (mm/sec)
+define DEFAULT_MAX_FEEDRATE            {300,300,2,100,100,100,100}     // X, Y, Z, E0, E1, E2, E3 (mm/sec)
 
 Add Feedrate for retraction
 -----------------
-#define DEFAULT_RETRACTION_MAX_FEEDRATE {150,150,150,150}               // E0, E1, E2, E3 (mm/sec)
+define DEFAULT_RETRACTION_MAX_FEEDRATE {150,150,150,150}               // E0, E1, E2, E3 (mm/sec)
 
 Singlenozzle
 -----------------
