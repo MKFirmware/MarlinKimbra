@@ -6,8 +6,17 @@ Please do not use this code in products (3D printers, CNC etc) that are closed s
 
 Quick Information
 ===================
----
-
+This version of Marlin was made to accommodate some requests made by the community RepRap Italy. 
+The new features are: 
+A single Marlin for all types of printers; Cartesian, Delta, SCARA, CoreXY. 
+The possibility of having only one hotend independently from the extruders that you have. 
+The addition of the 4th extruder. 
+System Management MKr4 for 4 extruders with just two drivers or two extruders with a driver only. 
+Management Multiestrusore NPr2, 4/6 extruders with only two engines. 
+Adding commands to facilitate purging of hotend. 
+Step per unit varied for each extruder as well as the feedrate. 
+The addition of a different feedrate for retraction. 
+Adding Debug Dryrun used by repetier.
 
 Features:
 =========
@@ -53,95 +62,47 @@ Features:
 The default baudrate is 250000. This baudrate has less jitter and hence errors than the usual 115200 baud, but is less supported by drivers and host-environments.
 
 
-Differences and additions to the already good Sprinter firmware:
+Differences and additions to the already good Marlin firmware:
 ================================================================
 
-Look-ahead:
------------
+Different printer one firmware
+-----------------
+I put in a single firmware all the firmware that I found online for the various printers, especially the one for Delta, I standardized the firmware. There are 4 files one for each type of printer, just edit the file in question and say configuration.h the printer you want to use ...
 
-Marlin has look-ahead. While sprinter has to break and re-accelerate at each corner,
-lookahead will only decelerate and accelerate to a velocity,
-so that the change in vectorial velocity magnitude is less than the xy_jerk_velocity.
-This is only possible, if some future moves are already processed, hence the name.
-It leads to less over-deposition at corners, especially at flat angles.
+#define CARTESIAN
+//#define COREXY
+//#define DELTA
+//#define SCARA
 
-Arc support:
-------------
+Different axis step per unit for all extruder
+-----------------
+#define DEFAULT_AXIS_STEPS_PER_UNIT     {80,80,3200,625,625,625,625}    // X, Y, Z, E0, E1, E2, E3 default steps per unit
 
-Slic3r can find curves that, although broken into segments, were ment to describe an arc.
-Marlin is able to print those arcs. The advantage is the firmware can choose the resolution,
-and can perform the arc with nearly constant velocity, resulting in a nice finish.
-Also, less serial communication is needed.
+Different feedrate for all extruder
+-----------------
+#define DEFAULT_MAX_FEEDRATE            {300,300,2,100,100,100,100}     // X, Y, Z, E0, E1, E2, E3 (mm/sec)
 
-Temperature Oversampling:
--------------------------
+Add Feedrate for retraction
+-----------------
+#define DEFAULT_RETRACTION_MAX_FEEDRATE {150,150,150,150}               // E0, E1, E2, E3 (mm/sec)
 
-To reduce noise and make the PID-differential term more useful, 16 ADC conversion results are averaged.
+Singlenozzle
+-----------------
+If have on hotend and more extruder define SINGLENOZZLE for unic temperature.
 
-AutoTemp:
----------
+MKR4 System
+-----------------
+The system MKR4 allows two extruders for each driver on the motherboard. So with two drivers available you get to have 4 extruders. This is due to the relays controlled by the same motherboard with the pins. Look at the bottom of the file pins.h to set the right pin. This system allows the use of flux channeler to print in color. See http://www.immaginaecrea.it/index.php/blog-wordpress/post/150-flusso-canalizzatore-a-4-vie-la-stampa-3d-a-4-colori-e-gia-realta-per-lambiente-reprap-prima-parte
 
-If your gcode contains a wide spread of extruder velocities, or you realtime change the building speed, the temperature should be changed accordingly.
-Usually, higher speed requires higher temperature.
-This can now be performed by the AutoTemp function
-By calling M109 S<mintemp> B<maxtemp> F<factor> you enter the autotemp mode.
+NPr2 System
+-----------------
+soon
+http://www.3dmakerlab.it/extruder-npr2.html
 
-You can leave it by calling M109 without any F.
-If active, the maximal extruder stepper rate of all buffered moves will be calculated, and named "maxerate" [steps/sec].
-The wanted temperature then will be set to t=tempmin+factor*maxerate, while being limited between tempmin and tempmax.
-If the target temperature is set manually or by gcode to a value less then tempmin, it will be kept without change.
-Ideally, your gcode can be completely free of temperature controls, apart from a M109 S T F in the start.gcode, and a M109 S0 in the end.gcode.
+Debug Dryrun Repetier
+-----------------
+In dry run mode, the firmware will ignore all commands to set temperature or extrude. That way you can send a file without using any filament. This is handy if your printer loses steps during print and you are doing some research on when and why. If you seem to have troubles with your extruder, check if you have that option enabled!
 
-EEPROM:
--------
-
-If you know your PID values, the acceleration and max-velocities of your unique machine, you can set them, and finally store them in the EEPROM.
-After each reboot, it will magically load them from EEPROM, independent what your Configuration.h says.
-
-LCD Menu:
----------
-
-If your hardware supports it, you can build yourself a LCD-CardReader+Click+encoder combination. It will enable you to realtime tune temperatures,
-accelerations, velocities, flow rates, select and print files from the SD card, preheat, disable the steppers, and do other fancy stuff.
-One working hardware is documented here: http://www.thingiverse.com/thing:12663
-Also, with just a 20x4 or 16x2 display, useful data is shown.
-
-SD card folders:
-----------------
-
-If you have an SD card reader attached to your controller, also folders work now. Listing the files in pronterface will show "/path/subpath/file.g".
-You can write to file in a subfolder by specifying a similar text using small letters in the path.
-Also, backup copies of various operating systems are hidden, as well as files not ending with ".g".
-
-SD card folders:
-----------------
-
-If you place a file auto[0-9].g into the root of the sd card, it will be automatically executed if you boot the printer. The same file will be executed by selecting "Autostart" from the menu.
-First *0 will be performed, than *1 and so on. That way, you can heat up or even print automatically without user interaction.
-
-Endstop trigger reporting:
---------------------------
-
-If an endstop is hit while moving towards the endstop, the location at which the firmware thinks that the endstop was triggered is outputed on the serial port.
-This is useful, because the user gets a warning message.
-However, also tools like QTMarlin can use this for finding acceptable combinations of velocity+acceleration.
-
-Coding paradigm:
-----------------
-
-Not relevant from a user side, but Marlin was split into thematic junks, and has tried to partially enforced private variables.
-This is intended to make it clearer, what interacts which what, and leads to a higher level of modularization.
-We think that this is a useful prestep for porting this firmware to e.g. an ARM platform in the future.
-A lot of RAM (with enabled LCD ~2200 bytes) was saved by storing char []="some message" in Program memory.
-In the serial communication, a #define based level of abstraction was enforced, so that it is clear that
-some transfer is information (usually beginning with "echo:"), an error "error:", or just normal protocol,
-necessary for backwards compatibility.
-
-Interrupt based temperature measurements:
------------------------------------------
-
-An interrupt is used to manage ADC conversions, and enforce checking for critical temperatures.
-This leads to less blocking in the heater management routine.
 
 Implemented G Codes:
 ====================
@@ -197,6 +158,7 @@ M Codes
 *  M107 - Fan off
 *  M109 - Sxxx Wait for extruder current temp to reach target temp. Waits only when heating
 *         Rxxx Wait for extruder current temp to reach target temp. Waits when heating and cooling
+*  M111 - Debug Dryrun Repetier
 *  M112 - Emergency stop
 *  M114 - Output current position to serial port
 *  M115 - Capabilities string
@@ -391,16 +353,3 @@ For example, suppose you measured the endstop position and it was 20mm to the ri
 * \#define Z_PROBE_OFFSET_FROM_EXTRUDER 2.75
 
 That's it.. enjoy never having to calibrate your Z endstop neither leveling your bed by hand anymore ;-)
-
-
-MKR4 System Option Notes
------------------
-Insert Relé for to double extruder single driver. See pin.h for setting pin.
-
-NPr2 System Option Notes
------------------
-soon
-
-Singlenozzle function notes
------------------
-If have on hotend and more extruder define SINGLENOZZLE for unic temperature.
