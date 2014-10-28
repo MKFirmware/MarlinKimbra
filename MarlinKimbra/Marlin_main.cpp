@@ -174,7 +174,7 @@
 // M540 - Use S[0|1] to enable or disable the stop SD card print on endstop hit (requires ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED)
 // M600 - Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
 // M605 - Set dual x-carriage movement mode: S<mode> [ X<duplication x-offset> R<duplication temp offset> ]
-// M666 - Endstop and delta geometry adjustment
+// M666 - Set z probe offset or Endstop and delta geometry adjustment
 // M907 - Set digital trimpot motor current using axis codes.
 // M908 - Control digital trimpot directly.
 // M350 - Set microstepping mode.
@@ -3939,6 +3939,18 @@ Sigma_Exit:
       }
 	  #endif
       break;
+      
+#ifdef ENABLE_AUTO_BED_LEVELING
+      case 666: // M666 Set Z probe offset
+        if (code_seen('P')) {
+           zprobe_zoffset = code_value();
+        }
+        if (code_seen('L')) {
+          SERIAL_ECHOPAIR("P (Z-Probe Offset):", zprobe_zoffset);
+          SERIAL_ECHOLN("");
+        }
+        break;
+#endif // ENABLE_AUTO_BED_LEVELING
 
 #ifdef DELTA
       case 666: // M666 set delta endstop and geometry adjustment

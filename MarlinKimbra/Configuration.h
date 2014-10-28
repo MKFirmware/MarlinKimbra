@@ -250,9 +250,9 @@
 
 // If you are using a pre-configured hotend then you can use one of the value sets by uncommenting it
 // IeC HotEnd
-#define  DEFAULT_Kp 76.42
-#define  DEFAULT_Ki 14.58
-#define  DEFAULT_Kd 100.17
+#define  DEFAULT_Kp 41.51
+#define  DEFAULT_Ki 7.28
+#define  DEFAULT_Kd 59.17
 
 // Buda-Style HotEnd 2.0
 // #define  DEFAULT_Kp 33.24

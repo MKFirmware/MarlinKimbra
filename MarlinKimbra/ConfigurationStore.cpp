@@ -73,6 +73,9 @@ void Config_StoreSettings()
   EEPROM_WRITE_VAR(i,tower_adj);
   EEPROM_WRITE_VAR(i,z_probe_offset);
 #endif
+#ifdef ENABLE_AUTO_BED_LEVELING
+  EEPROM_WRITE_VAR(i,zprobe_zoffset);
+#endif
 #ifndef ULTIPANEL
   int plaPreheatHotendTemp = PLA_PREHEAT_HOTEND_TEMP, plaPreheatHPBTemp = PLA_PREHEAT_HPB_TEMP, plaPreheatFanSpeed = PLA_PREHEAT_FAN_SPEED;
   int absPreheatHotendTemp = ABS_PREHEAT_HOTEND_TEMP, absPreheatHPBTemp = ABS_PREHEAT_HPB_TEMP, absPreheatFanSpeed = ABS_PREHEAT_FAN_SPEED;
@@ -87,9 +90,6 @@ void Config_StoreSettings()
   EEPROM_WRITE_VAR(i,gumPreheatHotendTemp);
   EEPROM_WRITE_VAR(i,gumPreheatHPBTemp);
   EEPROM_WRITE_VAR(i,gumPreheatFanSpeed);
-#if defined(CARTESIAN) || defined(COREXY) || defined(SCARA)
-  EEPROM_WRITE_VAR(i,zprobe_zoffset);
-#endif
 #ifdef PIDTEMP
   EEPROM_WRITE_VAR(i,Kp);
   EEPROM_WRITE_VAR(i,Ki);
@@ -231,11 +231,13 @@ void Config_PrintSettings()
    SERIAL_ECHOPAIR(" Y:",delta_tower3_y);
    SERIAL_ECHOLN("");
    */
-#else // no DELTA
+#endif // DELTA
+
+#ifdef ENABLE_AUTO_BED_LEVELING
   SERIAL_ECHO_START;
   SERIAL_ECHOPAIR("Z Probe offset (mm):" ,zprobe_zoffset);
   SERIAL_ECHOLN("");
-#endif // DELTA
+#endif // ENABLE_AUTO_BED_LEVELING
 
 #ifdef PIDTEMP
   SERIAL_ECHO_START;
@@ -287,6 +289,9 @@ void Config_RetrieveSettings()
     // Update delta constants for updated delta_radius & tower_adj values
     set_delta_constants();
 #endif
+#ifdef ENABLE_AUTO_BED_LEVELING
+    EEPROM_READ_VAR(i,zprobe_zoffset);
+#endif
 #ifndef ULTIPANEL
     int plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed;
     int absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed;
@@ -301,9 +306,6 @@ void Config_RetrieveSettings()
     EEPROM_READ_VAR(i,gumPreheatHotendTemp);
     EEPROM_READ_VAR(i,gumPreheatHPBTemp);
     EEPROM_READ_VAR(i,gumPreheatFanSpeed);
-#if defined(CARTESIAN) || defined(COREXY) || defined(SCARA)
-    EEPROM_READ_VAR(i,zprobe_zoffset);
-#endif
 #ifndef PIDTEMP
     float Kp,Ki,Kd;
 #endif
