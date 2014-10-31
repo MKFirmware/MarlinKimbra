@@ -44,6 +44,8 @@ void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size)
 #define EEPROM_VERSION "V12"
 #elif defined(SCARA)
 #define EEPROM_VERSION "V13"
+#elif defined(CNCLASER)
+#define EEPROM_VERSION "V14"
 #endif
 
 #ifdef EEPROM_SETTINGS

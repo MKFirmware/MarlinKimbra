@@ -73,6 +73,7 @@ I put in a single firmware all the firmware that I found online for the various 
 * \#define COREXY
 * \#define DELTA
 * \#define SCARA
+* \#define CNCLASER
 
 Different axis step per unit for all extruder
 -----------------
@@ -131,6 +132,8 @@ Implemented G Codes:
 M Codes
 *  M0   - Unconditional stop - Wait for user to press a button on the LCD (Only if ULTRA_LCD is enabled)
 *  M1   - Same as M0
+*  M03  - Put S<value> in laser beam control
+*  M05  - Turn off laser beam
 *  M17  - Enable/Power all stepper motors
 *  M18  - Disable all stepper motors; same as M84
 *  M20  - List SD card

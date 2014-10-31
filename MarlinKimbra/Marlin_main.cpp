@@ -89,6 +89,8 @@
 // M Codes
 // M0   - Unconditional stop - Wait for user to press a button on the LCD (Only if ULTRA_LCD is enabled)
 // M1   - Same as M0
+// M03  - Put S<value> in laser beam control
+// M05  - Turn off laser beam
 // M17  - Enable/Power all stepper motors
 // M18  - Disable all stepper motors; same as M84
 // M20  - List SD card
@@ -209,10 +211,6 @@ CardReader card;
 float homing_feedrate[] = HOMING_FEEDRATE;
 bool axis_known_position[3] = {false, false, false};
 
-#if defined(CARTESIAN) || defined(COREXY) || defined(SCARA)
-float zprobe_zoffset;
-#endif
-
 #ifdef DELTA
 float probing_feedrate = PROBING_FEEDRATE;
 float default_z_probe_offset[] = Z_PROBE_OFFSET;
@@ -221,7 +219,9 @@ float z_probe_deploy_start_location[] = Z_PROBE_DEPLOY_START_LOCATION;
 float z_probe_deploy_end_location[] = Z_PROBE_DEPLOY_END_LOCATION;
 float z_probe_retract_start_location[] = Z_PROBE_RETRACT_START_LOCATION;
 float z_probe_retract_end_location[] = Z_PROBE_RETRACT_END_LOCATION;
-#endif // Delta
+#else // No Delta
+float zprobe_zoffset;
+#endif // No Delta
 
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
 int feedmultiply=100; //100->1 200->2
@@ -387,10 +387,6 @@ static float destination[NUM_AXIS] = {  0.0, 0.0, 0.0, 0.0};
 static float offset[3] = {0.0, 0.0, 0.0};
 static bool home_all_axis = true;
 
-#if defined(CARTESIAN) || defined(COREXY) || defined(SCARA)
-static float feedrate = 1500.0, next_feedrate, saved_feedrate;
-#endif
-
 #ifdef DELTA
 const float SIN_60 = 0.8660254037844386;
 const float COS_60 = 0.5;
@@ -408,7 +404,9 @@ static float bed_level_x, bed_level_y, bed_level_z;
 static float bed_level_c = 20; //used for inital bed probe safe distance (to avoid crashing into bed)
 static float bed_level_ox, bed_level_oy, bed_level_oz;
 static int loopcount;
-#endif // DELTA
+#else // No DELTA
+static float feedrate = 1500.0, next_feedrate, saved_feedrate;
+#endif // No DELTA
 
 static long gcode_N, gcode_LastN, Stopped_gcode_LastN = 0;
 static bool relative_mode = false;  //Determines Absolute or Relative Coordinates
@@ -660,6 +658,10 @@ void setup()
   st_init();    // Initialize stepper, this enables interrupts!
 #if defined(PHOTOGRAPH_PIN) && PHOTOGRAPH_PIN > -1
   setup_photpin();
+#endif
+#if defined(LASERBEAM_PIN) && LASERBEAM_PIN > -1
+  pinMode(LASERBEAM_PIN, OUTPUT);
+  digitalWrite(LASERBEAM_PIN, LOW); // turn it off
 #endif
 #if defined(NUM_SERVOS)
   servo_init();
@@ -938,7 +940,7 @@ static inline type array(int axis)          \
     { return pgm_read_any(&array##_P[axis]); }
 
 XYZ_CONSTS_FROM_CONFIG(float, base_min_pos,    MIN_POS);
-#if defined(CARTESIAN) || defined(COREXY) || defined(SCARA)
+#if defined(CARTESIAN) || defined(COREXY) || defined(SCARA) || defined(CNCLASER)
 	XYZ_CONSTS_FROM_CONFIG(float, base_max_pos,    MAX_POS);
 	XYZ_CONSTS_FROM_CONFIG(float, base_home_pos,   HOME_POS);
 	XYZ_CONSTS_FROM_CONFIG(float, max_length,      MAX_LENGTH);
@@ -985,7 +987,7 @@ static float duplicate_extruder_temp_offset = 0; // used in mode 2
 bool extruder_duplication_enabled = false; // used in mode 2
 #endif //DUAL_X_CARRIAGE
 
-#if defined(CARTESIAN) || defined(COREXY) || defined(SCARA)
+#if defined(CARTESIAN) || defined(COREXY) || defined(SCARA) || defined(CNCLASER)
 static void axis_is_at_home(int axis) {
 #ifdef DUAL_X_CARRIAGE
   if (axis == X_AXIS) {
@@ -2947,6 +2949,20 @@ void process_commands()
     }
     break;
 #endif
+
+#ifdef CNCLASER
+    case 03: // M03 S - Setting laser beam
+    {
+      if(code_seen('S')) {
+        digitalWrite(LASERBEAM_PIN, code_value());
+      }
+    }
+    break;
+    case 05: // M05 - Setting laser beam off
+	digitalWrite(LASERBEAM_PIN, 0);
+    break;
+#endif // CNCLASER
+
     case 17:
         LCD_MESSAGEPGM(MSG_NO_MOVE);
         enable_x();

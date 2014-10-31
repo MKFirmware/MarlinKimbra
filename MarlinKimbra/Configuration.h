@@ -48,6 +48,7 @@
 //#define COREXY
 //#define DELTA
 //#define SCARA
+//#define CNCLASER
 
 #if defined(CARTESIAN)
 #include "Configuration_Cartesian.h"
@@ -57,6 +58,8 @@
 #include "Configuration_Delta.h"
 #elif defined(SCARA)
 #include "Configuration_Scara.h"
+#elif defined(CNCLASER)
+#include "Configuration_CNC_laser.h"
 #endif
 /***********************************************************************/
 
@@ -109,8 +112,6 @@
 #define MOTHERBOARD 33
 #endif
 
-// This defines the number of Driver extruders
-#define DRIVER_EXTRUDERS 1
 // This defines the number of extruder real or virtual
 #define EXTRUDERS 1
 
@@ -132,10 +133,13 @@
 //#define MKR4
 #ifdef MKR4
 #define DELAY_R 500          // Delay for switch rele
+#define DRIVER_EXTRUDERS 1   // This defines the number of Driver extruders
 #endif // END MKR4
-
 //**********************************************************************
 
+#if !defined(MKR4)
+#define DRIVER_EXTRUDERS EXTRUDERS // This defines the number of Driver extruders
+#endif
 
 // Setting firmware for FILAMENT END SWITCH
 // #define FILAMENT_END_SWITCH
