@@ -73,7 +73,6 @@ I put in a single firmware all the firmware that I found online for the various 
 * \#define COREXY
 * \#define DELTA
 * \#define SCARA
-* \#define CNCLASER
 
 Different axis step per unit for all extruder
 -----------------

@@ -48,7 +48,6 @@
 //#define COREXY
 //#define DELTA
 //#define SCARA
-//#define CNCLASER
 
 #if defined(CARTESIAN)
 #include "Configuration_Cartesian.h"
@@ -58,8 +57,6 @@
 #include "Configuration_Delta.h"
 #elif defined(SCARA)
 #include "Configuration_Scara.h"
-#elif defined(CNCLASER)
-#include "Configuration_CNC_laser.h"
 #endif
 /***********************************************************************/
 
@@ -592,6 +589,9 @@
 
 //define BlinkM/CyzRgb Support
 //#define BLINKM
+
+// define LASERBEAM
+//#define LASERBEAM
 
 /**********************************************************************\
  * Support for a filament diameter sensor

@@ -940,7 +940,7 @@ static inline type array(int axis)          \
     { return pgm_read_any(&array##_P[axis]); }
 
 XYZ_CONSTS_FROM_CONFIG(float, base_min_pos,    MIN_POS);
-#if defined(CARTESIAN) || defined(COREXY) || defined(SCARA) || defined(CNCLASER)
+#if defined(CARTESIAN) || defined(COREXY) || defined(SCARA)
 	XYZ_CONSTS_FROM_CONFIG(float, base_max_pos,    MAX_POS);
 	XYZ_CONSTS_FROM_CONFIG(float, base_home_pos,   HOME_POS);
 	XYZ_CONSTS_FROM_CONFIG(float, max_length,      MAX_LENGTH);
@@ -987,7 +987,7 @@ static float duplicate_extruder_temp_offset = 0; // used in mode 2
 bool extruder_duplication_enabled = false; // used in mode 2
 #endif //DUAL_X_CARRIAGE
 
-#if defined(CARTESIAN) || defined(COREXY) || defined(SCARA) || defined(CNCLASER)
+#if defined(CARTESIAN) || defined(COREXY) || defined(SCARA)
 static void axis_is_at_home(int axis) {
 #ifdef DUAL_X_CARRIAGE
   if (axis == X_AXIS) {
@@ -2950,7 +2950,7 @@ void process_commands()
     break;
 #endif
 
-#ifdef CNCLASER
+#ifdef LASERBEAM
     case 03: // M03 S - Setting laser beam
     {
       if(code_seen('S')) {
@@ -2961,7 +2961,7 @@ void process_commands()
     case 05: // M05 - Setting laser beam off
 	digitalWrite(LASERBEAM_PIN, 0);
     break;
-#endif // CNCLASER
+#endif // LASERBEAM
 
     case 17:
         LCD_MESSAGEPGM(MSG_NO_MOVE);
