@@ -2959,7 +2959,7 @@ void process_commands()
     }
     break;
     case 05: // M05 - Setting laser beam off
-	digitalWrite(LASERBEAM_PIN, 0);
+      digitalWrite(LASERBEAM_PIN, 0);
     break;
 #endif // LASERBEAM
 

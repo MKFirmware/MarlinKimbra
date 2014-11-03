@@ -13,8 +13,8 @@
 #define SERIAL_PORT 0
 
 // This determines the communication speed of the printer
-//#define BAUDRATE 115000
-#define BAUDRATE 250000
+#define BAUDRATE 115000
+//#define BAUDRATE 250000
 
 // This enables the serial port associated to the Bluetooth interface
 //#define BTENABLED              // Enable BT interface on AT90USB devices
@@ -97,7 +97,8 @@
 // 9  = Gen3+
 // 70 = Megatronics
 // 701= Megatronics v2.0
-// 702= Minitronics v1.0
+// 702= Minitronics v1.0 / v1.1
+// 703= Megatronics v3.0
 // 90 = Alpha OMCA board
 // 91 = Final OMCA board
 // 301= Rambo
@@ -247,7 +248,7 @@
                                 // is more then PID_FUNCTIONAL_RANGE then the PID will be shut off and the heater will be set to min/max.
 #define PID_INTEGRAL_DRIVE_MAX 255  //limit for the integral term
 #define K1 0.95 //smoothing factor within the PID
-#define PID_dT ((OVERSAMPLENR * 8.0)/(F_CPU / 64.0 / 256.0)) //sampling period of the temperature routine
+#define PID_dT ((OVERSAMPLENR * 10.0)/(F_CPU / 64.0 / 256.0)) //sampling period of the temperature routine
 
 // If you are using a pre-configured hotend then you can use one of the value sets by uncommenting it
 // IeC HotEnd
@@ -590,7 +591,7 @@
 //define BlinkM/CyzRgb Support
 //#define BLINKM
 
-// define LASERBEAM
+//define LASERBEAM support
 //#define LASERBEAM
 
 /**********************************************************************\
