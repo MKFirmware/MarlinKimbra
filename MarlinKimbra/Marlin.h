@@ -211,6 +211,7 @@ void prepare_move();
 void kill();
 void pause();
 void Stop();
+void temptone();
 
 bool IsStopped();
 

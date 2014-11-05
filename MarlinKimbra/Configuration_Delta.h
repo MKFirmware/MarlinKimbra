@@ -49,7 +49,7 @@
 #define Z_PROBE_DEPLOY_END_LOCATION {0, 0, 30, 0}        // X, Y, Z, E end location for z-probe deployment sequence
 #define Z_PROBE_RETRACT_START_LOCATION {0, 0, 30, 0}     // X, Y, Z, E start location for z-probe retract sequence
 #define Z_PROBE_RETRACT_END_LOCATION {0, 0, 30, 0}       // X, Y, Z, E end location for z-probe retract sequence 
-#define AUTOLEVEL_GRID 30                                // Distance between autolevel Z probing points, should be less than print surface radius/3.
+#define AUTOLEVEL_GRID 20                                // Distance between autolevel Z probing points, should be less than print surface radius/3.
 
 //===========================================================================
 //=============================Mechanical Settings===========================
@@ -123,7 +123,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 //Manual homing switch locations:
 #define MANUAL_X_HOME_POS 0
 #define MANUAL_Y_HOME_POS 0
-#define MANUAL_Z_HOME_POS 202 // Distance between nozzle and print surface after homing.
+#define MANUAL_Z_HOME_POS 210 // Distance between nozzle and print surface after homing.
 
 //// MOVEMENT SETTINGS
 #define NUM_AXIS 4 // The axis order in all axis related arrays is X, Y, Z, E
@@ -134,10 +134,10 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define DEFAULT_AXIS_STEPS_PER_UNIT     {80,80,80,451,451,451,451}            // X, Y, Z, E0, E1, E2, E3
 #define DEFAULT_MAX_FEEDRATE            {300,300,300,45,45,45,45}             // X, Y, Z, E0, E1, E2, E3 (mm/sec)
 #define DEFAULT_RETRACTION_MAX_FEEDRATE {80,80,80,80}                         // E0, E1, E2, E3 (mm/sec)
-#define DEFAULT_MAX_ACCELERATION        {2000,2000,2000,2000}                 // X, Y, Z, E maximum start speed for accelerated moves.
+#define DEFAULT_MAX_ACCELERATION        {2000,2000,2000,1000}                 // X, Y, Z, E maximum start speed for accelerated moves.
 
 #define DEFAULT_ACCELERATION          1000    // X, Y, Z and E max acceleration in mm/s^2 for printing moves
-#define DEFAULT_RETRACT_ACCELERATION  4000    // X, Y, Z and E max acceleration in mm/s^2 for retracts
+#define DEFAULT_RETRACT_ACCELERATION  2500    // X, Y, Z and E max acceleration in mm/s^2 for retracts
 
 // The speed change that does not require acceleration (i.e. the software might assume it can be done instantaneously)
 #define DEFAULT_XYJERK                20.0    // (mm/sec)

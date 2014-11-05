@@ -435,6 +435,8 @@ unsigned long starttime=0;
 unsigned long stoptime=0;
 
 static uint8_t tmp_extruder;
+static boolean beeptemphe = false;
+static boolean beeptemphb = false;
 
 #ifdef NPR2
 static float color_position[] = COLOR_STEP;  //variabile per la scelta del colore
@@ -1479,7 +1481,7 @@ float z_probe() {
   }
 
   feedrate = homing_feedrate[Z_AXIS];
-  destination[Z_AXIS] = mm+3;
+  destination[Z_AXIS] = mm+2;
   prepare_move_raw();
   return mm;
 }
@@ -1493,8 +1495,11 @@ void calibrate_print_surface(float z_offset) {
     for (int x = -3*dir; x != 4*dir; x += dir) {
       if (x*x + y*y < 11) {
         destination[X_AXIS] = AUTOLEVEL_GRID * x - z_probe_offset[X_AXIS];
+        if (destination[X_AXIS]<X_MIN_POS) destination[X_AXIS]=X_MIN_POS;
+        if (destination[X_AXIS]>X_MAX_POS) destination[X_AXIS]=X_MAX_POS;
         destination[Y_AXIS] = AUTOLEVEL_GRID * y - z_probe_offset[Y_AXIS];
-
+        if (destination[Y_AXIS]<Y_MIN_POS) destination[Y_AXIS]=Y_MIN_POS;
+        if (destination[Y_AXIS]>Y_MAX_POS) destination[Y_AXIS]=Y_MAX_POS;
         probe_count = 0;
         probe_z = -100;
         probe_h = -100;
@@ -1508,50 +1513,54 @@ void calibrate_print_surface(float z_offset) {
         } while ((probe_z != probe_bed_z) and (probe_count < 21));
 
         bed_level[x+3][3-y] = probe_bed_z;
-        } else {
-	       bed_level[x+3][3-y] = 0.0;
-        }
+      } else {
+	bed_level[x+3][3-y] = 0.0;
       }
-      // For unprobed positions just copy nearest neighbor.
-      if (abs(y) >= 3) {
-        bed_level[1][3-y] = bed_level[2][3-y];
-        bed_level[5][3-y] = bed_level[4][3-y];
-      }
-      if (abs(y) >=2) {
-        bed_level[0][3-y] = bed_level[1][3-y];
-        bed_level[6][3-y] = bed_level[5][3-y];
-      }
-      // Print calibration results for manual frame adjustment.
-      for (int x = -3; x <= 3; x++) {
-        SERIAL_PROTOCOL_F(bed_level[x+3][3-y], 3);
-        SERIAL_PROTOCOLPGM(" ");
-      }
-      SERIAL_ECHOLN("");
     }
+    // For unprobed positions just copy nearest neighbor.
+    if (abs(y) >= 3) {
+      bed_level[1][3-y] = bed_level[2][3-y];
+      bed_level[5][3-y] = bed_level[4][3-y];
+    }
+    if (abs(y) >=2) {
+      bed_level[0][3-y] = bed_level[1][3-y];
+      bed_level[6][3-y] = bed_level[5][3-y];
+    }
+    // Print calibration results for manual frame adjustment.
+    for (int x = -3; x <= 3; x++) {
+      SERIAL_PROTOCOL_F(bed_level[x+3][3-y], 3);
+      SERIAL_PROTOCOLPGM(" ");
+    }
+    SERIAL_ECHOLN("");
   }
+}
 
-  float probe_bed(float x, float y) {
-    //Probe bed at specified location and return z height of bed
-    float probe_bed_z, probe_z, probe_h, probe_l;
-    int probe_count;
-    //  feedrate = homing_feedrate[Z_AXIS];
-    destination[X_AXIS] = x - z_probe_offset[X_AXIS];
-    destination[Y_AXIS] = y - z_probe_offset[Y_AXIS];
-    destination[Z_AXIS] = bed_level_c - z_probe_offset[Z_AXIS] + 3;
-    prepare_move();
-    st_synchronize();
+float probe_bed(float x, float y) {
+  //Probe bed at specified location and return z height of bed
+  float probe_bed_z, probe_z, probe_h, probe_l;
+  int probe_count;
+  //  feedrate = homing_feedrate[Z_AXIS];
+  destination[X_AXIS] = x - z_probe_offset[X_AXIS];
+  if (destination[X_AXIS]<X_MIN_POS) destination[X_AXIS]=X_MIN_POS;
+  if (destination[X_AXIS]>X_MAX_POS) destination[X_AXIS]=X_MAX_POS;
+  destination[Y_AXIS] = y - z_probe_offset[Y_AXIS];
+  if (destination[Y_AXIS]<Y_MIN_POS) destination[Y_AXIS]=Y_MIN_POS;
+  if (destination[Y_AXIS]>Y_MAX_POS) destination[Y_AXIS]=Y_MAX_POS;
+  destination[Z_AXIS] = bed_level_c - z_probe_offset[Z_AXIS] + 3;
+  prepare_move();
+  st_synchronize();
 
-    probe_count = 0;
-    probe_z = -100;
-    probe_h = -100;
-    probe_l = 100;
-    do {
-      probe_bed_z = probe_z;
-      probe_z = z_probe() + z_probe_offset[Z_AXIS];
-      if (probe_z > probe_h) probe_h = probe_z;
-      if (probe_z < probe_l) probe_l = probe_z;
-      probe_count ++;
-      //SERIAL_PROTOCOL_F(probe_z,3);  // see the individual probes per site
+  probe_count = 0;
+  probe_z = -100;
+  probe_h = -100;
+  probe_l = 100;
+  do {
+    probe_bed_z = probe_z;
+    probe_z = z_probe() + z_probe_offset[Z_AXIS];
+    if (probe_z > probe_h) probe_h = probe_z;
+    if (probe_z < probe_l) probe_l = probe_z;
+    probe_count ++;
+    //SERIAL_PROTOCOL_F(probe_z,3);  // see the individual probes per site
     //SERIAL_ECHO(" ");
   } while ((probe_z != probe_bed_z) and (probe_count < 21));
   /*
@@ -3410,6 +3419,7 @@ Sigma_Exit:
         setTargetHotend1(code_value() == 0.0 ? 0.0 : code_value() + duplicate_extruder_temp_offset);
 #endif
       setWatch();
+      beeptemphe=true;
       break;
     case 111: // M111 - Debug mode
       if (code_seen('S')) debugLevel = code_value();
@@ -3427,6 +3437,7 @@ Sigma_Exit:
     case 140: // M140 set bed temp
       if(debugDryrun()) break;
       if (code_seen('S')) setTargetBed(code_value());
+      beeptemphb=true;
       break;
     case 105 : // M105
       if(setTargetedHotend(105)) break;
@@ -5608,6 +5619,10 @@ void manage_inactivity()
     }
   }
   
+  #if (LARGE_FLASH == true && ( BEEPER > 0 || defined(ULTRALCD) || defined(LCD_USE_I2C_BUZZER)))
+    temptone();
+  #endif
+  
   #ifdef CHDK //Check if pin should be set to LOW after M240 set it to HIGH
     if (chdkActive && (millis() - chdkHigh > CHDK_DELAY))
     {
@@ -5621,14 +5636,10 @@ void manage_inactivity()
       kill();
   #endif
   
-  /**********************************************************************\
-  ****************** Firmware Marlin by MagoKimbra **********************\
-  ***********************************************************************/
   #if defined(PAUSE_PIN) && PAUSE_PIN > -1
     if( 0 == READ(PAUSE_PIN) )
       pause();
   #endif
-  /**********************************************************************/
   
   #if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
     controllerFan(); //Check if fan should be turned on to cool stepper drivers down
@@ -5668,13 +5679,13 @@ void manage_inactivity()
   check_axes_activity();
 }
 
-void kill() {
-	#if defined(KILL_PIN) && KILL_PIN > -1
-  		cli(); // Stop interrupts
-  		disable_heater();
-
-  		disable_x();
-  	disable_y();
+void kill()
+{
+#if defined(KILL_PIN) && KILL_PIN > -1
+  cli(); // Stop interrupts
+  disable_heater();
+  disable_x();
+  disable_y();
   disable_z();
   disable_e0();
   disable_e1();
@@ -5692,15 +5703,60 @@ void kill() {
 #endif
 }
 
+#if (LARGE_FLASH == true && ( BEEPER > 0 || defined(ULTRALCD) || defined(LCD_USE_I2C_BUZZER)))
+void temptone()
+{
+  if (!isHeatingHotend(active_extruder) && degTargetHotend(active_extruder)!=0 && beeptemphe) 
+  {
+    int beepS = 200;
+    int beepP = 500;
+    int beepN = 3;
+    for (int i = 0; i < beepN; ++i)
+    {
+    #if BEEPER > 0
+      tone(BEEPER, beepS);
+      delay(beepP);
+      noTone(BEEPER);
+    #elif defined(ULTRALCD)
+      lcd_buzz(beepS, beepP);
+    #elif defined(LCD_USE_I2C_BUZZER)
+      lcd_buzz(beepP, beepS);
+    #endif
+      delay(beepP);
+    }
+    beeptemphe=false;
+  }
+  else if (!isHeatingBed() && degTargetBed()!=0 && beeptemphb)
+  {
+    int beepS = 100;
+    int beepP = 500;
+    int beepN = 2;
+    for (int i = 0; i < beepN; ++i)
+    {
+    #if BEEPER > 0
+      tone(BEEPER, beepS);
+      delay(beepP);
+      noTone(BEEPER);
+    #elif defined(ULTRALCD)
+      lcd_buzz(beepS, beepP);
+    #elif defined(LCD_USE_I2C_BUZZER)
+      lcd_buzz(beepP, beepS);
+    #endif
+      delay(beepP);
+    }
+    beeptemphb=false;
+  }
+}
+#endif
 
 #if defined(PAUSE_PIN) && PAUSE_PIN > -1
-	void pause()
-	{
-  		enquecommand("M600 X0 Z+5");
-  		enquecommand("G4 P0");
-  		enquecommand("G4 P0");
-  		enquecommand("G4 P0");
-	}
+void pause()
+{
+  enquecommand("M600 X0 Z+5");
+  enquecommand("G4 P0");
+  enquecommand("G4 P0");
+  enquecommand("G4 P0");
+}
 #endif
 
 void Stop()
