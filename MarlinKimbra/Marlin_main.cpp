@@ -2039,7 +2039,7 @@ void process_commands()
               current_position[Y_AXIS] = destination[Y_AXIS];
               #ifndef SCARA
                 current_position[Z_AXIS] = destination[Z_AXIS];
-  	    #endif
+              #endif
             }
           #endif // QUICK_HOME
   
@@ -2087,7 +2087,70 @@ void process_commands()
   
           #if Z_HOME_DIR < 0                      // If homing towards BED do Z last
             #ifndef Z_SAFE_HOMING
-              if((home_all_axis) || (code_seen(axis_codes[Z_AXIS]))) {
+              if (code_seen('M')) {              // Manual G28
+                #ifdef ULTIPANEL
+                if(home_all_axis) {
+                  boolean zig = true;
+                  int xGridSpacing = (RIGHT_PROBE_BED_POSITION - LEFT_PROBE_BED_POSITION);
+                  int yGridSpacing = (BACK_PROBE_BED_POSITION - FRONT_PROBE_BED_POSITION);
+                  for (int yProbe=FRONT_PROBE_BED_POSITION; yProbe <= BACK_PROBE_BED_POSITION; yProbe += yGridSpacing) {
+                    int xProbe, xInc;
+                    if (zig) {
+                      xProbe = LEFT_PROBE_BED_POSITION;
+                      xInc = xGridSpacing;
+                      zig = false;
+                    } else { // zag
+                      xProbe = RIGHT_PROBE_BED_POSITION;
+                      xInc = -xGridSpacing;
+                      zig = true;
+                    }
+                    for (int xCount=0; xCount < 2; xCount++) {
+                      destination[X_AXIS] = xProbe;
+                      destination[Y_AXIS] = yProbe;
+                      destination[Z_AXIS] = 5 * home_dir(Z_AXIS) * (-1);
+                      feedrate = XY_TRAVEL_SPEED;
+                      current_position[Z_AXIS] = 0;
+                      plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+                      plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder, active_driver);
+                      st_synchronize();
+                      current_position[X_AXIS] = destination[X_AXIS];
+                      current_position[Y_AXIS] = destination[Y_AXIS];
+                      HOMEAXIS(Z);
+                      lcd_setstatus("Press button       ");
+                      boolean beepbutton=true;
+                      while(!lcd_clicked()) {
+                        manage_heater();
+                        manage_inactivity();
+                        lcd_update();
+                        if(beepbutton) {
+                          #if BEEPER > 0
+                            SET_OUTPUT(BEEPER);
+                            WRITE(BEEPER,HIGH);
+                            delay(100);
+                            WRITE(BEEPER,LOW);
+                            delay(3);
+                          #else
+                            #if !defined(LCD_FEEDBACK_FREQUENCY_HZ) || !defined(LCD_FEEDBACK_FREQUENCY_DURATION_MS)
+                              lcd_buzz(1000/6,100);
+                            #else
+                              lcd_buzz(LCD_FEEDBACK_FREQUENCY_DURATION_MS,LCD_FEEDBACK_FREQUENCY_HZ);
+                            #endif
+                          #endif
+                          beepbutton=false;
+                        }
+                      }
+                      xProbe += xInc;
+                    }
+                  }
+                  lcd_setstatus("Finish           ");
+                  enquecommand("G28 X0 Y0");
+                  enquecommand("G4 P0");
+                  enquecommand("G4 P0");
+                  enquecommand("G4 P0");
+                }
+                #endif // ULTIPANEL
+              }
+              else if((home_all_axis) || (code_seen(axis_codes[Z_AXIS]))) {
                 #if defined (Z_RAISE_BEFORE_HOMING) && (Z_RAISE_BEFORE_HOMING > 0)
                   destination[Z_AXIS] = Z_RAISE_BEFORE_HOMING * home_dir(Z_AXIS) * (-1);    // Set destination away from bed
                   feedrate = max_feedrate[Z_AXIS];
@@ -4679,7 +4742,7 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
     #endif // CUSTOM_M_CODE_SET_Z_PROBE_OFFSET
 
     #ifdef FILAMENTCHANGEENABLE
-    case 600: //Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
+    case 600: //M600 - Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
     {
         float target[4];
         target[X_AXIS]=current_position[X_AXIS];
