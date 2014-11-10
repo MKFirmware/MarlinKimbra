@@ -113,9 +113,8 @@
 // This defines the number of extruder real or virtual
 #define EXTRUDERS 1
 
-#if EXTRUDERS > 1
-#define SINGLENOZZLE //This is used for singlenozzled multiple extrusion configuration
-#endif
+// Uncomment below to enable SINGLENOZZLE (One Hotend)
+//#define SINGLENOZZLE //This is used for singlenozzled multiple extrusion configuration
 
 /***********************************************************************
  *********************** Multiextruder MKR4  ***************************
@@ -605,6 +604,7 @@
  * 301 - Rambo  - uses Analog input 3
  * Note may require analog pins to be defined for different motherboards
  **********************************************************************/
+// Uncomment below to enable
 // #define FILAMENT_SENSOR
 #define FILAMENT_SENSOR_EXTRUDER_NUM	0  //The number of the extruder that has the filament sensor (0,1,2)
 #define MEASUREMENT_DELAY_CM			14  //measurement delay in cm.  This is the distance from filament sensor to middle of barrel
