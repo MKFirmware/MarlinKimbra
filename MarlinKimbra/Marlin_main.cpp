@@ -90,6 +90,7 @@
 // M0   - Unconditional stop - Wait for user to press a button on the LCD (Only if ULTRA_LCD is enabled)
 // M1   - Same as M0
 // M03  - Put S<value> in laser beam control
+// M04  - Turn on laser beam
 // M05  - Turn off laser beam
 // M17  - Enable/Power all stepper motors
 // M18  - Disable all stepper motors; same as M84
@@ -379,6 +380,10 @@ bool cancel_heatup = false ;
   int meas_delay_cm = MEASUREMENT_DELAY_CM;  //distance delay setting
 #endif
 
+#ifdef LASERBEAM
+   int laser_ttl_modulation = 0;
+#endif
+
 //===========================================================================
 //=============================Private Variables=============================
 //===========================================================================
@@ -661,9 +666,11 @@ void setup()
 #if defined(PHOTOGRAPH_PIN) && PHOTOGRAPH_PIN > -1
   setup_photpin();
 #endif
-#if defined(LASERBEAM_PIN) && LASERBEAM_PIN > -1
-  pinMode(LASERBEAM_PIN, OUTPUT);
-  digitalWrite(LASERBEAM_PIN, LOW); // turn it off
+#ifdef LASERBEAM            // Initialize Laser beam
+  SET_OUTPUT(LASER_PWR_PIN);
+  digitalWrite(LASER_PWR_PIN, LOW);
+  SET_OUTPUT(LASER_TTL_PIN);
+  digitalWrite(LASER_TTL_PIN, LOW);
 #endif
 #if defined(NUM_SERVOS)
   servo_init();
@@ -3026,12 +3033,20 @@ void process_commands()
     case 03: // M03 S - Setting laser beam
     {
       if(code_seen('S')) {
-        digitalWrite(LASERBEAM_PIN, code_value());
+        laser_ttl_modulation=constrain(code_value(),0,255);
+      }
+      else {
+        laser_ttl_modulation=0;
       }
     }
     break;
-    case 05: // M05 - Setting laser beam off
-      digitalWrite(LASERBEAM_PIN, 0);
+    case 04: // M04 - Turn on laser beam
+      digitalWrite(LASER_PWR_PIN, HIGH);
+      laser_ttl_modulation = 0;
+    break;
+    case 05: // M05 - Turn off laser beam
+      digitalWrite(LASER_PWR_PIN, LOW);
+      laser_ttl_modulation=0;
     break;
 #endif // LASERBEAM
 

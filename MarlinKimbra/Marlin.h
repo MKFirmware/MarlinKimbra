@@ -288,6 +288,10 @@ extern float retract_length, retract_length_swap, retract_feedrate, retract_zlif
 extern float retract_recover_length, retract_recover_length_swap, retract_recover_feedrate;
 #endif
 
+#ifdef LASERBEAM
+extern int laser_ttl_modulation;
+#endif
+
 extern unsigned long starttime;
 extern unsigned long stoptime;
 

@@ -3057,7 +3057,8 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #endif // END NPR2
 
 #ifdef LASERBEAM
-#define LASERBEAM_PIN      6
+#define LASER_PWR_PIN	42
+#define LASER_TTL_PIN	44
 #endif
 
 #ifdef FILAMENT_END_SWITCH

@@ -716,6 +716,15 @@ static void lcd_prepare_menu()
     MENU_ITEM(gcode, MSG_BED_SETTING, PSTR("G28 M"));
     MENU_ITEM(function, MSG_SET_HOME_OFFSETS, lcd_set_home_offsets);
     //MENU_ITEM(gcode, MSG_SET_ORIGIN, PSTR("G92 X0 Y0 Z0"));
+    //Add Preset menu for LASER setting '14. 7. 22
+#ifdef LASERBEAM
+    MENU_ITEM_EDIT(int3, MSG_LASER, &laser_ttl_modulation, 0, 255);
+    if(laser_ttl_modulation == 0) { 
+      digitalWrite(LASER_PWR_PIN, LOW);
+    } else {
+      digitalWrite(LASER_PWR_PIN, HIGH);
+    }
+#endif
 #if TEMP_SENSOR_0 != 0
   #if TEMP_SENSOR_1 != 0 || TEMP_SENSOR_2 != 0 || TEMP_SENSOR_BED != 0
     MENU_ITEM(submenu, MSG_PREHEAT_PLA, lcd_preheat_pla_menu);

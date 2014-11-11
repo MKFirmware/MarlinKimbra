@@ -68,6 +68,9 @@ typedef struct {
   unsigned long valve_pressure;
   unsigned long e_to_p_pressure;
 #endif
+#ifdef LASERBEAM
+  unsigned long laser_ttlmodulation;
+#endif
   volatile char busy;
 } 
 block_t;

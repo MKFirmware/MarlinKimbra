@@ -459,6 +459,9 @@ void check_axes_activity()
   unsigned char tail_valve_pressure = ValvePressure;
   unsigned char tail_e_to_p_pressure = EtoPPressure;
   #endif
+  #ifdef LASERBEAM
+  unsigned char tail_laser_ttl_modulation = laser_ttl_modulation;
+  #endif
   block_t *block;
 
   if(block_buffer_tail != block_buffer_head)
@@ -469,6 +472,10 @@ void check_axes_activity()
     tail_valve_pressure = block_buffer[block_index].valve_pressure;
     tail_e_to_p_pressure = block_buffer[block_index].e_to_p_pressure;
     #endif
+    #ifdef LASERBEAM
+    tail_laser_ttl_modulation = block_buffer[block_index].laser_ttlmodulation;
+    #endif
+
     while(block_index != block_buffer_head)
     {
       block = &block_buffer[block_index];
@@ -523,6 +530,12 @@ void check_axes_activity()
       analogWrite(HEATER_2_PIN,tail_e_to_p_pressure);
   #endif
 #endif
+
+// add Laser TTL Modulation(PWM) Control 
+#ifdef LASERBEAM
+  analogWrite(LASER_TTL_PIN, tail_laser_ttl_modulation);
+#endif
+
 }
 
 
@@ -631,6 +644,11 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
   #ifdef BARICUDA
   block->valve_pressure = ValvePressure;
   block->e_to_p_pressure = EtoPPressure;
+  #endif
+  
+  // Add update block variables for LASER BEAM control 
+  #ifdef LASERBEAM
+  block->laser_ttlmodulation = laser_ttl_modulation;
   #endif
 
   // Compute direction bits for this block 
