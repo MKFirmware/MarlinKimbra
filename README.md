@@ -43,6 +43,7 @@ Features:
 *   Updated sdcardlib
 *   Heater power reporting. Useful for PID monitoring.
 *   PID tuning
+*   Cartesian kinematics
 *   CoreXY kinematics (www.corexy.com/theory.html)
 *   Delta kinematics
 *   SCARA kinematics
@@ -51,6 +52,7 @@ Features:
 *   Configurable serial port to support connection of wireless adaptors.
 *   Automatic operation of extruder/cold-end cooling fans based on nozzle temperature
 *   RC Servo Support, specify angle or duration for continuous rotation servos.
+*   Manual procedure for bed setting with LCD
 *   Bed Auto Leveling for cartesian and delta printer
 *   Z probe repetability test
 *   Setting step for unit and feedrate for extruders
@@ -58,6 +60,7 @@ Features:
 *   MKR4 suppport for 4 extruder but only two driver
 *   Singlenozzle support
 *   NPr2 support, multiextruder by NicolaP http://www.3dmakerlab.it/extruder-npr2.html
+*   Laserbeam support
 
 The default baudrate is 250000. This baudrate has less jitter and hence errors than the usual 115200 baud, but is less supported by drivers and host-environments.
 
@@ -89,9 +92,8 @@ Add Feedrate for retraction
 Singlenozzle
 -----------------
 If have on hotend and more extruder define SINGLENOZZLE for unic temperature.
-* \#if EXTRUDERS > 1
-* \#define SINGLENOZZLE //This is used for singlenozzled multiple extrusion configuration
-* \#endif
+* \// Uncomment below to enable SINGLENOZZLE (One Hotend)
+* \//#define SINGLENOZZLE //This is used for singlenozzled multiple extrusion configuration
 
 MKR4 System
 -----------------
@@ -106,6 +108,10 @@ Debug Dryrun Repetier
 -----------------
 In dry run mode, the firmware will ignore all commands to set temperature or extrude. That way you can send a file without using any filament. This is handy if your printer loses steps during print and you are doing some research on when and why. If you seem to have troubles with your extruder, check if you have that option enabled!
 
+Laserbeam Support
+-----------------
+Support for laserbeam. M03 Sxxx put output LASERBEAM_PIN in PWM. M05 put off LASERBEAM_PIN.
+Setting LASERBEAM_PIN in PINS.H.
 
 Implemented G Codes:
 ====================
@@ -117,7 +123,7 @@ Implemented G Codes:
 *  G4  - Dwell S<seconds> or P<milliseconds>
 *  G10 - retract filament according to settings of M207
 *  G11 - retract recover filament according to settings of M208
-*  G28 - Home all Axis
+*  G28 - Home all Axis. G28 M for bed manual setting with LCD.
 *  G29 - Detailed Z-Probe, probes the bed at 3 points.  You must de at the home position for this to work correctly.
 *  G30 - Single Z Probe, probes bed at current XY location. - Bed Probe and Delta geometry Autocalibration
 *  G31 - Dock Z Probe sled (if enabled)
@@ -131,7 +137,7 @@ Implemented G Codes:
 M Codes
 *  M0   - Unconditional stop - Wait for user to press a button on the LCD (Only if ULTRA_LCD is enabled)
 *  M1   - Same as M0
-*  M03  - Put S<value> in laser beam control
+*  M03  - Sxxx Put output in laser beam control
 *  M05  - Turn off laser beam
 *  M17  - Enable/Power all stepper motors
 *  M18  - Disable all stepper motors; same as M84
@@ -155,7 +161,7 @@ M Codes
 *  M82  - Set E codes absolute (default)
 *  M83  - Set E codes relative while in Absolute Coordinates (G90) mode
 *  M84  - Disable steppers until next move, or use S<seconds> to specify an inactivity timeout, after which the steppers will be disabled.  S0 to disable the timeout.
-*  M85  - Set inactivity shutdown timer with parameter S<seconds>. To disable set zero (default)
+*  M85  - Set inactivity shutdown timer with parameter Sseconds. To disable set zero (default)
 *  M92  - Set axis_steps_per_unit - same syntax as G92
 *  M104 - Set extruder target temp
 *  M105 - Read current temp
@@ -174,9 +180,8 @@ M Codes
 *  M128 - EtoP Open (BariCUDA EtoP = electricity to air pressure transducer by jmil)
 *  M129 - EtoP Closed (BariCUDA EtoP = electricity to air pressure transducer by jmil)
 *  M140 - Set bed target temp
-*  M190 - Sxxx Wait for bed current temp to reach target temp. Waits only when heating
-*         Rxxx Wait for bed current temp to reach target temp. Waits when heating and cooling
-*  M200 D<millimeters>- set filament diameter and set E axis units to cubic millimeters (use S0 to set back to millimeters).
+*  M190 - Sxxx Wait for bed current temp to reach target temp. Waits only when heating Rxxx Wait for bed current temp to reach target temp. Waits when heating and cooling
+*  M200 Dmillimeters- set filament diameter and set E axis units to cubic millimeters (use S0 to set back to millimeters).
 *  M201 - Set max acceleration in units/s^2 for print moves (M201 X1000 Y1000)
 *  M202 - Set max acceleration in units/s^2 for travel moves (M202 X1000 Y1000) Unused in Marlin!!
 *  M203 - Set maximum feedrate that your machine can sustain (M203 X200 Y200 Z300 E10000) in mm/sec
@@ -185,22 +190,22 @@ M Codes
 *  M206 - set additional homeing offset
 *  M207 - set retract length S[positive mm] F[feedrate mm/min] Z[additional zlift/hop], stays in mm regardless of M200 setting
 *  M208 - set recover=unretract length S[positive mm surplus to the M207 S*] F[feedrate mm/min]
-*  M209 - S<1=true/0=false> enable automatic retract detect if the slicer did not support G10/11: every normal extrude-only move will be classified as retract depending on the direction.
-*  M218 - set hotend offset (in mm): T<extruder_number> X<offset_on_X> Y<offset_on_Y>
-*  M220 S<factor in percent>- set speed factor override percentage
-*  M221 S<factor in percent>- set extrude factor override percentage
+*  M209 - S1=true/0=false enable automatic retract detect if the slicer did not support G10/11: every normal extrude-only move will be classified as retract depending on the direction.
+*  M218 - set hotend offset (in mm): Textruder_number Xoffset_on_X Yoffset_on_Y
+*  M220 Sfactor in percent- set speed factor override percentage
+*  M221 Sfactor in percent- set extrude factor override percentage
 *  M240 - Trigger a camera to take a photograph
-*  M280 - Position an RC Servo P<index> S<angle/microseconds>, ommit S to report back current angle
-*  M300 - Play beepsound S<frequency Hz> P<duration ms>
+*  M280 - Position an RC Servo Pindex Sangle/microseconds, ommit S to report back current angle
+*  M300 - Play beepsound Sfrequency Hz Pduration ms
 *  M301 - Set PID parameters P I and D
 *  M302 - Allow cold extrudes
-*  M303 - PID relay autotune S<temperature> sets the target temperature. (default target temperature = 150C)
+*  M303 - PID relay autotune Stemperature sets the target temperature. (default target temperature = 150C)
 *  M304 - Set bed PID parameters P I and D
 *  M400 - Finish all moves
 *  M401 - Lower z-probe if present
 *  M402 - Raise z-probe if present
-*  M404 - N<dia in mm> Enter the nominal filament width (3mm, 1.75mm ) or will display nominal filament width without parameters
-*  M405 - Turn on Filament Sensor extrusion control.  Optional D<delay in cm> to set delay in centimeters between sensor and extruder 
+*  M404 - Ndia in mm Enter the nominal filament width (3mm, 1.75mm ) or will display nominal filament width without parameters
+*  M405 - Turn on Filament Sensor extrusion control.  Optional Ddelay in cm to set delay in centimeters between sensor and extruder 
 *  M406 - Turn off Filament Sensor extrusion control 
 *  M407 - Displays measured filament diameter 
 *  M500 - stores paramters in EEPROM
@@ -209,7 +214,7 @@ M Codes
 *  M503 - print the current settings (from memory not from eeprom)
 *  M540 - Use S[0|1] to enable or disable the stop SD card print on endstop hit (requires ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED)
 *  M600 - Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
-*  M605 - Set dual x-carriage movement mode: S<mode> [ X<duplication x-offset> R<duplication temp offset> ]
+*  M605 - Set dual x-carriage movement mode: Smode [ X<duplication x-offset> Rduplication temp offset ]
 *  M666 - Set z probe offset or Endstop and delta geometry adjustment
 *  M907 - Set digital trimpot motor current using axis codes.
 *  M908 - Control digital trimpot directly.
