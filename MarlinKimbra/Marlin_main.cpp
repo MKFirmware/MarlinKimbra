@@ -206,6 +206,8 @@
 //===========================================================================
 //=============================public variables=============================
 //===========================================================================
+unsigned long baudrate;
+
 #ifdef SDSUPPORT
 CardReader card;
 #endif
@@ -619,8 +621,11 @@ void setup()
   setup_pausepin();
 #endif
 
+  // loads data from EEPROM if available else uses defaults (and resets step acceleration rate)
+  Config_RetrieveSettings();
+
   setup_powerhold();
-  MYSERIAL.begin(BAUDRATE);
+  MYSERIAL.begin(baudrate);
   SERIAL_PROTOCOLLNPGM("start");
   SERIAL_ECHO_START;
 
@@ -655,9 +660,6 @@ void setup()
   {
     fromsd[i] = false;
   }
-
-  // loads data from EEPROM if available else uses defaults (and resets step acceleration rate)
-  Config_RetrieveSettings();
 
   tp_init();    // Initialize temperature loop
   plan_init();  // Initialize planner;

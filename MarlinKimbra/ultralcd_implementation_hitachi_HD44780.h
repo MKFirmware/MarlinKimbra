@@ -213,6 +213,19 @@ extern volatile uint16_t buttons;  //an extended version of the last checked but
 
 static void lcd_implementation_init()
 {
+  #ifdef DELTA
+    byte bedTemp[8] =
+    {
+        B00000,
+        B01110,
+        B11111,
+        B11011,
+        B11111,
+        B01110,
+        B00000,
+        B00000
+    };
+  #else
     byte bedTemp[8] =
     {
         B00000,
@@ -224,12 +237,13 @@ static void lcd_implementation_init()
         B00000,
         B00000
     }; //thanks Sonny Mounicou
+  #endif //DELTA
     byte degree[8] =
     {
-        B01100,
-        B10010,
-        B10010,
-        B01100,
+        B00100,
+        B01010,
+        B00100,
+        B00000,
         B00000,
         B00000,
         B00000,
@@ -242,17 +256,17 @@ static void lcd_implementation_init()
         B01010,
         B01010,
         B01010,
-        B10001,
-        B10001,
+        B11111,
+        B11111,
         B01110
     };
     byte uplevel[8]={
         B00100,
         B01110,
-        B11111,
+        B10101,
+        B00100,
         B00100,
         B11100,
-        B00000,
         B00000,
         B00000
     }; //thanks joris
@@ -456,20 +470,20 @@ static void lcd_implementation_status_screen()
     lcd.print(itostr3left(tTarget));
     lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
     if (tTarget < 10)
-        lcd.print(' ');
-#  else
-    lcd.setCursor(0,1);
-	#ifdef DELTA
-		lcd.print('X');
-		lcd.print(ftostr30(current_position[X_AXIS]));
-		lcd_printPGM(PSTR(" Y"));
-    lcd.print(ftostr30(current_position[Y_AXIS]));
-	#else
-    lcd.print('X');
-    lcd.print(ftostr3(current_position[X_AXIS]));
-    lcd_printPGM(PSTR(" Y"));
-    lcd.print(ftostr3(current_position[Y_AXIS]));
-	#endif
+      lcd.print(' ');
+#   else
+      lcd.setCursor(0,1);
+#     ifdef DELTA
+        lcd.print('X');
+        lcd.print(ftostr30(current_position[X_AXIS]));
+        lcd_printPGM(PSTR(" Y"));
+        lcd.print(ftostr30(current_position[Y_AXIS]));
+#     else
+        lcd.print('X');
+        lcd.print(ftostr3(current_position[X_AXIS]));
+        lcd_printPGM(PSTR(" Y"));
+        lcd.print(ftostr3(current_position[Y_AXIS]));
+#     endif // DELTA
 #  endif//EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
 # endif//LCD_WIDTH > 19
     lcd.setCursor(LCD_WIDTH - 8, 1);

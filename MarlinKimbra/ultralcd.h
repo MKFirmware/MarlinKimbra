@@ -109,6 +109,8 @@ char *itostr3(const int &xx);
 char *itostr3left(const int &xx);
 char *itostr4(const int &xx);
 
+char *ltostr7(const long &xx);
+
 char *ftostr3(const float &x);
 char *ftostr30(const float &x);
 char *ftostr31ns(const float &x); // float to string without sign character

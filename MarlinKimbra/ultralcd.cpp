@@ -23,6 +23,9 @@ int gumPreheatHotendTemp;
 int gumPreheatHPBTemp;
 int gumPreheatFanSpeed;
 
+const long baudrates[] = {9600,14400,19200,28800,38400,56000,115200,250000};
+int baudrate_position = -1;
+
 #ifdef ULTIPANEL
 static float manual_feedrate[] = MANUAL_FEEDRATE;
 #endif // ULTIPANEL
@@ -55,6 +58,7 @@ static void lcd_tune_menu();
 static void lcd_prepare_menu();
 static void lcd_move_menu();
 static void lcd_control_menu();
+static void lcd_config_menu();
 static void lcd_control_temperature_menu();
 static void lcd_control_temperature_preheat_pla_settings_menu();
 static void lcd_control_temperature_preheat_abs_settings_menu();
@@ -299,6 +303,7 @@ static void lcd_main_menu()
 #endif
     }
 #endif
+    MENU_ITEM(submenu, MSG_CONFIG, lcd_config_menu);
     END_MENU();
 }
 
@@ -658,7 +663,7 @@ static void lcd_preheat_abs_menu()
 #endif // SINGLENOZZLE
 
 #if TEMP_SENSOR_BED != 0
- 	MENU_ITEM(function, MSG_PREHEAT_ABS_BEDONLY, lcd_preheat_abs_bedonly);
+ MENU_ITEM(function, MSG_PREHEAT_ABS_BEDONLY, lcd_preheat_abs_bedonly);
 #endif
   END_MENU();
 }
@@ -671,18 +676,18 @@ static void lcd_preheat_gum_menu()
 
 #ifndef SINGLENOZZLE
 #if TEMP_SENSOR_1 != 0 //2 extruder preheat
-	MENU_ITEM(function, MSG_PREHEAT_GUM1, lcd_preheat_gum1);
+  MENU_ITEM(function, MSG_PREHEAT_GUM1, lcd_preheat_gum1);
 #endif //2 extruder preheat
 #if TEMP_SENSOR_2 != 0 //3 extruder preheat
-	MENU_ITEM(function, MSG_PREHEAT_GUM2, lcd_preheat_gum2);
+  MENU_ITEM(function, MSG_PREHEAT_GUM2, lcd_preheat_gum2);
 #endif //3 extruder preheat
 #if TEMP_SENSOR_3 != 0 //4 extruder preheat
-	MENU_ITEM(function, MSG_PREHEAT_GUM3, lcd_preheat_gum3);
+  MENU_ITEM(function, MSG_PREHEAT_GUM3, lcd_preheat_gum3);
 #endif //3 extruder preheat
 #endif // SINGLENOZZLE
 
 #if TEMP_SENSOR_BED != 0
- 	MENU_ITEM(function, MSG_PREHEAT_GUM_BEDONLY, lcd_preheat_gum_bedonly);
+  MENU_ITEM(function, MSG_PREHEAT_GUM_BEDONLY, lcd_preheat_gum_bedonly);
 #endif
   END_MENU();
 }
@@ -922,6 +927,43 @@ static void lcd_control_menu()
 #ifdef FWRETRACT
     MENU_ITEM(submenu, MSG_RETRACT, lcd_control_retract_menu);
 #endif
+    END_MENU();
+}
+
+static void config_baudrate()
+{
+  if(baudrate_position<0){
+    for (int8_t p = 0; p < 8; p++){
+      if (baudrates[p]==baudrate) baudrate_position = p;
+    }
+  }
+  if (encoderPosition != 0)
+    {
+      refresh_cmd_timeout();
+      baudrate_position += int(encoderPosition /2);
+      if(baudrate_position>7) baudrate_position=7;
+      if(baudrate_position<0) baudrate_position=0;
+      encoderPosition = 0;
+      lcdDrawUpdate = 1;
+    }
+  if (lcdDrawUpdate)
+    {
+      lcd_implementation_drawedit(PSTR("Baudrate"), ltostr7(baudrates[baudrate_position]));
+      baudrate=baudrates[baudrate_position];
+    }
+  if (LCD_CLICKED)
+  {
+    lcd_quick_feedback();
+    currentMenu = lcd_config_menu;
+    encoderPosition = 0;
+  }
+}
+
+static void lcd_config_menu()
+{
+    START_MENU();
+    MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
+    MENU_ITEM(submenu, MSG_BAUDRATE, config_baudrate);
 #ifdef EEPROM_SETTINGS
     MENU_ITEM(function, MSG_STORE_EPROM, Config_StoreSettings);
     MENU_ITEM(function, MSG_LOAD_EPROM, Config_RetrieveSettings);
@@ -1748,6 +1790,37 @@ char *itostr4(const int &xx)
     conv[2]=' ';
   conv[3]=(xx)%10+'0';
   conv[4]=0;
+  return conv;
+}
+
+char *ltostr7(const long &xx)
+{
+  if (xx >= 1000000)
+    conv[0]=(xx/1000000)%10+'0';
+  else
+    conv[0]=' ';
+  if (xx >= 100000)
+    conv[1]=(xx/100000)%10+'0';
+  else
+    conv[1]=' ';
+  if (xx >= 10000)
+    conv[2]=(xx/10000)%10+'0';
+  else
+    conv[2]=' ';
+  if (xx >= 1000)
+    conv[3]=(xx/1000)%10+'0';
+  else
+    conv[3]=' ';
+  if (xx >= 100)
+    conv[4]=(xx/100)%10+'0';
+  else
+    conv[4]=' ';
+  if (xx >= 10)
+    conv[5]=(xx/10)%10+'0';
+  else
+    conv[5]=' ';
+  conv[6]=(xx)%10+'0';
+  conv[7]=0;
   return conv;
 }
 

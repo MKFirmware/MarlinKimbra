@@ -283,6 +283,8 @@
   #define MSG_BABYSTEP_Z "Babystep Z"
   #define MSG_ENDSTOP_ABORT "Endstop abort"
   #define MSG_LASER  "Laser Preset"
+  #define MSG_CONFIG   "Configuration"
+  #define MSG_BAUDRATE   "Baudrate"
 
 #endif
 
@@ -413,6 +415,8 @@
   #define MSG_ENDSTOP_ABORT "Blad wyl. kranc."
   #define MSG_CONTRAST "Kontrast"
   #define MSG_LASER  "Laser Preset"
+  #define MSG_CONFIG   "Configuration"
+  #define MSG_BAUDRATE   "Baudrate"
 
 #endif
 
@@ -543,6 +547,8 @@
   #define MSG_ENDSTOP_ABORT "Butee abandon"
   #define MSG_CONTRAST "Contrast"
   #define MSG_LASER  "Laser Preset"
+  #define MSG_CONFIG   "Configuration"
+  #define MSG_BAUDRATE   "Baudrate"
 
 #endif
 
@@ -674,6 +680,8 @@
 	#define MSG_ENDSTOP_ABORT "Endstop abort"
 	#define MSG_CONTRAST "Contrast"
   #define MSG_LASER  "Laser Preset"
+  #define MSG_CONFIG   "Configuration"
+  #define MSG_BAUDRATE   "Baudrate"
 
 #endif
 
@@ -810,6 +818,8 @@
 	#define MSG_ENDSTOP_ABORT "Endstop abort"
 	#define MSG_CONTRAST "Contrast"
   #define MSG_LASER  "Laser Preset"
+  #define MSG_CONFIG   "Configuration"
+  #define MSG_BAUDRATE   "Baudrate"
 
 #endif
 
@@ -938,6 +948,8 @@
 	#define MSG_ENDSTOP_ABORT 					"Endstop abort"
 	#define MSG_CONTRAST 						"Contrast"
   #define MSG_LASER  "Laser Preset"
+  #define MSG_CONFIG   "Configuration"
+  #define MSG_BAUDRATE   "Baudrate"
 
 #endif
 
@@ -1078,6 +1090,8 @@
   #define MSG_ENDSTOP_ABORT "Endstop abort"
   #define MSG_CONTRAST "Contrast"
   #define MSG_LASER  "Laser Preset"
+  #define MSG_CONFIG   "Configuration"
+  #define MSG_BAUDRATE   "Baudrate"
 
 #endif
 
@@ -1211,6 +1225,8 @@
 	#define MSG_ENDSTOP_ABORT "Endstop abort"
 	#define MSG_CONTRAST "Contrast"
   #define MSG_LASER  "Laser Preset"
+  #define MSG_CONFIG   "Configuration"
+  #define MSG_BAUDRATE   "Baudrate"
 
 #endif
 
@@ -1338,6 +1354,8 @@
 	#define MSG_BABYSTEP_Z "Babystep Z"
 	#define MSG_ENDSTOP_ABORT "Endstop abort"
   #define MSG_LASER  "Laser Preset"
+  #define MSG_CONFIG   "Configuration"
+  #define MSG_BAUDRATE   "Baudrate"
 
 #endif
 
@@ -1472,6 +1490,8 @@
 	#define MSG_ENDSTOP_ABORT "Endstop abort"
 	#define MSG_CONTRAST "Contrast"
   #define MSG_LASER  "Laser Preset"
+  #define MSG_CONFIG   "Configuration"
+  #define MSG_BAUDRATE   "Baudrate"
 
 #endif
 
@@ -1597,6 +1617,8 @@
 	#define MSG_BABYSTEP_Z "Babystap Z"
 	#define MSG_ENDSTOP_ABORT "Endstop afbr."
   #define MSG_LASER  "Laser Preset"
+  #define MSG_CONFIG   "Configuration"
+  #define MSG_BAUDRATE   "Baudrate"
 
 #endif
 
@@ -1723,6 +1745,8 @@
 	#define MSG_BABYSTEP_Z "Babystep Z"
 	#define MSG_ENDSTOP_ABORT "Endstop abort"
   #define MSG_LASER  "Laser Preset"
+  #define MSG_CONFIG   "Configuration"
+  #define MSG_BAUDRATE   "Baudrate"
 
 #endif
 
@@ -1848,6 +1872,8 @@
 	#define MSG_BABYSTEP_Z "Babystep Z"
 	#define MSG_ENDSTOP_ABORT "Endstop deuseztat"
   #define MSG_LASER  "Laser Preset"
+  #define MSG_CONFIG   "Configuration"
+  #define MSG_BAUDRATE   "Baudrate"
 	
 #endif
 

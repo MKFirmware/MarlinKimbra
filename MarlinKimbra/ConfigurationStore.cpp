@@ -51,7 +51,8 @@ void Config_StoreSettings()
 {
   char ver[4]= "000";
   int i=EEPROM_OFFSET;
-  EEPROM_WRITE_VAR(i,ver); // invalidate data first 
+  EEPROM_WRITE_VAR(i,ver); // invalidate data first
+  EEPROM_WRITE_VAR(i,baudrate);
   EEPROM_WRITE_VAR(i,axis_steps_per_unit);
   EEPROM_WRITE_VAR(i,max_feedrate);
   EEPROM_WRITE_VAR(i,max_retraction_feedrate);
@@ -121,6 +122,8 @@ void Config_StoreSettings()
 void Config_PrintSettings()
 {  // Always have this function, even with EEPROM_SETTINGS disabled, the current values will be shown
   SERIAL_ECHO_START;
+  SERIAL_ECHOPAIR("Baudrate: ", baudrate);
+  SERIAL_ECHOLN("");
   SERIAL_ECHOLNPGM("Steps per unit:");
   SERIAL_ECHO_START;
   SERIAL_ECHOPAIR("  M92 X",axis_steps_per_unit[0]);
@@ -262,6 +265,7 @@ void Config_RetrieveSettings()
   if (strncmp(ver,stored_ver,3) == 0)
   {
     // version number match
+    EEPROM_READ_VAR(i,baudrate);
     EEPROM_READ_VAR(i,axis_steps_per_unit);
     EEPROM_READ_VAR(i,max_feedrate);
     EEPROM_READ_VAR(i,max_retraction_feedrate);
@@ -338,6 +342,9 @@ void Config_RetrieveSettings()
 
 void Config_ResetDefault()
 {
+  //Setting default baudrate for serial
+  baudrate=BAUDRATE;
+
   float tmp1[]=DEFAULT_AXIS_STEPS_PER_UNIT;
   float tmp2[]=DEFAULT_MAX_FEEDRATE;
   float tmp3[]=DEFAULT_RETRACTION_MAX_FEEDRATE;
