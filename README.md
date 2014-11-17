@@ -129,25 +129,29 @@ M666 L view value in memory for Z-Probe Offset.
 For DELTA:
 M666 L   List all current configuration values , e.g.:
 Current Delta geometry values:
-X (Endstop Adj): -3.05
-Y (Endstop Adj): -1.83
-Z (Endstop Adj): -2.69
-P (Z-Probe Offset): X0.00 Y10.00 Z-5.60
-A (Tower A Position Correction): -0.04
-B (Tower B Position Correction): 0.05
-C (Tower C Position Correction): -0.02
-I (Tower A Radius Correction): 0.25
-J (Tower B Radius Correction): -1.25
-K (Tower C Radius Correction): -0.37
-R (Delta Radius): 109.60
-D (Diagonal Rod Length): 224.59
-H (Z-Height): 255.73
+* \X (Endstop Adj): -3.05
+* \Y (Endstop Adj): -1.83
+* \Z (Endstop Adj): -2.69
+* \P (Z-Probe Offset): X0.00 Y10.00 Z-5.60
+* \A (Tower A Position Correction): -0.04
+* \B (Tower B Position Correction): 0.05
+* \C (Tower C Position Correction): -0.02
+* \I (Tower A Radius Correction): 0.25
+* \J (Tower B Radius Correction): -1.25
+* \K (Tower C Radius Correction): -0.37
+* \R (Delta Radius): 109.60
+* \D (Diagonal Rod Length): 224.59
+* \H (Z-Height): 255.73
+
 All of these values can also be adjusted using the M666 command, e.g. to set the delta radius to 200mm, use:
-M666 R200
+* \M666 R200
+
 Or to change the Z-Height to 350.5 mm:
-M666 H350.5
+* \M666 H350.5
+
 Commands can also be combined, e.g. to set endstop values:
-M666 X-2.04 Y-1.02 Z-1.52
+* \M666 X-2.04 Y-1.02 Z-1.52
+
 All of these values can be saved/loaded to/from EEPROM using standard M500/M501 G-Code commands (to save the settings at any time just type M500). This makes manual configuration of a printer much easier as there is no longer a requirement to edit the configuration.h file and re-upload firmware for each time a change needs to be made.
 
 Configuration_delta.h  now includes the following additional parameters:
@@ -157,6 +161,7 @@ Set start and end locations used to deploy the Z-Probe:
 * \#define Z_PROBE_DEPLOY_END_LOCATION {5, 96, 30, 0}
 * \#define Z_PROBE_RETRACT_START_LOCATION {49, 84, 20, 0}
 * \#define Z_PROBE_RETRACT_END_LOCATION {49, 84, 1, 0}
+
 Set precision for autocalibration G30 function – calibration will complete when this value is reached – all probed point have to be at 0 +/- 0.015mm (for 0.03 setting below)
 
 * \#define AUTOCALIBRATION_PRECISION 0.03 // mm
