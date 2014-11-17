@@ -126,6 +126,7 @@ G30 This command is used to perform reporting and autocalibration of a delta pri
 * -0.0375 -0.0250 	I:0.25 J:-1.25 K:-0.37 -0.0250
 * Delta Radius: 109.5965
 * Diag Rod: 224.5935 This option does not change any settings, but is useful when manually calibrating a printer, using the M666 command to change values.
+
 G30 Xnn Ynn Probe bed at specified X,Y point and show z-height and delta carriage positions, e.g.: Bed Z-Height at X:30.00 Y:30.00 = 0.0000 Carriage Positions: [176.40, 207.77, 209.52].
 
 G30 A Start auto-calibration. This will attempt to calibrate the printer, adjusting all parameters automatically, and will repeat the bed probing sequence show above several times adjusting each time until calibration is complete. It is recommended that you use M502 to load default values and then M500 to save them prior to starting the auto-calibration.
