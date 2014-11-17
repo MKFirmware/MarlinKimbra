@@ -266,6 +266,7 @@ void Config_RetrieveSettings()
   {
     // version number match
     EEPROM_READ_VAR(i,baudrate);
+    if(baudrate!=9600 && baudrate!=14400 && baudrate!=19200 && baudrate!=28800 && baudrate!=38400 && baudrate!=56000 && baudrate!=115200 && baudrate!=250000) baudrate=BAUDRATE;
     EEPROM_READ_VAR(i,axis_steps_per_unit);
     EEPROM_READ_VAR(i,max_feedrate);
     EEPROM_READ_VAR(i,max_retraction_feedrate);
