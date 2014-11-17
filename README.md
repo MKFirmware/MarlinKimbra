@@ -110,22 +110,77 @@ In dry run mode, the firmware will ignore all commands to set temperature or ext
 
 Laserbeam Support
 -----------------
-Support for laserbeam. M03 Sxxx put output LASERBEAM_PIN in PWM. M05 put off LASERBEAM_PIN.
-Setting LASERBEAM_PIN in PINS.H.
+Support for laserbeam.
+M3 Sxxx put output LASER_TTL_PIN in PWM
+M4 switch on Laser, put high LASER_PWR_PIN
+M5 switch off Laser, put low LASER_PWR_PIN
+Setting LASER_TTL_PIN and LASER_PWR_PIN in pins.h
+
+G30 Autocalibartion for DELTA
+-----------------
+G30 This command is used to perform reporting and autocalibration of a delta printer and has several options, as follows: G30 Probe bed and produce a report of the current state of the printer, e.g.: Z-Tower Endstop Offsets -0.0125 X:-3.05 Y:-1.83 Z:-2.69 -0.0000 -0.0000 Tower Position Adjust -0.0625 A:-0.04 B:0.05 C:-0.01 -0.0375 -0.0250 I:0.25 J:-1.25 K:-0.37 -0.0250 Delta Radius: 109.5965 X-Tower Y-Tower Diag Rod: 224.5935 This option does not change any settings, but is useful when manually calibrating a printer, using the M666 command to change values. G30 Xnn Ynn Probe bed at specified X,Y point and show z-height and delta carriage positions, e.g.: Bed Z-Height at X:30.00 Y:30.00 = 0.0000 Carriage Positions: [176.40, 207.77, 209.52] G30 A Start auto-calibration. This will attempt to calibrate the printer, adjusting all parameters automatically, and will repeat the bed probing sequence show above several times adjusting each time until calibration is complete. It is recommended that you use M502 to load default values and then M500 to save them prior to starting the auto-calibration.
+
+M666 for all printers
+-----------------
+For not DELTA:
+M666 Pzzz adjust Z-Probe Offset if you have Auto bed level.
+M666 L view value in memory for Z-Probe Offset.
+
+For DELTA:
+M666 L   List all current configuration values , e.g.:
+Current Delta geometry values:
+X (Endstop Adj): -3.05
+Y (Endstop Adj): -1.83
+Z (Endstop Adj): -2.69
+P (Z-Probe Offset): X0.00 Y10.00 Z-5.60
+A (Tower A Position Correction): -0.04
+B (Tower B Position Correction): 0.05
+C (Tower C Position Correction): -0.02
+I (Tower A Radius Correction): 0.25
+J (Tower B Radius Correction): -1.25
+K (Tower C Radius Correction): -0.37
+R (Delta Radius): 109.60
+D (Diagonal Rod Length): 224.59
+H (Z-Height): 255.73
+All of these values can also be adjusted using the M666 command, e.g. to set the delta radius to 200mm, use:
+M666 R200
+Or to change the Z-Height to 350.5 mm:
+M666 H350.5
+Commands can also be combined, e.g. to set endstop values:
+M666 X-2.04 Y-1.02 Z-1.52
+All of these values can be saved/loaded to/from EEPROM using standard M500/M501 G-Code commands (to save the settings at any time just type M500). This makes manual configuration of a printer much easier as there is no longer a requirement to edit the configuration.h file and re-upload firmware for each time a change needs to be made.
+
+Configuration_delta.h  now includes the following additional parameters:
+Set start and end locations used to deploy the Z-Probe:
+
+* \#define Z_PROBE_DEPLOY_START_LOCATION {20, 96, 30, 0}
+* \#define Z_PROBE_DEPLOY_END_LOCATION {5, 96, 30, 0}
+* \#define Z_PROBE_RETRACT_START_LOCATION {49, 84, 20, 0}
+* \#define Z_PROBE_RETRACT_END_LOCATION {49, 84, 1, 0}
+Set precision for autocalibration G30 function – calibration will complete when this value is reached – all probed point have to be at 0 +/- 0.015mm (for 0.03 setting below)
+
+* \#define AUTOCALIBRATION_PRECISION 0.03 // mm
+
+Set distance to probe bed at for G30 function
+ 
+* \#define BED_DIAMETER 170 // mm
+
 
 Implemented G Codes:
 ====================
 
 *  G0  -> G1
-*  G1  - Coordinated Movement X Y Z E
+*  G1  - Coordinated Movement X Y Z E F(feedrate)
 *  G2  - CW ARC
 *  G3  - CCW ARC
-*  G4  - Dwell S<seconds> or P<milliseconds>
+*  G4  - Dwell Sseconds or Pmilliseconds, delay in Second or Millisecond
 *  G10 - retract filament according to settings of M207
 *  G11 - retract recover filament according to settings of M208
-*  G28 - Home all Axis. G28 M for bed manual setting with LCD.
-*  G29 - Detailed Z-Probe, probes the bed at 3 points.  You must de at the home position for this to work correctly.
-*  G30 - Single Z Probe, probes bed at current XY location. - Bed Probe and Delta geometry Autocalibration
+*  G28 - X0 Y0 Z0 Home all Axis. G28 M for bed manual setting with LCD.
+*  G29 - Detailed Z-Probe, probes the bed at 4 points.  You must de at the home position for this to work correctly.
+   G29 Fyyy Lxxx Rxxx Byyy for probe in this 4 points.
+*  G30 - Single Z Probe, probes bed at current XY location.
+   Bed Probe and Delta geometry Autocalibration G30 A
 *  G31 - Dock Z Probe sled (if enabled)
 *  G32 - Undock Z Probe sled (if enabled)
 *  G60 - Memory actual position
@@ -137,8 +192,9 @@ Implemented G Codes:
 M Codes
 *  M0   - Unconditional stop - Wait for user to press a button on the LCD (Only if ULTRA_LCD is enabled)
 *  M1   - Same as M0
-*  M03  - Sxxx Put output in laser beam control
-*  M05  - Turn off laser beam
+*  M3   - Sxxx Put output in laser beam control
+*  M4   - Turn on laser beam
+*  M5   - Turn off laser beam
 *  M17  - Enable/Power all stepper motors
 *  M18  - Disable all stepper motors; same as M84
 *  M20  - List SD card
