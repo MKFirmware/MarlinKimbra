@@ -268,6 +268,7 @@ M Codes
 *  M221 Sfactor in percent- set extrude factor override percentage
 *  M240 - Trigger a camera to take a photograph
 *  M280 - Position an RC Servo Pindex Sangle/microseconds, ommit S to report back current angle
+*  M299 - Turn on/off beep sound temperature
 *  M300 - Play beepsound Sfrequency Hz Pduration ms
 *  M301 - Set PID parameters P I and D
 *  M302 - Allow cold extrudes

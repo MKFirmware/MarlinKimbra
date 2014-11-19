@@ -158,6 +158,7 @@
 // M240 - Trigger a camera to take a photograph
 // M250 - Set LCD contrast C<contrast value> (value 0..63)
 // M280 - set servo position absolute. P: servo index, S: angle or microseconds
+// M299 - Beep sound for temperature on/off
 // M300 - Play beep sound S<frequency Hz> P<duration ms>
 // M301 - Set PID parameters P I and D
 // M302 - Allow cold extrudes, or set the minimum extrude S<temperature>.
@@ -442,6 +443,7 @@ unsigned long starttime=0;
 unsigned long stoptime=0;
 
 static uint8_t tmp_extruder;
+static boolean beeptemponoff = true;
 static boolean beeptemphe = false;
 static boolean beeptemphb = false;
 
@@ -4375,6 +4377,9 @@ Sigma_Exit:
     #endif // NUM_SERVOS > 0
 
     #if (LARGE_FLASH == true && ( BEEPER > 0 || defined(ULTRALCD) || defined(LCD_USE_I2C_BUZZER)))
+    case 299: // M299 turn on/off beep sound temp
+      beeptemponoff = !beeptemponoff;
+    break;
     case 300: // M300
     {
       int beepS = code_seen('S') ? code_value() : 110;
@@ -4397,7 +4402,7 @@ Sigma_Exit:
       }
     }
     break;
-    #endif // M300
+    #endif // M299 - M300
 
     #ifdef PIDTEMP
     case 301: // M301
@@ -5700,7 +5705,7 @@ void manage_inactivity()
   }
   
   #if (LARGE_FLASH == true && ( BEEPER > 0 || defined(ULTRALCD) || defined(LCD_USE_I2C_BUZZER)))
-    temptone();
+    if (beeptemponoff) temptone();
   #endif
   
   #ifdef CHDK //Check if pin should be set to LOW after M240 set it to HIGH
