@@ -61,6 +61,7 @@ Features:
 *   Singlenozzle support
 *   NPr2 support, multiextruder by NicolaP http://www.3dmakerlab.it/extruder-npr2.html
 *   Laserbeam support
+*   Firmware test
 
 The default baudrate is 250000. This baudrate has less jitter and hence errors than the usual 115200 baud, but is less supported by drivers and host-environments.
 
@@ -182,6 +183,12 @@ Set distance to probe bed at for G30 function
 * \#define BED_DIAMETER 170 // mm
 
 
+M998 Firmware test tools
+-----------------
+Test firmware uncomment
+* \#define FIRMWARE_TEST in configuration.h
+Use baudrate 115200 and use Arduino serial monitor.
+
 Implemented G Codes:
 ====================
 
@@ -294,6 +301,7 @@ M Codes
 *  M350 - Set microstepping mode.
 *  M351 - Toggle MS1 MS2 pins directly.
 *  M928 - Start SD logging (M928 filename.g) - ended by M29
+*  M998 - Start tools firmware test
 *  M999 - Restart after being stopped by error
 
 

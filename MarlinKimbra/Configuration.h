@@ -4,7 +4,7 @@
 // User-specified version info of this build to display in [Pronterface, etc] terminal window during
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
 // build by the user have been successfully uploaded into firmware.
-#define STRING_VERSION_CONFIG_H __DATE__ " 11/10/2014 " __TIME__ // build date and time
+#define STRING_VERSION_CONFIG_H __DATE__ " 23/10/2014 " __TIME__ // build date and time
 #define STRING_CONFIG_H_AUTHOR "(MagoKimbra: magokimbra@hotmail.com, Version 4.0)" // Who made the changes.
 
 // SERIAL_PORT selects which serial port should be used for communication with the host.
@@ -40,6 +40,9 @@
 // This configuration file contains the basic settings.
 // Advanced settings can be found in Configuration_adv.h
 // BASIC SETTINGS: select your board type, temperature sensor type, axis scaling, and endstop configuration
+
+// If you want test the firmware uncomment below. The command for run test is M998. Use Serial arduino monitor...
+//#define FIRMWARE_TEST
 
 /***********************************************************************\
  **************************** Define type printer **********************

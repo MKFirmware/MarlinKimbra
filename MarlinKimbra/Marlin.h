@@ -312,5 +312,9 @@ extern inline bool debugDryrun()
   return ((debugLevel & 8)!=0);
 }
 
+#ifdef FIRMWARE_TEST
+void FirmwareTest();
+#endif
+
 #endif
 

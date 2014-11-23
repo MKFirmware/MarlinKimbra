@@ -5016,7 +5016,11 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
       }
       break;
 #endif // NPR2
-
+#ifdef FIRMWARE_TEST
+      case 998: // M998 Firmware test
+        FirmwareTest();
+      break;
+#endif // FIRMWARE_TEST
       case 999: // M999: Restart after being stopped
         Stopped = false;
         lcd_reset_alert_level();
@@ -5927,6 +5931,141 @@ void setPwmFrequency(uint8_t pin, int val)
   }
 }
 #endif //FAST_PWM_FAN
+
+#ifdef FIRMWARE_TEST
+void FirmwareTest(){
+  SERIAL_ECHO_START;
+  SERIAL_ECHOLN("INIZIO FIRMWARE TEST");
+  SERIAL_ECHOLN("Posizionare manualmente gli assi X, Y e z lontano dagli endstop");
+  SERIAL_ECHOLN("Dare il comando Y per andare avanti");
+  serial_char = MYSERIAL.read();
+  while(serial_char!='Y'){
+    serial_char = MYSERIAL.read();
+  }
+  SERIAL_ECHOLN("Inizio controllo ENDSTOP");
+  SERIAL_ECHOLN(" ");
+  SERIAL_ECHOLN("***** ENDSTOP X *****");
+#if defined(X_MIN_PIN) && X_MIN_PIN > -1 && X_HOME_DIR == -1
+  if (!READ(X_MIN_PIN)^X_MIN_ENDSTOP_INVERTING){
+    SERIAL_ECHOLN("MIN ENDSTOP X APERTO");
+#elif defined(X_MAX_PIN) && X_MAX_PIN > -1 && X_HOME_DIR == 1
+  if (!READ(X_MAX_PIN)^X_MAX_ENDSTOP_INVERTING){
+    SERIAL_ECHOLN("MAX ENDSTOP X APERTO");
+#endif
+  }
+  else
+  {
+    SERIAL_ECHOLN("Endstop X ERR");
+#if X_HOME_DIR == -1
+    SERIAL_ECHOLN("Invertire valore in #define X_MIN_ENDSTOP_INVERTING");
+#else
+    SERIAL_ECHOLN("Invertire valore in #define X_MAX_ENDSTOP_INVERTING");
+#endif
+    return;
+  }
+  SERIAL_ECHOLN("Premere e tenere premuto l'endstop X.");
+  SERIAL_ECHOLN("Dare il comando Y per andare avanti");
+  serial_char = MYSERIAL.read();
+  while(serial_char!='Y'){
+    serial_char = MYSERIAL.read();
+  }
+#if defined(X_MIN_PIN) && X_MIN_PIN > -1 && X_HOME_DIR == -1
+  if (READ(X_MIN_PIN)^X_MIN_ENDSTOP_INVERTING){
+    SERIAL_ECHOLN("MIN ENDSTOP X CHIUSO");
+#elif defined(X_MAX_PIN) && X_MAX_PIN > -1 && X_HOME_DIR == 1
+  if (READ(X_MAX_PIN)^X_MAX_ENDSTOP_INVERTING){
+    SERIAL_ECHOLN("MAX ENDSTOP X CHIUSO");
+#endif
+  }
+  else
+  {
+    SERIAL_ECHOLN("Endstop X ERR! Controllare cavi e connessioni");
+    return;
+  }
+  SERIAL_ECHOLN(" ");
+  SERIAL_ECHOLN("***** ENDSTOP Y *****");
+#if defined(Y_MIN_PIN) && Y_MIN_PIN > -1 && Y_HOME_DIR == -1
+  if (!READ(Y_MIN_PIN)^Y_MIN_ENDSTOP_INVERTING){
+    SERIAL_ECHOLN("MIN ENDSTOP Y APERTO");
+#elif defined(Y_MAX_PIN) && Y_MAX_PIN > -1 && Y_HOME_DIR == 1
+  if (!READ(Y_MAX_PIN)^Y_MAX_ENDSTOP_INVERTING){
+    SERIAL_ECHOLN("MAX ENDSTOP Y APERTO");
+#endif
+  }
+  else
+  {
+    SERIAL_ECHOLN("Endstop Y ERR");
+#if Y_HOME_DIR == -1
+    SERIAL_ECHOLN("Invertire valore in #define Y_MIN_ENDSTOP_INVERTING");
+#else
+    SERIAL_ECHOLN("Invertire valore in #define Y_MAX_ENDSTOP_INVERTING");
+#endif
+    return;
+  }
+  SERIAL_ECHOLN("Premere e tenere premuto l'endstop Y.");
+  SERIAL_ECHOLN("Dare il comando Y per andare avanti");
+  serial_char = MYSERIAL.read();
+  while(serial_char!='Y'){
+    serial_char = MYSERIAL.read();
+  }
+#if defined(Y_MIN_PIN) && Y_MIN_PIN > -1 && Y_HOME_DIR == -1
+  if (READ(Y_MIN_PIN)^Y_MIN_ENDSTOP_INVERTING){
+    SERIAL_ECHOLN("MIN ENDSTOP Y CHIUSO");
+#elif defined(Y_MAX_PIN) && Y_MAX_PIN > -1 && Y_HOME_DIR == 1
+  if (READ(Y_MAX_PIN)^Y_MAX_ENDSTOP_INVERTING){
+    SERIAL_ECHOLN("MAX ENDSTOP Y CHIUSO");
+#endif
+  }
+  else
+  {
+    SERIAL_ECHOLN("Endstop Y ERR! Controllare cavi e connessioni");
+    return;
+  }
+  SERIAL_ECHOLN(" ");
+  SERIAL_ECHOLN("***** ENDSTOP Z *****");
+#if defined(Z_MIN_PIN) && Z_MIN_PIN > -1 && Z_HOME_DIR == -1
+  if (!READ(Z_MIN_PIN)^Z_MIN_ENDSTOP_INVERTING){
+    SERIAL_ECHOLN("MIN ENDSTOP Z APERTO");
+#elif defined(Z_MAX_PIN) && Z_MAX_PIN > -1 && Z_HOME_DIR == 1
+  if (!READ(Z_MAX_PIN)^Z_MAX_ENDSTOP_INVERTING){
+    SERIAL_ECHOLN("MAX ENDSTOP Z APERTO");
+#endif
+  }
+  else
+  {
+    SERIAL_ECHOLN("Endstop Z ERR");
+#if Z_HOME_DIR == -1
+    SERIAL_ECHOLN("Invertire valore in #define Z_MIN_ENDSTOP_INVERTING");
+#else
+    SERIAL_ECHOLN("Invertire valore in #define Z_MAX_ENDSTOP_INVERTING");
+#endif
+    return;
+  }
+  SERIAL_ECHOLN("Premere e tenere premuto l'endstop Z.");
+  SERIAL_ECHOLN("Dare il comando Y per andare avanti");
+  serial_char = MYSERIAL.read();
+  while(serial_char!='Y'){
+    serial_char = MYSERIAL.read();
+  }
+#if defined(Z_MIN_PIN) && Z_MIN_PIN > -1 && Z_HOME_DIR == -1
+  if (READ(Z_MIN_PIN)^Z_MIN_ENDSTOP_INVERTING){
+    SERIAL_ECHOLN("MIN ENDSTOP Z CHIUSO");
+#elif defined(Z_MAX_PIN) && Z_MAX_PIN > -1 && Z_HOME_DIR == 1
+  if (READ(Z_MAX_PIN)^Z_MAX_ENDSTOP_INVERTING){
+    SERIAL_ECHOLN("MAX ENDSTOP Z CHIUSO");
+#endif
+  }
+  else
+  {
+    SERIAL_ECHOLN("Endstop Z ERR! Controllare cavi e connessioni");
+    return;
+  }
+  SERIAL_ECHOLN("ENDSTOP OK");
+  SERIAL_ECHOLN(" ");
+  SERIAL_ECHOLN("TEST MOTORI SOON");
+  serial_char = MYSERIAL.read();
+}
+#endif //FIRMWARE_TEST
 
 bool setTargetedHotend(int code){
   tmp_extruder = active_extruder;
