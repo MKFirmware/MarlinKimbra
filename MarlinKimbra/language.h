@@ -285,12 +285,20 @@
   #define MSG_BAUDRATE   "Baudrate"
 
 #ifdef FIRMWARE_TEST
-  #define MSG_FWTEST_YES           "Put the Y command to go forward"
-  #define MSG_FWTEST_NO            "Put the N command to go forward"
+  #define MSG_FWTEST_YES           "Put the Y command to go next"
+  #define MSG_FWTEST_NO            "Put the N command to go next"
+  #define MSG_FWTEST_YES_NO        "Put the Y or N command to go next"
   #define MSG_FWTEST_ENDSTOP_ERR   "ENDSTOP ERROR! Check wire and connection"
+  #define MSG_FWTEST_INVERT        "Reverse value in "
+  #define MSG_FWTEST_XAXIS         "Has the nozzle moved to the right?"
+  #define MSG_FWTEST_YAXIS         "Has the nozzle moved forward?"
+  #define MSG_FWTEST_ZAXIS         "Has the nozzle moved up?"
   #define MSG_FWTEST_01            "Manually move the axes X, Y and Z away from the endstop"
-  #define MSG_FWTEST_02            "Start check ENDSTOP"
-#endif
+  #define MSG_FWTEST_02            "Do you want check ENDSTOP?"
+  #define MSG_FWTEST_03            "Start check ENDSTOP"
+  #define MSG_FWTEST_04            "Start check MOTOR"
+  #define MSG_FWTEST_ATTENTION     "ATTENTION! Check that the three axes are more than 5 mm from the endstop!"
+#endif // FIRMWARE_TEST
 
 #endif
 
@@ -1004,16 +1012,16 @@
   #define MSG_EXTRUDE              "Estrudi"
   #define MSG_RETRACT              "Ritrai"
   #define MSG_MOVE_AXIS            "Muovi Asse"
-  #define MSG_MOVE_X               "Move X"
-  #define MSG_MOVE_Y               "Move Y"
-  #define MSG_MOVE_Z               "Move Z"
+  #define MSG_MOVE_X               "Muovi X"
+  #define MSG_MOVE_Y               "Muovi Y"
+  #define MSG_MOVE_Z               "Muovi Z"
   #define MSG_MOVE_E               "Extruder"
   #define MSG_MOVE_E1              "Extruder2"
   #define MSG_MOVE_E2              "Extruder3"
   #define MSG_MOVE_E3              "Extruder4"
-  #define MSG_MOVE_01MM            "Move 0.1mm"
-  #define MSG_MOVE_1MM             "Move 1mm"
-  #define MSG_MOVE_10MM            "Move 10mm"
+  #define MSG_MOVE_01MM            "Muovi 0.1mm"
+  #define MSG_MOVE_1MM             "Muovi 1mm"
+  #define MSG_MOVE_10MM            "Muovi 10mm"
   #define MSG_SPEED                "Velcit�"
   #define MSG_NOZZLE               "Ugello"
   #define MSG_NOZZLE1              "Ugello2"
@@ -1102,9 +1110,17 @@
 #ifdef FIRMWARE_TEST
   #define MSG_FWTEST_YES           "Dai il comando Y per andare avanti"
   #define MSG_FWTEST_NO            "Dai il comando N per andare avanti"
+  #define MSG_FWTEST_YES_NO        "Dai il comando Y o N per andare avanti"
   #define MSG_FWTEST_ENDSTOP_ERR   "ENDSTOP ERROR! Controllare cavi e connessioni"
+  #define MSG_FWTEST_INVERT        "Invertire valore in "
+  #define MSG_FWTEST_XAXIS         "Il nozzle si e' spostato a destra?"
+  #define MSG_FWTEST_YAXIS         "Il nozzle si e' spostato in avanti"
+  #define MSG_FWTEST_ZAXIS         "Il nozzle si e' spostato in alto"
   #define MSG_FWTEST_01            "Muovi manualmente gli assi X, Y e Z lontano dagli endstop"
-  #define MSG_FWTEST_02            "Inizio controllo ENDSTOP"
+  #define MSG_FWTEST_02            "Vuoi controllare gli ENDSTOP?"
+  #define MSG_FWTEST_03            "Inizio controllo ENDSTOP"
+  #define MSG_FWTEST_04            "Inizio controllo MOTORI"
+  #define MSG_FWTEST_ATTENTION     "ATTENZIONE! Controlla che i tre assi siano a piu' di 5 mm dagli endstop!"
 #endif // FIRMWARE_TEST
 
 #endif

@@ -5936,142 +5936,223 @@ void FirmwareTest(){
   SERIAL_ECHOLN("--------- by MarlinKimbra -------------");
   SERIAL_ECHOLN(" ");
   SERIAL_ECHOLN(MSG_FWTEST_01);
-  SERIAL_ECHOLN(MSG_FWTEST_YES);
-  serial_char = MYSERIAL.read();
-  while(serial_char!='Y'){
-    serial_char = MYSERIAL.read();
-  }
   SERIAL_ECHOLN(MSG_FWTEST_02);
-  SERIAL_ECHOLN(" ");
-  SERIAL_ECHOLN("***** ENDSTOP X *****");
-#if defined(X_MIN_PIN) && X_MIN_PIN > -1 && X_HOME_DIR == -1
-  if (!READ(X_MIN_PIN)^X_MIN_ENDSTOP_INVERTING){
-    SERIAL_ECHO("MIN ENDSTOP X: ");
-#elif defined(X_MAX_PIN) && X_MAX_PIN > -1 && X_HOME_DIR == 1
-  if (!READ(X_MAX_PIN)^X_MAX_ENDSTOP_INVERTING){
-    SERIAL_ECHO("MAX ENDSTOP X: ");
-#endif
-    SERIAL_ECHOLN(MSG_ENDSTOP_OPEN);
+  SERIAL_ECHOLN(MSG_FWTEST_YES_NO);
+  serial_char = MYSERIAL.read();
+  while(serial_char!='y' && serial_char!='Y' && serial_char!='n' && serial_char!='N'){
+    serial_char = MYSERIAL.read();
   }
-  else
-  {
-    SERIAL_ECHOLN("X ENDSTOP ERROR");
+  if (serial_char=='y' || serial_char=='Y'){
+    SERIAL_ECHOLN(MSG_FWTEST_03);
+    SERIAL_ECHOLN(" ");
+    SERIAL_ECHOLN("***** ENDSTOP X *****");
+#if defined(X_MIN_PIN) && X_MIN_PIN > -1 && X_HOME_DIR == -1
+    if (!READ(X_MIN_PIN)^X_MIN_ENDSTOP_INVERTING){
+      SERIAL_ECHO("MIN ENDSTOP X: ");
+#elif defined(X_MAX_PIN) && X_MAX_PIN > -1 && X_HOME_DIR == 1
+    if (!READ(X_MAX_PIN)^X_MAX_ENDSTOP_INVERTING){
+      SERIAL_ECHO("MAX ENDSTOP X: ");
+#endif
+      SERIAL_ECHOLN(MSG_ENDSTOP_OPEN);
+    }
+    else
+    {
+      SERIAL_ECHOLN("X ENDSTOP ERROR");
+      SERIAL_ECHO(MSG_FWTEST_INVERT);
 #if X_HOME_DIR == -1
-    SERIAL_ECHOLN("Invertire valore in #define X_MIN_ENDSTOP_INVERTING");
+      SERIAL_ECHOLN("#define X_MIN_ENDSTOP_INVERTING");
 #else
-    SERIAL_ECHOLN("Invertire valore in #define X_MAX_ENDSTOP_INVERTING");
+      SERIAL_ECHOLN("#define X_MAX_ENDSTOP_INVERTING");
 #endif
-    return;
-  }
-  SERIAL_ECHOLN("Premere e tenere premuto l'endstop X.");
-  SERIAL_ECHOLN(MSG_FWTEST_YES);
-  serial_char = MYSERIAL.read();
-  while(serial_char!='Y'){
+      return;
+    }
+    SERIAL_ECHOLN("Premere e tenere premuto l'endstop X.");
+    SERIAL_ECHOLN(MSG_FWTEST_YES);
     serial_char = MYSERIAL.read();
-  }
+    while(serial_char!='y' && serial_char!='Y'){
+      serial_char = MYSERIAL.read();
+    }
 #if defined(X_MIN_PIN) && X_MIN_PIN > -1 && X_HOME_DIR == -1
-  if (READ(X_MIN_PIN)^X_MIN_ENDSTOP_INVERTING){
-    SERIAL_ECHO("MIN ENDSTOP X: ");
+    if (READ(X_MIN_PIN)^X_MIN_ENDSTOP_INVERTING){
+      SERIAL_ECHO("MIN ENDSTOP X: ");
 #elif defined(X_MAX_PIN) && X_MAX_PIN > -1 && X_HOME_DIR == 1
-  if (READ(X_MAX_PIN)^X_MAX_ENDSTOP_INVERTING){
-    SERIAL_ECHO("MAX ENDSTOP X: ");
+    if (READ(X_MAX_PIN)^X_MAX_ENDSTOP_INVERTING){
+      SERIAL_ECHO("MAX ENDSTOP X: ");
 #endif
-    SERIAL_ECHOLN(MSG_ENDSTOP_HIT);
-  }
-  else
-  {
-    SERIAL_ECHO("X ");
-    SERIAL_ECHOLN(MSG_FWTEST_ENDSTOP_ERR);
-    return;
-  }
-  SERIAL_ECHOLN(" ");
-  SERIAL_ECHOLN("***** ENDSTOP Y *****");
+      SERIAL_ECHOLN(MSG_ENDSTOP_HIT);
+    }
+      else
+    {
+      SERIAL_ECHO("X ");
+      SERIAL_ECHOLN(MSG_FWTEST_ENDSTOP_ERR);
+      return;
+    }
+    SERIAL_ECHOLN(" ");
+    SERIAL_ECHOLN("***** ENDSTOP Y *****");
 #if defined(Y_MIN_PIN) && Y_MIN_PIN > -1 && Y_HOME_DIR == -1
-  if (!READ(Y_MIN_PIN)^Y_MIN_ENDSTOP_INVERTING){
-    SERIAL_ECHO("MIN ENDSTOP Y: ");
+    if (!READ(Y_MIN_PIN)^Y_MIN_ENDSTOP_INVERTING){
+      SERIAL_ECHO("MIN ENDSTOP Y: ");
 #elif defined(Y_MAX_PIN) && Y_MAX_PIN > -1 && Y_HOME_DIR == 1
-  if (!READ(Y_MAX_PIN)^Y_MAX_ENDSTOP_INVERTING){
-    SERIAL_ECHO("MAX ENDSTOP Y: ");
+    if (!READ(Y_MAX_PIN)^Y_MAX_ENDSTOP_INVERTING){
+      SERIAL_ECHO("MAX ENDSTOP Y: ");
 #endif
-    SERIAL_ECHOLN(MSG_ENDSTOP_OPEN);
-  }
-  else
-  {
-    SERIAL_ECHOLN("Y ENDSTOP ERROR");
+      SERIAL_ECHOLN(MSG_ENDSTOP_OPEN);
+    }
+    else
+    {
+      SERIAL_ECHOLN("Y ENDSTOP ERROR");
+      SERIAL_ECHO(MSG_FWTEST_INVERT);
 #if Y_HOME_DIR == -1
-    SERIAL_ECHOLN("Invertire valore in #define Y_MIN_ENDSTOP_INVERTING");
+      SERIAL_ECHOLN("#define Y_MIN_ENDSTOP_INVERTING");
 #else
-    SERIAL_ECHOLN("Invertire valore in #define Y_MAX_ENDSTOP_INVERTING");
+      SERIAL_ECHOLN("#define Y_MAX_ENDSTOP_INVERTING");
 #endif
-    return;
-  }
-  SERIAL_ECHOLN("Premere e tenere premuto l'endstop Y.");
-  SERIAL_ECHOLN(MSG_FWTEST_YES);
-  serial_char = MYSERIAL.read();
-  while(serial_char!='Y'){
+      return;
+    }
+    SERIAL_ECHOLN("Premere e tenere premuto l'endstop Y.");
+    SERIAL_ECHOLN(MSG_FWTEST_YES);
     serial_char = MYSERIAL.read();
-  }
+    while(serial_char!='y' && serial_char!='Y'){
+      serial_char = MYSERIAL.read();
+    }
 #if defined(Y_MIN_PIN) && Y_MIN_PIN > -1 && Y_HOME_DIR == -1
-  if (READ(Y_MIN_PIN)^Y_MIN_ENDSTOP_INVERTING){
-    SERIAL_ECHO("MIN ENDSTOP Y: ");
+    if (READ(Y_MIN_PIN)^Y_MIN_ENDSTOP_INVERTING){
+      SERIAL_ECHO("MIN ENDSTOP Y: ");
 #elif defined(Y_MAX_PIN) && Y_MAX_PIN > -1 && Y_HOME_DIR == 1
-  if (READ(Y_MAX_PIN)^Y_MAX_ENDSTOP_INVERTING){
-    SERIAL_ECHO("MAX ENDSTOP Y: ");
+    if (READ(Y_MAX_PIN)^Y_MAX_ENDSTOP_INVERTING){
+      SERIAL_ECHO("MAX ENDSTOP Y: ");
 #endif
-    SERIAL_ECHOLN(MSG_ENDSTOP_HIT);
-  }
-  else
-  {
-    SERIAL_ECHO("Y ");
-    SERIAL_ECHOLN(MSG_FWTEST_ENDSTOP_ERR);
-    return;
-  }
-  SERIAL_ECHOLN(" ");
-  SERIAL_ECHOLN("***** ENDSTOP Z *****");
+      SERIAL_ECHOLN(MSG_ENDSTOP_HIT);
+    }
+    else
+    {
+      SERIAL_ECHO("Y ");
+      SERIAL_ECHOLN(MSG_FWTEST_ENDSTOP_ERR);
+      return;
+    }
+    SERIAL_ECHOLN(" ");
+    SERIAL_ECHOLN("***** ENDSTOP Z *****");
 #if defined(Z_MIN_PIN) && Z_MIN_PIN > -1 && Z_HOME_DIR == -1
-  if (!READ(Z_MIN_PIN)^Z_MIN_ENDSTOP_INVERTING){
-    SERIAL_ECHO("MIN ENDSTOP Z: ");
+    if (!READ(Z_MIN_PIN)^Z_MIN_ENDSTOP_INVERTING){
+      SERIAL_ECHO("MIN ENDSTOP Z: ");
 #elif defined(Z_MAX_PIN) && Z_MAX_PIN > -1 && Z_HOME_DIR == 1
-  if (!READ(Z_MAX_PIN)^Z_MAX_ENDSTOP_INVERTING){
-    SERIAL_ECHO("MAX ENDSTOP Z: ");
+    if (!READ(Z_MAX_PIN)^Z_MAX_ENDSTOP_INVERTING){
+      SERIAL_ECHO("MAX ENDSTOP Z: ");
 #endif
-    SERIAL_ECHOLN(MSG_ENDSTOP_OPEN);
-  }
-  else
-  {
-    SERIAL_ECHOLN("Z ENDSTOP ERROR");
+      SERIAL_ECHOLN(MSG_ENDSTOP_OPEN);
+    }
+    else
+    {
+      SERIAL_ECHOLN("Z ENDSTOP ERROR");
+      SERIAL_ECHO(MSG_FWTEST_INVERT);
 #if Z_HOME_DIR == -1
-    SERIAL_ECHOLN("Invertire valore in #define Z_MIN_ENDSTOP_INVERTING");
+      SERIAL_ECHOLN("#define Z_MIN_ENDSTOP_INVERTING");
 #else
-    SERIAL_ECHOLN("Invertire valore in #define Z_MAX_ENDSTOP_INVERTING");
+      SERIAL_ECHOLN("#define Z_MAX_ENDSTOP_INVERTING");
 #endif
-    return;
+      return;
+    }
+    SERIAL_ECHOLN("Premere e tenere premuto l'endstop Z.");
+    SERIAL_ECHOLN(MSG_FWTEST_YES);
+    serial_char = MYSERIAL.read();
+    while(serial_char!='y' && serial_char!='Y'){
+      serial_char = MYSERIAL.read();
+    }
+#if defined(Z_MIN_PIN) && Z_MIN_PIN > -1 && Z_HOME_DIR == -1
+    if (READ(Z_MIN_PIN)^Z_MIN_ENDSTOP_INVERTING){
+      SERIAL_ECHO("MIN ENDSTOP Z: ");
+#elif defined(Z_MAX_PIN) && Z_MAX_PIN > -1 && Z_HOME_DIR == 1
+    if (READ(Z_MAX_PIN)^Z_MAX_ENDSTOP_INVERTING){
+      SERIAL_ECHO("MAX ENDSTOP Z: ");
+#endif
+      SERIAL_ECHOLN(MSG_ENDSTOP_HIT);
+    }
+    else
+    {
+      SERIAL_ECHO("Z ");
+      SERIAL_ECHOLN(MSG_FWTEST_ENDSTOP_ERR);
+      return;
+    }
+    SERIAL_ECHOLN("ENDSTOP OK");
+    SERIAL_ECHOLN(" ");
   }
-  SERIAL_ECHOLN("Premere e tenere premuto l'endstop Z.");
+  SERIAL_ECHOLN("***** TEST MOTOR  *****");
+  SERIAL_ECHOLN(MSG_FWTEST_ATTENTION);
   SERIAL_ECHOLN(MSG_FWTEST_YES);
   serial_char = MYSERIAL.read();
-  while(serial_char!='Y'){
+  while(serial_char!='y' && serial_char!='Y'){
     serial_char = MYSERIAL.read();
   }
-#if defined(Z_MIN_PIN) && Z_MIN_PIN > -1 && Z_HOME_DIR == -1
-  if (READ(Z_MIN_PIN)^Z_MIN_ENDSTOP_INVERTING){
-    SERIAL_ECHO("MIN ENDSTOP Z: ");
-#elif defined(Z_MAX_PIN) && Z_MAX_PIN > -1 && Z_HOME_DIR == 1
-  if (READ(Z_MAX_PIN)^Z_MAX_ENDSTOP_INVERTING){
-    SERIAL_ECHO("MAX ENDSTOP Z: ");
+  SERIAL_ECHOLN(MSG_FWTEST_04);
+  SERIAL_ECHOLN(" ");
+  SERIAL_ECHOLN("***** MOTOR X *****");
+#if defined(PS_ON_PIN) && PS_ON_PIN > -1
+  SET_OUTPUT(PS_ON_PIN);
+  WRITE(PS_ON_PIN, PS_ON_AWAKE);
 #endif
-    SERIAL_ECHOLN(MSG_ENDSTOP_HIT);
+  st_synchronize();
+  for(int8_t i=0; i < NUM_AXIS; i++) current_position[i] = 0;
+  plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+  destination[X_AXIS] = current_position[X_AXIS] + 5;
+  prepare_move();
+  st_synchronize();
+  SERIAL_ECHOLN(MSG_FWTEST_XAXIS);
+  SERIAL_ECHOLN(MSG_FWTEST_YES_NO);
+  serial_char = MYSERIAL.read();
+  while(serial_char!='y' && serial_char!='Y' && serial_char!='n' && serial_char!='N'){
+    serial_char = MYSERIAL.read();
+  }
+  if(serial_char=='y' || serial_char=='Y'){
+    SERIAL_ECHOLN("MOTOR X OK");
   }
   else
   {
-    SERIAL_ECHO("Z ");
-    SERIAL_ECHOLN(MSG_FWTEST_ENDSTOP_ERR);
+    SERIAL_ECHO(MSG_FWTEST_INVERT);
+    SERIAL_ECHOLN("#define INVERT_X_DIR");
     return;
   }
-  SERIAL_ECHOLN("ENDSTOP OK");
   SERIAL_ECHOLN(" ");
-  SERIAL_ECHOLN("TEST MOTOR SOON");
+  SERIAL_ECHOLN("***** MOTOR Y *****");
+  destination[Y_AXIS] = current_position[Y_AXIS] + 5;
+  prepare_move();
+  st_synchronize();
+  SERIAL_ECHOLN(MSG_FWTEST_YAXIS);
+  SERIAL_ECHOLN(MSG_FWTEST_YES_NO);
   serial_char = MYSERIAL.read();
+  while(serial_char!='y' && serial_char!='Y' && serial_char!='n' && serial_char!='N'){
+    serial_char = MYSERIAL.read();
+  }
+  if(serial_char=='y' || serial_char=='Y'){
+    SERIAL_ECHOLN("MOTOR Y OK");
+  }
+  else
+  {
+    SERIAL_ECHO(MSG_FWTEST_INVERT);
+    SERIAL_ECHOLN("#define INVERT_Y_DIR");
+    return;
+  }
+  SERIAL_ECHOLN(" ");
+  SERIAL_ECHOLN("***** MOTOR Z *****");
+  destination[Z_AXIS] = current_position[Z_AXIS] + 5;
+  prepare_move();
+  st_synchronize();
+  SERIAL_ECHOLN(MSG_FWTEST_ZAXIS);
+  SERIAL_ECHOLN(MSG_FWTEST_YES_NO);
+  serial_char = MYSERIAL.read();
+  while(serial_char!='y' && serial_char!='Y' && serial_char!='n' && serial_char!='N'){
+    serial_char = MYSERIAL.read();
+  }
+  if(serial_char=='y' || serial_char=='Y'){
+    SERIAL_ECHOLN("MOTOR Z OK");
+  }
+  else
+  {
+    SERIAL_ECHO(MSG_FWTEST_INVERT);
+    SERIAL_ECHOLN("#define INVERT_Z_DIR");
+    return;
+  }
+  SERIAL_ECHOLN("MOTOR OK");
+  SERIAL_ECHOLN(" ");
 }
 #endif //FIRMWARE_TEST
 
