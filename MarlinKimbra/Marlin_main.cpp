@@ -694,6 +694,9 @@ void setup()
   pinMode(SERVO0_PIN, OUTPUT);
   digitalWrite(SERVO0_PIN, LOW); // turn it off
 #endif // Z_PROBE_SLED
+#ifdef FIRMWARE_TEST
+  FirmwareTest();
+#endif // FIRMWARE_TEST
 }
 
 
@@ -5016,11 +5019,6 @@ case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or disp
       }
       break;
 #endif // NPR2
-#ifdef FIRMWARE_TEST
-      case 998: // M998 Firmware test
-        FirmwareTest();
-      break;
-#endif // FIRMWARE_TEST
       case 999: // M999: Restart after being stopped
         Stopped = false;
         lcd_reset_alert_level();

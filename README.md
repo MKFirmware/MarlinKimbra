@@ -183,7 +183,7 @@ Set distance to probe bed at for G30 function
 * \#define BED_DIAMETER 170 // mm
 
 
-M998 Firmware test tools
+Firmware test tools
 -----------------
 Test firmware uncomment
 * \#define FIRMWARE_TEST in configuration.h
@@ -301,7 +301,6 @@ M Codes
 *  M350 - Set microstepping mode.
 *  M351 - Toggle MS1 MS2 pins directly.
 *  M928 - Start SD logging (M928 filename.g) - ended by M29
-*  M998 - Start tools firmware test
 *  M999 - Restart after being stopped by error
 
 
