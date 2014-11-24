@@ -5932,28 +5932,30 @@ void setPwmFrequency(uint8_t pin, int val)
 
 #ifdef FIRMWARE_TEST
 void FirmwareTest(){
-  SERIAL_ECHO_START;
-  SERIAL_ECHOLN("INIZIO FIRMWARE TEST");
-  SERIAL_ECHOLN("Posizionare manualmente gli assi X, Y e z lontano dagli endstop");
-  SERIAL_ECHOLN("Dare il comando Y per andare avanti");
+  SERIAL_ECHOLN("---------- FIRMWARE TEST --------------");
+  SERIAL_ECHOLN("--------- by MarlinKimbra -------------");
+  SERIAL_ECHOLN(" ");
+  SERIAL_ECHOLN(MSG_FWTEST_01);
+  SERIAL_ECHOLN(MSG_FWTEST_YES);
   serial_char = MYSERIAL.read();
   while(serial_char!='Y'){
     serial_char = MYSERIAL.read();
   }
-  SERIAL_ECHOLN("Inizio controllo ENDSTOP");
+  SERIAL_ECHOLN(MSG_FWTEST_02);
   SERIAL_ECHOLN(" ");
   SERIAL_ECHOLN("***** ENDSTOP X *****");
 #if defined(X_MIN_PIN) && X_MIN_PIN > -1 && X_HOME_DIR == -1
   if (!READ(X_MIN_PIN)^X_MIN_ENDSTOP_INVERTING){
-    SERIAL_ECHOLN("MIN ENDSTOP X APERTO");
+    SERIAL_ECHO("MIN ENDSTOP X: ");
 #elif defined(X_MAX_PIN) && X_MAX_PIN > -1 && X_HOME_DIR == 1
   if (!READ(X_MAX_PIN)^X_MAX_ENDSTOP_INVERTING){
-    SERIAL_ECHOLN("MAX ENDSTOP X APERTO");
+    SERIAL_ECHO("MAX ENDSTOP X: ");
 #endif
+    SERIAL_ECHOLN(MSG_ENDSTOP_OPEN);
   }
   else
   {
-    SERIAL_ECHOLN("Endstop X ERR");
+    SERIAL_ECHOLN("X ENDSTOP ERROR");
 #if X_HOME_DIR == -1
     SERIAL_ECHOLN("Invertire valore in #define X_MIN_ENDSTOP_INVERTING");
 #else
@@ -5962,37 +5964,40 @@ void FirmwareTest(){
     return;
   }
   SERIAL_ECHOLN("Premere e tenere premuto l'endstop X.");
-  SERIAL_ECHOLN("Dare il comando Y per andare avanti");
+  SERIAL_ECHOLN(MSG_FWTEST_YES);
   serial_char = MYSERIAL.read();
   while(serial_char!='Y'){
     serial_char = MYSERIAL.read();
   }
 #if defined(X_MIN_PIN) && X_MIN_PIN > -1 && X_HOME_DIR == -1
   if (READ(X_MIN_PIN)^X_MIN_ENDSTOP_INVERTING){
-    SERIAL_ECHOLN("MIN ENDSTOP X CHIUSO");
+    SERIAL_ECHO("MIN ENDSTOP X: ");
 #elif defined(X_MAX_PIN) && X_MAX_PIN > -1 && X_HOME_DIR == 1
   if (READ(X_MAX_PIN)^X_MAX_ENDSTOP_INVERTING){
-    SERIAL_ECHOLN("MAX ENDSTOP X CHIUSO");
+    SERIAL_ECHO("MAX ENDSTOP X: ");
 #endif
+    SERIAL_ECHOLN(MSG_ENDSTOP_HIT);
   }
   else
   {
-    SERIAL_ECHOLN("Endstop X ERR! Controllare cavi e connessioni");
+    SERIAL_ECHO("X ");
+    SERIAL_ECHOLN(MSG_FWTEST_ENDSTOP_ERR);
     return;
   }
   SERIAL_ECHOLN(" ");
   SERIAL_ECHOLN("***** ENDSTOP Y *****");
 #if defined(Y_MIN_PIN) && Y_MIN_PIN > -1 && Y_HOME_DIR == -1
   if (!READ(Y_MIN_PIN)^Y_MIN_ENDSTOP_INVERTING){
-    SERIAL_ECHOLN("MIN ENDSTOP Y APERTO");
+    SERIAL_ECHO("MIN ENDSTOP Y: ");
 #elif defined(Y_MAX_PIN) && Y_MAX_PIN > -1 && Y_HOME_DIR == 1
   if (!READ(Y_MAX_PIN)^Y_MAX_ENDSTOP_INVERTING){
-    SERIAL_ECHOLN("MAX ENDSTOP Y APERTO");
+    SERIAL_ECHO("MAX ENDSTOP Y: ");
 #endif
+    SERIAL_ECHOLN(MSG_ENDSTOP_OPEN);
   }
   else
   {
-    SERIAL_ECHOLN("Endstop Y ERR");
+    SERIAL_ECHOLN("Y ENDSTOP ERROR");
 #if Y_HOME_DIR == -1
     SERIAL_ECHOLN("Invertire valore in #define Y_MIN_ENDSTOP_INVERTING");
 #else
@@ -6001,37 +6006,40 @@ void FirmwareTest(){
     return;
   }
   SERIAL_ECHOLN("Premere e tenere premuto l'endstop Y.");
-  SERIAL_ECHOLN("Dare il comando Y per andare avanti");
+  SERIAL_ECHOLN(MSG_FWTEST_YES);
   serial_char = MYSERIAL.read();
   while(serial_char!='Y'){
     serial_char = MYSERIAL.read();
   }
 #if defined(Y_MIN_PIN) && Y_MIN_PIN > -1 && Y_HOME_DIR == -1
   if (READ(Y_MIN_PIN)^Y_MIN_ENDSTOP_INVERTING){
-    SERIAL_ECHOLN("MIN ENDSTOP Y CHIUSO");
+    SERIAL_ECHO("MIN ENDSTOP Y: ");
 #elif defined(Y_MAX_PIN) && Y_MAX_PIN > -1 && Y_HOME_DIR == 1
   if (READ(Y_MAX_PIN)^Y_MAX_ENDSTOP_INVERTING){
-    SERIAL_ECHOLN("MAX ENDSTOP Y CHIUSO");
+    SERIAL_ECHO("MAX ENDSTOP Y: ");
 #endif
+    SERIAL_ECHOLN(MSG_ENDSTOP_HIT);
   }
   else
   {
-    SERIAL_ECHOLN("Endstop Y ERR! Controllare cavi e connessioni");
+    SERIAL_ECHO("Y ");
+    SERIAL_ECHOLN(MSG_FWTEST_ENDSTOP_ERR);
     return;
   }
   SERIAL_ECHOLN(" ");
   SERIAL_ECHOLN("***** ENDSTOP Z *****");
 #if defined(Z_MIN_PIN) && Z_MIN_PIN > -1 && Z_HOME_DIR == -1
   if (!READ(Z_MIN_PIN)^Z_MIN_ENDSTOP_INVERTING){
-    SERIAL_ECHOLN("MIN ENDSTOP Z APERTO");
+    SERIAL_ECHO("MIN ENDSTOP Z: ");
 #elif defined(Z_MAX_PIN) && Z_MAX_PIN > -1 && Z_HOME_DIR == 1
   if (!READ(Z_MAX_PIN)^Z_MAX_ENDSTOP_INVERTING){
-    SERIAL_ECHOLN("MAX ENDSTOP Z APERTO");
+    SERIAL_ECHO("MAX ENDSTOP Z: ");
 #endif
+    SERIAL_ECHOLN(MSG_ENDSTOP_OPEN);
   }
   else
   {
-    SERIAL_ECHOLN("Endstop Z ERR");
+    SERIAL_ECHOLN("Z ENDSTOP ERROR");
 #if Z_HOME_DIR == -1
     SERIAL_ECHOLN("Invertire valore in #define Z_MIN_ENDSTOP_INVERTING");
 #else
@@ -6040,27 +6048,29 @@ void FirmwareTest(){
     return;
   }
   SERIAL_ECHOLN("Premere e tenere premuto l'endstop Z.");
-  SERIAL_ECHOLN("Dare il comando Y per andare avanti");
+  SERIAL_ECHOLN(MSG_FWTEST_YES);
   serial_char = MYSERIAL.read();
   while(serial_char!='Y'){
     serial_char = MYSERIAL.read();
   }
 #if defined(Z_MIN_PIN) && Z_MIN_PIN > -1 && Z_HOME_DIR == -1
   if (READ(Z_MIN_PIN)^Z_MIN_ENDSTOP_INVERTING){
-    SERIAL_ECHOLN("MIN ENDSTOP Z CHIUSO");
+    SERIAL_ECHO("MIN ENDSTOP Z: ");
 #elif defined(Z_MAX_PIN) && Z_MAX_PIN > -1 && Z_HOME_DIR == 1
   if (READ(Z_MAX_PIN)^Z_MAX_ENDSTOP_INVERTING){
-    SERIAL_ECHOLN("MAX ENDSTOP Z CHIUSO");
+    SERIAL_ECHO("MAX ENDSTOP Z: ");
 #endif
+    SERIAL_ECHOLN(MSG_ENDSTOP_HIT);
   }
   else
   {
-    SERIAL_ECHOLN("Endstop Z ERR! Controllare cavi e connessioni");
+    SERIAL_ECHO("Z ");
+    SERIAL_ECHOLN(MSG_FWTEST_ENDSTOP_ERR);
     return;
   }
   SERIAL_ECHOLN("ENDSTOP OK");
   SERIAL_ECHOLN(" ");
-  SERIAL_ECHOLN("TEST MOTORI SOON");
+  SERIAL_ECHOLN("TEST MOTOR SOON");
   serial_char = MYSERIAL.read();
 }
 #endif //FIRMWARE_TEST
