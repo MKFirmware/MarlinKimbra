@@ -246,9 +246,9 @@ void Config_PrintSettings()
   SERIAL_ECHO_START;
   SERIAL_ECHOLNPGM("PID settings:");
   SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("   M301 P",Kp); 
-  SERIAL_ECHOPAIR(" I" ,unscalePID_i(Ki)); 
-  SERIAL_ECHOPAIR(" D" ,unscalePID_d(Kd));
+  SERIAL_ECHOPAIR("   M301 P",Kp[active_extruder]); 
+  SERIAL_ECHOPAIR(" I" ,unscalePID_i(Ki[active_extruder])); 
+  SERIAL_ECHOPAIR(" D" ,unscalePID_d(Kd[active_extruder]));
   SERIAL_ECHOLN(""); 
 #endif
 } 
@@ -350,7 +350,10 @@ void Config_ResetDefault()
   float tmp2[]=DEFAULT_MAX_FEEDRATE;
   float tmp3[]=DEFAULT_RETRACTION_MAX_FEEDRATE;
   long  tmp4[]=DEFAULT_MAX_ACCELERATION;
-
+  float tmp5[]=DEFAULT_Kp;
+  float tmp6[]=DEFAULT_Ki;
+  float tmp7[]=DEFAULT_Kd;
+  
   for (short i=0;i<7;i++) 
   {
     axis_steps_per_unit[i]=tmp1[i];
@@ -405,9 +408,18 @@ void Config_ResetDefault()
   lcd_contrast = DEFAULT_LCD_CONTRAST;
 #endif
 #ifdef PIDTEMP
-  Kp = DEFAULT_Kp;
-  Ki = scalePID_i(DEFAULT_Ki);
-  Kd = scalePID_d(DEFAULT_Kd);
+  for (short i=0;i<4;i++) 
+  {
+#ifdef SINGLENOZZLE
+    Kp[i] = tmp5[0];
+    Ki[i] = scalePID_i(tmp6[0]);
+    Kd[i] = scalePID_d(tmp7[0]);
+#else
+    Kp[i] = tmp5[i];
+    Ki[i] = scalePID_i(tmp6[i]);
+    Kd[i] = scalePID_d(tmp7[i]);
+#endif
+  }
 
   // call updatePID (similar to when we have processed M301)
   updatePID();

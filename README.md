@@ -56,6 +56,7 @@ Features:
 *   Bed Auto Leveling for cartesian and delta printer
 *   Z probe repetability test
 *   Setting step for unit and feedrate for extruders
+*   Setting PID for any extruder
 *   Real-time filament diameter measurement and control
 *   MKR4 suppport for 4 extruder but only two driver
 *   Singlenozzle support
@@ -85,6 +86,12 @@ Different axis step per unit for all extruder
 Different feedrate for all extruder
 -----------------
 * \#define DEFAULT_MAX_FEEDRATE            {300,300,2,100,100,100,100}     // X, Y, Z, E0, E1, E2, E3 (mm/sec)
+
+Different PID for all extruder
+-----------------
+* \#define  DEFAULT_Kp {41.51,50,0,0}
+* \#define  DEFAULT_Ki {7.28,15,0,0}
+* \#define  DEFAULT_Kd {59.17,90,0,0}
 
 Add Feedrate for retraction
 -----------------

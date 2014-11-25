@@ -253,30 +253,11 @@
 #define PID_dT ((OVERSAMPLENR * 10.0)/(F_CPU / 64.0 / 256.0)) //sampling period of the temperature routine
 
 // If you are using a pre-configured hotend then you can use one of the value sets by uncommenting it
-// IeC HotEnd
-#define  DEFAULT_Kp 41.51
-#define  DEFAULT_Ki 7.28
-#define  DEFAULT_Kd 59.17
+//            HotEnd{HE0,HE1,HE2,HE3}
+#define  DEFAULT_Kp {41.51,50,0,0}
+#define  DEFAULT_Ki {7.28,15,0,0}
+#define  DEFAULT_Kd {59.17,90,0,0}
 
-// Buda-Style HotEnd 2.0
-// #define  DEFAULT_Kp 33.24
-// #define  DEFAULT_Ki 2.12
-// #define  DEFAULT_Kd 130.15
-
-// Ultimaker
-// #define  DEFAULT_Kp 22.2
-// #define  DEFAULT_Ki 1.08
-// #define  DEFAULT_Kd 114
-
-// MakerGear
-// #define  DEFAULT_Kp 7.0
-// #define  DEFAULT_Ki 0.1
-// #define  DEFAULT_Kd 12
-
-// Mendel Parts V9 on 12V
-// #define  DEFAULT_Kp 63.0
-// #define  DEFAULT_Ki 2.25
-// #define  DEFAULT_Kd 440
 #endif // PIDTEMP
 
 // Bed Temperature Control

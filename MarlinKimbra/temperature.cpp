@@ -57,11 +57,11 @@ float current_temperature_bed = 0.0;
   float redundant_temperature = 0.0;
 #endif
 #ifdef PIDTEMP
-  float Kp=DEFAULT_Kp;
-  float Ki=(DEFAULT_Ki*PID_dT);
-  float Kd=(DEFAULT_Kd/PID_dT);
+  float Kp[4];
+  float Ki[4];
+  float Kd[4];
   #ifdef PID_ADD_EXTRUSION_RATE
-    float Kc=DEFAULT_Kc;
+    float Kc;
   #endif
 #endif //PIDTEMP
 
@@ -371,11 +371,11 @@ void updatePID()
 #ifdef PIDTEMP
   #ifndef SINGLENOZZLE
     for(int e = 0; e < EXTRUDERS; e++) { 
-       temp_iState_max[e] = PID_INTEGRAL_DRIVE_MAX / Ki;  
+       temp_iState_max[e] = PID_INTEGRAL_DRIVE_MAX / Ki[e];  
     }
   #else
     for(int e = 0; e < 1; e++) { 
-       temp_iState_max[e] = PID_INTEGRAL_DRIVE_MAX / Ki;  
+       temp_iState_max[e] = PID_INTEGRAL_DRIVE_MAX / Ki[0];
     }
   #endif
 #endif
@@ -501,14 +501,14 @@ void manage_heater()
             temp_iState[e] = 0.0;
             pid_reset[e] = false;
           }
-          pTerm[e] = Kp * pid_error[e];
+          pTerm[e] = Kp[e] * pid_error[e];
           temp_iState[e] += pid_error[e];
           temp_iState[e] = constrain(temp_iState[e], temp_iState_min[e], temp_iState_max[e]);
-          iTerm[e] = Ki * temp_iState[e];
+          iTerm[e] = Ki[e] * temp_iState[e];
 
           //K1 defined in Configuration.h in the PID settings
           #define K2 (1.0-K1)
-          dTerm[e] = (Kd * (pid_input - temp_dState[e]))*K2 + (K1 * dTerm[e]);
+          dTerm[e] = (Kd[e] * (pid_input - temp_dState[e]))*K2 + (K1 * dTerm[e]);
           pid_output = constrain(pTerm[e] + iTerm[e] - dTerm[e], 0, PID_MAX);
         }
         temp_dState[e] = pid_input;
@@ -845,7 +845,7 @@ void tp_init()
     maxttemp[e] = maxttemp[0];
 #ifdef PIDTEMP
     temp_iState_min[e] = 0.0;
-    temp_iState_max[e] = PID_INTEGRAL_DRIVE_MAX / Ki;
+    temp_iState_max[e] = PID_INTEGRAL_DRIVE_MAX / Ki[e];
 #endif //PIDTEMP
 #ifdef PIDTEMPBED
     temp_iState_min_bed = 0.0;

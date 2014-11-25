@@ -60,7 +60,7 @@ extern unsigned char soft_pwm_bed;
 #endif
 
 #ifdef PIDTEMP
-extern float Kp,Ki,Kd,Kc;
+extern float Kp[4],Ki[4],Kd[4],Kc;
 float scalePID_i(float i);
 float scalePID_d(float d);
 float unscalePID_i(float i);

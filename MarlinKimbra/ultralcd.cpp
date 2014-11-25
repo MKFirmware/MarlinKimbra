@@ -976,8 +976,8 @@ static void lcd_control_temperature_menu()
 {
 #ifdef PIDTEMP
     // set up temp variables - undo the default scaling
-    raw_Ki = unscalePID_i(Ki);
-    raw_Kd = unscalePID_d(Kd);
+    raw_Ki = unscalePID_i(Ki[active_extruder]);
+    raw_Kd = unscalePID_d(Kd[active_extruder]);
 #endif
 
     START_MENU();
@@ -1009,7 +1009,7 @@ static void lcd_control_temperature_menu()
     MENU_ITEM_EDIT(float32, MSG_FACTOR, &autotemp_factor, 0.0, 1.0);
 #endif
 #ifdef PIDTEMP
-    MENU_ITEM_EDIT(float52, MSG_PID_P, &Kp, 1, 9990);
+    MENU_ITEM_EDIT(float52, MSG_PID_P, &Kp[active_extruder], 1, 9990);
     // i is typically a small value so allows values below 1
     MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_I, &raw_Ki, 0.01, 9990, copy_and_scalePID_i);
     MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_D, &raw_Kd, 1, 9990, copy_and_scalePID_d);
@@ -1899,7 +1899,7 @@ char *ftostr52(const float &x)
 void copy_and_scalePID_i()
 {
 #ifdef PIDTEMP
-  Ki = scalePID_i(raw_Ki);
+  Ki[active_extruder] = scalePID_i(raw_Ki);
   updatePID();
 #endif
 }
@@ -1909,7 +1909,7 @@ void copy_and_scalePID_i()
 void copy_and_scalePID_d()
 {
 #ifdef PIDTEMP
-  Kd = scalePID_d(raw_Kd);
+  Kd[active_extruder] = scalePID_d(raw_Kd);
   updatePID();
 #endif
 }
