@@ -5259,6 +5259,11 @@ void get_coordinates()
     next_feedrate = code_value();
     if(next_feedrate > 0.0) feedrate = next_feedrate;
   }
+#ifdef LASERBEAM
+  if(code_seen('L')){
+    laser_ttl_modulation=constrain(code_value(),0,255);
+  }
+#endif // LASERBEAM
 }
 
 void get_arc_coordinates()
