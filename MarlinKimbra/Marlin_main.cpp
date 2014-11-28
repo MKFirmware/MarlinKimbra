@@ -1927,7 +1927,7 @@ void process_commands()
       st_synchronize();
       codenum += millis();  // keep track of when we started waiting
       previous_millis_cmd = millis();
-      while(millis()  < codenum ){
+      while(millis() < codenum) {
         manage_heater();
         manage_inactivity();
         lcd_update();
@@ -3043,29 +3043,50 @@ void process_commands()
     case 0: // M0 - Unconditional stop - Wait for user button press on LCD
     case 1: // M1 - Conditional stop - Wait for user button press on LCD
       {
-        LCD_MESSAGEPGM(MSG_USERWAIT);
-        codenum = 0;
-        if(code_seen('P')) codenum = code_value(); // milliseconds to wait
-        if(code_seen('S')) codenum = code_value() * 1000; // seconds to wait
+        char *src = strchr_pointer + 2;
 
+        codenum = 0;
+
+        bool hasP = false, hasS = false;
+        if (code_seen('P')) {
+          codenum = code_value(); // milliseconds to wait
+          hasP = codenum > 0;
+        }
+        if (code_seen('S')) {
+          codenum = code_value() * 1000; // seconds to wait
+          hasS = codenum > 0;
+        }
+        starpos = strchr(src, '*');
+        if (starpos != NULL) *(starpos) = '\0';
+        while (*src == ' ') ++src;
+        if (!hasP && !hasS && *src != '\0') {
+          lcd_setstatus(src);
+        } else {
+          LCD_MESSAGEPGM(MSG_USERWAIT);
+        }
+
+        lcd_ignore_click();
         st_synchronize();
         previous_millis_cmd = millis();
         if (codenum > 0){
           codenum += millis();  // keep track of when we started waiting
-          while(millis()  < codenum && !lcd_clicked()){
+          while(millis() < codenum && !lcd_clicked()) {
             manage_heater();
             manage_inactivity();
             lcd_update();
           }
-        } 
-        else {
+          lcd_ignore_click(false);
+        }else{
           while(!lcd_clicked()){
             manage_heater();
             manage_inactivity();
             lcd_update();
           }
         }
-        LCD_MESSAGEPGM(MSG_RESUMING);
+        if (IS_SD_PRINTING)
+          LCD_MESSAGEPGM(MSG_RESUMING);
+        else
+          LCD_MESSAGEPGM(WELCOME_MSG);
       }
       break;
 #endif

@@ -4,7 +4,7 @@
 // User-specified version info of this build to display in [Pronterface, etc] terminal window during
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
 // build by the user have been successfully uploaded into firmware.
-#define STRING_VERSION_CONFIG_H __DATE__ " 24/11/2014 " __TIME__ // build date and time
+#define STRING_VERSION_CONFIG_H __DATE__ " 28/11/2014 " __TIME__ // build date and time
 #define STRING_CONFIG_H_AUTHOR "(MagoKimbra: magokimbra@hotmail.com, Version 4.0)" // Who made the changes.
 
 // SERIAL_PORT selects which serial port should be used for communication with the host.
@@ -43,6 +43,10 @@
 
 // If you want test the firmware uncomment below. The command for run test is M998. Use Serial arduino monitor...
 //#define FIRMWARE_TEST
+#ifdef FIRMWARE_TEST
+#undef BAUDRATE
+#define BAUDRATE 115200  // Baudrate setting to 115200 because serial monitor arduino fuction at max 115200 baudrate.
+#endif
 
 /***********************************************************************\
  **************************** Define type printer **********************
