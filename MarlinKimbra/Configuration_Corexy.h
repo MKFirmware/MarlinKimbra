@@ -87,6 +87,14 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define X_MAX_LENGTH (X_MAX_POS - X_MIN_POS)
 #define Y_MAX_LENGTH (Y_MAX_POS - Y_MIN_POS)
 #define Z_MAX_LENGTH (Z_MAX_POS - Z_MIN_POS)
+
+// set the rectangle in which to probe in manual or automatic
+#define LEFT_PROBE_BED_POSITION 15
+#define RIGHT_PROBE_BED_POSITION 185
+#define BACK_PROBE_BED_POSITION 185
+#define FRONT_PROBE_BED_POSITION 15
+
+#define XY_TRAVEL_SPEED 10000         // X and Y axis travel speed between probes, in mm/min
 //============================= Bed Auto Leveling ===========================
 
 //#define ENABLE_AUTO_BED_LEVELING // Delete the comment to enable (remove // at the start of the line)
