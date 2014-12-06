@@ -16,9 +16,6 @@
   extern int lcd_contrast;
   void lcd_setcontrast(uint8_t value);
 #endif
-#ifdef MCP23017_LCD
-  extern LiquidTWI2 lcd;
-#endif
 
   static unsigned char blink = 0;	// Variable for visualization of fan rotation in GLCD
 
