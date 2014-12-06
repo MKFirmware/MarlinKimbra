@@ -402,6 +402,9 @@
 // http://reprap.org/wiki/RAMPS_1.3/1.4_GADGETS3D_Shield_with_Panel
 //#define G3D_PANEL
 
+// VIKI LCD install LiquidTWI2 http://blog.lincomatic.com/?tag=liquidtwi2
+//#define PANUCATT_VIKI 
+
 // The RepRapDiscount FULL GRAPHIC Smart Controller (quadratic white PCB)
 // http://reprap.org/wiki/RepRapDiscount_Full_Graphic_Smart_Controller
 //
@@ -447,6 +450,12 @@
 #define NEWPANEL
 #define LCD_I2C_TYPE_PCA8574
 #define LCD_I2C_ADDRESS 0x27   // I2C Address of the port expander
+#endif
+
+#ifdef PANUCATT_VIKI
+#define ULTIPANEL
+#define NEWPANEL
+#define MCP23017_LCD // Adafruit RGB LCD compatibles
 #endif
 
 //I2C PANELS

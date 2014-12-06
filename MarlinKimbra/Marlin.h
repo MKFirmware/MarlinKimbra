@@ -38,6 +38,11 @@
 #include "HardwareSerial.h"
 #endif
 
+#ifdef MCP23017_LCD
+#include <Wire.h>
+#include <LiquidTWI2.h>
+#endif
+
 #include "MarlinSerial.h"
 
 #ifndef cbi

@@ -1118,7 +1118,16 @@ static void lcd_control_motion_menu()
     MENU_ITEM_EDIT(float52, MSG_XSTEPS, &axis_steps_per_unit[X_AXIS], 5, 9999);
     MENU_ITEM_EDIT(float52, MSG_YSTEPS, &axis_steps_per_unit[Y_AXIS], 5, 9999);
     MENU_ITEM_EDIT(float51, MSG_ZSTEPS, &axis_steps_per_unit[Z_AXIS], 5, 9999);
-    MENU_ITEM_EDIT(float51, MSG_ESTEPS, &axis_steps_per_unit[active_extruder+3], 5, 9999);
+    MENU_ITEM_EDIT(float51, MSG_E0STEPS, &axis_steps_per_unit[3], 5, 9999);
+#if EXTRUDERS > 1 
+    MENU_ITEM_EDIT(float51, MSG_E1STEPS, &axis_steps_per_unit[4], 5, 9999);
+#endif 
+#if EXTRUDERS > 2
+    MENU_ITEM_EDIT(float51, MSG_E2STEPS, &axis_steps_per_unit[5], 5, 9999);
+#endif 
+#if EXTRUDERS > 3
+    MENU_ITEM_EDIT(float51, MSG_E3STEPS, &axis_steps_per_unit[6], 5, 9999);
+#endif
 #ifdef ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
     MENU_ITEM_EDIT(bool, MSG_ENDSTOP_ABORT, &abort_on_endstop_hit);
 #endif
