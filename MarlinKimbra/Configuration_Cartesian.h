@@ -89,10 +89,10 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define Z_MAX_LENGTH (Z_MAX_POS - Z_MIN_POS)
 
 // set the rectangle in which to probe in manual or automatic
-#define LEFT_PROBE_BED_POSITION 15
-#define RIGHT_PROBE_BED_POSITION 185
-#define BACK_PROBE_BED_POSITION 185
-#define FRONT_PROBE_BED_POSITION 15
+#define LEFT_PROBE_BED_POSITION 20
+#define RIGHT_PROBE_BED_POSITION 180
+#define BACK_PROBE_BED_POSITION 180
+#define FRONT_PROBE_BED_POSITION 20
 
 #define XY_TRAVEL_SPEED 10000         // X and Y axis travel speed between probes, in mm/min
 
@@ -142,7 +142,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 // these are the offsets to the probe relative to the extruder tip (Hotend - Probe)
 #define X_PROBE_OFFSET_FROM_EXTRUDER 0
 #define Y_PROBE_OFFSET_FROM_EXTRUDER 20
-#define Z_PROBE_OFFSET_FROM_EXTRUDER -3.10
+#define Z_PROBE_OFFSET_FROM_EXTRUDER -3.70
 
 #define Z_RAISE_BEFORE_HOMING 10       // (in mm) Raise Z before homing (G28) for Probe Clearance.
 // Be sure you have this distance over your Z_MAX_POS in case
@@ -247,4 +247,4 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 // Use M206 command to correct for switch height offset to actual nozzle height. Store that setting with M500.
 //
 //#define SERVO_ENDSTOPS {-1, -1, 0} // Servo index for X, Y, Z. Disable with -1
-//#define SERVO_ENDSTOP_ANGLES {0,0, 0,0, 70,0} // X,Y,Z Axis Extend and Retract angles
+//#define SERVO_ENDSTOP_ANGLES {0,0, 0,0, 90,0} // X,Y,Z Axis Extend and Retract angles

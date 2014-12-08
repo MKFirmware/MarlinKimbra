@@ -763,7 +763,7 @@ static void lcd_prepare_menu()
   #endif
 #endif
     MENU_ITEM(function, MSG_COOLDOWN, lcd_cooldown);
-#if PS_ON_PIN > -1
+#if defined(POWER_SUPPLY) && POWER_SUPPLY > 0 && defined(PS_ON_PIN) && PS_ON_PIN > -1
     if (powersupply)
     {
         MENU_ITEM(gcode, MSG_SWITCH_PS_OFF, PSTR("M81"));
@@ -1756,6 +1756,21 @@ char *ftostr32(const float &x)
   return conv;
 }
 
+//  convert float to space-padded string with -_23.4_ format
+char *ftostr32np(const float &x)
+{
+  char *c = ftostr32(x);
+  if (c[0] == '0' || c[0] == '-') {
+    if (c[0] == '0') c[0] = ' ';
+    if (c[1] == '0') c[1] = ' ';
+  }
+  if (c[5] == '0') {
+    c[5] = ' ';
+    if (c[4] == '0') c[4] = c[3] = ' ';
+  }
+  return c;
+}
+
 char *itostr31(const int &xx)
 {
   conv[0]=(xx>=0)?'+':'-';
@@ -1772,8 +1787,8 @@ char *itostr3(const int &x)
 {
   int xx = x;
   if (xx < 0) {
-     conv[0]='-';
-     xx = -xx;
+    conv[0]='-';
+    xx = -xx;
   } else if (xx >= 100)
     conv[0]=(xx/100)%10+'0';
   else
@@ -1863,14 +1878,14 @@ char *ltostr7(const long &xx)
 // convert float to string with +123 format
 char *ftostr30(const float &x)
 {
-int xx=x;
-conv[0]=(xx>=0)?'+':'-';
-xx=abs(xx);
-conv[1]=(xx/100)%10+'0';
-conv[2]=(xx/10)%10+'0';
-conv[3]=(xx)%10+'0';
-conv[4]=0;
-return conv;
+  int xx=x;
+  conv[0]=(xx>=0)?'+':'-';
+  xx=abs(xx);
+  conv[1]=(xx/100)%10+'0';
+  conv[2]=(xx/10)%10+'0';
+  conv[3]=(xx)%10+'0';
+  conv[4]=0;
+  return conv;
 }
 
 //  convert float to string with 12345 format

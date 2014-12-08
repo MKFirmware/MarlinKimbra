@@ -372,12 +372,12 @@ const unsigned int dropsegments=5; //everything with less than this number of st
 #endif
 
 // Power Signal Control Definitions
-// By default use ATX definition
+// By default use Normal definition
 #ifndef POWER_SUPPLY
-#define POWER_SUPPLY 1
+#define POWER_SUPPLY 0
 #endif
-// 1 = ATX
-#if (POWER_SUPPLY == 1)
+// 0 = Normal - 1 = ATX
+#if (POWER_SUPPLY <= 1)
 #define PS_ON_AWAKE  LOW
 #define PS_ON_ASLEEP HIGH
 #endif

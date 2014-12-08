@@ -4,7 +4,7 @@
 // User-specified version info of this build to display in [Pronterface, etc] terminal window during
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
 // build by the user have been successfully uploaded into firmware.
-#define STRING_VERSION_CONFIG_H __DATE__ " 28/11/2014 " __TIME__ // build date and time
+#define STRING_VERSION_CONFIG_H __DATE__ " 08/12/2014 " __TIME__ // build date and time
 #define STRING_CONFIG_H_AUTHOR "(MagoKimbra: magokimbra@hotmail.com, Version 4.0)" // Who made the changes.
 
 // SERIAL_PORT selects which serial port should be used for communication with the host.
@@ -13,35 +13,18 @@
 #define SERIAL_PORT 0
 
 // This determines the communication speed of the printer
+// 115200 - 250000
 #define BAUDRATE 115200
-//#define BAUDRATE 250000
 
 // This enables the serial port associated to the Bluetooth interface
 //#define BTENABLED              // Enable BT interface on AT90USB devices
 
-/***********************************************************************\
- ****************** Firmware Marlin by MagoKimbra **********************\
- ***********************************************************************\
- * Supporto quattro estrusori normali (con quattro Hotend, Marlin si ferma a tre)
- * Quattro estrusori normali (4 driver) con singolo Hotend.
- * Due estrusori con un driver (richiede blocco relè).
- * Quattro estrusori con due driver (richiede blocco relè).
- * Menù LCD per preriscaldamento GOMMA (o terzo tipo di materiale).
- * Autobed level ripetibile per check meccanica comando M49.
- * Autobed level con posizionamento dinamico della sonda.
- * Add command G60, memory actual position.
- * Add command G61 move x y z to memory position.
- * Switch pause per mettere in pausa con uno switch esterno, tipo controllo filo finito o altro.
- * Step per unit per singolo estrusore
- * Deinizione configuration per tipo di stampante (Cartesian, Corexy, Delta, Scara)
- * 
- */
-
 // This configuration file contains the basic settings.
 // Advanced settings can be found in Configuration_adv.h
-// BASIC SETTINGS: select your board type, temperature sensor type, axis scaling, and endstop configuration
+// BASIC SETTINGS: select your board type, temperature sensor type
+// MECHANISM SETTING: Select your type printer and put it in file associated
 
-// If you want test the firmware uncomment below. The command for run test is M998. Use Serial arduino monitor...
+// If you want test the firmware uncomment below. Use Serial arduino monitor...
 //#define FIRMWARE_TEST
 #ifdef FIRMWARE_TEST
 #undef BAUDRATE
@@ -120,8 +103,9 @@
 // This defines the number of extruder real or virtual
 #define EXTRUDERS 1
 
+//This is used for singlenozzled multiple extrusion configuration
 // Uncomment below to enable SINGLENOZZLE (One Hotend)
-//#define SINGLENOZZLE //This is used for singlenozzled multiple extrusion configuration
+//#define SINGLENOZZLE
 
 /***********************************************************************
  *********************** Multiextruder MKR4  ***************************
@@ -148,11 +132,12 @@
 // Setting firmware for FILAMENT END SWITCH
 // #define FILAMENT_END_SWITCH
 
-//// The following define selects which power supply you have. Please choose the one that matches your setup
+// The following define selects which power supply you have. Please choose the one that matches your setup
+// 0 = Normal power
 // 1 = ATX
-// 2 = X-Box 360 203Watts (the blue wire connected to PS_ON and the red wire to VCC)
+// 2 = X-Box 360 203 Watts (the blue wire connected to PS_ON and the red wire to VCC)
 
-#define POWER_SUPPLY 1
+#define POWER_SUPPLY 0
 
 // Define this to have the electronics keep the power supply off on startup. If you don't know what this is leave it.
 // #define PS_DEFAULT_OFF
@@ -180,7 +165,7 @@
  * 10 is 100k RS thermistor 198-961 (4.7k pullup)
  * 11 is 100k beta 3950 1% thermistor (4.7k pullup)
  * 12 is 100k 0603 SMD Vishay NTCS0603E3104FXT (4.7k pullup) (calibrated for Makibox hot bed)
- * 13 is 100k Hisens 3950  1% up to 300Â°C for hotend "Simple ONE " & "Hotend "All In ONE" 
+ * 13 is 100k Hisens 3950  1% up to 300Ã‚Â°C for hotend "Simple ONE " & "Hotend "All In ONE" 
  * 20 is the PT100 circuit found in the Ultimainboard V2.x
  * 60 is 100k Maker's Tool Works Kapton Bed Thermistor beta=3950
  * 
@@ -571,6 +556,9 @@
 
 // SF send wrong arc g-codes when using Arc Point as fillet procedure
 //#define SF_ARC_FIX
+
+// Support for STEPPERS TOSHIBA
+//#define CONFIG_STEPPERS_TOSHIBA 1
 
 // Support for the BariCUDA Paste Extruder.
 //#define BARICUDA

@@ -1159,11 +1159,16 @@ static void run_z_probe() {
 static void do_blocking_move_to(float x, float y, float z) {
   float oldFeedRate = feedrate;
 
+  feedrate = homing_feedrate[Z_AXIS];
+
+  current_position[Z_AXIS] = z;
+  plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], feedrate/60, active_extruder, active_driver);
+  st_synchronize();
+
   feedrate = XY_TRAVEL_SPEED;
 
   current_position[X_AXIS] = x;
   current_position[Y_AXIS] = y;
-  current_position[Z_AXIS] = z;
   plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], feedrate/60, active_extruder, active_driver);
   st_synchronize();
 
@@ -3793,7 +3798,7 @@ Sigma_Exit:
 #endif //HEATER_2_PIN
 #endif
 
-#if defined(PS_ON_PIN) && PS_ON_PIN > -1
+#if defined(POWER_SUPPLY) && POWER_SUPPLY > 0 && defined(PS_ON_PIN) && PS_ON_PIN > -1
     case 80: // M80 - Turn on Power Supply
       SET_OUTPUT(PS_ON_PIN); //GND
       WRITE(PS_ON_PIN, PS_ON_AWAKE);
@@ -3804,15 +3809,15 @@ Sigma_Exit:
 #if defined SUICIDE_PIN && SUICIDE_PIN > -1
       SET_OUTPUT(SUICIDE_PIN);
       WRITE(SUICIDE_PIN, HIGH);
-#endif
+#endif // SUICIDE_PIN
 
 #ifdef ULTIPANEL
       powersupply = true;
       LCD_MESSAGEPGM(WELCOME_MSG);
       lcd_update();
-#endif
+#endif // ULTIPANEL
       break;
-#endif
+#endif // POWER_SUPPLY
 
     case 81: // M81 - Turn off Power Supply
       disable_heater();
@@ -3823,7 +3828,7 @@ Sigma_Exit:
 #if defined(SUICIDE_PIN) && SUICIDE_PIN > -1
       st_synchronize();
       suicide();
-#elif defined(PS_ON_PIN) && PS_ON_PIN > -1
+#elif defined(POWER_SUPPLY) && POWER_SUPPLY > 0 && defined(PS_ON_PIN) && PS_ON_PIN > -1
       SET_OUTPUT(PS_ON_PIN);
       WRITE(PS_ON_PIN, PS_ON_ASLEEP);
 #endif
