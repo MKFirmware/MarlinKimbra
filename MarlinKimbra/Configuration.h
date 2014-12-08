@@ -123,9 +123,34 @@
 #define DELAY_R 500          // Delay for switch rele
 #define DRIVER_EXTRUDERS 1   // This defines the number of Driver extruders
 #endif // END MKR4
+
 //**********************************************************************
 
-#if !defined(MKR4)
+/***********************************************************************
+ *********************** Multiextruder NPr2  ***************************
+ ***********************************************************************
+ *                                                                     *
+ * Setting fot color meccanism NPr2 by NicolaP (www.3dmakerlab.it)     *
+ *                                                                     *
+ * Firmware by MagoKimbra magokimbra@hotmail.com                       *
+ *                                                                     *
+ * Find angle setting by g-Code "M997 Cxxx"                            *
+ *                                                                     *
+ ***********************************************************************/
+//#define NPR2
+#ifdef NPR2
+#define COLOR_STEP {120, 25, -65, -155}           // CARTER ANGLE
+#define COLOR_SLOWRATE 170                        // MICROSECOND delay for carter motor routine (Carter Motor Feedrate: upper value-slow feedrate)  
+#define COLOR_HOMERATE 4                          // FEEDRATE for carter home
+#define MOTOR_ANGLE 1.8                           // Nema angle for single step 
+#define DRIVER_MICROSTEP 4                        // Microstep moltiplicator driver (set jumper MS1-2-3) off-on-off 1/4 microstepping.
+#define CARTER_MOLTIPLICATOR 14.22                // CARTER MOLTIPLICATOR (gear ratio 13/31-10/31)
+#define DRIVER_EXTRUDERS 2                        // This defines the number of Driver extruders
+#endif
+//**********************************************************************
+
+
+#if !defined(MKR4) && !defined(NPR2)
 #define DRIVER_EXTRUDERS EXTRUDERS // This defines the number of Driver extruders
 #endif
 
@@ -165,7 +190,7 @@
  * 10 is 100k RS thermistor 198-961 (4.7k pullup)
  * 11 is 100k beta 3950 1% thermistor (4.7k pullup)
  * 12 is 100k 0603 SMD Vishay NTCS0603E3104FXT (4.7k pullup) (calibrated for Makibox hot bed)
- * 13 is 100k Hisens 3950  1% up to 300Ã‚Â°C for hotend "Simple ONE " & "Hotend "All In ONE" 
+ * 13 is 100k Hisens 3950  1% up to 300Â°C for hotend "Simple ONE " & "Hotend "All In ONE" 
  * 20 is the PT100 circuit found in the Ultimainboard V2.x
  * 60 is 100k Maker's Tool Works Kapton Bed Thermistor beta=3950
  * 
@@ -243,9 +268,9 @@
 
 // If you are using a pre-configured hotend then you can use one of the value sets by uncommenting it
 //            HotEnd{HE0,HE1,HE2,HE3}
-#define  DEFAULT_Kp {41.51,50,0,0}
-#define  DEFAULT_Ki {7.28,15,0,0}
-#define  DEFAULT_Kd {59.17,90,0,0}
+#define DEFAULT_Kp {41.51,50,0,0}
+#define DEFAULT_Ki {7.28,15,0,0}
+#define DEFAULT_Kd {59.17,90,0,0}
 
 #endif // PIDTEMP
 
@@ -334,33 +359,10 @@
 //===========================================================================
 
 
+
 //===========================================================================
-//=============================Additional Features===========================
+//=============================User Interfaces===========================
 //===========================================================================
-
-// EEPROM
-// The microcontroller can store settings in the EEPROM, e.g. max velocity...
-// M500 - stores parameters in EEPROM
-// M501 - reads parameters from EEPROM (if you need reset them after you changed them temporarily).
-// M502 - reverts to the default "factory settings".  You still need to store them in EEPROM afterwards if you want to.
-//define this to enable EEPROM support
-//#define EEPROM_SETTINGS
-//to disable EEPROM Serial responses and decrease program space by ~1700 byte: comment this out:
-// please keep turned on if you can.
-//#define EEPROM_CHITCHAT
-
-// Preheat Constants
-#define PLA_PREHEAT_HOTEND_TEMP 190
-#define PLA_PREHEAT_HPB_TEMP 60
-#define PLA_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
-
-#define ABS_PREHEAT_HOTEND_TEMP 240
-#define ABS_PREHEAT_HPB_TEMP 100
-#define ABS_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
-
-#define GUM_PREHEAT_HOTEND_TEMP 230
-#define GUM_PREHEAT_HPB_TEMP 60
-#define GUM_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
 
 //LCD and SD support
 //#define ULTRA_LCD  //general LCD support, also 16x2
@@ -435,7 +437,6 @@
 #endif
 
 //I2C PANELS
-
 //#define LCD_I2C_SAINSMART_YWROBOT
 #ifdef LCD_I2C_SAINSMART_YWROBOT
 // This uses the LiquidCrystal_I2C library ( https://bitbucket.org/fmalpartida/new-liquidcrystal/wiki/Home )
@@ -500,9 +501,8 @@
 //#define NEWPANEL
 #endif
 
-
 #ifdef ULTIPANEL
-//  #define NEWPANEL  //enable this if you have a click-encoder panel
+//#define NEWPANEL  //enable this if you have a click-encoder panel
 #define SDSUPPORT
 #define ULTRA_LCD
 #ifdef DOGLCD // Change number of lines to match the DOG graphic display
@@ -530,6 +530,54 @@
 #define DEFAULT_LCD_CONTRAST 32
 #endif
 #endif
+
+
+// Languages
+// 1  English
+// 2  Polish
+// 3  French
+// 4  German
+// 5  Spanish
+// 6  Russian
+// 7  Italian
+// 8  Portuguese
+// 9  Finnish
+// 10 Aragonese
+// 11 Dutch
+// 12 Catalan
+// 13 Basque-Euskera
+
+#define LANGUAGE_CHOICE 7
+
+
+//===========================================================================
+//=============================Additional Features===========================
+//===========================================================================
+
+// EEPROM
+// The microcontroller can store settings in the EEPROM, e.g. max velocity...
+// M500 - stores parameters in EEPROM
+// M501 - reads parameters from EEPROM (if you need reset them after you changed them temporarily).
+// M502 - reverts to the default "factory settings".  You still need to store them in EEPROM afterwards if you want to.
+//define this to enable EEPROM support
+//#define EEPROM_SETTINGS
+//to disable EEPROM Serial responses and decrease program space by ~1700 byte: comment this out:
+// please keep turned on if you can.
+//#define EEPROM_CHITCHAT
+
+// Preheat Constants
+#define PLA_PREHEAT_HOTEND_TEMP 190
+#define PLA_PREHEAT_HPB_TEMP 60
+#define PLA_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
+
+#define ABS_PREHEAT_HOTEND_TEMP 240
+#define ABS_PREHEAT_HPB_TEMP 100
+#define ABS_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
+
+#define GUM_PREHEAT_HOTEND_TEMP 230
+#define GUM_PREHEAT_HPB_TEMP 60
+#define GUM_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
+
 
 // Increase the FAN pwm frequency. Removes the PWM noise but increases heating in the FET/Arduino
 //#define FAST_PWM_FAN
