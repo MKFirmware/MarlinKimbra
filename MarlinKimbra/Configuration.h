@@ -531,6 +531,8 @@
 #endif
 #endif
 
+// option for invert rotary switch
+//#define INVERT_ROTARY_SWITCH
 
 // Languages
 // 1  English
