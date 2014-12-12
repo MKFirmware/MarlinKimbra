@@ -104,7 +104,7 @@
 #define EXTRUDERS 1
 
 //This is used for singlenozzled multiple extrusion configuration
-// Uncomment below to enable SINGLENOZZLE (One Hotend)
+// Uncomment below to enable (One Hotend)
 //#define SINGLENOZZLE
 
 /***********************************************************************
