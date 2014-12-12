@@ -1,3 +1,13 @@
+/**
+ * Configuration_adv.h
+ *
+ * Advanced settings.
+ * Only change these if you know exactly what you're doing.
+ * Some of these settings can damage your printer if improperly set!
+ *
+ * Basic settings can be found in Configuration.h
+ *
+ */
 #ifndef CONFIGURATION_ADV_H
 #define CONFIGURATION_ADV_H
 
@@ -295,13 +305,20 @@
 //#define CHDK 4        //Pin for triggering CHDK to take a picture see how to use it here http://captain-slow.dk/2014/03/09/3d-printing-timelapses/
 #define CHDK_DELAY 50 //How long in ms the pin should stay HIGH before going LOW again
 
-#define SD_FINISHED_STEPPERRELEASE true  //if sd support and the file is finished: disable steppers?
-#define SD_FINISHED_RELEASECOMMAND "M84 X Y Z E" // You might want to keep the z enabled so your bed stays in place.
+#ifdef SDSUPPORT
+// Disable steppers when the file is done printing?
+#define SD_FINISHED_STEPPERRELEASE true
+// Command to send. You may want to keep Z enabled so your bed stays in place.
+#define SD_FINISHED_RELEASECOMMAND "M84 X Y Z E"
 
-#define SDCARD_RATHERRECENTFIRST  //reverse file order of sd card menu display. Its sorted practically after the file system block order.
-// if a file is deleted, it frees a block. hence, the order is not purely chronological. To still have auto0.g accessible, there is again the option to do that.
-// using:
+// Reverse file order of sd card menu display. It's sorted practically after the file system block order.
+// When a file is deleted it frees a block, so the order is not purely chronological.
+#define SDCARD_RATHERRECENTFIRST
+
+// To still have auto0.g accessible, there is again the option to do that. Using:
 //#define MENU_ADDAUTOSTART
+
+#endif // SDSUPPORT
 
 // The hardware watchdog should reset the microcontroller disabling all outputs, in case the firmware gets stuck and doesn't do temperature regulation.
 //#define USE_WATCHDOG

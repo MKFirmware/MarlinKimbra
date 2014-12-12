@@ -4,7 +4,7 @@
 // User-specified version info of this build to display in [Pronterface, etc] terminal window during
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
 // build by the user have been successfully uploaded into firmware.
-#define STRING_VERSION_CONFIG_H __DATE__ " 08/12/2014 " __TIME__ // build date and time
+#define STRING_VERSION_CONFIG_H __DATE__ " 12/12/2014 " __TIME__ // build date and time
 #define STRING_CONFIG_H_AUTHOR "(MagoKimbra: magokimbra@hotmail.com, Version 4.0)" // Who made the changes.
 
 // SERIAL_PORT selects which serial port should be used for communication with the host.

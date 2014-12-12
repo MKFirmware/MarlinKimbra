@@ -31,32 +31,32 @@
 
 #define LARGE_FLASH        true
 
-#define X_STEP_PIN          0
-#define X_DIR_PIN           1
-#define X_ENABLE_PIN       23
-#define X_STOP_PIN         37
+#define ORIG_X_STEP_PIN          0
+#define ORIG_X_DIR_PIN           1
+#define ORIG_X_ENABLE_PIN       23
+#define X_STOP_PIN              37
 
-#define Y_STEP_PIN          2
-#define Y_DIR_PIN           3
-#define Y_ENABLE_PIN       19
-#define Y_STOP_PIN         36
+#define ORIG_Y_STEP_PIN          2
+#define ORIG_Y_DIR_PIN           3
+#define ORIG_Y_ENABLE_PIN       19
+#define Y_STOP_PIN              36
 
-#define Z_STEP_PIN          4
-#define Z_DIR_PIN           5
-#define Z_ENABLE_PIN       18
-#define Z_STOP_PIN         39
+#define ORIG_Z_STEP_PIN          4
+#define ORIG_Z_DIR_PIN           5
+#define ORIG_Z_ENABLE_PIN       18
+#define Z_STOP_PIN              39
 
-#define E0_STEP_PIN         6
-#define E0_DIR_PIN          7
-#define E0_ENABLE_PIN      17
+#define ORIG_E0_STEP_PIN         6
+#define ORIG_E0_DIR_PIN          7
+#define ORIG_E0_ENABLE_PIN      17
 
 #define HEATER_0_PIN       21  // Extruder
 #define HEATER_1_PIN       -1
 #define HEATER_2_PIN       -1
 #define HEATER_BED_PIN     20  // Bed
-// You may need to change FAN_PIN to 16 because Marlin isn't using fastio.h
+// You may need to change ORIG_FAN_PIN to 16 because Marlin isn't using fastio.h
 // for the fan and Teensyduino uses a different pin mapping.
-#define FAN_PIN            16  // Fan
+#define ORIG_FAN_PIN       16  // Fan
 
 #define TEMP_0_PIN          1  // Extruder / Analog pin numbering
 #define TEMP_BED_PIN        0  // Bed / Analog pin numbering
@@ -107,31 +107,31 @@
  #endif
 #endif
 
-#define X_STEP_PIN         28
-#define X_DIR_PIN          63
-#define X_ENABLE_PIN       29
-#define X_MIN_PIN          47
-#define X_MAX_PIN          -1   //2 //Max endstops default to disabled "-1", set to commented value to enable.
+#define ORIG_X_STEP_PIN         28
+#define ORIG_X_DIR_PIN          63
+#define ORIG_X_ENABLE_PIN       29
+#define ORIG_X_MIN_PIN          47
+#define ORIG_X_MAX_PIN          -1   //2 //Max endstops default to disabled "-1", set to commented value to enable.
 
-#define Y_STEP_PIN         14 // A6
-#define Y_DIR_PIN          15 // A0
-#define Y_ENABLE_PIN       39
-#define Y_MIN_PIN          48
-#define Y_MAX_PIN          -1   //15
+#define ORIG_Y_STEP_PIN         14 // A6
+#define ORIG_Y_DIR_PIN          15 // A0
+#define ORIG_Y_ENABLE_PIN       39
+#define ORIG_Y_MIN_PIN          48
+#define ORIG_Y_MAX_PIN          -1   //15
 
-#define Z_STEP_PIN         31 // A2
-#define Z_DIR_PIN          32 // A6
-#define Z_ENABLE_PIN       30 // A1
-#define Z_MIN_PIN          49
-#define Z_MAX_PIN          -1
+#define ORIG_Z_STEP_PIN         31 // A2
+#define ORIG_Z_DIR_PIN          32 // A6
+#define ORIG_Z_ENABLE_PIN       30 // A1
+#define ORIG_Z_MIN_PIN          49
+#define ORIG_Z_MAX_PIN          -1
 
-#define E0_STEP_PIN         34  //34
-#define E0_DIR_PIN          35 //35
-#define E0_ENABLE_PIN       33 //33
+#define ORIG_E0_STEP_PIN         34  //34
+#define ORIG_E0_DIR_PIN          35 //35
+#define ORIG_E0_ENABLE_PIN       33 //33
 
-#define E1_STEP_PIN         37 //37
-#define E1_DIR_PIN          40 //40
-#define E1_ENABLE_PIN       36 //36
+#define ORIG_E1_STEP_PIN         37 //37
+#define ORIG_E1_DIR_PIN          40 //40
+#define ORIG_E1_ENABLE_PIN       36 //36
 
 #define Y2_STEP_PIN         37
 #define Y2_DIR_PIN          40
@@ -145,7 +145,7 @@
 #define SDSS               11
 #define SDCARDDETECT       -1 // 10 optional also used as mode pin
 #define LED_PIN            13
-#define FAN_PIN            7
+#define ORIG_FAN_PIN        7
 #define PS_ON_PIN          -1
 #define KILL_PIN           -1
 #define SOL1_PIN   16
@@ -172,29 +172,29 @@
 #if MOTHERBOARD == 99
 #define KNOWN_BOARD 1
 
-#define X_STEP_PIN          2
-#define X_DIR_PIN           3
-#define X_ENABLE_PIN        -1
-#define X_STOP_PIN          16
+#define ORIG_X_STEP_PIN          2
+#define ORIG_X_DIR_PIN           3
+#define ORIG_X_ENABLE_PIN        -1
+#define X_STOP_PIN              16
 
-#define Y_STEP_PIN          5
-#define Y_DIR_PIN           6
-#define Y_ENABLE_PIN       -1
-#define Y_STOP_PIN          67
+#define ORIG_Y_STEP_PIN          5
+#define ORIG_Y_DIR_PIN           6
+#define ORIG_Y_ENABLE_PIN       -1
+#define Y_STOP_PIN              67
 
-#define Z_STEP_PIN          62
-#define Z_DIR_PIN           63
-#define Z_ENABLE_PIN       -1
-#define Z_STOP_PIN          59
+#define ORIG_Z_STEP_PIN          62
+#define ORIG_Z_DIR_PIN           63
+#define ORIG_Z_ENABLE_PIN       -1
+#define Z_STOP_PIN              59
 
-#define E0_STEP_PIN         65
-#define E0_DIR_PIN          66
-#define E0_ENABLE_PIN      -1
+#define ORIG_E0_STEP_PIN         65
+#define ORIG_E0_DIR_PIN          66
+#define ORIG_E0_ENABLE_PIN      -1
 
 #define SDPOWER            -1
 #define SDSS               53
 #define LED_PIN            -1
-#define FAN_PIN            -1
+#define ORIG_FAN_PIN       -1
 #define PS_ON_PIN           9
 #define KILL_PIN           -1
 
@@ -227,28 +227,28 @@
 #endif
 
 //x axis pins
-#define X_STEP_PIN 19
-#define X_DIR_PIN 18
-#define X_ENABLE_PIN 24
+#define ORIG_X_STEP_PIN 19
+#define ORIG_X_DIR_PIN 18
+#define ORIG_X_ENABLE_PIN 24
 #define X_STOP_PIN 2
 
 //y axis pins
-#define Y_STEP_PIN 23
-#define Y_DIR_PIN 22
-#define Y_ENABLE_PIN 24
+#define ORIG_Y_STEP_PIN 23
+#define ORIG_Y_DIR_PIN 22
+#define ORIG_Y_ENABLE_PIN 24
 #define Y_STOP_PIN 0
 
 //z axis pins
-#define Z_STEP_PIN 26
-#define Z_DIR_PIN 25
-#define Z_ENABLE_PIN 24
-#define Z_MIN_PIN 1
-#define Z_MAX_PIN 0
+#define ORIG_Z_STEP_PIN 26
+#define ORIG_Z_DIR_PIN 25
+#define ORIG_Z_ENABLE_PIN 24
+#define ORIG_Z_MIN_PIN 1
+#define ORIG_Z_MAX_PIN 0
 
 //extruder pins
-#define E0_STEP_PIN 28
-#define E0_DIR_PIN 27
-#define E0_ENABLE_PIN 24
+#define ORIG_E0_STEP_PIN 28
+#define ORIG_E0_DIR_PIN 27
+#define ORIG_E0_ENABLE_PIN 24
 
 #define TEMP_0_PIN 1
 #define TEMP_1_PIN -1
@@ -268,9 +268,9 @@
 
 #if (GEN7_VERSION >= 13)
 // Gen7 v1.3 removed the fan pin
-#define FAN_PIN -1
+#define ORIG_FAN_PIN -1
 #else
-#define FAN_PIN 31
+#define ORIG_FAN_PIN 31
 #endif
 #define PS_ON_PIN 15
 
@@ -282,8 +282,8 @@
 #define DEBUG_PIN 0
 
 //our RS485 pins
-#define TX_ENABLE_PIN 12
-#define RX_ENABLE_PIN 13
+#define TORIG_X_ENABLE_PIN 12
+#define RORIG_X_ENABLE_PIN 13
 
 #endif
 
@@ -311,28 +311,28 @@
 #endif
 
 //x axis pins
-#define X_STEP_PIN 19
-#define X_DIR_PIN 18
-#define X_ENABLE_PIN 24
+#define ORIG_X_STEP_PIN 19
+#define ORIG_X_DIR_PIN 18
+#define ORIG_X_ENABLE_PIN 24
 #define X_STOP_PIN 7
 
 //y axis pins
-#define Y_STEP_PIN 23
-#define Y_DIR_PIN 22
-#define Y_ENABLE_PIN 24
+#define ORIG_Y_STEP_PIN 23
+#define ORIG_Y_DIR_PIN 22
+#define ORIG_Y_ENABLE_PIN 24
 #define Y_STOP_PIN 5
 
 //z axis pins
-#define Z_STEP_PIN 26
-#define Z_DIR_PIN 25
-#define Z_ENABLE_PIN 24
-#define Z_MIN_PIN 1
-#define Z_MAX_PIN 0
+#define ORIG_Z_STEP_PIN 26
+#define ORIG_Z_DIR_PIN 25
+#define ORIG_Z_ENABLE_PIN 24
+#define ORIG_Z_MIN_PIN 1
+#define ORIG_Z_MAX_PIN 0
 
 //extruder pins
-#define E0_STEP_PIN 28
-#define E0_DIR_PIN 27
-#define E0_ENABLE_PIN 24
+#define ORIG_E0_STEP_PIN 28
+#define ORIG_E0_DIR_PIN 27
+#define ORIG_E0_ENABLE_PIN 24
 
 #define TEMP_0_PIN 1
 #define TEMP_1_PIN -1
@@ -352,9 +352,9 @@
 
 #if (GEN7_VERSION >= 13)
 // Gen7 v1.3 removed the fan pin
-#define FAN_PIN -1
+#define ORIG_FAN_PIN -1
 #else
-#define FAN_PIN 31
+#define ORIG_FAN_PIN 31
 #endif
 #define PS_ON_PIN 15
 
@@ -393,27 +393,27 @@
 #endif
 
 //x axis pins
-#define X_STEP_PIN 29
-#define X_DIR_PIN 28
-#define X_ENABLE_PIN 25
+#define ORIG_X_STEP_PIN 29
+#define ORIG_X_DIR_PIN 28
+#define ORIG_X_ENABLE_PIN 25
 #define X_STOP_PIN 0
 
 //y axis pins
-#define Y_STEP_PIN 27
-#define Y_DIR_PIN 26
-#define Y_ENABLE_PIN 25
+#define ORIG_Y_STEP_PIN 27
+#define ORIG_Y_DIR_PIN 26
+#define ORIG_Y_ENABLE_PIN 25
 #define Y_STOP_PIN 1
 
 //z axis pins
-#define Z_STEP_PIN 23
-#define Z_DIR_PIN 22
-#define Z_ENABLE_PIN 25
+#define ORIG_Z_STEP_PIN 23
+#define ORIG_Z_DIR_PIN 22
+#define ORIG_Z_ENABLE_PIN 25
 #define Z_STOP_PIN 2
 
 //extruder pins
-#define E0_STEP_PIN 19
-#define E0_DIR_PIN 18
-#define E0_ENABLE_PIN 25
+#define ORIG_E0_STEP_PIN 19
+#define ORIG_E0_DIR_PIN 18
+#define ORIG_E0_ENABLE_PIN 25
 
 #define TEMP_0_PIN 1
 #define TEMP_1_PIN -1
@@ -431,7 +431,7 @@
 #define SDSS -1 // SCL pin of I2C header
 #define LED_PIN -1
 
-#define FAN_PIN -1
+#define ORIG_FAN_PIN -1
 
 #define PS_ON_PIN 15
 
@@ -461,27 +461,27 @@
 #endif
 
 //x axis pins
-    #define X_STEP_PIN      21                  // different from standard GEN7
-    #define X_DIR_PIN       20                  // different from standard GEN7
-    #define X_ENABLE_PIN    24
+    #define ORIG_X_STEP_PIN      21                  // different from standard GEN7
+    #define ORIG_X_DIR_PIN       20                  // different from standard GEN7
+    #define ORIG_X_ENABLE_PIN    24
     #define X_STOP_PIN      0
 
     //y axis pins
-    #define Y_STEP_PIN      23
-    #define Y_DIR_PIN       22
-    #define Y_ENABLE_PIN    24
+    #define ORIG_Y_STEP_PIN      23
+    #define ORIG_Y_DIR_PIN       22
+    #define ORIG_Y_ENABLE_PIN    24
     #define Y_STOP_PIN      1
 
     //z axis pins
-    #define Z_STEP_PIN      26
-    #define Z_DIR_PIN       25
-    #define Z_ENABLE_PIN    24
+    #define ORIG_Z_STEP_PIN      26
+    #define ORIG_Z_DIR_PIN       25
+    #define ORIG_Z_ENABLE_PIN    24
     #define Z_STOP_PIN      2
 
     //extruder pins
-    #define E0_STEP_PIN      28
-    #define E0_DIR_PIN       27
-    #define E0_ENABLE_PIN    24
+    #define ORIG_E0_STEP_PIN      28
+    #define ORIG_E0_DIR_PIN       27
+    #define ORIG_E0_ENABLE_PIN    24
 
     #define TEMP_0_PIN      2
     #define TEMP_1_PIN      -1
@@ -497,7 +497,7 @@
     #define SDSS            31                  // SCL pin of I2C header || CS Pin for SD Card support
     #define LED_PIN         -1
 
-    #define FAN_PIN         -1
+    #define ORIG_FAN_PIN         -1
     #define PS_ON_PIN       19
     //our pin for debugging.
 
@@ -552,23 +552,23 @@
   #define LARGE_FLASH true
 
   #if MOTHERBOARD == 77
-    #define X_STEP_PIN         54
-    #define X_DIR_PIN          55
-    #define X_ENABLE_PIN       38
-    #define X_MIN_PIN           3
-    #define X_MAX_PIN           -1   //2 //Max endstops default to disabled "-1", set to commented value to enable.
+    #define ORIG_X_STEP_PIN         54
+    #define ORIG_X_DIR_PIN          55
+    #define ORIG_X_ENABLE_PIN       38
+    #define ORIG_X_MIN_PIN           3
+    #define ORIG_X_MAX_PIN           -1   //2 //Max endstops default to disabled "-1", set to commented value to enable.
 
-    #define Y_STEP_PIN         60
-    #define Y_DIR_PIN          61
-    #define Y_ENABLE_PIN       56
-    #define Y_MIN_PIN          14
-    #define Y_MAX_PIN          -1   //15
+    #define ORIG_Y_STEP_PIN         60
+    #define ORIG_Y_DIR_PIN          61
+    #define ORIG_Y_ENABLE_PIN       56
+    #define ORIG_Y_MIN_PIN          14
+    #define ORIG_Y_MAX_PIN          -1   //15
 
-    #define Z_STEP_PIN         46
-    #define Z_DIR_PIN          48
-    #define Z_ENABLE_PIN       63
-    #define Z_MIN_PIN          18
-    #define Z_MAX_PIN          -1
+    #define ORIG_Z_STEP_PIN         46
+    #define ORIG_Z_DIR_PIN          48
+    #define ORIG_Z_ENABLE_PIN       63
+    #define ORIG_Z_MIN_PIN          18
+    #define ORIG_Z_MAX_PIN          -1
 
     #define Y2_STEP_PIN        36
     #define Y2_DIR_PIN         34
@@ -578,13 +578,13 @@
     #define Z2_DIR_PIN         34
     #define Z2_ENABLE_PIN      30
 
-    #define E0_STEP_PIN        26
-    #define E0_DIR_PIN         28
-    #define E0_ENABLE_PIN      24
+    #define ORIG_E0_STEP_PIN        26
+    #define ORIG_E0_DIR_PIN         28
+    #define ORIG_E0_ENABLE_PIN      24
 
-    #define E1_STEP_PIN        36
-    #define E1_DIR_PIN         34
-    #define E1_ENABLE_PIN      30
+    #define ORIG_E1_STEP_PIN        36
+    #define ORIG_E1_DIR_PIN         34
+    #define ORIG_E1_ENABLE_PIN      30
 
     #define SDPOWER            -1
     #define SDSS               25//53
@@ -594,23 +594,23 @@
 
   #else
 
-    #define X_STEP_PIN         54
-    #define X_DIR_PIN          55
-    #define X_ENABLE_PIN       38
-    #define X_MIN_PIN           3
-    #define X_MAX_PIN           2
+    #define ORIG_X_STEP_PIN         54
+    #define ORIG_X_DIR_PIN          55
+    #define ORIG_X_ENABLE_PIN       38
+    #define ORIG_X_MIN_PIN           3
+    #define ORIG_X_MAX_PIN           2
 
-    #define Y_STEP_PIN         60
-    #define Y_DIR_PIN          61
-    #define Y_ENABLE_PIN       56
-    #define Y_MIN_PIN          14
-    #define Y_MAX_PIN          15
+    #define ORIG_Y_STEP_PIN         60
+    #define ORIG_Y_DIR_PIN          61
+    #define ORIG_Y_ENABLE_PIN       56
+    #define ORIG_Y_MIN_PIN          14
+    #define ORIG_Y_MAX_PIN          15
 
-    #define Z_STEP_PIN         46
-    #define Z_DIR_PIN          48
-    #define Z_ENABLE_PIN       62
-    #define Z_MIN_PIN          18
-    #define Z_MAX_PIN          19
+    #define ORIG_Z_STEP_PIN         46
+    #define ORIG_Z_DIR_PIN          48
+    #define ORIG_Z_ENABLE_PIN       62
+    #define ORIG_Z_MIN_PIN          18
+    #define ORIG_Z_MAX_PIN          19
 
     #define Y2_STEP_PIN        36
     #define Y2_DIR_PIN         34
@@ -620,13 +620,13 @@
     #define Z2_DIR_PIN         34
     #define Z2_ENABLE_PIN      30
 
-    #define E0_STEP_PIN        26
-    #define E0_DIR_PIN         28
-    #define E0_ENABLE_PIN      24
+    #define ORIG_E0_STEP_PIN        26
+    #define ORIG_E0_DIR_PIN         28
+    #define ORIG_E0_ENABLE_PIN      24
 
-    #define E1_STEP_PIN        36
-    #define E1_DIR_PIN         34
-    #define E1_ENABLE_PIN      30
+    #define ORIG_E1_STEP_PIN        36
+    #define ORIG_E1_DIR_PIN         34
+    #define ORIG_E1_ENABLE_PIN      30
 
 #if MOTHERBOARD == 34  //FMM added for Filament Extruder
 #ifdef FILAMENT_SENSOR
@@ -638,13 +638,13 @@
 
 
     #if MOTHERBOARD == 68
-      #define E2_STEP_PIN        23
-      #define E2_DIR_PIN         25
-      #define E2_ENABLE_PIN      40
+      #define ORIG_E2_STEP_PIN        23
+      #define ORIG_E2_DIR_PIN         25
+      #define ORIG_E2_ENABLE_PIN      40
 
-      #define E3_STEP_PIN        27
-      #define E3_DIR_PIN         29
-      #define E3_ENABLE_PIN      41
+      #define ORIG_E3_STEP_PIN        27
+      #define ORIG_E3_DIR_PIN         29
+      #define ORIG_E3_ENABLE_PIN      41
 
       #define E4_STEP_PIN        43
       #define E4_DIR_PIN         37
@@ -657,13 +657,13 @@
   #endif
 
   #if MOTHERBOARD == 33 || MOTHERBOARD == 35 || MOTHERBOARD == 67 || MOTHERBOARD == 68
-    #define FAN_PIN            9 // 9 (Sprinter config)
+    #define ORIG_FAN_PIN            9 // 9 (Sprinter config)
   #else
-    #define FAN_PIN            4 // IO pin. Buffer needed
+    #define ORIG_FAN_PIN            4 // IO pin. Buffer needed
   #endif
 
   #if MOTHERBOARD == 77 || MOTHERBOARD == 36
-    #define FAN_PIN            8
+    #define ORIG_FAN_PIN            8
   #endif
 
   #if MOTHERBOARD == 35
@@ -852,27 +852,27 @@
 
 #else // RAMPS_V_1_1 or RAMPS_V_1_2 as default (MOTHERBOARD == 3)
 
-#define X_STEP_PIN         26
-#define X_DIR_PIN          28
-#define X_ENABLE_PIN       24
-#define X_MIN_PIN           3
-#define X_MAX_PIN          -1    //2
+#define ORIG_X_STEP_PIN         26
+#define ORIG_X_DIR_PIN          28
+#define ORIG_X_ENABLE_PIN       24
+#define ORIG_X_MIN_PIN           3
+#define ORIG_X_MAX_PIN          -1    //2
 
-#define Y_STEP_PIN         38
-#define Y_DIR_PIN          40
-#define Y_ENABLE_PIN       36
-#define Y_MIN_PIN          16
-#define Y_MAX_PIN          -1    //17
+#define ORIG_Y_STEP_PIN         38
+#define ORIG_Y_DIR_PIN          40
+#define ORIG_Y_ENABLE_PIN       36
+#define ORIG_Y_MIN_PIN          16
+#define ORIG_Y_MAX_PIN          -1    //17
 
-#define Z_STEP_PIN         44
-#define Z_DIR_PIN          46
-#define Z_ENABLE_PIN       42
-#define Z_MIN_PIN          18
-#define Z_MAX_PIN          -1    //19
+#define ORIG_Z_STEP_PIN         44
+#define ORIG_Z_DIR_PIN          46
+#define ORIG_Z_ENABLE_PIN       42
+#define ORIG_Z_MIN_PIN          18
+#define ORIG_Z_MAX_PIN          -1    //19
 
-#define E0_STEP_PIN         32
-#define E0_DIR_PIN          34
-#define E0_ENABLE_PIN       30
+#define ORIG_E0_STEP_PIN         32
+#define ORIG_E0_DIR_PIN          34
+#define ORIG_E0_ENABLE_PIN       30
 
 #define SDPOWER            48
 #define SDSS               53
@@ -883,11 +883,11 @@
 #ifdef RAMPS_V_1_0 // RAMPS_V_1_0
   #define HEATER_0_PIN     12    // RAMPS 1.0
   #define HEATER_BED_PIN   -1    // RAMPS 1.0
-  #define FAN_PIN          11    // RAMPS 1.0
+  #define ORIG_FAN_PIN          11    // RAMPS 1.0
 #else // RAMPS_V_1_1 or RAMPS_V_1_2
   #define HEATER_0_PIN     10    // RAMPS 1.1
   #define HEATER_BED_PIN    8    // RAMPS 1.1
-  #define FAN_PIN           9    // RAMPS 1.1
+  #define ORIG_FAN_PIN           9    // RAMPS 1.1
 #endif
 #define HEATER_1_PIN        -1
 #define HEATER_2_PIN        -1
@@ -923,29 +923,29 @@
 #error Oops!  Make sure you have 'Arduino Duemilanove w/ ATMega328' selected from the 'Tools -> Boards' menu.
 #endif
 
-#define X_STEP_PIN         19
-#define X_DIR_PIN          18
-#define X_ENABLE_PIN       -1
+#define ORIG_X_STEP_PIN         19
+#define ORIG_X_DIR_PIN          18
+#define ORIG_X_ENABLE_PIN       -1
 #define X_STOP_PIN         17
 
-#define Y_STEP_PIN         10
-#define Y_DIR_PIN           7
-#define Y_ENABLE_PIN       -1
+#define ORIG_Y_STEP_PIN         10
+#define ORIG_Y_DIR_PIN           7
+#define ORIG_Y_ENABLE_PIN       -1
 #define Y_STOP_PIN          8
 
-#define Z_STEP_PIN         13
-#define Z_DIR_PIN           3
-#define Z_ENABLE_PIN        2
+#define ORIG_Z_STEP_PIN         13
+#define ORIG_Z_DIR_PIN           3
+#define ORIG_Z_ENABLE_PIN        2
 #define Z_STOP_PIN          4
 
-#define E0_STEP_PIN         11
-#define E0_DIR_PIN          12
-#define E0_ENABLE_PIN       -1
+#define ORIG_E0_STEP_PIN         11
+#define ORIG_E0_DIR_PIN          12
+#define ORIG_E0_ENABLE_PIN       -1
 
 #define SDPOWER          -1
 #define SDSS          -1
 #define LED_PIN            -1
-#define FAN_PIN             5
+#define ORIG_FAN_PIN             5
 #define PS_ON_PIN          -1
 #define KILL_PIN           -1
 
@@ -972,40 +972,40 @@
 #endif
 
 
-#define X_STEP_PIN		     49
-#define X_DIR_PIN			     13
-#define X_ENABLE_PIN		   48
-#define X_MIN_PIN			     35
-#define X_MAX_PIN			     -1 //34
+#define ORIG_X_STEP_PIN		     49
+#define ORIG_X_DIR_PIN			     13
+#define ORIG_X_ENABLE_PIN		   48
+#define ORIG_X_MIN_PIN			     35
+#define ORIG_X_MAX_PIN			     -1 //34
 
-#define Y_STEP_PIN         11
-#define Y_DIR_PIN          9
-#define Y_ENABLE_PIN       12
-#define Y_MIN_PIN          33
-#define Y_MAX_PIN          -1 //32
+#define ORIG_Y_STEP_PIN         11
+#define ORIG_Y_DIR_PIN          9
+#define ORIG_Y_ENABLE_PIN       12
+#define ORIG_Y_MIN_PIN          33
+#define ORIG_Y_MAX_PIN          -1 //32
 
-#define Z_STEP_PIN         7
-#define Z_DIR_PIN          6
-#define Z_ENABLE_PIN       8
-#define Z_MIN_PIN          31
-#define Z_MAX_PIN          -1 //30
+#define ORIG_Z_STEP_PIN         7
+#define ORIG_Z_DIR_PIN          6
+#define ORIG_Z_ENABLE_PIN       8
+#define ORIG_Z_MIN_PIN          31
+#define ORIG_Z_MAX_PIN          -1 //30
 
-#define E2_STEP_PIN        43
-#define E2_DIR_PIN         47
-#define E2_ENABLE_PIN      42
+#define ORIG_E2_STEP_PIN        43
+#define ORIG_E2_DIR_PIN         47
+#define ORIG_E2_ENABLE_PIN      42
 
-#define E1_STEP_PIN        18
-#define E1_DIR_PIN         19
-#define E1_ENABLE_PIN      38
+#define ORIG_E1_STEP_PIN        18
+#define ORIG_E1_DIR_PIN         19
+#define ORIG_E1_ENABLE_PIN      38
 
-#define E0_STEP_PIN        40
-#define E0_DIR_PIN         41
-#define E0_ENABLE_PIN      37
+#define ORIG_E0_STEP_PIN        40
+#define ORIG_E0_DIR_PIN         41
+#define ORIG_E0_ENABLE_PIN      37
 
 #define SDPOWER            -1
 #define LED_PIN            -1 //Use +12V Aux port for LED Ring
 
-#define FAN_PIN            16 //5V PWM
+#define ORIG_FAN_PIN            16 //5V PWM
 
 #define PS_ON_PIN          10 //Set to -1 if using a manual switch on the PWRSW Connector
 #define SLEEP_WAKE_PIN		 26 //This feature still needs work
@@ -1099,27 +1099,27 @@
 #endif
 
 //x axis pins
-    #define X_STEP_PIN      15
-    #define X_DIR_PIN       18
-    #define X_ENABLE_PIN    19
+    #define ORIG_X_STEP_PIN      15
+    #define ORIG_X_DIR_PIN       18
+    #define ORIG_X_ENABLE_PIN    19
     #define X_STOP_PIN      20
 
     //y axis pins
-    #define Y_STEP_PIN      23
-    #define Y_DIR_PIN       22
-    #define Y_ENABLE_PIN    24
+    #define ORIG_Y_STEP_PIN      23
+    #define ORIG_Y_DIR_PIN       22
+    #define ORIG_Y_ENABLE_PIN    24
     #define Y_STOP_PIN      25
 
     //z axis pins
-    #define Z_STEP_PIN      27
-    #define Z_DIR_PIN       28
-    #define Z_ENABLE_PIN    29
+    #define ORIG_Z_STEP_PIN      27
+    #define ORIG_Z_DIR_PIN       28
+    #define ORIG_Z_ENABLE_PIN    29
     #define Z_STOP_PIN      30
 
     //extruder pins
-    #define E0_STEP_PIN      4    //Edited @ EJE Electronics 20100715
-    #define E0_DIR_PIN       2    //Edited @ EJE Electronics 20100715
-    #define E0_ENABLE_PIN    3    //Added @ EJE Electronics 20100715
+    #define ORIG_E0_STEP_PIN      4    //Edited @ EJE Electronics 20100715
+    #define ORIG_E0_DIR_PIN       2    //Edited @ EJE Electronics 20100715
+    #define ORIG_E0_ENABLE_PIN    3    //Added @ EJE Electronics 20100715
     #define TEMP_0_PIN      5     //changed @ rkoeppl 20110410
     #define TEMP_1_PIN      -1    //changed @ rkoeppl 20110410
 
@@ -1138,7 +1138,7 @@
     #define SDPOWER          -1
     #define SDSS          17
     #define LED_PIN         -1    //changed @ rkoeppl 20110410
-    #define FAN_PIN         -1    //changed @ rkoeppl 20110410
+    #define ORIG_FAN_PIN         -1    //changed @ rkoeppl 20110410
     #define PS_ON_PIN       -1    //changed @ rkoeppl 20110410
     #define KILL_PIN        -1    //changed @ drakelive 20120830
     //our pin for debugging.
@@ -1182,41 +1182,41 @@
 #endif
 #endif
 
-#define X_STEP_PIN         15
-#define X_DIR_PIN          21
+#define ORIG_X_STEP_PIN         15
+#define ORIG_X_DIR_PIN          21
 #define X_STOP_PIN         18
 
-#define Y_STEP_PIN         22
-#define Y_DIR_PIN          23
+#define ORIG_Y_STEP_PIN         22
+#define ORIG_Y_DIR_PIN          23
 #define Y_STOP_PIN         19
 
-#define Z_STEP_PIN         3
-#define Z_DIR_PIN          2
+#define ORIG_Z_STEP_PIN         3
+#define ORIG_Z_DIR_PIN          2
 #define Z_STOP_PIN         20
 
-#define E0_STEP_PIN         1
-#define E0_DIR_PIN          0
+#define ORIG_E0_STEP_PIN         1
+#define ORIG_E0_DIR_PIN          0
 
 #define LED_PIN            -1
 
-#define FAN_PIN            -1
- #if FAN_PIN == 12 || FAN_PIN ==13
+#define ORIG_FAN_PIN            -1
+ #if ORIG_FAN_PIN == 12 || ORIG_FAN_PIN ==13
   #define FAN_SOFT_PWM
 #endif
 
 #ifdef MELZI
  #define LED_PIN            27 /* On some broken versions of the Sanguino libraries the pin definitions are wrong, which then needs LED_PIN as pin 28. But you better upgrade your Sanguino libraries! See #368. */
- #define FAN_PIN            4 // Works for Panelolu2 too
+ #define ORIG_FAN_PIN            4 // Works for Panelolu2 too
 #endif
 
 #ifdef STB
- #define FAN_PIN            4
+ #define ORIG_FAN_PIN            4
 	//  Uncomment this if you have the first generation (V1.10) of STBs board
  #define LCD_PIN_BL         17 // LCD backlight LED
 #endif
 
 #ifdef AZTEEG_X1
- #define FAN_PIN            4
+ #define ORIG_FAN_PIN            4
 #endif
 
 #ifdef NUM_SERVOS
@@ -1245,22 +1245,22 @@
 #ifdef SANGUINOLOLU_V_1_2
 
  #define HEATER_BED_PIN     12 // (bed)
- #define X_ENABLE_PIN       14
- #define Y_ENABLE_PIN       14
- #define Z_ENABLE_PIN       26
- #define E0_ENABLE_PIN      14
+ #define ORIG_X_ENABLE_PIN       14
+ #define ORIG_Y_ENABLE_PIN       14
+ #define ORIG_Z_ENABLE_PIN       26
+ #define ORIG_E0_ENABLE_PIN      14
 
  #ifdef LCD_I2C_PANELOLU2
-   #define FAN_PIN          4 // Uses Transistor1 (PWM) on Panelolu2's Sanguino Adapter Board to drive the fan
+   #define ORIG_FAN_PIN          4 // Uses Transistor1 (PWM) on Panelolu2's Sanguino Adapter Board to drive the fan
  #endif
 
 #else
 
 #define HEATER_BED_PIN      14  // (bed)
-#define X_ENABLE_PIN       -1
-#define Y_ENABLE_PIN       -1
-#define Z_ENABLE_PIN       -1
-#define E0_ENABLE_PIN      -1
+#define ORIG_X_ENABLE_PIN       -1
+#define ORIG_Y_ENABLE_PIN       -1
+#define ORIG_Z_ENABLE_PIN       -1
+#define ORIG_E0_ENABLE_PIN      -1
 
 #endif
 
@@ -1355,23 +1355,23 @@
 
 #define LARGE_FLASH true
 
-#define X_STEP_PIN 25
-#define X_DIR_PIN 23
-#define X_MIN_PIN 22
-#define X_MAX_PIN 24
-#define X_ENABLE_PIN 27
+#define ORIG_X_STEP_PIN 25
+#define ORIG_X_DIR_PIN 23
+#define ORIG_X_MIN_PIN 22
+#define ORIG_X_MAX_PIN 24
+#define ORIG_X_ENABLE_PIN 27
 
-#define Y_STEP_PIN 31
-#define Y_DIR_PIN 33
-#define Y_MIN_PIN 26
-#define Y_MAX_PIN 28
-#define Y_ENABLE_PIN 29
+#define ORIG_Y_STEP_PIN 31
+#define ORIG_Y_DIR_PIN 33
+#define ORIG_Y_MIN_PIN 26
+#define ORIG_Y_MAX_PIN 28
+#define ORIG_Y_ENABLE_PIN 29
 
-#define Z_STEP_PIN 37
-#define Z_DIR_PIN 39
-#define Z_MIN_PIN 30
-#define Z_MAX_PIN 32
-#define Z_ENABLE_PIN 35
+#define ORIG_Z_STEP_PIN 37
+#define ORIG_Z_DIR_PIN 39
+#define ORIG_Z_MIN_PIN 30
+#define ORIG_Z_MAX_PIN 32
+#define ORIG_Z_ENABLE_PIN 35
 
 #define HEATER_BED_PIN 4
 #define TEMP_BED_PIN 10
@@ -1385,18 +1385,18 @@
 #define HEATER_2_PIN -1
 #define TEMP_2_PIN -1
 
-#define E0_STEP_PIN         43
-#define E0_DIR_PIN          45
-#define E0_ENABLE_PIN       41
+#define ORIG_E0_STEP_PIN         43
+#define ORIG_E0_DIR_PIN          45
+#define ORIG_E0_ENABLE_PIN       41
 
-#define E1_STEP_PIN         49
-#define E1_DIR_PIN          47
-#define E1_ENABLE_PIN       48
+#define ORIG_E1_STEP_PIN         49
+#define ORIG_E1_DIR_PIN          47
+#define ORIG_E1_ENABLE_PIN       48
 
 #define SDPOWER            -1
 #define SDSS               53
 #define LED_PIN            13
-#define FAN_PIN            7
+#define ORIG_FAN_PIN            7
 #define PS_ON_PIN          12
 #define KILL_PIN           -1
 #define SUICIDE_PIN        54  //PIN that has to be turned on right after start, to keep power flowing.
@@ -1458,23 +1458,23 @@
 
 #define LARGE_FLASH true
 
-#define X_STEP_PIN 25
-#define X_DIR_PIN 23
-#define X_MIN_PIN 15
-#define X_MAX_PIN 14
-#define X_ENABLE_PIN 27
+#define ORIG_X_STEP_PIN 25
+#define ORIG_X_DIR_PIN 23
+#define ORIG_X_MIN_PIN 15
+#define ORIG_X_MAX_PIN 14
+#define ORIG_X_ENABLE_PIN 27
 
-#define Y_STEP_PIN 31
-#define Y_DIR_PIN 33
-#define Y_MIN_PIN 17
-#define Y_MAX_PIN 16
-#define Y_ENABLE_PIN 29
+#define ORIG_Y_STEP_PIN 31
+#define ORIG_Y_DIR_PIN 33
+#define ORIG_Y_MIN_PIN 17
+#define ORIG_Y_MAX_PIN 16
+#define ORIG_Y_ENABLE_PIN 29
 
-#define Z_STEP_PIN 37
-#define Z_DIR_PIN 39
-#define Z_MIN_PIN 19
-#define Z_MAX_PIN 18
-#define Z_ENABLE_PIN 35
+#define ORIG_Z_STEP_PIN 37
+#define ORIG_Z_DIR_PIN 39
+#define ORIG_Z_MIN_PIN 19
+#define ORIG_Z_MAX_PIN 18
+#define ORIG_Z_ENABLE_PIN 35
 
 #define HEATER_BED_PIN -1
 #define TEMP_BED_PIN -1
@@ -1488,18 +1488,18 @@
 #define HEATER_2_PIN -1
 #define TEMP_2_PIN -1
 
-#define E0_STEP_PIN         43
-#define E0_DIR_PIN          45
-#define E0_ENABLE_PIN       41
+#define ORIG_E0_STEP_PIN         43
+#define ORIG_E0_DIR_PIN          45
+#define ORIG_E0_ENABLE_PIN       41
 
-#define E1_STEP_PIN         -1
-#define E1_DIR_PIN          -1
-#define E1_ENABLE_PIN       -1
+#define ORIG_E1_STEP_PIN         -1
+#define ORIG_E1_DIR_PIN          -1
+#define ORIG_E1_ENABLE_PIN       -1
 
 #define SDPOWER            -1
 #define SDSS               -1
 #define LED_PIN            -1
-#define FAN_PIN            -1
+#define ORIG_FAN_PIN            -1
 #define PS_ON_PIN          -1
 #define KILL_PIN           -1
 #define SUICIDE_PIN        -1  //PIN that has to be turned on right after start, to keep power flowing.
@@ -1523,20 +1523,20 @@
  #error Oops!  Make sure you have 'Arduino Mega 2560' selected from the 'Tools -> Boards' menu.
 #endif
 
-#define X_STEP_PIN 25
-#define X_DIR_PIN 23
+#define ORIG_X_STEP_PIN 25
+#define ORIG_X_DIR_PIN 23
 #define X_STOP_PIN 22
-#define X_ENABLE_PIN 27
+#define ORIG_X_ENABLE_PIN 27
 
-#define Y_STEP_PIN 32
-#define Y_DIR_PIN 33
+#define ORIG_Y_STEP_PIN 32
+#define ORIG_Y_DIR_PIN 33
 #define Y_STOP_PIN 26
-#define Y_ENABLE_PIN 31
+#define ORIG_Y_ENABLE_PIN 31
 
-#define Z_STEP_PIN 35
-#define Z_DIR_PIN 36
+#define ORIG_Z_STEP_PIN 35
+#define ORIG_Z_DIR_PIN 36
 #define Z_STOP_PIN 29
-#define Z_ENABLE_PIN 34
+#define ORIG_Z_ENABLE_PIN 34
 
 #define HEATER_BED_PIN 4
 #define TEMP_BED_PIN 10
@@ -1550,18 +1550,18 @@
 #define HEATER_2_PIN -1
 #define TEMP_2_PIN -1
 
-#define E0_STEP_PIN         42
-#define E0_DIR_PIN          43
-#define E0_ENABLE_PIN       37
+#define ORIG_E0_STEP_PIN         42
+#define ORIG_E0_DIR_PIN          43
+#define ORIG_E0_ENABLE_PIN       37
 
-#define E1_STEP_PIN         49
-#define E1_DIR_PIN          47
-#define E1_ENABLE_PIN       48
+#define ORIG_E1_STEP_PIN         49
+#define ORIG_E1_DIR_PIN          47
+#define ORIG_E1_ENABLE_PIN       48
 
 #define SDPOWER            -1
 #define SDSS               53
 #define LED_PIN            8
-#define FAN_PIN            7
+#define ORIG_FAN_PIN            7
 #define PS_ON_PIN          -1
 #define KILL_PIN           -1
 #define SUICIDE_PIN        -1  //PIN that has to be turned on right after start, to keep power flowing.
@@ -1609,39 +1609,39 @@
  #error Oops!  Make sure you have 'Arduino Mega' selected from the 'Tools -> Boards' menu.
 #endif
 
-#define X_STEP_PIN         17
-#define X_DIR_PIN          16
-#define X_ENABLE_PIN       48
-#define X_MIN_PIN          37
-#define X_MAX_PIN          36
+#define ORIG_X_STEP_PIN         17
+#define ORIG_X_DIR_PIN          16
+#define ORIG_X_ENABLE_PIN       48
+#define ORIG_X_MIN_PIN          37
+#define ORIG_X_MAX_PIN          36
 
-#define Y_STEP_PIN         54
-#define Y_DIR_PIN          47
-#define Y_ENABLE_PIN       55
-#define Y_MIN_PIN          35
-#define Y_MAX_PIN          34
+#define ORIG_Y_STEP_PIN         54
+#define ORIG_Y_DIR_PIN          47
+#define ORIG_Y_ENABLE_PIN       55
+#define ORIG_Y_MIN_PIN          35
+#define ORIG_Y_MAX_PIN          34
 
-#define Z_STEP_PIN         57
-#define Z_DIR_PIN          56
-#define Z_ENABLE_PIN       62
-#define Z_MIN_PIN          33
-#define Z_MAX_PIN          32
+#define ORIG_Z_STEP_PIN         57
+#define ORIG_Z_DIR_PIN          56
+#define ORIG_Z_ENABLE_PIN       62
+#define ORIG_Z_MIN_PIN          33
+#define ORIG_Z_MAX_PIN          32
 
-#define E0_STEP_PIN        23
-#define E0_DIR_PIN         22
-#define E0_ENABLE_PIN      24
+#define ORIG_E0_STEP_PIN        23
+#define ORIG_E0_DIR_PIN         22
+#define ORIG_E0_ENABLE_PIN      24
 
-#define E1_STEP_PIN        26
-#define E1_DIR_PIN         25
-#define E1_ENABLE_PIN      27
+#define ORIG_E1_STEP_PIN        26
+#define ORIG_E1_DIR_PIN         25
+#define ORIG_E1_ENABLE_PIN      27
 
-#define E2_STEP_PIN        29
-#define E2_DIR_PIN         28
-#define E2_ENABLE_PIN      39
+#define ORIG_E2_STEP_PIN        29
+#define ORIG_E2_DIR_PIN         28
+#define ORIG_E2_ENABLE_PIN      39
 
 #define LED_PIN            13
 
-#define FAN_PIN            7
+#define ORIG_FAN_PIN            7
 //additional FAN1 PIN (e.g. useful for electronics fan or light on/off) on PIN 8
 
 #define PS_ON_PIN          45
@@ -1735,28 +1735,28 @@
 
 #define LARGE_FLASH        true
 
-#define X_STEP_PIN          0
-#define X_DIR_PIN           1
-#define X_ENABLE_PIN       39
+#define ORIG_X_STEP_PIN          0
+#define ORIG_X_DIR_PIN           1
+#define ORIG_X_ENABLE_PIN       39
 
-#define Y_STEP_PIN          2
-#define Y_DIR_PIN           3
-#define Y_ENABLE_PIN       38
+#define ORIG_Y_STEP_PIN          2
+#define ORIG_Y_DIR_PIN           3
+#define ORIG_Y_ENABLE_PIN       38
 
-#define Z_STEP_PIN          4
-#define Z_DIR_PIN           5
-#define Z_ENABLE_PIN       23
+#define ORIG_Z_STEP_PIN          4
+#define ORIG_Z_DIR_PIN           5
+#define ORIG_Z_ENABLE_PIN       23
 
-#define E0_STEP_PIN         6
-#define E0_DIR_PIN          7
-#define E0_ENABLE_PIN      19
+#define ORIG_E0_STEP_PIN         6
+#define ORIG_E0_DIR_PIN          7
+#define ORIG_E0_ENABLE_PIN      19
 
 #define HEATER_0_PIN       21  // Extruder
 #define HEATER_1_PIN       -1
 #define HEATER_2_PIN       -1
 #define HEATER_BED_PIN     20  // Bed
-#define FAN_PIN            22  // Fan
-// You may need to change FAN_PIN to 16 because Marlin isn't using fastio.h
+#define ORIG_FAN_PIN            22  // Fan
+// You may need to change ORIG_FAN_PIN to 16 because Marlin isn't using fastio.h
 // for the fan and Teensyduino uses a different pin mapping.
 
 #if MOTHERBOARD == 8  // Teensylu
@@ -1808,34 +1808,34 @@
 #error Oops!  Make sure you have 'Brainwave' selected from the 'Tools -> Boards' menu.
 #endif
 
-#define X_STEP_PIN         27
-#define X_DIR_PIN          29
-#define X_ENABLE_PIN       28
+#define ORIG_X_STEP_PIN         27
+#define ORIG_X_DIR_PIN          29
+#define ORIG_X_ENABLE_PIN       28
 #define X_STOP_PIN          7
 #define X_ATT_PIN          26
 
-#define Y_STEP_PIN         31
-#define Y_DIR_PIN          33
-#define Y_ENABLE_PIN       32
+#define ORIG_Y_STEP_PIN         31
+#define ORIG_Y_DIR_PIN          33
+#define ORIG_Y_ENABLE_PIN       32
 #define Y_STOP_PIN          6
 #define Y_ATT_PIN          30
 
-#define Z_STEP_PIN         17
-#define Z_DIR_PIN          19
-#define Z_ENABLE_PIN       18
+#define ORIG_Z_STEP_PIN         17
+#define ORIG_Z_DIR_PIN          19
+#define ORIG_Z_ENABLE_PIN       18
 #define Z_STOP_PIN          5
 #define Z_ATT_PIN          16
 
-#define E0_STEP_PIN        21
-#define E0_DIR_PIN         23
-#define E0_ENABLE_PIN      22
+#define ORIG_E0_STEP_PIN        21
+#define ORIG_E0_DIR_PIN         23
+#define ORIG_E0_ENABLE_PIN      22
 #define E0_ATT_PIN         20
 
 #define HEATER_0_PIN        4  // Extruder
 #define HEATER_1_PIN       -1
 #define HEATER_2_PIN       -1
 #define HEATER_BED_PIN     38  // Bed
-#define FAN_PIN             3  // Fan
+#define ORIG_FAN_PIN             3  // Fan
 
 #define TEMP_0_PIN          7  // Extruder / Analog pin numbering
 #define TEMP_1_PIN         -1
@@ -1878,27 +1878,27 @@
 #define LARGE_FLASH        true
 
 
-#define X_STEP_PIN         0
-#define X_DIR_PIN          1
-#define X_ENABLE_PIN       39
+#define ORIG_X_STEP_PIN         0
+#define ORIG_X_DIR_PIN          1
+#define ORIG_X_ENABLE_PIN       39
 
-#define Y_STEP_PIN         2
-#define Y_DIR_PIN          3
-#define Y_ENABLE_PIN       38
+#define ORIG_Y_STEP_PIN         2
+#define ORIG_Y_DIR_PIN          3
+#define ORIG_Y_ENABLE_PIN       38
 
-#define Z_STEP_PIN         4
-#define Z_DIR_PIN          5
-#define Z_ENABLE_PIN       23
+#define ORIG_Z_STEP_PIN         4
+#define ORIG_Z_DIR_PIN          5
+#define ORIG_Z_ENABLE_PIN       23
 
-#define E0_STEP_PIN         6
-#define E0_DIR_PIN          7
-#define E0_ENABLE_PIN       19
+#define ORIG_E0_STEP_PIN         6
+#define ORIG_E0_DIR_PIN          7
+#define ORIG_E0_ENABLE_PIN       19
 
 #define HEATER_0_PIN       21  // Extruder
 #define HEATER_1_PIN       -1
 #define HEATER_2_PIN       -1
 #define HEATER_BED_PIN     20  // Bed
-#define FAN_PIN            16  // Fan   -- from Teensyduino environment.
+#define ORIG_FAN_PIN            16  // Fan   -- from Teensyduino environment.
                                // For the fan and Teensyduino uses a different pin mapping.
 
   #define X_STOP_PIN         13
@@ -2004,27 +2004,27 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
   // or build from command line with:  DEFINES=AT90USBxx_TEENSYPP_ASSIGNMENTS HARDWARE_MOTHERBOARD=84  make
 #endif
 
-#define X_STEP_PIN         28 //  0 Marlin
-#define X_DIR_PIN          29 //  1 Marlin
-#define X_ENABLE_PIN       26 
+#define ORIG_X_STEP_PIN         28 //  0 Marlin
+#define ORIG_X_DIR_PIN          29 //  1 Marlin
+#define ORIG_X_ENABLE_PIN       26 
 
-#define Y_STEP_PIN         30 //  2 Marlin
-#define Y_DIR_PIN          31 //  3
-#define Y_ENABLE_PIN       26     // Shared w/x
+#define ORIG_Y_STEP_PIN         30 //  2 Marlin
+#define ORIG_Y_DIR_PIN          31 //  3
+#define ORIG_Y_ENABLE_PIN       26     // Shared w/x
 
-#define Z_STEP_PIN         32 //  4
-#define Z_DIR_PIN          33 //  5
-#define Z_ENABLE_PIN       26 // Shared w/x
+#define ORIG_Z_STEP_PIN         32 //  4
+#define ORIG_Z_DIR_PIN          33 //  5
+#define ORIG_Z_ENABLE_PIN       26 // Shared w/x
 
-#define E0_STEP_PIN        34 //  6
-#define E0_DIR_PIN         35 //  7
-#define E0_ENABLE_PIN      26 // Shared w/x
+#define ORIG_E0_STEP_PIN        34 //  6
+#define ORIG_E0_DIR_PIN         35 //  7
+#define ORIG_E0_ENABLE_PIN      26 // Shared w/x
 
 #define HEATER_0_PIN       15 //  21  // Extruder
 #define HEATER_1_PIN       -1
 #define HEATER_2_PIN       -1
 #define HEATER_BED_PIN     14 // 20  // Bed
-#define FAN_PIN            16 // 22  // Fan
+#define ORIG_FAN_PIN            16 // 22  // Fan
 
 #define X_STOP_PIN          2
 #define Y_STOP_PIN          3
@@ -2078,24 +2078,24 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #endif
 #endif
 
-#define X_STEP_PIN         15
-#define X_DIR_PIN          18
+#define ORIG_X_STEP_PIN         15
+#define ORIG_X_DIR_PIN          18
 #define X_STOP_PIN         20
 
-#define Y_STEP_PIN         23
-#define Y_DIR_PIN          22
+#define ORIG_Y_STEP_PIN         23
+#define ORIG_Y_DIR_PIN          22
 #define Y_STOP_PIN         25
 
-#define Z_STEP_PIN         27
-#define Z_DIR_PIN          28
+#define ORIG_Z_STEP_PIN         27
+#define ORIG_Z_DIR_PIN          28
 #define Z_STOP_PIN         30
 
-#define E0_STEP_PIN        17
-#define E0_DIR_PIN         21
+#define ORIG_E0_STEP_PIN        17
+#define ORIG_E0_DIR_PIN         21
 
 #define LED_PIN            -1
 
-#define FAN_PIN            -1
+#define ORIG_FAN_PIN            -1
 
 #define PS_ON_PIN         14
 #define KILL_PIN           -1
@@ -2103,10 +2103,10 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define HEATER_0_PIN       12 // (extruder)
 
 #define HEATER_BED_PIN     16 // (bed)
-#define X_ENABLE_PIN       19
-#define Y_ENABLE_PIN       24
-#define Z_ENABLE_PIN       29
-#define E0_ENABLE_PIN      13
+#define ORIG_X_ENABLE_PIN       19
+#define ORIG_Y_ENABLE_PIN       24
+#define ORIG_Z_ENABLE_PIN       29
+#define ORIG_E0_ENABLE_PIN      13
 
 #define TEMP_0_PIN          0   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!! (pin 33 extruder)
 #define TEMP_1_PIN         -1   
@@ -2156,38 +2156,38 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #error Oops!  Make sure you have 'SanguinoA' selected from the 'Tools -> Boards' menu.
 #endif
 
-#define X_STEP_PIN         21
-#define X_DIR_PIN          20
-#define X_ENABLE_PIN       24
+#define ORIG_X_STEP_PIN         21
+#define ORIG_X_DIR_PIN          20
+#define ORIG_X_ENABLE_PIN       24
 #define X_STOP_PIN         0
 
-#define Y_STEP_PIN         23
-#define Y_DIR_PIN          22
-#define Y_ENABLE_PIN       24
+#define ORIG_Y_STEP_PIN         23
+#define ORIG_Y_DIR_PIN          22
+#define ORIG_Y_ENABLE_PIN       24
 #define Y_STOP_PIN         1
 
-#define Z_STEP_PIN         26
-#define Z_DIR_PIN          25
-#define Z_ENABLE_PIN       24
+#define ORIG_Z_STEP_PIN         26
+#define ORIG_Z_DIR_PIN          25
+#define ORIG_Z_ENABLE_PIN       24
 #define Z_STOP_PIN         2
 
-#define E0_STEP_PIN         28
-#define E0_DIR_PIN          27
-#define E0_ENABLE_PIN       24
+#define ORIG_E0_STEP_PIN         28
+#define ORIG_E0_DIR_PIN          27
+#define ORIG_E0_ENABLE_PIN       24
 
-#define E1_STEP_PIN         -1 // 19
-#define E1_DIR_PIN          -1 // 18
-#define E1_ENABLE_PIN       24
+#define ORIG_E1_STEP_PIN         -1 // 19
+#define ORIG_E1_DIR_PIN          -1 // 18
+#define ORIG_E1_ENABLE_PIN       24
 
-#define E2_STEP_PIN         -1 // 17
-#define E2_DIR_PIN          -1 // 16
-#define E2_ENABLE_PIN       24
+#define ORIG_E2_STEP_PIN         -1 // 17
+#define ORIG_E2_DIR_PIN          -1 // 16
+#define ORIG_E2_ENABLE_PIN       24
 
 #define SDPOWER            -1
 #define SDSS               11
 #define SDCARDDETECT       -1 // 10 optional also used as mode pin
 #define LED_PIN            -1
-#define FAN_PIN            3
+#define ORIG_FAN_PIN            3
 #define PS_ON_PIN          -1
 #define KILL_PIN           -1
 
@@ -2210,24 +2210,24 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #error Oops!  Make sure you have 'Sanguino' selected from the 'Tools -> Boards' menu. (Final OMCA board)
 #endif
 
-#define X_STEP_PIN         26
-#define X_DIR_PIN          25
-#define X_ENABLE_PIN       10
+#define ORIG_X_STEP_PIN         26
+#define ORIG_X_DIR_PIN          25
+#define ORIG_X_ENABLE_PIN       10
 #define X_STOP_PIN         0
 
-#define Y_STEP_PIN         28
-#define Y_DIR_PIN          27
-#define Y_ENABLE_PIN       10
+#define ORIG_Y_STEP_PIN         28
+#define ORIG_Y_DIR_PIN          27
+#define ORIG_Y_ENABLE_PIN       10
 #define Y_STOP_PIN         1
 
-#define Z_STEP_PIN         23
-#define Z_DIR_PIN          22
-#define Z_ENABLE_PIN       10
+#define ORIG_Z_STEP_PIN         23
+#define ORIG_Z_DIR_PIN          22
+#define ORIG_Z_ENABLE_PIN       10
 #define Z_STOP_PIN         2
 
-#define E0_STEP_PIN         24
-#define E0_DIR_PIN          21
-#define E0_ENABLE_PIN       10
+#define ORIG_E0_STEP_PIN         24
+#define ORIG_E0_DIR_PIN          21
+#define ORIG_E0_ENABLE_PIN       10
 
 /* future proofing */
 #define __FS  20
@@ -2237,19 +2237,19 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 
 #define UNUSED_PWM           14 /* PWM on LEFT connector */
 
-#define E1_STEP_PIN         -1 // 21
-#define E1_DIR_PIN          -1 // 20
-#define E1_ENABLE_PIN       -1 // 19
+#define ORIG_E1_STEP_PIN         -1 // 21
+#define ORIG_E1_DIR_PIN          -1 // 20
+#define ORIG_E1_ENABLE_PIN       -1 // 19
 
-#define E2_STEP_PIN         -1 // 21
-#define E2_DIR_PIN          -1 // 20
-#define E2_ENABLE_PIN       -1 // 18
+#define ORIG_E2_STEP_PIN         -1 // 21
+#define ORIG_E2_DIR_PIN          -1 // 20
+#define ORIG_E2_ENABLE_PIN       -1 // 18
 
 #define SDPOWER            -1
 #define SDSS               11
 #define SDCARDDETECT       -1 // 10 optional also used as mode pin
 #define LED_PIN            -1
-#define FAN_PIN            14 /* PWM on MIDDLE connector */
+#define ORIG_FAN_PIN            14 /* PWM on MIDDLE connector */
 #define PS_ON_PIN          -1
 #define KILL_PIN           -1
 
@@ -2281,27 +2281,27 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 
 #define LARGE_FLASH true
 
-#define X_STEP_PIN 37
-#define X_DIR_PIN 48
-#define X_MIN_PIN 12
-#define X_MAX_PIN 24
-#define X_ENABLE_PIN 29
+#define ORIG_X_STEP_PIN 37
+#define ORIG_X_DIR_PIN 48
+#define ORIG_X_MIN_PIN 12
+#define ORIG_X_MAX_PIN 24
+#define ORIG_X_ENABLE_PIN 29
 #define X_MS1_PIN 40
 #define X_MS2_PIN 41
 
-#define Y_STEP_PIN 36
-#define Y_DIR_PIN 49
-#define Y_MIN_PIN 11
-#define Y_MAX_PIN 23
-#define Y_ENABLE_PIN 28
+#define ORIG_Y_STEP_PIN 36
+#define ORIG_Y_DIR_PIN 49
+#define ORIG_Y_MIN_PIN 11
+#define ORIG_Y_MAX_PIN 23
+#define ORIG_Y_ENABLE_PIN 28
 #define Y_MS1_PIN 69
 #define Y_MS2_PIN 39
 
-#define Z_STEP_PIN 35
-#define Z_DIR_PIN 47
-#define Z_MIN_PIN 10
-#define Z_MAX_PIN 30
-#define Z_ENABLE_PIN 27
+#define ORIG_Z_STEP_PIN 35
+#define ORIG_Z_DIR_PIN 47
+#define ORIG_Z_MIN_PIN 10
+#define ORIG_Z_MAX_PIN 30
+#define ORIG_Z_ENABLE_PIN 27
 #define Z_MS1_PIN 68
 #define Z_MS2_PIN 67
 
@@ -2321,15 +2321,15 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #endif
 #define TEMP_2_PIN -1
 
-#define E0_STEP_PIN         34
-#define E0_DIR_PIN          43
-#define E0_ENABLE_PIN       26
+#define ORIG_E0_STEP_PIN         34
+#define ORIG_E0_DIR_PIN          43
+#define ORIG_E0_ENABLE_PIN       26
 #define E0_MS1_PIN 65
 #define E0_MS2_PIN 66
 
-#define E1_STEP_PIN         33
-#define E1_DIR_PIN          42
-#define E1_ENABLE_PIN       25
+#define ORIG_E1_STEP_PIN         33
+#define ORIG_E1_DIR_PIN          42
+#define ORIG_E1_ENABLE_PIN       25
 #define E1_MS1_PIN 63
 #define E1_MS2_PIN 64
 
@@ -2339,7 +2339,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define SDPOWER            -1
 #define SDSS               53
 #define LED_PIN            13
-#define FAN_PIN            8
+#define ORIG_FAN_PIN            8
 #define PS_ON_PIN          4
 #define KILL_PIN           -1 //80 with Smart Controller LCD
 #define SUICIDE_PIN        -1  //PIN that has to be turned on right after start, to keep power flowing.
@@ -2430,38 +2430,38 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 
 #define LARGE_FLASH        true
 
-#define X_STEP_PIN         26
-#define X_DIR_PIN          28
-#define X_ENABLE_PIN       24
-#define X_MIN_PIN          41
-#define X_MAX_PIN          37
+#define ORIG_X_STEP_PIN         26
+#define ORIG_X_DIR_PIN          28
+#define ORIG_X_ENABLE_PIN       24
+#define ORIG_X_MIN_PIN          41
+#define ORIG_X_MAX_PIN          37
 
-#define Y_STEP_PIN         60 // A6
-#define Y_DIR_PIN          61 // A7
-#define Y_ENABLE_PIN       22
-#define Y_MIN_PIN          14
-#define Y_MAX_PIN          15
+#define ORIG_Y_STEP_PIN         60 // A6
+#define ORIG_Y_DIR_PIN          61 // A7
+#define ORIG_Y_ENABLE_PIN       22
+#define ORIG_Y_MIN_PIN          14
+#define ORIG_Y_MAX_PIN          15
 
-#define Z_STEP_PIN         54 // A0
-#define Z_DIR_PIN          55 // A1
-#define Z_ENABLE_PIN       56 // A2
-#define Z_MIN_PIN          18
-#define Z_MAX_PIN          19
+#define ORIG_Z_STEP_PIN         54 // A0
+#define ORIG_Z_DIR_PIN          55 // A1
+#define ORIG_Z_ENABLE_PIN       56 // A2
+#define ORIG_Z_MIN_PIN          18
+#define ORIG_Z_MAX_PIN          19
 
-#define E0_STEP_PIN        31
-#define E0_DIR_PIN         32
-#define E0_ENABLE_PIN      38
+#define ORIG_E0_STEP_PIN        31
+#define ORIG_E0_DIR_PIN         32
+#define ORIG_E0_ENABLE_PIN      38
 
-#define E1_STEP_PIN        34
-#define E1_DIR_PIN         36
-#define E1_ENABLE_PIN      30
+#define ORIG_E1_STEP_PIN        34
+#define ORIG_E1_DIR_PIN         36
+#define ORIG_E1_ENABLE_PIN      30
 
 #define SDPOWER            -1
 #define SDSS               53
 #define LED_PIN            13
 
 
-#define FAN_PIN            7 // IO pin. Buffer needed
+#define ORIG_FAN_PIN            7 // IO pin. Buffer needed
 #define PS_ON_PIN          12
 #define KILL_PIN           -1
 
@@ -2531,41 +2531,41 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 
  #define LARGE_FLASH        true
 
- #define X_STEP_PIN 26
- #define X_DIR_PIN 27
- #define X_ENABLE_PIN 25
- #define X_MIN_PIN 37
- #define X_MAX_PIN 40 //2 //Max endstops default to disabled "-1", set to commented value to enable.
+ #define ORIG_X_STEP_PIN 26
+ #define ORIG_X_DIR_PIN 27
+ #define ORIG_X_ENABLE_PIN 25
+ #define ORIG_X_MIN_PIN 37
+ #define ORIG_X_MAX_PIN 40 //2 //Max endstops default to disabled "-1", set to commented value to enable.
 
- #define Y_STEP_PIN 4 // A6
- #define Y_DIR_PIN 54 // A0
- #define Y_ENABLE_PIN 5
- #define Y_MIN_PIN 41
- #define Y_MAX_PIN 38 //15
+ #define ORIG_Y_STEP_PIN 4 // A6
+ #define ORIG_Y_DIR_PIN 54 // A0
+ #define ORIG_Y_ENABLE_PIN 5
+ #define ORIG_Y_MIN_PIN 41
+ #define ORIG_Y_MAX_PIN 38 //15
 
- #define Z_STEP_PIN 56 // A2
- #define Z_DIR_PIN 60 // A6
- #define Z_ENABLE_PIN 55 // A1
- #define Z_MIN_PIN 18
- #define Z_MAX_PIN 19
+ #define ORIG_Z_STEP_PIN 56 // A2
+ #define ORIG_Z_DIR_PIN 60 // A6
+ #define ORIG_Z_ENABLE_PIN 55 // A1
+ #define ORIG_Z_MIN_PIN 18
+ #define ORIG_Z_MAX_PIN 19
 
- #define E0_STEP_PIN 35
- #define E0_DIR_PIN 36
- #define E0_ENABLE_PIN 34
+ #define ORIG_E0_STEP_PIN 35
+ #define ORIG_E0_DIR_PIN 36
+ #define ORIG_E0_ENABLE_PIN 34
 
- #define E1_STEP_PIN 29
- #define E1_DIR_PIN 39
- #define E1_ENABLE_PIN 28
+ #define ORIG_E1_STEP_PIN 29
+ #define ORIG_E1_DIR_PIN 39
+ #define ORIG_E1_ENABLE_PIN 28
 
- #define E2_STEP_PIN 23
- #define E2_DIR_PIN 24
- #define E2_ENABLE_PIN 22
+ #define ORIG_E2_STEP_PIN 23
+ #define ORIG_E2_DIR_PIN 24
+ #define ORIG_E2_ENABLE_PIN 22
 
  #define SDPOWER -1
  #define SDSS 53
  #define LED_PIN 13
 
- #define FAN_PIN 7
+ #define ORIG_FAN_PIN 7
  #define FAN2_PIN 6
  #define PS_ON_PIN 12
  #define KILL_PIN -1
@@ -2648,35 +2648,35 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
  #define LARGE_FLASH        true
  
 
-	#define X_STEP_PIN         58
-	#define X_DIR_PIN          57
-	#define X_ENABLE_PIN       59
-	#define X_MIN_PIN          37
-	#define X_MAX_PIN          40   //2 //Max endstops default to disabled "-1", set to commented value to enable.
+	#define ORIG_X_STEP_PIN         58
+	#define ORIG_X_DIR_PIN          57
+	#define ORIG_X_ENABLE_PIN       59
+	#define ORIG_X_MIN_PIN          37
+	#define ORIG_X_MAX_PIN          40   //2 //Max endstops default to disabled "-1", set to commented value to enable.
 
-	#define Y_STEP_PIN         5 // A6
-	#define Y_DIR_PIN          17 // A0
-	#define Y_ENABLE_PIN       4
-	#define Y_MIN_PIN          41
-	#define Y_MAX_PIN          38   //15
+	#define ORIG_Y_STEP_PIN         5 // A6
+	#define ORIG_Y_DIR_PIN          17 // A0
+	#define ORIG_Y_ENABLE_PIN       4
+	#define ORIG_Y_MIN_PIN          41
+	#define ORIG_Y_MAX_PIN          38   //15
 
-	#define Z_STEP_PIN         16 // A2
-	#define Z_DIR_PIN          11 // A6
-	#define Z_ENABLE_PIN       3 // A1
-	#define Z_MIN_PIN          18
-	#define Z_MAX_PIN          19
+	#define ORIG_Z_STEP_PIN         16 // A2
+	#define ORIG_Z_DIR_PIN          11 // A6
+	#define ORIG_Z_ENABLE_PIN       3 // A1
+	#define ORIG_Z_MIN_PIN          18
+	#define ORIG_Z_MAX_PIN          19
 	 
-	#define E0_STEP_PIN         28
-	#define E0_DIR_PIN          27
-	#define E0_ENABLE_PIN       29
+	#define ORIG_E0_STEP_PIN         28
+	#define ORIG_E0_DIR_PIN          27
+	#define ORIG_E0_ENABLE_PIN       29
 
-	#define E1_STEP_PIN         25
-	#define E1_DIR_PIN          24
-	#define E1_ENABLE_PIN       26
+	#define ORIG_E1_STEP_PIN         25
+	#define ORIG_E1_DIR_PIN          24
+	#define ORIG_E1_ENABLE_PIN       26
 
-	#define E2_STEP_PIN         22
-	#define E2_DIR_PIN          60
-	#define E2_ENABLE_PIN       23
+	#define ORIG_E2_STEP_PIN         22
+	#define ORIG_E2_DIR_PIN          60
+	#define ORIG_E2_ENABLE_PIN       23
 	 
  #define SDPOWER -1
  #define SDSS 53
@@ -2694,7 +2694,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 	#define HEATER_1_PIN 8 
 	#define HEATER_2_PIN 9 
 	#define HEATER_BED_PIN 10 
- #define FAN_PIN 6
+ #define ORIG_FAN_PIN 6
  #define FAN2_PIN 7
  
  #if TEMP_SENSOR_0 == -1
@@ -2774,42 +2774,42 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 
  #define LARGE_FLASH        true
 
- #define X_STEP_PIN 48
- #define X_DIR_PIN 47
- #define X_ENABLE_PIN 49
- #define X_MIN_PIN 5
- #define X_MAX_PIN -1 //2 //Max endstops default to disabled "-1", set to commented value to enable.
+ #define ORIG_X_STEP_PIN 48
+ #define ORIG_X_DIR_PIN 47
+ #define ORIG_X_ENABLE_PIN 49
+ #define ORIG_X_MIN_PIN 5
+ #define ORIG_X_MAX_PIN -1 //2 //Max endstops default to disabled "-1", set to commented value to enable.
 
- #define Y_STEP_PIN 39 // A6
- #define Y_DIR_PIN 40 // A0
- #define Y_ENABLE_PIN 38
- #define Y_MIN_PIN 2
- #define Y_MAX_PIN -1 //15
+ #define ORIG_Y_STEP_PIN 39 // A6
+ #define ORIG_Y_DIR_PIN 40 // A0
+ #define ORIG_Y_ENABLE_PIN 38
+ #define ORIG_Y_MIN_PIN 2
+ #define ORIG_Y_MAX_PIN -1 //15
 
- #define Z_STEP_PIN 42 // A2
- #define Z_DIR_PIN 43 // A6
- #define Z_ENABLE_PIN 41 // A1
- #define Z_MIN_PIN 6
- #define Z_MAX_PIN -1
+ #define ORIG_Z_STEP_PIN 42 // A2
+ #define ORIG_Z_DIR_PIN 43 // A6
+ #define ORIG_Z_ENABLE_PIN 41 // A1
+ #define ORIG_Z_MIN_PIN 6
+ #define ORIG_Z_MAX_PIN -1
 
- #define E0_STEP_PIN 45
- #define E0_DIR_PIN 44
- #define E0_ENABLE_PIN 27
+ #define ORIG_E0_STEP_PIN 45
+ #define ORIG_E0_DIR_PIN 44
+ #define ORIG_E0_ENABLE_PIN 27
 
- #define E1_STEP_PIN 36
- #define E1_DIR_PIN 35
- #define E1_ENABLE_PIN 37
+ #define ORIG_E1_STEP_PIN 36
+ #define ORIG_E1_DIR_PIN 35
+ #define ORIG_E1_ENABLE_PIN 37
 
- #define E2_STEP_PIN -1
- #define E2_DIR_PIN -1
- #define E2_ENABLE_PIN -1
+ #define ORIG_E2_STEP_PIN -1
+ #define ORIG_E2_DIR_PIN -1
+ #define ORIG_E2_ENABLE_PIN -1
  
  #define SDPOWER -1
  #define SDSS               53
 
  #define LED_PIN 46
  
- #define FAN_PIN 9
+ #define ORIG_FAN_PIN 9
  #define FAN2_PIN -1
  #define PS_ON_PIN -1
  #define KILL_PIN -1
@@ -2873,48 +2873,48 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
  #define LARGE_FLASH        true
 
  //X motor stepper
- #define X_STEP_PIN 14
- #define X_DIR_PIN 15
- #define X_ENABLE_PIN 24
+ #define ORIG_X_STEP_PIN 14
+ #define ORIG_X_DIR_PIN 15
+ #define ORIG_X_ENABLE_PIN 24
 
  //X endstop
- #define X_MIN_PIN 3
- #define X_MAX_PIN -1
+ #define ORIG_X_MIN_PIN 3
+ #define ORIG_X_MAX_PIN -1
 
  //Y motor stepper
- #define Y_STEP_PIN 35
- #define Y_DIR_PIN 36
- #define Y_ENABLE_PIN 31
+ #define ORIG_Y_STEP_PIN 35
+ #define ORIG_Y_DIR_PIN 36
+ #define ORIG_Y_ENABLE_PIN 31
 
  //Y endstop
- #define Y_MIN_PIN 2
- #define Y_MAX_PIN -1
+ #define ORIG_Y_MIN_PIN 2
+ #define ORIG_Y_MAX_PIN -1
 
  //Z motor stepper
- #define Z_STEP_PIN 40
- #define Z_DIR_PIN 41
- #define Z_ENABLE_PIN 37
+ #define ORIG_Z_STEP_PIN 40
+ #define ORIG_Z_DIR_PIN 41
+ #define ORIG_Z_ENABLE_PIN 37
 
  //Z endstop
- #define Z_MIN_PIN 5
- #define Z_MAX_PIN -1
+ #define ORIG_Z_MIN_PIN 5
+ #define ORIG_Z_MAX_PIN -1
 
  //Extruder 0 stepper
- #define E0_STEP_PIN 26
- #define E0_DIR_PIN 28
- #define E0_ENABLE_PIN 25
+ #define ORIG_E0_STEP_PIN 26
+ #define ORIG_E0_DIR_PIN 28
+ #define ORIG_E0_ENABLE_PIN 25
 
  //Extruder 1 stepper
- #define E1_STEP_PIN 33
- #define E1_DIR_PIN 34
- #define E1_ENABLE_PIN 30
+ #define ORIG_E1_STEP_PIN 33
+ #define ORIG_E1_DIR_PIN 34
+ #define ORIG_E1_ENABLE_PIN 30
 
  #define SDPOWER -1
  #define SDSS -1
  #define LED_PIN -1
 
  //FAN
- #define FAN_PIN -1
+ #define ORIG_FAN_PIN -1
 
  #define PS_ON_PIN -1
  #define KILL_PIN -1
@@ -2972,68 +2972,68 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #endif
 
 //List of pins which to ignore when asked to change by gcode, 0 and 1 are RX and TX, do not mess with those!
-#define _E0_PINS E0_STEP_PIN, E0_DIR_PIN, E0_ENABLE_PIN, HEATER_0_PIN,
+#define _E0_PINS ORIG_E0_STEP_PIN, ORIG_E0_DIR_PIN, ORIG_E0_ENABLE_PIN, HEATER_0_PIN,
 #if DRIVER_EXTRUDERS > 1
-  #define _E1_PINS E1_STEP_PIN, E1_DIR_PIN, E1_ENABLE_PIN, HEATER_1_PIN,
+  #define _E1_PINS ORIG_E1_STEP_PIN, ORIG_E1_DIR_PIN, ORIG_E1_ENABLE_PIN, HEATER_1_PIN,
 #else
   #define _E1_PINS
 #endif
 #if DRIVER_EXTRUDERS  > 2
-  #define _E2_PINS E2_STEP_PIN, E2_DIR_PIN, E2_ENABLE_PIN, HEATER_2_PIN,
+  #define _E2_PINS ORIG_E2_STEP_PIN, ORIG_E2_DIR_PIN, ORIG_E2_ENABLE_PIN, HEATER_2_PIN,
 #else
   #define _E2_PINS
 #endif
 #if DRIVER_EXTRUDERS > 3
-  #define _E3_PINS E3_STEP_PIN, E3_DIR_PIN, E3_ENABLE_PIN, HEATER_3_PIN,
+  #define _E3_PINS ORIG_E3_STEP_PIN, ORIG_E3_DIR_PIN, ORIG_E3_ENABLE_PIN, HEATER_3_PIN,
 #else
   #define _E3_PINS
 #endif
 
 #ifdef X_STOP_PIN
   #if X_HOME_DIR < 0
-    #define X_MIN_PIN X_STOP_PIN
-    #define X_MAX_PIN -1
+    #define ORIG_X_MIN_PIN X_STOP_PIN
+    #define ORIG_X_MAX_PIN -1
   #else
-    #define X_MIN_PIN -1
-    #define X_MAX_PIN X_STOP_PIN
+    #define ORIG_X_MIN_PIN -1
+    #define ORIG_X_MAX_PIN X_STOP_PIN
   #endif
 #endif
 
 #ifdef Y_STOP_PIN
   #if Y_HOME_DIR < 0
-    #define Y_MIN_PIN Y_STOP_PIN
-    #define Y_MAX_PIN -1
+    #define ORIG_Y_MIN_PIN Y_STOP_PIN
+    #define ORIG_Y_MAX_PIN -1
   #else
-    #define Y_MIN_PIN -1
-    #define Y_MAX_PIN Y_STOP_PIN
+    #define ORIG_Y_MIN_PIN -1
+    #define ORIG_Y_MAX_PIN Y_STOP_PIN
   #endif
 #endif
 
 #ifdef Z_STOP_PIN
   #if Z_HOME_DIR < 0
-    #define Z_MIN_PIN Z_STOP_PIN
-    #define Z_MAX_PIN -1
+    #define ORIG_Z_MIN_PIN Z_STOP_PIN
+    #define ORIG_Z_MAX_PIN -1
   #else
-    #define Z_MIN_PIN -1
-    #define Z_MAX_PIN Z_STOP_PIN
+    #define ORIG_Z_MIN_PIN -1
+    #define ORIG_Z_MAX_PIN Z_STOP_PIN
   #endif
 #endif
 
 #ifdef DISABLE_MAX_ENDSTOPS
-#define X_MAX_PIN          -1
-#define Y_MAX_PIN          -1
-#define Z_MAX_PIN          -1
+#define ORIG_X_MAX_PIN          -1
+#define ORIG_Y_MAX_PIN          -1
+#define ORIG_Z_MAX_PIN          -1
 #endif
 
 #ifdef DISABLE_MIN_ENDSTOPS
-#define X_MIN_PIN          -1
-#define Y_MIN_PIN          -1
-#define Z_MIN_PIN          -1
+#define ORIG_X_MIN_PIN          -1
+#define ORIG_Y_MIN_PIN          -1
+#define ORIG_Z_MIN_PIN          -1
 #endif
 
 #ifdef DELTA
-#define X_MIN_PIN          -1
-#define Y_MIN_PIN          -1
+#define ORIG_X_MIN_PIN          -1
+#define ORIG_Y_MIN_PIN          -1
 #endif
 
 #ifdef MKR4
@@ -3049,9 +3049,9 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 
 #ifdef NPR2
 #ifdef DELTA
-#define E_MIN_PIN          3  // Use pin X_MIN_PIN
+#define E_MIN_PIN          3  // Use pin ORIG_X_MIN_PIN
 #else  // NO DELTA
-#define Z_MAX_PIN          -1 // Use pin Z_MAX_PIN
+#define ORIG_Z_MAX_PIN          -1 // Use pin ORIG_Z_MAX_PIN
 #define E_MIN_PIN          19
 #endif // END DELTA
 #endif // END NPR2
@@ -3065,8 +3065,49 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define PAUSE_PIN          5
 #endif
 
-#define SENSITIVE_PINS {0, 1, X_STEP_PIN, X_DIR_PIN, X_ENABLE_PIN, X_MIN_PIN, X_MAX_PIN, Y_STEP_PIN, Y_DIR_PIN, Y_ENABLE_PIN, Y_MIN_PIN, Y_MAX_PIN, Z_STEP_PIN, Z_DIR_PIN, Z_ENABLE_PIN, Z_MIN_PIN, Z_MAX_PIN, PS_ON_PIN, \
-                        HEATER_BED_PIN, FAN_PIN,                  \
+
+// Original pin assignmats to be used in configuration tool
+#define X_STEP_PIN ORIG_X_STEP_PIN
+#define X_DIR_PIN ORIG_X_DIR_PIN
+#define X_ENABLE_PIN ORIG_X_ENABLE_PIN
+#define X_MIN_PIN ORIG_X_MIN_PIN
+#define X_MAX_PIN ORIG_X_MAX_PIN
+
+#define Y_STEP_PIN ORIG_Y_STEP_PIN
+#define Y_DIR_PIN ORIG_Y_DIR_PIN
+#define Y_ENABLE_PIN ORIG_Y_ENABLE_PIN
+#define Y_MIN_PIN ORIG_Y_MIN_PIN
+#define Y_MAX_PIN ORIG_Y_MAX_PIN
+
+#define Z_STEP_PIN ORIG_Z_STEP_PIN
+#define Z_DIR_PIN ORIG_Z_DIR_PIN
+#define Z_ENABLE_PIN ORIG_Z_ENABLE_PIN
+#define Z_MIN_PIN ORIG_Z_MIN_PIN
+#define Z_MAX_PIN ORIG_Z_MAX_PIN
+
+#define E0_STEP_PIN ORIG_E0_STEP_PIN
+#define E0_DIR_PIN ORIG_E0_DIR_PIN
+#define E0_ENABLE_PIN ORIG_E0_ENABLE_PIN
+
+#if DRIVER_EXTRUDERS > 1
+#define E1_STEP_PIN ORIG_E1_STEP_PIN
+#define E1_DIR_PIN ORIG_E1_DIR_PIN
+#define E1_ENABLE_PIN ORIG_E1_ENABLE_PIN
+#elif DRIVER_EXTRUDERS > 2
+#define E2_STEP_PIN ORIG_E2_STEP_PIN
+#define E2_DIR_PIN ORIG_E2_DIR_PIN
+#define E2_ENABLE_PIN ORIG_E2_ENABLE_PIN
+#elif DRIVER_EXTRUDERS > 3
+#define E3_STEP_PIN ORIG_E3_STEP_PIN
+#define E3_DIR_PIN ORIG_E3_DIR_PIN
+#define E3_ENABLE_PIN ORIG_E3_ENABLE_PIN
+#endif
+
+#define FAN_PIN ORIG_FAN_PIN
+
+
+#define SENSITIVE_PINS {0, 1, ORIG_X_STEP_PIN, ORIG_X_DIR_PIN, ORIG_X_ENABLE_PIN, ORIG_X_MIN_PIN, ORIG_X_MAX_PIN, ORIG_Y_STEP_PIN, ORIG_Y_DIR_PIN, ORIG_Y_ENABLE_PIN, ORIG_Y_MIN_PIN, ORIG_Y_MAX_PIN, ORIG_Z_STEP_PIN, ORIG_Z_DIR_PIN, ORIG_Z_ENABLE_PIN, ORIG_Z_MIN_PIN, ORIG_Z_MAX_PIN, PS_ON_PIN, \
+                        HEATER_BED_PIN, ORIG_FAN_PIN,                  \
                         _E0_PINS _E1_PINS _E2_PINS _E3_PINS           \
                         analogInputToDigitalPin(TEMP_0_PIN), analogInputToDigitalPin(TEMP_1_PIN), analogInputToDigitalPin(TEMP_2_PIN), analogInputToDigitalPin(TEMP_3_PIN), analogInputToDigitalPin(TEMP_BED_PIN) }
 #endif
