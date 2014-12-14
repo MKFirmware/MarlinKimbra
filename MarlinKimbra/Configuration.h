@@ -592,7 +592,7 @@
 //define BlinkM/CyzRgb Support
 //#define BLINKM
 
-//define LASERBEAM support
+//define laser beam support
 //#define LASERBEAM
 
 /**********************************************************************\
