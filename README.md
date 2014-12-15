@@ -1,11 +1,14 @@
-==========================
 MarlinKimbra 3D Printer Firmware
 ==========================
 Marlin has a GPL license because I believe in open development.
 Please do not use this code in products (3D printers, CNC etc) that are closed source or are crippled by a patent.
 
+Configurator Tool OnLine
+==========================
+http://marlinkimbra.it
+
 Quick Information
-===================
+==========================
 This version of Marlin was made to accommodate some requests made by the community RepRap Italy. 
 The new features are: 
 A single Marlin for all types of printers; Cartesian, Delta, SCARA, CoreXY. 
@@ -19,7 +22,7 @@ The addition of a different feedrate for retraction.
 Adding Debug Dryrun used by repetier.
 
 Features:
-=========
+==========================
 
 *   Interrupt based movement with real linear acceleration
 *   High steprate
