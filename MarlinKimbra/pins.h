@@ -730,22 +730,22 @@
 
   #define TEMP_BED_PIN       14   // ANALOG NUMBERING
 
-  #ifdef NUM_SERVOS
+  #if NUM_SERVOS > 0
     #define SERVO0_PIN         11
-
-    #if NUM_SERVOS > 1
-      #define SERVO1_PIN         6
-    #endif
-
-    #if NUM_SERVOS > 2
-      #define SERVO2_PIN         5
-    #endif
-
-    #if NUM_SERVOS > 3
-      #define SERVO3_PIN         4
-    #endif
   #endif
 
+  #if NUM_SERVOS > 1
+    #define SERVO1_PIN         6
+  #endif
+
+  #if NUM_SERVOS > 2
+    #define SERVO2_PIN         5
+  #endif
+
+  #if NUM_SERVOS > 3
+    #define SERVO3_PIN         4
+  #endif
+  
   #if MOTHERBOARD == 68
     #define BEEPER 33
   #endif
@@ -1219,20 +1219,20 @@
  #define ORIG_FAN_PIN            4
 #endif
 
-#ifdef NUM_SERVOS
+#if NUM_SERVOS > 0
   #define SERVO0_PIN          -1
+#endif
 
-  #if NUM_SERVOS > 1
-    #define SERVO1_PIN        -1
-  #endif
+#if NUM_SERVOS > 1
+  #define SERVO1_PIN        -1
+#endif
 
-  #if NUM_SERVOS > 2
-    #define SERVO2_PIN        -1
-  #endif
+#if NUM_SERVOS > 2
+  #define SERVO2_PIN        -1
+#endif
 
-  #if NUM_SERVOS > 3
-    #define SERVO3_PIN        -1
-  #endif
+#if NUM_SERVOS > 3
+  #define SERVO3_PIN        -1
 #endif
 
 #define PS_ON_PIN          -1
@@ -2682,9 +2682,9 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
  #define SDSS 53
  #define LED_PIN 13
  
- #ifdef NUM_SERVOS
-#define SERVO0_PIN 46
-#endif
+ #if NUM_SERVOS > 0
+   #define SERVO0_PIN 46
+ #endif
 
  #define PS_ON_PIN 12
  #define KILL_PIN -1
