@@ -192,17 +192,17 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 
 //// MOVEMENT SETTINGS
 #define NUM_AXIS 4 // The axis order in all axis related arrays is X, Y, Z, E
-#define HOMING_FEEDRATE {100*60, 100*60, 4*60, 0}  // set the homing speeds (mm/min)
+#define HOMING_FEEDRATE {100*60,100*60,4*60,0}  // set the homing speeds (mm/min)
 
 // default settings
 
-#define DEFAULT_AXIS_STEPS_PER_UNIT     {80,80,3200,625,625,625,625}    // X, Y, Z, E0, E1, E2, E3 default steps per unit
-#define DEFAULT_MAX_FEEDRATE            {300,300,2,100,100,100,100}     // X, Y, Z, E0, E1, E2, E3 (mm/sec)
-#define DEFAULT_RETRACTION_MAX_FEEDRATE {110,110,110,110}               // E0, E1, E2, E3 (mm/sec)
-#define DEFAULT_MAX_ACCELERATION        {3000,3000,50,1000}             // X, Y, Z, E maximum start speed for accelerated moves.
+#define DEFAULT_AXIS_STEPS_PER_UNIT {80,80,3200,625,625,625,625}     // X, Y, Z, E0, E1, E2, E3 default steps per unit
+#define DEFAULT_MAX_FEEDRATE {300,300,2,100,100,100,100}     // X, Y, Z, E0, E1, E2, E3 (mm/sec)
+#define DEFAULT_RETRACTION_MAX_FEEDRATE {110,110,110,110}     // E0, E1, E2, E3 (mm/sec)
+#define DEFAULT_MAX_ACCELERATION {3000,3000,50,1000}     // X, Y, Z, E maximum start speed for accelerated moves.
 
-#define DEFAULT_ACCELERATION          2500    // X, Y, Z and E max acceleration in mm/s^2 for printing moves
-#define DEFAULT_RETRACT_ACCELERATION  3000    // X, Y, Z and E max acceleration in mm/s^2 for retracts
+#define DEFAULT_ACCELERATION 2500    // X, Y, Z and E max acceleration in mm/s^2 for printing moves
+#define DEFAULT_RETRACT_ACCELERATION 3000    // X, Y, Z and E max acceleration in mm/s^2 for retracts
 
 // Offset of the extruders (uncomment if using more than one and relying on firmware to position when changing).
 // The offset has to be X=0, Y=0 for the extruder 0 hotend (default extruder).
@@ -211,9 +211,9 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 // #define EXTRUDER_OFFSET_Y {0.0, 5.00}  // (in mm) for each extruder, offset of the hotend on the Y axis
 
 // The speed change that does not require acceleration (i.e. the software might assume it can be done instantaneously)
-#define DEFAULT_XYJERK                10.0    // (mm/sec)
-#define DEFAULT_ZJERK                 0.4     // (mm/sec)
-#define DEFAULT_EJERK                 5.0     // (mm/sec)
+#define DEFAULT_XYJERK 10.0    // (mm/sec)
+#define DEFAULT_ZJERK 0.4     // (mm/sec)
+#define DEFAULT_EJERK 5.0     // (mm/sec)
 
 //===========================================================================
 //=============================Additional Features===========================
@@ -244,5 +244,5 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 // This allows for servo actuated endstops, primary usage is for the Z Axis to eliminate calibration or bed height changes.
 // Use M206 command to correct for switch height offset to actual nozzle height. Store that setting with M500.
 //
-#define SERVO_ENDSTOPS {-1, -1, 0}     // Servo index for X, Y, Z. Disable with -1
+#define SERVO_ENDSTOPS {-1,-1,0}     // Servo index for X, Y, Z. Disable with -1
 #define SERVO_ENDSTOP_ANGLES {0,0,0,0,90,0}     // X,Y,Z Axis Extend and Retract angles
