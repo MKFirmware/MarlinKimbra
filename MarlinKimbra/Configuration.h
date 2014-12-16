@@ -130,9 +130,6 @@
 #define DRIVER_EXTRUDERS EXTRUDERS // This defines the number of Driver extruders
 #endif
 
-// Setting firmware for FILAMENT END SWITCH
-// #define FILAMENT_END_SWITCH
-
 // The following define selects which power supply you have. Please choose the one that matches your setup
 // 0 = Normal power
 // 1 = ATX
@@ -141,7 +138,7 @@
 #define POWER_SUPPLY 0
 
 // Define this to have the electronics keep the power supply off on startup. If you don't know what this is leave it.
-// #define PS_DEFAULT_OFF
+//#define PS_DEFAULT_OFF
 
 /******************************************************************************
  ************************** Thermal Settings **********************************
@@ -578,19 +575,22 @@
 
 // M240  Triggers a camera by emulating a Canon RC-1 Remote
 // Data from: http://www.doc-diy.net/photo/rc-1_hacked/
-// #define PHOTOGRAPH_PIN     23
+//#define PHOTOGRAPH_PIN     23
 
-// SF send wrong arc g-codes when using Arc Point as fillet procedure
+//SF send wrong arc g-codes when using Arc Point as fillet procedure
 //#define SF_ARC_FIX
 
-// Support for STEPPERS TOSHIBA
+//Support for STEPPERS TOSHIBA
 //#define CONFIG_STEPPERS_TOSHIBA 1
 
-// Support for the BariCUDA Paste Extruder.
+//Support for the BariCUDA Paste Extruder.
 //#define BARICUDA
 
 //define BlinkM/CyzRgb Support
 //#define BLINKM
+
+//Setting firmware for FILAMENT END SWITCH
+//#define FILAMENT_END_SWITCH
 
 //define laser beam support
 //#define LASERBEAM
