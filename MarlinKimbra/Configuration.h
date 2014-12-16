@@ -137,7 +137,7 @@
 
 #define POWER_SUPPLY 0
 
-// Define this to have the electronics keep the power supply off on startup. If you don't know what this is leave it.
+//Define this to have the electronics keep the power supply off on startup. If you don't know what this is leave it.
 //#define PS_DEFAULT_OFF
 
 /******************************************************************************
@@ -163,7 +163,7 @@
  * 10 is 100k RS thermistor 198-961 (4.7k pullup)
  * 11 is 100k beta 3950 1% thermistor (4.7k pullup)
  * 12 is 100k 0603 SMD Vishay NTCS0603E3104FXT (4.7k pullup) (calibrated for Makibox hot bed)
- * 13 is 100k Hisens 3950  1% up to 300Â°C for hotend "Simple ONE " & "Hotend "All In ONE" 
+ * 13 is 100k Hisens 3950  1% up to 300Ã‚Â°C for hotend "Simple ONE " & "Hotend "All In ONE" 
  * 20 is the PT100 circuit found in the Ultimainboard V2.x
  * 60 is 100k Maker's Tool Works Kapton Bed Thermistor beta=3950
  * 
@@ -241,9 +241,9 @@
 
 // If you are using a pre-configured hotend then you can use one of the value sets by uncommenting it
 //            HotEnd{HE0,HE1,HE2,HE3}
-#define DEFAULT_Kp {41.51,50,0,0}
-#define DEFAULT_Ki {7.28,15,0,0}
-#define DEFAULT_Kd {59.17,90,0,0}
+#define DEFAULT_Kp {41.51,41.51,41.51,41.51}
+#define DEFAULT_Ki {7.28,7.28,7.28,7.28}
+#define DEFAULT_Kd {59.17,59.17,59.17,59.17}
 
 #endif // PIDTEMP
 
@@ -577,22 +577,22 @@
 // Data from: http://www.doc-diy.net/photo/rc-1_hacked/
 //#define PHOTOGRAPH_PIN     23
 
-//SF send wrong arc g-codes when using Arc Point as fillet procedure
+// SF send wrong arc g-codes when using Arc Point as fillet procedure
 //#define SF_ARC_FIX
 
-//Support for STEPPERS TOSHIBA
+// Support for STEPPERS TOSHIBA
 //#define CONFIG_STEPPERS_TOSHIBA 1
 
-//Support for the BariCUDA Paste Extruder.
+// Support for the BariCUDA Paste Extruder.
 //#define BARICUDA
 
-//define BlinkM/CyzRgb Support
+// define BlinkM/CyzRgb Support
 //#define BLINKM
 
-//Setting firmware for FILAMENT END SWITCH
+// Setting firmware for filament end switch
 //#define FILAMENT_END_SWITCH
 
-//define laser beam support
+// define laser beam support
 //#define LASERBEAM
 
 /**********************************************************************\
