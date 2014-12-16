@@ -319,7 +319,7 @@ uint8_t active_driver = 0;
 uint8_t debugLevel = 0;
 
 int fanSpeed=0;
-#ifdef SERVO_ENDSTOPS
+#ifdef SERVO_ENDSTOPS && (NUM_SERVOS > 0)
   int servo_endstops[] = SERVO_ENDSTOPS;
   int servo_endstop_angles[] = SERVO_ENDSTOP_ANGLES;
 #endif
@@ -457,6 +457,9 @@ static float color_step_moltiplicator = (DRIVER_MICROSTEP / MOTOR_ANGLE) * CARTE
 #endif // NPR2
 
 bool Stopped=false;
+#if defined(PAUSE_PIN) && PAUSE_PIN > -1
+bool paused=false;
+#endif
 
 #if NUM_SERVOS > 0
 Servo servos[NUM_SERVOS];
@@ -581,7 +584,7 @@ void suicide()
 #endif
 }
 
-#if defined(NUM_SERVOS)
+#if NUM_SERVOS > 0
 void servo_init()
 {
 #if (NUM_SERVOS >= 1) && defined(SERVO0_PIN) && (SERVO0_PIN > -1)
@@ -601,7 +604,7 @@ void servo_init()
 #endif
 
   // Set position of Servo Endstops that are defined
-#ifdef SERVO_ENDSTOPS
+#if defined(SERVO_ENDSTOPS) && (NUM_SERVOS > 0)
   for(int8_t i = 0; i < 3; i++) {
     if(servo_endstops[i] > -1) {
       servos[servo_endstops[i]].write(servo_endstop_angles[i * 2 + 1]);
@@ -678,7 +681,7 @@ void setup()
   SET_OUTPUT(LASER_TTL_PIN);
   digitalWrite(LASER_TTL_PIN, LOW);
 #endif
-#if defined(NUM_SERVOS)
+#if NUM_SERVOS > 0
   servo_init();
 #endif
 
@@ -1201,7 +1204,7 @@ static void clean_up_after_endstop_move() {
 
 static void engage_z_probe() {
   // Engage Z Servo endstop if enabled
-#ifdef SERVO_ENDSTOPS
+#if defined(SERVO_ENDSTOPS) && (NUM_SERVOS > 0)
   if (servo_endstops[Z_AXIS] > -1) {
 #if defined (ENABLE_AUTO_BED_LEVELING) && (PROBE_SERVO_DEACTIVATION_DELAY > 0)
     servos[servo_endstops[Z_AXIS]].attach(0);
@@ -1217,7 +1220,7 @@ static void engage_z_probe() {
 
 static void retract_z_probe() {
   // Retract Z Servo endstop if enabled
-#ifdef SERVO_ENDSTOPS
+#if defined(SERVO_ENDSTOPS) && (NUM_SERVOS > 0)
   if (servo_endstops[Z_AXIS] > -1) {
 #if defined (ENABLE_AUTO_BED_LEVELING) && (PROBE_SERVO_DEACTIVATION_DELAY > 0)
     servos[servo_endstops[Z_AXIS]].attach(0);
@@ -1279,7 +1282,7 @@ static void homeaxis(int axis) {
 
 #ifndef Z_PROBE_SLED
     // Engage Servo endstop if enabled
-    #ifdef SERVO_ENDSTOPS
+    #if defined(SERVO_ENDSTOPS) && (NUM_SERVOS > 0)
       #if defined (ENABLE_AUTO_BED_LEVELING) && (PROBE_SERVO_DEACTIVATION_DELAY > 0)
         if (axis==Z_AXIS) {
           engage_z_probe();
@@ -1313,7 +1316,7 @@ static void homeaxis(int axis) {
     axis_known_position[axis] = true;
 
     // Retract Servo endstop if enabled
-    #ifdef SERVO_ENDSTOPS
+    #if defined(SERVO_ENDSTOPS) && (NUM_SERVOS > 0)
       if (servo_endstops[axis] > -1) {
         servos[servo_endstops[axis]].write(servo_endstop_angles[axis * 2 + 1]);
       }
@@ -4672,7 +4675,7 @@ Sigma_Exit:
       }
       break;
 
-#if defined(ENABLE_AUTO_BED_LEVELING) && defined(SERVO_ENDSTOPS) && not defined(Z_PROBE_SLED)
+#if defined(ENABLE_AUTO_BED_LEVELING) && defined(SERVO_ENDSTOPS) && (NUM_SERVOS > 0) && not defined(Z_PROBE_SLED)
     case 401:
       {
         engage_z_probe();    // Engage Z Servo endstop if available
@@ -4918,6 +4921,9 @@ Sigma_Exit:
           target[E_AXIS]+=(-1)*FILAMENTCHANGE_FINALRETRACT ;
 #endif
         }
+#if defined(PAUSE_PIN) && PAUSE_PIN > -1
+        paused=false;
+#endif
         current_position[E_AXIS]=target[E_AXIS]; //the long retract of L is compensated by manual filament feeding
         plan_set_e_position(current_position[E_AXIS]);
         plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver); //should do nothing
@@ -5791,7 +5797,7 @@ void manage_inactivity()
 #endif
 
 #if defined(PAUSE_PIN) && PAUSE_PIN > -1
-  if(0 == READ(PAUSE_PIN)) pause();
+  if(0 == READ(PAUSE_PIN) && !paused) pause();
 #endif
 
 #if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
@@ -5902,6 +5908,7 @@ void temptone()
 #if defined(PAUSE_PIN) && PAUSE_PIN > -1
 void pause()
 {
+  paused=true;
   enquecommand("M600 X0 Z+5");
   enquecommand("G4 P0");
   enquecommand("G4 P0");
