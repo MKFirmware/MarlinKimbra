@@ -16,7 +16,7 @@
 //===========================================================================
 
 #ifdef BED_LIMIT_SWITCHING
-#define BED_HYSTERESIS 2 //only disable heating if T>target+BED_HYSTERESIS and enable heating if T>target-BED_HYSTERESIS
+  #define BED_HYSTERESIS 2 //only disable heating if T>target+BED_HYSTERESIS and enable heating if T>target-BED_HYSTERESIS
 #endif
 #define BED_CHECK_INTERVAL 5000 //ms between checks in bang-bang control
 
@@ -29,12 +29,12 @@
 //#define WATCH_TEMP_INCREASE 10  //Heat up at least 10 degree in 20 seconds
 
 #ifdef PIDTEMP
-// this adds an experimental additional term to the heating power, proportional to the extrusion speed.
-// if Kc is chosen well, the additional required power due to increased melting should be compensated.
-#define PID_ADD_EXTRUSION_RATE
-#ifdef PID_ADD_EXTRUSION_RATE
-#define  DEFAULT_Kc (1) //heating power=Kc*(e_speed)
-#endif
+  // this adds an experimental additional term to the heating power, proportional to the extrusion speed.
+  // if Kc is chosen well, the additional required power due to increased melting should be compensated.
+  #define PID_ADD_EXTRUSION_RATE
+  #ifdef PID_ADD_EXTRUSION_RATE
+    #define  DEFAULT_Kc (1) //heating power=Kc*(e_speed)
+  #endif
 #endif
 
 
@@ -47,7 +47,7 @@
 // on an Ultimaker, some initial testing worked with M109 S215 B260 F1 in the start.gcode
 #define AUTOTEMP
 #ifdef AUTOTEMP
-#define AUTOTEMP_OLDWEIGHT 0.98
+  #define AUTOTEMP_OLDWEIGHT 0.98
 #endif
 
 //Show Temperature ADC value
@@ -102,46 +102,46 @@
 //// AUTOSET LOCATIONS OF LIMIT SWITCHES
 //// Added by ZetaPhoenix 09-15-2012
 #ifdef MANUAL_HOME_POSITIONS  // Use manual limit switch locations
-#define X_HOME_POS MANUAL_X_HOME_POS
-#define Y_HOME_POS MANUAL_Y_HOME_POS
-#define Z_HOME_POS MANUAL_Z_HOME_POS
+  #define X_HOME_POS MANUAL_X_HOME_POS
+  #define Y_HOME_POS MANUAL_Y_HOME_POS
+  #define Z_HOME_POS MANUAL_Z_HOME_POS
 #else //Set min/max homing switch positions based upon homing direction and min/max travel limits
-//X axis
-#if X_HOME_DIR == -1
-#ifdef BED_CENTER_AT_0_0
-#define X_HOME_POS X_MAX_LENGTH * -0.5
-#else
-#define X_HOME_POS X_MIN_POS
-#endif //BED_CENTER_AT_0_0
-#else
-#ifdef BED_CENTER_AT_0_0
-#define X_HOME_POS X_MAX_LENGTH * 0.5
-#else
-#define X_HOME_POS X_MAX_POS
-#endif //BED_CENTER_AT_0_0
-#endif //X_HOME_DIR == -1
+  //X axis
+  #if X_HOME_DIR == -1
+    #ifdef BED_CENTER_AT_0_0
+      #define X_HOME_POS X_MAX_LENGTH * -0.5
+    #else
+      #define X_HOME_POS X_MIN_POS
+    #endif //BED_CENTER_AT_0_0
+  #else
+    #ifdef BED_CENTER_AT_0_0
+      #define X_HOME_POS X_MAX_LENGTH * 0.5
+    #else
+      #define X_HOME_POS X_MAX_POS
+    #endif //BED_CENTER_AT_0_0
+  #endif //X_HOME_DIR == -1
 
-//Y axis
-#if Y_HOME_DIR == -1
-#ifdef BED_CENTER_AT_0_0
-#define Y_HOME_POS Y_MAX_LENGTH * -0.5
-#else
-#define Y_HOME_POS Y_MIN_POS
-#endif //BED_CENTER_AT_0_0
-#else
-#ifdef BED_CENTER_AT_0_0
-#define Y_HOME_POS Y_MAX_LENGTH * 0.5
-#else
-#define Y_HOME_POS Y_MAX_POS
-#endif //BED_CENTER_AT_0_0
-#endif //Y_HOME_DIR == -1
+  //Y axis
+  #if Y_HOME_DIR == -1
+    #ifdef BED_CENTER_AT_0_0
+      #define Y_HOME_POS Y_MAX_LENGTH * -0.5
+    #else
+      #define Y_HOME_POS Y_MIN_POS
+    #endif //BED_CENTER_AT_0_0
+  #else
+    #ifdef BED_CENTER_AT_0_0
+      #define Y_HOME_POS Y_MAX_LENGTH * 0.5
+    #else
+      #define Y_HOME_POS Y_MAX_POS
+    #endif //BED_CENTER_AT_0_0
+  #endif //Y_HOME_DIR == -1
 
-// Z axis
-#if Z_HOME_DIR == -1 //BED_CENTER_AT_0_0 not used
-#define Z_HOME_POS Z_MIN_POS
-#else
-#define Z_HOME_POS Z_MAX_POS
-#endif //Z_HOME_DIR == -1
+  // Z axis
+  #if Z_HOME_DIR == -1 //BED_CENTER_AT_0_0 not used
+    #define Z_HOME_POS Z_MIN_POS
+  #else
+    #define Z_HOME_POS Z_MAX_POS
+  #endif //Z_HOME_DIR == -1
 #endif //End auto min/max positions
 //END AUTOSET LOCATIONS OF LIMIT SWITCHES -ZP
 
@@ -156,8 +156,8 @@
 //#define Z_DUAL_STEPPER_DRIVERS
 
 #ifdef Z_DUAL_STEPPER_DRIVERS
-#undef EXTRUDERS
-#define EXTRUDERS 1
+  #undef EXTRUDERS
+  #define EXTRUDERS 1
 #endif
 
 // Same again but for Y Axis.
@@ -167,12 +167,12 @@
 #define INVERT_Y2_VS_Y_DIR true
 
 #ifdef Y_DUAL_STEPPER_DRIVERS
-#undef EXTRUDERS
-#define EXTRUDERS 1
+  #undef EXTRUDERS
+  #define EXTRUDERS 1
 #endif
 
 #if defined (Z_DUAL_STEPPER_DRIVERS) && defined (Y_DUAL_STEPPER_DRIVERS)
-#error "You cannot have dual drivers for both Y and Z"
+  #error "You cannot have dual drivers for both Y and Z"
 #endif
 
 // Enable this for dual x-carriage printers.
@@ -188,10 +188,10 @@
 #define X2_MAX_POS 353    // set maximum to the distance between toolheads when both heads are homed
 #define X2_HOME_DIR 1     // the second X-carriage always homes to the maximum endstop position
 #define X2_HOME_POS X2_MAX_POS // default home position is the maximum carriage position
-// However: In this mode the EXTRUDER_OFFSET_X value for the second extruder provides a software
-// override for X2_HOME_POS. This also allow recalibration of the distance between the two endstops
-// without modifying the firmware (through the "M218 T1 X???" command).
-// Remember: you should set the second extruder x-offset to 0 in your slicer.
+    // However: In this mode the EXTRUDER_OFFSET_X value for the second extruder provides a software
+    // override for X2_HOME_POS. This also allow recalibration of the distance between the two endstops
+    // without modifying the firmware (through the "M218 T1 X???" command).
+    // Remember: you should set the second extruder x-offset to 0 in your slicer.
 
 // Pins for second x-carriage stepper driver (defined here to avoid further complicating pins.h)
 #define X2_ENABLE_PIN 29
@@ -257,7 +257,7 @@
 
 //Comment to disable setting feedrate multiplier via encoder
 #ifdef ULTIPANEL
-#define ULTIPANEL_FEEDMULTIPLY
+    #define ULTIPANEL_FEEDMULTIPLY
 #endif
 
 // minimum time in microseconds that a movement needs to take if the buffer is emptied.
@@ -294,9 +294,9 @@
 // uncomment to enable an I2C based DIGIPOT like on the Azteeg X3 Pro
 //#define DIGIPOT_I2C
 // Number of channels available for I2C digipot, For Azteeg X3 Pro we have 8
-//#define DIGIPOT_I2C_NUM_CHANNELS 8
+#define DIGIPOT_I2C_NUM_CHANNELS 8
 // actual motor currents in Amps, need as many here as DIGIPOT_I2C_NUM_CHANNELS
-//#define DIGIPOT_I2C_MOTOR_CURRENTS {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0}
+#define DIGIPOT_I2C_MOTOR_CURRENTS {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0}
 
 //===========================================================================
 //=============================Additional Features===========================
@@ -305,20 +305,14 @@
 //#define CHDK 4        //Pin for triggering CHDK to take a picture see how to use it here http://captain-slow.dk/2014/03/09/3d-printing-timelapses/
 #define CHDK_DELAY 50 //How long in ms the pin should stay HIGH before going LOW again
 
-#ifdef SDSUPPORT
-// Disable steppers when the file is done printing?
-#define SD_FINISHED_STEPPERRELEASE true
-// Command to send. You may want to keep Z enabled so your bed stays in place.
-#define SD_FINISHED_RELEASECOMMAND "M84 X Y Z E"
+#define SD_FINISHED_STEPPERRELEASE true  //if sd support and the file is finished: disable steppers?
+#define SD_FINISHED_RELEASECOMMAND "M84 X Y Z E" // You might want to keep the z enabled so your bed stays in place.
 
-// Reverse file order of sd card menu display. It's sorted practically after the file system block order.
-// When a file is deleted it frees a block, so the order is not purely chronological.
-#define SDCARD_RATHERRECENTFIRST
-
-// To still have auto0.g accessible, there is again the option to do that. Using:
+//#define SDCARD_SORT_ALPHA // Sort SD file listings in ASCII order. Find additional options in cardreader.h
+#define SDCARD_RATHERRECENTFIRST  //reverse file order of sd card menu display. Its sorted practically after the file system block order.
+// if a file is deleted, it frees a block. hence, the order is not purely chronological. To still have auto0.g accessible, there is again the option to do that.
+// using:
 //#define MENU_ADDAUTOSTART
-
-#endif // SDSUPPORT
 
 // The hardware watchdog should reset the microcontroller disabling all outputs, in case the firmware gets stuck and doesn't do temperature regulation.
 //#define USE_WATCHDOG
@@ -338,19 +332,19 @@
 // does not respect endstops!
 //#define BABYSTEPPING
 #ifdef BABYSTEPPING
-#define BABYSTEP_XY  //not only z, but also XY in the menu. more clutter, more functions
-#define BABYSTEP_INVERT_Z false  //true for inverse movements in Z
-#define BABYSTEP_Z_MULTIPLICATOR 2 //faster z movements
+  #define BABYSTEP_XY  //not only z, but also XY in the menu. more clutter, more functions
+  #define BABYSTEP_INVERT_Z false  //true for inverse movements in Z
+  #define BABYSTEP_Z_MULTIPLICATOR 2 //faster z movements
 
-#ifdef COREXY
-#error BABYSTEPPING not implemented for COREXY yet.
-#endif
+  #ifdef COREXY
+    #error BABYSTEPPING not implemented for COREXY yet.
+  #endif
 
-#ifdef DELTA
-#ifdef BABYSTEP_XY
-#error BABYSTEPPING only implemented for Z axis on deltabots.
-#endif
-#endif
+  #ifdef DELTA
+    #ifdef BABYSTEP_XY
+      #error BABYSTEPPING only implemented for Z axis on deltabots.
+    #endif
+  #endif
 #endif
 
 // extruder advance constant (s2/mm3)
@@ -363,12 +357,12 @@
 //#define ADVANCE
 
 #ifdef ADVANCE
-#define EXTRUDER_ADVANCE_K .0
+  #define EXTRUDER_ADVANCE_K .0
 
-#define D_FILAMENT 2.85
-#define STEPS_MM_E 836
-#define EXTRUTION_AREA (0.25 * D_FILAMENT * D_FILAMENT * 3.14159)
-#define STEPS_PER_CUBIC_MM_E (axis_steps_per_unit[E_AXIS]/ EXTRUTION_AREA)
+  #define D_FILAMENT 2.85
+  #define STEPS_MM_E 836
+  #define EXTRUTION_AREA (0.25 * D_FILAMENT * D_FILAMENT * 3.14159)
+  #define STEPS_PER_CUBIC_MM_E (axis_steps_per_unit[E_AXIS]/ EXTRUTION_AREA)
 
 #endif // ADVANCE
 
@@ -385,7 +379,7 @@ const unsigned int dropsegments=5; //everything with less than this number of st
 #define SDCARDDETECTINVERTED
 
 #ifdef ULTIPANEL
-#undef SDCARDDETECTINVERTED
+ #undef SDCARDDETECTINVERTED
 #endif
 
 // Power Signal Control Definitions
@@ -400,8 +394,8 @@ const unsigned int dropsegments=5; //everything with less than this number of st
 #endif
 // 2 = X-Box 360 203W
 #if (POWER_SUPPLY == 2)
-#define PS_ON_AWAKE  HIGH
-#define PS_ON_ASLEEP LOW
+  #define PS_ON_AWAKE  HIGH
+  #define PS_ON_ASLEEP LOW
 #endif
 
 // Control heater 0 and heater 1 in parallel.
@@ -414,9 +408,9 @@ const unsigned int dropsegments=5; //everything with less than this number of st
 // The number of linear motions that can be in the plan at any give time.
 // THE BLOCK_BUFFER_SIZE NEEDS TO BE A POWER OF 2, i.g. 8,16,32 because shifts and ors are used to do the ring-buffering.
 #if defined SDSUPPORT
-#define BLOCK_BUFFER_SIZE 16   // SD,LCD,Buttons take more memory, block buffer needs to be smaller
+  #define BLOCK_BUFFER_SIZE 16   // SD,LCD,Buttons take more memory, block buffer needs to be smaller
 #else
-#define BLOCK_BUFFER_SIZE 16 // maximize block buffer
+  #define BLOCK_BUFFER_SIZE 16 // maximize block buffer
 #endif
 
 
@@ -433,102 +427,102 @@ const unsigned int dropsegments=5; //everything with less than this number of st
 
 // #define FWRETRACT  //ONLY PARTIALLY TESTED
 #ifdef FWRETRACT
-#define MIN_RETRACT 0.1                //minimum extruded mm to accept a automatic gcode retraction attempt
-#define RETRACT_LENGTH 3               //default retract length (positive mm)
-#define RETRACT_LENGTH_SWAP 13         //default swap retract length (positive mm), for extruder change
-#define RETRACT_FEEDRATE 45            //default feedrate for retracting (mm/s)
-#define RETRACT_ZLIFT 0                //default retract Z-lift
-#define RETRACT_RECOVER_LENGTH 0       //default additional recover length (mm, added to retract length when recovering)
-#define RETRACT_RECOVER_LENGTH_SWAP 0  //default additional swap recover length (mm, added to retract length when recovering from extruder change)
-#define RETRACT_RECOVER_FEEDRATE 8     //default feedrate for recovering from retraction (mm/s)
+  #define MIN_RETRACT 0.1                //minimum extruded mm to accept a automatic gcode retraction attempt
+  #define RETRACT_LENGTH 3               //default retract length (positive mm)
+  #define RETRACT_LENGTH_SWAP 13         //default swap retract length (positive mm), for extruder change
+  #define RETRACT_FEEDRATE 45            //default feedrate for retracting (mm/s)
+  #define RETRACT_ZLIFT 0                //default retract Z-lift
+  #define RETRACT_RECOVER_LENGTH 0       //default additional recover length (mm, added to retract length when recovering)
+  #define RETRACT_RECOVER_LENGTH_SWAP 0  //default additional swap recover length (mm, added to retract length when recovering from extruder change)
+  #define RETRACT_RECOVER_FEEDRATE 8     //default feedrate for recovering from retraction (mm/s)
 #endif
 
 //adds support for experimental filament exchange support M600; requires display
 #ifdef ULTIPANEL
-//#define FILAMENTCHANGEENABLE
-#ifdef FILAMENTCHANGEENABLE
-#define FILAMENTCHANGE_XPOS 3
-#define FILAMENTCHANGE_YPOS 3
-#define FILAMENTCHANGE_ZADD 10
-#define FILAMENTCHANGE_FIRSTRETRACT -2
-#define FILAMENTCHANGE_FINALRETRACT -100
-#endif
+  #define FILAMENTCHANGEENABLE
+  #ifdef FILAMENTCHANGEENABLE
+    #define FILAMENTCHANGE_XPOS 3
+    #define FILAMENTCHANGE_YPOS 3
+    #define FILAMENTCHANGE_ZADD 10
+    #define FILAMENTCHANGE_FIRSTRETRACT -2
+    #define FILAMENTCHANGE_FINALRETRACT -100
+  #endif
 #endif
 
 #ifdef FILAMENTCHANGEENABLE
-#ifdef EXTRUDER_RUNOUT_PREVENT
-#error EXTRUDER_RUNOUT_PREVENT currently incompatible with FILAMENTCHANGE
-#endif
+  #ifdef EXTRUDER_RUNOUT_PREVENT
+    #error EXTRUDER_RUNOUT_PREVENT currently incompatible with FILAMENTCHANGE
+  #endif
 #endif
 
 //===========================================================================
 //=============================  Define Defines  ============================
 //===========================================================================
 #if EXTRUDERS > 1 && defined TEMP_SENSOR_1_AS_REDUNDANT
-#error "You cannot use TEMP_SENSOR_1_AS_REDUNDANT if EXTRUDERS > 1"
+  #error "You cannot use TEMP_SENSOR_1_AS_REDUNDANT if EXTRUDERS > 1"
 #endif
 
 #if EXTRUDERS > 1 && defined HEATERS_PARALLEL
-#error "You cannot use HEATERS_PARALLEL if EXTRUDERS > 1"
+  #error "You cannot use HEATERS_PARALLEL if EXTRUDERS > 1"
 #endif
 
 #if TEMP_SENSOR_0 > 0
-#define THERMISTORHEATER_0 TEMP_SENSOR_0
-#define HEATER_0_USES_THERMISTOR
+  #define THERMISTORHEATER_0 TEMP_SENSOR_0
+  #define HEATER_0_USES_THERMISTOR
 #endif
 #if TEMP_SENSOR_1 > 0
-#define THERMISTORHEATER_1 TEMP_SENSOR_1
-#define HEATER_1_USES_THERMISTOR
+  #define THERMISTORHEATER_1 TEMP_SENSOR_1
+  #define HEATER_1_USES_THERMISTOR
 #endif
 #if TEMP_SENSOR_2 > 0
-#define THERMISTORHEATER_2 TEMP_SENSOR_2
-#define HEATER_2_USES_THERMISTOR
+  #define THERMISTORHEATER_2 TEMP_SENSOR_2
+  #define HEATER_2_USES_THERMISTOR
 #endif
 #if TEMP_SENSOR_3 > 0
-#define THERMISTORHEATER_3 TEMP_SENSOR_3
-#define HEATER_3_USES_THERMISTOR
+  #define THERMISTORHEATER_3 TEMP_SENSOR_3
+  #define HEATER_3_USES_THERMISTOR
 #endif
 #if TEMP_SENSOR_BED > 0
-#define THERMISTORBED TEMP_SENSOR_BED
-#define BED_USES_THERMISTOR
+  #define THERMISTORBED TEMP_SENSOR_BED
+  #define BED_USES_THERMISTOR
 #endif
 #if TEMP_SENSOR_0 == -1
-#define HEATER_0_USES_AD595
+  #define HEATER_0_USES_AD595
 #endif
 #if TEMP_SENSOR_1 == -1
-#define HEATER_1_USES_AD595
+  #define HEATER_1_USES_AD595
 #endif
 #if TEMP_SENSOR_2 == -1
-#define HEATER_2_USES_AD595
+  #define HEATER_2_USES_AD595
 #endif
 #if TEMP_SENSOR_3 == -1
-#define HEATER_3_USES_AD595
+  #define HEATER_3_USES_AD595
 #endif
 #if TEMP_SENSOR_BED == -1
-#define BED_USES_AD595
+  #define BED_USES_AD595
 #endif
 #if TEMP_SENSOR_0 == -2
-#define HEATER_0_USES_MAX6675
+  #define HEATER_0_USES_MAX6675
 #endif
 #if TEMP_SENSOR_0 == 0
-#undef HEATER_0_MINTEMP
-#undef HEATER_0_MAXTEMP
+  #undef HEATER_0_MINTEMP
+  #undef HEATER_0_MAXTEMP
 #endif
 #if TEMP_SENSOR_1 == 0
-#undef HEATER_1_MINTEMP
-#undef HEATER_1_MAXTEMP
+  #undef HEATER_1_MINTEMP
+  #undef HEATER_1_MAXTEMP
 #endif
 #if TEMP_SENSOR_2 == 0
-#undef HEATER_2_MINTEMP
-#undef HEATER_2_MAXTEMP
+  #undef HEATER_2_MINTEMP
+  #undef HEATER_2_MAXTEMP
 #endif
 #if TEMP_SENSOR_3 == 0
-#undef HEATER_3_MINTEMP
-#undef HEATER_3_MAXTEMP
+  #undef HEATER_3_MINTEMP
+  #undef HEATER_3_MAXTEMP
 #endif
 #if TEMP_SENSOR_BED == 0
-#undef BED_MINTEMP
-#undef BED_MAXTEMP
+  #undef BED_MINTEMP
+  #undef BED_MAXTEMP
 #endif
 
 
