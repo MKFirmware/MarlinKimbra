@@ -90,7 +90,7 @@ Different feedrate for all extruder
 -----------------
 * \#define DEFAULT_MAX_FEEDRATE            {300,300,2,100,100,100,100}     // X, Y, Z, E0, E1, E2, E3 (mm/sec)
 
-Different PID for all extruder
+Different PID for all hotend
 -----------------
 * \#define  DEFAULT_Kp {41.51,50,0,0}
 * \#define  DEFAULT_Ki {7.28,15,0,0}
@@ -102,7 +102,7 @@ Add Feedrate for retraction
 
 Singlenozzle
 -----------------
-If have on hotend and more extruder define SINGLENOZZLE for unic temperature.
+If have one hotend and more extruder define SINGLENOZZLE for unique temperature.
 * \// Uncomment below to enable SINGLENOZZLE (One Hotend)
 * \//#define SINGLENOZZLE //This is used for singlenozzled multiple extrusion configuration
 
