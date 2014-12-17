@@ -85,6 +85,7 @@
 // 83 = SAV Mk-I (AT90USB1286)
 // 84 = Teensy++2.0 (AT90USB1286) // CLI compile: DEFINES=AT90USBxx_TEENSYPP_ASSIGNMENTS HARDWARE_MOTHERBOARD=84  make
 // 9  = Gen3+
+// 22 = Gen3 Monolithic Electronics
 // 70 = Megatronics
 // 701= Megatronics v2.0
 // 702= Minitronics v1.0 / v1.1
@@ -163,12 +164,12 @@
  * 10 is 100k RS thermistor 198-961 (4.7k pullup)
  * 11 is 100k beta 3950 1% thermistor (4.7k pullup)
  * 12 is 100k 0603 SMD Vishay NTCS0603E3104FXT (4.7k pullup) (calibrated for Makibox hot bed)
- * 13 is 100k Hisens 3950  1% up to 300Â°C for hotend "Simple ONE " & "Hotend "All In ONE" 
+ * 13 is 100k Hisens 3950  1% up to 300°C for hotend "Simple ONE " & "Hotend "All In ONE" 
  * 20 is the PT100 circuit found in the Ultimainboard V2.x
  * 60 is 100k Maker's Tool Works Kapton Bed Thermistor beta=3950
  * 
  * 1k ohm pullup tables - This is not normal, you would have to have changed out your 4.7k for 1k
- * (but gives greater accuracy and more stable PID)
+ *                        (but gives greater accuracy and more stable PID)
  * 51 is 100k thermistor - EPCOS (1k pullup)
  * 52 is 200k thermistor - ATC Semitec 204GT-2 (1k pullup)
  * 55 is 100k thermistor - ATC Semitec 104GT-2 (Used in ParCan & J-Head) (1k pullup)
@@ -379,88 +380,89 @@
 
 //automatic expansion
 #if defined (MAKRPANEL)
-#define DOGLCD
-#define SDSUPPORT
-#define ULTIPANEL
-#define NEWPANEL
-#define DEFAULT_LCD_CONTRAST 17
+ #define DOGLCD
+ #define SDSUPPORT
+ #define ULTIPANEL
+ #define NEWPANEL
+ #define DEFAULT_LCD_CONTRAST 17
 #endif
 
 #if defined (REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER)
-#define DOGLCD
-#define U8GLIB_ST7920
-#define REPRAP_DISCOUNT_SMART_CONTROLLER
+ #define DOGLCD
+ #define U8GLIB_ST7920
+ #define REPRAP_DISCOUNT_SMART_CONTROLLER
 #endif
 
 #if defined(ULTIMAKERCONTROLLER) || defined(REPRAP_DISCOUNT_SMART_CONTROLLER) || defined(G3D_PANEL)
-#define ULTIPANEL
-#define NEWPANEL
+ #define ULTIPANEL
+ #define NEWPANEL
 #endif
 
 #if defined(REPRAPWORLD_KEYPAD)
-#define NEWPANEL
-#define ULTIPANEL
+ #define NEWPANEL
+ #define ULTIPANEL
 #endif
 #if defined(RA_CONTROL_PANEL)
-#define ULTIPANEL
-#define NEWPANEL
-#define LCD_I2C_TYPE_PCA8574
-#define LCD_I2C_ADDRESS 0x27   // I2C Address of the port expander
+ #define ULTIPANEL
+ #define NEWPANEL
+ #define LCD_I2C_TYPE_PCA8574
+ #define LCD_I2C_ADDRESS 0x27   // I2C Address of the port expander
 #endif
 
 //I2C PANELS
+
 //#define LCD_I2C_SAINSMART_YWROBOT
 #ifdef LCD_I2C_SAINSMART_YWROBOT
-// This uses the LiquidCrystal_I2C library ( https://bitbucket.org/fmalpartida/new-liquidcrystal/wiki/Home )
-// Make sure it is placed in the Arduino libraries directory.
-#define LCD_I2C_TYPE_PCF8575
-#define LCD_I2C_ADDRESS 0x27   // I2C Address of the port expander
-#define NEWPANEL
-#define ULTIPANEL
+  // This uses the LiquidCrystal_I2C library ( https://bitbucket.org/fmalpartida/new-liquidcrystal/wiki/Home )
+  // Make sure it is placed in the Arduino libraries directory.
+  #define LCD_I2C_TYPE_PCF8575
+  #define LCD_I2C_ADDRESS 0x27   // I2C Address of the port expander
+  #define NEWPANEL
+  #define ULTIPANEL
 #endif
 
 // PANELOLU2 LCD with status LEDs, separate encoder and click inputs
 //#define LCD_I2C_PANELOLU2
 #ifdef LCD_I2C_PANELOLU2
-// This uses the LiquidTWI2 library v1.2.3 or later ( https://github.com/lincomatic/LiquidTWI2 )
-// Make sure the LiquidTWI2 directory is placed in the Arduino or Sketchbook libraries subdirectory.
-// (v1.2.3 no longer requires you to define PANELOLU in the LiquidTWI2.h library header file)
-// Note: The PANELOLU2 encoder click input can either be directly connected to a pin
-//       (if BTN_ENC defined to != -1) or read through I2C (when BTN_ENC == -1).
-#define LCD_I2C_TYPE_MCP23017
-#define LCD_I2C_ADDRESS 0x20 // I2C Address of the port expander
-#define LCD_USE_I2C_BUZZER //comment out to disable buzzer on LCD
-#define NEWPANEL
-#define ULTIPANEL
+  // This uses the LiquidTWI2 library v1.2.3 or later ( https://github.com/lincomatic/LiquidTWI2 )
+  // Make sure the LiquidTWI2 directory is placed in the Arduino or Sketchbook libraries subdirectory.
+  // (v1.2.3 no longer requires you to define PANELOLU in the LiquidTWI2.h library header file)
+  // Note: The PANELOLU2 encoder click input can either be directly connected to a pin
+  //       (if BTN_ENC defined to != -1) or read through I2C (when BTN_ENC == -1).
+  #define LCD_I2C_TYPE_MCP23017
+  #define LCD_I2C_ADDRESS 0x20 // I2C Address of the port expander
+  #define LCD_USE_I2C_BUZZER //comment out to disable buzzer on LCD
+  #define NEWPANEL
+  #define ULTIPANEL
 
-#ifndef ENCODER_PULSES_PER_STEP
-#define ENCODER_PULSES_PER_STEP 4
-#endif
+  #ifndef ENCODER_PULSES_PER_STEP
+	#define ENCODER_PULSES_PER_STEP 4
+  #endif
 
-#ifndef ENCODER_STEPS_PER_MENU_ITEM
-#define ENCODER_STEPS_PER_MENU_ITEM 1
-#endif
+  #ifndef ENCODER_STEPS_PER_MENU_ITEM
+	#define ENCODER_STEPS_PER_MENU_ITEM 1
+  #endif
 
 
-#ifdef LCD_USE_I2C_BUZZER
-#define LCD_FEEDBACK_FREQUENCY_HZ 1000
-#define LCD_FEEDBACK_FREQUENCY_DURATION_MS 100
-#endif
+  #ifdef LCD_USE_I2C_BUZZER
+	#define LCD_FEEDBACK_FREQUENCY_HZ 1000
+	#define LCD_FEEDBACK_FREQUENCY_DURATION_MS 100
+  #endif
 
 #endif
 
 // Panucatt VIKI LCD with status LEDs, integrated click & L/R/U/P buttons, separate encoder inputs
 //#define LCD_I2C_VIKI
 #ifdef LCD_I2C_VIKI
-// This uses the LiquidTWI2 library v1.2.3 or later ( https://github.com/lincomatic/LiquidTWI2 )
-// Make sure the LiquidTWI2 directory is placed in the Arduino or Sketchbook libraries subdirectory.
-// Note: The pause/stop/resume LCD button pin should be connected to the Arduino
-//       BTN_ENC pin (or set BTN_ENC to -1 if not used)
-#define LCD_I2C_TYPE_MCP23017
-#define LCD_I2C_ADDRESS 0x20 // I2C Address of the port expander
-#define LCD_USE_I2C_BUZZER //comment out to disable buzzer on LCD (requires LiquidTWI2 v1.2.3 or later)
-#define NEWPANEL
-#define ULTIPANEL
+  // This uses the LiquidTWI2 library v1.2.3 or later ( https://github.com/lincomatic/LiquidTWI2 )
+  // Make sure the LiquidTWI2 directory is placed in the Arduino or Sketchbook libraries subdirectory.
+  // Note: The pause/stop/resume LCD button pin should be connected to the Arduino
+  //       BTN_ENC pin (or set BTN_ENC to -1 if not used)
+  #define LCD_I2C_TYPE_MCP23017
+  #define LCD_I2C_ADDRESS 0x20 // I2C Address of the port expander
+  #define LCD_USE_I2C_BUZZER //comment out to disable buzzer on LCD (requires LiquidTWI2 v1.2.3 or later)
+  #define NEWPANEL
+  #define ULTIPANEL
 #endif
 
 // Shift register panels
@@ -469,38 +471,39 @@
 // https://bitbucket.org/fmalpartida/new-liquidcrystal/wiki/schematics#!shiftregister-connection
 //#define SR_LCD
 #ifdef SR_LCD
-#define SR_LCD_2W_NL    // Non latching 2 wire shift register
-//#define NEWPANEL
+   #define SR_LCD_2W_NL    // Non latching 2 wire shift register
+   //#define NEWPANEL
 #endif
 
+
 #ifdef ULTIPANEL
-//#define NEWPANEL  //enable this if you have a click-encoder panel
-#define SDSUPPORT
-#define ULTRA_LCD
-#ifdef DOGLCD // Change number of lines to match the DOG graphic display
-#define LCD_WIDTH 20
-#define LCD_HEIGHT 5
-#else
-#define LCD_WIDTH 20
-#define LCD_HEIGHT 4
-#endif
+//  #define NEWPANEL  //enable this if you have a click-encoder panel
+  #define SDSUPPORT
+  #define ULTRA_LCD
+  #ifdef DOGLCD // Change number of lines to match the DOG graphic display
+    #define LCD_WIDTH 20
+    #define LCD_HEIGHT 5
+  #else
+    #define LCD_WIDTH 20
+    #define LCD_HEIGHT 4
+  #endif
 #else //no panel but just LCD
-#ifdef ULTRA_LCD
-#ifdef DOGLCD // Change number of lines to match the 128x64 graphics display
-#define LCD_WIDTH 20
-#define LCD_HEIGHT 5
-#else
-#define LCD_WIDTH 16
-#define LCD_HEIGHT 2
-#endif
-#endif
+  #ifdef ULTRA_LCD
+  #ifdef DOGLCD // Change number of lines to match the 128x64 graphics display
+    #define LCD_WIDTH 20
+    #define LCD_HEIGHT 5
+  #else
+    #define LCD_WIDTH 16
+    #define LCD_HEIGHT 2
+  #endif
+  #endif
 #endif
 
 // default LCD contrast for dogm-like LCD displays
 #ifdef DOGLCD
-#ifndef DEFAULT_LCD_CONTRAST
-#define DEFAULT_LCD_CONTRAST 32
-#endif
+# ifndef DEFAULT_LCD_CONTRAST
+#  define DEFAULT_LCD_CONTRAST 32
+# endif
 #endif
 
 // option for invert rotary switch
@@ -623,12 +626,13 @@
  * 
  * Motherboards
  * 34 - RAMPS1.4 - uses Analog input 5 on the AUX2 connector 
- * 81 - Printrboard - Uses Analog input 2 on the Aux 2 connector
+ * 81 - Printrboard - Uses Analog input 2 on the Exp1 connector (version B,C,D,E)
  * 301 - Rambo  - uses Analog input 3
  * Note may require analog pins to be defined for different motherboards
  **********************************************************************/
 // Uncomment below to enable
-// #define FILAMENT_SENSOR
+//#define FILAMENT_SENSOR
+
 #define FILAMENT_SENSOR_EXTRUDER_NUM	0  //The number of the extruder that has the filament sensor (0,1,2)
 #define MEASUREMENT_DELAY_CM			14  //measurement delay in cm.  This is the distance from filament sensor to middle of barrel
 
@@ -638,7 +642,14 @@
 #define MAX_MEASUREMENT_DELAY			20  //delay buffer size in bytes (1 byte = 1cm)- limits maximum measurement delay allowable (must be larger than MEASUREMENT_DELAY_CM  and lower number saves RAM)
 
 //defines used in the code
-#define DEFAULT_MEASURED_FILAMENT_DIA  DEFAULT_NOMINAL_FILAMENT_DIA  //set measured to nominal initially
+#define DEFAULT_MEASURED_FILAMENT_DIA  DEFAULT_NOMINAL_FILAMENT_DIA  //set measured to nominal initially 
+
+//When using an LCD, uncomment the line below to display the Filament sensor data on the last line instead of status.  Status will appear for 5 sec.
+//#define FILAMENT_LCD_DISPLAY
+
+
+
+
 
 
 #include "Configuration_adv.h"

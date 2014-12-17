@@ -25,6 +25,11 @@ int gumPreheatFanSpeed;
 
 const long baudrates[] = {9600,14400,19200,28800,38400,56000,115200,250000};
 int baudrate_position = -1;
+#ifdef FILAMENT_LCD_DISPLAY
+unsigned long message_millis=0;
+#endif
+
+
 
 #ifdef ULTIPANEL
 static float manual_feedrate[] = MANUAL_FEEDRATE;
@@ -224,6 +229,9 @@ static void lcd_status_screen()
         encoderPosition = 0;
         lcd_quick_feedback();
         lcd_implementation_init(); // to maybe revive the LCD if static electricity killed it.
+#ifdef FILAMENT_LCD_DISPLAY
+        message_millis=millis();  //get status message to show up for a while
+#endif
     }
 
 #ifdef ULTIPANEL_FEEDMULTIPLY
@@ -287,6 +295,8 @@ static void lcd_sdcard_stop()
     autotempShutdown();
 
 	cancel_heatup = true;
+
+	lcd_setstatus(MSG_PRINT_ABORTED);
 }
 
 /* Menu implementation */
@@ -1246,15 +1256,15 @@ void lcd_sdcard_menu()
 #define menu_edit_type(_type, _name, _strFunc, scale) \
     void menu_edit_ ## _name () \
     { \
-        if ((int32_t)encoderPosition < minEditValue) \
-            encoderPosition = minEditValue; \
+        if ((int32_t)encoderPosition < 0) \
+            encoderPosition = 0; \
         if ((int32_t)encoderPosition > maxEditValue) \
             encoderPosition = maxEditValue; \
         if (lcdDrawUpdate) \
-            lcd_implementation_drawedit(editLabel, _strFunc(((_type)encoderPosition) / scale)); \
+            lcd_implementation_drawedit(editLabel, _strFunc(((_type)((int32_t)encoderPosition + minEditValue)) / scale)); \
         if (LCD_CLICKED) \
         { \
-            *((_type*)editValue) = ((_type)encoderPosition) / scale; \
+            *((_type*)editValue) = ((_type)((int32_t)encoderPosition + minEditValue)) / scale; \
             lcd_quick_feedback(); \
             currentMenu = prevMenu; \
             encoderPosition = prevEncoderPosition; \
@@ -1262,15 +1272,15 @@ void lcd_sdcard_menu()
     } \
     void menu_edit_callback_ ## _name () \
     { \
-        if ((int32_t)encoderPosition < minEditValue) \
-            encoderPosition = minEditValue; \
+        if ((int32_t)encoderPosition < 0) \
+            encoderPosition = 0; \
         if ((int32_t)encoderPosition > maxEditValue) \
             encoderPosition = maxEditValue; \
         if (lcdDrawUpdate) \
-            lcd_implementation_drawedit(editLabel, _strFunc(((_type)encoderPosition) / scale)); \
+            lcd_implementation_drawedit(editLabel, _strFunc(((_type)((int32_t)encoderPosition + minEditValue)) / scale)); \
         if (LCD_CLICKED) \
         { \
-            *((_type*)editValue) = ((_type)encoderPosition) / scale; \
+            *((_type*)editValue) = ((_type)((int32_t)encoderPosition + minEditValue)) / scale; \
             lcd_quick_feedback(); \
             currentMenu = prevMenu; \
             encoderPosition = prevEncoderPosition; \
@@ -1288,8 +1298,8 @@ void lcd_sdcard_menu()
         editLabel = pstr; \
         editValue = ptr; \
         minEditValue = minValue * scale; \
-        maxEditValue = maxValue * scale; \
-        encoderPosition = (*ptr) * scale; \
+        maxEditValue = maxValue * scale - minEditValue; \
+        encoderPosition = (*ptr) * scale - minEditValue; \
     }\
     static void menu_action_setting_edit_callback_ ## _name (const char* pstr, _type* ptr, _type minValue, _type maxValue, menuFunc_t callback) \
     { \
@@ -1302,8 +1312,8 @@ void lcd_sdcard_menu()
         editLabel = pstr; \
         editValue = ptr; \
         minEditValue = minValue * scale; \
-        maxEditValue = maxValue * scale; \
-        encoderPosition = (*ptr) * scale; \
+        maxEditValue = maxValue * scale - minEditValue; \
+        encoderPosition = (*ptr) * scale - minEditValue; \
         callbackFunc = callback;\
     }
 menu_edit_type(int, int3, itostr3, 1)
@@ -1465,7 +1475,7 @@ void lcd_update()
     lcd_buttons_update();
 
     #if (SDCARDDETECT > 0)
-    if((IS_SD_INSERTED != lcd_oldcardstatus))
+    if((IS_SD_INSERTED != lcd_oldcardstatus && lcd_detected()))
     {
         lcdDrawUpdate = 2;
         lcd_oldcardstatus = IS_SD_INSERTED;
@@ -1568,14 +1578,30 @@ void lcd_setstatus(const char* message)
     if (lcd_status_message_level > 0)
         return;
     strncpy(lcd_status_message, message, LCD_WIDTH);
+
+    size_t i = strlen(lcd_status_message);
+    memset(lcd_status_message + i, ' ', LCD_WIDTH - i);
+    lcd_status_message[LCD_WIDTH] = '\0';
+
     lcdDrawUpdate = 2;
+#ifdef FILAMENT_LCD_DISPLAY
+        message_millis=millis();  //get status message to show up for a while
+#endif
 }
 void lcd_setstatuspgm(const char* message)
 {
     if (lcd_status_message_level > 0)
         return;
     strncpy_P(lcd_status_message, message, LCD_WIDTH);
+
+    size_t i = strlen(lcd_status_message);
+    memset(lcd_status_message + i, ' ', LCD_WIDTH - i);
+    lcd_status_message[LCD_WIDTH] = '\0';
+
     lcdDrawUpdate = 2;
+#ifdef FILAMENT_LCD_DISPLAY
+        message_millis=millis();  //get status message to show up for a while
+#endif
 }
 void lcd_setalertstatuspgm(const char* message)
 {
@@ -1688,6 +1714,15 @@ void lcd_buttons_update()
     lastEncoderBits = enc;
 }
 
+bool lcd_detected(void)
+{
+#if (defined(LCD_I2C_TYPE_MCP23017) || defined(LCD_I2C_TYPE_MCP23008)) && defined(DETECT_DEVICE)
+  return lcd.LcdDetected() == 1;
+#else
+  return true;
+#endif
+}
+
 void lcd_buzz(long duration, uint16_t freq)
 {
 #ifdef LCD_USE_I2C_BUZZER
@@ -1765,6 +1800,20 @@ char *ftostr32(const float &x)
   conv[4]=(xx/10)%10+'0';
   conv[5]=(xx)%10+'0';
   conv[6]=0;
+  return conv;
+}
+
+//Float to string with 1.23 format
+char *ftostr12ns(const float &x)
+{
+  long xx=x*100;
+  
+  xx=abs(xx);
+  conv[0]=(xx/100)%10+'0';
+  conv[1]='.';
+  conv[2]=(xx/10)%10+'0';
+  conv[3]=(xx)%10+'0';
+  conv[4]=0;
   return conv;
 }
 
