@@ -528,6 +528,15 @@
 //=============================Additional Features===========================
 //===========================================================================
 
+// Custom M code points
+#define CUSTOM_M_CODES
+#ifdef CUSTOM_M_CODES
+#define CUSTOM_M_CODE_SET_Z_PROBE_OFFSET 851
+#define Z_PROBE_OFFSET_RANGE_MIN -15
+#define Z_PROBE_OFFSET_RANGE_MAX -5
+#endif
+
+
 // EEPROM
 // The microcontroller can store settings in the EEPROM, e.g. max velocity...
 // M500 - stores parameters in EEPROM
@@ -593,6 +602,28 @@
 
 // define laser beam support
 //#define LASERBEAM
+
+
+/*********************************************************************\
+ * R/C SERVO support
+ * Sponsored by TrinityLabs, Reworked by codexmas
+ **********************************************************************/
+
+// Number of servos
+//
+// If you select a configuration below, this will receive a default value and does not need to be set manually
+// set it manually if you have more servos than extruders and wish to manually control some
+// leaving it defining as 0 will disable the servo subsystem
+#define NUM_SERVOS 0     // Servo index starts with 0 for M280 command
+
+// Servo Endstops
+//
+// This allows for servo actuated endstops, primary usage is for the Z Axis to eliminate calibration or bed height changes.
+// Use M206 command to correct for switch height offset to actual nozzle height. Store that setting with M500.
+//
+#define SERVO_ENDSTOPS {-1,-1,0}     // Servo index for X, Y, Z. Disable with -1
+#define SERVO_ENDSTOP_ANGLES {0,0,0,0,90,0}     // X,Y,Z Axis Extend and Retract angles
+
 
 /**********************************************************************\
  * Support for a filament diameter sensor
