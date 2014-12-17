@@ -220,3 +220,15 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the lo
 #define DEFAULT_XYJERK 10.0    // (mm/sec)
 #define DEFAULT_ZJERK 0.4      // (mm/sec)
 #define DEFAULT_EJERK 5.0      // (mm/sec)
+
+//===========================================================================
+//=============================Additional Features===========================
+//===========================================================================
+
+// Custom M code points
+//#define CUSTOM_M_CODES
+#ifdef CUSTOM_M_CODES
+#define CUSTOM_M_CODE_SET_Z_PROBE_OFFSET 851
+#define Z_PROBE_OFFSET_RANGE_MIN -15
+#define Z_PROBE_OFFSET_RANGE_MAX -5
+#endif

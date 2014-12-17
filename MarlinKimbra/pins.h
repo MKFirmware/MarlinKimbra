@@ -3110,8 +3110,10 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define TEMP_3_PIN ORIG_TEMP_3_PIN
 #define TEMP_BED_PIN ORIG_TEMP_BED_PIN
 
-#define SENSITIVE_PINS {0, 1, ORIG_X_STEP_PIN, ORIG_X_DIR_PIN, ORIG_X_ENABLE_PIN, ORIG_X_MIN_PIN, ORIG_X_MAX_PIN, ORIG_Y_STEP_PIN, ORIG_Y_DIR_PIN, ORIG_Y_ENABLE_PIN, ORIG_Y_MIN_PIN, ORIG_Y_MAX_PIN, ORIG_Z_STEP_PIN, ORIG_Z_DIR_PIN, ORIG_Z_ENABLE_PIN, ORIG_Z_MIN_PIN, ORIG_Z_MAX_PIN, PS_ON_PIN, \
+#include "pins2tool.h"
+
+#define SENSITIVE_PINS {0, 1, X_STEP_PIN, X_DIR_PIN, X_ENABLE_PIN, X_MIN_PIN, X_MAX_PIN, Y_STEP_PIN, Y_DIR_PIN, Y_ENABLE_PIN, Y_MIN_PIN, Y_MAX_PIN, Z_STEP_PIN, Z_DIR_PIN, Z_ENABLE_PIN, Z_MIN_PIN, Z_MAX_PIN, PS_ON_PIN, \
                         HEATER_BED_PIN, ORIG_FAN_PIN,                  \
                         _E0_PINS _E1_PINS _E2_PINS _E3_PINS           \
-                        analogInputToDigitalPin(ORIG_TEMP_0_PIN), analogInputToDigitalPin(ORIG_TEMP_1_PIN), analogInputToDigitalPin(ORIG_TEMP_2_PIN), analogInputToDigitalPin(ORIG_TEMP_3_PIN), analogInputToDigitalPin(ORIG_TEMP_BED_PIN) }
+                        analogInputToDigitalPin(TEMP_0_PIN), analogInputToDigitalPin(TEMP_1_PIN), analogInputToDigitalPin(TEMP_2_PIN), analogInputToDigitalPin(TEMP_3_PIN), analogInputToDigitalPin(TEMP_BED_PIN) }
 #endif

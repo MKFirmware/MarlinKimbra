@@ -126,31 +126,7 @@
 
 //**********************************************************************
 
-/***********************************************************************
- *********************** Multiextruder NPr2  ***************************
- ***********************************************************************
- *                                                                     *
- * Setting fot color meccanism NPr2 by NicolaP (www.3dmakerlab.it)     *
- *                                                                     *
- * Firmware by MagoKimbra magokimbra@hotmail.com                       *
- *                                                                     *
- * Find angle setting by g-Code "M997 Cxxx"                            *
- *                                                                     *
- ***********************************************************************/
-//#define NPR2
-#ifdef NPR2
-#define COLOR_STEP {120, 25, -65, -155}           // CARTER ANGLE
-#define COLOR_SLOWRATE 170                        // MICROSECOND delay for carter motor routine (Carter Motor Feedrate: upper value-slow feedrate)  
-#define COLOR_HOMERATE 4                          // FEEDRATE for carter home
-#define MOTOR_ANGLE 1.8                           // Nema angle for single step 
-#define DRIVER_MICROSTEP 4                        // Microstep moltiplicator driver (set jumper MS1-2-3) off-on-off 1/4 microstepping.
-#define CARTER_MOLTIPLICATOR 14.22                // CARTER MOLTIPLICATOR (gear ratio 13/31-10/31)
-#define DRIVER_EXTRUDERS 2                        // This defines the number of Driver extruders
-#endif
-//**********************************************************************
-
-
-#if !defined(MKR4) && !defined(NPR2)
+#if !defined(MKR4)
 #define DRIVER_EXTRUDERS EXTRUDERS // This defines the number of Driver extruders
 #endif
 
@@ -187,7 +163,7 @@
  * 10 is 100k RS thermistor 198-961 (4.7k pullup)
  * 11 is 100k beta 3950 1% thermistor (4.7k pullup)
  * 12 is 100k 0603 SMD Vishay NTCS0603E3104FXT (4.7k pullup) (calibrated for Makibox hot bed)
- * 13 is 100k Hisens 3950  1% up to 300Ã‚Â°C for hotend "Simple ONE " & "Hotend "All In ONE" 
+ * 13 is 100k Hisens 3950  1% up to 300Â°C for hotend "Simple ONE " & "Hotend "All In ONE" 
  * 20 is the PT100 circuit found in the Ultimainboard V2.x
  * 60 is 100k Maker's Tool Works Kapton Bed Thermistor beta=3950
  * 
