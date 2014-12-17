@@ -3038,9 +3038,9 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 
 #ifdef MKR4
 #if (EXTRUDERS == 2) && (DRIVER_EXTRUDERS==1)     // Use this for one driver and two extruder
-#define E0E1_CHOICE_PIN    6
+#define E0E1_CHOICE_PIN    5
 #elif (EXTRUDERS == 3) && (DRIVER_EXTRUDERS==2)   // Use this for two driver and 3 extruder
-#define E0E2_CHOICE_PIN    6
+#define E0E2_CHOICE_PIN    5
 #elif (EXTRUDERS == 4) && (DRIVER_EXTRUDERS==2)   // Use this for two driver and 4 extruder
 #define E0E2_CHOICE_PIN    5
 #define E1E3_CHOICE_PIN    6
