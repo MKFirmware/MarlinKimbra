@@ -30,7 +30,7 @@
 # include "Arduino.h"
 #else
 # include "WProgram.h"
-//Arduino < 1.0.0 does not define this, so we need to do it ourselves
+  //Arduino < 1.0.0 does not define this, so we need to do it ourselves
 # define analogInputToDigitalPin(p) ((p) + A0)
 #endif
 
@@ -50,13 +50,13 @@
 #include "WString.h"
 
 #ifdef AT90USB
-#ifdef BTENABLED
-#define MYSERIAL bt
+   #ifdef BTENABLED
+         #define MYSERIAL bt
+   #else
+         #define MYSERIAL Serial
+   #endif // BTENABLED
 #else
-#define MYSERIAL Serial
-#endif // BTENABLED
-#else
-#define MYSERIAL MSerial
+  #define MYSERIAL MSerial
 #endif
 
 #define SERIAL_PROTOCOL(x) (MYSERIAL.print(x))
@@ -181,6 +181,7 @@ enum AxisEnum {X_AXIS=0, Y_AXIS=1, Z_AXIS=2, E_AXIS=3};
 
 void FlushSerialRequestResend();
 void ClearToSend();
+
 void get_coordinates();
 
 #ifdef DELTA
@@ -206,7 +207,6 @@ extern float delta_tower3_x,delta_tower3_y;
 void calculate_delta(float cartesian[3]);
 void calculate_SCARA_forward_Transform(float f_scara[3]);
 #endif
-
 void prepare_move();
 void kill();
 void pause();

@@ -171,7 +171,10 @@ void Config_PrintSettings()
   SERIAL_ECHOPAIR("  M201 X" ,max_acceleration_units_per_sq_second[0] ); 
   SERIAL_ECHOPAIR(" Y" , max_acceleration_units_per_sq_second[1] ); 
   SERIAL_ECHOPAIR(" Z" ,max_acceleration_units_per_sq_second[2] );
-  SERIAL_ECHOPAIR(" E" ,max_acceleration_units_per_sq_second[3]);
+  SERIAL_ECHOPAIR(" E0" ,max_acceleration_units_per_sq_second[3]);
+  SERIAL_ECHOPAIR(" E1" ,max_acceleration_units_per_sq_second[4]);
+  SERIAL_ECHOPAIR(" E2" ,max_acceleration_units_per_sq_second[5]);
+  SERIAL_ECHOPAIR(" E3" ,max_acceleration_units_per_sq_second[6]);
   SERIAL_ECHOLN("");
   
   SERIAL_ECHO_START;
@@ -358,16 +361,16 @@ void Config_ResetDefault()
   {
     axis_steps_per_unit[i]=tmp1[i];
     max_feedrate[i]=tmp2[i];
-  }
-  for (short i=0;i<4;i++) 
-  {
-    max_retraction_feedrate[i]=tmp3[i];
     max_acceleration_units_per_sq_second[i]=tmp4[i];
-    #ifdef SCARA
-      axis_scaling[i]=1;
-    #endif
   }
 
+  for (short i=0;i<4;i++)
+  {
+    max_retraction_feedrate[i]=tmp3[i];
+  #ifdef SCARA
+    axis_scaling[i]=1;
+  #endif
+  }
 
   // steps per sq second need to be updated to agree with the units per sq second
   reset_acceleration_rates();

@@ -145,9 +145,9 @@
 // M150 - Set BlinkM Color Output R: Red<0-255> U(!): Green<0-255> B: Blue<0-255> over i2c, G for green does not work.
 // M190 - Sxxx Wait for bed current temp to reach target temp. Waits only when heating
 //        Rxxx Wait for bed current temp to reach target temp. Waits when heating and cooling
-// M200 - D<millimeters>- set filament diameter and set E axis units to cubic millimeters (use S0 to set back to millimeters).
+// M200 D<millimeters>- set filament diameter and set E axis units to cubic millimeters (use S0 to set back to millimeters).
 // M201 - Set max acceleration in units/s^2 for print moves (M201 X1000 Y1000)
-// M202 - Set max acceleration in units/s^2 for travel moves (M202 X1000 Y1000) Unused in MagoKimbra!!
+// M202 - Set max acceleration in units/s^2 for travel moves (M202 X1000 Y1000) Unused in Marlin!!
 // M203 - Set maximum feedrate that your machine can sustain (M203 X200 Y200 Z300 E10000) in mm/sec
 // M204 - Set default acceleration: S normal moves T filament only moves (M204 S3000 T7000) in mm/sec^2  also sets minimum segment time in ms (B20000) to prevent buffer under-runs and M20 minimum feedrate
 // M205 -  advanced settings:  minimum travel speed S=while printing T=travel only,  B=minimum segment time X= maximum xy jerk, Z=maximum Z jerk, E=maximum E jerk
@@ -155,10 +155,10 @@
 // M207 - set retract length S[positive mm] F[feedrate mm/min] Z[additional zlift/hop], stays in mm regardless of M200 setting
 // M208 - set recover=unretract length S[positive mm surplus to the M207 S*] F[feedrate mm/sec]
 // M209 - S<1=true/0=false> enable automatic retract detect if the slicer did not support G10/11: every normal extrude-only move will be classified as retract depending on the direction.
-// M218 - set hotend offset (in mm): T<hotend_number> X<offset_on_X> Y<offset_on_Y>
-// M220 - S<factor in percent>- set speed factor override percentage
-// M221 - S<factor in percent>- set extrude factor override percentage
-// M226 - P<pin number> S<pin state>- Wait until the specified pin reaches the state required
+// M218 - set hotend offset (in mm): T<extruder_number> X<offset_on_X> Y<offset_on_Y>
+// M220 S<factor in percent>- set speed factor override percentage
+// M221 S<factor in percent>- set extrude factor override percentage
+// M226 P<pin number> S<pin state>- Wait until the specified pin reaches the state required
 // M240 - Trigger a camera to take a photograph
 // M250 - Set LCD contrast C<contrast value> (value 0..63)
 // M280 - set servo position absolute. P: servo index, S: angle or microseconds
@@ -514,7 +514,7 @@ void enquecommand(const char *cmd)
     //this is dangerous if a mixing of serial and this happens
     strcpy(&(cmdbuffer[bufindw][0]),cmd);
     SERIAL_ECHO_START;
-    SERIAL_ECHOPGM("enqueing \"");
+    SERIAL_ECHOPGM(MSG_Enqueing);
     SERIAL_ECHO(cmdbuffer[bufindw]);
     SERIAL_ECHOLNPGM("\"");
     bufindw= (bufindw + 1)%BUFSIZE;
@@ -528,7 +528,7 @@ void enquecommand_P(const char *cmd)
     //this is dangerous if a mixing of serial and this happens
     strcpy_P(&(cmdbuffer[bufindw][0]),cmd);
     SERIAL_ECHO_START;
-    SERIAL_ECHOPGM("enqueing \"");
+    SERIAL_ECHOPGM(MSG_Enqueing);
     SERIAL_ECHO(cmdbuffer[bufindw]);
     SERIAL_ECHOLNPGM("\"");
     bufindw= (bufindw + 1)%BUFSIZE;
@@ -1162,16 +1162,11 @@ static void run_z_probe() {
 static void do_blocking_move_to(float x, float y, float z) {
   float oldFeedRate = feedrate;
 
-  feedrate = homing_feedrate[Z_AXIS];
-
-  current_position[Z_AXIS] = z;
-  plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], feedrate/60, active_extruder, active_driver);
-  st_synchronize();
-
   feedrate = XY_TRAVEL_SPEED;
 
   current_position[X_AXIS] = x;
   current_position[Y_AXIS] = y;
+  current_position[Z_AXIS] = z;
   plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], feedrate/60, active_extruder, active_driver);
   st_synchronize();
 
@@ -2099,7 +2094,7 @@ void process_commands()
 #ifdef SCARA
           current_position[X_AXIS]=code_value();
 #else
-          current_position[X_AXIS]=code_value()+add_homing[0];
+          current_position[X_AXIS]=code_value()+add_homing[X_AXIS];
 #endif
         }
       }
@@ -2109,7 +2104,7 @@ void process_commands()
 #ifdef SCARA
           current_position[Y_AXIS]=code_value();
 #else
-          current_position[Y_AXIS]=code_value()+add_homing[1];
+          current_position[Y_AXIS]=code_value()+add_homing[Y_AXIS];
 #endif
         }
       }
@@ -2238,7 +2233,7 @@ void process_commands()
 
       if(code_seen(axis_codes[Z_AXIS])) {
         if(code_value_long() != 0) {
-          current_position[Z_AXIS]=code_value()+add_homing[2];
+          current_position[Z_AXIS]=code_value()+add_homing[Z_AXIS];
         }
       }
 
@@ -3939,9 +3934,9 @@ Sigma_Exit:
       SERIAL_PROTOCOLLN("");
 
       SERIAL_PROTOCOLPGM("SCARA Cal - Theta:");
-      SERIAL_PROTOCOL(delta[X_AXIS]+add_homing[0]);
+      SERIAL_PROTOCOL(delta[X_AXIS]+add_homing[X_AXIS]);
       SERIAL_PROTOCOLPGM("   Psi+Theta (90):");
-      SERIAL_PROTOCOL(delta[Y_AXIS]-delta[X_AXIS]-90+add_homing[1]);
+      SERIAL_PROTOCOL(delta[Y_AXIS]-delta[X_AXIS]-90+add_homing[Y_AXIS]);
       SERIAL_PROTOCOLLN("");
 
       SERIAL_PROTOCOLPGM("SCARA step Cal - Theta:");
@@ -4083,11 +4078,11 @@ Sigma_Exit:
 #ifdef SCARA
       if(code_seen('T'))       // Theta
       {
-        add_homing[0] = code_value() ;
+        add_homing[X_AXIS] = code_value() ;
       }
       if(code_seen('P'))       // Psi
       {
-        add_homing[1] = code_value() ;
+        add_homing[Y_AXIS] = code_value() ;
       }
 #endif
       break;
@@ -4577,12 +4572,12 @@ Sigma_Exit:
       //SERIAL_ECHOLN(" Soft endstops disabled ");
       if(Stopped == false) {
         //get_coordinates(); // For X Y Z E F
-        delta[0] = 0;
-        delta[1] = 120;
+        delta[X_AXIS] = 0;
+        delta[Y_AXIS] = 120;
         calculate_SCARA_forward_Transform(delta);
-        destination[0] = delta[0]/axis_scaling[X_AXIS];
-        destination[1] = delta[1]/axis_scaling[Y_AXIS];
-
+        destination[X_AXIS] = delta[X_AXIS]/axis_scaling[X_AXIS];
+        destination[Y_AXIS] = delta[Y_AXIS]/axis_scaling[Y_AXIS];
+        
         prepare_move();
         //ClearToSend();
         return;
@@ -4594,12 +4589,12 @@ Sigma_Exit:
       //SERIAL_ECHOLN(" Soft endstops disabled ");
       if(Stopped == false) {
         //get_coordinates(); // For X Y Z E F
-        delta[0] = 90;
-        delta[1] = 130;
+        delta[X_AXIS] = 90;
+        delta[Y_AXIS] = 130;
         calculate_SCARA_forward_Transform(delta);
-        destination[0] = delta[0]/axis_scaling[X_AXIS];
-        destination[1] = delta[1]/axis_scaling[Y_AXIS];
-
+        destination[X_AXIS] = delta[X_AXIS]/axis_scaling[X_AXIS];
+        destination[Y_AXIS] = delta[Y_AXIS]/axis_scaling[Y_AXIS];
+        
         prepare_move();
         //ClearToSend();
         return;
@@ -4611,12 +4606,12 @@ Sigma_Exit:
       //SERIAL_ECHOLN(" Soft endstops disabled ");
       if(Stopped == false) {
         //get_coordinates(); // For X Y Z E F
-        delta[0] = 60;
-        delta[1] = 180;
+        delta[X_AXIS] = 60;
+        delta[Y_AXIS] = 180;
         calculate_SCARA_forward_Transform(delta);
-        destination[0] = delta[0]/axis_scaling[X_AXIS];
-        destination[1] = delta[1]/axis_scaling[Y_AXIS];
-
+        destination[X_AXIS] = delta[X_AXIS]/axis_scaling[X_AXIS];
+        destination[Y_AXIS] = delta[Y_AXIS]/axis_scaling[Y_AXIS];
+        
         prepare_move();
         //ClearToSend();
         return;
@@ -4628,12 +4623,12 @@ Sigma_Exit:
       //SERIAL_ECHOLN(" Soft endstops disabled ");
       if(Stopped == false) {
         //get_coordinates(); // For X Y Z E F
-        delta[0] = 50;
-        delta[1] = 90;
+        delta[X_AXIS] = 50;
+        delta[Y_AXIS] = 90;
         calculate_SCARA_forward_Transform(delta);
-        destination[0] = delta[0]/axis_scaling[X_AXIS];
-        destination[1] = delta[1]/axis_scaling[Y_AXIS];
-
+        destination[X_AXIS] = delta[X_AXIS]/axis_scaling[X_AXIS];
+        destination[Y_AXIS] = delta[Y_AXIS]/axis_scaling[Y_AXIS];
+        
         prepare_move();
         //ClearToSend();
         return;
@@ -4645,12 +4640,12 @@ Sigma_Exit:
       //SERIAL_ECHOLN(" Soft endstops disabled ");
       if(Stopped == false) {
         //get_coordinates(); // For X Y Z E F
-        delta[0] = 45;
-        delta[1] = 135;
+        delta[X_AXIS] = 45;
+        delta[Y_AXIS] = 135;
         calculate_SCARA_forward_Transform(delta);
-        destination[0] = delta[0]/axis_scaling[X_AXIS];
-        destination[1] = delta[1]/axis_scaling[Y_AXIS]; 
-
+        destination[X_AXIS] = delta[X_AXIS]/axis_scaling[X_AXIS];
+        destination[Y_AXIS] = delta[Y_AXIS]/axis_scaling[Y_AXIS]; 
+        
         prepare_move();
         //ClearToSend();
         return;
