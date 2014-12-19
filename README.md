@@ -90,11 +90,15 @@ Different feedrate for all extruder
 -----------------
 * \#define DEFAULT_MAX_FEEDRATE            {300,300,2,100,100,100,100}     // X, Y, Z, E0, E1, E2, E3 (mm/sec)
 
+Different acceleration for all extruder
+-----------------
+* #define DEFAULT_MAX_ACCELERATION {3000,3000,50,1000,1000,1000,1000}     // X, Y, Z, E0, E1, E2, E3 maximum start speed for accelerated moves.
+
 Different PID for all hotend
 -----------------
-* \#define  DEFAULT_Kp {41.51,50,0,0}
-* \#define  DEFAULT_Ki {7.28,15,0,0}
-* \#define  DEFAULT_Kd {59.17,90,0,0}
+* \#define  DEFAULT_Kp {41.51,50,0,0} // Kp for E0, E1, E2, E3
+* \#define  DEFAULT_Ki {7.28,15,0,0}  // Ki for E0, E1, E2, E3
+* \#define  DEFAULT_Kd {59.17,90,0,0} // Kd for E0, E1, E2, E3
 
 Add Feedrate for retraction
 -----------------
@@ -453,3 +457,13 @@ For example, suppose you measured the endstop position and it was 20mm to the ri
 * \#define Z_PROBE_OFFSET_FROM_EXTRUDER 2.75
 
 That's it.. enjoy never having to calibrate your Z endstop neither leveling your bed by hand anymore ;-)
+
+Filament Sensor
+---------------
+Supports the use of a real time filament diameter sensor that measures the diameter of the filament going into the extruder and then adjusts the extrusion rate to compensate for filament that does not match what is defined in the g-code.  The diameter can also be displayed on the LCD screen. This potentially eliminates the need to measure filament diameter when changing spools of filament. Gcode becomes independent of the filament diameter. Can also compensate for changing diameter.
+
+For examples of these sensors, see: http://www.thingiverse.com/thing:454584, https://www.youmagine.com/designs/filament-diameter-sensor, http://diy3dprinting.blogspot.com/2014/01/diy-filament-diameter-sensor.html. Any sensor which produces a voltage equivalent to the diameter in mm (i.e. 1v = 1mm) can be used. This provides a very simple interface and may encourage more innovation in this area.
+
+4 new Mcodes are defined to set relevant parameters: M404, M405, M406, M407 - see above.
+
+ Implements a delay buffer to handle the transit delay between where the filament is measured and when it gets to the extruder.

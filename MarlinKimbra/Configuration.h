@@ -242,9 +242,9 @@
 
 // If you are using a pre-configured hotend then you can use one of the value sets by uncommenting it
 //            HotEnd{HE0,HE1,HE2,HE3}
-#define DEFAULT_Kp {41.51,41.51,41.51,41.51}
-#define DEFAULT_Ki {7.28,7.28,7.28,7.28}
-#define DEFAULT_Kd {59.17,59.17,59.17,59.17}
+#define DEFAULT_Kp {40,41,41,41}     // Kp for E0, E1, E2, E3
+#define DEFAULT_Ki {7,7,7,7}     // Ki for E0, E1, E2, E3
+#define DEFAULT_Kd {59,59,59,59}     // Kd for E0, E1, E2, E3
 
 #endif // PIDTEMP
 
