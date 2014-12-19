@@ -147,9 +147,9 @@ void Config_PrintSettings()
 #endif
   SERIAL_ECHOLNPGM("Maximum feedrates (mm/s):");
   SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("  M203 X",max_feedrate[0]);
-  SERIAL_ECHOPAIR(" Y",max_feedrate[1] ); 
-  SERIAL_ECHOPAIR(" Z", max_feedrate[2] ); 
+  SERIAL_ECHOPAIR("  M203 X ",max_feedrate[0]);
+  SERIAL_ECHOPAIR(" Y ",max_feedrate[1] ); 
+  SERIAL_ECHOPAIR(" Z ", max_feedrate[2] ); 
   SERIAL_ECHOPAIR(" E0 ", max_feedrate[3]);
   SERIAL_ECHOPAIR(" E1 ", max_feedrate[4]);
   SERIAL_ECHOPAIR(" E2 ", max_feedrate[5]);
@@ -168,13 +168,13 @@ void Config_PrintSettings()
   SERIAL_ECHO_START;
   SERIAL_ECHOLNPGM("Maximum Acceleration (mm/s2):");
   SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("  M201 X" ,max_acceleration_units_per_sq_second[0] ); 
-  SERIAL_ECHOPAIR(" Y" , max_acceleration_units_per_sq_second[1] ); 
-  SERIAL_ECHOPAIR(" Z" ,max_acceleration_units_per_sq_second[2] );
-  SERIAL_ECHOPAIR(" E0" ,max_acceleration_units_per_sq_second[3]);
-  SERIAL_ECHOPAIR(" E1" ,max_acceleration_units_per_sq_second[4]);
-  SERIAL_ECHOPAIR(" E2" ,max_acceleration_units_per_sq_second[5]);
-  SERIAL_ECHOPAIR(" E3" ,max_acceleration_units_per_sq_second[6]);
+  SERIAL_ECHOPAIR("  M201 X " ,max_acceleration_units_per_sq_second[0] ); 
+  SERIAL_ECHOPAIR(" Y " , max_acceleration_units_per_sq_second[1] ); 
+  SERIAL_ECHOPAIR(" Z " ,max_acceleration_units_per_sq_second[2] );
+  SERIAL_ECHOPAIR(" E0 " ,max_acceleration_units_per_sq_second[3]);
+  SERIAL_ECHOPAIR(" E1 " ,max_acceleration_units_per_sq_second[4]);
+  SERIAL_ECHOPAIR(" E2 " ,max_acceleration_units_per_sq_second[5]);
+  SERIAL_ECHOPAIR(" E3 " ,max_acceleration_units_per_sq_second[6]);
   SERIAL_ECHOLN("");
   
   SERIAL_ECHO_START;
