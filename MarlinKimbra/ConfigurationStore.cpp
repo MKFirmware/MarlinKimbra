@@ -357,7 +357,7 @@ void Config_ResetDefault()
   float tmp6[]=DEFAULT_Ki;
   float tmp7[]=DEFAULT_Kd;
   
-  for (short i=0;i<7;i++) 
+  for (short i=0;i<NUM_AXIS;i++) 
   {
     axis_steps_per_unit[i]=tmp1[i];
     max_feedrate[i]=tmp2[i];
