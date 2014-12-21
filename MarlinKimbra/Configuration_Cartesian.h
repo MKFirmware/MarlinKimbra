@@ -192,7 +192,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the lo
 #define MANUAL_Z_HOME_POS 0
 
 //// MOVEMENT SETTINGS
-#define NUM_AXIS 7 // The axis order in all axis related arrays is X, Y, Z, E0, E1, E2, E3
+#define NUM_AXIS 4 // The axis order in all axis related arrays is X, Y, Z, E
 #define HOMING_FEEDRATE {100*60,100*60,2*60,0}      // set the homing speeds (mm/min)
 
 // default settings

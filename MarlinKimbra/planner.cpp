@@ -63,10 +63,10 @@
 //===========================================================================
 
 unsigned long minsegmenttime;
-float max_feedrate[NUM_AXIS]; // set the max speeds
+float max_feedrate[7]; // set the max speeds
 float max_retraction_feedrate[4]; // set the max speeds for retraction
-float axis_steps_per_unit[NUM_AXIS];
-unsigned long max_acceleration_units_per_sq_second[NUM_AXIS]; // Use M201 to override by software
+float axis_steps_per_unit[7];
+unsigned long max_acceleration_units_per_sq_second[7]; // Use M201 to override by software
 float minimumfeedrate;
 float acceleration;         // Normal acceleration mm/s^2  THIS IS THE DEFAULT ACCELERATION for all moves. M204 SXXXX
 float retract_acceleration; //  mm/s^2   filament pull-pack and push-forward  while standing still in the other axis M204 TXXXX
@@ -74,7 +74,7 @@ float max_xy_jerk; //speed than can be stopped at once, if i understand correctl
 float max_z_jerk;
 float max_e_jerk;
 float mintravelfeedrate;
-unsigned long axis_steps_per_sqr_second[NUM_AXIS];
+unsigned long axis_steps_per_sqr_second[7];
 
 #ifdef ENABLE_AUTO_BED_LEVELING
 // this holds the required transform to compensate for bed level
@@ -1139,7 +1139,7 @@ void set_extrude_min_temp(float temp)
 // Calculate the steps/s^2 acceleration rates, based on the mm/s^s
 void reset_acceleration_rates()
 {
-	for(int8_t i=0; i < NUM_AXIS; i++)
+	for(int8_t i=0; i < 7; i++)
         {
         axis_steps_per_sqr_second[i] = max_acceleration_units_per_sq_second[i] * axis_steps_per_unit[i];
         }
