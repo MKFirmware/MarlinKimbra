@@ -1,10 +1,12 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
+#include "boards.h"
+
 // User-specified version info of this build to display in [Pronterface, etc] terminal window during
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
 // build by the user have been successfully uploaded into firmware.
-#define STRING_VERSION_CONFIG_H __DATE__ " 16/12/2014 " __TIME__ // build date and time
+#define STRING_VERSION_CONFIG_H __DATE__ " 21/12/2014 " __TIME__ // build date and time
 #define STRING_CONFIG_H_AUTHOR "(MagoKimbra: magokimbra@hotmail.com, Version 4.0)" // Who made the changes.
 
 // SERIAL_PORT selects which serial port should be used for communication with the host.
@@ -27,8 +29,8 @@
 // If you want test the firmware uncomment below. Use Serial arduino monitor...
 //#define FIRMWARE_TEST
 #ifdef FIRMWARE_TEST
-#undef BAUDRATE
-#define BAUDRATE 115200  // Baudrate setting to 115200 because serial monitor arduino fuction at max 115200 baudrate.
+  #undef BAUDRATE
+  #define BAUDRATE 115200  // Baudrate setting to 115200 because serial monitor arduino fuction at max 115200 baudrate.
 #endif
 
 /***********************************************************************\
@@ -40,65 +42,21 @@
 //#define SCARA
 
 #if defined(CARTESIAN)
-#include "Configuration_Cartesian.h"
+  #include "Configuration_Cartesian.h"
 #elif defined(COREXY)
-#include "Configuration_Corexy.h"
+  #include "Configuration_Corexy.h"
 #elif defined(DELTA)
-#include "Configuration_Delta.h"
+  #include "Configuration_Delta.h"
 #elif defined(SCARA)
-#include "Configuration_Scara.h"
+  #include "Configuration_Scara.h"
 #endif
 /***********************************************************************/
 
 
-//// The following define selects which electronics board you have. Please choose the one that matches your setup
-// 10 = Gen7 custom (Alfons3 Version) "https://github.com/Alfons3/Generation_7_Electronics"
-// 11 = Gen7 v1.1, v1.2 = 11
-// 12 = Gen7 v1.3
-// 13 = Gen7 v1.4
-// 2  = Cheaptronic v1.0
-// 20 = Sethi 3D_1
-// 3  = MEGA/RAMPS up to 1.2 = 3
-// 33 = RAMPS 1.3 / 1.4 (Power outputs: Extruder, Fan, Bed)
-// 34 = RAMPS 1.3 / 1.4 (Power outputs: Extruder0, Extruder1, Bed)
-// 35 = RAMPS 1.3 / 1.4 (Power outputs: Extruder, Fan, Fan)
-// 36 = RAMPS 1.3 / 1.4 (Power outputs: Extruder0, Extruder1, Fan)
-// 4  = Duemilanove w/ ATMega328P pin assignment
-// 5  = Gen6
-// 51 = Gen6 deluxe
-// 6  = Sanguinololu < 1.2
-// 62 = Sanguinololu 1.2 and above
-// 63 = Melzi
-// 64 = STB V1.1
-// 65 = Azteeg X1
-// 66 = Melzi with ATmega1284 (MaKr3d version)
-// 67 = Azteeg X3
-// 68 = Azteeg X3 Pro
-// 7  = Ultimaker
-// 71 = Ultimaker (Older electronics. Pre 1.5.4. This is rare)
-// 72 = Ultimainboard 2.x (Uses TEMP_SENSOR 20)
-// 77 = 3Drag Controller
-// 8  = Teensylu
-// 80 = Rumba
-// 81 = Printrboard (AT90USB1286)
-// 82 = Brainwave (AT90USB646)
-// 83 = SAV Mk-I (AT90USB1286)
-// 84 = Teensy++2.0 (AT90USB1286) // CLI compile: DEFINES=AT90USBxx_TEENSYPP_ASSIGNMENTS HARDWARE_MOTHERBOARD=84  make
-// 9  = Gen3+
-// 22 = Gen3 Monolithic Electronics
-// 70 = Megatronics
-// 701= Megatronics v2.0
-// 702= Minitronics v1.0 / v1.1
-// 703= Megatronics v3.0
-// 90 = Alpha OMCA board
-// 91 = Final OMCA board
-// 301= Rambo
-// 21 = Elefu Ra Board (v3)
-// 88 = 5DPrint D8 Driver Board
-// 999 = Leapfrog
-
+// The following define selects which electronics board you have.
+// Please choose the name from boards.h that matches your setup
 #ifndef MOTHERBOARD
-#define MOTHERBOARD 33
+  #define MOTHERBOARD BOARD_RAMPS_13_EFB
 #endif
 
 // This defines the number of extruder real or virtual

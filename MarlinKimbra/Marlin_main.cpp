@@ -488,22 +488,27 @@ void serial_echopair_P(const char *s_P, double v)
 void serial_echopair_P(const char *s_P, unsigned long v)
     { serialprintPGM(s_P); SERIAL_ECHO(v); }
 
-extern "C"{
-  extern unsigned int __bss_end;
-  extern unsigned int __heap_start;
-  extern void *__brkval;
+#ifdef SDSUPPORT
+  #include "SdFatUtil.h"
+  int freeMemory() { return SdFatUtil::FreeRam(); }
+#else
+  extern "C" {
+    extern unsigned int __bss_end;
+    extern unsigned int __heap_start;
+    extern void *__brkval;
 
-  int freeMemory() {
-    int free_memory;
+    int freeMemory() {
+      int free_memory;
 
-    if((int)__brkval == 0)
-      free_memory = ((int)&free_memory) - ((int)&__bss_end);
-    else
-      free_memory = ((int)&free_memory) - ((int)__brkval);
+      if ((int)__brkval == 0)
+        free_memory = ((int)&free_memory) - ((int)&__bss_end);
+      else
+        free_memory = ((int)&free_memory) - ((int)__brkval);
 
-    return free_memory;
+      return free_memory;
+    }
   }
-}
+#endif //!SDSUPPORT
 
 //adds an command to the main command buffer
 //thats really done in a non-safe way.
@@ -868,10 +873,10 @@ void get_command()
     int16_t n=card.get();
     serial_char = (char)n;
     if(serial_char == '\n' ||
-      serial_char == '\r' ||
-      (serial_char == '#' && comment_mode == false) ||
-      (serial_char == ':' && comment_mode == false) ||
-      serial_count >= (MAX_CMD_SIZE - 1)||n==-1)
+       serial_char == '\r' ||
+       (serial_char == '#' && comment_mode == false) ||
+       (serial_char == ':' && comment_mode == false) ||
+       serial_count >= (MAX_CMD_SIZE - 1)||n==-1)
     {
       if(card.eof()){
         SERIAL_PROTOCOLLNPGM(MSG_FILE_PRINTED);
@@ -898,11 +903,11 @@ void get_command()
         return; //if empty line
       }
       cmdbuffer[bufindw][serial_count] = 0; //terminate string
-      //      if(!comment_mode){
-      fromsd[bufindw] = true;
-      buflen += 1;
-      bufindw = (bufindw + 1)%BUFSIZE;
-      //      }
+//      if(!comment_mode){
+        fromsd[bufindw] = true;
+        buflen += 1;
+        bufindw = (bufindw + 1)%BUFSIZE;
+//      }
       comment_mode = false; //for new command
       serial_count = 0; //clear buffer
     }
@@ -1156,11 +1161,16 @@ static void run_z_probe() {
 static void do_blocking_move_to(float x, float y, float z) {
   float oldFeedRate = feedrate;
 
+  feedrate = homing_feedrate[Z_AXIS];
+
+  current_position[Z_AXIS] = z;
+  plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], feedrate/60, active_extruder, active_driver);
+  st_synchronize();
+
   feedrate = XY_TRAVEL_SPEED;
 
   current_position[X_AXIS] = x;
   current_position[Y_AXIS] = y;
-  current_position[Z_AXIS] = z;
   plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], feedrate/60, active_extruder, active_driver);
   st_synchronize();
 
