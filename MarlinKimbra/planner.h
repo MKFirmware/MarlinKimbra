@@ -26,9 +26,9 @@
 
 #include "Marlin.h"
 
-#ifdef ENABLE_AUTO_BED_LEVELING
+#ifdef ENABLE_AUTO_BED_COMPENSATION
 #include "vector_3.h"
-#endif // ENABLE_AUTO_BED_LEVELING
+#endif // ENABLE_AUTO_BED_COMPENSATION
 
 // This struct is used when buffering the setup for each linear movement "nominal" values are as specified in 
 // the source g-code and may never actually be reached if acceleration management is active.
@@ -75,10 +75,10 @@ typedef struct {
 } 
 block_t;
 
-#ifdef ENABLE_AUTO_BED_LEVELING
+#ifdef ENABLE_AUTO_BED_COMPENSATION
 // this holds the required transform to compensate for bed level
-extern matrix_3x3 plan_bed_level_matrix;
-#endif // #ifdef ENABLE_AUTO_BED_LEVELING
+extern matrix_3x3 plan_bed_compensation_matrix;
+#endif // #ifdef ENABLE_AUTO_BED_COMPENSATION
 
 // Initialize the motion plan subsystem      
 void plan_init();
@@ -86,21 +86,21 @@ void plan_init();
 // Add a new linear movement to the buffer. x, y and z is the signed, absolute target position in 
 // millimaters. Feed rate specifies the speed of the motion.
 
-#ifdef ENABLE_AUTO_BED_LEVELING
+#ifdef ENABLE_AUTO_BED_COMPENSATION
 void plan_buffer_line(float x, float y, float z, const float &e, float feed_rate, const uint8_t &extruder, const uint8_t &driver);
 
 // Get the position applying the bed level matrix if enabled
 vector_3 plan_get_position();
 #else
 void plan_buffer_line(const float &x, const float &y, const float &z, const float &e, float feed_rate, const uint8_t &extruder, const uint8_t &driver);
-#endif // ENABLE_AUTO_BED_LEVELING
+#endif // ENABLE_AUTO_BED_COMPENSATION
 
 // Set position. Used for G92 instructions.
-#ifdef ENABLE_AUTO_BED_LEVELING
+#ifdef ENABLE_AUTO_BED_COMPENSATION
 void plan_set_position(float x, float y, float z, const float &e);
 #else
 void plan_set_position(const float &x, const float &y, const float &z, const float &e);
-#endif // ENABLE_AUTO_BED_LEVELING
+#endif // ENABLE_AUTO_BED_COMPENSATION
 
 void plan_set_e_position(const float &e);
 

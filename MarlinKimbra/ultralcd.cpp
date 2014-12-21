@@ -1107,7 +1107,7 @@ static void lcd_control_motion_menu()
 {
     START_MENU();
     MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
-#ifdef ENABLE_AUTO_BED_LEVELING
+#ifdef ENABLE_AUTO_BED_COMPENSATION
     MENU_ITEM_EDIT(float32, MSG_ZPROBE_ZOFFSET, &zprobe_zoffset, 0.5, 50);
 #endif
     MENU_ITEM_EDIT(float5, MSG_ACC, &acceleration, 500, 99000);
