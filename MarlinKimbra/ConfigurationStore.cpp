@@ -74,7 +74,7 @@ void Config_StoreSettings()
   EEPROM_WRITE_VAR(i,tower_adj);
   EEPROM_WRITE_VAR(i,z_probe_offset);
 #endif
-#ifdef ENABLE_AUTO_BED_COMPENSATION
+#ifdef ENABLE_AUTO_BED_LEVELING
   EEPROM_WRITE_VAR(i,zprobe_zoffset);
 #endif
 #ifndef ULTIPANEL
@@ -239,11 +239,11 @@ void Config_PrintSettings()
    */
 #endif // DELTA
 
-#ifdef ENABLE_AUTO_BED_COMPENSATION
+#ifdef ENABLE_AUTO_BED_LEVELING
   SERIAL_ECHO_START;
   SERIAL_ECHOPAIR("Z Probe offset (mm):" ,zprobe_zoffset);
   SERIAL_ECHOLN("");
-#endif // ENABLE_AUTO_BED_COMPENSATION
+#endif // ENABLE_AUTO_BED_LEVELING
 
 #ifdef PIDTEMP
   SERIAL_ECHO_START;
@@ -297,7 +297,7 @@ void Config_RetrieveSettings()
     // Update delta constants for updated delta_radius & tower_adj values
     set_delta_constants();
 #endif
-#ifdef ENABLE_AUTO_BED_COMPENSATION
+#ifdef ENABLE_AUTO_BED_LEVELING
     EEPROM_READ_VAR(i,zprobe_zoffset);
 #endif
 #ifndef ULTIPANEL
@@ -357,7 +357,7 @@ void Config_ResetDefault()
   float tmp6[]=DEFAULT_Ki;
   float tmp7[]=DEFAULT_Kd;
   
-  for (short i=0;i<NUM_AXIS;i++) 
+  for (short i=0;i<7;i++) 
   {
     axis_steps_per_unit[i]=tmp1[i];
     max_feedrate[i]=tmp2[i];
@@ -404,7 +404,7 @@ void Config_ResetDefault()
   gumPreheatHPBTemp = GUM_PREHEAT_HPB_TEMP;
   gumPreheatFanSpeed = GUM_PREHEAT_FAN_SPEED;
 #endif
-#ifdef ENABLE_AUTO_BED_COMPENSATION
+#ifdef ENABLE_AUTO_BED_LEVELING
   zprobe_zoffset = -Z_PROBE_OFFSET_FROM_EXTRUDER;
 #endif
 #ifdef DOGLCD

@@ -54,32 +54,35 @@
 #define ENDSTOPPULLUP_XMIN
 #define ENDSTOPPULLUP_YMIN
 #define ENDSTOPPULLUP_ZMIN
-#define ENDSTOPPULLUP_EMIN
 #endif
 
 // The pullups are needed if you directly connect a mechanical endswitch between the signal and ground pins.
 const bool X_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
 const bool Y_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
 const bool Z_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
-const bool E_MIN_ENDSTOP_INVERTING = false;// set to true to invert the logic of the endstop.
 const bool X_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
 const bool Y_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
 const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
 //#define DISABLE_MAX_ENDSTOPS
 //#define DISABLE_MIN_ENDSTOPS
 
+// Disable max endstops for compatibility with endstop checking routine
+#if defined(COREXY) && !defined(DISABLE_MAX_ENDSTOPS)
+#define DISABLE_MAX_ENDSTOPS
+#endif
+
 // For Inverting Stepper Enable Pins (Active Low) use 0, Non Inverting (Active High) use 1
 #define X_ENABLE_ON 0
 #define Y_ENABLE_ON 0
 #define Z_ENABLE_ON 0
-#define E_ENABLE_ON 0      // For all extruders
+#define E_ENABLE_ON 0 // For all extruders
 
 // Disables axis when it's not being used.
 #define DISABLE_X false
 #define DISABLE_Y false
 #define DISABLE_Z false
-#define DISABLE_E false      // For all extruders
-#define DISABLE_INACTIVE_EXTRUDER false //disable only inactive extruders and keep active extruder enabled
+#define DISABLE_E false // For all extruders
+#define DISABLE_INACTIVE_EXTRUDER true //disable only inactive extruders and keep active extruder enabled
 
 #define INVERT_X_DIR false    // for Mendel set to false, for Orca set to true
 #define INVERT_Y_DIR false    // for Mendel set to true, for Orca set to false
@@ -89,11 +92,10 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define INVERT_E2_DIR false   // for direct drive extruder v9 set to true, for geared extruder set to false
 
 // ENDSTOP SETTINGS:
-// Sets direction of endstops when homing; 1=MAX, -1=MIN
+// Sets direction of endstop	s when homing; 1=MAX, -1=MIN
 #define X_HOME_DIR 1
 #define Y_HOME_DIR 1
 #define Z_HOME_DIR -1
-#define E_HOME_DIR -1
 
 #define min_software_endstops true // If true, axis won't move to coordinates less than HOME_POS.
 #define max_software_endstops true  // If true, axis won't move to coordinates greater than the defined lengths below.
@@ -105,27 +107,15 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define Y_MIN_POS 0
 #define Z_MAX_POS 225
 #define Z_MIN_POS MANUAL_Z_HOME_POS
-#define E_MIN_POS 0
 
 #define X_MAX_LENGTH (X_MAX_POS - X_MIN_POS)
 #define Y_MAX_LENGTH (Y_MAX_POS - Y_MIN_POS)
 #define Z_MAX_LENGTH (Z_MAX_POS - Z_MIN_POS)
+//============================= Bed Auto Leveling ===========================
 
+//#define ENABLE_AUTO_BED_LEVELING // Delete the comment to enable (remove // at the start of the line)
 
-//============================= Bed Auto Compensation ===========================
-
-//#define ENABLE_AUTO_BED_COMPENSATION // Delete the comment to enable
-//#define Z_PROBE_REPEATABILITY_TEST  // Delete the comment to enable
-
-// set the rectangle in which to probe in manual or automatic
-#define LEFT_PROBE_BED_POSITION 20
-#define RIGHT_PROBE_BED_POSITION 180
-#define BACK_PROBE_BED_POSITION 180
-#define FRONT_PROBE_BED_POSITION 20
-
-#define XY_TRAVEL_SPEED 8000     // X and Y axis travel speed between probes, in mm/min
-
-#ifdef ENABLE_AUTO_BED_COMPENSATION
+#ifdef ENABLE_AUTO_BED_LEVELING
 
 // There are 2 different ways to pick the X and Y locations to probe:
 
@@ -139,17 +129,25 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 //    Probe 3 arbitrary points on the bed (that aren't colinear)
 //    You must specify the X & Y coordinates of all 3 points
 
-#define AUTO_BED_COMPENSATION_GRID
-// with AUTO_BED_COMPENSATION_GRID, the bed is sampled in a
-// AUTO_BED_COMPENSATION_GRID_POINTSxAUTO_BED_COMPENSATION_GRID_POINTS grid
+#define AUTO_BED_LEVELING_GRID
+// with AUTO_BED_LEVELING_GRID, the bed is sampled in a
+// AUTO_BED_LEVELING_GRID_POINTSxAUTO_BED_LEVELING_GRID_POINTS grid
 // and least squares solution is calculated
 // Note: this feature occupies 10'206 byte
-#ifdef AUTO_BED_COMPENSATION_GRID
+#ifdef AUTO_BED_LEVELING_GRID
+
+// set the rectangle in which to probe
+#define LEFT_PROBE_BED_POSITION 15
+#define RIGHT_PROBE_BED_POSITION 170
+#define BACK_PROBE_BED_POSITION 180
+#define FRONT_PROBE_BED_POSITION 20
+
 // set the number of grid points per dimension
 // I wouldn't see a reason to go above 3 (=9 probing points on the bed)
-#define AUTO_BED_COMPENSATION_GRID_POINTS 2
+#define AUTO_BED_LEVELING_GRID_POINTS 2
 
-#else  // not AUTO_BED_COMPENSATION_GRID
+
+#else  // not AUTO_BED_LEVELING_GRID
 // with no grid, just probe 3 arbitrary points.  A simple cross-product
 // is used to esimate the plane of the print bed
 
@@ -160,7 +158,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define ABL_PROBE_PT_3_X 170
 #define ABL_PROBE_PT_3_Y 20
 
-#endif // AUTO_BED_COMPENSATION_GRID
+#endif // AUTO_BED_LEVELING_GRID
 
 
 // these are the offsets to the probe relative to the extruder tip (Hotend - Probe)
@@ -170,6 +168,8 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 
 //#define Z_RAISE_BEFORE_HOMING 4       // (in mm) Raise Z before homing (G28) for Probe Clearance.
 // Be sure you have this distance over your Z_MAX_POS in case
+
+#define XY_TRAVEL_SPEED 8000         // X and Y axis travel speed between probes, in mm/min
 
 #define Z_RAISE_BEFORE_PROBING 15    //How much the extruder will be raised before traveling to the first probing point.
 #define Z_RAISE_BETWEEN_PROBINGS 5  //How much the extruder will be raised when traveling from between next probing points
@@ -185,12 +185,12 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 //If you have enabled the Bed Auto Compensation and are using the same Z Probe for Z Homing,
 //it is highly recommended you let this Z_SAFE_HOMING enabled!!!
 
-#define Z_SAFE_HOMING   // This feature is meant to avoid Z homing with probe outside the bed area.
-                        // When defined, it will:
-                        // - Allow Z homing only after X and Y homing AND stepper drivers still enabled
-                        // - If stepper drivers timeout, it will need X and Y homing again before Z homing
-                        // - Position the probe in a defined XY point before Z Homing when homing all axis (G28)
-                        // - Block Z homing only when the probe is outside bed area.
+// #define Z_SAFE_HOMING   // This feature is meant to avoid Z homing with probe outside the bed area.
+// When defined, it will:
+// - Allow Z homing only after X and Y homing AND stepper drivers still enabled
+// - If stepper drivers timeout, it will need X and Y homing again before Z homing
+// - Position the probe in a defined XY point before Z Homing when homing all axis (G28)
+// - Block Z homing only when the probe is outside bed area.
 
 #ifdef Z_SAFE_HOMING
 
@@ -199,7 +199,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 
 #endif
 
-#endif // ENABLE_AUTO_BED_COMPENSATION
+#endif // ENABLE_AUTO_BED_LEVELING
 
 
 // The position of the homing switches
@@ -238,15 +238,3 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 #define DEFAULT_XYJERK                5    // (mm/sec)
 #define DEFAULT_ZJERK                 0.4    // (mm/sec)
 #define DEFAULT_EJERK                 3    // (mm/sec)
-
-//===========================================================================
-//=============================Additional Features===========================
-//===========================================================================
-
-// Custom M code points
-//#define CUSTOM_M_CODES
-#ifdef CUSTOM_M_CODES
-#define CUSTOM_M_CODE_SET_Z_PROBE_OFFSET 851
-#define Z_PROBE_OFFSET_RANGE_MIN -15
-#define Z_PROBE_OFFSET_RANGE_MAX -5
-#endif
