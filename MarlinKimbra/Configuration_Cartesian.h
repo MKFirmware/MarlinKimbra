@@ -89,9 +89,9 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the lo
 #define Z_MAX_LENGTH (Z_MAX_POS - Z_MIN_POS)
 
 
-//============================= Bed Leveling ===========================
+//============================= Bed auto Leveling ===========================
 
-//#define ENABLE_AUTO_BED_LEVELING // Delete the comment to enable
+//#define ENABLE_AUTO_BED_LEVELING // Delete the comment to enable (ABL)
 //#define Z_PROBE_REPEATABILITY_TEST  // Delete the comment to enable
 
 // set the rectangle in which to probe in manual or automatic
@@ -110,7 +110,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the lo
 //    Probe every point in a rectangular grid
 //    You must specify the rectangle, and the density of sample points
 //    This mode is preferred because there are more measurements.
-//    It used to be called ACCURATE_BED_COMPENSATION but "grid" is more descriptive
+//    It used to be called ACCURATE_BED_LEVELING but "grid" is more descriptive
 
 //  - "3-point" mode
 //    Probe 3 arbitrary points on the bed (that aren't colinear)
@@ -161,7 +161,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the lo
 #define PROBE_SERVO_DEACTIVATION_DELAY 300
 
 
-//If you have enabled the Bed Auto Compensation and are using the same Z Probe for Z Homing,
+//If you have enabled the Auto Bed Leveling and are using the same Z Probe for Z Homing,
 //it is highly recommended you let this Z_SAFE_HOMING enabled!!!
 
 #define Z_SAFE_HOMING   // This feature is meant to avoid Z homing with probe outside the bed area.
