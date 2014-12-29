@@ -36,14 +36,12 @@ void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size)
 // wrong data being written to the variables.
 // ALSO:  always make sure the variables in the Store and retrieve sections are in the same order.
 
-#if defined(CARTESIAN)
 #define EEPROM_VERSION "V10"
-#elif defined(COREXY)
-#define EEPROM_VERSION "V11"
-#elif defined(DELTA)
-#define EEPROM_VERSION "V12"
-#elif defined(SCARA)
-#define EEPROM_VERSION "V13"
+#ifdef DELTA
+  #define EEPROM_VERSION "V11"
+#endif
+#ifdef SCARA
+  #define EEPROM_VERSION "V12"
 #endif
 
 #ifdef EEPROM_SETTINGS
@@ -121,141 +119,155 @@ void Config_StoreSettings()
 #ifndef DISABLE_M503
 void Config_PrintSettings()
 {  // Always have this function, even with EEPROM_SETTINGS disabled, the current values will be shown
-  SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("Baudrate: ", baudrate);
-  SERIAL_ECHOLN("");
-  SERIAL_ECHOLNPGM("Steps per unit:");
-  SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("  M92 X",axis_steps_per_unit[0]);
-  SERIAL_ECHOPAIR(" Y",axis_steps_per_unit[1]);
-  SERIAL_ECHOPAIR(" Z",axis_steps_per_unit[2]);
-  SERIAL_ECHOPAIR(" E0 ",axis_steps_per_unit[3]);
-  SERIAL_ECHOPAIR(" E1 ",axis_steps_per_unit[4]);
-  SERIAL_ECHOPAIR(" E2 ",axis_steps_per_unit[5]);
-  SERIAL_ECHOPAIR(" E3 ",axis_steps_per_unit[6]);
-  SERIAL_ECHOLN("");
+    SERIAL_ECHO_START;
+    SERIAL_ECHOPAIR("Baudrate: ", baudrate);
+    SERIAL_ECHOLN("");
+    SERIAL_ECHOLNPGM("Steps per unit:");
+    SERIAL_ECHO_START;
+    SERIAL_ECHOPAIR("  M92 X",axis_steps_per_unit[X_AXIS]);
+    SERIAL_ECHOPAIR(" Y",axis_steps_per_unit[Y_AXIS]);
+    SERIAL_ECHOPAIR(" Z",axis_steps_per_unit[Z_AXIS]);
+    SERIAL_ECHOPAIR(" E0 ",axis_steps_per_unit[3]);
+    SERIAL_ECHOPAIR(" E1 ",axis_steps_per_unit[4]);
+    SERIAL_ECHOPAIR(" E2 ",axis_steps_per_unit[5]);
+    SERIAL_ECHOPAIR(" E3 ",axis_steps_per_unit[6]);
+    SERIAL_ECHOLN("");
   
-  SERIAL_ECHO_START;
+    SERIAL_ECHO_START;
 #ifdef SCARA
-  SERIAL_ECHOLNPGM("Scaling factors:");
-  SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("  M365 X",axis_scaling[0]);
-  SERIAL_ECHOPAIR(" Y",axis_scaling[1]);
-  SERIAL_ECHOPAIR(" Z",axis_scaling[2]);
-  SERIAL_ECHOLN("");
-  SERIAL_ECHO_START;
+    SERIAL_ECHOLNPGM("Scaling factors:");
+    SERIAL_ECHO_START;
+    SERIAL_ECHOPAIR("  M365 X",axis_scaling[X_AXIS]);
+    SERIAL_ECHOPAIR(" Y",axis_scaling[Y_AXIS]);
+    SERIAL_ECHOPAIR(" Z",axis_scaling[Z_AXIS]);
+    SERIAL_ECHOLN("");
+      
+    SERIAL_ECHO_START;
 #endif
-  SERIAL_ECHOLNPGM("Maximum feedrates (mm/s):");
-  SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("  M203 X ",max_feedrate[0]);
-  SERIAL_ECHOPAIR(" Y ",max_feedrate[1] ); 
-  SERIAL_ECHOPAIR(" Z ", max_feedrate[2] ); 
-  SERIAL_ECHOPAIR(" E0 ", max_feedrate[3]);
-  SERIAL_ECHOPAIR(" E1 ", max_feedrate[4]);
-  SERIAL_ECHOPAIR(" E2 ", max_feedrate[5]);
-  SERIAL_ECHOPAIR(" E3 ", max_feedrate[6]);
-  SERIAL_ECHOLN("");
+    SERIAL_ECHOLNPGM("Maximum feedrates (mm/s):");
+    SERIAL_ECHO_START;
+    SERIAL_ECHOPAIR("  M203 X ",max_feedrate[X_AXIS]);
+    SERIAL_ECHOPAIR(" Y ",max_feedrate[Y_AXIS] ); 
+    SERIAL_ECHOPAIR(" Z ", max_feedrate[Z_AXIS] ); 
+    SERIAL_ECHOPAIR(" E0 ", max_feedrate[3]);
+    SERIAL_ECHOPAIR(" E1 ", max_feedrate[4]);
+    SERIAL_ECHOPAIR(" E2 ", max_feedrate[5]);
+    SERIAL_ECHOPAIR(" E3 ", max_feedrate[6]);
+    SERIAL_ECHOLN("");
 
-  SERIAL_ECHO_START;
-  SERIAL_ECHOLNPGM("Retraction Steps per unit:");
-  SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR(" E0 ",max_retraction_feedrate[0]);
-  SERIAL_ECHOPAIR(" E1 ",max_retraction_feedrate[1]);
-  SERIAL_ECHOPAIR(" E2 ",max_retraction_feedrate[2]);
-  SERIAL_ECHOPAIR(" E3 ",max_retraction_feedrate[3]);
-  SERIAL_ECHOLN("");
-  
-  SERIAL_ECHO_START;
-  SERIAL_ECHOLNPGM("Maximum Acceleration (mm/s2):");
-  SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("  M201 X " ,max_acceleration_units_per_sq_second[0] ); 
-  SERIAL_ECHOPAIR(" Y " , max_acceleration_units_per_sq_second[1] ); 
-  SERIAL_ECHOPAIR(" Z " ,max_acceleration_units_per_sq_second[2] );
-  SERIAL_ECHOPAIR(" E0 " ,max_acceleration_units_per_sq_second[3]);
-  SERIAL_ECHOPAIR(" E1 " ,max_acceleration_units_per_sq_second[4]);
-  SERIAL_ECHOPAIR(" E2 " ,max_acceleration_units_per_sq_second[5]);
-  SERIAL_ECHOPAIR(" E3 " ,max_acceleration_units_per_sq_second[6]);
-  SERIAL_ECHOLN("");
-  
-  SERIAL_ECHO_START;
-  SERIAL_ECHOLNPGM("Acceleration: S=acceleration, T=retract acceleration");
-  SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("  M204 S",acceleration ); 
-  SERIAL_ECHOPAIR(" T" ,retract_acceleration);
-  SERIAL_ECHOLN("");
+    SERIAL_ECHO_START;
+    SERIAL_ECHOLNPGM("Retraction Steps per unit:");
+    SERIAL_ECHO_START;
+    SERIAL_ECHOPAIR(" E0 ",max_retraction_feedrate[0]);
+    SERIAL_ECHOPAIR(" E1 ",max_retraction_feedrate[1]);
+    SERIAL_ECHOPAIR(" E2 ",max_retraction_feedrate[2]);
+    SERIAL_ECHOPAIR(" E3 ",max_retraction_feedrate[3]);
+    SERIAL_ECHOLN("");
+    SERIAL_ECHO_START;
+    SERIAL_ECHOLNPGM("Maximum Acceleration (mm/s2):");
+    SERIAL_ECHO_START;
+    SERIAL_ECHOPAIR("  M201 X " ,max_acceleration_units_per_sq_second[X_AXIS] ); 
+    SERIAL_ECHOPAIR(" Y " , max_acceleration_units_per_sq_second[Y_AXIS] ); 
+    SERIAL_ECHOPAIR(" Z " ,max_acceleration_units_per_sq_second[Z_AXIS] );
+    SERIAL_ECHOPAIR(" E0 " ,max_acceleration_units_per_sq_second[3]);
+    SERIAL_ECHOPAIR(" E1 " ,max_acceleration_units_per_sq_second[4]);
+    SERIAL_ECHOPAIR(" E2 " ,max_acceleration_units_per_sq_second[5]);
+    SERIAL_ECHOPAIR(" E3 " ,max_acceleration_units_per_sq_second[6]);
+    SERIAL_ECHOLN("");
+    SERIAL_ECHO_START;
+    SERIAL_ECHOLNPGM("Acceleration: S=acceleration, T=retract acceleration");
+    SERIAL_ECHO_START;
+    SERIAL_ECHOPAIR("  M204 S",acceleration ); 
+    SERIAL_ECHOPAIR(" T" ,retract_acceleration);
+    SERIAL_ECHOLN("");
 
-  SERIAL_ECHO_START;
-  SERIAL_ECHOLNPGM("Advanced variables: S=Min feedrate (mm/s), T=Min travel feedrate (mm/s), B=minimum segment time (ms), X=maximum XY jerk (mm/s),  Z=maximum Z jerk (mm/s),  E=maximum E jerk (mm/s)");
-  SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("  M205 S",minimumfeedrate ); 
-  SERIAL_ECHOPAIR(" T" ,mintravelfeedrate ); 
-  SERIAL_ECHOPAIR(" B" ,minsegmenttime ); 
-  SERIAL_ECHOPAIR(" X" ,max_xy_jerk ); 
-  SERIAL_ECHOPAIR(" Z" ,max_z_jerk);
-  SERIAL_ECHOPAIR(" E" ,max_e_jerk);
-  SERIAL_ECHOLN(""); 
+    SERIAL_ECHO_START;
+    SERIAL_ECHOLNPGM("Advanced variables: S=Min feedrate (mm/s), T=Min travel feedrate (mm/s), B=minimum segment time (ms), X=maximum XY jerk (mm/s),  Z=maximum Z jerk (mm/s),  E=maximum E jerk (mm/s)");
+    SERIAL_ECHO_START;
+    SERIAL_ECHOPAIR("  M205 S",minimumfeedrate ); 
+    SERIAL_ECHOPAIR(" T" ,mintravelfeedrate ); 
+    SERIAL_ECHOPAIR(" B" ,minsegmenttime ); 
+    SERIAL_ECHOPAIR(" X" ,max_xy_jerk ); 
+    SERIAL_ECHOPAIR(" Z" ,max_z_jerk);
+    SERIAL_ECHOPAIR(" E" ,max_e_jerk);
+    SERIAL_ECHOLN(""); 
 
-  SERIAL_ECHO_START;
-  SERIAL_ECHOLNPGM("Home offset (mm):");
-  SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("  M206 X",add_homing[0] );
-  SERIAL_ECHOPAIR(" Y" ,add_homing[1] );
-  SERIAL_ECHOPAIR(" Z" ,add_homing[2] );
-  SERIAL_ECHOLN("");
-
+    SERIAL_ECHO_START;
+    SERIAL_ECHOLNPGM("Home offset (mm):");
+    SERIAL_ECHO_START;
+    SERIAL_ECHOPAIR("  M206 X",add_homing[X_AXIS] );
+    SERIAL_ECHOPAIR(" Y" ,add_homing[Y_AXIS] );
+    SERIAL_ECHOPAIR(" Z" ,add_homing[Z_AXIS] );
+    SERIAL_ECHOLN("");
 #ifdef DELTA
-  SERIAL_ECHO_START;
-  SERIAL_ECHOLNPGM("Endstop adjustment (mm):");
-  SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("  M666 X",endstop_adj[0]);
-  SERIAL_ECHOPAIR(" Y" ,endstop_adj[1]);
-  SERIAL_ECHOPAIR(" Z" ,endstop_adj[2]);
-  SERIAL_ECHOLN("");
-  SERIAL_ECHO_START;
-  SERIAL_ECHOLNPGM("Delta Geometry adjustment:");
-  SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("  M666 A",tower_adj[0]);
-  SERIAL_ECHOPAIR(" B" ,tower_adj[1]);
-  SERIAL_ECHOPAIR(" C" ,tower_adj[2]);
-  SERIAL_ECHOPAIR(" E" ,tower_adj[3]);
-  SERIAL_ECHOPAIR(" F" ,tower_adj[4]);
-  SERIAL_ECHOPAIR(" G" ,tower_adj[5]);
-  SERIAL_ECHOPAIR(" R" ,delta_radius);
-  SERIAL_ECHOPAIR(" D" ,delta_diagonal_rod);
-  SERIAL_ECHOPAIR(" H" ,max_pos[2]);
-  SERIAL_ECHOPAIR(" P" ,z_probe_offset[3]);
-  SERIAL_ECHOLN("");
+    SERIAL_ECHO_START;
+    SERIAL_ECHOLNPGM("Endstop adjustment (mm):");
+    SERIAL_ECHO_START;
+    SERIAL_ECHOPAIR("  M666 X",endstop_adj[0]);
+    SERIAL_ECHOPAIR(" Y" ,endstop_adj[1]);
+    SERIAL_ECHOPAIR(" Z" ,endstop_adj[2]);
+    SERIAL_ECHOLN("");
+    SERIAL_ECHO_START;
+    SERIAL_ECHOLNPGM("Delta Geometry adjustment:");
+    SERIAL_ECHO_START;
+    SERIAL_ECHOPAIR("  M666 A",tower_adj[0]);
+    SERIAL_ECHOPAIR(" B" ,tower_adj[1]);
+    SERIAL_ECHOPAIR(" C" ,tower_adj[2]);
+    SERIAL_ECHOPAIR(" E" ,tower_adj[3]);
+    SERIAL_ECHOPAIR(" F" ,tower_adj[4]);
+    SERIAL_ECHOPAIR(" G" ,tower_adj[5]);
+    SERIAL_ECHOPAIR(" R" ,delta_radius);
+    SERIAL_ECHOPAIR(" D" ,delta_diagonal_rod);
+    SERIAL_ECHOPAIR(" H" ,max_pos[2]);
+    SERIAL_ECHOPAIR(" P" ,z_probe_offset[3]);
+    SERIAL_ECHOLN("");
   /*
     SERIAL_ECHOLN("Tower Positions");
-   SERIAL_ECHOPAIR("Tower1 X:",delta_tower1_x);
-   SERIAL_ECHOPAIR(" Y:",delta_tower1_y);
-   SERIAL_ECHOLN("");
-   SERIAL_ECHOPAIR("Tower2 X:",delta_tower2_x);
-   SERIAL_ECHOPAIR(" Y:",delta_tower2_y);
-   SERIAL_ECHOLN("");
-   SERIAL_ECHOPAIR("Tower3 X:",delta_tower3_x);
-   SERIAL_ECHOPAIR(" Y:",delta_tower3_y);
-   SERIAL_ECHOLN("");
-   */
+    SERIAL_ECHOPAIR("Tower1 X:",delta_tower1_x);
+    SERIAL_ECHOPAIR(" Y:",delta_tower1_y);
+    SERIAL_ECHOLN("");
+    SERIAL_ECHOPAIR("Tower2 X:",delta_tower2_x);
+    SERIAL_ECHOPAIR(" Y:",delta_tower2_y);
+    SERIAL_ECHOLN("");
+    SERIAL_ECHOPAIR("Tower3 X:",delta_tower3_x);
+    SERIAL_ECHOPAIR(" Y:",delta_tower3_y);
+    SERIAL_ECHOLN("");
+  */
 #endif // DELTA
 
 #ifdef ENABLE_AUTO_BED_LEVELING
-  SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("Z Probe offset (mm):" ,zprobe_zoffset);
-  SERIAL_ECHOLN("");
+    SERIAL_ECHO_START;
+    SERIAL_ECHOPAIR("Z Probe offset (mm):" ,zprobe_zoffset);
+    SERIAL_ECHOLN("");
 #endif // ENABLE_AUTO_BED_LEVELING
 
 #ifdef PIDTEMP
-  SERIAL_ECHO_START;
-  SERIAL_ECHOLNPGM("PID settings:");
-  SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("   M301 P",Kp[active_extruder]); 
-  SERIAL_ECHOPAIR(" I" ,unscalePID_i(Ki[active_extruder])); 
-  SERIAL_ECHOPAIR(" D" ,unscalePID_d(Kd[active_extruder]));
-  SERIAL_ECHOLN(""); 
+    SERIAL_ECHO_START;
+    SERIAL_ECHOLNPGM("PID settings:");
+    SERIAL_ECHO_START;
+    SERIAL_ECHOPAIR("   M301 P",Kp[active_extruder]); 
+    SERIAL_ECHOPAIR(" I" ,unscalePID_i(Ki[active_extruder])); 
+    SERIAL_ECHOPAIR(" D" ,unscalePID_d(Kd[active_extruder]));
+    SERIAL_ECHOLN(""); 
+#endif
+#ifdef FWRETRACT
+    SERIAL_ECHO_START;
+    SERIAL_ECHOLNPGM("Retract: S=Length (mm) F:Speed (mm/m) Z: ZLift (mm)");
+    SERIAL_ECHO_START;
+    SERIAL_ECHOPAIR("   M207 S",retract_length); 
+    SERIAL_ECHOPAIR(" F" ,retract_feedrate*60); 
+    SERIAL_ECHOPAIR(" Z" ,retract_zlift);
+    SERIAL_ECHOLN(""); 
+    SERIAL_ECHO_START;
+    SERIAL_ECHOLNPGM("Recover: S=Extra length (mm) F:Speed (mm/m)");
+    SERIAL_ECHO_START;
+    SERIAL_ECHOPAIR("   M208 S",retract_recover_length); 
+    SERIAL_ECHOPAIR(" F" ,retract_recover_feedrate*60); 
+    SERIAL_ECHOLN(""); 
 #endif
 } 
 #endif
+
 
 #ifdef EEPROM_SETTINGS
 void Config_RetrieveSettings()

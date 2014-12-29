@@ -134,7 +134,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 // delta speeds must be the same on xyz
 #define DEFAULT_AXIS_STEPS_PER_UNIT {80,80,80,451,625,625,625}      // X, Y, Z, E0, E1, E2, E3
 #define DEFAULT_MAX_FEEDRATE {300,300,300,45,100,100,100}      // X, Y, Z, E0, E1, E2, E3 (mm/sec)
-#define DEFAULT_RETRACTION_MAX_FEEDRATE {80,150,150,150}      // E0, E1, E2, E3 (mm/sec)
+#define DEFAULT_RETRACTION_MAX_FEEDRATE {150,150,150,150}      // E0, E1, E2, E3 (mm/sec)
 #define DEFAULT_MAX_ACCELERATION {2000,2000,2000,1000,1000,1000,1000}      // X, Y, Z, E0, E1, E2, E3 maximum start speed for accelerated moves.
 
 #define DEFAULT_ACCELERATION 1000      // X, Y, Z and E max acceleration in mm/s^2 for printing moves

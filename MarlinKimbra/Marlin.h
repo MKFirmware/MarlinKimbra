@@ -66,8 +66,9 @@
 #define SERIAL_PROTOCOLLNPGM(x) (serialprintPGM(PSTR(x)),MYSERIAL.write('\n'))
 
 
-const char errormagic[] PROGMEM ="Error:";
-const char echomagic[] PROGMEM ="echo:";
+extern const char errormagic[] PROGMEM;
+extern const char echomagic[] PROGMEM;
+
 #define SERIAL_ERROR_START (serialprintPGM(errormagic))
 #define SERIAL_ERROR(x) SERIAL_PROTOCOL(x)
 #define SERIAL_ERRORPGM(x) SERIAL_PROTOCOLPGM(x)
@@ -151,30 +152,28 @@ void manage_inactivity();
 #endif
 
 #if (DRIVER_EXTRUDERS > 1) && defined(E1_ENABLE_PIN) && (E1_ENABLE_PIN > -1)
-#define enable_e1() WRITE(E1_ENABLE_PIN, E_ENABLE_ON)
-#define disable_e1() WRITE(E1_ENABLE_PIN,!E_ENABLE_ON)
+  #define enable_e1() WRITE(E1_ENABLE_PIN, E_ENABLE_ON)
+  #define disable_e1() WRITE(E1_ENABLE_PIN,!E_ENABLE_ON)
 #else
-#define enable_e1()  /* nothing */
-#define disable_e1() /* nothing */
+  #define enable_e1()  /* nothing */
+  #define disable_e1() /* nothing */
 #endif
 
 #if (DRIVER_EXTRUDERS > 2) && defined(E2_ENABLE_PIN) && (E2_ENABLE_PIN > -1)
-#define enable_e2() WRITE(E2_ENABLE_PIN, E_ENABLE_ON)
-#define disable_e2() WRITE(E2_ENABLE_PIN,!E_ENABLE_ON)
+  #define enable_e2() WRITE(E2_ENABLE_PIN, E_ENABLE_ON)
+  #define disable_e2() WRITE(E2_ENABLE_PIN,!E_ENABLE_ON)
 #else
-#define enable_e2()  /* nothing */
-#define disable_e2() /* nothing */
+  #define enable_e2()  /* nothing */
+  #define disable_e2() /* nothing */
 #endif
 
 #if (DRIVER_EXTRUDERS > 3) && defined(E3_ENABLE_PIN) && (E3_ENABLE_PIN > -1)
-#define enable_e3() WRITE(E3_ENABLE_PIN, E_ENABLE_ON)
-#define disable_e3() WRITE(E3_ENABLE_PIN,!E_ENABLE_ON)
+  #define enable_e3() WRITE(E3_ENABLE_PIN, E_ENABLE_ON)
+  #define disable_e3() WRITE(E3_ENABLE_PIN,!E_ENABLE_ON)
 #else
-#define enable_e3()  /* nothing */
-#define disable_e3() /* nothing */
+  #define enable_e3()  /* nothing */
+  #define disable_e3() /* nothing */
 #endif
-
-
 
 enum AxisEnum {X_AXIS=0, Y_AXIS=1, Z_AXIS=2, E_AXIS=3};
 
@@ -183,7 +182,6 @@ void FlushSerialRequestResend();
 void ClearToSend();
 
 void get_coordinates();
-
 #ifdef DELTA
 float probe_bed(float x, float y);
 void set_delta_constants();
@@ -202,7 +200,6 @@ extern float delta_tower1_x,delta_tower1_y;
 extern float delta_tower2_x,delta_tower2_y;
 extern float delta_tower3_x,delta_tower3_y;
 #endif
-
 #ifdef SCARA
 void calculate_delta(float cartesian[3]);
 void calculate_SCARA_forward_Transform(float f_scara[3]);
@@ -288,6 +285,10 @@ extern bool autoretract_enabled;
 extern bool retracted[EXTRUDERS];
 extern float retract_length, retract_length_swap, retract_feedrate, retract_zlift;
 extern float retract_recover_length, retract_recover_length_swap, retract_recover_feedrate;
+#endif
+
+#ifdef EASY_LOAD
+extern bool allow_lengthy_extrude_once; // for load/unload
 #endif
 
 #ifdef LASERBEAM

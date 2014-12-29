@@ -3,10 +3,12 @@
 
 #include "boards.h"
 
+// This configuration file contains the basic settings.
+// Advanced settings can be found in Configuration_adv.h
 // User-specified version info of this build to display in [Pronterface, etc] terminal window during
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
 // build by the user have been successfully uploaded into firmware.
-#define STRING_VERSION_CONFIG_H __DATE__ " 21/12/2014 " __TIME__ // build date and time
+#define STRING_VERSION_CONFIG_H __DATE__ " " __TIME__ // build date and time
 #define STRING_CONFIG_H_AUTHOR "(MagoKimbra: magokimbra@hotmail.com, Version 4.0)" // Who made the changes.
 
 // SERIAL_PORT selects which serial port should be used for communication with the host.
@@ -187,22 +189,21 @@
 // PID settings:
 // Comment the following line to disable PID and enable bang-bang.
 #define PIDTEMP
-#define BANG_MAX 255 // limits current to nozzle while in bang-bang mode; 255=full current
-#define PID_MAX 255 // limits current to nozzle while PID is active (see PID_FUNCTIONAL_RANGE below); 255=full current
+#define BANG_MAX 255     // limits current to nozzle while in bang-bang mode; 255=full current
+#define PID_MAX BANG_MAX // limits current to nozzle while PID is active (see PID_FUNCTIONAL_RANGE below); 255=full current
 #ifdef PIDTEMP
-//#define PID_DEBUG // Sends debug data to the serial port.
-//#define PID_OPENLOOP 1 // Puts PID in open loop. M104/M140 sets the output power from 0 to PID_MAX
-#define PID_FUNCTIONAL_RANGE 10 // If the temperature difference between the target temperature and the actual temperature
-                                // is more then PID_FUNCTIONAL_RANGE then the PID will be shut off and the heater will be set to min/max.
-#define PID_INTEGRAL_DRIVE_MAX 255  //limit for the integral term
-#define K1 0.95 //smoothing factor within the PID
-#define PID_dT ((OVERSAMPLENR * 10.0)/(F_CPU / 64.0 / 256.0)) //sampling period of the temperature routine
+  //#define PID_DEBUG // Sends debug data to the serial port.
+  //#define PID_OPENLOOP 1 // Puts PID in open loop. M104/M140 sets the output power from 0 to PID_MAX
+  #define PID_FUNCTIONAL_RANGE 10 // If the temperature difference between the target temperature and the actual temperature
+                                  // is more then PID_FUNCTIONAL_RANGE then the PID will be shut off and the heater will be set to min/max.
+  #define PID_INTEGRAL_DRIVE_MAX PID_MAX  //limit for the integral term
+  #define K1 0.95 //smoothing factor within the PID
+  #define PID_dT ((OVERSAMPLENR * 10.0)/(F_CPU / 64.0 / 256.0)) //sampling period of the temperature routine
 
-// If you are using a pre-configured hotend then you can use one of the value sets by uncommenting it
 //            HotEnd{HE0,HE1,HE2,HE3}
-#define DEFAULT_Kp {40,41,41,41}     // Kp for E0, E1, E2, E3
-#define DEFAULT_Ki {7,7,7,7}     // Ki for E0, E1, E2, E3
-#define DEFAULT_Kd {59,59,59,59}     // Kd for E0, E1, E2, E3
+  #define DEFAULT_Kp {40,41,41,41}     // Kp for E0, E1, E2, E3
+  #define DEFAULT_Ki {7,7,7,7}     // Ki for E0, E1, E2, E3
+  #define DEFAULT_Kd {59,59,59,59}     // Kd for E0, E1, E2, E3
 
 #endif // PIDTEMP
 
@@ -229,9 +230,9 @@
 #ifdef PIDTEMPBED
 //120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
 //from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
-#define  DEFAULT_bedKp 10.00
-#define  DEFAULT_bedKi .023
-#define  DEFAULT_bedKd 305.4
+  #define  DEFAULT_bedKp 10.00
+  #define  DEFAULT_bedKi .023
+  #define  DEFAULT_bedKd 305.4
 
 //120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
 //from pidautotune
@@ -338,33 +339,33 @@
 
 //automatic expansion
 #if defined (MAKRPANEL)
- #define DOGLCD
- #define SDSUPPORT
- #define ULTIPANEL
- #define NEWPANEL
- #define DEFAULT_LCD_CONTRAST 17
+  #define DOGLCD
+  #define SDSUPPORT
+  #define ULTIPANEL
+  #define NEWPANEL
+  #define DEFAULT_LCD_CONTRAST 17
 #endif
 
 #if defined (REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER)
- #define DOGLCD
- #define U8GLIB_ST7920
- #define REPRAP_DISCOUNT_SMART_CONTROLLER
+  #define DOGLCD
+  #define U8GLIB_ST7920
+  #define REPRAP_DISCOUNT_SMART_CONTROLLER
 #endif
 
 #if defined(ULTIMAKERCONTROLLER) || defined(REPRAP_DISCOUNT_SMART_CONTROLLER) || defined(G3D_PANEL)
- #define ULTIPANEL
- #define NEWPANEL
+  #define ULTIPANEL
+  #define NEWPANEL
 #endif
 
 #if defined(REPRAPWORLD_KEYPAD)
- #define NEWPANEL
- #define ULTIPANEL
+  #define NEWPANEL
+  #define ULTIPANEL
 #endif
 #if defined(RA_CONTROL_PANEL)
- #define ULTIPANEL
- #define NEWPANEL
- #define LCD_I2C_TYPE_PCA8574
- #define LCD_I2C_ADDRESS 0x27   // I2C Address of the port expander
+  #define ULTIPANEL
+  #define NEWPANEL
+  #define LCD_I2C_TYPE_PCA8574
+  #define LCD_I2C_ADDRESS 0x27   // I2C Address of the port expander
 #endif
 
 //I2C PANELS
@@ -426,11 +427,13 @@
 // Shift register panels
 // ---------------------
 // 2 wire Non-latching LCD SR from:
-// https://bitbucket.org/fmalpartida/new-liquidcrystal/wiki/schematics#!shiftregister-connection
-//#define SR_LCD
-#ifdef SR_LCD
-   #define SR_LCD_2W_NL    // Non latching 2 wire shift register
-   //#define NEWPANEL
+// https://bitbucket.org/fmalpartida/new-liquidcrystal/wiki/schematics#!shiftregister-connection 
+
+//#define SAV_3DLCD
+#ifdef SAV_3DLCD
+   #define SR_LCD_2W_NL    // Non latching 2 wire shiftregister
+   #define NEWPANEL
+   #define ULTIPANEL
 #endif
 
 
@@ -459,9 +462,9 @@
 
 // default LCD contrast for dogm-like LCD displays
 #ifdef DOGLCD
-# ifndef DEFAULT_LCD_CONTRAST
-#  define DEFAULT_LCD_CONTRAST 32
-# endif
+  #ifndef DEFAULT_LCD_CONTRAST
+    #define DEFAULT_LCD_CONTRAST 32
+  #endif
 #endif
 
 // option for invert rotary switch
@@ -499,6 +502,32 @@
 //to disable EEPROM Serial responses and decrease program space by ~1700 byte: comment this out:
 // please keep turned on if you can.
 //#define EEPROM_CHITCHAT
+
+//Bowden Filament management
+//#define EASY_LOAD
+#ifdef EASY_LOAD
+  #define BOWDEN_LENGTH 560       // mm
+  #define LCD_PURGE_LENGTH 3      // mm
+  #define LCD_RETRACT_LENGTH 3    // mm
+  #define LCD_PURGE_FEEDRATE 3    // mm/s
+  #define LCD_RETRACT_FEEDRATE 10 // mm/s
+  #define LCD_LOAD_FEEDRATE 8     // mm/s
+  #define LCD_UNLOAD_FEEDRATE 8   // mm/s
+#endif
+
+// Show a progress bar on the LCD when printing from SD?
+//#define LCD_PROGRESS_BAR
+#ifdef LCD_PROGRESS_BAR
+  // Amount of time (ms) to show the bar
+  #define PROGRESS_BAR_BAR_TIME 2000
+  // Amount of time (ms) to show the status message
+  #define PROGRESS_BAR_MSG_TIME 3000
+  // Amount of time (ms) to retain the status message (0=forever)
+  #define PROGRESS_BAR_MSG_EXPIRE   0
+  // Enable this to show messages for MSG_TIME then hide them
+  //#define PROGRESS_BAR_MSG_ONCE
+#endif
+
 
 // Preheat Constants
 #define PLA_PREHEAT_HOTEND_TEMP 190
@@ -604,9 +633,6 @@
 
 //When using an LCD, uncomment the line below to display the Filament sensor data on the last line instead of status.  Status will appear for 5 sec.
 //#define FILAMENT_LCD_DISPLAY
-
-
-
 
 
 

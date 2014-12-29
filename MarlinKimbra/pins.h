@@ -1899,24 +1899,24 @@
 #define ORIG_HEATER_2_PIN       -1
 #define ORIG_HEATER_BED_PIN     20  // Bed
 #define ORIG_FAN_PIN            16  // Fan   -- from Teensyduino environment.
-                               // For the fan and Teensyduino uses a different pin mapping.
+                                    // For the fan and Teensyduino uses a different pin mapping.
+#define X_STOP_PIN              13
+#define Y_STOP_PIN              14
+#define Z_STOP_PIN              15
+//#define Z_STOP_PIN            36  // For inductive sensor.
 
-  #define X_STOP_PIN         13
-  #define Y_STOP_PIN         14
-  #define Z_STOP_PIN         15
-  #define ORIG_TEMP_0_PIN          7  // Extruder / Analog pin numbering
-  #define ORIG_TEMP_BED_PIN        6  // Bed / Analog pin numbering
+#define ORIG_TEMP_0_PIN          7  // Extruder / Analog pin numbering
+#define ORIG_TEMP_BED_PIN        6  // Bed / Analog pin numbering
 
 #define ORIG_TEMP_1_PIN         -1
 #define ORIG_TEMP_2_PIN         -1
 
-#define SDPOWER            -1
-#define SDSS               20  // PB0 - 8 in marlin env.
-#define LED_PIN            -1
-#define PS_ON_PIN          -1
-#define KILL_PIN           -1
-#define ALARM_PIN          -1
-#define SDCARDDETECT       -1
+#define SDPOWER                 -1
+#define SDSS                    20  // PB0 - 8 in marlin env.
+#define LED_PIN                 -1
+#define PS_ON_PIN               -1
+#define ALARM_PIN               -1
+#define SDCARDDETECT            -1
 
 
 #ifndef SDSUPPORT
@@ -1933,13 +1933,24 @@
 #define LCD_PINS_D5        -1
 #define LCD_PINS_D6        -1
 #define LCD_PINS_D7        -1
-#define BTN_EN1            -1
-#define BTN_EN2            -1
-#define BTN_ENC            -1
 
+#ifdef SAV_3DLCD
 // For LCD SHIFT register LCD
-#define SR_DATA_PIN         0
-#define SR_CLK_PIN          1
+#define SR_DATA_PIN         1
+#define SR_CLK_PIN          0
+
+#define BTN_EN1            41
+#define BTN_EN2            40
+#define BTN_ENC            12
+
+#define KILL_PIN           42 // A2 = 42 - teensy = 40
+#define HOME_PIN          -1 // A4 = marlin 44 - teensy = 42
+
+#ifdef NUM_SERVOS
+  #define SERVO0_PIN       41 // In teensy's pin definition for pinMode (in Servo.cpp)
+#endif
+
+#endif
 
 #endif // SAV_MKI
 

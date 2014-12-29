@@ -32,21 +32,24 @@
 	#define FIRMWARE_URL "http://firmware.ultimaker.com"
 #elif MB(RUMBA)
 	#define MACHINE_NAME "Rumba"
-	#define FIRMWARE_URL "https://github.com/ErikZalm/Marlin/"
+	#define FIRMWARE_URL "https://github.com/MagoKimbra/MarlinKimbra"
 #elif MB(3DRAG)
 	#define MACHINE_NAME "3Drag"
 	#define FIRMWARE_URL "http://3dprint.elettronicain.it/"
 #elif MB(5DPRINT)
 	#define MACHINE_NAME "Makibox"
-	#define FIRMWARE_URL "https://github.com/ErikZalm/Marlin/"
+	#define FIRMWARE_URL "https://github.com/MagoKimbra/MarlinKimbra"
+#elif MB(SAV_MKI)
+	#define MACHINE_NAME "SAV MkI"
+	#define FIRMWARE_URL "https://github.com/fmalpartida/Marlin/tree/SAV-MkI-config"
 #else
 	#ifdef CUSTOM_MENDEL_NAME
 		#define MACHINE_NAME CUSTOM_MENDEL_NAME
 	#else
-		#define MACHINE_NAME "Mendel"
+		#define MACHINE_NAME "Prusa"
 	#endif
 
-// Default firmware set to Mendel
+// Default firmware set to Prusa/Mendel
   #define FIRMWARE_URL "https://github.com/MagoKimbra/MarlinKimbra"
 #endif
 
@@ -118,7 +121,7 @@
 #define MSG_ENDSTOP_HIT                     "TRIGGERED"
 #define MSG_ENDSTOP_OPEN                    "open"
 #define MSG_HOTEND_OFFSET                   "Hotend offsets:"
-#define MSG_EMPTY_PLANE				 "Autolevel can only be execute on an actual plane, make sure width and height are not 0!"
+#define MSG_EMPTY_PLANE                     "Autolevel can only be execute on an actual plane, make sure width and height are not 0!"
 
 #define MSG_SD_CANT_OPEN_SUBDIR             "Cannot open subdir"
 #define MSG_SD_INIT_FAIL                    "SD init fail"

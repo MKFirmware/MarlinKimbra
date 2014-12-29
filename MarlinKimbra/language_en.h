@@ -143,6 +143,10 @@
 #define MSG_CONFIG                          "Configuration"
 #define MSG_BAUDRATE                        "Baudrate"
 #define MSG_RECTRACT                        "Rectract"
+#define MSG_E_BOWDEN_LENGTH                 "Extrude " STRINGIFY(BOWDEN_LENGTH) "mm"
+#define MSG_R_BOWDEN_LENGTH                 "Retract " STRINGIFY(BOWDEN_LENGTH) "mm"
+#define MSG_PURGE_XMM                       "Purge " STRINGIFY(LCD_PURGE_LENGTH) "mm"
+#define MSG_RETRACT_XMM                     "Retract " STRINGIFY(LCD_RETRACT_LENGTH) "mm"
 
 #ifdef FIRMWARE_TEST
 #define MSG_FWTEST_YES                      "Put the Y command to go next"

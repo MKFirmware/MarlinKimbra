@@ -377,20 +377,23 @@ float axis_scaling[3]={1,1,1};  // Build size scaling, default to 1
 bool cancel_heatup = false ;
 
 #ifdef FILAMENT_SENSOR
-//Variables for Filament Sensor input 
-float filament_width_nominal=DEFAULT_NOMINAL_FILAMENT_DIA;  //Set nominal filament width, can be changed with M404 
-bool filament_sensor=false;  //M405 turns on filament_sensor control, M406 turns it off 
-float filament_width_meas=DEFAULT_MEASURED_FILAMENT_DIA; //Stores the measured filament diameter 
-signed char measurement_delay[MAX_MEASUREMENT_DELAY+1];  //ring buffer to delay measurement  store extruder factor after subtracting 100 
-int delay_index1=0;  //index into ring buffer
-int delay_index2=-1;  //index into ring buffer - set to -1 on startup to indicate ring buffer needs to be initialized
-float delay_dist=0; //delay distance counter  
-int meas_delay_cm = MEASUREMENT_DELAY_CM;  //distance delay setting
+  //Variables for Filament Sensor input 
+  float filament_width_nominal=DEFAULT_NOMINAL_FILAMENT_DIA;  //Set nominal filament width, can be changed with M404 
+  bool filament_sensor=false;  //M405 turns on filament_sensor control, M406 turns it off 
+  float filament_width_meas=DEFAULT_MEASURED_FILAMENT_DIA; //Stores the measured filament diameter 
+  signed char measurement_delay[MAX_MEASUREMENT_DELAY+1];  //ring buffer to delay measurement  store extruder factor after subtracting 100 
+  int delay_index1=0;  //index into ring buffer
+  int delay_index2=-1;  //index into ring buffer - set to -1 on startup to indicate ring buffer needs to be initialized
+  float delay_dist=0; //delay distance counter  
+  int meas_delay_cm = MEASUREMENT_DELAY_CM;  //distance delay setting
 #endif
 
 #ifdef LASERBEAM
 int laser_ttl_modulation = 0;
 #endif
+
+const char errormagic[] PROGMEM = "Error:";
+const char echomagic[] PROGMEM = "echo:";
 
 //===========================================================================
 //=============================Private Variables=============================
@@ -456,13 +459,17 @@ static float color_position[] = COLOR_STEP;  //variabile per la scelta del color
 static float color_step_moltiplicator = (DRIVER_MICROSTEP / MOTOR_ANGLE) * CARTER_MOLTIPLICATOR;
 #endif // NPR2
 
+#ifdef EASY_LOAD
+bool allow_lengthy_extrude_once; // for load/unload
+#endif
+
 bool Stopped=false;
 #if defined(PAUSE_PIN) && PAUSE_PIN > -1
 bool paused=false;
 #endif
 
 #if NUM_SERVOS > 0
-Servo servos[NUM_SERVOS];
+  Servo servos[NUM_SERVOS];
 #endif
 
 bool CooldownNoWait = true;
@@ -515,7 +522,8 @@ void serial_echopair_P(const char *s_P, unsigned long v)
 //needs overworking someday
 void enquecommand(const char *cmd)
 {
-  if(buflen < BUFSIZE) {
+  if(buflen < BUFSIZE)
+  {
     //this is dangerous if a mixing of serial and this happens
     strcpy(&(cmdbuffer[bufindw][0]),cmd);
     SERIAL_ECHO_START;
@@ -529,7 +537,8 @@ void enquecommand(const char *cmd)
 
 void enquecommand_P(const char *cmd)
 {
-  if(buflen < BUFSIZE) {
+  if(buflen < BUFSIZE)
+  {
     //this is dangerous if a mixing of serial and this happens
     strcpy_P(&(cmdbuffer[bufindw][0]),cmd);
     SERIAL_ECHO_START;
@@ -541,97 +550,101 @@ void enquecommand_P(const char *cmd)
   }
 }
 
-#if defined(KILL_PIN) && KILL_PIN > -1
 void setup_killpin()
 {
-  pinMode(KILL_PIN,INPUT);
-  WRITE(KILL_PIN,HIGH);
+  #if defined(KILL_PIN) && KILL_PIN > -1
+    SET_INPUT(KILL_PIN);
+    WRITE(KILL_PIN,HIGH);
+  #endif
 }
-#endif
 
-#if defined(PAUSE_PIN) && PAUSE_PIN > -1
+// Set home pin
+void setup_homepin(void)
+{
+#if defined(HOME_PIN) && HOME_PIN > -1
+   SET_INPUT(HOME_PIN);
+   WRITE(HOME_PIN,HIGH);
+#endif
+}
+
 void setup_pausepin()
 {
-  pinMode(PAUSE_PIN,INPUT);
-  WRITE(PAUSE_PIN,HIGH);
+  #if defined(PAUSE_PIN) && PAUSE_PIN > -1
+    SET_INPUT(PAUSE_PIN);
+    WRITE(PAUSE_PIN,HIGH);
+  #endif
 }
-#endif
 
-#if defined(PHOTOGRAPH_PIN) && PHOTOGRAPH_PIN > -1
 void setup_photpin()
 {
-  SET_OUTPUT(PHOTOGRAPH_PIN);
-  WRITE(PHOTOGRAPH_PIN, LOW);
+  #if defined(PHOTOGRAPH_PIN) && PHOTOGRAPH_PIN > -1
+    SET_OUTPUT(PHOTOGRAPH_PIN);
+    WRITE(PHOTOGRAPH_PIN, LOW);
+  #endif
 }
-#endif
 
 void setup_powerhold()
 {
-#if defined(SUICIDE_PIN) && SUICIDE_PIN > -1
-  SET_OUTPUT(SUICIDE_PIN);
-  WRITE(SUICIDE_PIN, HIGH);
-#endif
-#if defined(PS_ON_PIN) && PS_ON_PIN > -1
-  SET_OUTPUT(PS_ON_PIN);
-#if defined(PS_DEFAULT_OFF)
-  WRITE(PS_ON_PIN, PS_ON_ASLEEP);
-#else
-  WRITE(PS_ON_PIN, PS_ON_AWAKE);
-#endif // PS_DEFAULT_OFF
-#endif // PS_ON_PIN
+  #if defined(SUICIDE_PIN) && SUICIDE_PIN > -1
+    SET_OUTPUT(SUICIDE_PIN);
+    WRITE(SUICIDE_PIN, HIGH);
+  #endif
+  #if defined(PS_ON_PIN) && PS_ON_PIN > -1
+    SET_OUTPUT(PS_ON_PIN);
+	#if defined(PS_DEFAULT_OFF)
+	  WRITE(PS_ON_PIN, PS_ON_ASLEEP);
+    #else
+	  WRITE(PS_ON_PIN, PS_ON_AWAKE);
+	#endif
+  #endif
 }
 
 void suicide()
 {
-#if defined(SUICIDE_PIN) && SUICIDE_PIN > -1
-  SET_OUTPUT(SUICIDE_PIN);
-  WRITE(SUICIDE_PIN, LOW);
-#endif
+  #if defined(SUICIDE_PIN) && SUICIDE_PIN > -1
+    SET_OUTPUT(SUICIDE_PIN);
+    WRITE(SUICIDE_PIN, LOW);
+  #endif
 }
 
-#if NUM_SERVOS > 0
 void servo_init()
 {
-#if (NUM_SERVOS >= 1) && defined(SERVO0_PIN) && (SERVO0_PIN > -1)
-  servos[0].attach(SERVO0_PIN);
-#endif
-#if (NUM_SERVOS >= 2) && defined(SERVO1_PIN) && (SERVO1_PIN > -1)
-  servos[1].attach(SERVO1_PIN);
-#endif
-#if (NUM_SERVOS >= 3) && defined(SERVO2_PIN) && (SERVO2_PIN > -1)
-  servos[2].attach(SERVO2_PIN);
-#endif
-#if (NUM_SERVOS >= 4) && defined(SERVO3_PIN) && (SERVO3_PIN > -1)
-  servos[3].attach(SERVO3_PIN);
-#endif
-#if (NUM_SERVOS >= 5)
-#error "TODO: enter initalisation code for more servos"
-#endif
+  #if (NUM_SERVOS >= 1) && defined(SERVO0_PIN) && (SERVO0_PIN > -1)
+    servos[0].attach(SERVO0_PIN);
+  #endif
+  #if (NUM_SERVOS >= 2) && defined(SERVO1_PIN) && (SERVO1_PIN > -1)
+    servos[1].attach(SERVO1_PIN);
+  #endif
+  #if (NUM_SERVOS >= 3) && defined(SERVO2_PIN) && (SERVO2_PIN > -1)
+    servos[2].attach(SERVO2_PIN);
+  #endif
+  #if (NUM_SERVOS >= 4) && defined(SERVO3_PIN) && (SERVO3_PIN > -1)
+    servos[3].attach(SERVO3_PIN);
+  #endif
+  #if (NUM_SERVOS >= 5)
+    #error "TODO: enter initalisation code for more servos"
+  #endif
 
   // Set position of Servo Endstops that are defined
-#if defined(SERVO_ENDSTOPS) && (NUM_SERVOS > 0)
-  for(int8_t i = 0; i < 3; i++) {
+  #if (NUM_SERVOS > 0)
+  for(int8_t i = 0; i < 3; i++)
+  {
     if(servo_endstops[i] > -1) {
       servos[servo_endstops[i]].write(servo_endstop_angles[i * 2 + 1]);
     }
   }
-#endif // SERVO_ENDSTOPS
+  #endif // NUM_SERVOS
 
-#if defined (ENABLE_AUTO_BED_LEVELING) && (PROBE_SERVO_DEACTIVATION_DELAY > 0)
+  #if defined (ENABLE_AUTO_BED_LEVELING) && (PROBE_SERVO_DEACTIVATION_DELAY > 0)
   delay(PROBE_SERVO_DEACTIVATION_DELAY);
   servos[servo_endstops[Z_AXIS]].detach();
-#endif
+  #endif
 }
-#endif // NUM_SERVOS
 
 void setup()
 {
-#if defined(KILL_PIN) && KILL_PIN > -1
   setup_killpin();
-#endif
-#if defined(PAUSE_PIN) && PAUSE_PIN > -1
   setup_pausepin();
-#endif
 
   // loads data from EEPROM if available else uses defaults (and resets step acceleration rate)
   Config_RetrieveSettings();
@@ -652,17 +665,17 @@ void setup()
 
   SERIAL_ECHOPGM(MSG_MARLIN);
   SERIAL_ECHOLNPGM(VERSION_STRING);
-#ifdef STRING_VERSION_CONFIG_H
-#ifdef STRING_CONFIG_H_AUTHOR
-  SERIAL_ECHO_START;
-  SERIAL_ECHOPGM(MSG_CONFIGURATION_VER);
-  SERIAL_ECHOPGM(STRING_VERSION_CONFIG_H);
-  SERIAL_ECHOPGM(MSG_AUTHOR);
-  SERIAL_ECHOLNPGM(STRING_CONFIG_H_AUTHOR);
-  SERIAL_ECHOPGM("Compiled: ");
-  SERIAL_ECHOLNPGM(__DATE__);
-#endif // STRING_CONFIG_H_AUTHOR
-#endif // STRING_VERSION_CONFIG_H
+  #ifdef STRING_VERSION_CONFIG_H
+    #ifdef STRING_CONFIG_H_AUTHOR
+      SERIAL_ECHO_START;
+      SERIAL_ECHOPGM(MSG_CONFIGURATION_VER);
+      SERIAL_ECHOPGM(STRING_VERSION_CONFIG_H);
+      SERIAL_ECHOPGM(MSG_AUTHOR);
+      SERIAL_ECHOLNPGM(STRING_CONFIG_H_AUTHOR);
+      SERIAL_ECHOPGM("Compiled: ");
+      SERIAL_ECHOLNPGM(__DATE__);
+    #endif // STRING_CONFIG_H_AUTHOR
+  #endif // STRING_VERSION_CONFIG_H
   SERIAL_ECHO_START;
   SERIAL_ECHOPGM(MSG_FREE_MEMORY);
   SERIAL_ECHO(freeMemory());
@@ -677,33 +690,31 @@ void setup()
   plan_init();  // Initialize planner;
   watchdog_init();
   st_init();    // Initialize stepper, this enables interrupts!
-#if defined(PHOTOGRAPH_PIN) && PHOTOGRAPH_PIN > -1
   setup_photpin();
-#endif
 #ifdef LASERBEAM            // Initialize Laser beam
   SET_OUTPUT(LASER_PWR_PIN);
   digitalWrite(LASER_PWR_PIN, LOW);
   SET_OUTPUT(LASER_TTL_PIN);
   digitalWrite(LASER_TTL_PIN, LOW);
 #endif
-#if NUM_SERVOS > 0
   servo_init();
-#endif
+  
 
   lcd_init();
   _delay_ms(1000);	// wait 1sec to display the splash screen
 
-#if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
-  SET_OUTPUT(CONTROLLERFAN_PIN); //Set pin used for driver cooling fan
-#endif
+  #if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
+    SET_OUTPUT(CONTROLLERFAN_PIN); //Set pin used for driver cooling fan
+  #endif
 
-#ifdef DIGIPOT_I2C
-  digipot_i2c_init();
-#endif
+  #ifdef DIGIPOT_I2C
+    digipot_i2c_init();
+  #endif
 #ifdef Z_PROBE_SLED
   pinMode(SERVO0_PIN, OUTPUT);
   digitalWrite(SERVO0_PIN, LOW); // turn it off
 #endif // Z_PROBE_SLED
+  setup_homepin();
 #ifdef FIRMWARE_TEST
   FirmwareTest();
 #endif // FIRMWARE_TEST
@@ -714,40 +725,39 @@ void loop()
 {
   if(buflen < (BUFSIZE-1))
     get_command();
-#ifdef SDSUPPORT
+  #ifdef SDSUPPORT
   card.checkautostart(false);
-#endif
+  #endif
   if(buflen)
   {
-#ifdef SDSUPPORT
-    if(card.saving)
-    {
-      if(strstr_P(cmdbuffer[bufindr], PSTR("M29")) == NULL)
+    #ifdef SDSUPPORT
+      if(card.saving)
       {
-        card.write_command(cmdbuffer[bufindr]);
-        if(card.logging)
+        if(strstr_P(cmdbuffer[bufindr], PSTR("M29")) == NULL)
         {
-          process_commands();
+          card.write_command(cmdbuffer[bufindr]);
+          if(card.logging)
+          {
+            process_commands();
+          }
+          else
+          {
+            SERIAL_PROTOCOLLNPGM(MSG_OK);
+          }
         }
         else
         {
-          SERIAL_PROTOCOLLNPGM(MSG_OK);
+          card.closefile();
+          SERIAL_PROTOCOLLNPGM(MSG_FILE_SAVED);
         }
       }
       else
       {
-        card.closefile();
-        SERIAL_PROTOCOLLNPGM(MSG_FILE_SAVED);
+        process_commands();
       }
-    }
-    else
-    {
+    #else
       process_commands();
-    }
-#else // no SDSUPPORT
-    process_commands();
-#endif //SDSUPPORT
-
+    #endif //SDSUPPORT
     buflen = (buflen-1);
     bufindr = (bufindr + 1)%BUFSIZE;
   }
@@ -763,9 +773,9 @@ void get_command()
   while( MYSERIAL.available() > 0  && buflen < BUFSIZE) {
     serial_char = MYSERIAL.read();
     if(serial_char == '\n' ||
-      serial_char == '\r' ||
-      (serial_char == ':' && comment_mode == false) ||
-      serial_count >= (MAX_CMD_SIZE - 1))
+       serial_char == '\r' ||
+       (serial_char == ':' && comment_mode == false) ||
+       serial_count >= (MAX_CMD_SIZE - 1) )
     {
       if(!serial_count) { //if empty line
         comment_mode = false; //for new command
@@ -779,7 +789,7 @@ void get_command()
         {
           strchr_pointer = strchr(cmdbuffer[bufindw], 'N');
           gcode_N = (strtol(&cmdbuffer[bufindw][strchr_pointer - cmdbuffer[bufindw] + 1], NULL, 10));
-          if(gcode_N != gcode_LastN+1 && (strstr_P(cmdbuffer[bufindw], PSTR("M110")) == NULL)) {
+          if(gcode_N != gcode_LastN+1 && (strstr_P(cmdbuffer[bufindw], PSTR("M110")) == NULL) ) {
             SERIAL_ERROR_START;
             SERIAL_ERRORPGM(MSG_ERR_LINE_NO);
             SERIAL_ERRORLN(gcode_LastN);
@@ -789,7 +799,8 @@ void get_command()
             return;
           }
 
-          if(strchr(cmdbuffer[bufindw], '*') != NULL) {
+          if(strchr(cmdbuffer[bufindw], '*') != NULL)
+          {
             byte checksum = 0;
             byte count = 0;
             while(cmdbuffer[bufindw][count] != '*') checksum = checksum^cmdbuffer[bufindw][count++];
@@ -804,7 +815,9 @@ void get_command()
               return;
             }
             //if no errors, continue parsing
-          } else {
+          }
+          else
+          {
             SERIAL_ERROR_START;
             SERIAL_ERRORPGM(MSG_ERR_NO_CHECKSUM);
             SERIAL_ERRORLN(gcode_LastN);
@@ -815,8 +828,11 @@ void get_command()
 
           gcode_LastN = gcode_N;
           //if no errors, continue parsing
-        } else {  // if we don't receive 'N' but still see '*'
-          if((strchr(cmdbuffer[bufindw], '*') != NULL)) {
+        }
+        else  // if we don't receive 'N' but still see '*'
+        {
+          if((strchr(cmdbuffer[bufindw], '*') != NULL))
+          {
             SERIAL_ERROR_START;
             SERIAL_ERRORPGM(MSG_ERR_NO_LINENUMBER_WITH_CHECKSUM);
             SERIAL_ERRORLN(gcode_LastN);
@@ -824,9 +840,9 @@ void get_command()
             return;
           }
         }
-        if((strchr(cmdbuffer[bufindw], 'G') != NULL)) {
+        if((strchr(cmdbuffer[bufindw], 'G') != NULL)){
           strchr_pointer = strchr(cmdbuffer[bufindw], 'G');
-          switch((int)((strtod(&cmdbuffer[bufindw][strchr_pointer - cmdbuffer[bufindw] + 1], NULL)))) {
+          switch((int)((strtod(&cmdbuffer[bufindw][strchr_pointer - cmdbuffer[bufindw] + 1], NULL)))){
           case 0:
           case 1:
           case 2:
@@ -857,7 +873,7 @@ void get_command()
       if(!comment_mode) cmdbuffer[bufindw][serial_count++] = serial_char;
     }
   }
-#ifdef SDSUPPORT
+  #ifdef SDSUPPORT
   if(!card.sdprinting || serial_count!=0){
     return;
   }
@@ -917,7 +933,9 @@ void get_command()
       if(!comment_mode) cmdbuffer[bufindw][serial_count++] = serial_char;
     }
   }
-#endif //SDSUPPORT
+
+  #endif //SDSUPPORT
+
 }
 
 
@@ -974,6 +992,7 @@ XYZ_CONSTS_FROM_CONFIG(signed char, home_dir,  HOME_DIR);
 #define DXC_AUTO_PARK_MODE    1
 #define DXC_DUPLICATION_MODE  2
 static int dual_x_carriage_mode = DEFAULT_DUAL_X_CARRIAGE_MODE;
+
 static float x_home_pos(int extruder) {
   if (extruder == 0)
     return base_home_pos(X_AXIS) + add_homing[X_AXIS];
@@ -2190,7 +2209,7 @@ void process_commands()
         destination[X_AXIS] = round(Z_SAFE_HOMING_X_POINT - X_PROBE_OFFSET_FROM_EXTRUDER);
         destination[Y_AXIS] = round(Z_SAFE_HOMING_Y_POINT - Y_PROBE_OFFSET_FROM_EXTRUDER);
         destination[Z_AXIS] = Z_RAISE_BEFORE_HOMING * home_dir(Z_AXIS) * (-1);    // Set destination away from bed
-        feedrate = XY_TRAVEL_SPEED;
+        feedrate = XY_TRAVEL_SPEED/60;
         current_position[Z_AXIS] = 0;
 
         plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
@@ -5351,7 +5370,14 @@ void clamp_to_software_endstops(float target[3])
   if (min_software_endstops) {
     if (target[X_AXIS] < min_pos[X_AXIS]) target[X_AXIS] = min_pos[X_AXIS];
     if (target[Y_AXIS] < min_pos[Y_AXIS]) target[Y_AXIS] = min_pos[Y_AXIS];
-    if (target[Z_AXIS] < min_pos[Z_AXIS]) target[Z_AXIS] = min_pos[Z_AXIS];
+    
+    float negative_z_offset = 0;
+    #ifdef ENABLE_AUTO_BED_LEVELING
+      if (Z_PROBE_OFFSET_FROM_EXTRUDER < 0) negative_z_offset = negative_z_offset + Z_PROBE_OFFSET_FROM_EXTRUDER;
+      if (add_homing[Z_AXIS] < 0) negative_z_offset = negative_z_offset + add_homing[Z_AXIS];
+    #endif
+    
+    if (target[Z_AXIS] < min_pos[Z_AXIS]+negative_z_offset) target[Z_AXIS] = min_pos[Z_AXIS]+negative_z_offset;
   }
 
   if (max_software_endstops) {
@@ -5755,6 +5781,18 @@ void handle_status_leds(void)
 
 void manage_inactivity()
 {
+	
+#if defined(KILL_PIN) && KILL_PIN > -1
+	static int killCount = 0;   // make the inactivity button a bit less responsive
+   const int KILL_DELAY = 10000;
+#endif
+
+#if defined(HOME_PIN) && HOME_PIN > -1
+   static int homeDebounceCount = 0;   // poor man's debouncing count
+   const int HOME_DEBOUNCE_DELAY = 10000;
+#endif
+   
+	
   if(buflen < (BUFSIZE-1))
     get_command();
 
@@ -5775,47 +5813,83 @@ void manage_inactivity()
       }
     }
   }
-
+  
 #if (LARGE_FLASH == true && ( BEEPER > 0 || defined(ULTRALCD) || defined(LCD_USE_I2C_BUZZER)))
   if (beeptemponoff) temptone();
 #endif
 
-#ifdef CHDK //Check if pin should be set to LOW after M240 set it to HIGH
-  if (chdkActive && (millis() - chdkHigh > CHDK_DELAY))
-  {
-    chdkActive = false;
-    WRITE(CHDK, LOW);
-  }
-#endif
+  #ifdef CHDK //Check if pin should be set to LOW after M240 set it to HIGH
+    if (chdkActive && (millis() - chdkHigh > CHDK_DELAY))
+    {
+      chdkActive = false;
+      WRITE(CHDK, LOW);
+    }
+  #endif
+  
+  #if defined(KILL_PIN) && KILL_PIN > -1
+    
+    // Check if the kill button was pressed and wait just in case it was an accidental
+    // key kill key press
+    // -------------------------------------------------------------------------------
+    if( 0 == READ(KILL_PIN) )
+    {
+       killCount++;
+    }
+    else if (killCount > 0)
+    {
+       killCount--;
+    }
+    // Exceeded threshold and we can confirm that it was not accidental
+    // KILL the machine
+    // ----------------------------------------------------------------
+    if ( killCount >= KILL_DELAY)
+    {
+       kill();
+    }
+  #endif
 
-#if defined(KILL_PIN) && KILL_PIN > -1
-  if(0 == READ(KILL_PIN)) kill();
-#endif
-
-#if defined(PAUSE_PIN) && PAUSE_PIN > -1
-  if(0 == READ(PAUSE_PIN) && !paused) pause();
-#endif
-
-#if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
-  controllerFan(); //Check if fan should be turned on to cool stepper drivers down
-#endif
-#ifdef EXTRUDER_RUNOUT_PREVENT
-  if( (millis() - previous_millis_cmd) >  EXTRUDER_RUNOUT_SECONDS*1000 )
+  #if defined(HOME_PIN) && HOME_PIN > -1
+    // Check to see if we have to home, use poor man's debouncer
+    // ---------------------------------------------------------
+    if ( 0 == READ(HOME_PIN) )
+    {
+       if (homeDebounceCount == 0)
+       {
+          enquecommand_P((PSTR("G28")));
+          homeDebounceCount++;
+          LCD_ALERTMESSAGEPGM(MSG_AUTO_HOME);
+       }
+       else if (homeDebounceCount < HOME_DEBOUNCE_DELAY)
+       {
+          homeDebounceCount++;
+       }
+       else
+       {
+          homeDebounceCount = 0;
+       }
+    }
+  #endif
+    
+  #if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
+    controllerFan(); //Check if fan should be turned on to cool stepper drivers down
+  #endif
+  #ifdef EXTRUDER_RUNOUT_PREVENT
+    if( (millis() - previous_millis_cmd) >  EXTRUDER_RUNOUT_SECONDS*1000 )
     if(degHotend(active_extruder)>EXTRUDER_RUNOUT_MINTEMP)
     {
-      bool oldstatus=READ(E0_ENABLE_PIN);
-      enable_e0();
-      float oldepos=current_position[E_AXIS];
-      float oldedes=destination[E_AXIS];
-      plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS],
-      destination[E_AXIS]+EXTRUDER_RUNOUT_EXTRUDE*EXTRUDER_RUNOUT_ESTEPS/axis_steps_per_unit[active_extruder+3],
-      EXTRUDER_RUNOUT_SPEED/60.*EXTRUDER_RUNOUT_ESTEPS/axis_steps_per_unit[active_extruder+3], active_extruder, active_driver);
-      current_position[E_AXIS]=oldepos;
-      destination[E_AXIS]=oldedes;
-      plan_set_e_position(oldepos);
-      previous_millis_cmd=millis();
-      st_synchronize();
-      WRITE(E0_ENABLE_PIN,oldstatus);
+     bool oldstatus=READ(E0_ENABLE_PIN);
+     enable_e0();
+     float oldepos=current_position[E_AXIS];
+     float oldedes=destination[E_AXIS];
+     plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS],
+                      destination[E_AXIS]+EXTRUDER_RUNOUT_EXTRUDE*EXTRUDER_RUNOUT_ESTEPS/axis_steps_per_unit[active_extruder+3],
+                      EXTRUDER_RUNOUT_SPEED/60.*EXTRUDER_RUNOUT_ESTEPS/axis_steps_per_unit[active_extruder+3], active_extruder, active_driver);
+     current_position[E_AXIS]=oldepos;
+     destination[E_AXIS]=oldedes;
+     plan_set_e_position(oldepos);
+     previous_millis_cmd=millis();
+     st_synchronize();
+     WRITE(E0_ENABLE_PIN,oldstatus);
     }
 #endif
 #if defined(DUAL_X_CARRIAGE)
@@ -5836,9 +5910,9 @@ void manage_inactivity()
 
 void kill()
 {
-#if defined(KILL_PIN) && KILL_PIN > -1
   cli(); // Stop interrupts
   disable_heater();
+
   disable_x();
   disable_y();
   disable_z();
@@ -5853,9 +5927,16 @@ void kill()
   SERIAL_ERROR_START;
   SERIAL_ERRORLNPGM(MSG_ERR_KILLED);
   LCD_ALERTMESSAGEPGM(MSG_KILLED);
+  
+  // FMC small patch to update the LCD before ending
+  sei();   // enable interrupts
+  for ( int i=5; i--; lcd_update())
+  {
+     delay(200);	
+  }
+  cli();   // disable interrupts
   suicide();
   while(1) { /* Intentionally left empty */ } // Wait for reset
-#endif
 }
 
 #if (LARGE_FLASH == true && ( BEEPER > 0 || defined(ULTRALCD) || defined(LCD_USE_I2C_BUZZER)))
@@ -5901,16 +5982,17 @@ void temptone()
 }
 #endif // (LARGE_FLASH == true && ( BEEPER > 0 || defined(ULTRALCD) || defined(LCD_USE_I2C_BUZZER)))
 
-#if defined(PAUSE_PIN) && PAUSE_PIN > -1
+
 void pause()
 {
-  paused=true;
-  enquecommand("M600 X0 Z+5");
-  enquecommand("G4 P0");
-  enquecommand("G4 P0");
-  enquecommand("G4 P0");
+  #if defined(PAUSE_PIN) && PAUSE_PIN > -1
+    paused=true;
+    enquecommand("M600 X0 Z+5");
+    enquecommand("G4 P0");
+    enquecommand("G4 P0");
+    enquecommand("G4 P0");
+  #endif // defined(PAUSE_PIN) && PAUSE_PIN > -1
 }
-#endif // defined(PAUSE_PIN) && PAUSE_PIN > -1
 
 void Stop()
 {
@@ -5930,77 +6012,79 @@ bool IsStopped() { return Stopped; };
 void setPwmFrequency(uint8_t pin, int val)
 {
   val &= 0x07;
-  switch(digitalPinToTimer(pin)) {
-#if defined(TCCR0A)
-  case TIMER0A:
-  case TIMER0B:
-    //TCCR0B &= ~(_BV(CS00) | _BV(CS01) | _BV(CS02));
-    //TCCR0B |= val;
-    break;
-#endif
+  switch(digitalPinToTimer(pin))
+  {
 
-#if defined(TCCR1A)
-  case TIMER1A:
-  case TIMER1B:
-    //TCCR1B &= ~(_BV(CS10) | _BV(CS11) | _BV(CS12));
-    //TCCR1B |= val;
-    break;
-#endif
+    #if defined(TCCR0A)
+    case TIMER0A:
+    case TIMER0B:
+//         TCCR0B &= ~(_BV(CS00) | _BV(CS01) | _BV(CS02));
+//         TCCR0B |= val;
+         break;
+    #endif
 
-#if defined(TCCR2)
-  case TIMER2:
-  case TIMER2:
-    TCCR2 &= ~(_BV(CS10) | _BV(CS11) | _BV(CS12));
-    TCCR2 |= val;
-    break;
-#endif
+    #if defined(TCCR1A)
+    case TIMER1A:
+    case TIMER1B:
+//         TCCR1B &= ~(_BV(CS10) | _BV(CS11) | _BV(CS12));
+//         TCCR1B |= val;
+         break;
+    #endif
 
-#if defined(TCCR2A)
-  case TIMER2A:
-  case TIMER2B:
-    TCCR2B &= ~(_BV(CS20) | _BV(CS21) | _BV(CS22));
-    TCCR2B |= val;
-    break;
-#endif
+    #if defined(TCCR2)
+    case TIMER2:
+    case TIMER2:
+         TCCR2 &= ~(_BV(CS10) | _BV(CS11) | _BV(CS12));
+         TCCR2 |= val;
+         break;
+    #endif
 
-#if defined(TCCR3A)
-  case TIMER3A:
-  case TIMER3B:
-  case TIMER3C:
-    TCCR3B &= ~(_BV(CS30) | _BV(CS31) | _BV(CS32));
-    TCCR3B |= val;
-    break;
-#endif
+    #if defined(TCCR2A)
+    case TIMER2A:
+    case TIMER2B:
+         TCCR2B &= ~(_BV(CS20) | _BV(CS21) | _BV(CS22));
+         TCCR2B |= val;
+         break;
+    #endif
 
-#if defined(TCCR4A)
-  case TIMER4A:
-  case TIMER4B:
-  case TIMER4C:
-    TCCR4B &= ~(_BV(CS40) | _BV(CS41) | _BV(CS42));
-    TCCR4B |= val;
-    break;
-#endif
+    #if defined(TCCR3A)
+    case TIMER3A:
+    case TIMER3B:
+    case TIMER3C:
+         TCCR3B &= ~(_BV(CS30) | _BV(CS31) | _BV(CS32));
+         TCCR3B |= val;
+         break;
+    #endif
 
-#if defined(TCCR5A)
-  case TIMER5A:
-  case TIMER5B:
-  case TIMER5C:
-    TCCR5B &= ~(_BV(CS50) | _BV(CS51) | _BV(CS52));
-    TCCR5B |= val;
-    break;
-#endif
+    #if defined(TCCR4A)
+    case TIMER4A:
+    case TIMER4B:
+    case TIMER4C:
+         TCCR4B &= ~(_BV(CS40) | _BV(CS41) | _BV(CS42));
+         TCCR4B |= val;
+         break;
+   #endif
+
+    #if defined(TCCR5A)
+    case TIMER5A:
+    case TIMER5B:
+    case TIMER5C:
+         TCCR5B &= ~(_BV(CS50) | _BV(CS51) | _BV(CS52));
+         TCCR5B |= val;
+         break;
+   #endif
 
   }
 }
 #endif //FAST_PWM_FAN
 
-bool setTargetedHotend(int code) {
+bool setTargetedHotend(int code){
   tmp_extruder = active_extruder;
   if(code_seen('T')) {
     tmp_extruder = code_value();
     if(tmp_extruder >= EXTRUDERS) {
       SERIAL_ECHO_START;
-      switch(code) {
+      switch(code){
         case 104:
           SERIAL_ECHO(MSG_M104_INVALID_EXTRUDER);
           break;

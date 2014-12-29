@@ -60,30 +60,29 @@ extern int current_temperature_bed_raw;
 extern int target_temperature_bed;
 extern float current_temperature_bed;
 #ifdef TEMP_SENSOR_1_AS_REDUNDANT
-extern float redundant_temperature;
+  extern float redundant_temperature;
 #endif
 
 #if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
-extern unsigned char soft_pwm_bed;
+  extern unsigned char soft_pwm_bed;
 #endif
 
 #ifdef PIDTEMP
-extern float Kp[4],Ki[4],Kd[4],Kc;
-float scalePID_i(float i);
-float scalePID_d(float d);
-float unscalePID_i(float i);
-float unscalePID_d(float d);
-
+  extern float Kp[4],Ki[4],Kd[4],Kc;
+  float scalePID_i(float i);
+  float scalePID_d(float d);
+  float unscalePID_i(float i);
+  float unscalePID_d(float d);
 #endif
+
 #ifdef PIDTEMPBED
-extern float bedKp,bedKi,bedKd;
+  extern float bedKp,bedKi,bedKd;
 #endif
-
 
 #ifdef BABYSTEPPING
-extern volatile int babystepsTodo[3];
+  extern volatile int babystepsTodo[3];
 #endif
-
+  
 //high level conversion routines, for use outside of temperature.cpp
 //inline so that there is no performance decrease.
 //deg=degreeCelsius
@@ -205,7 +204,7 @@ void disable_heater();
 void setWatch();
 void updatePID();
 
-#ifdef THERMAL_RUNAWAY_PROTECTION_PERIOD && THERMAL_RUNAWAY_PROTECTION_PERIOD > 0
+#if defined (THERMAL_RUNAWAY_PROTECTION_PERIOD) && THERMAL_RUNAWAY_PROTECTION_PERIOD > 0
 void thermal_runaway_protection(int *state, unsigned long *timer, float temperature, float target_temperature, int heater_id, int period_seconds, int hysteresis_degc);
 static int thermal_runaway_state_machine[4]; // = {0,0,0,0};
 static unsigned long thermal_runaway_timer[4]; // = {0,0,0,0};
@@ -229,4 +228,8 @@ FORCE_INLINE void autotempShutdown(){
 
 void PID_autotune(float temp, int extruder, int ncycles);
 
+void setExtruderAutoFanState(int pin, bool state);
+void checkExtruderAutoFans();
+
 #endif
+

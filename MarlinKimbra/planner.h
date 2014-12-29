@@ -49,7 +49,7 @@ typedef struct {
 #endif
 
   // Fields used by the motion planner to manage acceleration
-  //  float speed_x, speed_y, speed_z, speed_e;        // Nominal mm/sec for each axis
+  //  float speed_x, speed_y, speed_z, speed_e;      // Nominal mm/sec for each axis
   float nominal_speed;                               // The nominal speed for this block in mm/sec 
   float entry_speed;                                 // Entry speed at previous-current junction in mm/sec
   float max_entry_speed;                             // Maximum allowable junction entry speed in mm/sec
@@ -72,8 +72,7 @@ typedef struct {
   unsigned long laser_ttlmodulation;
 #endif
   volatile char busy;
-} 
-block_t;
+} block_t;
 
 #ifdef ENABLE_AUTO_BED_LEVELING
 // this holds the required transform to compensate for bed level
