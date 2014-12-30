@@ -73,6 +73,10 @@ static void lcd_set_contrast();
 static void lcd_control_retract_menu();
 static void lcd_sdcard_menu();
 
+#ifdef DELTA
+static void lcd_delta_calibrate_menu();
+#endif // DELTA
+
 static void lcd_quick_feedback();//Cause an LCD refresh, and give the user visual or audible feedback that something has happened
 
 /* Different types of actions that can be used in menu items. */
@@ -342,6 +346,9 @@ static void lcd_main_menu()
         MENU_ITEM(submenu, MSG_TUNE, lcd_tune_menu);
     }else{
         MENU_ITEM(submenu, MSG_PREPARE, lcd_prepare_menu);
+#ifdef DELTA
+        MENU_ITEM(submenu, MSG_DELTA_CALIBRATE, lcd_delta_calibrate_menu);
+#endif // DELTA
     }
     MENU_ITEM(submenu, MSG_CONTROL, lcd_control_menu);
 #ifdef SDSUPPORT
@@ -762,7 +769,9 @@ static void lcd_prepare_menu()
 #endif
     MENU_ITEM(gcode, MSG_DISABLE_STEPPERS, PSTR("M84"));
     MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
+#ifndef DELTA
     MENU_ITEM(gcode, MSG_BED_SETTING, PSTR("G28 M"));
+#endif
     MENU_ITEM(function, MSG_SET_HOME_OFFSETS, lcd_set_home_offsets);
     //MENU_ITEM(gcode, MSG_SET_ORIGIN, PSTR("G92 X0 Y0 Z0"));
     //Add Preset menu for LASER setting '14. 7. 22
@@ -804,6 +813,19 @@ static void lcd_prepare_menu()
     END_MENU();
 }
 
+#ifdef DELTA
+static void lcd_delta_calibrate_menu()
+{
+    START_MENU();
+    MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
+    MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
+    MENU_ITEM(gcode, MSG_DELTA_CALIBRATE_X, PSTR("G0 F8000 X-77.94 Y-45 Z0"));
+    MENU_ITEM(gcode, MSG_DELTA_CALIBRATE_Y, PSTR("G0 F8000 X77.94 Y-45 Z0"));
+    MENU_ITEM(gcode, MSG_DELTA_CALIBRATE_Z, PSTR("G0 F8000 X0 Y90 Z0"));
+    MENU_ITEM(gcode, MSG_DELTA_CALIBRATE_CENTER, PSTR("G0 F8000 X0 Y0 Z0"));
+    END_MENU();
+}
+#endif // DELTA
 float move_menu_scale;
 static void lcd_move_menu_axis();
 
@@ -1725,7 +1747,52 @@ char *ftostr12ns(const float &x)
   return conv;
 }
 
-// Convert int to lj string with +123.0 format
+//  convert float to space-padded string with -_23.4_ format
+char *ftostr32sp(const float &x) {
+  long xx = abs(x * 100);
+  uint8_t dig;
+
+  if (x < 0) { // negative val = -_0
+    conv[0] = '-';
+    dig = (xx / 1000) % 10;
+    conv[1] = dig ? '0' + dig : ' ';
+  }
+  else { // positive val = __0
+    dig = (xx / 10000) % 10;
+    if (dig) {
+      conv[0] = '0' + dig;
+      conv[1] = '0' + (xx / 1000) % 10;
+    }
+    else {
+      conv[0] = ' ';
+      dig = (xx / 1000) % 10;
+      conv[1] = dig ? '0' + dig : ' ';
+    }
+  }
+
+  conv[2] = '0' + (xx / 100) % 10; // lsd always
+
+  dig = xx % 10;
+  if (dig) { // 2 decimal places
+    conv[5] = '0' + dig;
+    conv[4] = '0' + (xx / 10) % 10;
+    conv[3] = '.';
+  }
+  else { // 1 or 0 decimal place
+    dig = (xx / 10) % 10;
+    if (dig) {
+      conv[4] = '0' + dig;
+      conv[3] = '.';
+    }
+    else {
+      conv[3] = conv[4] = ' ';
+    }
+    conv[5] = ' ';
+  }
+  conv[6] = '\0';
+  return conv;
+}
+
 char *itostr31(const int &xx)
 {
   conv[0]=(xx>=0)?'+':'-';

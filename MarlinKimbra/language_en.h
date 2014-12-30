@@ -148,6 +148,14 @@
 #define MSG_PURGE_XMM                       "Purge " STRINGIFY(LCD_PURGE_LENGTH) "mm"
 #define MSG_RETRACT_XMM                     "Retract " STRINGIFY(LCD_RETRACT_LENGTH) "mm"
 
+#ifdef DELTA
+    #define MSG_DELTA_CALIBRATE             "Delta Calibration"
+    #define MSG_DELTA_CALIBRATE_X           "Calibrate X"
+    #define MSG_DELTA_CALIBRATE_Y           "Calibrate Y"
+    #define MSG_DELTA_CALIBRATE_Z           "Calibrate Z"
+    #define MSG_DELTA_CALIBRATE_CENTER      "Calibrate Center"
+#endif // DELTA
+
 #ifdef FIRMWARE_TEST
 #define MSG_FWTEST_YES                      "Put the Y command to go next"
 #define MSG_FWTEST_NO                       "Put the N command to go next"
