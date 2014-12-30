@@ -28,26 +28,26 @@
 #define PROTOCOL_VERSION "1.0"
 
 #if MB(ULTIMAKER)|| MB(ULTIMAKER_OLD)|| MB(ULTIMAIN_2)
-	#define MACHINE_NAME "Ultimaker"
-	#define FIRMWARE_URL "http://firmware.ultimaker.com"
+  #define MACHINE_NAME "Ultimaker"
+  #define FIRMWARE_URL "http://firmware.ultimaker.com"
 #elif MB(RUMBA)
-	#define MACHINE_NAME "Rumba"
-	#define FIRMWARE_URL "https://github.com/MagoKimbra/MarlinKimbra"
+  #define MACHINE_NAME "Rumba"
+  #define FIRMWARE_URL "https://github.com/MagoKimbra/MarlinKimbra"
 #elif MB(3DRAG)
-	#define MACHINE_NAME "3Drag"
-	#define FIRMWARE_URL "http://3dprint.elettronicain.it/"
+  #define MACHINE_NAME "3Drag"
+  #define FIRMWARE_URL "http://3dprint.elettronicain.it/"
 #elif MB(5DPRINT)
-	#define MACHINE_NAME "Makibox"
-	#define FIRMWARE_URL "https://github.com/MagoKimbra/MarlinKimbra"
+  #define MACHINE_NAME "Makibox"
+  #define FIRMWARE_URL "https://github.com/MagoKimbra/MarlinKimbra"
 #elif MB(SAV_MKI)
-	#define MACHINE_NAME "SAV MkI"
-	#define FIRMWARE_URL "https://github.com/fmalpartida/Marlin/tree/SAV-MkI-config"
+  #define MACHINE_NAME "SAV MkI"
+  #define FIRMWARE_URL "https://github.com/fmalpartida/Marlin/tree/SAV-MkI-config"
 #else
-	#ifdef CUSTOM_MENDEL_NAME
-		#define MACHINE_NAME CUSTOM_MENDEL_NAME
-	#else
-		#define MACHINE_NAME "Prusa"
-	#endif
+  #ifdef CUSTOM_MENDEL_NAME
+    #define MACHINE_NAME CUSTOM_MENDEL_NAME
+  #else
+    #define MACHINE_NAME "Prusa"
+  #endif
 
 // Default firmware set to Prusa/Mendel
   #define FIRMWARE_URL "https://github.com/MagoKimbra/MarlinKimbra"
@@ -55,7 +55,7 @@
 
 
 #ifndef MACHINE_UUID
-   #define MACHINE_UUID "00000000-0000-0000-0000-000000000000"
+  #define MACHINE_UUID "00000000-0000-0000-0000-000000000000"
 #endif
 
 

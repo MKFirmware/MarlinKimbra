@@ -4904,7 +4904,7 @@ Sigma_Exit:
         while(!lcd_clicked()){
           cnt++;
           manage_heater();
-          manage_inactivity();
+          manage_inactivity(true);
           lcd_update();
           if(cnt==0)
           {
@@ -5779,7 +5779,7 @@ void handle_status_leds(void)
 }
 #endif // TEMP_STAT_LEDS
 
-void manage_inactivity()
+void manage_inactivity(bool ignore_stepper_queue/*=false*/) //default argument set in Marlin.h
 {
 	
 #if defined(KILL_PIN) && KILL_PIN > -1
