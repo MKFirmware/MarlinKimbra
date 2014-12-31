@@ -1509,9 +1509,9 @@ float z_probe() {
   calculate_delta(current_position);
   plan_set_position(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS]);
 
-  for(int8_t i=0; i < NUM_AXIS; i++) {
-    saved_position[i] = float(st_get_position(i) / axis_steps_per_unit[i]);
-  }
+  saved_position[X_AXIS] = float((st_get_position(X_AXIS)) / axis_steps_per_unit[X_AXIS]);
+  saved_position[Y_AXIS] = float((st_get_position(Y_AXIS)) / axis_steps_per_unit[Y_AXIS]);
+  saved_position[Z_AXIS] = float((st_get_position(Z_AXIS)) / axis_steps_per_unit[Z_AXIS]);
 
   feedrate = homing_feedrate[Z_AXIS];
   destination[Z_AXIS] = mm+2;
@@ -2638,7 +2638,7 @@ void process_commands()
         if (bed_level_y + endstop_adj[1] > h_endstop) h_endstop = bed_level_y + endstop_adj[1];
         if (bed_level_y + endstop_adj[1] < l_endstop) l_endstop = bed_level_y + endstop_adj[1];
         if (bed_level_z + endstop_adj[2] > h_endstop) h_endstop = bed_level_z + endstop_adj[2];
-        if (bed_level_z + endstop_adj[2] < l_endstop) l_endstop = bed_level_x + endstop_adj[2];
+        if (bed_level_z + endstop_adj[2] < l_endstop) l_endstop = bed_level_z + endstop_adj[2];
 
         if (h_endstop - l_endstop > 3) {
           SERIAL_ECHOLN("The position of the endstop switches on this printer are not within limits");
