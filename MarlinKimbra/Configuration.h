@@ -595,15 +595,15 @@
 // If you select a configuration below, this will receive a default value and does not need to be set manually
 // set it manually if you have more servos than extruders and wish to manually control some
 // leaving it defining as 0 will disable the servo subsystem
-#define NUM_SERVOS 0     // Servo index starts with 0 for M280 command
+#define NUM_SERVOS 0      // Servo index starts with 0 for M280 command
 
 // Servo Endstops
 //
 // This allows for servo actuated endstops, primary usage is for the Z Axis to eliminate calibration or bed height changes.
 // Use M206 command to correct for switch height offset to actual nozzle height. Store that setting with M500.
 //
-#define SERVO_ENDSTOPS {-1,-1,0}     // Servo index for X, Y, Z. Disable with -1
-#define SERVO_ENDSTOP_ANGLES {0,0,0,0,90,0}     // X,Y,Z Axis Extend and Retract angles
+#define SERVO_ENDSTOPS {-1,-1,0}      // Servo index for X, Y, Z. Disable with -1
+#define SERVO_ENDSTOP_ANGLES {0,0,0,0,90,0}      // X,Y,Z Axis Extend and Retract angles
 
 
 /**********************************************************************\
