@@ -1205,7 +1205,7 @@ static void setup_for_endstop_move() {
   saved_feedrate = feedrate;
   saved_feedmultiply = feedmultiply;
   feedmultiply = 100;
-  previous_millis_cmd = millis();
+  refresh_cmd_timeout();
 
   enable_endstops(true);
 }
@@ -1217,7 +1217,7 @@ static void clean_up_after_endstop_move() {
 
   feedrate = saved_feedrate;
   feedmultiply = saved_feedmultiply;
-  previous_millis_cmd = millis();
+  refresh_cmd_timeout();
 }
 
 static void engage_z_probe() {
@@ -1741,7 +1741,7 @@ void home_delta_axis()
   saved_feedrate = feedrate;
   saved_feedmultiply = feedmultiply;
   feedmultiply = 100;
-  previous_millis_cmd = millis();
+  refresh_cmd_timeout();
 
   enable_endstops(true);
 
@@ -1781,13 +1781,13 @@ void home_delta_axis()
 
   feedrate = saved_feedrate;
   feedmultiply = saved_feedmultiply;
-  previous_millis_cmd = millis();
+  refresh_cmd_timeout();
   endstops_hit_on_purpose(); 
 }
 
 void prepare_move_raw()
 {
-  previous_millis_cmd = millis();
+  refresh_cmd_timeout();
   calculate_delta(destination);
   plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS],
 		   destination[E_AXIS], feedrate*feedmultiply/60/100.0,
@@ -1949,7 +1949,7 @@ void process_commands()
 
       st_synchronize();
       codenum += millis();  // keep track of when we started waiting
-      previous_millis_cmd = millis();
+      refresh_cmd_timeout();
       while(millis() < codenum) {
         manage_heater();
         manage_inactivity();
@@ -1983,7 +1983,7 @@ void process_commands()
       saved_feedrate = feedrate;
       saved_feedmultiply = feedmultiply;
       feedmultiply = 100;
-      previous_millis_cmd = millis();
+      refresh_cmd_timeout();
 
       enable_endstops(true);
 
@@ -2277,7 +2277,7 @@ void process_commands()
 
       feedrate = saved_feedrate;
       feedmultiply = saved_feedmultiply;
-      previous_millis_cmd = millis();
+      refresh_cmd_timeout();
       endstops_hit_on_purpose();
       break;
 
@@ -2530,7 +2530,7 @@ void process_commands()
 
       feedrate = saved_feedrate;
       feedmultiply = saved_feedmultiply;
-      previous_millis_cmd = millis();
+      refresh_cmd_timeout();
       endstops_hit_on_purpose();
       break;
 
@@ -3090,7 +3090,7 @@ void process_commands()
 
         lcd_ignore_click();
         st_synchronize();
-        previous_millis_cmd = millis();
+        refresh_cmd_timeout();
         if (codenum > 0){
           codenum += millis();  // keep track of when we started waiting
           while(millis() < codenum && !lcd_clicked()) {
@@ -3728,7 +3728,7 @@ Sigma_Exit:
           }
           LCD_MESSAGEPGM(MSG_HEATING_COMPLETE);
           starttime=millis();
-          previous_millis_cmd = millis();
+          refresh_cmd_timeout();
         }
         break;
     case 190: // M190 - Wait for bed heater to reach target.
@@ -3767,7 +3767,7 @@ Sigma_Exit:
         lcd_update();
       }
       LCD_MESSAGEPGM(MSG_BED_DONE);
-      previous_millis_cmd = millis();
+      refresh_cmd_timeout();
 #endif
       break;
 
@@ -5310,7 +5310,7 @@ void FlushSerialRequestResend()
 
 void ClearToSend()
 {
-  previous_millis_cmd = millis();
+  refresh_cmd_timeout();
   #ifdef SDSUPPORT
   if(fromsd[bufindr])
     return;
@@ -5466,7 +5466,7 @@ void adjust_delta(float cartesian[3])
 void prepare_move()
 {
   clamp_to_software_endstops(destination);
-  previous_millis_cmd = millis();
+  refresh_cmd_timeout();
 
 #ifdef SCARA //for now same as delta-code
   float difference[NUM_AXIS];
@@ -5620,7 +5620,7 @@ void prepare_arc_move(char isclockwise)
   for(int8_t i=0; i < NUM_AXIS; i++) {
     current_position[i] = destination[i];
   }
-  previous_millis_cmd = millis();
+  refresh_cmd_timeout();
 }
 
 #if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
