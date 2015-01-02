@@ -923,22 +923,5 @@ static uint8_t lcd_implementation_read_slow_buttons()
 }
 #endif
 
-static void lcd_message_init()
-{
-  static String message[4];
-  message[0] = "MARLINKIMBRA V4.0";
-  message[1] = "By MagoKimbra";
-  message[2] = "magokimbra@hotmail";
-  message[3] = ".com";
-
-  lcd.clear();
-  for(int8_t i=0;i<4;i++){
-    lcd.setCursor(0,i);
-    lcd.print(message[i]);
-  }
-  delay(5000);
-  lcd.clear();
-}
-
 
 #endif//ULTRA_LCD_IMPLEMENTATION_HITACHI_HD44780_H

@@ -1339,7 +1339,6 @@ static void menu_action_setting_edit_bool(const char* pstr, bool* ptr)
 void lcd_init()
 {
     lcd_implementation_init();
-    lcd_message_init();
 
 #ifdef NEWPANEL
     SET_INPUT(BTN_EN1);

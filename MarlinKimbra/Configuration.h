@@ -200,7 +200,7 @@
   #define K1 0.95 //smoothing factor within the PID
   #define PID_dT ((OVERSAMPLENR * 10.0)/(F_CPU / 64.0 / 256.0)) //sampling period of the temperature routine
 
-//            HotEnd{HE0,HE1,HE2,HE3}
+//             HotEnd{HE0,HE1,HE2,HE3}
   #define DEFAULT_Kp {40,41,41,41}     // Kp for E0, E1, E2, E3
   #define DEFAULT_Ki {7,7,7,7}     // Ki for E0, E1, E2, E3
   #define DEFAULT_Kd {59,59,59,59}     // Kd for E0, E1, E2, E3
@@ -431,9 +431,9 @@
 
 //#define SAV_3DLCD
 #ifdef SAV_3DLCD
-   #define SR_LCD_2W_NL    // Non latching 2 wire shiftregister
-   #define NEWPANEL
-   #define ULTIPANEL
+  #define SR_LCD_2W_NL    // Non latching 2 wire shiftregister
+  #define NEWPANEL
+  #define ULTIPANEL
 #endif
 
 
