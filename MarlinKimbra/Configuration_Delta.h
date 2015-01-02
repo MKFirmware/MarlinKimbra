@@ -15,19 +15,19 @@
 #define DELTA_SEGMENTS_PER_SECOND 200
 
 // Center-to-center distance of the holes in the diagonal push rods.
-#define DEFAULT_DELTA_DIAGONAL_ROD 217      // mm
+#define DEFAULT_DELTA_DIAGONAL_ROD 217.0      // mm
 
 // Horizontal offset from middle of printer to smooth rod center.
-#define DELTA_SMOOTH_ROD_OFFSET 145      // mm
+#define DELTA_SMOOTH_ROD_OFFSET 145.0      // mm
 
 // Horizontal offset of the universal joints on the end effector.
-#define DELTA_EFFECTOR_OFFSET 20      // mm
+#define DELTA_EFFECTOR_OFFSET 20.0      // mm
 
 // Horizontal offset of the universal joints on the carriages.
-#define DELTA_CARRIAGE_OFFSET 20      // mm
+#define DELTA_CARRIAGE_OFFSET 20.0      // mm
 
 // Printer radius
-#define PRINTER_RADIUS 70
+#define PRINTER_RADIUS 70     // mm
 
 // Effective horizontal distance bridged by diagonal push rods.
 #define DEFAULT_DELTA_RADIUS (DELTA_SMOOTH_ROD_OFFSET-DELTA_EFFECTOR_OFFSET-DELTA_CARRIAGE_OFFSET)
@@ -43,13 +43,13 @@
 
 // Z-Probe variables
 // Start and end location values are used to deploy/retract the probe (will move from start to end and back again)
-#define PROBING_FEEDRATE 600                             // Speed for individual probe Use: G30 A F600
-#define Z_PROBE_OFFSET {0,-10,-11.5,0}      // X, Y, Z, E distance between hotend nozzle and deployed bed leveling probe.
-#define Z_PROBE_DEPLOY_START_LOCATION {0,0,30,0}      // X, Y, Z, E start location for z-probe deployment sequence
-#define Z_PROBE_DEPLOY_END_LOCATION {0,0,30,0}      // X, Y, Z, E end location for z-probe deployment sequence
-#define Z_PROBE_RETRACT_START_LOCATION {0,0,30,0}      // X, Y, Z, E start location for z-probe retract sequence
-#define Z_PROBE_RETRACT_END_LOCATION {0,0,30,0}      // X, Y, Z, E end location for z-probe retract sequence
-#define AUTOLEVEL_GRID 20      // Distance between autolevel Z probing points, should be less than print surface radius/3.
+#define PROBING_FEEDRATE 600                     // Speed for individual probe Use: G30 A F600
+#define Z_PROBE_OFFSET {0,0,-1,0}                // X, Y, Z, E distance between hotend nozzle and deployed bed leveling probe.
+#define Z_PROBE_DEPLOY_START_LOCATION {0,0,30,0} // X, Y, Z, E start location for z-probe deployment sequence
+#define Z_PROBE_DEPLOY_END_LOCATION {0,0,30,0}   // X, Y, Z, E end location for z-probe deployment sequence
+#define Z_PROBE_RETRACT_START_LOCATION {0,0,30,0}// X, Y, Z, E start location for z-probe retract sequence
+#define Z_PROBE_RETRACT_END_LOCATION {0,0,30,0}  // X, Y, Z, E end location for z-probe retract sequence
+#define AUTOLEVEL_GRID 20                        // Distance between autolevel Z probing points, should be less than print surface radius/3.
 
 //===========================================================================
 //=============================Mechanical Settings===========================
