@@ -30,7 +30,10 @@
 # include "Arduino.h"
 #else
 # include "WProgram.h"
-  //Arduino < 1.0.0 does not define this, so we need to do it ourselves
+#endif
+
+// Arduino < 1.0.0 does not define this, so we need to do it ourselves
+#ifndef analogInputToDigitalPin
 # define analogInputToDigitalPin(p) ((p) + A0)
 #endif
 
@@ -233,7 +236,9 @@ extern float homing_feedrate[];
 extern bool axis_relative_modes[];
 extern int feedmultiply;
 extern int extrudemultiply; // Sets extrude multiply factor (in percent) for all extruders
+extern bool volumetric_enabled;
 extern int extruder_multiply[EXTRUDERS]; // sets extrude multiply factor (in percent) for each extruder individually
+extern float filament_size[EXTRUDERS]; // cross-sectional area of filament (in millimeters), typically around 1.75 or 2.85, 0 disables the volumetric calculations for the extruder.
 extern float volumetric_multiplier[EXTRUDERS]; // reciprocal of cross-sectional area of filament (in square millimeters), stored this way to reduce computational burden in planner
 extern float current_position[NUM_AXIS];
 extern float destination[NUM_AXIS];
@@ -318,5 +323,6 @@ extern inline bool debugDryrun()
 void FirmwareTest();
 #endif
 
-#endif
+extern void calculate_volumetric_multipliers();
 
+#endif
