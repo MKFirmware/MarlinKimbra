@@ -457,9 +457,11 @@ void Config_ResetDefault()
   float tmp2[]=DEFAULT_MAX_FEEDRATE;
   float tmp3[]=DEFAULT_RETRACTION_MAX_FEEDRATE;
   long  tmp4[]=DEFAULT_MAX_ACCELERATION;
+#ifdef PIDTEMP
   float tmp5[]=DEFAULT_Kp;
   float tmp6[]=DEFAULT_Ki;
   float tmp7[]=DEFAULT_Kd;
+#endif
   
   for (short i=0;i<7;i++) 
   {
