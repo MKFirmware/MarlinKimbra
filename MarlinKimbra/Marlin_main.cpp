@@ -31,9 +31,9 @@
 
 #ifdef ENABLE_AUTO_BED_LEVELING
 #include "vector_3.h"
-#ifdef AUTO_BED_LEVELING_GRID
-#include "qr_solve.h"
-#endif
+  #ifdef AUTO_BED_LEVELING_GRID
+    #include "qr_solve.h"
+  #endif
 #endif // ENABLE_AUTO_BED_LEVELING
 
 #include "ultralcd.h"
