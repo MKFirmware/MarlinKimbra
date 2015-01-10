@@ -91,13 +91,7 @@ void Config_StoreSettings()
   EEPROM_WRITE_VAR(i,Kp);
   EEPROM_WRITE_VAR(i,Ki);
   EEPROM_WRITE_VAR(i,Kd);
-#else
-  float dummy = 3000.0f;
-  EEPROM_WRITE_VAR(i,dummy);
-  dummy = 0.0f;
-  EEPROM_WRITE_VAR(i,dummy);
-  EEPROM_WRITE_VAR(i,dummy);
-#endif
+#endif // PIDTEMP
 #ifndef DOGLCD
   int lcd_contrast = 32;
 #endif
@@ -270,12 +264,17 @@ void Config_PrintSettings()
 #ifdef PIDTEMP
     SERIAL_ECHO_START;
     SERIAL_ECHOLNPGM("PID settings:");
-    SERIAL_ECHO_START;
-    SERIAL_ECHOPAIR("   M301 P",Kp[active_extruder]); 
-    SERIAL_ECHOPAIR(" I" ,unscalePID_i(Ki[active_extruder])); 
-    SERIAL_ECHOPAIR(" D" ,unscalePID_d(Kd[active_extruder]));
-    SERIAL_ECHOLN(""); 
-#endif
+    for (int e = 0; e < EXTRUDERS; e++)
+    {
+      SERIAL_ECHO_START;
+      SERIAL_ECHOPAIR("   M301 E", (long unsigned int)e);
+      SERIAL_ECHOPAIR(" P", Kp[e]);
+      SERIAL_ECHOPAIR(" I" ,unscalePID_i(Ki[e])); 
+      SERIAL_ECHOPAIR(" D" ,unscalePID_d(Kd[e]));
+      SERIAL_ECHOLN(""); 
+    }
+#endif // PIDTEMP
+
 #ifdef FWRETRACT
     SERIAL_ECHO_START;
     SERIAL_ECHOLNPGM("Retract: S=Length (mm) F:Speed (mm/m) Z: ZLift (mm)");
@@ -391,13 +390,14 @@ void Config_RetrieveSettings()
     EEPROM_READ_VAR(i,gumPreheatHotendTemp);
     EEPROM_READ_VAR(i,gumPreheatHPBTemp);
     EEPROM_READ_VAR(i,gumPreheatFanSpeed);
-#ifndef PIDTEMP
-    float Kp,Ki,Kd;
-#endif
+
+#ifdef PIDTEMP
     // do not need to scale PID values as the values in EEPROM are already scaled		
     EEPROM_READ_VAR(i,Kp);
     EEPROM_READ_VAR(i,Ki);
     EEPROM_READ_VAR(i,Kd);
+#endif // PIDTEMP
+
 #ifndef DOGLCD
     int lcd_contrast;
 #endif
@@ -461,7 +461,7 @@ void Config_ResetDefault()
   float tmp5[]=DEFAULT_Kp;
   float tmp6[]=DEFAULT_Ki;
   float tmp7[]=DEFAULT_Kd;
-#endif
+#endif // PIDTEMP
   
   for (short i=0;i<7;i++) 
   {
@@ -517,6 +517,8 @@ void Config_ResetDefault()
   lcd_contrast = DEFAULT_LCD_CONTRAST;
 #endif
 #ifdef PIDTEMP
+  // call updatePID (similar to when we have processed M301)
+  updatePID();
   for (short i=0;i<4;i++) 
   {
 #ifdef SINGLENOZZLE
@@ -528,14 +530,8 @@ void Config_ResetDefault()
     Ki[i] = scalePID_i(tmp6[i]);
     Kd[i] = scalePID_d(tmp7[i]);
 #endif
+    
   }
-
-  // call updatePID (similar to when we have processed M301)
-  updatePID();
-
-#ifdef PID_ADD_EXTRUSION_RATE
-    Kc = DEFAULT_Kc;
-#endif//PID_ADD_EXTRUSION_RATE
 #endif//PIDTEMP
 
 #ifdef FWRETRACT

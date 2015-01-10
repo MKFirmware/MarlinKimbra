@@ -60,9 +60,6 @@ float current_temperature_bed = 0.0;
   float Kp[4];
   float Ki[4];
   float Kd[4];
-  #ifdef PID_ADD_EXTRUSION_RATE
-    float Kc;
-  #endif
 #endif //PIDTEMP
 
 #ifdef PIDTEMPBED

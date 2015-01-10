@@ -87,7 +87,31 @@
 
 //**********************************************************************
 
-#if !defined(MKR4)
+/***********************************************************************
+ *********************** Multiextruder NPr2  ***************************
+ ***********************************************************************
+ *                                                                     *
+ * Setting fot color meccanism NPr2 by NicolaP (www.3dmakerlab.it)     *
+ *                                                                     *
+ * Firmware by MagoKimbra magokimbra@hotmail.com                       *
+ *                                                                     *
+ * Find angle setting by g-Code "M997 Cxxx"                            *
+ *                                                                     *
+ ***********************************************************************/
+//#define NPR2
+#ifdef NPR2
+#define COLOR_STEP {120,25,-65,-155} // CARTER ANGLE
+#define COLOR_SLOWRATE 170           // MICROSECOND delay for carter motor routine (Carter Motor Feedrate: upper value-slow feedrate)  
+#define COLOR_HOMERATE 4             // FEEDRATE for carter home
+#define MOTOR_ANGLE 1.8              // Nema angle for single step 
+#define DRIVER_MICROSTEP 4           // Microstep moltiplicator driver (set jumper MS1-2-3) off-on-off 1/4 microstepping.
+#define CARTER_MOLTIPLICATOR 14.22   // CARTER MOLTIPLICATOR (gear ratio 13/31-10/31)
+#define DRIVER_EXTRUDERS 2           // This defines the number of Driver extruders
+#endif
+//**********************************************************************
+
+
+#if !defined(MKR4) && !defined(NPR2)
 #define DRIVER_EXTRUDERS EXTRUDERS // This defines the number of Driver extruders
 #endif
 
@@ -515,7 +539,8 @@
   #define LCD_UNLOAD_FEEDRATE 8   // mm/s
 #endif
 
-// Show a progress bar on the LCD when printing from SD?
+
+// Show a progress bar on HD44780 LCDs for SD printing
 //#define LCD_PROGRESS_BAR
 #ifdef LCD_PROGRESS_BAR
   // Amount of time (ms) to show the bar
@@ -526,6 +551,12 @@
   #define PROGRESS_BAR_MSG_EXPIRE   0
   // Enable this to show messages for MSG_TIME then hide them
   //#define PROGRESS_BAR_MSG_ONCE
+  #ifdef DOGLCD
+    #warning LCD_PROGRESS_BAR does not apply to graphical displays at this time.
+  #endif
+  #ifdef FILAMENT_LCD_DISPLAY
+    #error LCD_PROGRESS_BAR and FILAMENT_LCD_DISPLAY are not fully compatible. Comment out this line to use both.
+  #endif
 #endif
 
 

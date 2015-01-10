@@ -4497,28 +4497,35 @@ Sigma_Exit:
 #ifdef PIDTEMP
     case 301: // M301
       {
-        if(code_seen('P')) Kp[active_extruder] = code_value();
-        if(code_seen('I')) Ki[active_extruder] = scalePID_i(code_value());
-        if(code_seen('D')) Kd[active_extruder] = scalePID_d(code_value());
-
-#ifdef PID_ADD_EXTRUSION_RATE
-        if(code_seen('C')) Kc = code_value();
-#endif
-
-        updatePID();
-        SERIAL_PROTOCOL(MSG_OK);
-        SERIAL_PROTOCOL(" p:");
-        SERIAL_PROTOCOL(Kp[active_extruder]);
-        SERIAL_PROTOCOL(" i:");
-        SERIAL_PROTOCOL(unscalePID_i(Ki[active_extruder]));
-        SERIAL_PROTOCOL(" d:");
-        SERIAL_PROTOCOL(unscalePID_d(Kd[active_extruder]));
-#ifdef PID_ADD_EXTRUSION_RATE
-        SERIAL_PROTOCOL(" c:");
-        //Kc does not have scaling applied above, or in resetting defaults
-        SERIAL_PROTOCOL(Kc);
-#endif
-        SERIAL_PROTOCOLLN("");
+        // multi-extruder PID patch: M301 updates or prints a single extruder's PID values
+        // default behaviour (omitting E parameter) is to update for extruder 0 only
+        int e = 0; // extruder being updated
+        if (code_seen('E'))
+        {
+          e = (int)code_value();
+        }
+        if (e < EXTRUDERS) // catch bad input value
+        {
+          if (code_seen('P')) Kp[e] = code_value();
+          if (code_seen('I')) Ki[e] = scalePID_i(code_value());
+          if (code_seen('D')) Kd[e] = scalePID_d(code_value());
+          updatePID();
+          SERIAL_PROTOCOL(MSG_OK);
+          SERIAL_PROTOCOL(" e:"); // specify extruder in serial output
+          SERIAL_PROTOCOL(e);
+          SERIAL_PROTOCOL(" p:");
+          SERIAL_PROTOCOL(Kp[e]);
+          SERIAL_PROTOCOL(" i:");
+          SERIAL_PROTOCOL(unscalePID_i(Ki[e]));
+          SERIAL_PROTOCOL(" d:");
+          SERIAL_PROTOCOL(unscalePID_d(Kd[e]));
+          SERIAL_PROTOCOLLN("");
+        }
+        else
+        {
+          SERIAL_ECHO_START;
+          SERIAL_ECHOLN(MSG_INVALID_EXTRUDER);
+        }
       }
       break;
 #endif //PIDTEMP
