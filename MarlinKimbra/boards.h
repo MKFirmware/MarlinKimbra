@@ -48,7 +48,8 @@
 #define BOARD_5DPRINT           88   // 5DPrint D8 Driver Board
 #define BOARD_LEAPFROG          999  // Leapfrog
 
-#define BOARD_99                99   // This is in pins.h but...?
+
+
 
 #define MB(board) (MOTHERBOARD==BOARD_##board)
 #define IS_RAMPS (MB(RAMPS_OLD) || MB(RAMPS_13_EFB) || MB(RAMPS_13_EEB) || MB(RAMPS_13_EFF) || MB(RAMPS_13_EEF))

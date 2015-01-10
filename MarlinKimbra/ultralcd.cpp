@@ -244,11 +244,12 @@ static void lcd_status_screen()
         lcd_status_update_delay--;
     else
         lcdDrawUpdate = 1;
-    if (lcdDrawUpdate)
-    {
+
+    if (lcdDrawUpdate) {
         lcd_implementation_status_screen();
         lcd_status_update_delay = 10;   /* redraw the main screen every second. This is easier then trying keep track of all things that change on the screen */
     }
+
 #ifdef ULTIPANEL
 
     bool current_click = LCD_CLICKED;
@@ -273,7 +274,7 @@ static void lcd_status_screen()
     {
         lcd_goto_menu(lcd_main_menu);
         lcd_implementation_init( // to maybe revive the LCD if static electricity killed it.
-          #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
+          #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT) && !defined(DOGLCD)
             currentMenu == lcd_status_screen
           #endif
         );
@@ -1017,9 +1018,6 @@ static void lcd_control_temperature_menu()
     // i is typically a small value so allows values below 1
     MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_I, &raw_Ki, 0.01, 9990, copy_and_scalePID_i);
     MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_D, &raw_Kd, 1, 9990, copy_and_scalePID_d);
-# ifdef PID_ADD_EXTRUSION_RATE
-    MENU_ITEM_EDIT(float3, MSG_PID_C, &Kc, 1, 9990);
-# endif//PID_ADD_EXTRUSION_RATE
 #endif//PIDTEMP
     MENU_ITEM(submenu, MSG_PREHEAT_PLA_SETTINGS, lcd_control_temperature_preheat_pla_settings_menu);
     MENU_ITEM(submenu, MSG_PREHEAT_ABS_SETTINGS, lcd_control_temperature_preheat_abs_settings_menu);
@@ -1438,7 +1436,7 @@ void lcd_update()
         lcdDrawUpdate = 2;
         lcd_oldcardstatus = IS_SD_INSERTED;
         lcd_implementation_init( // to maybe revive the LCD if static electricity killed it.
-          #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
+          #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT) && !defined(DOGLCD)
             currentMenu == lcd_status_screen
           #endif
         );
@@ -1541,7 +1539,7 @@ void lcd_finishstatus() {
     }
   }
   lcd_status_message[LCD_WIDTH] = '\0';
-  #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
+  #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT) && !defined(DOGLCD)
     #if PROGRESS_BAR_MSG_EXPIRE > 0
       messageTick =
     #endif
