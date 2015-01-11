@@ -123,10 +123,10 @@
 #define MSG_DWELL                           "Sospensione..."
 #define MSG_USERWAIT                        "Attendi Utente..."
 #define MSG_RESUMING                        "Riprendi Stampa"
-#define MSG_PRINT_ABORTED                   "Print aborted"
-#define MSG_NO_MOVE                         "Nessun Movimento."
-#define MSG_KILLED                          "UCCISO. "
-#define MSG_STOPPED                         "ARRESTATO. "
+#define MSG_PRINT_ABORTED                   "Stampa abortita"
+#define MSG_NO_MOVE                         "Nessun Movimento"
+#define MSG_KILLED                          "UCCISO "
+#define MSG_STOPPED                         "ARRESTATO "
 #define MSG_CONTROL_RETRACT                 "Ritrai mm"
 #define MSG_CONTROL_RETRACT_SWAP            "Scamb. Ritrai mm"
 #define MSG_CONTROL_RETRACTF                "Ritrai  V"
@@ -158,11 +158,11 @@
 #define MSG_RETRACT_XMM                     "Retract " STRINGIFY(LCD_RETRACT_LENGTH) "mm"
 
 #ifdef DELTA
-    #define MSG_DELTA_CALIBRATE             "Delta Calibration"
-    #define MSG_DELTA_CALIBRATE_X           "Calibrate X"
-    #define MSG_DELTA_CALIBRATE_Y           "Calibrate Y"
-    #define MSG_DELTA_CALIBRATE_Z           "Calibrate Z"
-    #define MSG_DELTA_CALIBRATE_CENTER      "Calibrate Center"
+  #define MSG_DELTA_CALIBRATE             "Delta Calibration"
+  #define MSG_DELTA_CALIBRATE_X           "Calibrate X"
+  #define MSG_DELTA_CALIBRATE_Y           "Calibrate Y"
+  #define MSG_DELTA_CALIBRATE_Z           "Calibrate Z"
+  #define MSG_DELTA_CALIBRATE_CENTER      "Calibrate Center"
 #endif // DELTA
 
 #ifdef FIRMWARE_TEST

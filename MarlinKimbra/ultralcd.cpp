@@ -203,7 +203,7 @@ static void lcd_goto_menu(menuFunc_t menu, const uint32_t encoder=0, const bool 
     if (feedback) lcd_quick_feedback();
 
     // For LCD_PROGRESS_BAR re-initialize the custom characters
-    #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
+    #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT) && !defined(DOGLCD)
       lcd_set_custom_characters(menu == lcd_status_screen);
     #endif
   }
@@ -212,7 +212,7 @@ static void lcd_goto_menu(menuFunc_t menu, const uint32_t encoder=0, const bool 
 /* Main status screen. It's up to the implementation specific part to show what is needed. As this is very display dependent */
 static void lcd_status_screen()
 {
-  #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
+  #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT) && !defined(DOGLCD)
     uint16_t mil = millis();
     #ifndef PROGRESS_BAR_MSG_ONCE
       if (mil > progressBarTick + PROGRESS_BAR_MSG_TIME + PROGRESS_BAR_BAR_TIME) {
