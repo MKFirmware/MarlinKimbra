@@ -71,11 +71,13 @@ extern float current_temperature_bed;
   float scalePID_d(float d);
   float unscalePID_i(float i);
   float unscalePID_d(float d);
+
 #endif
 
 #ifdef PIDTEMPBED
   extern float bedKp,bedKi,bedKd;
 #endif
+
 
 #ifdef BABYSTEPPING
   extern volatile int babystepsTodo[3];
