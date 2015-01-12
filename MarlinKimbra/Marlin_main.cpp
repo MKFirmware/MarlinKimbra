@@ -65,7 +65,7 @@
 #include "firmware_test.h"
 #endif
 
-#define VERSION_STRING  "4.0.2"
+#define VERSION_STRING  " 4.0.2"
 
 // look here for descriptions of G-codes: http://linuxcnc.org/handbook/gcode/g-code.html
 // http://objects.reprap.org/wiki/Mendel_User_Manual:_RepRapGCodes
@@ -162,7 +162,6 @@
 // M240 - Trigger a camera to take a photograph
 // M250 - Set LCD contrast C<contrast value> (value 0..63)
 // M280 - set servo position absolute. P: servo index, S: angle or microseconds
-// M299 - Beep sound for temperature on/off
 // M300 - Play beep sound S<frequency Hz> P<duration ms>
 // M301 - Set PID parameters P I and D
 // M302 - Allow cold extrudes, or set the minimum extrude S<temperature>.
@@ -462,9 +461,6 @@ unsigned long starttime=0;
 unsigned long stoptime=0;
 
 static uint8_t tmp_extruder;
-static boolean beeptemponoff = true;
-static boolean beeptemphe = false;
-static boolean beeptemphb = false;
 
 #ifdef NPR2
 static float color_position[] = COLOR_STEP;  //variabile per la scelta del colore
@@ -3567,7 +3563,6 @@ Sigma_Exit:
         setTargetHotend1(code_value() == 0.0 ? 0.0 : code_value() + duplicate_extruder_temp_offset);
 #endif
       setWatch();
-      beeptemphe=true;
       break;
     case 111: // M111 - Debug mode
       if (code_seen('S')) debugLevel = code_value();
@@ -3585,7 +3580,6 @@ Sigma_Exit:
     case 140: // M140 set bed temp
       if(debugDryrun()) break;
       if (code_seen('S')) setTargetBed(code_value());
-      beeptemphb=true;
       break;
     case 105 : // M105
       if(setTargetedHotend(105)) break;
@@ -4465,11 +4459,6 @@ Sigma_Exit:
 #endif // NUM_SERVOS > 0
 
 #if (LARGE_FLASH == true && ( BEEPER > 0 || defined(ULTRALCD) || defined(LCD_USE_I2C_BUZZER)))
-    case 299: // M299 turn on/off beep sound temp
-      {
-        beeptemponoff = !beeptemponoff;
-      }
-      break;
     case 300: // M300
       {
         int beepS = code_seen('S') ? code_value() : 110;
@@ -5845,10 +5834,6 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) //default argument s
     }
   }
   
-#if (LARGE_FLASH == true && ( BEEPER > 0 || defined(ULTRALCD) || defined(LCD_USE_I2C_BUZZER)))
-  if (beeptemponoff) temptone();
-#endif
-
   #ifdef CHDK //Check if pin should be set to LOW after M240 set it to HIGH
     if (chdkActive && (millis() - chdkHigh > CHDK_DELAY))
     {
@@ -5969,50 +5954,6 @@ void kill()
   suicide();
   while(1) { /* Intentionally left empty */ } // Wait for reset
 }
-
-#if (LARGE_FLASH == true && ( BEEPER > 0 || defined(ULTRALCD) || defined(LCD_USE_I2C_BUZZER)))
-void temptone()
-{
-  if (!isHeatingHotend(active_extruder) && degTargetHotend(active_extruder)!=0 && beeptemphe) {
-    int beepS = 200;
-    int beepP = 500;
-    int beepN = 3;
-    for (int i = 0; i < beepN; ++i)
-    {
-#if BEEPER > 0
-      tone(BEEPER, beepS);
-      delay(beepP);
-      noTone(BEEPER);
-#elif defined(ULTRALCD)
-      lcd_buzz(beepS, beepP);
-#elif defined(LCD_USE_I2C_BUZZER)
-      lcd_buzz(beepP, beepS);
-#endif
-      delay(beepP);
-    }
-    beeptemphe=false;
-  }
-  else if (!isHeatingBed() && degTargetBed()!=0 && beeptemphb) {
-    int beepS = 100;
-    int beepP = 500;
-    int beepN = 2;
-    for (int i = 0; i < beepN; ++i) {
-#if BEEPER > 0
-      tone(BEEPER, beepS);
-      delay(beepP);
-      noTone(BEEPER);
-#elif defined(ULTRALCD)
-      lcd_buzz(beepS, beepP);
-#elif defined(LCD_USE_I2C_BUZZER)
-      lcd_buzz(beepP, beepS);
-#endif
-      delay(beepP);
-    }
-    beeptemphb=false;
-  }
-}
-#endif // (LARGE_FLASH == true && ( BEEPER > 0 || defined(ULTRALCD) || defined(LCD_USE_I2C_BUZZER)))
-
 
 void pause()
 {
