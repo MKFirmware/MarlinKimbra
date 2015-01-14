@@ -6,24 +6,22 @@
 
 void _EEPROM_writeData(int &pos, uint8_t* value, uint8_t size)
 {
-  do
-  {
-    eeprom_write_byte((unsigned char*)pos, *value);
-    pos++;
-    value++;
-  }
-  while(--size);
+    do
+    {
+        eeprom_write_byte((unsigned char*)pos, *value);
+        pos++;
+        value++;
+    }while(--size);
 }
 #define EEPROM_WRITE_VAR(pos, value) _EEPROM_writeData(pos, (uint8_t*)&value, sizeof(value))
 void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size)
 {
-  do
-  {
-    *value = eeprom_read_byte((unsigned char*)pos);
-    pos++;
-    value++;
-  }
-  while(--size);
+    do
+    {
+        *value = eeprom_read_byte((unsigned char*)pos);
+        pos++;
+        value++;
+    }while(--size);
 }
 #define EEPROM_READ_VAR(pos, value) _EEPROM_readData(pos, (uint8_t*)&value, sizeof(value))
 //======================================================================================
@@ -453,26 +451,26 @@ void Config_ResetDefault()
   //Setting default baudrate for serial
   baudrate=BAUDRATE;
 
-  float tmp1[]=DEFAULT_AXIS_STEPS_PER_UNIT;
-  float tmp2[]=DEFAULT_MAX_FEEDRATE;
-  float tmp3[]=DEFAULT_RETRACTION_MAX_FEEDRATE;
-  long  tmp4[]=DEFAULT_MAX_ACCELERATION;
+  const static float tmp1[] MARLIN_PROGMEM = DEFAULT_AXIS_STEPS_PER_UNIT;
+  const static float tmp2[] MARLIN_PROGMEM = DEFAULT_MAX_FEEDRATE;
+  const static float tmp3[] MARLIN_PROGMEM = DEFAULT_RETRACTION_MAX_FEEDRATE;
+  const static long tmp4[]  MARLIN_PROGMEM = DEFAULT_MAX_ACCELERATION;
 #ifdef PIDTEMP
-  float tmp5[]=DEFAULT_Kp;
-  float tmp6[]=DEFAULT_Ki;
-  float tmp7[]=DEFAULT_Kd;
+  const static float tmp5[] MARLIN_PROGMEM = DEFAULT_Kp;
+  const static float tmp6[] MARLIN_PROGMEM = DEFAULT_Ki;
+  const static float tmp7[] MARLIN_PROGMEM = DEFAULT_Kd;
 #endif // PIDTEMP
   
   for (short i=0;i<7;i++) 
   {
-    axis_steps_per_unit[i]=tmp1[i];
-    max_feedrate[i]=tmp2[i];
-    max_acceleration_units_per_sq_second[i]=tmp4[i];
+    axis_steps_per_unit[i] = pgm_read_float(&tmp1[i]);
+    max_feedrate[i] = pgm_read_float(&tmp2[i]);
+    max_acceleration_units_per_sq_second[i]=pgm_read_float(&tmp4[i]);
   }
 
   for (short i=0;i<4;i++)
   {
-    max_retraction_feedrate[i]=tmp3[i];
+    max_retraction_feedrate[i]=pgm_read_float(&tmp3[i]);
   #ifdef SCARA
     axis_scaling[i]=1;
   #endif
@@ -522,13 +520,13 @@ void Config_ResetDefault()
   for (short i=0;i<4;i++) 
   {
 #ifdef SINGLENOZZLE
-    Kp[i] = tmp5[0];
-    Ki[i] = scalePID_i(tmp6[0]);
-    Kd[i] = scalePID_d(tmp7[0]);
+    Kp[i] = pgm_read_float(&tmp5[0]);;
+    Ki[i] = scalePID_i(pgm_read_float(&tmp6[0]));
+    Kd[i] = scalePID_d(pgm_read_float(&tmp7[0]));
 #else
-    Kp[i] = tmp5[i];
-    Ki[i] = scalePID_i(tmp6[i]);
-    Kd[i] = scalePID_d(tmp7[i]);
+    Kp[i] = pgm_read_float(&tmp5[i]);;
+    Ki[i] = scalePID_i(pgm_read_float(&tmp6[i]));
+    Kd[i] = scalePID_d(pgm_read_float(&tmp7[i]));
 #endif
     
   }
@@ -539,15 +537,15 @@ void Config_ResetDefault()
 	retract_length = RETRACT_LENGTH;
 #if EXTRUDERS > 1
 	retract_length_swap = RETRACT_LENGTH_SWAP;
-#endif
+#endif //EXTRUDERS > 1
 	retract_feedrate = RETRACT_FEEDRATE;
 	retract_zlift = RETRACT_ZLIFT;
 	retract_recover_length = RETRACT_RECOVER_LENGTH;
 #if EXTRUDERS > 1
 	retract_recover_length_swap = RETRACT_RECOVER_LENGTH_SWAP;
-#endif
+#endif //EXTRUDERS > 1
 	retract_recover_feedrate = RETRACT_RECOVER_FEEDRATE;
-#endif
+#endif //FWRETRACT
 
 	volumetric_enabled = false;
 	filament_size[0] = DEFAULT_NOMINAL_FILAMENT_DIA;
@@ -557,9 +555,9 @@ void Config_ResetDefault()
 	filament_size[2] = DEFAULT_NOMINAL_FILAMENT_DIA;
 #if EXTRUDERS > 3
 	filament_size[3] = DEFAULT_NOMINAL_FILAMENT_DIA;
-#endif
-#endif
-#endif
+#endif //EXTRUDERS > 3
+#endif //EXTRUDERS > 2
+#endif //EXTRUDERS > 1
 	calculate_volumetric_multipliers();
 
   SERIAL_ECHO_START;

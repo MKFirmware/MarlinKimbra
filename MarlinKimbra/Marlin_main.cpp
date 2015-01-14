@@ -403,8 +403,8 @@ bool cancel_heatup = false ;
 int laser_ttl_modulation = 0;
 #endif
 
-const char errormagic[] PROGMEM = "Error:";
-const char echomagic[] PROGMEM = "echo:";
+const prog_char errormagic[] MARLIN_PROGMEM = "Error:";
+const prog_char echomagic[] MARLIN_PROGMEM = "echo:";
 
 //===========================================================================
 //=============================Private Variables=============================
@@ -971,7 +971,7 @@ DEFINE_PGM_READ_ANY(float,       float);
 DEFINE_PGM_READ_ANY(signed char, byte);
 
 #define XYZ_CONSTS_FROM_CONFIG(type, array, CONFIG) \
-static const PROGMEM type array##_P[3] =        \
+static const type array##_P[3] MARLIN_PROGMEM =        \
     { X_##CONFIG, Y_##CONFIG, Z_##CONFIG };     \
 static inline type array(int axis)          \
     { return pgm_read_any(&array##_P[axis]); }

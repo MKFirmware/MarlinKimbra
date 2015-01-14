@@ -671,7 +671,9 @@
 
 
 
+
+
+
 #include "Configuration_adv.h"
-#include "thermistortables.h"
 
 #endif //__CONFIGURATION_H
