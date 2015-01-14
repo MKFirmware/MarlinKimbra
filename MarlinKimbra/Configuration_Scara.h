@@ -1,10 +1,6 @@
 // Define this to set a custom name for your generic Mendel,
 #define CUSTOM_MENDEL_NAME "Scara"
 
-// Define this to set a unique identifier for this printer, (Used by some programs to differentiate between machines)
-// You can use an online service to generate a random UUID. (eg http://www.uuidgenerator.net/version4)
-// #define MACHINE_UUID "00000000-0000-0000-0000-000000000000"
-
 // SCARA-mode for Marlin has been developed by QHARLEY in ZA in 2012/2013. Implemented
 // and slightly reworked by JCERNY in 06/2014 with the goal to bring it into Master-Branch
 // QHARLEYS Autobedlevelling has not been ported, because Marlin has now Bed-levelling
