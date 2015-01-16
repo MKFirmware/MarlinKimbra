@@ -96,19 +96,19 @@ void Config_StoreSettings()
   EEPROM_WRITE_VAR(i,lcd_contrast);
 #ifdef SCARA
   EEPROM_WRITE_VAR(i,axis_scaling);        // Add scaling for SCARA
-#endif
+#endif //SCARA
 #ifdef FWRETRACT
   EEPROM_WRITE_VAR(i,autoretract_enabled);
   EEPROM_WRITE_VAR(i,retract_length);
 #if EXTRUDERS > 1
   EEPROM_WRITE_VAR(i,retract_length_swap);
-#endif
+#endif //EXTRUDERS > 1
   EEPROM_WRITE_VAR(i,retract_feedrate);
   EEPROM_WRITE_VAR(i,retract_zlift);
   EEPROM_WRITE_VAR(i,retract_recover_length);
 #if EXTRUDERS > 1
   EEPROM_WRITE_VAR(i,retract_recover_length_swap);
-#endif
+#endif //EXTRUDERS > 1
   EEPROM_WRITE_VAR(i,retract_recover_feedrate);
 #endif // FWRETRACT
 
@@ -121,9 +121,9 @@ void Config_StoreSettings()
   EEPROM_WRITE_VAR(i, filament_size[2]);
 #if EXTRUDERS > 3
   EEPROM_WRITE_VAR(i, filament_size[3]);
-#endif
-#endif
-#endif
+#endif //EXTRUDERS > 3
+#endif //EXTRUDERS > 2
+#endif //EXTRUDERS > 1
 
   char ver2[4]=EEPROM_VERSION;
   i=EEPROM_OFFSET;
@@ -301,7 +301,7 @@ void Config_PrintSettings()
     SERIAL_ECHO_START;
     SERIAL_ECHOPAIR("   Swap rec. addl. length (mm): ", retract_recover_length_swap);
     SERIAL_ECHOLN("");
-#endif
+#endif //EXTRUDERS > 1
     SERIAL_ECHO_START;
     if (volumetric_enabled) {
         SERIAL_ECHOLNPGM("Filament settings:");
@@ -309,26 +309,26 @@ void Config_PrintSettings()
         SERIAL_ECHOPAIR("   M200 D", filament_size[0]);
         SERIAL_ECHOLN(""); 
 #if EXTRUDERS > 1
-		SERIAL_ECHO_START;
+        SERIAL_ECHO_START;
         SERIAL_ECHOPAIR("   M200 T1 D", filament_size[1]);
         SERIAL_ECHOLN(""); 
 #if EXTRUDERS > 2
-		SERIAL_ECHO_START;
+        SERIAL_ECHO_START;
         SERIAL_ECHOPAIR("   M200 T2 D", filament_size[2]);
-		    SERIAL_ECHOLN("");
+        SERIAL_ECHOLN("");
 #if EXTRUDERS > 3
-		SERIAL_ECHO_START;
+        SERIAL_ECHO_START;
         SERIAL_ECHOPAIR("   M200 T3 D", filament_size[3]);
-		    SERIAL_ECHOLN("");
-#endif
-#endif
-#endif
+        SERIAL_ECHOLN("");
+#endif //EXTRUDERS > 3
+#endif //EXTRUDERS > 2
+#endif //EXTRUDERS > 1
     } else {
         SERIAL_ECHOLNPGM("Filament settings: Disabled");
     }
-#endif
+#endif //FWRETRACT
 }
-#endif
+#endif //DISABLE_M503
 
 
 #ifdef EEPROM_SETTINGS
@@ -402,35 +402,35 @@ void Config_RetrieveSettings()
     EEPROM_READ_VAR(i,lcd_contrast);
 #ifdef SCARA
     EEPROM_READ_VAR(i,axis_scaling);
-#endif
+#endif //SCARA
 
 #ifdef FWRETRACT
-		EEPROM_READ_VAR(i,autoretract_enabled);
-		EEPROM_READ_VAR(i,retract_length);
-		#if EXTRUDERS > 1
-		EEPROM_READ_VAR(i,retract_length_swap);
-		#endif
-		EEPROM_READ_VAR(i,retract_feedrate);
-		EEPROM_READ_VAR(i,retract_zlift);
-		EEPROM_READ_VAR(i,retract_recover_length);
-		#if EXTRUDERS > 1
-		EEPROM_READ_VAR(i,retract_recover_length_swap);
-		#endif
-		EEPROM_READ_VAR(i,retract_recover_feedrate);
+    EEPROM_READ_VAR(i,autoretract_enabled);
+    EEPROM_READ_VAR(i,retract_length);
+#if EXTRUDERS > 1
+    EEPROM_READ_VAR(i,retract_length_swap);
+#endif //EXTRUDERS > 1
+    EEPROM_READ_VAR(i,retract_feedrate);
+    EEPROM_READ_VAR(i,retract_zlift);
+    EEPROM_READ_VAR(i,retract_recover_length);
+#if EXTRUDERS > 1
+    EEPROM_READ_VAR(i,retract_recover_length_swap);
+#endif //EXTRUDERS > 1
+    EEPROM_READ_VAR(i,retract_recover_feedrate);
 #endif
 
-		EEPROM_READ_VAR(i, volumetric_enabled);
-		EEPROM_READ_VAR(i, filament_size[0]);
+    EEPROM_READ_VAR(i, volumetric_enabled);
+    EEPROM_READ_VAR(i, filament_size[0]);
 #if EXTRUDERS > 1
-		EEPROM_READ_VAR(i, filament_size[1]);
+    EEPROM_READ_VAR(i, filament_size[1]);
 #if EXTRUDERS > 2
-		EEPROM_READ_VAR(i, filament_size[2]);
+    EEPROM_READ_VAR(i, filament_size[2]);
 #if EXTRUDERS > 3
-		EEPROM_READ_VAR(i, filament_size[3]);
-#endif
-#endif
-#endif
-		calculate_volumetric_multipliers();
+    EEPROM_READ_VAR(i, filament_size[3]);
+#endif //EXTRUDERS > 3
+#endif //EXTRUDERS > 2
+#endif //EXTRUDERS > 1
+    calculate_volumetric_multipliers();
     // Call updatePID (similar to when we have processed M301)
     updatePID();
     SERIAL_ECHO_START;
@@ -451,26 +451,26 @@ void Config_ResetDefault()
   //Setting default baudrate for serial
   baudrate=BAUDRATE;
 
-  const static float tmp1[] MARLIN_PROGMEM = DEFAULT_AXIS_STEPS_PER_UNIT;
-  const static float tmp2[] MARLIN_PROGMEM = DEFAULT_MAX_FEEDRATE;
-  const static float tmp3[] MARLIN_PROGMEM = DEFAULT_RETRACTION_MAX_FEEDRATE;
-  const static long tmp4[]  MARLIN_PROGMEM = DEFAULT_MAX_ACCELERATION;
+  const static float tmp1[] = DEFAULT_AXIS_STEPS_PER_UNIT;
+  const static float tmp2[] = DEFAULT_MAX_FEEDRATE;
+  const static float tmp3[] = DEFAULT_RETRACTION_MAX_FEEDRATE;
+  const static long tmp4[]  = DEFAULT_MAX_ACCELERATION;
 #ifdef PIDTEMP
-  const static float tmp5[] MARLIN_PROGMEM = DEFAULT_Kp;
-  const static float tmp6[] MARLIN_PROGMEM = DEFAULT_Ki;
-  const static float tmp7[] MARLIN_PROGMEM = DEFAULT_Kd;
+  const static float tmp5[] = DEFAULT_Kp;
+  const static float tmp6[] = DEFAULT_Ki;
+  const static float tmp7[] = DEFAULT_Kd;
 #endif // PIDTEMP
   
   for (short i=0;i<7;i++) 
   {
-    axis_steps_per_unit[i] = pgm_read_float(&tmp1[i]);
-    max_feedrate[i] = pgm_read_float(&tmp2[i]);
-    max_acceleration_units_per_sq_second[i]=pgm_read_float(&tmp4[i]);
+    axis_steps_per_unit[i] = tmp1[i];
+    max_feedrate[i] = tmp2[i];
+    max_acceleration_units_per_sq_second[i] = tmp4[i];
   }
 
   for (short i=0;i<4;i++)
   {
-    max_retraction_feedrate[i]=pgm_read_float(&tmp3[i]);
+    max_retraction_feedrate[i] = tmp3[i];
   #ifdef SCARA
     axis_scaling[i]=1;
   #endif
@@ -515,50 +515,47 @@ void Config_ResetDefault()
   lcd_contrast = DEFAULT_LCD_CONTRAST;
 #endif
 #ifdef PIDTEMP
+#ifndef SINGLENOZZLE
+  for (short e=0;e<4;e++) 
+#else
+  int e = 0; // only need to write once
+#endif
+  {
+    Kp[e] = tmp5[e];
+    Ki[e] = scalePID_i(tmp6[e]);
+    Kd[e] = scalePID_d(tmp7[e]);
+  }
   // call updatePID (similar to when we have processed M301)
   updatePID();
-  for (short i=0;i<4;i++) 
-  {
-#ifdef SINGLENOZZLE
-    Kp[i] = pgm_read_float(&tmp5[0]);;
-    Ki[i] = scalePID_i(pgm_read_float(&tmp6[0]));
-    Kd[i] = scalePID_d(pgm_read_float(&tmp7[0]));
-#else
-    Kp[i] = pgm_read_float(&tmp5[i]);;
-    Ki[i] = scalePID_i(pgm_read_float(&tmp6[i]));
-    Kd[i] = scalePID_d(pgm_read_float(&tmp7[i]));
-#endif
-    
-  }
 #endif//PIDTEMP
 
 #ifdef FWRETRACT
-	autoretract_enabled = false;
-	retract_length = RETRACT_LENGTH;
+  autoretract_enabled = false;
+  retract_length = RETRACT_LENGTH;
 #if EXTRUDERS > 1
-	retract_length_swap = RETRACT_LENGTH_SWAP;
+  retract_length_swap = RETRACT_LENGTH_SWAP;
 #endif //EXTRUDERS > 1
-	retract_feedrate = RETRACT_FEEDRATE;
-	retract_zlift = RETRACT_ZLIFT;
-	retract_recover_length = RETRACT_RECOVER_LENGTH;
+  retract_feedrate = RETRACT_FEEDRATE;
+  retract_zlift = RETRACT_ZLIFT;
+  retract_recover_length = RETRACT_RECOVER_LENGTH;
 #if EXTRUDERS > 1
-	retract_recover_length_swap = RETRACT_RECOVER_LENGTH_SWAP;
+  retract_recover_length_swap = RETRACT_RECOVER_LENGTH_SWAP;
 #endif //EXTRUDERS > 1
-	retract_recover_feedrate = RETRACT_RECOVER_FEEDRATE;
+  retract_recover_feedrate = RETRACT_RECOVER_FEEDRATE;
 #endif //FWRETRACT
 
-	volumetric_enabled = false;
-	filament_size[0] = DEFAULT_NOMINAL_FILAMENT_DIA;
+  volumetric_enabled = false;
+  filament_size[0] = DEFAULT_NOMINAL_FILAMENT_DIA;
 #if EXTRUDERS > 1
-	filament_size[1] = DEFAULT_NOMINAL_FILAMENT_DIA;
+  filament_size[1] = DEFAULT_NOMINAL_FILAMENT_DIA;
 #if EXTRUDERS > 2
-	filament_size[2] = DEFAULT_NOMINAL_FILAMENT_DIA;
+  filament_size[2] = DEFAULT_NOMINAL_FILAMENT_DIA;
 #if EXTRUDERS > 3
-	filament_size[3] = DEFAULT_NOMINAL_FILAMENT_DIA;
+  filament_size[3] = DEFAULT_NOMINAL_FILAMENT_DIA;
 #endif //EXTRUDERS > 3
 #endif //EXTRUDERS > 2
 #endif //EXTRUDERS > 1
-	calculate_volumetric_multipliers();
+  calculate_volumetric_multipliers();
 
   SERIAL_ECHO_START;
   SERIAL_ECHOLNPGM("Hardcoded Default Settings Loaded");
