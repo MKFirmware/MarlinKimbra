@@ -1,6 +1,6 @@
 # Configuring and compilation
 
-  1. Install the latest non-beta arduino software IDE/toolset: http://www.arduino.cc/en/Main/Software
+  1. Install the LATES non-beta arduino software IDE/toolset: http://www.arduino.cc/en/Main/Software
   2. Download the MarlinKimbra firmware
    https://github.com/MagoKimbra/MarlinKimbra
    Use the "Download Zip" button on the right.
