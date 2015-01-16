@@ -214,6 +214,7 @@ void checkHitEndstops()
      setTargetHotend1(0);
      setTargetHotend2(0);
      setTargetHotend3(0);
+     setTargetBed(0);
    }
 #endif
  }
@@ -257,6 +258,8 @@ void checkHitEndstops()
      setTargetHotend0(0);
      setTargetHotend1(0);
      setTargetHotend2(0);
+     setTargetHotend3(0);
+     setTargetBed(0);
    }
 #endif
  }
@@ -362,7 +365,7 @@ FORCE_INLINE void trapezoid_generator_reset() {
 //    SERIAL_ECHOPGM("advance rate :");
 //    SERIAL_ECHO(current_block->advance_rate/256.0);
 //    SERIAL_ECHOPGM("initial advance :");
-//  SERIAL_ECHO(current_block->initial_advance/256.0);
+//    SERIAL_ECHO(current_block->initial_advance/256.0);
 //    SERIAL_ECHOPGM("final advance :");
 //    SERIAL_ECHOLN(current_block->final_advance/256.0);
 

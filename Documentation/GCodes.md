@@ -6,7 +6,7 @@
 *  G1  - Coordinated Movement X Y Z E F(feedrate)
 *  G2  - CW ARC
 *  G3  - CCW ARC
-*  G4  - Dwell Sseconds or Pmilliseconds, delay in Second or Millisecond
+*  G4  - Dwell S[seconds] or P[milliseconds], delay in Second or Millisecond
 *  G10 - retract filament according to settings of M207
 *  G11 - retract recover filament according to settings of M208
 *  G28 - X0 Y0 Z0 Home all Axis. G28 M for bed manual setting with LCD.
@@ -16,7 +16,7 @@
    Bed Probe and Delta geometry Autocalibration G30 A
 *  G31 - Dock Z Probe sled (if enabled)
 *  G32 - Undock Z Probe sled (if enabled)
-*  G60 - Memory actual position
+*  G60 - Store in memory the actual position
 *  G61 - Move X Y Z to position in memory
 *  G90 - Use Absolute Coordinates
 *  G91 - Use Relative Coordinates
@@ -25,7 +25,7 @@
 ## M Codes
 *  M0   - Unconditional stop - Wait for user to press a button on the LCD (Only if ULTRA_LCD is enabled)
 *  M1   - Same as M0
-*  M3   - Sxxx Put output in laser beam control
+*  M3   - S[0-255] Put output in laser beam control
 *  M4   - Turn on laser beam
 *  M5   - Turn off laser beam
 *  M17  - Enable/Power all stepper motors
@@ -56,8 +56,8 @@
 *  M105 - Read current temp
 *  M106 - Fan on
 *  M107 - Fan off
-*  M109 - Sxxx Wait for extruder current temp to reach target temp. Waits only when heating
-*         Rxxx Wait for extruder current temp to reach target temp. Waits when heating and cooling
+*  M109 - S[xxx] Wait for extruder current temp to reach target temp. Waits only when heating
+*         R[xxx] Wait for extruder current temp to reach target temp. Waits when heating and cooling
 *  M111 - Debug Dryrun Repetier
 *  M112 - Emergency stop
 *  M114 - Output current position to serial port
@@ -69,7 +69,7 @@
 *  M128 - EtoP Open (BariCUDA EtoP = electricity to air pressure transducer by jmil)
 *  M129 - EtoP Closed (BariCUDA EtoP = electricity to air pressure transducer by jmil)
 *  M140 - Set bed target temp
-*  M190 - Sxxx Wait for bed current temp to reach target temp. Waits only when heating Rxxx Wait for bed current temp to reach target temp. Waits when heating and cooling
+*  M190 - S[xxx] Wait for bed current temp to reach target temp. Waits only when heating Rxxx Wait for bed current temp to reach target temp. Waits when heating and cooling
 *  M200 Dmillimeters- set filament diameter and set E axis units to cubic millimeters (use S0 to set back to millimeters).
 *  M201 - Set max acceleration in units/s^2 for print moves (M201 X1000 Y1000)
 *  M202 - Set max acceleration in units/s^2 for travel moves (M202 X1000 Y1000) Unused in Marlin!!
@@ -106,7 +106,7 @@
 *  M540 - Use S[0|1] to enable or disable the stop SD card print on endstop hit (requires ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED)
 *  M600 - Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
 *  M605 - Set dual x-carriage movement mode: Smode [ X<duplication x-offset> Rduplication temp offset ]
-*  M666 - Set z probe offset or Endstop and delta geometry adjustment
+*  M666 - Set z probe offset or Endstop and delta geometry adjustment. M666 L for list command
 *  M907 - Set digital trimpot motor current using axis codes.
 *  M908 - Control digital trimpot directly.
 *  M350 - Set microstepping mode.
