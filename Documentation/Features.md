@@ -165,7 +165,7 @@ I put in a single firmware all the firmware that I found online for the various 
 ### Singlenozzle
 
 If have one hotend and more extruder define SINGLENOZZLE for unique temperature.
-* \ Uncomment below to enable SINGLENOZZLE (One Hotend)
+* Uncomment below to enable SINGLENOZZLE (One Hotend)
 * \#define SINGLENOZZLE //This is used for singlenozzled multiple extrusion configuration
 
 
@@ -252,7 +252,7 @@ Set start and end locations used to deploy the Z-Probe:
 * \#define Z_PROBE_RETRACT_START_LOCATION {49, 84, 20, 0}
 * \#define Z_PROBE_RETRACT_END_LOCATION {49, 84, 1, 0}
 
-Set precision for autocalibration G30 function – calibration will complete when this value is reached – all probed point have to be at 0 +/- 0.015mm (for 0.03 setting below)
+Set precision for autocalibration G30 function Â– calibration will complete when this value is reached Â– all probed point have to be at 0 +/- 0.015mm (for 0.03 setting below)
 
 * \#define AUTOCALIBRATION_PRECISION 0.03 // mm
 
