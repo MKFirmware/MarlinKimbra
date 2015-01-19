@@ -701,9 +701,9 @@ void setup()
   setup_photpin();
 #ifdef LASERBEAM            // Initialize Laser beam
   SET_OUTPUT(LASER_PWR_PIN);
-  digitalWrite(LASER_PWR_PIN, LOW);
+  WRITE(LASER_PWR_PIN, LOW);
   SET_OUTPUT(LASER_TTL_PIN);
-  digitalWrite(LASER_TTL_PIN, LOW);
+  WRITE(LASER_TTL_PIN, LOW);
 #endif
   servo_init();
   
@@ -719,8 +719,8 @@ void setup()
     digipot_i2c_init();
   #endif
 #ifdef Z_PROBE_SLED
-  pinMode(SERVO0_PIN, OUTPUT);
-  digitalWrite(SERVO0_PIN, LOW); // turn it off
+  SET_OUTPUT(SERVO0_PIN);
+  WRITE(SERVO0_PIN, LOW); // turn it off
 #endif // Z_PROBE_SLED
   setup_homepin();
 #ifdef FIRMWARE_TEST
@@ -3134,11 +3134,11 @@ void process_commands()
       }
       break;
     case 4: // M04 - Turn on laser beam
-      digitalWrite(LASER_PWR_PIN, HIGH);
+      WRITE(LASER_PWR_PIN, HIGH);
       laser_ttl_modulation = 0;
       break;
     case 5: // M05 - Turn off laser beam
-      digitalWrite(LASER_PWR_PIN, LOW);
+      WRITE(LASER_PWR_PIN, LOW);
       laser_ttl_modulation=0;
       break;
 #endif // LASERBEAM

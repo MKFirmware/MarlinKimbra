@@ -782,9 +782,9 @@ static void lcd_prepare_menu()
 #ifdef LASERBEAM
     MENU_ITEM_EDIT(int3, MSG_LASER, &laser_ttl_modulation, 0, 255);
     if(laser_ttl_modulation == 0) { 
-      digitalWrite(LASER_PWR_PIN, LOW);
+      WRITE(LASER_PWR_PIN, LOW);
     } else {
-      digitalWrite(LASER_PWR_PIN, HIGH);
+      WRITE(LASER_PWR_PIN, HIGH);
     }
 #endif
 #if TEMP_SENSOR_0 != 0
