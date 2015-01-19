@@ -165,8 +165,8 @@ I put in a single firmware all the firmware that I found online for the various 
 ### Singlenozzle
 
 If have one hotend and more extruder define SINGLENOZZLE for unique temperature.
-* \// Uncomment below to enable SINGLENOZZLE (One Hotend)
-* \//#define SINGLENOZZLE //This is used for singlenozzled multiple extrusion configuration
+* \ Uncomment below to enable SINGLENOZZLE (One Hotend)
+* \#define SINGLENOZZLE //This is used for singlenozzled multiple extrusion configuration
 
 
 ### MKR4 System
