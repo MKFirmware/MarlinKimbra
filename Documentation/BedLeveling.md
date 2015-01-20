@@ -1,6 +1,9 @@
 ===============================================
 Instructions for configuring Bed Auto Leveling
 ===============================================
+
+Guida in Italiano: http://forums.reprap.org/read.php?352,416597
+
 There are two options for this feature. You may choose to use a servo mounted on the X carriage or you may use a sled that mounts on the X axis and can be docked when not in use.
 See the section for each option below for specifics about installation and configuration. Also included are instructions that apply to both options.
 
