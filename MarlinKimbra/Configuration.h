@@ -539,7 +539,6 @@
 //#define EEPROM_CHITCHAT
 
 //========================= Bowden Filament management ======================
-//Bowden Filament management
 //#define EASY_LOAD
 #ifdef EASY_LOAD
   #define BOWDEN_LENGTH 560       // mm
