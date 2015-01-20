@@ -303,6 +303,27 @@
 // using:
 //#define MENU_ADDAUTOSTART
 
+//========================= LCD PROGRESS BAR ======================
+// Show a progress bar on HD44780 LCDs for SD printing
+//#define LCD_PROGRESS_BAR
+#ifdef LCD_PROGRESS_BAR
+  // Amount of time (ms) to show the bar
+  #define PROGRESS_BAR_BAR_TIME 2000
+  // Amount of time (ms) to show the status message
+  #define PROGRESS_BAR_MSG_TIME 3000
+  // Amount of time (ms) to retain the status message (0=forever)
+  #define PROGRESS_BAR_MSG_EXPIRE   0
+  // Enable this to show messages for MSG_TIME then hide them
+  //#define PROGRESS_BAR_MSG_ONCE
+  #ifdef DOGLCD
+    #warning LCD_PROGRESS_BAR does not apply to graphical displays at this time.
+  #endif
+  #ifdef FILAMENT_LCD_DISPLAY
+    #error LCD_PROGRESS_BAR and FILAMENT_LCD_DISPLAY are not fully compatible. Comment out this line to use both.
+  #endif
+#endif
+
+
 // The hardware watchdog should reset the microcontroller disabling all outputs, in case the firmware gets stuck and doesn't do temperature regulation.
 //#define USE_WATCHDOG
 
