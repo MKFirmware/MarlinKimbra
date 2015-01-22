@@ -145,10 +145,16 @@ void Config_PrintSettings()
     SERIAL_ECHOPAIR("  M92 X",axis_steps_per_unit[X_AXIS]);
     SERIAL_ECHOPAIR(" Y",axis_steps_per_unit[Y_AXIS]);
     SERIAL_ECHOPAIR(" Z",axis_steps_per_unit[Z_AXIS]);
-    SERIAL_ECHOPAIR(" E0 ",axis_steps_per_unit[3]);
-    SERIAL_ECHOPAIR(" E1 ",axis_steps_per_unit[4]);
-    SERIAL_ECHOPAIR(" E2 ",axis_steps_per_unit[5]);
-    SERIAL_ECHOPAIR(" E3 ",axis_steps_per_unit[6]);
+    SERIAL_ECHOPAIR(" E0 ",axis_steps_per_unit[E_AXIS + 0]);
+#if EXTRUDERS > 1
+    SERIAL_ECHOPAIR(" E1 ",axis_steps_per_unit[E_AXIS + 1]);
+#if EXTRUDERS > 2
+    SERIAL_ECHOPAIR(" E2 ",axis_steps_per_unit[E_AXIS + 2]);
+#if EXTRUDERS > 3
+    SERIAL_ECHOPAIR(" E3 ",axis_steps_per_unit[E_AXIS + 3]);
+#endif //EXTRUDERS > 3
+#endif //EXTRUDERS > 2
+#endif //EXTRUDERS > 1
     SERIAL_ECHOLN("");
   
     SERIAL_ECHO_START;
@@ -167,19 +173,31 @@ void Config_PrintSettings()
     SERIAL_ECHOPAIR("  M203 X ",max_feedrate[X_AXIS]);
     SERIAL_ECHOPAIR(" Y ",max_feedrate[Y_AXIS] ); 
     SERIAL_ECHOPAIR(" Z ", max_feedrate[Z_AXIS] ); 
-    SERIAL_ECHOPAIR(" E0 ", max_feedrate[3]);
-    SERIAL_ECHOPAIR(" E1 ", max_feedrate[4]);
-    SERIAL_ECHOPAIR(" E2 ", max_feedrate[5]);
-    SERIAL_ECHOPAIR(" E3 ", max_feedrate[6]);
+    SERIAL_ECHOPAIR(" E0 ", max_feedrate[E_AXIS + 0]);
+#if EXTRUDERS > 1
+    SERIAL_ECHOPAIR(" E1 ", max_feedrate[E_AXIS + 1]);
+#if EXTRUDERS > 2
+    SERIAL_ECHOPAIR(" E2 ", max_feedrate[E_AXIS + 2]);
+#if EXTRUDERS > 3
+    SERIAL_ECHOPAIR(" E3 ", max_feedrate[E_AXIS + 3]);
+#endif //EXTRUDERS > 3
+#endif //EXTRUDERS > 2
+#endif //EXTRUDERS > 1
     SERIAL_ECHOLN("");
 
     SERIAL_ECHO_START;
     SERIAL_ECHOLNPGM("Retraction Steps per unit:");
     SERIAL_ECHO_START;
     SERIAL_ECHOPAIR(" E0 ",max_retraction_feedrate[0]);
+#if EXTRUDERS > 1
     SERIAL_ECHOPAIR(" E1 ",max_retraction_feedrate[1]);
+#if EXTRUDERS > 2
     SERIAL_ECHOPAIR(" E2 ",max_retraction_feedrate[2]);
+#if EXTRUDERS > 3
     SERIAL_ECHOPAIR(" E3 ",max_retraction_feedrate[3]);
+#endif //EXTRUDERS > 3
+#endif //EXTRUDERS > 2
+#endif //EXTRUDERS > 1
     SERIAL_ECHOLN("");
     SERIAL_ECHO_START;
     SERIAL_ECHOLNPGM("Maximum Acceleration (mm/s2):");
@@ -187,10 +205,16 @@ void Config_PrintSettings()
     SERIAL_ECHOPAIR("  M201 X " ,max_acceleration_units_per_sq_second[X_AXIS] ); 
     SERIAL_ECHOPAIR(" Y " , max_acceleration_units_per_sq_second[Y_AXIS] ); 
     SERIAL_ECHOPAIR(" Z " ,max_acceleration_units_per_sq_second[Z_AXIS] );
-    SERIAL_ECHOPAIR(" E0 " ,max_acceleration_units_per_sq_second[3]);
-    SERIAL_ECHOPAIR(" E1 " ,max_acceleration_units_per_sq_second[4]);
-    SERIAL_ECHOPAIR(" E2 " ,max_acceleration_units_per_sq_second[5]);
-    SERIAL_ECHOPAIR(" E3 " ,max_acceleration_units_per_sq_second[6]);
+    SERIAL_ECHOPAIR(" E0 " ,max_acceleration_units_per_sq_second[E_AXIS]);
+#if EXTRUDERS > 1
+    SERIAL_ECHOPAIR(" E1 " ,max_acceleration_units_per_sq_second[E_AXIS+1]);
+#if EXTRUDERS > 2
+    SERIAL_ECHOPAIR(" E2 " ,max_acceleration_units_per_sq_second[E_AXIS+2]);
+#if EXTRUDERS > 3
+    SERIAL_ECHOPAIR(" E3 " ,max_acceleration_units_per_sq_second[E_AXIS+3]);
+#endif //EXTRUDERS > 3
+#endif //EXTRUDERS > 2
+#endif //EXTRUDERS > 1
     SERIAL_ECHOLN("");
     SERIAL_ECHO_START;
     SERIAL_ECHOLNPGM("Acceleration: S=acceleration, T=retract acceleration");
@@ -255,14 +279,20 @@ void Config_PrintSettings()
 
 #ifdef ENABLE_AUTO_BED_LEVELING
     SERIAL_ECHO_START;
-    SERIAL_ECHOPAIR("Z Probe offset (mm):" ,zprobe_zoffset);
+    SERIAL_ECHOLNPGM("Z Probe offset (mm)");
+    SERIAL_ECHO_START;
+    SERIAL_ECHOPAIR("  M666 P",zprobe_zoffset);
     SERIAL_ECHOLN("");
 #endif // ENABLE_AUTO_BED_LEVELING
 
 #ifdef PIDTEMP
     SERIAL_ECHO_START;
     SERIAL_ECHOLNPGM("PID settings:");
+#ifndef SINGLENOZZLE
     for (int e = 0; e < EXTRUDERS; e++)
+#else
+    int e = 0;
+#endif
     {
       SERIAL_ECHO_START;
       SERIAL_ECHOPAIR("   M301 E", (long unsigned int)e);
@@ -461,14 +491,14 @@ void Config_ResetDefault()
   const static float tmp7[] = DEFAULT_Kd;
 #endif // PIDTEMP
   
-  for (short i=0;i<7;i++) 
+  for (short i=0;i<3+EXTRUDERS;i++) 
   {
     axis_steps_per_unit[i] = tmp1[i];
     max_feedrate[i] = tmp2[i];
     max_acceleration_units_per_sq_second[i] = tmp4[i];
   }
 
-  for (short i=0;i<4;i++)
+  for (short i=0;i<EXTRUDERS;i++)
   {
     max_retraction_feedrate[i] = tmp3[i];
   #ifdef SCARA
@@ -516,7 +546,7 @@ void Config_ResetDefault()
 #endif
 #ifdef PIDTEMP
 #ifndef SINGLENOZZLE
-  for (short e=0;e<4;e++) 
+  for (short e=0;e<EXTRUDERS;e++) 
 #else
   int e = 0; // only need to write once
 #endif

@@ -63,10 +63,10 @@
 //===========================================================================
 
 unsigned long minsegmenttime;
-float max_feedrate[7]; // set the max speeds
-float max_retraction_feedrate[4]; // set the max speeds for retraction
-float axis_steps_per_unit[7];
-unsigned long max_acceleration_units_per_sq_second[7]; // Use M201 to override by software
+float max_feedrate[3 + EXTRUDERS]; // set the max speeds
+float max_retraction_feedrate[EXTRUDERS]; // set the max speeds for retraction
+float axis_steps_per_unit[3 + EXTRUDERS];
+unsigned long max_acceleration_units_per_sq_second[3 + EXTRUDERS]; // Use M201 to override by software
 float minimumfeedrate;
 float acceleration;         // Normal acceleration mm/s^2  THIS IS THE DEFAULT ACCELERATION for all moves. M204 SXXXX
 float retract_acceleration; //  mm/s^2   filament pull-pack and push-forward  while standing still in the other axis M204 TXXXX
@@ -74,7 +74,7 @@ float max_xy_jerk; //speed than can be stopped at once, if i understand correctl
 float max_z_jerk;
 float max_e_jerk;
 float mintravelfeedrate;
-unsigned long axis_steps_per_sqr_second[7];
+unsigned long axis_steps_per_sqr_second[3 + EXTRUDERS];
 
 #ifdef ENABLE_AUTO_BED_LEVELING
 // this holds the required transform to compensate for bed level
@@ -86,8 +86,8 @@ matrix_3x3 plan_bed_level_matrix = {
 #endif // #ifdef ENABLE_AUTO_BED_LEVELING
 
 // The current position of the tool in absolute steps
-long position[4];   //rescaled from extern when axis_steps_per_unit are changed by gcode
-static float previous_speed[4]; // Speed of previous path line segment
+long position[NUM_AXIS];   //rescaled from extern when axis_steps_per_unit are changed by gcode
+static float previous_speed[NUM_AXIS]; // Speed of previous path line segment
 static float previous_nominal_speed; // Nominal speed of previous path line segment
 
 #ifdef AUTOTEMP
@@ -572,7 +572,7 @@ void plan_buffer_line(const float &x, const float &y, const float &z, const floa
   target[X_AXIS] = lround(x*axis_steps_per_unit[X_AXIS]);
   target[Y_AXIS] = lround(y*axis_steps_per_unit[Y_AXIS]);
   target[Z_AXIS] = lround(z*axis_steps_per_unit[Z_AXIS]);     
-  target[E_AXIS] = lround(e*axis_steps_per_unit[active_extruder+3]);
+  target[E_AXIS] = lround(e*axis_steps_per_unit[E_AXIS + active_extruder]);
 
 #ifdef PREVENT_DANGEROUS_EXTRUDE
 #ifdef NPR2
@@ -867,24 +867,23 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
   // Calculate and limit speed in mm/sec for each axis
   float current_speed[4];
   float speed_factor = 1.0; //factor <=1 do decrease speed
-  for(int i=0; i < 4; i++)
+  for(int i=0; i < 3; i++)
   {
     current_speed[i] = delta_mm[i] * inverse_second;
-    if ((i == 3) && (target[E_AXIS] < position[E_AXIS]))
-    {
-      if(fabs(current_speed[i]) > max_retraction_feedrate[active_extruder])
-        speed_factor = min(speed_factor, max_retraction_feedrate[active_extruder]/ fabs(current_speed[i]));
-    }
-    else if (i==3)
-    {
-      if(fabs(current_speed[i]) > max_feedrate[active_extruder + 3])
-        speed_factor = min(speed_factor, max_feedrate[active_extruder + 3] / fabs(current_speed[i]));
-    }
-    else
-    {
-      if(fabs(current_speed[i]) > max_feedrate[i])
-        speed_factor = min(speed_factor, max_feedrate[i] / fabs(current_speed[i]));
-    }
+    if(fabs(current_speed[i]) > max_feedrate[i])
+      speed_factor = min(speed_factor, max_feedrate[i] / fabs(current_speed[i]));
+  }
+
+  current_speed[E_AXIS] = delta_mm[E_AXIS] * inverse_second;
+  if (target[E_AXIS] < position[E_AXIS])
+  {
+    if(fabs(current_speed[E_AXIS]) > max_retraction_feedrate[active_extruder])
+      speed_factor = min(speed_factor, max_retraction_feedrate[active_extruder]/ fabs(current_speed[E_AXIS]));
+  }
+  else
+  {
+    if(fabs(current_speed[E_AXIS]) > max_feedrate[E_AXIS + active_extruder])
+      speed_factor = min(speed_factor, max_feedrate[E_AXIS + active_extruder] / fabs(current_speed[E_AXIS]));
   }
 
   // Max segement time in us.
@@ -947,10 +946,10 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
       block->acceleration_st = axis_steps_per_sqr_second[X_AXIS];
     if(((float)block->acceleration_st * (float)block->steps_y / (float)block->step_event_count) > axis_steps_per_sqr_second[Y_AXIS])
       block->acceleration_st = axis_steps_per_sqr_second[Y_AXIS];
-    if(((float)block->acceleration_st * (float)block->steps_e / (float)block->step_event_count) > axis_steps_per_sqr_second[E_AXIS])
-      block->acceleration_st = axis_steps_per_sqr_second[E_AXIS];
     if(((float)block->acceleration_st * (float)block->steps_z / (float)block->step_event_count ) > axis_steps_per_sqr_second[Z_AXIS])
       block->acceleration_st = axis_steps_per_sqr_second[Z_AXIS];
+    if(((float)block->acceleration_st * (float)block->steps_e / (float)block->step_event_count) > axis_steps_per_sqr_second[E_AXIS])
+      block->acceleration_st = axis_steps_per_sqr_second[E_AXIS];
   }
   block->acceleration = block->acceleration_st / steps_per_mm;
   block->acceleration_rate = (long)((float)block->acceleration_st * (16777216.0 / (F_CPU / 8.0)));
@@ -1116,7 +1115,7 @@ void plan_set_position(const float &x, const float &y, const float &z, const flo
   position[X_AXIS] = lround(x*axis_steps_per_unit[X_AXIS]);
   position[Y_AXIS] = lround(y*axis_steps_per_unit[Y_AXIS]);
   position[Z_AXIS] = lround(z*axis_steps_per_unit[Z_AXIS]);     
-  position[E_AXIS] = lround(e*axis_steps_per_unit[active_extruder+3]);  
+  position[E_AXIS] = lround(e*axis_steps_per_unit[E_AXIS + active_extruder]);  
   st_set_position(position[X_AXIS], position[Y_AXIS], position[Z_AXIS], position[E_AXIS]);
   previous_nominal_speed = 0.0; // Resets planner junction speeds. Assumes start from rest.
   previous_speed[0] = 0.0;
@@ -1127,7 +1126,7 @@ void plan_set_position(const float &x, const float &y, const float &z, const flo
 
 void plan_set_e_position(const float &e)
 {
-  position[E_AXIS] = lround(e*axis_steps_per_unit[active_extruder+3]);  
+  position[E_AXIS] = lround(e*axis_steps_per_unit[E_AXIS + active_extruder]);  
   st_set_e_position(position[E_AXIS]);
 }
 
@@ -1146,7 +1145,7 @@ void set_extrude_min_temp(float temp)
 // Calculate the steps/s^2 acceleration rates, based on the mm/s^s
 void reset_acceleration_rates()
 {
-	for(int8_t i=0; i < 7; i++)
+	for(int8_t i=0; i < 3 + EXTRUDERS; i++)
         {
         axis_steps_per_sqr_second[i] = max_acceleration_units_per_sq_second[i] * axis_steps_per_unit[i];
         }

@@ -109,10 +109,10 @@ void check_axes_activity();
 uint8_t movesplanned(); //return the nr of buffered moves
 
 extern unsigned long minsegmenttime;
-extern float max_feedrate[7]; // set the max speeds
-extern float max_retraction_feedrate[4]; // set the max speeds for retraction
-extern float axis_steps_per_unit[7];
-extern unsigned long max_acceleration_units_per_sq_second[7]; // Use M201 to override by software
+extern float max_feedrate[3 + EXTRUDERS]; // set the max speeds
+extern float max_retraction_feedrate[EXTRUDERS]; // set the max speeds for retraction
+extern float axis_steps_per_unit[3 + EXTRUDERS];
+extern unsigned long max_acceleration_units_per_sq_second[3 + EXTRUDERS]; // Use M201 to override by software
 extern float minimumfeedrate;
 extern float acceleration;         // Normal acceleration mm/s^2  THIS IS THE DEFAULT ACCELERATION for all moves. M204 SXXXX
 extern float retract_acceleration; //  mm/s^2   filament pull-pack and push-forward  while standing still in the other axis M204 TXXXX
@@ -120,7 +120,7 @@ extern float max_xy_jerk; //speed than can be stopped at once, if i understand c
 extern float max_z_jerk;
 extern float max_e_jerk;
 extern float mintravelfeedrate;
-extern unsigned long axis_steps_per_sqr_second[7];
+extern unsigned long axis_steps_per_sqr_second[3 + EXTRUDERS];
 
 #ifdef AUTOTEMP
     extern bool autotemp_enabled;

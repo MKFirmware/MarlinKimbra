@@ -247,9 +247,9 @@
   #define PID_dT ((OVERSAMPLENR * 10.0)/(F_CPU / 64.0 / 256.0))
 
 //             HotEnd{HE0,HE1,HE2,HE3}
-  #define DEFAULT_Kp {41,41,41,41} // Kp for E0, E1, E2, E3
-  #define DEFAULT_Ki {7,7,7,7}     // Ki for E0, E1, E2, E3
-  #define DEFAULT_Kd {59,59,59,59} // Kd for E0, E1, E2, E3
+  #define DEFAULT_Kp {41,41,41,41}     // Kp for E0, E1, E2, E3
+  #define DEFAULT_Ki {07,07,07,07}     // Ki for E0, E1, E2, E3
+  #define DEFAULT_Kd {59,59,59,59}     // Kd for E0, E1, E2, E3
 
 #endif // PIDTEMP
 
@@ -576,8 +576,8 @@
 // This allows for servo actuated endstops, primary usage is for the Z Axis to eliminate calibration or bed height changes.
 // Use M666 command to correct for switch height offset to actual nozzle height. Store that setting with M500.
 //
-#define SERVO_ENDSTOPS {-1,-1,0}      // Servo index for X, Y, Z. Disable with -1
-#define SERVO_ENDSTOP_ANGLES {0,0,0,0,90,0}      // X,Y,Z Axis Extend and Retract angles
+#define SERVO_ENDSTOPS {-1,-1,0}            // Servo index for X, Y, Z. Disable with -1
+#define SERVO_ENDSTOP_ANGLES {0,0,0,0,90,0} // X,Y,Z Axis Extend and Retract angles
 
 
 //============================== Filament Sensor ============================
