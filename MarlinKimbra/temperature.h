@@ -23,6 +23,8 @@
 
 #include "Marlin.h"
 #include "planner.h"
+#include "stepper.h"
+
 
 
 // public functions
