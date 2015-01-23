@@ -299,12 +299,6 @@ void st_wake_up() {
   ENABLE_STEPPER_DRIVER_INTERRUPT();
 }
 
-void step_wait(){
-    for(int8_t i=0; i < 6; i++){
-    }
-}
-
-
 FORCE_INLINE unsigned short calc_timer(unsigned short step_rate) {
   unsigned short timer;
   if(step_rate > MAX_STEP_FREQUENCY) step_rate = MAX_STEP_FREQUENCY;
@@ -1107,7 +1101,7 @@ void st_init()
     WRITE(E3_STEP_PIN,INVERT_E_STEP_PIN);
     disable_e3();
   #endif
-  
+
   // waveform generation = 0100 = CTC
   TCCR1B &= ~(1<<WGM13);
   TCCR1B |=  (1<<WGM12);
@@ -1249,9 +1243,9 @@ void babystep(const uint8_t axis,const bool direction)
     #ifdef DUAL_X_CARRIAGE
       WRITE(X2_STEP_PIN, !INVERT_X_STEP_PIN);
     #endif
-    {
-    float x=1./float(axis+1)/float(axis+2); //wait a tiny bit
-    }
+
+    _delay_us(1U); // wait 1 microsecond
+
     WRITE(X_STEP_PIN, INVERT_X_STEP_PIN);
     #ifdef DUAL_X_CARRIAGE
       WRITE(X2_STEP_PIN, INVERT_X_STEP_PIN);
@@ -1281,9 +1275,9 @@ void babystep(const uint8_t axis,const bool direction)
     #ifdef DUAL_Y_CARRIAGE
       WRITE(Y2_STEP_PIN, !INVERT_Y_STEP_PIN);
     #endif
-    {
-    float x=1./float(axis+1)/float(axis+2); //wait a tiny bit
-    }
+
+    _delay_us(1U); // wait 1 microsecond
+
     WRITE(Y_STEP_PIN, INVERT_Y_STEP_PIN);
     #ifdef DUAL_Y_CARRIAGE
       WRITE(Y2_STEP_PIN, INVERT_Y_STEP_PIN);
@@ -1313,10 +1307,9 @@ void babystep(const uint8_t axis,const bool direction)
     #ifdef Z_DUAL_STEPPER_DRIVERS
       WRITE(Z2_STEP_PIN, !INVERT_Z_STEP_PIN);
     #endif
-    //wait a tiny bit
-    {
-    float x=1./float(axis+1); //absolutely useless
-    }
+
+    _delay_us(1U); // wait 1 microsecond
+
     WRITE(Z_STEP_PIN, INVERT_Z_STEP_PIN);
     #ifdef Z_DUAL_STEPPER_DRIVERS
       WRITE(Z2_STEP_PIN, INVERT_Z_STEP_PIN);
@@ -1349,10 +1342,8 @@ void babystep(const uint8_t axis,const bool direction)
     WRITE(Y_STEP_PIN, !INVERT_Y_STEP_PIN); 
     WRITE(Z_STEP_PIN, !INVERT_Z_STEP_PIN); 
     
-    //wait a tiny bit
-    {
-    float x=1./float(axis+1); //absolutely useless
-    }
+    _delay_us(1U); // wait 1 microsecond
+
     WRITE(X_STEP_PIN, INVERT_X_STEP_PIN); 
     WRITE(Y_STEP_PIN, INVERT_Y_STEP_PIN); 
     WRITE(Z_STEP_PIN, INVERT_Z_STEP_PIN);

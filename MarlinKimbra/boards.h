@@ -28,7 +28,8 @@
 #define BOARD_ULTIMAKER         7    // Ultimaker
 #define BOARD_ULTIMAKER_OLD     71   // Ultimaker (Older electronics. Pre 1.5.4. This is rare)
 #define BOARD_ULTIMAIN_2        72   // Ultimainboard 2.x (Uses TEMP_SENSOR 20)
-#define BOARD_3DRAG             77   // 3Drag Controller / Vellemann K8200 Controller
+#define BOARD_3DRAG             77   // 3Drag Controller
+#define BOARD_K8200             78   // Vellemann K8200 Controller (derived from 3Drag Controller)
 #define BOARD_TEENSYLU          8    // Teensylu
 #define BOARD_RUMBA             80   // Rumba
 #define BOARD_PRINTRBOARD       81   // Printrboard (AT90USB1286)
@@ -40,7 +41,6 @@
 #define BOARD_MEGATRONICS       70   // Megatronics
 #define BOARD_MEGATRONICS_2     701  // Megatronics v2.0
 #define BOARD_MEGATRONICS_1     702  // Minitronics v1.0
-#define BOARD_MEGATRONICS_3     703  // Megatronics v3.0
 #define BOARD_OMCA_A            90   // Alpha OMCA board
 #define BOARD_OMCA              91   // Final OMCA board
 #define BOARD_RAMBO             301  // Rambo
@@ -48,8 +48,7 @@
 #define BOARD_5DPRINT           88   // 5DPrint D8 Driver Board
 #define BOARD_LEAPFROG          999  // Leapfrog
 
-
-
+#define BOARD_99                99   // This is in pins.h but...?
 
 #define MB(board) (MOTHERBOARD==BOARD_##board)
 #define IS_RAMPS (MB(RAMPS_OLD) || MB(RAMPS_13_EFB) || MB(RAMPS_13_EEB) || MB(RAMPS_13_EFF) || MB(RAMPS_13_EEF))

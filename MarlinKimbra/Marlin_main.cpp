@@ -239,9 +239,9 @@ int extruder_multiply[EXTRUDERS] = {100
     , 100
     #if EXTRUDERS > 2
       , 100
-	  #if EXTRUDERS > 3
+	    #if EXTRUDERS > 3
       	, 100
-	  #endif
+	    #endif
     #endif
   #endif
 };
@@ -4041,32 +4041,32 @@ Sigma_Exit:
 
         float area = .0;
         if(code_seen('D')) {
-		  float diameter = (float)code_value();
-		  if (diameter == 0.0) {
-			// setting any extruder filament size disables volumetric on the assumption that
-			// slicers either generate in extruder values as cubic mm or as as filament feeds
-			// for all extruders
-		    volumetric_enabled = false;
-		  } else {
+          float diameter = (float)code_value();
+          if (diameter == 0.0) {
+            // setting any extruder filament size disables volumetric on the assumption that
+            // slicers either generate in extruder values as cubic mm or as as filament feeds
+            // for all extruders
+            volumetric_enabled = false;
+          } else {
             filament_size[tmp_extruder] = (float)code_value();
-			// make sure all extruders have some sane value for the filament size
-			filament_size[0] = (filament_size[0] == 0.0 ? DEFAULT_NOMINAL_FILAMENT_DIA : filament_size[0]);
-            #if EXTRUDERS > 1
-			filament_size[1] = (filament_size[1] == 0.0 ? DEFAULT_NOMINAL_FILAMENT_DIA : filament_size[1]);
-            #if EXTRUDERS > 2
-			filament_size[2] = (filament_size[2] == 0.0 ? DEFAULT_NOMINAL_FILAMENT_DIA : filament_size[2]);
-            #if EXTRUDERS > 3
-			filament_size[3] = (filament_size[3] == 0.0 ? DEFAULT_NOMINAL_FILAMENT_DIA : filament_size[3]);
-            #endif
-            #endif
-            #endif
-			volumetric_enabled = true;
-		  }
+            // make sure all extruders have some sane value for the filament size
+            filament_size[0] = (filament_size[0] == 0.0 ? DEFAULT_NOMINAL_FILAMENT_DIA : filament_size[0]);
+#if EXTRUDERS > 1
+            filament_size[1] = (filament_size[1] == 0.0 ? DEFAULT_NOMINAL_FILAMENT_DIA : filament_size[1]);
+#if EXTRUDERS > 2
+            filament_size[2] = (filament_size[2] == 0.0 ? DEFAULT_NOMINAL_FILAMENT_DIA : filament_size[2]);
+#if EXTRUDERS > 3
+            filament_size[3] = (filament_size[3] == 0.0 ? DEFAULT_NOMINAL_FILAMENT_DIA : filament_size[3]);
+#endif //EXTRUDERS > 3
+#endif //EXTRUDERS > 2
+#endif //EXTRUDERS > 1
+            volumetric_enabled = true;
+          }
         } else {
           //reserved for setting filament diameter via UFID or filament measuring device
           break;
         }
-		calculate_volumetric_multipliers();
+        calculate_volumetric_multipliers();
       }
       break;
     case 201: // M201
@@ -6104,8 +6104,8 @@ void calculate_volumetric_multipliers() {
 	volumetric_multiplier[2] = calculate_volumetric_multiplier(filament_size[2]);
 #if EXTRUDERS > 3
 	volumetric_multiplier[3] = calculate_volumetric_multiplier(filament_size[3]);
-#endif
-#endif
-#endif
+#endif //EXTRUDERS > 3
+#endif //EXTRUDERS > 2
+#endif //EXTRUDERS > 1
 }
 

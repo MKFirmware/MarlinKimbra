@@ -50,9 +50,9 @@
 
   extern bool cancel_heatup;
   
-  #ifdef FILAMENT_LCD_DISPLAY
+#ifdef FILAMENT_LCD_DISPLAY
   extern unsigned long message_millis;
-  #endif
+#endif
 
   void lcd_buzz(long duration,uint16_t freq);
   bool lcd_clicked();

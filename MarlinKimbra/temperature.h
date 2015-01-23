@@ -211,8 +211,8 @@ static int thermal_runaway_state_machine[4]; // = {0,0,0,0};
 static unsigned long thermal_runaway_timer[4]; // = {0,0,0,0};
 static bool thermal_runaway = false;
 #if TEMP_SENSOR_BED != 0
-static int thermal_runaway_bed_state_machine;
-static unsigned long thermal_runaway_bed_timer;
+  static int thermal_runaway_bed_state_machine;
+  static unsigned long thermal_runaway_bed_timer;
 #endif
 #endif
 
@@ -233,4 +233,3 @@ void setExtruderAutoFanState(int pin, bool state);
 void checkExtruderAutoFans();
 
 #endif
-

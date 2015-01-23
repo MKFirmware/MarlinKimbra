@@ -656,12 +656,12 @@
   #endif
 
   #if MB(RAMPS_13_EFB) || MB(RAMPS_13_EFF) || MB(AZTEEG_X3) || MB(AZTEEG_X3_PRO)
-    #define ORIG_FAN_PIN            9 // 9 (Sprinter config)
+    #define ORIG_FAN_PIN            9 // (Sprinter config)
   #else
     #define ORIG_FAN_PIN            4 // IO pin. Buffer needed
   #endif
 
-  #if MB(3DRAG) || MB(RAMPS_13_EEF)
+  #if MB(3DRAG) || MB(K8200) || MB(RAMPS_13_EEF)
     #define ORIG_FAN_PIN            8
   #endif
 
@@ -690,7 +690,7 @@
   #endif
 
 
-  #if MB(3DRAG)
+  #if MB(3DRAG) || MB(K8200)
     #define ORIG_HEATER_0_PIN       10
     #define ORIG_HEATER_1_PIN       12
     #define ORIG_HEATER_2_PIN       6
@@ -720,7 +720,7 @@
   #if MB(RAMPS_13_EFF) || MB(RAMPS_13_EEF)
     #define ORIG_HEATER_BED_PIN     -1    // NO BED
   #else
-    #if MB(3DRAG)
+    #if MB(3DRAG) || MB(K8200)
       #define ORIG_HEATER_BED_PIN    9    // BED
     #else
       #define ORIG_HEATER_BED_PIN    8    // BED
@@ -813,7 +813,7 @@
 
       #endif
 
-      #if MB(3DRAG)
+      #if MB(3DRAG) || MB(K8200)
         #define BEEPER -1
 
         #define LCD_PINS_RS 27
@@ -895,7 +895,7 @@
 #define ORIG_TEMP_2_PIN          -1
 #define ORIG_TEMP_BED_PIN        1    // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
 
-#endif // RAMPS_13_EFB || RAMPS_13_EEB || RAMPS_13_EFF || 3DRAG
+#endif // RAMPS_13_EFB || RAMPS_13_EEB || RAMPS_13_EFF || 3DRAG || K8200
 
 // SPI for Max6675 Thermocouple
 
@@ -909,7 +909,7 @@
   #define MAX6675_SS       66// Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
 #endif
 
-#endif // RAMPS_OLD || RAMPS_13_EFB || RAMPS_13_EEB || RAMPS_13_EFF || 3DRAG
+#endif // RAMPS_OLD || RAMPS_13_EFB || RAMPS_13_EEB || RAMPS_13_EFF || 3DRAG || K8200
 
 /****************************************************************************************
 * Duemilanove w/ ATMega328P pin assignment
@@ -3204,4 +3204,4 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
                         HEATER_BED_PIN, FAN_PIN,                  \
                         _E0_PINS _E1_PINS _E2_PINS _E3_PINS           \
                         analogInputToDigitalPin(TEMP_0_PIN), analogInputToDigitalPin(TEMP_1_PIN), analogInputToDigitalPin(TEMP_2_PIN), analogInputToDigitalPin(TEMP_3_PIN), analogInputToDigitalPin(TEMP_BED_PIN) }
-#endif
+#endif //__PINS_H
