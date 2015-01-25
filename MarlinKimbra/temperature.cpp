@@ -39,8 +39,12 @@
 
 
 //===========================================================================
-//=============================public variables============================
+//============================= public variables ============================
 //===========================================================================
+
+// Sampling period of the temperature routine
+#define PID_dT ((OVERSAMPLENR * 12.0)/(F_CPU / 64.0 / 256.0))
+
 #ifndef SINGLENOZZLE
   int target_temperature[EXTRUDERS] = { 0 };
   int current_temperature_raw[EXTRUDERS] = { 0 };
