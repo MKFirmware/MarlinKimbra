@@ -145,13 +145,13 @@ void Config_PrintSettings()
     SERIAL_ECHOPAIR("  M92 X",axis_steps_per_unit[X_AXIS]);
     SERIAL_ECHOPAIR(" Y",axis_steps_per_unit[Y_AXIS]);
     SERIAL_ECHOPAIR(" Z",axis_steps_per_unit[Z_AXIS]);
-    SERIAL_ECHOPAIR(" E0 ",axis_steps_per_unit[E_AXIS + 0]);
+    SERIAL_ECHOPAIR(" E0 S",axis_steps_per_unit[E_AXIS + 0]);
 #if EXTRUDERS > 1
-    SERIAL_ECHOPAIR(" E1 ",axis_steps_per_unit[E_AXIS + 1]);
+    SERIAL_ECHOPAIR(" E1 S",axis_steps_per_unit[E_AXIS + 1]);
 #if EXTRUDERS > 2
-    SERIAL_ECHOPAIR(" E2 ",axis_steps_per_unit[E_AXIS + 2]);
+    SERIAL_ECHOPAIR(" E2 S",axis_steps_per_unit[E_AXIS + 2]);
 #if EXTRUDERS > 3
-    SERIAL_ECHOPAIR(" E3 ",axis_steps_per_unit[E_AXIS + 3]);
+    SERIAL_ECHOPAIR(" E3 S",axis_steps_per_unit[E_AXIS + 3]);
 #endif //EXTRUDERS > 3
 #endif //EXTRUDERS > 2
 #endif //EXTRUDERS > 1

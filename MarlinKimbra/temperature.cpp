@@ -209,6 +209,11 @@ static void updateTemperaturesFromRawValues();
 #ifdef FILAMENT_SENSOR
   static int meas_shift_index;  //used to point to a delayed sample in buffer for filament width sensor
 #endif
+
+#ifdef HEATER_0_USES_MAX6675
+  static int read_max6675();
+#endif
+
 //===========================================================================
 //=============================   functions      ============================
 //===========================================================================
@@ -512,6 +517,16 @@ void manage_heater()
     return; 
 
   updateTemperaturesFromRawValues();
+
+  #ifdef HEATER_0_USES_MAX6675
+    if (current_temperature[0] > 1023 || current_temperature[0] > HEATER_0_MAXTEMP) {
+      max_temp_error(0);
+    }
+    if (current_temperature[0] == 0  || current_temperature[0] < HEATER_0_MINTEMP) {
+      min_temp_error(0);
+    }
+  #endif //HEATER_0_USES_MAX6675
+
 #ifndef SINGLENOZZLE
   for(int e = 0; e < EXTRUDERS; e++) 
   {
@@ -641,7 +656,7 @@ void manage_heater()
 
   #if TEMP_SENSOR_BED != 0
   
-    #ifdef THERMAL_RUNAWAY_PROTECTION_PERIOD && THERMAL_RUNAWAY_PROTECTION_PERIOD > 0
+    #if defined(THERMAL_RUNAWAY_PROTECTION_BED_PERIOD) && THERMAL_RUNAWAY_PROTECTION_BED_PERIOD > 0
       thermal_runaway_protection(&thermal_runaway_bed_state_machine, &thermal_runaway_bed_timer, current_temperature_bed, target_temperature_bed, 9, THERMAL_RUNAWAY_PROTECTION_BED_PERIOD, THERMAL_RUNAWAY_PROTECTION_BED_HYSTERESIS);
     #endif
 
@@ -826,11 +841,15 @@ static float analog2tempBed(int raw) {
     and this function is called from normal context as it is too slow to run in interrupts and will block the stepper routine otherwise */
 static void updateTemperaturesFromRawValues()
 {
+  #ifdef HEATER_0_USES_MAX6675
+    current_temperature_raw[0] = read_max6675();
+  #endif
+
   #ifndef SINGLENOZZLE
     for(uint8_t e=0;e<EXTRUDERS;e++)
     {
   #else
-    for(uint8_t e=0;e<1;e++)
+    uint8_t e=0;
     {
   #endif // !SINGLENOZZLE
         current_temperature[e] = analog2temp(current_temperature_raw[e], e);
@@ -890,10 +909,10 @@ void tp_init()
   
   // Finish init of mult extruder arrays
   #ifndef SINGLENOZZLE
-    for (int e = 0; e < EXTRUDERS; e++)
+    for (uint8_t e = 0; e < EXTRUDERS; e++)
     {
   #else
-    for (int e = 0; e < 1; e++)
+    uint8_t e = 0;
     {
   #endif // !SINGLENOZZLE
     // populate with the first value 
@@ -937,6 +956,7 @@ void tp_init()
   #endif  
 
   #ifdef HEATER_0_USES_MAX6675
+
     #ifndef SDSUPPORT
       SET_OUTPUT(SCK_PIN);
       WRITE(SCK_PIN,0);
@@ -946,15 +966,15 @@ void tp_init()
     
       SET_INPUT(MISO_PIN);
       WRITE(MISO_PIN,1);
+    #else
+      pinMode(SS_PIN, OUTPUT);
+      digitalWrite(SS_PIN, HIGH);
     #endif
-    /* Using pinMode and digitalWrite, as that was the only way I could get it to compile */
     
-    //Have to toggle SD card CS pin to low first, to enable firmware to talk with SD card
-	pinMode(SS_PIN, OUTPUT);
-	digitalWrite(SS_PIN,0);  
-	pinMode(MAX6675_SS, OUTPUT);
-	digitalWrite(MAX6675_SS,1);
-  #endif
+    SET_OUTPUT(MAX6675_SS);
+    WRITE(MAX6675_SS,1);
+
+  #endif //HEATER_0_USES_MAX6675
 
   // Set analog inputs
   ADCSRA = 1<<ADEN | 1<<ADSC | 1<<ADIF | 0x07;
@@ -1131,10 +1151,10 @@ void setWatch()
 {  
 #ifdef WATCH_TEMP_PERIOD
   #ifndef SINGLENOZZLE
-    for (int e = 0; e < EXTRUDERS; e++)
+    for (uint8_t e = 0; e < EXTRUDERS; e++)
     {
   #else
-    for (int e = 0; e < 1; e++)
+    uint8_t e = 0;
     {
   #endif // !SINGLENOZZLE
       if(degHotend(e) < degTargetHotend(e) - (WATCH_TEMP_INCREASE * 2))
@@ -1211,9 +1231,9 @@ void thermal_runaway_protection(int *state, unsigned long *timer, float temperat
 void disable_heater()
 {
   #ifndef SINGLENOZZLE
-    for(int i=0;i<EXTRUDERS;i++)
+    for(uint8_t i=0;i<EXTRUDERS;i++)
   #else
-    for(int i=0;i<1;i++)
+    uint8_t i=0;
   #endif // !SINGLENOZZLE
       setTargetHotend(0,i);
   setTargetBed(0);
@@ -1305,7 +1325,7 @@ void bed_max_temp_error(void) {
 long max6675_previous_millis = MAX6675_HEAT_INTERVAL;
 int max6675_temp = 2000;
 
-int read_max6675()
+static int read_max6675()
 {
   if (millis() - max6675_previous_millis < MAX6675_HEAT_INTERVAL) 
     return max6675_temp;
@@ -1313,9 +1333,9 @@ int read_max6675()
   max6675_previous_millis = millis();
   max6675_temp = 0;
     
-  #ifdef	PRR
+  #ifdef PRR
     PRR &= ~(1<<PRSPI);
-  #elif defined PRR0
+  #elif defined(PRR0)
     PRR0 &= ~(1<<PRSPI);
   #endif
   
@@ -1342,10 +1362,10 @@ int read_max6675()
   // disable TT_MAX6675
   WRITE(MAX6675_SS, 1);
 
-  if (max6675_temp & 4) 
+  if (max6675_temp & 4)
   {
     // thermocouple open
-    max6675_temp = 2000;
+    max6675_temp = 4000;
   }
   else 
   {
@@ -1354,7 +1374,8 @@ int read_max6675()
 
   return max6675_temp;
 }
-#endif
+
+#endif //HEATER_0_USES_MAX6675
 
 
 // Timer 0 is shared with millies
@@ -1760,9 +1781,6 @@ ISR(TIMER0_COMPB_vect)
       #if defined(TEMP_0_PIN) && (TEMP_0_PIN > -1)
         raw_temp_0_value += ADC;
       #endif
-      #ifdef HEATER_0_USES_MAX6675 // TODO remove the blocking
-        raw_temp_0_value = read_max6675();
-      #endif
       temp_state = 2;
       break;
     case 2: // Prepare TEMP_BED
@@ -1883,7 +1901,9 @@ ISR(TIMER0_COMPB_vect)
   {
     if (!temp_meas_ready) //Only update the raw values if they have been read. Else we could be updating them during reading.
     {
+#ifndef HEATER_0_USES_MAX6675
       current_temperature_raw[0] = raw_temp_0_value;
+#endif
 #ifndef SINGLENOZZLE
 #if EXTRUDERS > 1
       current_temperature_raw[1] = raw_temp_1_value;
@@ -1920,14 +1940,18 @@ ISR(TIMER0_COMPB_vect)
 #else
     if(current_temperature_raw[0] >= maxttemp_raw[0]) {
 #endif
+#ifndef HEATER_0_USES_MAX6675
         max_temp_error(0);
+#endif
     }
 #if HEATER_0_RAW_LO_TEMP > HEATER_0_RAW_HI_TEMP
     if(current_temperature_raw[0] >= minttemp_raw[0]) {
 #else
     if(current_temperature_raw[0] <= minttemp_raw[0]) {
 #endif
+#ifndef HEATER_0_USES_MAX6675
         min_temp_error(0);
+#endif
     }
 
 #ifndef SINGLENOZZLE

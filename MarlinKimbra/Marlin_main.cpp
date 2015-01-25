@@ -3907,17 +3907,16 @@ Sigma_Exit:
     case 92: // M92
       for(int8_t i=0; i < NUM_AXIS; i++)
       {
+        int e = 0;
         if(code_seen(axis_codes[i]))
         {
-          if(i == 3) { // E
-            float value = code_value();
-            if(value < 20.0) {
-              float factor = axis_steps_per_unit[i] / value; // increase e constants if M92 E14 is given for netfab.
-              max_e_jerk *= factor;
-              max_feedrate[i] *= factor;
-              axis_steps_per_sqr_second[i] *= factor;
+          if (i == 3)
+          {
+            e = (int)code_value();
+            if(code_seen('S'))
+            {
+              if (e < EXTRUDERS) axis_steps_per_unit[e+3] = code_value();
             }
-            axis_steps_per_unit[i] = value;
           }
           else {
             axis_steps_per_unit[i] = code_value();
