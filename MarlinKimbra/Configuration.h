@@ -244,7 +244,7 @@
   // Smoothing factor within the PID
   #define K1 0.95
   // Sampling period of the temperature routine
-  #define PID_dT ((OVERSAMPLENR * 10.0)/(F_CPU / 64.0 / 256.0))
+  #define PID_dT ((OVERSAMPLENR * 12.0)/(F_CPU / 64.0 / 256.0))
 
 //             HotEnd{HE0,HE1,HE2,HE3}
   #define DEFAULT_Kp {41,41,41,41}     // Kp for E0, E1, E2, E3
