@@ -17,16 +17,16 @@
   #define MOTHERBOARD BOARD_RAMPS_13_EFB
 #endif
 
-// User-specified version info of this build to display in during startup.
-// Implementation of an idea by Prof Braino to inform user that any changes
-// made to this build by the user have been successfully uploaded into firmware.
-#define STRING_VERSION "v4.0.2"
+// User-specified version info of this build to display in [Pronterface, etc] terminal window during
+// startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
+// build by the user have been successfully uploaded into firmware.
+#define STRING_VERSION "4.0.2"
 #define STRING_VERSION_CONFIG_H __DATE__ " " __TIME__                 // build date and time
 #define STRING_URL "reprap.org"
 #define STRING_CONFIG_H_AUTHOR "(MagoKimbra: magokimbra@hotmail.com)" // Who made the changes.
-#define STRING_SPLASH STRING_VERSION " - " STRING_URL                 // will be shown during bootu
+#define STRING_SPLASH "v" STRING_VERSION " - " STRING_URL             // will be shown during bootup
 
-// Select which serial port should be used for communication with the host.
+// SERIAL_PORT selects which serial port should be used for communication with the host.
 // This allows the connection of wireless adapters (for instance) to non-default port pins.
 // Serial port 0 is still used by the Arduino bootloader regardless of this setting.
 #define SERIAL_PORT 0
