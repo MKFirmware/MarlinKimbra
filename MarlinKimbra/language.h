@@ -20,6 +20,7 @@
 // 11 Dutch
 // 12 Catalan
 // 13 Basque-Euskera
+// 14 Portuguese (Brazil)
 
 #ifndef LANGUAGE_CHOICE
   #define LANGUAGE_CHOICE 7  // Pick your language from the list above
@@ -178,6 +179,8 @@
   #include "language_ca.h"
 #elif LANGUAGE_CHOICE == 13 // Basque-Euskera
   #include "language_eu.h"
+#elif LANGUAGE_CHOICE == 14 // Portuguese - Brasil
+  #include "language_pt-br.h"
 #endif
 
 #endif //__LANGUAGE_H

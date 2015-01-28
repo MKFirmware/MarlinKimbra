@@ -32,19 +32,19 @@
     #error Oops!  Make sure you have 'Gen7' selected from the 'Tools -> Boards' menu.
   #endif
 
-  //x axis pins
+  //X axis pins
   #define ORIG_X_STEP_PIN       21  // different from standard GEN7
   #define ORIG_X_DIR_PIN        20  // different from standard GEN7
   #define ORIG_X_ENABLE_PIN     24
   #define X_STOP_PIN            0
 
-  //y axis pins
+  //Y axis pins
   #define ORIG_Y_STEP_PIN       23
   #define ORIG_Y_DIR_PIN        22
   #define ORIG_Y_ENABLE_PIN     24
   #define Y_STOP_PIN            1
 
-  //z axis pins
+  //Z axis pins
   #define ORIG_Z_STEP_PIN       26
   #define ORIG_Z_DIR_PIN        25
   #define ORIG_Z_ENABLE_PIN     24
