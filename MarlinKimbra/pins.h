@@ -1,3 +1,63 @@
+/****************************************************************************************
+* 10 BOARD_GEN7_CUSTOM - Gen7 custom (Alfons3 Version)
+* 11 BOARD_GEN7_12 - Gen7 v1.1, v1.2
+* 12 BOARD_GEN7_13 - Gen7 v1.3
+* 12 BOARD_GEN7_14 - Gen7 v1.4
+*
+*  2 BOARD_CHEAPTRONIC - Cheaptronic v1.0
+* 20 BOARD_SETHI - Sethi 3D_1
+* 21 BOARD_ELEFU_3 - Elefu Ra Board (v3)
+* 22 BOARD_GEN3_MONOLITHIC - Gen3 Monolithic Electronics
+*
+*  3 BOARD_RAMPS_OLD - MEGA/RAMPS up to 1.2
+* 33 BOARD_RAMPS_13_EFB - RAMPS 1.3 / 1.4 (Power outputs: Extruder, Fan, Bed)
+* 34 BOARD_RAMPS_13_EEB - RAMPS 1.3 / 1.4 (Power outputs: Extruder0, Extruder1, Bed)
+* 35 BOARD_RAMPS_13_EFF - RAMPS 1.3 / 1.4 (Power outputs: Extruder, Fan, Fan)
+* 36 BOARD_RAMPS_13_EEF - RAMPS 1.3 / 1.4 (Power outputs: Extruder0, Extruder1, Fan)
+*
+*301 BOARD_RAMBO - Rambo
+*
+*  4 BOARD_DUEMILANOVE_328P - Duemilanove w/ ATMega328P pin assignment
+*
+*  5 BOARD_GEN6 - Gen6
+* 51 BOARD_GEN6_DELUXE - Gen6 deluxe
+*
+*  6 BOARD_SANGUINOLOLU_11 - Sanguinololu < 1.2
+* 62 BOARD_SANGUINOLOLU_12 - Sanguinololu 1.2 and above
+* 63 BOARD_MELZI - Melzi
+* 64 BOARD_STB_11 - STB V1.1
+* 65 BOARD_AZTEEG_X1 - Azteeg X1
+* 66 BOARD_MELZI_1284 - Melzi with ATmega1284 (MaKr3d version)
+* 67 BOARD_AZTEEG_X3 - Azteeg X3
+* 68 BOARD_AZTEEG_X3_PRO - Azteeg X3 Pro
+*
+*  7 BOARD_ULTIMAKER - Ultimaker
+*
+* 70 BOARD_MEGATRONICS   - Megatronics
+*701 BOARD_MEGATRONICS_2 - Megatronics v2.0
+*702 BOARD_MEGATRONICS_1 - Minitronics v1.0
+*703 BOARD_MEGATRONICS_3 - Megatronics v3.0
+* 71 BOARD_ULTIMAKER_OLD - Ultimaker (Older electronics. Pre 1.5.4. This is rare)
+* 72 BOARD_ULTIMAIN_2 - Ultimainboard 2.x (Uses TEMP_SENSOR 20)
+* 77 BOARD_3DRAG - 3Drag Controller
+* 78 BOARD_K8200 - Vellemann K8200 Controller (derived from 3Drag Controller)
+*
+*  8 BOARD_TEENSYLU - Teensylu
+* 80 BOARD_RUMBA - Rumba
+* 81 BOARD_PRINTRBOARD - Printrboard (AT90USB1286)
+* 82 BOARD_BRAINWAVE - Brainwave (AT90USB646)
+* 83 BOARD_SAV_MKI - SAV Mk-I (AT90USB1286)
+* 84 BOARD_TEENSY2 - Teensy++2.0 (AT90USB1286)
+* 88 BOARD_5DPRINT - 5DPrint D8 Driver Board
+*
+*  9 BOARD_GEN3_PLUS - Gen3+
+* 90 BOARD_OMCA_A - Alpha OMCA board
+* 91 BOARD_OMCA - Final OMCA board
+*999 BOARD_LEAPFROG - Leapfrog
+*
+*99 BOARD_99 - Custom motherboard
+****************************************************************************************/
+
 #ifndef PINS_H
 #define PINS_H
 
@@ -683,7 +743,6 @@
   #define ORIG_HEATER_BED_PIN -1
   #define ORIG_TEMP_BED_PIN -1
   
-  
   #define SDSS		   -1
   #define SDPOWER          -1
   #define LED_PIN          -1
@@ -783,17 +842,12 @@
 
 
 /****************************************************************************************
-* 33 - 34 - 35 - 36
+* 33
 * RAMPS 1.3 / 1.4
-* Applies to the following boards:
-*
-* 33 - RAMPS_13_EFB (Extruder, Fan, Bed)
-* 34 - RAMPS_13_EEB (Extruder, Extruder, Bed)
-* 35 - RAMPS_13_EFF (Extruder, Fan, Fan)
-* 36 - RAMPS_13_EEF (Extruder, Extruder, Fan)
+* RAMPS_13_EFB (Extruder, Fan, Bed)
 ****************************************************************************************/
 
-#if (IS_RAMPS && !MB(RAMPS_OLD))
+#if MB(RAMPS_13_EFB)
   #define KNOWN_BOARD 1
   
   #if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__)
@@ -802,36 +856,40 @@
   
   #define LARGE_FLASH true
   
+  //X axis pins
   #define ORIG_X_STEP_PIN         54
   #define ORIG_X_DIR_PIN          55
   #define ORIG_X_ENABLE_PIN       38
   #define ORIG_X_MIN_PIN           3
   #define ORIG_X_MAX_PIN           2
   
+  //Y axis pins
   #define ORIG_Y_STEP_PIN         60
   #define ORIG_Y_DIR_PIN          61
   #define ORIG_Y_ENABLE_PIN       56
   #define ORIG_Y_MIN_PIN          14
   #define ORIG_Y_MAX_PIN          15
   
+  #define Y2_STEP_PIN             36
+  #define Y2_DIR_PIN              34
+  #define Y2_ENABLE_PIN           30
+
+  //Z axis pins
   #define ORIG_Z_STEP_PIN         46
   #define ORIG_Z_DIR_PIN          48
   #define ORIG_Z_ENABLE_PIN       62
   #define ORIG_Z_MIN_PIN          18
   #define ORIG_Z_MAX_PIN          19
-  
-  #define Y2_STEP_PIN             36
-  #define Y2_DIR_PIN              34
-  #define Y2_ENABLE_PIN           30
-  
+
   #define Z2_STEP_PIN             36
   #define Z2_DIR_PIN              34
   #define Z2_ENABLE_PIN           30
-  
+
+  //E axis pins
   #define ORIG_E0_STEP_PIN        26
   #define ORIG_E0_DIR_PIN         28
   #define ORIG_E0_ENABLE_PIN      24
-  
+
   #define ORIG_E1_STEP_PIN        36
   #define ORIG_E1_DIR_PIN         34
   #define ORIG_E1_ENABLE_PIN      30
@@ -840,134 +898,299 @@
   #define SDSS                    53
   #define LED_PIN                 13
   
-  #if MB(RAMPS_13_EEB) && defined(FILAMENT_SENSOR)  // FMM added for Filament Extruder
+  #define ORIG_FAN_PIN             9
+  #define PS_ON_PIN               12
+  
+  #define ORIG_HEATER_0_PIN       10   // Hotend 1
+  #define ORIG_HEATER_1_PIN       -1
+  #define ORIG_HEATER_2_PIN       -1
+  #define ORIG_HEATER_3_PIN       -1
+
+  #define ORIG_TEMP_0_PIN         13   // ANALOG NUMBERING
+  #define ORIG_TEMP_1_PIN         15   // ANALOG NUMBERING
+  #define ORIG_TEMP_2_PIN         -1   // ANALOG NUMBERING
+  #define ORIG_TEMP_3_PIN         -1   // ANALOG NUMBERING
+  
+  #define ORIG_HEATER_BED_PIN      8   // BED
+  #define ORIG_TEMP_BED_PIN       14   // ANALOG NUMBERING
+  
+  #ifdef FILAMENT_SENSOR
+    // FMM added for Filament Extruder
     //define analog pin for the filament width sensor input
     //Use the RAMPS 1.4 Analog input 5 on the AUX2 connector
     #define FILWIDTH_PIN           5
   #endif
   
-  #if MB(RAMPS_13_EFB) || MB(RAMPS_13_EFF)
-    #define ORIG_FAN_PIN            9
-  #elif MB(RAMPS_13_EEF)
-    #define ORIG_FAN_PIN            8
-  #else
-    #define ORIG_FAN_PIN            4 // IO pin. Buffer needed
-  #endif
-  
-  #if MB(RAMPS_13_EFF)
-    #define CONTROLLERFAN_PIN      -1 //Pin used for the fan to cool controller
-  #endif
-  
-  #define PS_ON_PIN                12
-  
   #if defined(REPRAP_DISCOUNT_SMART_CONTROLLER) || defined(G3D_PANEL)
-    #define KILL_PIN               41
+    #define KILL_PIN              41
   #else
-    #define KILL_PIN               -1
+    #define KILL_PIN              -1
   #endif
-  
-  #if MB(RAMPS_13_EFF)
-    #define ORIG_HEATER_0_PIN       8
-  #else
-    #define ORIG_HEATER_0_PIN      10  // HOTEND 1
-  #endif
-  
-  #if MB(RAMPS_13_EFB)
-    #define ORIG_HEATER_1_PIN      -1
-  #else
-    #define ORIG_HEATER_1_PIN       9  // HOTEND 2
-  #endif
-  
-  #define ORIG_HEATER_2_PIN        -1
-  #define ORIG_HEATER_3_PIN        -1
-  
-  #define ORIG_TEMP_0_PIN          13   // ANALOG NUMBERING
-  #define ORIG_TEMP_1_PIN          15   // ANALOG NUMBERING
-  #define ORIG_TEMP_2_PIN          -1   // ANALOG NUMBERING
-  
-  #if MB(RAMPS_13_EFF) || MB(RAMPS_13_EEF)
-    #define ORIG_HEATER_BED_PIN    -1   // NO BED
-  #else
-    #define ORIG_HEATER_BED_PIN     8   // BED
-  #endif
-  
-  #define ORIG_TEMP_BED_PIN        14   // ANALOG NUMBERING
   
   #if NUM_SERVOS > 0
-    #define SERVO0_PIN             11
+    #define SERVO0_PIN            11
   #endif
   
   #if NUM_SERVOS > 1
-    #define SERVO1_PIN              6
+    #define SERVO1_PIN             6
   #endif
   
   #if NUM_SERVOS > 2
-    #define SERVO2_PIN              5
+    #define SERVO2_PIN             5
   #endif
   
   #if NUM_SERVOS > 3
-    #define SERVO3_PIN              4
+    #define SERVO3_PIN             4
   #endif
     
   #ifdef ULTRA_LCD
     #ifdef NEWPANEL
-      #define LCD_PINS_RS          16
-      #define LCD_PINS_ENABLE      17
-      #define LCD_PINS_D4          23
-      #define LCD_PINS_D5          25
-      #define LCD_PINS_D6          27
-      #define LCD_PINS_D7          29
+      #define LCD_PINS_RS         16
+      #define LCD_PINS_ENABLE     17
+      #define LCD_PINS_D4         23
+      #define LCD_PINS_D5         25
+      #define LCD_PINS_D6         27
+      #define LCD_PINS_D7         29
   
       #ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
-        #define BEEPER             37
+        #define BEEPER            37
   
-        #define BTN_EN1 31
-        #define BTN_EN2 33
-        #define BTN_ENC 35
+        #define BTN_EN1           31
+        #define BTN_EN2           33
+        #define BTN_ENC           35
   
-        #define SDCARDDETECT 49
+        #define SDCARDDETECT      49
       #elif defined(LCD_I2C_PANELOLU2)
-        #define BTN_EN1 47  //reverse if the encoder turns the wrong way.
-        #define BTN_EN2 43
-        #define BTN_ENC 32
-        #define LCD_SDSS 53
-        #define SDCARDDETECT -1
-        #define KILL_PIN 41
+        #define BTN_EN1           47  //reverse if the encoder turns the wrong way.
+        #define BTN_EN2           43
+        #define BTN_ENC           32
+        #define LCD_SDSS          53
+        #define SDCARDDETECT      -1
+        #define KILL_PIN          41
       #elif defined(LCD_I2C_VIKI)
-        #define BTN_EN1 22  //reverse if the encoder turns the wrong way.
-        #define BTN_EN2 7
-        #define BTN_ENC -1
-        #define LCD_SDSS 53
-        #define SDCARDDETECT 49
+        #define BTN_EN1           22  //reverse if the encoder turns the wrong way.
+        #define BTN_EN2            7
+        #define BTN_ENC           -1
+        #define LCD_SDSS          53
+        #define SDCARDDETECT      49
       #else
         //arduino pin which triggers an piezzo beeper
-        #define BEEPER 33  // Beeper on AUX-4
+        #define BEEPER            33  // Beeper on AUX-4
   
         //buttons are directly attached using AUX-2
         #ifdef REPRAPWORLD_KEYPAD
-          #define BTN_EN1 64 // encoder
-          #define BTN_EN2 59 // encoder
-          #define BTN_ENC 63 // enter button
-          #define SHIFT_OUT 40 // shift register
-          #define SHIFT_CLK 44 // shift register
-          #define SHIFT_LD 42 // shift register
+          #define BTN_EN1         64 // encoder
+          #define BTN_EN2         59 // encoder
+          #define BTN_ENC         63 // enter button
+          #define SHIFT_OUT       40 // shift register
+          #define SHIFT_CLK       44 // shift register
+          #define SHIFT_LD        42 // shift register
         #else
-          #define BTN_EN1 37
-          #define BTN_EN2 35
-          #define BTN_ENC 31  //the click
+          #define BTN_EN1         37
+          #define BTN_EN2         35
+          #define BTN_ENC         31  //the click
         #endif
   
         #ifdef G3D_PANEL
-          #define SDCARDDETECT 49
+          #define SDCARDDETECT    49
         #else
-          #define SDCARDDETECT -1  // Ramps does not use this port
+          #define SDCARDDETECT    -1  // Ramps does not use this port
         #endif
   
       #endif
   
     #else //old style panel with shift register
       //arduino pin witch triggers an piezzo beeper
-      #define BEEPER 33   //No Beeper added
+      #define BEEPER              33   //No Beeper added
+  
+      //buttons are attached to a shift register
+      // Not wired this yet
+      //#define SHIFT_CLK         38
+      //#define SHIFT_LD          42
+      //#define SHIFT_OUT         40
+      //#define SHIFT_EN          17
+  
+      #define LCD_PINS_RS         16
+      #define LCD_PINS_ENABLE     17
+      #define LCD_PINS_D4         23
+      #define LCD_PINS_D5         25
+      #define LCD_PINS_D6         27
+      #define LCD_PINS_D7         29
+    #endif
+  #endif //ULTRA_LCD
+  
+  // SPI for Max6675 Thermocouple
+  #ifndef SDSUPPORT
+  // these pins are defined in the SD library if building with SD support
+    #define SCK_PIN               52
+    #define MISO_PIN              50
+    #define MOSI_PIN              51
+    #define MAX6675_SS            66 // Do not use pin 53 if there is even the remote possibility of using Display/SD card
+  #else
+    #define MAX6675_SS            66// Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
+  #endif
+
+#endif // RAMPS_13_EFB
+/****************************************************************************************/
+
+
+
+
+/****************************************************************************************
+* 34
+* RAMPS 1.3 / 1.4
+* RAMPS_13_EEB (Extruder, Extruder, Bed)
+****************************************************************************************/
+
+#if MB(RAMPS_13_EEB)
+  #define KNOWN_BOARD 1
+  
+  #if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__)
+    #error Oops!  Make sure you have 'Arduino Mega' selected from the 'Tools -> Boards' menu.
+  #endif
+  
+  #define LARGE_FLASH true
+  
+    //X axis pins
+  #define ORIG_X_STEP_PIN         54
+  #define ORIG_X_DIR_PIN          55
+  #define ORIG_X_ENABLE_PIN       38
+  #define ORIG_X_MIN_PIN           3
+  #define ORIG_X_MAX_PIN           2
+  
+  //Y axis pins
+  #define ORIG_Y_STEP_PIN         60
+  #define ORIG_Y_DIR_PIN          61
+  #define ORIG_Y_ENABLE_PIN       56
+  #define ORIG_Y_MIN_PIN          14
+  #define ORIG_Y_MAX_PIN          15
+  
+  #define Y2_STEP_PIN             36
+  #define Y2_DIR_PIN              34
+  #define Y2_ENABLE_PIN           30
+
+  //Z axis pins
+  #define ORIG_Z_STEP_PIN         46
+  #define ORIG_Z_DIR_PIN          48
+  #define ORIG_Z_ENABLE_PIN       62
+  #define ORIG_Z_MIN_PIN          18
+  #define ORIG_Z_MAX_PIN          19
+
+  #define Z2_STEP_PIN             36
+  #define Z2_DIR_PIN              34
+  #define Z2_ENABLE_PIN           30
+
+  //E axis pins
+  #define ORIG_E0_STEP_PIN        26
+  #define ORIG_E0_DIR_PIN         28
+  #define ORIG_E0_ENABLE_PIN      24
+
+  #define ORIG_E1_STEP_PIN        36
+  #define ORIG_E1_DIR_PIN         34
+  #define ORIG_E1_ENABLE_PIN      30
+  
+  #define SDPOWER                 -1
+  #define SDSS                    53
+  #define LED_PIN                 13
+  
+  #define ORIG_FAN_PIN             4
+  #define PS_ON_PIN               12
+  
+  #define ORIG_HEATER_0_PIN       10   // HOTEND 1
+  #define ORIG_HEATER_1_PIN        9   // HOTEND 2
+  #define ORIG_HEATER_2_PIN       -1
+  #define ORIG_HEATER_3_PIN       -1
+
+  #define ORIG_TEMP_0_PIN         13   // ANALOG NUMBERING
+  #define ORIG_TEMP_1_PIN         15   // ANALOG NUMBERING
+  #define ORIG_TEMP_2_PIN         -1   // ANALOG NUMBERING
+  #define ORIG_TEMP_3_PIN         -1   // ANALOG NUMBERING
+  
+  #define ORIG_HEATER_BED_PIN      8   // BED
+  #define ORIG_TEMP_BED_PIN       14   // ANALOG NUMBERING
+  
+  #ifdef FILAMENT_SENSOR
+    // FMM added for Filament Extruder
+    //define analog pin for the filament width sensor input
+    //Use the RAMPS 1.4 Analog input 5 on the AUX2 connector
+    #define FILWIDTH_PIN           5
+  #endif
+  
+  #if NUM_SERVOS > 0
+    #define SERVO0_PIN            11
+  #endif
+  
+  #if NUM_SERVOS > 1
+    #define SERVO1_PIN             6
+  #endif
+  
+  #if NUM_SERVOS > 2
+    #define SERVO2_PIN             5
+  #endif
+  
+  #if NUM_SERVOS > 3
+    #define SERVO3_PIN             4
+  #endif
+    
+  #ifdef ULTRA_LCD
+    #ifdef NEWPANEL
+      #define LCD_PINS_RS         16
+      #define LCD_PINS_ENABLE     17
+      #define LCD_PINS_D4         23
+      #define LCD_PINS_D5         25
+      #define LCD_PINS_D6         27
+      #define LCD_PINS_D7         29
+  
+      #ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
+        #define BEEPER            37
+  
+        #define BTN_EN1           31
+        #define BTN_EN2           33
+        #define BTN_ENC           35
+  
+        #define SDCARDDETECT      49
+      #elif defined(LCD_I2C_PANELOLU2)
+        #define BTN_EN1           47  //reverse if the encoder turns the wrong way.
+        #define BTN_EN2           43
+        #define BTN_ENC           32
+        #define LCD_SDSS          53
+        #define SDCARDDETECT      -1
+        #define KILL_PIN          41
+      #elif defined(LCD_I2C_VIKI)
+        #define BTN_EN1           22  //reverse if the encoder turns the wrong way.
+        #define BTN_EN2            7
+        #define BTN_ENC           -1
+        #define LCD_SDSS          53
+        #define SDCARDDETECT      49
+      #else
+        //arduino pin which triggers an piezzo beeper
+        #define BEEPER            33  // Beeper on AUX-4
+  
+        //buttons are directly attached using AUX-2
+        #ifdef REPRAPWORLD_KEYPAD
+          #define BTN_EN1         64 // encoder
+          #define BTN_EN2         59 // encoder
+          #define BTN_ENC         63 // enter button
+          #define SHIFT_OUT       40 // shift register
+          #define SHIFT_CLK       44 // shift register
+          #define SHIFT_LD        42 // shift register
+        #else
+          #define BTN_EN1         37
+          #define BTN_EN2         35
+          #define BTN_ENC         31  //the click
+        #endif
+  
+        #ifdef G3D_PANEL
+          #define SDCARDDETECT    49
+        #else
+          #define SDCARDDETECT    -1  // Ramps does not use this port
+        #endif
+  
+      #endif
+  
+    #else //old style panel with shift register
+      //arduino pin witch triggers an piezzo beeper
+      #define BEEPER              33  //No Beeper added
   
       //buttons are attached to a shift register
       // Not wired this yet
@@ -976,28 +1199,407 @@
       //#define SHIFT_OUT 40
       //#define SHIFT_EN 17
   
-      #define LCD_PINS_RS 16
-      #define LCD_PINS_ENABLE 17
-      #define LCD_PINS_D4 23
-      #define LCD_PINS_D5 25
-      #define LCD_PINS_D6 27
-      #define LCD_PINS_D7 29
+      #define LCD_PINS_RS         16
+      #define LCD_PINS_ENABLE     17
+      #define LCD_PINS_D4         23
+      #define LCD_PINS_D5         25
+      #define LCD_PINS_D6         27
+      #define LCD_PINS_D7         29
     #endif
   #endif //ULTRA_LCD
   
   // SPI for Max6675 Thermocouple
   #ifndef SDSUPPORT
   // these pins are defined in the SD library if building with SD support
-    #define SCK_PIN          52
-    #define MISO_PIN         50
-    #define MOSI_PIN         51
-    #define MAX6675_SS       66 // Do not use pin 53 if there is even the remote possibility of using Display/SD card
+    #define SCK_PIN               52
+    #define MISO_PIN              50
+    #define MOSI_PIN              51
+    #define MAX6675_SS            66  // Do not use pin 53 if there is even the remote possibility of using Display/SD card
   #else
-    #define MAX6675_SS       66// Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
+    #define MAX6675_SS            66  // Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
   #endif
 
-#endif // RAMPS_13_EFB || RAMPS_13_EEB || RAMPS_13_EFF
+#endif // RAMPS_13_EEB
 /****************************************************************************************/
+
+
+
+
+/****************************************************************************************
+* 35
+* RAMPS 1.3 / 1.4
+* RAMPS_13_EFF (Extruder, Fan, Fan)
+****************************************************************************************/
+
+#if MB(RAMPS_13_EFF)
+  #define KNOWN_BOARD 1
+  
+  #if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__)
+    #error Oops!  Make sure you have 'Arduino Mega' selected from the 'Tools -> Boards' menu.
+  #endif
+  
+  #define LARGE_FLASH true
+  
+    //X axis pins
+  #define ORIG_X_STEP_PIN         54
+  #define ORIG_X_DIR_PIN          55
+  #define ORIG_X_ENABLE_PIN       38
+  #define ORIG_X_MIN_PIN           3
+  #define ORIG_X_MAX_PIN           2
+  
+  //Y axis pins
+  #define ORIG_Y_STEP_PIN         60
+  #define ORIG_Y_DIR_PIN          61
+  #define ORIG_Y_ENABLE_PIN       56
+  #define ORIG_Y_MIN_PIN          14
+  #define ORIG_Y_MAX_PIN          15
+  
+  #define Y2_STEP_PIN             36
+  #define Y2_DIR_PIN              34
+  #define Y2_ENABLE_PIN           30
+
+  //Z axis pins
+  #define ORIG_Z_STEP_PIN         46
+  #define ORIG_Z_DIR_PIN          48
+  #define ORIG_Z_ENABLE_PIN       62
+  #define ORIG_Z_MIN_PIN          18
+  #define ORIG_Z_MAX_PIN          19
+
+  #define Z2_STEP_PIN             36
+  #define Z2_DIR_PIN              34
+  #define Z2_ENABLE_PIN           30
+
+  //E axis pins
+  #define ORIG_E0_STEP_PIN        26
+  #define ORIG_E0_DIR_PIN         28
+  #define ORIG_E0_ENABLE_PIN      24
+
+  #define ORIG_E1_STEP_PIN        36
+  #define ORIG_E1_DIR_PIN         34
+  #define ORIG_E1_ENABLE_PIN      30
+  
+  #define SDPOWER                 -1
+  #define SDSS                    53
+  #define LED_PIN                 13
+  
+  #define ORIG_FAN_PIN             9
+  #define PS_ON_PIN               12
+  
+  #define ORIG_HEATER_0_PIN       10   // HOTEND 1
+  #define ORIG_HEATER_1_PIN       -1
+  #define ORIG_HEATER_2_PIN       -1
+  #define ORIG_HEATER_3_PIN       -1
+
+  #define ORIG_TEMP_0_PIN         13   // ANALOG NUMBERING
+  #define ORIG_TEMP_1_PIN         15   // ANALOG NUMBERING
+  #define ORIG_TEMP_2_PIN         -1   // ANALOG NUMBERING
+  #define ORIG_TEMP_3_PIN         -1   // ANALOG NUMBERING
+  
+  #define ORIG_HEATER_BED_PIN     -1   // BED
+  #define ORIG_TEMP_BED_PIN       14   // ANALOG NUMBERING
+  
+  #ifdef FILAMENT_SENSOR
+    // FMM added for Filament Extruder
+    //define analog pin for the filament width sensor input
+    //Use the RAMPS 1.4 Analog input 5 on the AUX2 connector
+    #define FILWIDTH_PIN           5
+  #endif
+  
+  #if NUM_SERVOS > 0
+    #define SERVO0_PIN            11
+  #endif
+  
+  #if NUM_SERVOS > 1
+    #define SERVO1_PIN             6
+  #endif
+  
+  #if NUM_SERVOS > 2
+    #define SERVO2_PIN             5
+  #endif
+  
+  #if NUM_SERVOS > 3
+    #define SERVO3_PIN             4
+  #endif
+    
+  #ifdef ULTRA_LCD
+    #ifdef NEWPANEL
+      #define LCD_PINS_RS         16
+      #define LCD_PINS_ENABLE     17
+      #define LCD_PINS_D4         23
+      #define LCD_PINS_D5         25
+      #define LCD_PINS_D6         27
+      #define LCD_PINS_D7         29
+  
+      #ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
+        #define BEEPER            37
+  
+        #define BTN_EN1           31
+        #define BTN_EN2           33
+        #define BTN_ENC           35
+  
+        #define SDCARDDETECT      49
+      #elif defined(LCD_I2C_PANELOLU2)
+        #define BTN_EN1           47  //reverse if the encoder turns the wrong way.
+        #define BTN_EN2           43
+        #define BTN_ENC           32
+        #define LCD_SDSS          53
+        #define SDCARDDETECT      -1
+        #define KILL_PIN          41
+      #elif defined(LCD_I2C_VIKI)
+        #define BTN_EN1           22  //reverse if the encoder turns the wrong way.
+        #define BTN_EN2            7
+        #define BTN_ENC           -1
+        #define LCD_SDSS          53
+        #define SDCARDDETECT      49
+      #else
+        //arduino pin which triggers an piezzo beeper
+        #define BEEPER            33  // Beeper on AUX-4
+  
+        //buttons are directly attached using AUX-2
+        #ifdef REPRAPWORLD_KEYPAD
+          #define BTN_EN1         64 // encoder
+          #define BTN_EN2         59 // encoder
+          #define BTN_ENC         63 // enter button
+          #define SHIFT_OUT       40 // shift register
+          #define SHIFT_CLK       44 // shift register
+          #define SHIFT_LD        42 // shift register
+        #else
+          #define BTN_EN1         37
+          #define BTN_EN2         35
+          #define BTN_ENC         31  //the click
+        #endif
+  
+        #ifdef G3D_PANEL
+          #define SDCARDDETECT    49
+        #else
+          #define SDCARDDETECT    -1  // Ramps does not use this port
+        #endif
+  
+      #endif
+  
+    #else //old style panel with shift register
+      //arduino pin witch triggers an piezzo beeper
+      #define BEEPER              33  //No Beeper added
+  
+      //buttons are attached to a shift register
+      // Not wired this yet
+      //#define SHIFT_CLK 38
+      //#define SHIFT_LD 42
+      //#define SHIFT_OUT 40
+      //#define SHIFT_EN 17
+  
+      #define LCD_PINS_RS         16
+      #define LCD_PINS_ENABLE     17
+      #define LCD_PINS_D4         23
+      #define LCD_PINS_D5         25
+      #define LCD_PINS_D6         27
+      #define LCD_PINS_D7         29
+    #endif
+  #endif //ULTRA_LCD
+  
+  // SPI for Max6675 Thermocouple
+  #ifndef SDSUPPORT
+  // these pins are defined in the SD library if building with SD support
+    #define SCK_PIN               52
+    #define MISO_PIN              50
+    #define MOSI_PIN              51
+    #define MAX6675_SS            66  // Do not use pin 53 if there is even the remote possibility of using Display/SD card
+  #else
+    #define MAX6675_SS            66  // Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
+  #endif
+
+#endif // RAMPS_13_EFF
+/****************************************************************************************/
+
+
+
+
+/****************************************************************************************
+* 36
+* RAMPS 1.3 / 1.4
+* RAMPS_13_EEF (Extruder, Extruder, Fan)
+****************************************************************************************/
+
+#if MB(RAMPS_13_EEF)
+  #define KNOWN_BOARD 1
+  
+  #if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__)
+    #error Oops!  Make sure you have 'Arduino Mega' selected from the 'Tools -> Boards' menu.
+  #endif
+  
+  #define LARGE_FLASH true
+  
+    //X axis pins
+  #define ORIG_X_STEP_PIN         54
+  #define ORIG_X_DIR_PIN          55
+  #define ORIG_X_ENABLE_PIN       38
+  #define ORIG_X_MIN_PIN           3
+  #define ORIG_X_MAX_PIN           2
+  
+  //Y axis pins
+  #define ORIG_Y_STEP_PIN         60
+  #define ORIG_Y_DIR_PIN          61
+  #define ORIG_Y_ENABLE_PIN       56
+  #define ORIG_Y_MIN_PIN          14
+  #define ORIG_Y_MAX_PIN          15
+  
+  #define Y2_STEP_PIN             36
+  #define Y2_DIR_PIN              34
+  #define Y2_ENABLE_PIN           30
+
+  //Z axis pins
+  #define ORIG_Z_STEP_PIN         46
+  #define ORIG_Z_DIR_PIN          48
+  #define ORIG_Z_ENABLE_PIN       62
+  #define ORIG_Z_MIN_PIN          18
+  #define ORIG_Z_MAX_PIN          19
+
+  #define Z2_STEP_PIN             36
+  #define Z2_DIR_PIN              34
+  #define Z2_ENABLE_PIN           30
+
+  //E axis pins
+  #define ORIG_E0_STEP_PIN        26
+  #define ORIG_E0_DIR_PIN         28
+  #define ORIG_E0_ENABLE_PIN      24
+
+  #define ORIG_E1_STEP_PIN        36
+  #define ORIG_E1_DIR_PIN         34
+  #define ORIG_E1_ENABLE_PIN      30
+  
+  #define SDPOWER                 -1
+  #define SDSS                    53
+  #define LED_PIN                 13
+  
+  #define ORIG_FAN_PIN             8
+  #define PS_ON_PIN               12
+  
+  #define ORIG_HEATER_0_PIN       10   // HOTEND 1
+  #define ORIG_HEATER_1_PIN        9   // HOTEND 2
+  #define ORIG_HEATER_2_PIN       -1
+  #define ORIG_HEATER_3_PIN       -1
+
+  #define ORIG_TEMP_0_PIN         13   // ANALOG NUMBERING
+  #define ORIG_TEMP_1_PIN         15   // ANALOG NUMBERING
+  #define ORIG_TEMP_2_PIN         -1   // ANALOG NUMBERING
+  #define ORIG_TEMP_3_PIN         -1   // ANALOG NUMBERING
+  
+  #define ORIG_HEATER_BED_PIN      8   // BED
+  #define ORIG_TEMP_BED_PIN       14   // ANALOG NUMBERING
+  
+  #ifdef FILAMENT_SENSOR
+    // FMM added for Filament Extruder
+    //define analog pin for the filament width sensor input
+    //Use the RAMPS 1.4 Analog input 5 on the AUX2 connector
+    #define FILWIDTH_PIN           5
+  #endif
+  
+  #if NUM_SERVOS > 0
+    #define SERVO0_PIN            11
+  #endif
+  
+  #if NUM_SERVOS > 1
+    #define SERVO1_PIN             6
+  #endif
+  
+  #if NUM_SERVOS > 2
+    #define SERVO2_PIN             5
+  #endif
+  
+  #if NUM_SERVOS > 3
+    #define SERVO3_PIN             4
+  #endif
+    
+  #ifdef ULTRA_LCD
+    #ifdef NEWPANEL
+      #define LCD_PINS_RS         16
+      #define LCD_PINS_ENABLE     17
+      #define LCD_PINS_D4         23
+      #define LCD_PINS_D5         25
+      #define LCD_PINS_D6         27
+      #define LCD_PINS_D7         29
+  
+      #ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
+        #define BEEPER            37
+  
+        #define BTN_EN1           31
+        #define BTN_EN2           33
+        #define BTN_ENC           35
+  
+        #define SDCARDDETECT      49
+      #elif defined(LCD_I2C_PANELOLU2)
+        #define BTN_EN1           47  //reverse if the encoder turns the wrong way.
+        #define BTN_EN2           43
+        #define BTN_ENC           32
+        #define LCD_SDSS          53
+        #define SDCARDDETECT      -1
+        #define KILL_PIN          41
+      #elif defined(LCD_I2C_VIKI)
+        #define BTN_EN1           22  //reverse if the encoder turns the wrong way.
+        #define BTN_EN2            7
+        #define BTN_ENC           -1
+        #define LCD_SDSS          53
+        #define SDCARDDETECT      49
+      #else
+        //arduino pin which triggers an piezzo beeper
+        #define BEEPER            33  // Beeper on AUX-4
+  
+        //buttons are directly attached using AUX-2
+        #ifdef REPRAPWORLD_KEYPAD
+          #define BTN_EN1         64 // encoder
+          #define BTN_EN2         59 // encoder
+          #define BTN_ENC         63 // enter button
+          #define SHIFT_OUT       40 // shift register
+          #define SHIFT_CLK       44 // shift register
+          #define SHIFT_LD        42 // shift register
+        #else
+          #define BTN_EN1         37
+          #define BTN_EN2         35
+          #define BTN_ENC         31  //the click
+        #endif
+  
+        #ifdef G3D_PANEL
+          #define SDCARDDETECT    49
+        #else
+          #define SDCARDDETECT    -1  // Ramps does not use this port
+        #endif
+  
+      #endif
+  
+    #else //old style panel with shift register
+      //arduino pin witch triggers an piezzo beeper
+      #define BEEPER              33  //No Beeper added
+  
+      //buttons are attached to a shift register
+      // Not wired this yet
+      //#define SHIFT_CLK 38
+      //#define SHIFT_LD 42
+      //#define SHIFT_OUT 40
+      //#define SHIFT_EN 17
+  
+      #define LCD_PINS_RS         16
+      #define LCD_PINS_ENABLE     17
+      #define LCD_PINS_D4         23
+      #define LCD_PINS_D5         25
+      #define LCD_PINS_D6         27
+      #define LCD_PINS_D7         29
+    #endif
+  #endif //ULTRA_LCD
+  
+  // SPI for Max6675 Thermocouple
+  #ifndef SDSUPPORT
+  // these pins are defined in the SD library if building with SD support
+    #define SCK_PIN               52
+    #define MISO_PIN              50
+    #define MOSI_PIN              51
+    #define MAX6675_SS            66  // Do not use pin 53 if there is even the remote possibility of using Display/SD card
+  #else
+    #define MAX6675_SS            66  // Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
+  #endif
+
+#endif // RAMPS_13_EEF
+/****************************************************************************************/
+
 
 
 

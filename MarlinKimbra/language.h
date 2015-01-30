@@ -154,7 +154,6 @@
 
 #define MSG_ERR_EEPROM_WRITE                "Error writing to EEPROM!"
 
-// LCD Menu Messages
 #include "language_en.h"
 
 #if   LANGUAGE_CHOICE == 2 // Polish

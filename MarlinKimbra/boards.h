@@ -20,7 +20,7 @@
 #define BOARD_RAMPS_13_EEF      36   // RAMPS 1.3 / 1.4 (Power outputs: Extruder0, Extruder1, Fan)
 #define BOARD_RAMBO             301  // Rambo
 
-#define BOARD_DUEMILANOVE_328P  4    // Duemilanove w/ ATMega328P pin assignment
+#define BOARD_DUEMILANOVE_328P  4    // Duemilanove w/ ATMega328P pin assignments
 
 #define BOARD_GEN6              5    // Gen6
 #define BOARD_GEN6_DELUXE       51   // Gen6 deluxe
@@ -49,7 +49,7 @@
 #define BOARD_PRINTRBOARD       81   // Printrboard (AT90USB1286)
 #define BOARD_BRAINWAVE         82   // Brainwave (AT90USB646)
 #define BOARD_SAV_MKI           83   // SAV Mk-I (AT90USB1286)
-#define BOARD_TEENSY2           84   // Teensy++2.0 (AT90USB1286) - CLI compile: DEFINES=AT90USBxx_TEENSYPP_ASSIGNMENTS HARDWARE_MOTHERBOARD=84  make
+#define BOARD_TEENSY2           84   // Teensy++2.0 (AT90USB1286)
 #define BOARD_5DPRINT           88   // 5DPrint D8 Driver Board
 
 #define BOARD_GEN3_PLUS         9    // Gen3+

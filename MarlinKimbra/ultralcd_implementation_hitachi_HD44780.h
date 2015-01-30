@@ -1,5 +1,5 @@
-#ifndef ULTRA_LCD_IMPLEMENTATION_HITACHI_HD44780_H
-#define ULTRA_LCD_IMPLEMENTATION_HITACHI_HD44780_H
+#ifndef ULTRALCD_IMPLEMENTATION_HITACHI_HD44780_H
+#define ULTRALCD_IMPLEMENTATION_HITACHI_HD44780_H
 
 /**
 * Implementation of the LCD display routines for a Hitachi HD44780 display. These are common LCD character displays.
@@ -7,9 +7,9 @@
 **/
 
 #ifndef REPRAPWORLD_KEYPAD
-extern volatile uint8_t buttons;  //the last checked buttons in a bit array.
+  extern volatile uint8_t buttons;  //the last checked buttons in a bit array.
 #else
-extern volatile uint16_t buttons;  //an extended version of the last checked buttons in a bit array.
+  extern volatile uint16_t buttons;  //an extended version of the last checked buttons in a bit array.
 #endif
 
 ////////////////////////////////////
@@ -526,8 +526,8 @@ static void lcd_implementation_status_screen()
     lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
     if (tTarget < 10)
         lcd.print(' ');
-# endif (EXTRUDERS > 1 && !defined(SINGLENOZZLE)) || TEMP_SENSOR_BED != 0
-#endif //LCD_WIDTH > 19
+# endif//(EXTRUDERS > 1 && !defined(SINGLENOZZLE)) || TEMP_SENSOR_BED != 0
+#endif//LCD_WIDTH > 19
 
 #if LCD_HEIGHT > 2
 //Lines 2 for 4 line LCD
@@ -927,5 +927,4 @@ static uint8_t lcd_implementation_read_slow_buttons()
 }
 #endif
 
-
-#endif//ULTRA_LCD_IMPLEMENTATION_HITACHI_HD44780_H
+#endif //__ULTRALCD_IMPLEMENTATION_HITACHI_HD44780_H

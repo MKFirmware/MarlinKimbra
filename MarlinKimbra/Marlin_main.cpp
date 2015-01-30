@@ -49,20 +49,20 @@
 #include "math.h"
 
 #ifdef BLINKM
-#include "BlinkM.h"
-#include "Wire.h"
+  #include "BlinkM.h"
+  #include "Wire.h"
 #endif
 
 #if NUM_SERVOS > 0
-#include "Servo.h"
+  #include "Servo.h"
 #endif
 
 #if defined(DIGIPOTSS_PIN) && DIGIPOTSS_PIN > -1
-#include <SPI.h>
+  #include <SPI.h>
 #endif
 
 #ifdef FIRMWARE_TEST
-#include "firmware_test.h"
+  #include "firmware_test.h"
 #endif
 
 // look here for descriptions of G-codes: http://linuxcnc.org/handbook/gcode/g-code.html
@@ -172,10 +172,10 @@
 // M405 - Turn on Filament Sensor extrusion control.  Optional D<delay in cm> to set delay in centimeters between sensor and extruder 
 // M406 - Turn off Filament Sensor extrusion control 
 // M407 - Displays measured filament diameter 
-// M500 - stores parameters in EEPROM
-// M501 - reads parameters from EEPROM (if you need reset them after you changed them temporarily).
-// M502 - reverts to the default "factory settings".  You still need to store them in EEPROM afterwards if you want to.
-// M503 - print the current settings (from memory not from EEPROM)
+// M500 - Store parameters in EEPROM
+// M501 - Read parameters from EEPROM (if you need reset them after you changed them temporarily).
+// M502 - Revert to the default "factory settings".  You still need to store them in EEPROM afterwards if you want to.
+// M503 - Print the current settings (from memory not from EEPROM). Use S0 to leave off headings.
 // M540 - Use S[0|1] to enable or disable the stop SD card print on endstop hit (requires ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED)
 // M600 - Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
 // M605 - Set dual x-carriage movement mode: S<mode> [ X<duplication x-offset> R<duplication temp offset> ]
@@ -198,21 +198,11 @@
 // M997 - NPR2 Color rotate
 // M999 - Restart after being stopped by error
 
-//Stepper Movement Variables
-
-//===========================================================================
-//=============================imported variables============================
-//===========================================================================
-
-
-//===========================================================================
-//=============================public variables=============================
-//===========================================================================
-unsigned long baudrate;
-
 #ifdef SDSUPPORT
-CardReader card;
+  CardReader card;
 #endif
+
+unsigned long baudrate;
 float homing_feedrate[] = HOMING_FEEDRATE;
 bool axis_known_position[3] = {false, false, false};
 
@@ -229,10 +219,10 @@ float zprobe_zoffset;
 #endif // No Delta
 
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
-int feedmultiply=100; //100->1 200->2
+int feedmultiply = 100; //100->1 200->2
 int saved_feedmultiply;
-int extrudemultiply=100; //100->1 200->2
-int extruder_multiply[EXTRUDERS] = {100
+int extrudemultiply = 100; //100->1 200->2
+int extruder_multiply[EXTRUDERS] = { 100
   #if EXTRUDERS > 1
     , 100
     #if EXTRUDERS > 2
@@ -267,16 +257,16 @@ float volumetric_multiplier[EXTRUDERS] = {1.0
   #endif
 };
 float current_position[NUM_AXIS] = { 0.0, 0.0, 0.0, 0.0 };
-float destination[NUM_AXIS] = {  0.0, 0.0, 0.0, 0.0};
-float add_homing[3]={0,0,0};
+float destination[NUM_AXIS] = { 0.0, 0.0, 0.0, 0.0 };
+float add_homing[3]={ 0, 0, 0 };
 
 #ifdef NPR2
 int old_color = 99;
 #endif // NPR2
 
 #ifdef DELTA
-float endstop_adj[3]={0,0,0};
-float tower_adj[6]={0,0,0,0,0,0};
+float endstop_adj[3]={ 0, 0, 0 };
+float tower_adj[6]={ 0, 0, 0, 0, 0, 0 };
 float delta_radius; // = DEFAULT_delta_radius;
 float delta_diagonal_rod; // = DEFAULT_DELTA_DIAGONAL_ROD;
 float DELTA_DIAGONAL_ROD_2;
@@ -288,18 +278,18 @@ float delta_tower3_x, delta_tower3_y;
 float base_max_pos[3] = {X_MAX_POS, Y_MAX_POS, Z_MAX_POS};
 float base_home_pos[3] = {X_HOME_POS, Y_HOME_POS, Z_HOME_POS};
 float max_length[3] = {X_MAX_LENGTH, Y_MAX_LENGTH, Z_MAX_LENGTH};
-float saved_position[3]={0.0,0.0,0.0};
+float saved_position[3]={ 0.0, 0.0, 0.0 };
 float saved_positions[7][3] = {
-    {0, 0, 0},
-    {0, 0, 0},
-    {0, 0, 0},
-    {0, 0, 0},
-    {0, 0, 0},
-    {0, 0, 0},
-    {0, 0, 0},
+    { 0, 0, 0 },
+    { 0, 0, 0 },
+    { 0, 0, 0 },
+    { 0, 0, 0 },
+    { 0, 0, 0 },
+    { 0, 0, 0 },
+    { 0, 0, 0 },
     };
-float delta[3] = {0.0, 0.0, 0.0};
-float delta_tmp[3] = {0.0, 0.0, 0.0};
+float delta[3] = { 0.0, 0.0, 0.0 };
+float delta_tmp[3] = { 0.0, 0.0, 0.0 };
 #endif // DELTA
 
 float min_pos[3] = { X_MIN_POS, Y_MIN_POS, Z_MIN_POS };
@@ -327,19 +317,20 @@ uint8_t active_driver = 0;
 
 uint8_t debugLevel = 0;
 
-int fanSpeed=0;
+int fanSpeed = 0;
 #ifdef SERVO_ENDSTOPS && (NUM_SERVOS > 0)
   int servo_endstops[] = SERVO_ENDSTOPS;
   int servo_endstop_angles[] = SERVO_ENDSTOP_ANGLES;
 #endif
 #ifdef BARICUDA
-  int ValvePressure=0;
-  int EtoPPressure=0;
+  int ValvePressure = 0;
+  int EtoPPressure = 0;
 #endif
 
 #ifdef FWRETRACT
-  bool autoretract_enabled=false;
-  bool retracted[EXTRUDERS]={false
+
+  bool autoretract_enabled = false;
+  bool retracted[EXTRUDERS] = { false
     #if EXTRUDERS > 1
       , false
       #if EXTRUDERS > 2
@@ -350,7 +341,7 @@ int fanSpeed=0;
       #endif
     #endif
   };
-  bool retracted_swap[EXTRUDERS]={false
+  bool retracted_swap[EXTRUDERS] = { false
     #if EXTRUDERS > 1
       , false
       #if EXTRUDERS > 2
@@ -369,21 +360,22 @@ int fanSpeed=0;
   float retract_recover_length = RETRACT_RECOVER_LENGTH;
   float retract_recover_length_swap = RETRACT_RECOVER_LENGTH_SWAP;
   float retract_recover_feedrate = RETRACT_RECOVER_FEEDRATE;
+
 #endif // FWRETRACT
 
 #ifdef ULTIPANEL
-#ifdef PS_DEFAULT_OFF
-bool powersupply = false;
-#else
-bool powersupply = true;
-#endif
-#endif // ULTIPANEL
+  #ifdef PS_DEFAULT_OFF
+    bool powersupply = false;
+  #else
+    bool powersupply = true;
+  #endif
+#endif //ULTIPANEL
 
 #ifdef SCARA                    // Build size scaling
 float axis_scaling[3]={1,1,1};  // Build size scaling, default to 1
-#endif // SCARA			
+#endif //SCARA
 
-bool cancel_heatup = false ;
+bool cancel_heatup = false;
 
 #ifdef FILAMENT_SENSOR
   //Variables for Filament Sensor input 
@@ -398,7 +390,7 @@ bool cancel_heatup = false ;
 #endif
 
 #ifdef LASERBEAM
-int laser_ttl_modulation = 0;
+  int laser_ttl_modulation = 0;
 #endif
 
 const char errormagic[] PROGMEM = "Error:";
@@ -408,20 +400,20 @@ const char echomagic[] PROGMEM = "echo:";
 //=============================Private Variables=============================
 //===========================================================================
 const char axis_codes[NUM_AXIS] = {'X', 'Y', 'Z', 'E'};
-static float offset[3] = {0.0, 0.0, 0.0};
+static float offset[3] = { 0.0, 0.0, 0.0 };
 static bool home_all_axis = true;
 
 #ifdef DELTA
 const float SIN_60 = 0.8660254037844386;
 const float COS_60 = 0.5;
 static float bed_level[7][7] = {
-    {0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0},
-    {0, 0, 0, 0, 0, 0, 0},
+    { 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0, 0, 0 },
     };
 static float feedrate = 1500.0, next_feedrate, saved_feedrate, z_offset;
 static float bed_level_x, bed_level_y, bed_level_z;
@@ -443,35 +435,32 @@ static int buflen = 0;
 static char serial_char;
 static int serial_count = 0;
 static boolean comment_mode = false;
-static char *strchr_pointer; // just a pointer to find chars in the command string like X, Y, Z, E, etc
+static char *strchr_pointer; ///< A pointer to find chars in the command string (X, Y, Z, E, etc.)
 
-const int sensitive_pins[] = SENSITIVE_PINS; // Sensitive pin list for M42
+const int sensitive_pins[] = SENSITIVE_PINS; ///< Sensitive pin list for M42
 
-//static float tt = 0;
-//static float bt = 0;
-
-//Inactivity shutdown variables
+// Inactivity shutdown
 static unsigned long previous_millis_cmd = 0;
 static unsigned long max_inactive_time = 0;
 static unsigned long stepper_inactive_time = DEFAULT_STEPPER_DEACTIVE_TIME*1000l;
 
-unsigned long starttime=0;
-unsigned long stoptime=0;
+unsigned long starttime = 0; ///< Print job start time
+unsigned long stoptime = 0;  ///< Print job stop time
 
 static uint8_t tmp_extruder;
 
 #ifdef NPR2
-static float color_position[] = COLOR_STEP;  //variabile per la scelta del colore
-static float color_step_moltiplicator = (DRIVER_MICROSTEP / MOTOR_ANGLE) * CARTER_MOLTIPLICATOR;
+  static float color_position[] = COLOR_STEP;  //variabile per la scelta del colore
+  static float color_step_moltiplicator = (DRIVER_MICROSTEP / MOTOR_ANGLE) * CARTER_MOLTIPLICATOR;
 #endif // NPR2
 
 #ifdef EASY_LOAD
-bool allow_lengthy_extrude_once; // for load/unload
+  bool allow_lengthy_extrude_once; // for load/unload
 #endif
 
-bool Stopped=false;
+bool Stopped = false;
 #if defined(PAUSE_PIN) && PAUSE_PIN > -1
-bool paused=false;
+ bool paused = false;
 #endif
 
 #if NUM_SERVOS > 0
@@ -481,10 +470,9 @@ bool paused=false;
 bool CooldownNoWait = true;
 bool target_direction;
 
-//Insert variables if CHDK is defined
 #ifdef CHDK
-unsigned long chdkHigh = 0;
-boolean chdkActive = false;
+  unsigned long chdkHigh = 0;
+  boolean chdkActive = false;
 #endif
 
 //===========================================================================
@@ -639,13 +627,14 @@ void servo_init()
       servos[servo_endstops[i]].write(servo_endstop_angles[i * 2 + 1]);
     }
   }
-  #endif // NUM_SERVOS
+  #endif //NUM_SERVOS
 
   #if defined (ENABLE_AUTO_BED_LEVELING) && (PROBE_SERVO_DEACTIVATION_DELAY > 0)
   delay(PROBE_SERVO_DEACTIVATION_DELAY);
   servos[servo_endstops[Z_AXIS]].detach();
   #endif
 }
+
 
 void setup()
 {
