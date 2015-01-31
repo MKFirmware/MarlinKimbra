@@ -22,11 +22,8 @@
 // Horizontal offset of the universal joints on the carriages.
 #define DELTA_CARRIAGE_OFFSET 20.0      // mm
 
-// Printer radius
+// Bed Printer radius
 #define PRINTER_RADIUS 70     // mm
-
-// Effective horizontal distance bridged by diagonal push rods.
-#define DEFAULT_DELTA_RADIUS (DELTA_SMOOTH_ROD_OFFSET-DELTA_EFFECTOR_OFFSET-DELTA_CARRIAGE_OFFSET)
 
 //Uncomment to enable autocalibration debug messages
 #define DEBUG_MESSAGES
@@ -34,12 +31,12 @@
 // Precision for G30 delta autocalibration function
 #define AUTOCALIBRATION_PRECISION 0.1      // mm
 
-// Diameter of print bed - this is used to set the distance that autocalibration probes the bed at.
-#define BED_DIAMETER 140 // mm
+// Effective horizontal distance bridged by diagonal push rods.
+#define DEFAULT_DELTA_RADIUS (DELTA_SMOOTH_ROD_OFFSET-DELTA_EFFECTOR_OFFSET-DELTA_CARRIAGE_OFFSET)
 
 // Z-Probe variables
 // Start and end location values are used to deploy/retract the probe (will move from start to end and back again)
-#define PROBING_FEEDRATE 600                     // Speed for individual probe Use: G30 A F600
+#define PROBING_FEEDRATE 500                     // Speed for individual probe Use: G30 A F600
 #define Z_PROBE_OFFSET {0,0,-1,0}                // X, Y, Z, E distance between hotend nozzle and deployed bed leveling probe.
 #define Z_PROBE_DEPLOY_START_LOCATION {0,0,30,0} // X, Y, Z, E start location for z-probe deployment sequence
 #define Z_PROBE_DEPLOY_END_LOCATION {0,0,30,0}   // X, Y, Z, E end location for z-probe deployment sequence
@@ -108,7 +105,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 //Manual homing switch locations:
 #define MANUAL_X_HOME_POS 0
 #define MANUAL_Y_HOME_POS 0
-#define MANUAL_Z_HOME_POS 210      // Distance between nozzle and print surface after homing.
+#define MANUAL_Z_HOME_POS 205      // Distance between nozzle and print surface after homing.
 
 // Travel limits after homing
 #define X_MAX_POS PRINTER_RADIUS

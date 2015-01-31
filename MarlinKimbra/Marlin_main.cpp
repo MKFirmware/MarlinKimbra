@@ -271,7 +271,7 @@ float delta_radius; // = DEFAULT_delta_radius;
 float delta_diagonal_rod; // = DEFAULT_DELTA_DIAGONAL_ROD;
 float DELTA_DIAGONAL_ROD_2;
 float ac_prec = AUTOCALIBRATION_PRECISION / 2;
-float bed_radius = BED_DIAMETER / 2;
+float bed_radius = PRINTER_RADIUS;
 float delta_tower1_x, delta_tower1_y;
 float delta_tower2_x, delta_tower2_y;
 float delta_tower3_x, delta_tower3_y;
@@ -2589,6 +2589,11 @@ void process_commands()
 
       if (code_seen('A')) {
         SERIAL_ECHOLN("Starting Auto Calibration..");
+        LCD_MESSAGEPGM("Auto Calibration...");
+        if (code_value() != 0) ac_prec = code_value();
+        SERIAL_ECHO("Calibration precision: +/-");
+        SERIAL_PROTOCOL_F(ac_prec,3);
+        SERIAL_ECHOLN("mm");
 
         //Zero the bedlevel array in case this affects bed probing
         for (int y = 0; y >=6; y++) {
@@ -2963,6 +2968,7 @@ void process_commands()
         while(loopcount < iterations);
 
         SERIAL_ECHOLN("Auto Calibration Complete");
+        LCD_MESSAGEPGM("Complete");
         SERIAL_ECHOLN("Issue M500 Command to save calibration settings to EPROM (if enabled)");
         /*   
          if ((abs(delta_diagonal_rod - saved_delta_diagonal_rod) > 1) and (adj_dr_allowed == true)) {

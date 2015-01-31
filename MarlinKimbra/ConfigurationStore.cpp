@@ -142,7 +142,7 @@ void Config_StoreSettings() {
 #endif //EEPROM_SETTINGS
 
 
-#ifndef DISABLE_M503
+#ifdef EEPROM_CHITCHAT
 void Config_PrintSettings() {  // Always have this function, even with EEPROM_SETTINGS disabled, the current values will be shown
   SERIAL_ECHO_START;
   SERIAL_ECHOPAIR("Baudrate: ", baudrate);
@@ -194,7 +194,7 @@ void Config_PrintSettings() {  // Always have this function, even with EEPROM_SE
   SERIAL_ECHO_START;
   SERIAL_ECHOLNPGM("Retraction Steps per unit:");
   SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR(" E0 ",max_retraction_feedrate[0]);
+  SERIAL_ECHOPAIR("  E0 ",max_retraction_feedrate[0]);
 #if EXTRUDERS > 1
   SERIAL_ECHOPAIR(" E1 ",max_retraction_feedrate[1]);
 #if EXTRUDERS > 2
@@ -302,7 +302,7 @@ void Config_PrintSettings() {  // Always have this function, even with EEPROM_SE
 #endif
   {
     SERIAL_ECHO_START;
-    SERIAL_ECHOPAIR("   M301 E", (long unsigned int)e);
+    SERIAL_ECHOPAIR("  M301 E", (long unsigned int)e);
     SERIAL_ECHOPAIR(" P", Kp[e]);
     SERIAL_ECHOPAIR(" I" ,unscalePID_i(Ki[e])); 
     SERIAL_ECHOPAIR(" D" ,unscalePID_d(Kd[e]));
@@ -314,48 +314,48 @@ void Config_PrintSettings() {  // Always have this function, even with EEPROM_SE
   SERIAL_ECHO_START;
   SERIAL_ECHOLNPGM("Retract: S=Length (mm) F:Speed (mm/m) Z: ZLift (mm)");
   SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("   M207 S",retract_length); 
+  SERIAL_ECHOPAIR("  M207 S",retract_length); 
   SERIAL_ECHOPAIR(" F" ,retract_feedrate*60); 
   SERIAL_ECHOPAIR(" Z" ,retract_zlift);
   SERIAL_ECHOLN(""); 
   SERIAL_ECHO_START;
   SERIAL_ECHOLNPGM("Recover: S=Extra length (mm) F:Speed (mm/m)");
   SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("   M208 S",retract_recover_length); 
+  SERIAL_ECHOPAIR("  M208 S",retract_recover_length); 
   SERIAL_ECHOPAIR(" F" ,retract_recover_feedrate*60); 
   SERIAL_ECHOLN("");
   SERIAL_ECHO_START;
   SERIAL_ECHOLNPGM("Auto-Retract: S=0 to disable, 1 to interpret extrude-only moves as retracts or recoveries");
   SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("   M209 S", (unsigned long)(autoretract_enabled ? 1 : 0));
+  SERIAL_ECHOPAIR("  M209 S", (unsigned long)(autoretract_enabled ? 1 : 0));
   SERIAL_ECHOLN("");
 #if EXTRUDERS > 1
   SERIAL_ECHO_START;
   SERIAL_ECHOLNPGM("Multi-extruder settings:");
   SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("   Swap retract length (mm):    ", retract_length_swap);
+  SERIAL_ECHOPAIR("  Swap retract length (mm):    ", retract_length_swap);
   SERIAL_ECHOLN("");
   SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("   Swap rec. addl. length (mm): ", retract_recover_length_swap);
+  SERIAL_ECHOPAIR("  Swap rec. addl. length (mm): ", retract_recover_length_swap);
   SERIAL_ECHOLN("");
 #endif //EXTRUDERS > 1
   SERIAL_ECHO_START;
   if (volumetric_enabled) {
     SERIAL_ECHOLNPGM("Filament settings:");
     SERIAL_ECHO_START;
-    SERIAL_ECHOPAIR("   M200 D", filament_size[0]);
+    SERIAL_ECHOPAIR("  M200 D", filament_size[0]);
     SERIAL_ECHOLN(""); 
 #if EXTRUDERS > 1
     SERIAL_ECHO_START;
-    SERIAL_ECHOPAIR("   M200 T1 D", filament_size[1]);
+    SERIAL_ECHOPAIR("  M200 T1 D", filament_size[1]);
     SERIAL_ECHOLN(""); 
 #if EXTRUDERS > 2
     SERIAL_ECHO_START;
-    SERIAL_ECHOPAIR("   M200 T2 D", filament_size[2]);
+    SERIAL_ECHOPAIR("  M200 T2 D", filament_size[2]);
     SERIAL_ECHOLN("");
 #if EXTRUDERS > 3
     SERIAL_ECHO_START;
-    SERIAL_ECHOPAIR("   M200 T3 D", filament_size[3]);
+    SERIAL_ECHOPAIR("  M200 T3 D", filament_size[3]);
     SERIAL_ECHOLN("");
 #endif //EXTRUDERS > 3
 #endif //EXTRUDERS > 2
@@ -365,7 +365,7 @@ void Config_PrintSettings() {  // Always have this function, even with EEPROM_SE
   }
 #endif //FWRETRACT
 }
-#endif //DISABLE_M503
+#endif //EEPROM_CHITCHAT
 
 
 #ifdef EEPROM_SETTINGS
