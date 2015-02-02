@@ -179,36 +179,34 @@
 // This makes temp sensor 1 a redundant sensor for sensor 0.
 // If the temperatures difference between these sensors is to high the print will be aborted.
 //#define TEMP_SENSOR_1_AS_REDUNDANT
-#define MAX_REDUNDANT_TEMP_SENSOR_DIFF 10 // degC
+#define MAX_REDUNDANT_TEMP_SENSOR_DIFF 10 // (degC)
 
 #ifdef SINGLENOZZLE
 #undef TEMP_SENSOR_1_AS_REDUNDANT
 #endif
 
 // Actual temperature must be close to target for this long before M109 returns success
-#define TEMP_RESIDENCY_TIME 10 // seconds
-// Range of +/- temperatures considered "close" to the target one
-#define TEMP_HYSTERESIS 3 // degC
-// Window around target to start the residency timer x degC early.
-#define TEMP_WINDOW 1 // degC
+#define TEMP_RESIDENCY_TIME 10  // (seconds)
+#define TEMP_HYSTERESIS 3       // (degC) range of +/- temperatures considered "close" to the target one
+#define TEMP_WINDOW     1       // (degC) Window around target to start the residency timer x degC early.
 
 // The minimal temperature defines the temperature below which the heater will not be enabled It is used
 // to check that the wiring to the thermistor is not broken.
 // Otherwise this would lead to the heater being powered on all the time.
-#define HEATER_0_MINTEMP 5 // degC
-#define HEATER_1_MINTEMP 5 // degC
-#define HEATER_2_MINTEMP 5 // degC
-#define HEATER_3_MINTEMP 5 // degC
-#define BED_MINTEMP      5 // degC
+#define HEATER_0_MINTEMP 5 // (degC)
+#define HEATER_1_MINTEMP 5 // (degC)
+#define HEATER_2_MINTEMP 5 // (degC)
+#define HEATER_3_MINTEMP 5 // (degC)
+#define BED_MINTEMP      5 // (degC)
 
 // When temperature exceeds max temp, your heater will be switched off.
 // This feature exists to protect your hotend from overheating accidentally, but *NOT* from thermistor short/failure!
 // You should use MINTEMP for thermistor short/failure protection.
-#define HEATER_0_MAXTEMP 275 // degC
-#define HEATER_1_MAXTEMP 275 // degC
-#define HEATER_2_MAXTEMP 275 // degC
-#define HEATER_3_MAXTEMP 275 // degC
-#define BED_MAXTEMP      150 // degC
+#define HEATER_0_MAXTEMP 275 // (degC)
+#define HEATER_1_MAXTEMP 275 // (degC)
+#define HEATER_2_MAXTEMP 275 // (degC)
+#define HEATER_3_MAXTEMP 275 // (degC)
+#define BED_MAXTEMP      150 // (degC)
 
 // If your bed has low resistance e.g. 0.6 ohm and throws the fuse you can duty cycle it to reduce the
 // average current. The value should be an integer and the heat bed will be turned on for 1 interval of
@@ -222,27 +220,18 @@
 //=============================== PID settings ==============================
 // Comment the following line to disable PID and enable bang-bang.
 #define PIDTEMP
-#ifdef PIDTEMP
-  // Limits current to nozzle while in bang-bang mode
-  #define BANG_MAX 255 // 255 is full current
-  // Limits current to nozzle while PID is active (see PID_FUNCTIONAL_RANGE below)
-  #define PID_MAX BANG_MAX // 255 is full current
-  // Sends debug data to the serial port
-  //#define PID_DEBUG
-  // Puts PID in open loop. M104/M140 sets the output power from 0 to PID_MAX
-  //#define PID_OPENLOOP 1
-  // PWM with very low frequency (roughly 0.125Hz=8s) and minimum state time of
-  // approximately 1s useful for heaters driven by a relay
-  //#define SLOW_PWM_HEATERS
+#define BANG_MAX 255 // limits current to nozzle while in bang-bang mode; 255=full current
+#define PID_MAX BANG_MAX // limits current to nozzle while PID is active (see PID_FUNCTIONAL_RANGE below); 255=full current
 
+#ifdef PIDTEMP
+  //#define PID_DEBUG        // Sends debug data to the serial port.
+  //#define PID_OPENLOOP 1   // Puts PID in open loop. M104/M140 sets the output power from 0 to PID_MAX
+  //#define SLOW_PWM_HEATERS // PWM with very low frequency (roughly 0.125Hz=8s) and minimum state time of approximately 1s useful for heaters driven by a relay
   // If the temperature difference between the target temperature and the actual temperature
   // is more then PID_FUNCTIONAL_RANGE then the PID will be shut off and the heater will be set to min/max.
   #define PID_FUNCTIONAL_RANGE 10 // degC
-  
-  // Limit for the integral term
-  #define PID_INTEGRAL_DRIVE_MAX PID_MAX
-  // Smoothing factor within the PID
-  #define K1 0.95
+  #define PID_INTEGRAL_DRIVE_MAX PID_MAX // Limit for the integral term
+  #define K1 0.95 // Smoothing factor within the PID
 
 //             HotEnd{HE0,HE1,HE2,HE3}
   #define DEFAULT_Kp {41,41,41,41}     // Kp for E0, E1, E2, E3

@@ -5162,7 +5162,13 @@ void process_commands()
               target[E_AXIS]+= FILAMENTCHANGE_FIRSTRETRACT;
             #endif
           }
-          plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver);
+
+          #ifdef DELTA
+            calculate_delta(target);
+            plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver);
+          #else
+            plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver);
+          #endif
 
           //lift Z
           if(code_seen('Z'))
@@ -5175,7 +5181,13 @@ void process_commands()
               target[Z_AXIS]+= FILAMENTCHANGE_ZADD;
             #endif
           }
-          plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver);
+
+          #ifdef DELTA
+            calculate_delta(target);
+            plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver);
+          #else
+            plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver);
+          #endif
 
           //move xy
           if(code_seen('X'))
@@ -5199,7 +5211,12 @@ void process_commands()
             #endif
           }
 
-          plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver);
+          #ifdef DELTA
+            calculate_delta(target);
+            plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver);
+          #else
+            plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver);
+          #endif
 
           if(code_seen('L'))
           {
@@ -5212,7 +5229,12 @@ void process_commands()
             #endif
           }
 
-          plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver);
+          #ifdef DELTA
+            calculate_delta(target);
+            plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver);
+          #else
+            plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver);
+          #endif
 
           //finish moves
           st_synchronize();
@@ -5264,10 +5286,19 @@ void process_commands()
           #endif
           current_position[E_AXIS]=target[E_AXIS]; //the long retract of L is compensated by manual filament feeding
           plan_set_e_position(current_position[E_AXIS]);
-          plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver); //should do nothing
-          plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver); //move xy back
-          plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver); //move z back
-          plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], lastpos[E_AXIS], feedrate/60, active_extruder, active_driver); //final untretract
+
+          #ifdef DELTA
+            calculate_delta(target);
+            plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver); //should do nothing
+            calculate_delta(lastpos);
+            plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver); //move xyz back
+            plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], lastpos[E_AXIS], feedrate/60, active_extruder, active_driver); //final unretract
+          #else
+            plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver); //should do nothing
+            plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver); //move xy back
+            plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver); //move z back
+            plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], lastpos[E_AXIS], feedrate/60, active_extruder, active_driver); //final unretract
+          #endif
         }
         break;
       #endif //FILAMENTCHANGEENABLE
