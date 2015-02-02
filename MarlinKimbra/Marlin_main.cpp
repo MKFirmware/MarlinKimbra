@@ -3530,7 +3530,7 @@ void process_commands()
             if (verbose_level<0 || verbose_level>4 )
             {
               SERIAL_PROTOCOLPGM("?Verbose Level not plausible.\n");
-              goto Sigma_Exit;
+              break;
             }
           }
 
@@ -3546,7 +3546,7 @@ void process_commands()
             if (n_samples<4 || n_samples>50 )
             {
               SERIAL_PROTOCOLPGM("?Specified sample size not plausable.\n");
-              goto Sigma_Exit;
+              break;
             }
           }
 
@@ -3564,7 +3564,7 @@ void process_commands()
             if (X_probe_location<X_MIN_POS || X_probe_location>X_MAX_POS)
             {
               SERIAL_PROTOCOLPGM("?Specified X position out of range.\n");
-              goto Sigma_Exit;
+              break;
             }
           }
 
@@ -3574,7 +3574,7 @@ void process_commands()
             if (Y_probe_location<Y_MIN_POS || Y_probe_location>Y_MAX_POS )
             {
               SERIAL_PROTOCOLPGM("?Specified Y position out of range.\n");
-              goto Sigma_Exit;
+              break;
             }
           }
 
@@ -3585,7 +3585,7 @@ void process_commands()
             if (n_legs<0 || n_legs>15)
             {
               SERIAL_PROTOCOLPGM("?Specified number of legs in movement not plausible.\n");
-              goto Sigma_Exit;
+              break;
             }
           }
 
@@ -3761,8 +3761,6 @@ void process_commands()
           SERIAL_PROTOCOLPGM("Standard Deviation: ");
           SERIAL_PROTOCOL_F(sigma, 6);
           SERIAL_PROTOCOLPGM("\n\n");
-
-          Sigma_Exit:
         }
         break;
       #endif //defined(ENABLE_AUTO_BED_LEVELING) && defined(Z_PROBE_REPEATABILITY_TEST)
