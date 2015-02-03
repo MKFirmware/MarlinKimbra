@@ -3,10 +3,10 @@
 
 // This configuration file contains basic settings. Select your:
 //  - board type
-//  - temperature sensor type
 //  - Mechanism type (cartesian-corexy-delta-scara)
+//  - temperature sensor type
 //
-// Mechanisms-settings can be found in configuration_xxx.h
+// Mechanisms-settings can be found in configuration_xxxxxx.h
 // Advanced settings can be found in Configuration_adv.h
 
 // Choose your board type.
@@ -68,7 +68,7 @@
 #endif
 /***********************************************************************/
 
-// This defines the number of extruders real or virtual
+// This defines the number of extruder real or virtual
 #define EXTRUDERS 1
 
 // This is used for singlenozzled multiple extrusion configuration
@@ -88,8 +88,8 @@
  ***********************************************************************/
 //#define MKR4
 #ifdef MKR4
-#define DELAY_R 500          // Delay for switch rele
-#define DRIVER_EXTRUDERS 1   // This defines the number of Driver extruders
+  #define DELAY_R 500          // Delay for switch rele
+  #define DRIVER_EXTRUDERS 2   // This defines the number of Driver extruder
 #endif // END MKR4
 
 //**********************************************************************
@@ -107,20 +107,20 @@
  ***********************************************************************/
 //#define NPR2
 #ifdef NPR2
-#define COLOR_STEP {120,25,-65,-155} // CARTER ANGLE
-#define COLOR_SLOWRATE 170           // MICROSECOND delay for carter motor routine (Carter Motor Feedrate: upper value-slow feedrate)  
-#define COLOR_HOMERATE 4             // FEEDRATE for carter home
-#define MOTOR_ANGLE 1.8              // Nema angle for single step 
-#define DRIVER_MICROSTEP 4           // Microstep moltiplicator driver (set jumper MS1-2-3) off-on-off 1/4 microstepping.
-#define CARTER_MOLTIPLICATOR 14.22   // CARTER MOLTIPLICATOR (gear ratio 13/31-10/31)
-#define DRIVER_EXTRUDERS 2           // This defines the number of Driver extruders
+  #define COLOR_STEP {120,25,-65,-155} // CARTER ANGLE
+  #define COLOR_SLOWRATE 170           // MICROSECOND delay for carter motor routine (Carter Motor Feedrate: upper value-slow feedrate)  
+  #define COLOR_HOMERATE 4             // FEEDRATE for carter home
+  #define MOTOR_ANGLE 1.8              // Nema angle for single step 
+  #define DRIVER_MICROSTEP 4           // Microstep moltiplicator driver (set jumper MS1-2-3) off-on-off 1/4 microstepping.
+  #define CARTER_MOLTIPLICATOR 14.22   // CARTER MOLTIPLICATOR (gear ratio 13/31-10/31)
+  #define DRIVER_EXTRUDERS 2           // This defines the number of Driver extruders
 #endif
 //**********************************************************************
 
-
 #if !defined(MKR4) && !defined(NPR2)
-#define DRIVER_EXTRUDERS EXTRUDERS // This defines the number of Driver extruders
+  #define DRIVER_EXTRUDERS EXTRUDERS // This defines the number of Driver extruder
 #endif
+
 
 // The following define selects which power supply you have. Please choose the one that matches your setup
 // 0 = Normal power
@@ -182,7 +182,7 @@
 #define MAX_REDUNDANT_TEMP_SENSOR_DIFF 10 // (degC)
 
 #ifdef SINGLENOZZLE
-#undef TEMP_SENSOR_1_AS_REDUNDANT
+  #undef TEMP_SENSOR_1_AS_REDUNDANT
 #endif
 
 // Actual temperature must be close to target for this long before M109 returns success
@@ -220,8 +220,8 @@
 //=============================== PID settings ==============================
 // Comment the following line to disable PID and enable bang-bang.
 #define PIDTEMP
-#define BANG_MAX 255 // limits current to nozzle while in bang-bang mode; 255=full current
-#define PID_MAX BANG_MAX // limits current to nozzle while PID is active (see PID_FUNCTIONAL_RANGE below); 255=full current
+#define BANG_MAX 255      // limits current to nozzle while in bang-bang mode; 255=full current
+#define PID_MAX BANG_MAX  // limits current to nozzle while PID is active (see PID_FUNCTIONAL_RANGE below); 255=full current
 
 #ifdef PIDTEMP
   //#define PID_DEBUG        // Sends debug data to the serial port.
@@ -374,32 +374,32 @@ your extruder heater takes 2 minutes to hit the target on heating.
   #define ULTIPANEL
   #define NEWPANEL
   #define DEFAULT_LCD_CONTRAST 17
-#endif
+#endif //defined (MAKRPANEL)
 
 #if defined (REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER)
   #define DOGLCD
   #define U8GLIB_ST7920
   #define REPRAP_DISCOUNT_SMART_CONTROLLER
-#endif
+#endif //defined (REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER)
 
 #if defined(ULTIMAKERCONTROLLER) || defined(REPRAP_DISCOUNT_SMART_CONTROLLER) || defined(G3D_PANEL)
   #define ULTIPANEL
   #define NEWPANEL
-#endif
+#endif //defined(ULTIMAKERCONTROLLER) || defined(REPRAP_DISCOUNT_SMART_CONTROLLER) || defined(G3D_PANEL)
 
 #if defined(REPRAPWORLD_KEYPAD)
   #define NEWPANEL
   #define ULTIPANEL
-#endif
+#endif //defined(REPRAPWORLD_KEYPAD)
+
 #if defined(RA_CONTROL_PANEL)
   #define ULTIPANEL
   #define NEWPANEL
   #define LCD_I2C_TYPE_PCA8574
   #define LCD_I2C_ADDRESS 0x27   // I2C Address of the port expander
-#endif
+#endif //defined(RA_CONTROL_PANEL)
 
 //I2C PANELS
-
 //#define LCD_I2C_SAINSMART_YWROBOT
 #ifdef LCD_I2C_SAINSMART_YWROBOT
   // This uses the LiquidCrystal_I2C library ( https://bitbucket.org/fmalpartida/new-liquidcrystal/wiki/Home )
@@ -408,7 +408,7 @@ your extruder heater takes 2 minutes to hit the target on heating.
   #define LCD_I2C_ADDRESS 0x27   // I2C Address of the port expander
   #define NEWPANEL
   #define ULTIPANEL
-#endif
+#endif //LCD_I2C_SAINSMART_YWROBOT
 
 // PANELOLU2 LCD with status LEDs, separate encoder and click inputs
 //#define LCD_I2C_PANELOLU2
@@ -432,13 +432,11 @@ your extruder heater takes 2 minutes to hit the target on heating.
 	#define ENCODER_STEPS_PER_MENU_ITEM 1
   #endif
 
-
   #ifdef LCD_USE_I2C_BUZZER
 	#define LCD_FEEDBACK_FREQUENCY_HZ 1000
 	#define LCD_FEEDBACK_FREQUENCY_DURATION_MS 100
   #endif
-
-#endif
+#endif //LCD_I2C_PANELOLU2
 
 // Panucatt VIKI LCD with status LEDs, integrated click & L/R/U/P buttons, separate encoder inputs
 //#define LCD_I2C_VIKI
@@ -452,7 +450,7 @@ your extruder heater takes 2 minutes to hit the target on heating.
   #define LCD_USE_I2C_BUZZER //comment out to disable buzzer on LCD (requires LiquidTWI2 v1.2.3 or later)
   #define NEWPANEL
   #define ULTIPANEL
-#endif
+#endif //LCD_I2C_VIKI
 
 // Shift register panels
 // ---------------------
@@ -464,38 +462,38 @@ your extruder heater takes 2 minutes to hit the target on heating.
   #define SR_LCD_2W_NL    // Non latching 2 wire shiftregister
   #define NEWPANEL
   #define ULTIPANEL
-#endif
+#endif //SAV_3DLCD
 
 
 #ifdef ULTIPANEL
-//  #define NEWPANEL  //enable this if you have a click-encoder panel
+  //#define NEWPANEL  //enable this if you have a click-encoder panel
   #define SDSUPPORT
   #define ULTRA_LCD
   #ifdef DOGLCD // Change number of lines to match the DOG graphic display
-    #define LCD_WIDTH 20
+    #define LCD_WIDTH 22
     #define LCD_HEIGHT 5
-  #else
+  #else //NO DOGLCD
     #define LCD_WIDTH 20
     #define LCD_HEIGHT 4
-  #endif
-#else //no panel but just LCD
+  #endif //DOGLCD
+#else //no ULTIPANEL
   #ifdef ULTRA_LCD
-  #ifdef DOGLCD // Change number of lines to match the 128x64 graphics display
-    #define LCD_WIDTH 20
-    #define LCD_HEIGHT 5
-  #else
-    #define LCD_WIDTH 16
-    #define LCD_HEIGHT 2
-  #endif
-  #endif
-#endif
+    #ifdef DOGLCD // Change number of lines to match the 128x64 graphics display
+      #define LCD_WIDTH 22
+      #define LCD_HEIGHT 5
+    #else //NO DOGLCD
+      #define LCD_WIDTH 16
+      #define LCD_HEIGHT 2
+    #endif //DOGLCD
+  #endif //ULTRA_LCD
+#endif //ULTIPANEL
 
 // default LCD contrast for dogm-like LCD displays
 #ifdef DOGLCD
   #ifndef DEFAULT_LCD_CONTRAST
     #define DEFAULT_LCD_CONTRAST 32
   #endif
-#endif
+#endif //DOGLCD
 
 // option for invert rotary switch
 //#define INVERT_ROTARY_SWITCH
@@ -543,7 +541,7 @@ your extruder heater takes 2 minutes to hit the target on heating.
   #define LCD_RETRACT_FEEDRATE 10 // mm/s
   #define LCD_LOAD_FEEDRATE 8     // mm/s
   #define LCD_UNLOAD_FEEDRATE 8   // mm/s
-#endif
+#endif //EASY_LOAD
 
 
 //============================== Preheat Constants ==========================
@@ -648,7 +646,5 @@ your extruder heater takes 2 minutes to hit the target on heating.
 //#define LASERBEAM
 
 
-
 #include "Configuration_adv.h"
-
 #endif //__CONFIGURATION_H

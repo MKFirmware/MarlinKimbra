@@ -174,11 +174,11 @@
 // M351 - Toggle MS1 MS2 pins directly.
 
 // ************ SCARA Specific - This can change to suit future G-code regulations
-// M360 - SCARA calibration: Move to cal-position ThetaA (0 deg calibration)
-// M361 - SCARA calibration: Move to cal-position ThetaB (90 deg calibration - steps per degree)
-// M362 - SCARA calibration: Move to cal-position PsiA (0 deg calibration)
-// M363 - SCARA calibration: Move to cal-position PsiB (90 deg calibration - steps per degree)
-// M364 - SCARA calibration: Move to cal-position PSIC (90 deg to Theta calibration position)
+// M360 - SCARA calibration: Move to calc-position ThetaA (0 deg calibration)
+// M361 - SCARA calibration: Move to calc-position ThetaB (90 deg calibration - steps per degree)
+// M362 - SCARA calibration: Move to calc-position PsiA (0 deg calibration)
+// M363 - SCARA calibration: Move to calc-position PsiB (90 deg calibration - steps per degree)
+// M364 - SCARA calibration: Move to calc-position PSIC (90 deg to Theta calibration position)
 // M365 - SCARA calibration: Scaling factor, X, Y, Z axis
 //************* SCARA End ***************
 
@@ -193,19 +193,7 @@
 unsigned long baudrate;
 float homing_feedrate[] = HOMING_FEEDRATE;
 bool axis_known_position[3] = {false, false, false};
-
-#ifdef DELTA
-  float probing_feedrate = PROBING_FEEDRATE;
-  float default_z_probe_offset[] = Z_PROBE_OFFSET;
-  float z_probe_offset[3];
-  float z_probe_deploy_start_location[] = Z_PROBE_DEPLOY_START_LOCATION;
-  float z_probe_deploy_end_location[] = Z_PROBE_DEPLOY_END_LOCATION;
-  float z_probe_retract_start_location[] = Z_PROBE_RETRACT_START_LOCATION;
-  float z_probe_retract_end_location[] = Z_PROBE_RETRACT_END_LOCATION;
-#else // No Delta
-  float zprobe_zoffset;
-#endif // No Delta
-
+float zprobe_zoffset;
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
 int feedmultiply = 100; //100->1 200->2
 int saved_feedmultiply;
@@ -278,6 +266,13 @@ float add_homing[3]={ 0, 0, 0 };
       };
   float delta[3] = { 0.0, 0.0, 0.0 };
   float delta_tmp[3] = { 0.0, 0.0, 0.0 };
+  float probing_feedrate = PROBING_FEEDRATE;
+  float default_z_probe_offset[] = Z_PROBE_OFFSET;
+  float z_probe_offset[3];
+  float z_probe_deploy_start_location[] = Z_PROBE_DEPLOY_START_LOCATION;
+  float z_probe_deploy_end_location[] = Z_PROBE_DEPLOY_END_LOCATION;
+  float z_probe_retract_start_location[] = Z_PROBE_RETRACT_START_LOCATION;
+  float z_probe_retract_end_location[] = Z_PROBE_RETRACT_END_LOCATION;
 #endif // DELTA
 
 float min_pos[3] = { X_MIN_POS, Y_MIN_POS, Z_MIN_POS };
@@ -921,7 +916,6 @@ void get_command()
     }
   #endif //SDSUPPORT
 }
-
 
 float code_value()
 {
@@ -2299,7 +2293,6 @@ void gcode_G28()
   endstops_hit_on_purpose();
 }
 
-
 #ifdef ENABLE_AUTO_BED_LEVELING
   // G29: Detailed Z-Probe, probes the bed at 3 or more points.
   //      Will fail if the printer has not been homed with G28.
@@ -2492,7 +2485,6 @@ void gcode_G28()
     }
   #endif //Z_PROBE_SLED
 #endif //ENABLE_AUTO_BED_LEVELING
-
 
 #ifdef DELTA
   // G29: Delta Z-Probe, probes the bed at more points.
@@ -3102,6 +3094,463 @@ void gcode_G92()
   }
 }
 
+#ifdef ULTIPANEL
+  // M0: Unconditional stop - Wait for user button press on LCD
+  // M1: Conditional stop - Wait for user button press on LCD
+  void gcode_M0_M1()
+  {
+    unsigned long codenum; //throw away variable
+    char *starpos = NULL;
+    char *src = strchr_pointer + 2;
+    
+    codenum = 0;
+    bool hasP = false, hasS = false;
+    if (code_seen('P'))
+    {
+      codenum = code_value(); // milliseconds to wait
+      hasP = codenum > 0;
+    }
+    if (code_seen('S'))
+    {
+      codenum = code_value() * 1000; // seconds to wait
+      hasS = codenum > 0;
+    }
+    starpos = strchr(src, '*');
+    if (starpos != NULL) *(starpos) = '\0';
+    while (*src == ' ') ++src;
+    if (!hasP && !hasS && *src != '\0')
+    {
+      lcd_setstatus(src);
+    }
+    else
+    {
+      LCD_MESSAGEPGM(MSG_USERWAIT);
+    }
+
+    lcd_ignore_click();
+    st_synchronize();
+    refresh_cmd_timeout();
+    if (codenum > 0)
+    {
+      codenum += millis();  // keep track of when we started waiting
+      while(millis() < codenum && !lcd_clicked())
+      {
+        manage_heater();
+        manage_inactivity();
+        lcd_update();
+      }
+      lcd_ignore_click(false);
+    }
+    else
+    {
+      while(!lcd_clicked())
+      {
+        manage_heater();
+        manage_inactivity();
+        lcd_update();
+      }
+    }
+    if (IS_SD_PRINTING)
+      LCD_MESSAGEPGM(MSG_RESUMING);
+    else
+      LCD_MESSAGEPGM(WELCOME_MSG);
+  }
+#endif //ULTIPANEL
+
+#ifdef LASERBEAM
+  // M3: S - Setting laser beam
+  void gcode_M3()
+  {
+    if(code_seen('S'))
+    {
+      laser_ttl_modulation = constrain(code_value(),0,255);
+    }
+    else
+    {
+      laser_ttl_modulation=0;
+    }
+  }
+  // M4: Turn on laser beam
+  void gcode_M4()
+  {
+    WRITE(LASER_PWR_PIN, HIGH);
+    laser_ttl_modulation = 0;
+  }
+  // M5: Turn off laser beam
+  void gcode_M5()
+  {
+    WRITE(LASER_PWR_PIN, LOW);
+    laser_ttl_modulation=0;
+  }
+#endif //LASERBEAM
+
+#if defined(ENABLE_AUTO_BED_LEVELING) && defined(Z_PROBE_REPEATABILITY_TEST)
+  //M49: Z-Probe repeatability
+  void gcode_M49()
+  {
+    #if Z_MIN_PIN == -1
+      #error "You must have a Z_MIN endstop in order to enable calculation of Z-Probe repeatability."
+    #endif
+
+    double sum = 0.0, mean = 0.0, sigma = 0.0;
+    double sample_set[50];
+    int verbose_level = 1, n = 0, j, n_samples = 10, n_legs = 0, engage_probe_for_each_reading = 0;
+    double X_current, Y_current, Z_current;
+    double X_probe_location, Y_probe_location, Z_start_location, ext_position;
+
+    if (code_seen('V') || code_seen('v'))
+    {
+      verbose_level = code_value();
+      if (verbose_level<0 || verbose_level>4 )
+      {
+        SERIAL_PROTOCOLPGM("?Verbose Level not plausible.\n");
+        return;
+      }
+    }
+
+    if (verbose_level > 0)
+    {
+      SERIAL_PROTOCOLPGM("M49 Z-Probe Repeatability test.   Version 2.00\n");
+      SERIAL_PROTOCOLPGM("Full support at: http://3dprintboard.com/forum.php\n");
+    }
+
+    if (code_seen('n'))
+    {
+      n_samples = code_value();
+      if (n_samples<4 || n_samples>50 )
+      {
+        SERIAL_PROTOCOLPGM("?Specified sample size not plausable.\n");
+        return;
+      }
+    }
+
+    X_current = X_probe_location = st_get_position_mm(X_AXIS);
+    Y_current = Y_probe_location = st_get_position_mm(Y_AXIS);
+    Z_current = st_get_position_mm(Z_AXIS);
+    Z_start_location = st_get_position_mm(Z_AXIS) + Z_RAISE_BEFORE_PROBING;
+    ext_position   = st_get_position_mm(E_AXIS);
+
+    if (code_seen('E') || code_seen('e')) engage_probe_for_each_reading++;
+
+    if (code_seen('X') || code_seen('x'))
+    {
+      X_probe_location = code_value() -  X_PROBE_OFFSET_FROM_EXTRUDER;
+      if (X_probe_location<X_MIN_POS || X_probe_location>X_MAX_POS)
+      {
+        SERIAL_PROTOCOLPGM("?Specified X position out of range.\n");
+        return;
+      }
+    }
+
+    if (code_seen('Y') || code_seen('y'))
+    {
+      Y_probe_location = code_value() -  Y_PROBE_OFFSET_FROM_EXTRUDER;
+      if (Y_probe_location<Y_MIN_POS || Y_probe_location>Y_MAX_POS)
+      {
+        SERIAL_PROTOCOLPGM("?Specified Y position out of range.\n");
+        return;
+      }
+    }
+
+    if (code_seen('L') || code_seen('l'))
+    {
+      n_legs = code_value();
+      if (n_legs == 1) n_legs = 2;
+      if (n_legs<0 || n_legs>15)
+      {
+        SERIAL_PROTOCOLPGM("?Specified number of legs in movement not plausible.\n");
+        return;
+      }
+    }
+
+    //
+    // Do all the preliminary setup work. First raise the probe.
+    //
+
+    st_synchronize();
+    plan_bed_level_matrix.set_to_identity();
+    plan_buffer_line( X_current, Y_current, Z_start_location,
+    ext_position,
+    homing_feedrate[Z_AXIS]/60,
+    active_extruder, active_driver);
+    st_synchronize();
+
+    //
+    // Now get everything to the specified probe point So we can safely do a probe to
+    // get us close to the bed.  If the Z-Axis is far from the bed, we don't want to 
+    // use that as a starting point for each probe.
+    //
+    if (verbose_level > 2) SERIAL_PROTOCOL("Positioning probe for the test.\n");
+
+    plan_buffer_line( X_probe_location, Y_probe_location, Z_start_location, ext_position, homing_feedrate[X_AXIS]/60, active_extruder, active_driver);
+    st_synchronize();
+
+    current_position[X_AXIS] = X_current = st_get_position_mm(X_AXIS);
+    current_position[Y_AXIS] = Y_current = st_get_position_mm(Y_AXIS);
+    current_position[Z_AXIS] = Z_current = st_get_position_mm(Z_AXIS);
+    current_position[E_AXIS] = ext_position = st_get_position_mm(E_AXIS);
+
+    // 
+    // OK, do the initial probe to get us close to the bed.
+    // Then retrace the right amount and use that in subsequent probes
+    //
+
+    engage_z_probe();
+
+    setup_for_endstop_move();
+    run_z_probe();
+
+    current_position[Z_AXIS] = Z_current = st_get_position_mm(Z_AXIS);
+    Z_start_location = st_get_position_mm(Z_AXIS) + Z_RAISE_BEFORE_PROBING;
+
+    plan_buffer_line( X_probe_location, Y_probe_location, Z_start_location, ext_position, homing_feedrate[X_AXIS]/60, active_extruder, active_driver);
+    st_synchronize();
+    current_position[Z_AXIS] = Z_current = st_get_position_mm(Z_AXIS);
+
+    if (engage_probe_for_each_reading) retract_z_probe();
+
+    for (n=0; n<n_samples; n++)
+    {
+      do_blocking_move_to( X_probe_location, Y_probe_location, Z_start_location); // Make sure we are at the probe location
+        if (n_legs)
+        {
+          double radius=0.0, theta=0.0, x_sweep, y_sweep;
+          int rotational_direction, l;
+
+          rotational_direction = (unsigned long) millis() & 0x0001;     // clockwise or counter clockwise
+          radius = (unsigned long) millis() % (long) (X_MAX_LENGTH/4);      // limit how far out to go
+          theta = (float) ((unsigned long) millis() % (long) 360) / (360./(2*3.1415926)); // turn into radians
+
+          //SERIAL_ECHOPAIR("starting radius: ",radius);
+          //SERIAL_ECHOPAIR("   theta: ",theta);
+          //SERIAL_ECHOPAIR("   direction: ",rotational_direction);
+          //SERIAL_PROTOCOLLNPGM("");
+
+          for( l=0; l<n_legs-1; l++)
+          {
+            if (rotational_direction==1) theta += (float) ((unsigned long) millis() % (long) 20) / (360.0/(2*3.1415926)); // turn into radians
+            else theta -= (float) ((unsigned long) millis() % (long) 20) / (360.0/(2*3.1415926)); // turn into radians
+
+            radius += (float) ( ((long) ((unsigned long) millis() % (long) 10)) - 5);
+            if (radius < 0.0) radius = -radius;
+
+            X_current = X_probe_location + cos(theta) * radius;
+            Y_current = Y_probe_location + sin(theta) * radius;
+
+            if (X_current < X_MIN_POS) X_current = X_MIN_POS; // Make sure our X & Y are sane
+            if (X_current > X_MAX_POS) X_current = X_MAX_POS;
+
+            if (Y_current < Y_MIN_POS) Y_current = Y_MIN_POS; // Make sure our X & Y are sane
+            if (Y_current > Y_MAX_POS) Y_current = Y_MAX_POS;
+
+            if (verbose_level > 3)
+            {
+              SERIAL_ECHOPAIR("x: ", X_current);
+              SERIAL_ECHOPAIR("y: ", Y_current);
+              SERIAL_PROTOCOLLNPGM("");
+            }
+
+            do_blocking_move_to( X_current, Y_current, Z_current );
+          }
+          do_blocking_move_to( X_probe_location, Y_probe_location, Z_start_location); // Go back to the probe location
+        }
+
+      if (engage_probe_for_each_reading)
+      {
+        engage_z_probe();
+        delay(1000);
+      }
+
+      setup_for_endstop_move();
+      run_z_probe();
+
+      sample_set[n] = current_position[Z_AXIS];
+
+      //
+      // Get the current mean for the data points we have so far
+      //
+      sum = 0.0;
+      for (j=0; j<=n; j++)
+      {
+        sum = sum + sample_set[j];
+      }
+      mean = sum / (double (n+1));
+      //
+      // Now, use that mean to calculate the standard deviation for the
+      // data points we have so far
+      //
+
+      sum = 0.0;
+      for (j=0; j<=n; j++)
+      {
+        sum = sum + (sample_set[j]-mean) * (sample_set[j]-mean);
+      }
+      sigma = sqrt( sum / (double (n+1)));
+
+      if (verbose_level > 1)
+      {
+        SERIAL_PROTOCOL(n+1);
+        SERIAL_PROTOCOL(" of ");
+        SERIAL_PROTOCOL(n_samples);
+        SERIAL_PROTOCOLPGM("   z: ");
+        SERIAL_PROTOCOL_F(current_position[Z_AXIS], 6);
+      }
+
+      if (verbose_level > 2)
+      {
+        SERIAL_PROTOCOL(" mean: ");
+        SERIAL_PROTOCOL_F(mean,6);
+        SERIAL_PROTOCOL("   sigma: ");
+        SERIAL_PROTOCOL_F(sigma,6);
+      }
+
+      if (verbose_level > 0) SERIAL_PROTOCOLPGM("\n");
+
+      plan_buffer_line( X_probe_location, Y_probe_location, Z_start_location, current_position[E_AXIS], homing_feedrate[Z_AXIS]/60, active_extruder, active_driver);
+      st_synchronize();
+
+      if (engage_probe_for_each_reading)
+      {
+        retract_z_probe();
+        delay(1000);
+      }
+    }
+
+    retract_z_probe();
+    delay(1000);
+
+    clean_up_after_endstop_move();
+
+    if (verbose_level > 0)
+    {
+      SERIAL_PROTOCOLPGM("Mean: ");
+      SERIAL_PROTOCOL_F(mean, 6);
+      SERIAL_PROTOCOLPGM("\n");
+    }
+
+    SERIAL_PROTOCOLPGM("Standard Deviation: ");
+    SERIAL_PROTOCOL_F(sigma, 6);
+    SERIAL_PROTOCOLPGM("\n\n");
+  }
+#endif //defined(ENABLE_AUTO_BED_LEVELING) && defined(Z_PROBE_REPEATABILITY_TEST)
+
+#ifdef ENABLE_AUTO_BED_LEVELING
+  void gcode_M666()
+  {
+    if (code_seen('P'))
+    {
+      zprobe_zoffset = code_value();
+    }
+    if (code_seen('L'))
+    {
+      SERIAL_ECHOPAIR("P (Z-Probe Offset):", zprobe_zoffset);
+      SERIAL_ECHOLN("");
+    }
+  }
+#elif defined(DELTA)
+  void gcode_M666()
+  {
+    if ( !(code_seen('P')))
+    {
+      for(int8_t i=0; i < 3; i++)
+      {
+        if (code_seen(axis_codes[i])) endstop_adj[i] = code_value();
+      }
+    }
+    if (code_seen('A'))
+    {
+      tower_adj[0] = code_value();
+      set_delta_constants();
+    }
+    if (code_seen('B'))
+    {
+      tower_adj[1] = code_value();
+      set_delta_constants();
+    }
+    if (code_seen('C'))
+    {
+      tower_adj[2] = code_value();
+      set_delta_constants();
+    }
+    if (code_seen('I'))
+    {
+      tower_adj[3] = code_value();
+      set_delta_constants();
+    }
+    if (code_seen('J'))
+    {
+      tower_adj[4] = code_value();
+      set_delta_constants();
+    }
+    if (code_seen('K'))
+    {
+      tower_adj[5] = code_value();
+      set_delta_constants();
+    }
+    if (code_seen('R'))
+    {
+      delta_radius = code_value();
+      set_delta_constants();
+    }
+    if (code_seen('D'))
+    {
+      delta_diagonal_rod = code_value();
+      set_delta_constants();
+    }
+    if (code_seen('H'))
+    {
+      max_pos[Z_AXIS]= code_value();
+      set_delta_constants();
+    }
+    if (code_seen('P'))
+    {
+      float pz = code_value();
+      if (!(code_seen(axis_codes[0]) || code_seen(axis_codes[1]) || code_seen(axis_codes[2])))  // Allow direct set of Z offset without an axis code
+      {
+        z_probe_offset[Z_AXIS]= pz;
+      }
+      else
+      {
+        for(int8_t i=0; i < 3; i++)
+        {
+          if (code_seen(axis_codes[i])) z_probe_offset[i] = code_value();
+        }
+      }
+    }
+    if (code_seen('L'))
+    {
+      SERIAL_ECHOLN("Current Delta geometry values:");
+      SERIAL_ECHOPAIR("X (Endstop Adj): ",endstop_adj[0]);
+      SERIAL_ECHOLN("");
+      SERIAL_ECHOPAIR("Y (Endstop Adj): ",endstop_adj[1]);
+      SERIAL_ECHOLN("");
+      SERIAL_ECHOPAIR("Z (Endstop Adj): ",endstop_adj[2]);
+      SERIAL_ECHOLN("");
+      SERIAL_ECHOPAIR("P (Z-Probe Offset): X", z_probe_offset[0]);
+      SERIAL_ECHOPAIR(" Y", z_probe_offset[1]);
+      SERIAL_ECHOPAIR(" Z", z_probe_offset[2]);
+      SERIAL_ECHOLN("");
+      SERIAL_ECHOPAIR("A (Tower A Position Correction): ",tower_adj[0]);
+      SERIAL_ECHOLN("");
+      SERIAL_ECHOPAIR("B (Tower B Position Correction): ",tower_adj[1]);
+      SERIAL_ECHOLN("");
+      SERIAL_ECHOPAIR("C (Tower C Position Correction): ",tower_adj[2]);
+      SERIAL_ECHOLN("");
+      SERIAL_ECHOPAIR("I (Tower A Radius Correction): ",tower_adj[3]);
+      SERIAL_ECHOLN("");
+      SERIAL_ECHOPAIR("J (Tower B Radius Correction): ",tower_adj[4]);
+      SERIAL_ECHOLN("");
+      SERIAL_ECHOPAIR("K (Tower C Radius Correction): ",tower_adj[5]);
+      SERIAL_ECHOLN("");
+      SERIAL_ECHOPAIR("R (Delta Radius): ",delta_radius);
+      SERIAL_ECHOLN("");
+      SERIAL_ECHOPAIR("D (Diagonal Rod Length): ",delta_diagonal_rod);
+      SERIAL_ECHOLN("");
+      SERIAL_ECHOPAIR("H (Z-Height): ",max_pos[Z_AXIS]);
+      SERIAL_ECHOLN("");
+    }
+  }
+#endif 
 
 // Process Commands and dispatch them to handlers
 void process_commands()
@@ -3126,12 +3575,12 @@ void process_commands()
         {
           gcode_G2_G3(true);
         }
-          break;
+        break;
         case 3: //G3 - CCW ARC
         {
           gcode_G2_G3(false);
         }
-          break;
+        break;
       #endif
 
       //G4 Dwell
@@ -3234,58 +3683,7 @@ void process_commands()
         case 0: //M0 - Unconditional stop - Wait for user button press on LCD
         case 1: //M1 - Conditional stop - Wait for user button press on LCD
           {
-            char *src = strchr_pointer + 2;
-            codenum = 0;
-            bool hasP = false, hasS = false;
-            if (code_seen('P'))
-            {
-              codenum = code_value(); // milliseconds to wait
-              hasP = codenum > 0;
-            }
-            if (code_seen('S'))
-            {
-              codenum = code_value() * 1000; // seconds to wait
-              hasS = codenum > 0;
-            }
-            starpos = strchr(src, '*');
-            if (starpos != NULL) *(starpos) = '\0';
-            while (*src == ' ') ++src;
-            if (!hasP && !hasS && *src != '\0')
-            {
-              lcd_setstatus(src);
-            }
-            else
-            {
-              LCD_MESSAGEPGM(MSG_USERWAIT);
-            }
-
-            lcd_ignore_click();
-            st_synchronize();
-            refresh_cmd_timeout();
-            if (codenum > 0)
-            {
-              codenum += millis();  // keep track of when we started waiting
-              while(millis() < codenum && !lcd_clicked())
-              {
-                manage_heater();
-                manage_inactivity();
-                lcd_update();
-              }
-              lcd_ignore_click(false);
-            }
-            else
-            {
-              while(!lcd_clicked())
-              {
-                manage_heater();
-                manage_inactivity();
-                lcd_update();
-              }
-            }
-            if (IS_SD_PRINTING)
-              LCD_MESSAGEPGM(MSG_RESUMING);
-            else
-              LCD_MESSAGEPGM(WELCOME_MSG);
+            gcode_M0_M1();
           }
           break;
       #endif //ULTIPANEL
@@ -3293,31 +3691,22 @@ void process_commands()
       #ifdef LASERBEAM
         case 3: // M03 S - Setting laser beam
           {
-            if(code_seen('S'))
-            {
-              laser_ttl_modulation=constrain(code_value(),0,255);
-            }
-            else
-            {
-              laser_ttl_modulation=0;
-            }
+            gcode_M3();
           }
           break;
         case 4: // M04 - Turn on laser beam
         {
-          WRITE(LASER_PWR_PIN, HIGH);
-          laser_ttl_modulation = 0;
+          gcode_M4();
         }
           break;
         case 5: // M05 - Turn off laser beam
         {
-          WRITE(LASER_PWR_PIN, LOW);
-          laser_ttl_modulation=0;
+          gcode_M5();
         }
         break;
       #endif //LASERBEAM
 
-      case 17:
+      case 17: //M17 - Enable/Power all stepper motors
       {
         LCD_MESSAGEPGM(MSG_NO_MOVE);
         enable_x();
@@ -3503,255 +3892,7 @@ void process_commands()
       #if defined(ENABLE_AUTO_BED_LEVELING) && defined(Z_PROBE_REPEATABILITY_TEST)
         case 49: //M49 Z-Probe repeatability
         {
-          #if Z_MIN_PIN == -1
-            #error "You must have a Z_MIN endstop in order to enable calculation of Z-Probe repeatability."
-          #endif
-
-          double sum=0.0; 
-          double mean=0.0; 
-          double sigma=0.0;
-          double sample_set[50];
-          int verbose_level=1, n=0, j, n_samples = 10, n_legs=0, engage_probe_for_each_reading=0 ;
-          double X_current, Y_current, Z_current;
-          double X_probe_location, Y_probe_location, Z_start_location, ext_position;
-
-          if (code_seen('V') || code_seen('v'))
-          {
-            verbose_level = code_value();
-            if (verbose_level<0 || verbose_level>4 )
-            {
-              SERIAL_PROTOCOLPGM("?Verbose Level not plausible.\n");
-              break;
-            }
-          }
-
-          if (verbose_level > 0)
-          {
-            SERIAL_PROTOCOLPGM("M49 Z-Probe Repeatability test.   Version 2.00\n");
-            SERIAL_PROTOCOLPGM("Full support at: http://3dprintboard.com/forum.php\n");
-          }
-
-          if (code_seen('n'))
-          {
-            n_samples = code_value();
-            if (n_samples<4 || n_samples>50 )
-            {
-              SERIAL_PROTOCOLPGM("?Specified sample size not plausable.\n");
-              break;
-            }
-          }
-
-          X_current = X_probe_location = st_get_position_mm(X_AXIS);
-          Y_current = Y_probe_location = st_get_position_mm(Y_AXIS);
-          Z_current = st_get_position_mm(Z_AXIS);
-          Z_start_location = st_get_position_mm(Z_AXIS) + Z_RAISE_BEFORE_PROBING;
-          ext_position   = st_get_position_mm(E_AXIS);
-
-          if (code_seen('E') || code_seen('e')) engage_probe_for_each_reading++;
-
-          if (code_seen('X') || code_seen('x'))
-          {
-            X_probe_location = code_value() -  X_PROBE_OFFSET_FROM_EXTRUDER;
-            if (X_probe_location<X_MIN_POS || X_probe_location>X_MAX_POS)
-            {
-              SERIAL_PROTOCOLPGM("?Specified X position out of range.\n");
-              break;
-            }
-          }
-
-          if (code_seen('Y') || code_seen('y'))
-          {
-            Y_probe_location = code_value() -  Y_PROBE_OFFSET_FROM_EXTRUDER;
-            if (Y_probe_location<Y_MIN_POS || Y_probe_location>Y_MAX_POS )
-            {
-              SERIAL_PROTOCOLPGM("?Specified Y position out of range.\n");
-              break;
-            }
-          }
-
-          if (code_seen('L') || code_seen('l'))
-          {
-            n_legs = code_value();
-            if (n_legs == 1) n_legs = 2;
-            if (n_legs<0 || n_legs>15)
-            {
-              SERIAL_PROTOCOLPGM("?Specified number of legs in movement not plausible.\n");
-              break;
-            }
-          }
-
-          //
-          // Do all the preliminary setup work. First raise the probe.
-          //
-
-          st_synchronize();
-          plan_bed_level_matrix.set_to_identity();
-          plan_buffer_line( X_current, Y_current, Z_start_location,
-          ext_position,
-          homing_feedrate[Z_AXIS]/60,
-          active_extruder, active_driver);
-          st_synchronize();
-
-          //
-          // Now get everything to the specified probe point So we can safely do a probe to
-          // get us close to the bed.  If the Z-Axis is far from the bed, we don't want to 
-          // use that as a starting point for each probe.
-          //
-          if (verbose_level > 2) SERIAL_PROTOCOL("Positioning probe for the test.\n");
-
-          plan_buffer_line( X_probe_location, Y_probe_location, Z_start_location, ext_position, homing_feedrate[X_AXIS]/60, active_extruder, active_driver);
-          st_synchronize();
-
-          current_position[X_AXIS] = X_current = st_get_position_mm(X_AXIS);
-          current_position[Y_AXIS] = Y_current = st_get_position_mm(Y_AXIS);
-          current_position[Z_AXIS] = Z_current = st_get_position_mm(Z_AXIS);
-          current_position[E_AXIS] = ext_position = st_get_position_mm(E_AXIS);
-
-          // 
-          // OK, do the initial probe to get us close to the bed.
-          // Then retrace the right amount and use that in subsequent probes
-          //
-
-          engage_z_probe(); 
-
-          setup_for_endstop_move();
-          run_z_probe();
-
-          current_position[Z_AXIS] = Z_current = st_get_position_mm(Z_AXIS);
-          Z_start_location = st_get_position_mm(Z_AXIS) + Z_RAISE_BEFORE_PROBING;
-
-          plan_buffer_line( X_probe_location, Y_probe_location, Z_start_location,
-          ext_position,
-          homing_feedrate[X_AXIS]/60,
-          active_extruder, active_driver);
-          st_synchronize();
-          current_position[Z_AXIS] = Z_current = st_get_position_mm(Z_AXIS);
-
-          if (engage_probe_for_each_reading) retract_z_probe();
-
-          for (n=0; n<n_samples; n++)
-          {
-            do_blocking_move_to( X_probe_location, Y_probe_location, Z_start_location); // Make sure we are at the probe location
-              if (n_legs)
-              {
-                double radius=0.0, theta=0.0, x_sweep, y_sweep;
-                int rotational_direction, l;
-
-                rotational_direction = (unsigned long) millis() & 0x0001;     // clockwise or counter clockwise
-                radius = (unsigned long) millis() % (long) (X_MAX_LENGTH/4);      // limit how far out to go 
-                theta = (float) ((unsigned long) millis() % (long) 360) / (360./(2*3.1415926)); // turn into radians
-
-                //SERIAL_ECHOPAIR("starting radius: ",radius);
-                //SERIAL_ECHOPAIR("   theta: ",theta);
-                //SERIAL_ECHOPAIR("   direction: ",rotational_direction);
-                //SERIAL_PROTOCOLLNPGM("");
-
-                for( l=0; l<n_legs-1; l++)
-                {
-                  if (rotational_direction==1) theta += (float) ((unsigned long) millis() % (long) 20) / (360.0/(2*3.1415926)); // turn into radians
-                  else theta -= (float) ((unsigned long) millis() % (long) 20) / (360.0/(2*3.1415926)); // turn into radians
-
-                  radius += (float) ( ((long) ((unsigned long) millis() % (long) 10)) - 5);
-                  if (radius < 0.0) radius = -radius;
-
-                  X_current = X_probe_location + cos(theta) * radius;
-                  Y_current = Y_probe_location + sin(theta) * radius;
-
-                  if (X_current < X_MIN_POS) X_current = X_MIN_POS; // Make sure our X & Y are sane
-                  if (X_current > X_MAX_POS) X_current = X_MAX_POS;
-
-                  if (Y_current < Y_MIN_POS) Y_current = Y_MIN_POS; // Make sure our X & Y are sane
-                  if (Y_current > Y_MAX_POS) Y_current = Y_MAX_POS;
-
-                  if (verbose_level > 3)
-                  {
-                    SERIAL_ECHOPAIR("x: ", X_current);
-                    SERIAL_ECHOPAIR("y: ", Y_current);
-                    SERIAL_PROTOCOLLNPGM("");
-                  }
-
-                  do_blocking_move_to( X_current, Y_current, Z_current );
-                }
-                do_blocking_move_to( X_probe_location, Y_probe_location, Z_start_location); // Go back to the probe location
-              }
-
-            if (engage_probe_for_each_reading)
-            {
-              engage_z_probe();
-              delay(1000);
-            }
-
-            setup_for_endstop_move();
-            run_z_probe();
-
-            sample_set[n] = current_position[Z_AXIS];
-
-            //
-            // Get the current mean for the data points we have so far
-            //
-            sum=0.0; 
-            for( j=0; j<=n; j++)
-            {
-              sum = sum + sample_set[j];
-            }
-            mean = sum / (double (n+1));
-            //
-            // Now, use that mean to calculate the standard deviation for the
-            // data points we have so far
-            //
-
-            sum=0.0;
-            for( j=0; j<=n; j++)
-            {
-              sum = sum + (sample_set[j]-mean) * (sample_set[j]-mean);
-            }
-            sigma = sqrt( sum / (double (n+1)));
-
-            if (verbose_level > 1)
-            {
-              SERIAL_PROTOCOL(n+1);
-              SERIAL_PROTOCOL(" of ");
-              SERIAL_PROTOCOL(n_samples);
-              SERIAL_PROTOCOLPGM("   z: ");
-              SERIAL_PROTOCOL_F(current_position[Z_AXIS], 6);
-            }
-
-            if (verbose_level > 2)
-            {
-              SERIAL_PROTOCOL(" mean: ");
-              SERIAL_PROTOCOL_F(mean,6);
-              SERIAL_PROTOCOL("   sigma: ");
-              SERIAL_PROTOCOL_F(sigma,6);
-            }
-
-            if (verbose_level > 0) SERIAL_PROTOCOLPGM("\n");
-
-            plan_buffer_line( X_probe_location, Y_probe_location, Z_start_location, 
-            current_position[E_AXIS], homing_feedrate[Z_AXIS]/60, active_extruder, active_driver);
-            st_synchronize();
-
-            if (engage_probe_for_each_reading)
-            {
-              retract_z_probe();
-              delay(1000);
-            }
-          }
-
-          retract_z_probe();
-          delay(1000);
-
-          clean_up_after_endstop_move();
-
-          if (verbose_level > 0)
-          {
-            SERIAL_PROTOCOLPGM("Mean: ");
-            SERIAL_PROTOCOL_F(mean, 6);
-            SERIAL_PROTOCOLPGM("\n");
-          }
-
-          SERIAL_PROTOCOLPGM("Standard Deviation: ");
-          SERIAL_PROTOCOL_F(sigma, 6);
-          SERIAL_PROTOCOLPGM("\n\n");
+          gcode_M49();
         }
         break;
       #endif //defined(ENABLE_AUTO_BED_LEVELING) && defined(Z_PROBE_REPEATABILITY_TEST)
@@ -4276,7 +4417,7 @@ void process_commands()
         #endif
       }
       break;
-      //TODO: update for all axis, use for loop
+
       #ifdef BLINKM
         case 150: //M150
         {
@@ -4292,6 +4433,7 @@ void process_commands()
         }
         break;
       #endif //BLINKM
+
       case 200: //M200 D<millimetres> set filament diameter and set E axis units to cubic millimetres (use S0 to set back to millimetres).
       {
         tmp_extruder = active_extruder;
@@ -4396,128 +4538,6 @@ void process_commands()
         #endif
       }
       break;
-
-      #ifdef ENABLE_AUTO_BED_LEVELING
-        case 666: //M666 Set Z probe offset
-        {
-          if (code_seen('P'))
-          {
-            zprobe_zoffset = code_value();
-          }
-          if (code_seen('L'))
-          {
-            SERIAL_ECHOPAIR("P (Z-Probe Offset):", zprobe_zoffset);
-            SERIAL_ECHOLN("");
-          }
-        }
-        break;
-      #endif // ENABLE_AUTO_BED_LEVELING
-
-      #ifdef DELTA
-        case 666: //M666 set delta endstop and geometry adjustment
-        {
-          if ( !(code_seen('P')))
-          {
-            for(int8_t i=0; i < 3; i++)
-            {
-              if (code_seen(axis_codes[i])) endstop_adj[i] = code_value();
-            }
-          }
-          if (code_seen('A'))
-          {
-            tower_adj[0] = code_value();
-            set_delta_constants();
-          }
-          if (code_seen('B'))
-          {
-            tower_adj[1] = code_value();
-            set_delta_constants();
-          }
-          if (code_seen('C'))
-          {
-            tower_adj[2] = code_value();
-            set_delta_constants();
-          }
-          if (code_seen('I'))
-          {
-            tower_adj[3] = code_value();
-            set_delta_constants();
-          }
-          if (code_seen('J'))
-          {
-            tower_adj[4] = code_value();
-            set_delta_constants();
-          }
-          if (code_seen('K'))
-          {
-            tower_adj[5] = code_value();
-            set_delta_constants();
-          }
-          if (code_seen('R'))
-          {
-            delta_radius = code_value();
-            set_delta_constants();
-          }
-          if (code_seen('D'))
-          {
-            delta_diagonal_rod = code_value();
-            set_delta_constants();
-          }
-          if (code_seen('H'))
-          {
-            max_pos[Z_AXIS]= code_value();
-            set_delta_constants();
-          }
-          if (code_seen('P'))
-          {
-            float pz = code_value();
-            if (!(code_seen(axis_codes[0]) || code_seen(axis_codes[1]) || code_seen(axis_codes[2])))  // Allow direct set of Z offset without an axis code
-            {
-              z_probe_offset[Z_AXIS]= pz;
-            }
-            else
-            {
-              for(int8_t i=0; i < 3; i++)
-              {
-                if (code_seen(axis_codes[i])) z_probe_offset[i] = code_value();
-              }
-            }
-          }
-          if (code_seen('L'))
-          {
-            SERIAL_ECHOLN("Current Delta geometry values:");
-            SERIAL_ECHOPAIR("X (Endstop Adj): ",endstop_adj[0]);
-            SERIAL_ECHOLN("");
-            SERIAL_ECHOPAIR("Y (Endstop Adj): ",endstop_adj[1]);
-            SERIAL_ECHOLN("");
-            SERIAL_ECHOPAIR("Z (Endstop Adj): ",endstop_adj[2]);
-            SERIAL_ECHOLN("");
-            SERIAL_ECHOPAIR("P (Z-Probe Offset): X", z_probe_offset[0]);
-            SERIAL_ECHOPAIR(" Y", z_probe_offset[1]);
-            SERIAL_ECHOPAIR(" Z", z_probe_offset[2]);
-            SERIAL_ECHOLN("");
-            SERIAL_ECHOPAIR("A (Tower A Position Correction): ",tower_adj[0]);
-            SERIAL_ECHOLN("");
-            SERIAL_ECHOPAIR("B (Tower B Position Correction): ",tower_adj[1]);
-            SERIAL_ECHOLN("");
-            SERIAL_ECHOPAIR("C (Tower C Position Correction): ",tower_adj[2]);
-            SERIAL_ECHOLN("");
-            SERIAL_ECHOPAIR("I (Tower A Radius Correction): ",tower_adj[3]);
-            SERIAL_ECHOLN("");
-            SERIAL_ECHOPAIR("J (Tower B Radius Correction): ",tower_adj[4]);
-            SERIAL_ECHOLN("");
-            SERIAL_ECHOPAIR("K (Tower C Radius Correction): ",tower_adj[5]);
-            SERIAL_ECHOLN("");
-            SERIAL_ECHOPAIR("R (Delta Radius): ",delta_radius);
-            SERIAL_ECHOLN("");
-            SERIAL_ECHOPAIR("D (Diagonal Rod Length): ",delta_diagonal_rod);
-            SERIAL_ECHOLN("");
-            SERIAL_ECHOPAIR("H (Z-Height): ",max_pos[Z_AXIS]);
-            SERIAL_ECHOLN("");
-          }
-        }
-        break;
-      #endif //Delta
 
       #ifdef FWRETRACT
         case 207: //M207 - set retract length S[positive mm] F[feedrate mm/min] Z[additional zlift/hop]
@@ -4706,7 +4726,47 @@ void process_commands()
           }
         }
       break;
+      case 240: //M240  Triggers a camera by emulating a Canon RC-1 : http://www.doc-diy.net/photo/rc-1_hacked/
+      {
+        #ifdef CHDK
+          SET_OUTPUT(CHDK);
+          WRITE(CHDK, HIGH);
+          chdkHigh = millis();
+          chdkActive = true;
+        #else
+          #if defined(PHOTOGRAPH_PIN) && PHOTOGRAPH_PIN > -1
+            const uint8_t NUM_PULSES=16;
+            const float PULSE_LENGTH=0.01524;
+            for(int i=0; i < NUM_PULSES; i++)
+            {
+              WRITE(PHOTOGRAPH_PIN, HIGH);
+              _delay_ms(PULSE_LENGTH);
+              WRITE(PHOTOGRAPH_PIN, LOW);
+              _delay_ms(PULSE_LENGTH);
+            }
+            delay(7.33);
+            for(int i=0; i < NUM_PULSES; i++) {
+              WRITE(PHOTOGRAPH_PIN, HIGH);
+              _delay_ms(PULSE_LENGTH);
+              WRITE(PHOTOGRAPH_PIN, LOW);
+              _delay_ms(PULSE_LENGTH);
+            }
+          #endif //defined(PHOTOGRAPH_PIN) && PHOTOGRAPH_PIN > -1
+        #endif //CHDK
+      }
+      break;
 
+      #ifdef DOGLCD
+        case 250: //M250  Set LCD contrast value: C<value> (value 0..63)
+        {
+          if (code_seen('C')) lcd_setcontrast(((int)code_value())&63);
+          SERIAL_PROTOCOLPGM("lcd contrast value: ");
+          SERIAL_PROTOCOL(lcd_contrast);
+          SERIAL_PROTOCOLLN("");
+        }
+        break;
+      #endif //DOGLCD
+      
       #if NUM_SERVOS > 0
         case 280: //M280 - set servo position absolute. P: servo index, S: angle or microseconds
         {
@@ -4810,6 +4870,16 @@ void process_commands()
         break;
       #endif //PIDTEMP
 
+      #ifdef PREVENT_DANGEROUS_EXTRUDE
+        case 302: //M302 allow cold extrudes, or set the minimum extrude temperature
+        {
+          float temp = .0;
+          if (code_seen('S')) temp=code_value();
+          set_extrude_min_temp(temp);
+        }
+        break;
+      #endif //PREVENT_DANGEROUS_EXTRUDE
+
       #ifdef PIDTEMPBED
         case 304: // M304
         {
@@ -4829,56 +4899,7 @@ void process_commands()
         }
         break;
       #endif //PIDTEMPBED
-      case 240: //M240  Triggers a camera by emulating a Canon RC-1 : http://www.doc-diy.net/photo/rc-1_hacked/
-      {
-        #ifdef CHDK
-          SET_OUTPUT(CHDK);
-          WRITE(CHDK, HIGH);
-          chdkHigh = millis();
-          chdkActive = true;
-        #else
-          #if defined(PHOTOGRAPH_PIN) && PHOTOGRAPH_PIN > -1
-            const uint8_t NUM_PULSES=16;
-            const float PULSE_LENGTH=0.01524;
-            for(int i=0; i < NUM_PULSES; i++)
-            {
-              WRITE(PHOTOGRAPH_PIN, HIGH);
-              _delay_ms(PULSE_LENGTH);
-              WRITE(PHOTOGRAPH_PIN, LOW);
-              _delay_ms(PULSE_LENGTH);
-            }
-            delay(7.33);
-            for(int i=0; i < NUM_PULSES; i++) {
-              WRITE(PHOTOGRAPH_PIN, HIGH);
-              _delay_ms(PULSE_LENGTH);
-              WRITE(PHOTOGRAPH_PIN, LOW);
-              _delay_ms(PULSE_LENGTH);
-            }
-          #endif //defined(PHOTOGRAPH_PIN) && PHOTOGRAPH_PIN > -1
-        #endif //CHDK
-      }
-      break;
 
-      #ifdef DOGLCD
-        case 250: //M250  Set LCD contrast value: C<value> (value 0..63)
-        {
-          if (code_seen('C')) lcd_setcontrast(((int)code_value())&63);
-          SERIAL_PROTOCOLPGM("lcd contrast value: ");
-          SERIAL_PROTOCOL(lcd_contrast);
-          SERIAL_PROTOCOLLN("");
-        }
-        break;
-      #endif
-
-      #ifdef PREVENT_DANGEROUS_EXTRUDE
-        case 302: //M302 allow cold extrudes, or set the minimum extrude temperature
-        {
-          float temp = .0;
-          if (code_seen('S')) temp=code_value();
-          set_extrude_min_temp(temp);
-        }
-        break;
-      #endif
       case 303: //M303 PID autotune
       {
         float temp = 150.0;
@@ -4889,6 +4910,34 @@ void process_commands()
         if (code_seen('S')) temp=code_value();
         if (code_seen('C')) c=code_value();
         PID_autotune(temp, e, c);
+      }
+      break;
+      case 350: // M350 Set microstepping mode. Warning: Steps per unit remains unchanged. S code sets stepping mode for all drivers.
+      {
+        #if defined(X_MS1_PIN) && X_MS1_PIN > -1
+          if(code_seen('S')) for(int i=0;i<=4;i++) microstep_mode(i,code_value());
+          for(int i=0;i<NUM_AXIS;i++) if(code_seen(axis_codes[i])) microstep_mode(i,(uint8_t)code_value());
+          if(code_seen('B')) microstep_mode(4,code_value());
+          microstep_readings();
+        #endif // X_MS1_PIN
+      }
+      break;
+      case 351: // M351 Toggle MS1 MS2 pins directly, S# determines MS1 or MS2, X# sets the pin high/low.
+      {
+        #if defined(X_MS1_PIN) && X_MS1_PIN > -1
+          if(code_seen('S')) switch((int)code_value())
+          {
+          case 1:
+            for(int i=0;i<NUM_AXIS;i++) if(code_seen(axis_codes[i])) microstep_ms(i,code_value(),-1);
+            if(code_seen('B')) microstep_ms(4,code_value(),-1);
+            break;
+          case 2:
+            for(int i=0;i<NUM_AXIS;i++) if(code_seen(axis_codes[i])) microstep_ms(i,-1,code_value());
+            if(code_seen('B')) microstep_ms(4,-1,code_value());
+            break;
+          }
+          microstep_readings();
+        #endif // X_MS1_PIN
       }
       break;
 
@@ -5338,6 +5387,14 @@ void process_commands()
         break;
       #endif //DUAL_X_CARRIAGE
 
+      #if defined(ENABLE_AUTO_BED_LEVELING) || defined(DELTA)
+        case 666: //M666 Set Z probe offset or set delta endstop and geometry adjustment
+        {
+          gcode_M666();
+        }
+        break;
+      #endif //defined(ENABLE_AUTO_BED_LEVELING) || defined(DELTA)
+      
       case 907: // M907 Set digital trim pot motor current using axis codes.
       {
         #if defined(DIGIPOTSS_PIN) && DIGIPOTSS_PIN > -1
@@ -5370,34 +5427,6 @@ void process_commands()
           if(code_seen('S')) current=code_value();
           digitalPotWrite(channel, current);
         #endif // DIGIPOTSS_PIN
-      }
-      break;
-      case 350: // M350 Set microstepping mode. Warning: Steps per unit remains unchanged. S code sets stepping mode for all drivers.
-      {
-        #if defined(X_MS1_PIN) && X_MS1_PIN > -1
-          if(code_seen('S')) for(int i=0;i<=4;i++) microstep_mode(i,code_value());
-          for(int i=0;i<NUM_AXIS;i++) if(code_seen(axis_codes[i])) microstep_mode(i,(uint8_t)code_value());
-          if(code_seen('B')) microstep_mode(4,code_value());
-          microstep_readings();
-        #endif // X_MS1_PIN
-      }
-      break;
-      case 351: // M351 Toggle MS1 MS2 pins directly, S# determines MS1 or MS2, X# sets the pin high/low.
-      {
-        #if defined(X_MS1_PIN) && X_MS1_PIN > -1
-          if(code_seen('S')) switch((int)code_value())
-          {
-          case 1:
-            for(int i=0;i<NUM_AXIS;i++) if(code_seen(axis_codes[i])) microstep_ms(i,code_value(),-1);
-            if(code_seen('B')) microstep_ms(4,code_value(),-1);
-            break;
-          case 2:
-            for(int i=0;i<NUM_AXIS;i++) if(code_seen(axis_codes[i])) microstep_ms(i,-1,code_value());
-            if(code_seen('B')) microstep_ms(4,-1,code_value());
-            break;
-          }
-          microstep_readings();
-        #endif // X_MS1_PIN
       }
       break;
 
