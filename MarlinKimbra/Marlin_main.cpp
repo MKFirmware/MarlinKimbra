@@ -197,8 +197,7 @@ float zprobe_zoffset;
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
 int feedmultiply = 100; //100->1 200->2
 int saved_feedmultiply;
-int extrudemultiply = 100; //100->1 200->2
-int extruder_multiply[EXTRUDERS] = { 100
+int extruder_multiplier[EXTRUDERS] = { 100 //100->1 200->2
   #if EXTRUDERS > 1
     , 100
     #if EXTRUDERS > 2
@@ -4672,11 +4671,11 @@ void process_commands()
             if(setTargetedHotend(221)){
               break;
             }
-            extruder_multiply[tmp_extruder] = tmp_code;
+            extruder_multiplier[tmp_extruder] = tmp_code;
           }
           else
           {
-            extrudemultiply = tmp_code ;
+            extruder_multiplier[active_extruder] = tmp_code;
           }
         }
       }
@@ -5099,7 +5098,7 @@ void process_commands()
           //SERIAL_PROTOCOLPGM("Filament dia (measured mm):");
           //SERIAL_PROTOCOL(filament_width_meas);
           //SERIAL_PROTOCOLPGM("Extrusion ratio(%):");
-          //SERIAL_PROTOCOL(extrudemultiply);
+          //SERIAL_PROTOCOL(extruder_multiplier[active_extruder]);
         }
         break;
         case 406:  //M406 Turn off filament sensor for control
