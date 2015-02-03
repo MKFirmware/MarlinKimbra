@@ -1,4 +1,4 @@
-// Define this to set a custom name for your generic Mendel,
+// Define this to set a custom name for your generic Delta
 #define CUSTOM_MENDEL_NAME "Delta"
 
 //===========================================================================
@@ -72,14 +72,14 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define X_ENABLE_ON 0
 #define Y_ENABLE_ON 0
 #define Z_ENABLE_ON 0
-#define E_ENABLE_ON 0      // For all extruders
+#define E_ENABLE_ON 0      // For all extruder
 
 // Disables axis when it's not being used.
 #define DISABLE_X false
 #define DISABLE_Y false
 #define DISABLE_Z false
-#define DISABLE_E false      // For all extruders
-#define DISABLE_INACTIVE_EXTRUDER true //disable only inactive extruders and keep active extruder enabled
+#define DISABLE_E false      // For all extruder
+#define DISABLE_INACTIVE_EXTRUDER true //disable only inactive extruder and keep active extruder enabled
 
 
 #define INVERT_X_DIR false
@@ -95,12 +95,12 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define Y_HOME_DIR 1
 #define Z_HOME_DIR 1
 
-#define min_software_endstops true // If true, axis won't move to coordinates less than HOME_POS.
+#define min_software_endstops true  // If true, axis won't move to coordinates less than HOME_POS.
 #define max_software_endstops true  // If true, axis won't move to coordinates greater than the defined lengths below.
 
 // The position of the homing switches
 #define MANUAL_HOME_POSITIONS  // If defined, MANUAL_*_HOME_POS below will be used
-#define BED_CENTER_AT_0_0  // If defined, the center of the bed is at (X=0, Y=0)
+#define BED_CENTER_AT_0_0      // If defined, the center of the bed is at (X=0, Y=0)
 
 //Manual homing switch locations:
 #define MANUAL_X_HOME_POS 0
@@ -125,15 +125,15 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 
 // default settings
 // delta speeds must be the same on xyz
-#define DEFAULT_AXIS_STEPS_PER_UNIT {80,80,80,451,625,625,625}      // X, Y, Z, E0, E1, E2, E3
-#define DEFAULT_MAX_FEEDRATE {300,300,300,45,100,100,100}      // X, Y, Z, E0, E1, E2, E3 (mm/sec)
-#define DEFAULT_RETRACTION_MAX_FEEDRATE {150,150,150,150}      // E0, E1, E2, E3 (mm/sec)
-#define DEFAULT_MAX_ACCELERATION {2000,2000,2000,1000,1000,1000,1000}      // X, Y, Z, E0, E1, E2, E3 maximum start speed for accelerated moves.
+#define DEFAULT_AXIS_STEPS_PER_UNIT {80,80,80,451,625,625,625}        // X, Y, Z, E0, E1, E2, E3
+#define DEFAULT_MAX_FEEDRATE {300,300,300,45,100,100,100}             // X, Y, Z, E0, E1, E2, E3 (mm/sec)
+#define DEFAULT_RETRACTION_MAX_FEEDRATE {150,150,150,150}             // E0, E1, E2, E3 (mm/sec)
+#define DEFAULT_MAX_ACCELERATION {2000,2000,2000,1000,1000,1000,1000} // X, Y, Z, E0, E1, E2, E3 maximum start speed for accelerated moves.
 
-#define DEFAULT_ACCELERATION 1000      // X, Y, Z and E max acceleration in mm/s^2 for printing moves
-#define DEFAULT_RETRACT_ACCELERATION 2500      // X, Y, Z and E max acceleration in mm/s^2 for retracts
+#define DEFAULT_ACCELERATION 1000          // X, Y, Z and E max acceleration in mm/s^2 for printing moves
+#define DEFAULT_RETRACT_ACCELERATION 2500  // X, Y, Z and E max acceleration in mm/s^2 for retracts
 
 // The speed change that does not require acceleration (i.e. the software might assume it can be done instantaneously)
-#define DEFAULT_XYJERK 20      // (mm/sec)
-#define DEFAULT_ZJERK 20      // (mm/sec)
-#define DEFAULT_EJERK 5      // (mm/sec)
+#define DEFAULT_XYJERK 20  // (mm/sec)
+#define DEFAULT_ZJERK 20   // (mm/sec)
+#define DEFAULT_EJERK 5    // (mm/sec)
