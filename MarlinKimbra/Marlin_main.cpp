@@ -5213,7 +5213,7 @@ void process_commands()
           //lift Z
           if(code_seen('Z'))
           {
-            target[Z_AXIS]+= code_value();
+            target[Z_AXIS]= code_value();
           }
           else
           {
@@ -5232,7 +5232,7 @@ void process_commands()
           //move xy
           if(code_seen('X'))
           {
-            target[X_AXIS]+= code_value();
+            target[X_AXIS]= code_value();
           }
           else
           {
