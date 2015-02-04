@@ -380,7 +380,7 @@ void Config_ResetDefault()
   SERIAL_ECHOLNPGM("Hardcoded Default Settings Loaded");
 }
 
-#ifdef EEPROM_CHITCHAT
+#ifndef DISABLE_M503
   void Config_PrintSettings()
   {  // Always have this function, even with EEPROM_SETTINGS disabled, the current values will be shown
     SERIAL_ECHO_START;
@@ -604,4 +604,4 @@ void Config_ResetDefault()
       }
     #endif //FWRETRACT
   }
-#endif //EEPROM_CHITCHAT
+#endif //!DISABLE_M503
