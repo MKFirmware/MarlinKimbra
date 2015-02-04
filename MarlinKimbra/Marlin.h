@@ -143,8 +143,8 @@ void manage_inactivity(bool ignore_stepper_queue=false);
     #define disable_z() { WRITE(Z_ENABLE_PIN,!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }
   #endif
 #else
-  #define enable_z() ;
-  #define disable_z() ;
+  #define enable_z();
+  #define disable_z();
 #endif
 
 #if defined(E0_ENABLE_PIN) && (E0_ENABLE_PIN > -1)
@@ -178,6 +178,8 @@ void manage_inactivity(bool ignore_stepper_queue=false);
   #define enable_e3()  /* nothing */
   #define disable_e3() /* nothing */
 #endif
+
+#define disable_e() {disable_e0(); disable_e1(); disable_e2(); disable_e3();}
 
 enum AxisEnum {X_AXIS=0, Y_AXIS=1, Z_AXIS=2, E_AXIS=3};
 
