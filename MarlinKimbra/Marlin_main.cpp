@@ -1573,7 +1573,7 @@ bool extruder_duplication_enabled = false; // used in mode 2
         SERIAL_PROTOCOL_F(bed_level[x+3][3-y], 3);
         SERIAL_PROTOCOLPGM(" ");
       }
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
     }
   }
 
@@ -1679,7 +1679,7 @@ bool extruder_duplication_enabled = false; // used in mode 2
     SERIAL_ECHOPAIR("\t\t\tX:",endstop_adj[0]);
     SERIAL_ECHOPAIR(" Y:",endstop_adj[1]);
     SERIAL_ECHOPAIR(" Z:",endstop_adj[2]);
-    SERIAL_ECHOLN("");
+    SERIAL_EOL;
 
     SERIAL_PROTOCOL_F(bed_level_oy, 4);
     SERIAL_PROTOCOLPGM("\t\t");
@@ -1691,7 +1691,7 @@ bool extruder_duplication_enabled = false; // used in mode 2
     SERIAL_ECHOPAIR("\t\t\tA:",tower_adj[0]);
     SERIAL_ECHOPAIR(" B:",tower_adj[1]);
     SERIAL_ECHOPAIR(" C:",tower_adj[2]);
-    SERIAL_ECHOLN("");
+    SERIAL_EOL;
 
     SERIAL_PROTOCOL_F(bed_level_x, 4);
     SERIAL_PROTOCOLPGM("\t\t");
@@ -1699,17 +1699,17 @@ bool extruder_duplication_enabled = false; // used in mode 2
     SERIAL_ECHOPAIR("\t\tI:",tower_adj[3]);
     SERIAL_ECHOPAIR(" J:",tower_adj[4]);
     SERIAL_ECHOPAIR(" K:",tower_adj[5]);
-    SERIAL_ECHOLN("");
+    SERIAL_EOL;
 
     SERIAL_PROTOCOLPGM("\t");
     SERIAL_PROTOCOL_F(bed_level_oz, 4);
     SERIAL_PROTOCOLPGM("\t\t\tDelta Radius: ");
     SERIAL_PROTOCOL_F(delta_radius, 4);
-    SERIAL_ECHOLN("");
+    SERIAL_EOL;
 
     SERIAL_PROTOCOLPGM("X-Tower\t\tY-Tower\t\tDiag Rod: ");
     SERIAL_PROTOCOL_F(delta_diagonal_rod, 4);
-    SERIAL_ECHOLN("");
+    SERIAL_EOL;
   }
 
   void save_carriage_positions(int position_num)
@@ -2492,7 +2492,7 @@ void gcode_G28()
     if (code_seen('D'))
     {
       SERIAL_ECHOLN("Current bed level array values:");
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
       for (int y = 0; y < 7; y++)
       {
         for (int x = 0; x < 7; x++)
@@ -2500,7 +2500,7 @@ void gcode_G28()
           SERIAL_PROTOCOL_F(bed_level[x][y], 3);
           SERIAL_PROTOCOLPGM(" ");
         }
-        SERIAL_ECHOLN("");
+        SERIAL_EOL;
       }
       return;
     }
@@ -2568,7 +2568,7 @@ void gcode_G28()
       SERIAL_ECHO(y);
       SERIAL_ECHO(" = ");
       SERIAL_PROTOCOL_F(probe_value, 4);
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
 
       SERIAL_ECHO("Carriage Positions: [");
       SERIAL_ECHO(saved_position[X_AXIS]);
@@ -2648,12 +2648,12 @@ void gcode_G28()
       {
         SERIAL_ECHOLN("The position of the endstop switches on this printer are not within limits");
         SERIAL_ECHOLN("Adjust endstop switches so that they are within 3mm Z-height of each other");
-        SERIAL_ECHOLN("");
+        SERIAL_EOL;
         SERIAL_ECHOPAIR("Current Endstop Positions - X: ", bed_level_x + endstop_adj[0]); 
         SERIAL_ECHOPAIR(" Y: ", bed_level_y + endstop_adj[1]);
         SERIAL_ECHOPAIR(" Z: ", bed_level_z + endstop_adj[2]);
-        SERIAL_ECHOLN("");
-        SERIAL_ECHOLN("");
+        SERIAL_EOL;
+        SERIAL_EOL;
         SERIAL_ECHOLN("Auto calibration aborted");
 
         retract_z_probe();
@@ -2675,7 +2675,7 @@ void gcode_G28()
       {
         SERIAL_ECHO("Iteration: ");
         SERIAL_ECHO(loopcount);
-        SERIAL_ECHOLN("");
+        SERIAL_EOL;
 
         if ((bed_level_c > 3) or (bed_level_c < -3))
         {
@@ -2865,7 +2865,7 @@ void gcode_G28()
                     if (bed_level_z > bed_level_oz) adj_RadiusC = -0.5;
                     #ifdef DEBUG_MESSAGES
                       SERIAL_ECHOPAIR("adj_RadiusC set to ",adj_RadiusC);
-                      SERIAL_ECHOLN("");
+                      SERIAL_EOL;
                     #endif
                   }
                 }
@@ -2880,7 +2880,7 @@ void gcode_G28()
                     if (bed_level_x > bed_level_ox) adj_RadiusA = -0.5;  
                     #ifdef DEBUG_MESSAGES
                       SERIAL_ECHOPAIR("adj_RadiusA set to ",adj_RadiusA);
-                      SERIAL_ECHOLN("");
+                      SERIAL_EOL;
                     #endif
                   }
                 } 
@@ -2895,7 +2895,7 @@ void gcode_G28()
                     if (bed_level_y > bed_level_oy) adj_RadiusB = -0.5;                     
                     #ifdef DEBUG_MESSAGES
                       SERIAL_ECHOPAIR("adj_RadiusB set to ",adj_RadiusB);
-                      SERIAL_ECHOLN("");
+                      SERIAL_EOL;
                     #endif
                   }
                 }                   
@@ -2933,19 +2933,19 @@ void gcode_G28()
                   SERIAL_ECHOPAIR(" ox: ", bed_level_ox);
                   SERIAL_ECHOPAIR(" oy: ", bed_level_oy);
                   SERIAL_ECHOPAIR(" oz: ", bed_level_oz);
-                  SERIAL_ECHOLN("");
+                  SERIAL_EOL;
                   SERIAL_ECHO("radius:");
                   SERIAL_PROTOCOL_F(delta_radius, 4);
                   SERIAL_ECHO(" diagrod:");
                   SERIAL_PROTOCOL_F(delta_diagonal_rod, 4);
-                  SERIAL_ECHOLN("");
+                  SERIAL_EOL;
                   SERIAL_ECHO("Radius Adj Complete: ");
                   if (adj_r_done == true) SERIAL_ECHO("Yes"); 
                   else SERIAL_ECHO("No");
                   SERIAL_ECHO(" DiagRod Adj Complete: ");
                   if (adj_dr_done == true) SERIAL_ECHO("Yes"); 
                   else SERIAL_ECHO("No");
-                  SERIAL_ECHOLN("");
+                  SERIAL_EOL;
                   SERIAL_ECHOPAIR("RadiusA Error: ",radiusErrorA);
                   SERIAL_ECHOPAIR(" (adjust: ",adj_RadiusA);
                   SERIAL_ECHOLN(")");
@@ -2956,11 +2956,11 @@ void gcode_G28()
                   SERIAL_ECHOPAIR(" (adjust: ",adj_RadiusC);
                   SERIAL_ECHOLN(")");
                   SERIAL_ECHOPAIR("DeltaAlphaA: ",adj_AlphaA);
-                  SERIAL_ECHOLN("");
+                  SERIAL_EOL;
                   SERIAL_ECHOPAIR("DeltaAlphaB: ",adj_AlphaB);
-                  SERIAL_ECHOLN("");
+                  SERIAL_EOL;
                   SERIAL_ECHOPAIR("DeltaAlphaC: ",adj_AlphaC);
-                  SERIAL_ECHOLN("");
+                  SERIAL_EOL;
                 #endif
               } while (((adj_r_done == false) or (adj_dr_done = false)) and (loopcount < iterations));
             }
@@ -3006,7 +3006,7 @@ void gcode_G28()
       SERIAL_ECHOLN("Issue M500 Command to save calibration settings to EPROM (if enabled)");
       /*   
        if ((abs(delta_diagonal_rod - saved_delta_diagonal_rod) > 1) and (adj_dr_allowed == true)) {
-       SERIAL_ECHOLN("");
+       SERIAL_EOL;
        SERIAL_ECHOPAIR("WARNING: The length of diagonal rods specified (", saved_delta_diagonal_rod);
        SERIAL_ECHOLN(" mm) appears to be incorrect");
        SERIAL_ECHOLN("If you have measured your rods and you believe that this value is correct, this could indicate");
@@ -3034,7 +3034,7 @@ void gcode_G60()
   //SERIAL_ECHOPAIR(" Lastpos Y: ", lastpos[Y_AXIS]);
   //SERIAL_ECHOPAIR(" Lastpos Z: ", lastpos[Z_AXIS]);
   //SERIAL_ECHOPAIR(" Lastpos E: ", lastpos[E_AXIS]);
-  //SERIAL_ECHOLN("");
+  //SERIAL_EOL;
 }
 
 // G61: move to X Y Z in memory
@@ -3055,7 +3055,7 @@ void gcode_G61()
   //SERIAL_ECHOPAIR(" Move to Y: ", destination[Y_AXIS]);
   //SERIAL_ECHOPAIR(" Move to Z: ", destination[Z_AXIS]);
   //SERIAL_ECHOPAIR(" Move to E: ", destination[E_AXIS]);
-  //SERIAL_ECHOLN("");
+  //SERIAL_EOL;
 
   if(code_seen('F'))
   {
@@ -3443,7 +3443,7 @@ void gcode_G92()
     if (code_seen('L'))
     {
       SERIAL_ECHOPAIR("P (Z-Probe Offset):", zprobe_zoffset);
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
     }
   }
 #elif defined(DELTA)
@@ -3520,33 +3520,33 @@ void gcode_G92()
     {
       SERIAL_ECHOLN("Current Delta geometry values:");
       SERIAL_ECHOPAIR("X (Endstop Adj): ",endstop_adj[0]);
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
       SERIAL_ECHOPAIR("Y (Endstop Adj): ",endstop_adj[1]);
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
       SERIAL_ECHOPAIR("Z (Endstop Adj): ",endstop_adj[2]);
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
       SERIAL_ECHOPAIR("P (Z-Probe Offset): X", z_probe_offset[0]);
       SERIAL_ECHOPAIR(" Y", z_probe_offset[1]);
       SERIAL_ECHOPAIR(" Z", z_probe_offset[2]);
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
       SERIAL_ECHOPAIR("A (Tower A Position Correction): ",tower_adj[0]);
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
       SERIAL_ECHOPAIR("B (Tower B Position Correction): ",tower_adj[1]);
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
       SERIAL_ECHOPAIR("C (Tower C Position Correction): ",tower_adj[2]);
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
       SERIAL_ECHOPAIR("I (Tower A Radius Correction): ",tower_adj[3]);
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
       SERIAL_ECHOPAIR("J (Tower B Radius Correction): ",tower_adj[4]);
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
       SERIAL_ECHOPAIR("K (Tower C Radius Correction): ",tower_adj[5]);
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
       SERIAL_ECHOPAIR("R (Delta Radius): ",delta_radius);
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
       SERIAL_ECHOPAIR("D (Diagonal Rod Length): ",delta_diagonal_rod);
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
       SERIAL_ECHOPAIR("H (Z-Height): ",max_pos[Z_AXIS]);
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
     }
   }
 #endif 
@@ -3908,31 +3908,6 @@ void process_commands()
         setWatch();
       }
       break;
-      case 111: //M111 - Debug mode
-      {
-        if (code_seen('S')) debugLevel = code_value();
-        if (debugDryrun())
-        {
-          SERIAL_ECHOLN("DEBUG DRYRUN ENABLED");
-          setTargetBed(0);
-          for (int8_t cur_extruder = 0; cur_extruder < EXTRUDERS; ++cur_extruder)
-          {
-            setTargetHotend(0, cur_extruder);
-          }
-        }
-      }
-      break;
-      case 112: //M112 -Emergency Stop
-      {
-        kill();
-      }
-      break;
-      case 140: //M140 set bed temp
-      {
-        if(debugDryrun()) break;
-        if (code_seen('S')) setTargetBed(code_value());
-      }
-      break;
       case 105 : //M105
       {
         if(setTargetedHotend(105)) break;
@@ -4000,6 +3975,27 @@ void process_commands()
         return;
       }
       break;
+
+      #if defined(FAN_PIN) && FAN_PIN > -1
+        case 106: //M106 Fan On
+        {
+          if (code_seen('S'))
+          {
+            fanSpeed=constrain(code_value(),0,255);
+          }
+          else
+          {
+            fanSpeed=255;
+          }
+          break;
+        }
+        case 107: //M107 Fan Off
+        {
+          fanSpeed = 0;
+        }
+        break;
+      #endif //FAN_PIN
+
       case 109: //M109 - Wait for extruder heater to reach target.
       {
         if(setTargetedHotend(109)) break;
@@ -4096,6 +4092,31 @@ void process_commands()
         refresh_cmd_timeout();
       }
       break;
+      case 111: //M111 - Debug mode
+      {
+        if (code_seen('S')) debugLevel = code_value();
+        if (debugDryrun())
+        {
+          SERIAL_ECHOLN("DEBUG DRYRUN ENABLED");
+          setTargetBed(0);
+          for (int8_t cur_extruder = 0; cur_extruder < EXTRUDERS; ++cur_extruder)
+          {
+            setTargetHotend(0, cur_extruder);
+          }
+        }
+      }
+      break;
+      case 112: //M112 -Emergency Stop
+      {
+        kill();
+      }
+      break;
+      case 140: //M140 set bed temp
+      {
+        if(debugDryrun()) break;
+        if (code_seen('S')) setTargetBed(code_value());
+      }
+      break;
       case 190: //M190 - Wait for bed heater to reach target.
       {
         #if defined(TEMP_BED_PIN) && TEMP_BED_PIN > -1
@@ -4139,26 +4160,6 @@ void process_commands()
         #endif
       }
       break;
-
-      #if defined(FAN_PIN) && FAN_PIN > -1
-        case 106: //M106 Fan On
-        {
-          if (code_seen('S'))
-          {
-            fanSpeed=constrain(code_value(),0,255);
-          }
-          else
-          {
-            fanSpeed=255;
-          }
-          break;
-        }
-        case 107: //M107 Fan Off
-        {
-          fanSpeed = 0;
-        }
-        break;
-      #endif //FAN_PIN
 
       #ifdef BARICUDA
         // PWM for HEATER_1_PIN
@@ -4647,7 +4648,7 @@ void process_commands()
                 SERIAL_ECHO(extruder_offset[Z_AXIS][tmp_extruder]);
               #endif
             }
-            SERIAL_ECHOLN("");
+            SERIAL_EOL;
           }
           break;
         #endif //EXTRUDERS > 1

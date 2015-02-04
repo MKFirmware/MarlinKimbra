@@ -385,7 +385,7 @@ void Config_ResetDefault()
   {  // Always have this function, even with EEPROM_SETTINGS disabled, the current values will be shown
     SERIAL_ECHO_START;
     SERIAL_ECHOPAIR("Baudrate: ", baudrate);
-    SERIAL_ECHOLN("");
+    SERIAL_EOL;
     SERIAL_ECHOLNPGM("Steps per unit:");
     SERIAL_ECHO_START;
     SERIAL_ECHOPAIR("  M92 X",axis_steps_per_unit[X_AXIS]);
@@ -401,7 +401,7 @@ void Config_ResetDefault()
         #endif //EXTRUDERS > 3
       #endif //EXTRUDERS > 2
     #endif //EXTRUDERS > 1
-    SERIAL_ECHOLN("");
+    SERIAL_EOL;
     SERIAL_ECHO_START;
 
     #ifdef SCARA
@@ -410,7 +410,7 @@ void Config_ResetDefault()
       SERIAL_ECHOPAIR("  M365 X",axis_scaling[X_AXIS]);
       SERIAL_ECHOPAIR(" Y",axis_scaling[Y_AXIS]);
       SERIAL_ECHOPAIR(" Z",axis_scaling[Z_AXIS]);
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
       SERIAL_ECHO_START;
     #endif
 
@@ -429,7 +429,7 @@ void Config_ResetDefault()
         #endif //EXTRUDERS > 3
       #endif //EXTRUDERS > 2
     #endif //EXTRUDERS > 1
-    SERIAL_ECHOLN("");
+    SERIAL_EOL;
     SERIAL_ECHO_START;
     SERIAL_ECHOLNPGM("Retraction Steps per unit:");
     SERIAL_ECHO_START;
@@ -443,7 +443,7 @@ void Config_ResetDefault()
         #endif //EXTRUDERS > 3
       #endif //EXTRUDERS > 2
     #endif //EXTRUDERS > 1
-    SERIAL_ECHOLN("");
+    SERIAL_EOL;
     SERIAL_ECHO_START;
     SERIAL_ECHOLNPGM("Maximum Acceleration (mm/s2):");
     SERIAL_ECHO_START;
@@ -460,13 +460,13 @@ void Config_ResetDefault()
         #endif //EXTRUDERS > 3
       #endif //EXTRUDERS > 2
     #endif //EXTRUDERS > 1
-    SERIAL_ECHOLN("");
+    SERIAL_EOL;
     SERIAL_ECHO_START;
     SERIAL_ECHOLNPGM("Acceleration: S=acceleration, T=retract acceleration");
     SERIAL_ECHO_START;
     SERIAL_ECHOPAIR("  M204 S",acceleration ); 
     SERIAL_ECHOPAIR(" T" ,retract_acceleration);
-    SERIAL_ECHOLN("");
+    SERIAL_EOL;
 
     SERIAL_ECHO_START;
     SERIAL_ECHOLNPGM("Advanced variables: S=Min feedrate (mm/s), T=Min travel feedrate (mm/s), B=minimum segment time (ms), X=maximum XY jerk (mm/s),  Z=maximum Z jerk (mm/s),  E=maximum E jerk (mm/s)");
@@ -477,7 +477,7 @@ void Config_ResetDefault()
     SERIAL_ECHOPAIR(" X" ,max_xy_jerk ); 
     SERIAL_ECHOPAIR(" Z" ,max_z_jerk);
     SERIAL_ECHOPAIR(" E" ,max_e_jerk);
-    SERIAL_ECHOLN(""); 
+    SERIAL_EOL; 
 
     SERIAL_ECHO_START;
     SERIAL_ECHOLNPGM("Home offset (mm):");
@@ -485,7 +485,7 @@ void Config_ResetDefault()
     SERIAL_ECHOPAIR("  M206 X",add_homing[X_AXIS] );
     SERIAL_ECHOPAIR(" Y" ,add_homing[Y_AXIS] );
     SERIAL_ECHOPAIR(" Z" ,add_homing[Z_AXIS] );
-    SERIAL_ECHOLN("");
+    SERIAL_EOL;
 
     #ifdef DELTA
       SERIAL_ECHO_START;
@@ -494,7 +494,7 @@ void Config_ResetDefault()
       SERIAL_ECHOPAIR("  M666 X",endstop_adj[0]);
       SERIAL_ECHOPAIR(" Y" ,endstop_adj[1]);
       SERIAL_ECHOPAIR(" Z" ,endstop_adj[2]);
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
       SERIAL_ECHO_START;
       SERIAL_ECHOLNPGM("Delta Geometry adjustment:");
       SERIAL_ECHO_START;
@@ -508,17 +508,17 @@ void Config_ResetDefault()
       SERIAL_ECHOPAIR(" D" ,delta_diagonal_rod);
       SERIAL_ECHOPAIR(" H" ,max_pos[2]);
       SERIAL_ECHOPAIR(" P" ,z_probe_offset[3]);
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
       SERIAL_ECHOLN("Tower Positions");
       SERIAL_ECHOPAIR("Tower1 X:",delta_tower1_x);
       SERIAL_ECHOPAIR(" Y:",delta_tower1_y);
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
       SERIAL_ECHOPAIR("Tower2 X:",delta_tower2_x);
       SERIAL_ECHOPAIR(" Y:",delta_tower2_y);
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
       SERIAL_ECHOPAIR("Tower3 X:",delta_tower3_x);
       SERIAL_ECHOPAIR(" Y:",delta_tower3_y);
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
     #endif // DELTA
 
     #ifdef ENABLE_AUTO_BED_LEVELING
@@ -526,7 +526,7 @@ void Config_ResetDefault()
       SERIAL_ECHOLNPGM("Z Probe offset (mm)");
       SERIAL_ECHO_START;
       SERIAL_ECHOPAIR("  M666 P",zprobe_zoffset);
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
     #endif // ENABLE_AUTO_BED_LEVELING
 
     #ifdef PIDTEMP
@@ -543,7 +543,7 @@ void Config_ResetDefault()
         SERIAL_ECHOPAIR(" P", Kp[e]);
         SERIAL_ECHOPAIR(" I" ,unscalePID_i(Ki[e])); 
         SERIAL_ECHOPAIR(" D" ,unscalePID_d(Kd[e]));
-        SERIAL_ECHOLN(""); 
+        SERIAL_EOL; 
       }
     #endif // PIDTEMP
 
@@ -554,27 +554,27 @@ void Config_ResetDefault()
       SERIAL_ECHOPAIR("  M207 S",retract_length); 
       SERIAL_ECHOPAIR(" F" ,retract_feedrate*60); 
       SERIAL_ECHOPAIR(" Z" ,retract_zlift);
-      SERIAL_ECHOLN(""); 
+      SERIAL_EOL; 
       SERIAL_ECHO_START;
       SERIAL_ECHOLNPGM("Recover: S=Extra length (mm) F:Speed (mm/m)");
       SERIAL_ECHO_START;
       SERIAL_ECHOPAIR("  M208 S",retract_recover_length); 
       SERIAL_ECHOPAIR(" F" ,retract_recover_feedrate*60); 
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
       SERIAL_ECHO_START;
       SERIAL_ECHOLNPGM("Auto-Retract: S=0 to disable, 1 to interpret extrude-only moves as retracts or recoveries");
       SERIAL_ECHO_START;
       SERIAL_ECHOPAIR("  M209 S", (unsigned long)(autoretract_enabled ? 1 : 0));
-      SERIAL_ECHOLN("");
+      SERIAL_EOL;
       #if EXTRUDERS > 1
         SERIAL_ECHO_START;
         SERIAL_ECHOLNPGM("Multi-extruder settings:");
         SERIAL_ECHO_START;
         SERIAL_ECHOPAIR("  Swap retract length (mm):    ", retract_length_swap);
-        SERIAL_ECHOLN("");
+        SERIAL_EOL;
         SERIAL_ECHO_START;
         SERIAL_ECHOPAIR("  Swap rec. addl. length (mm): ", retract_recover_length_swap);
-        SERIAL_ECHOLN("");
+        SERIAL_EOL;
       #endif //EXTRUDERS > 1
       SERIAL_ECHO_START;
       if (volumetric_enabled)
@@ -582,19 +582,19 @@ void Config_ResetDefault()
         SERIAL_ECHOLNPGM("Filament settings:");
         SERIAL_ECHO_START;
         SERIAL_ECHOPAIR("  M200 D", filament_size[0]);
-        SERIAL_ECHOLN(""); 
+        SERIAL_EOL; 
         #if EXTRUDERS > 1
           SERIAL_ECHO_START;
           SERIAL_ECHOPAIR("  M200 T1 D", filament_size[1]);
-          SERIAL_ECHOLN(""); 
+          SERIAL_EOL; 
           #if EXTRUDERS > 2
             SERIAL_ECHO_START;
             SERIAL_ECHOPAIR("  M200 T2 D", filament_size[2]);
-            SERIAL_ECHOLN("");
+            SERIAL_EOL;
             #if EXTRUDERS > 3
               SERIAL_ECHO_START;
               SERIAL_ECHOPAIR("  M200 T3 D", filament_size[3]);
-              SERIAL_ECHOLN("");
+              SERIAL_EOL;
             #endif //EXTRUDERS > 3
           #endif //EXTRUDERS > 2
         #endif //EXTRUDERS > 1

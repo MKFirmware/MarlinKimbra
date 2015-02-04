@@ -68,7 +68,6 @@
 #define SERIAL_PROTOCOLLN(x) (MYSERIAL.print(x),MYSERIAL.write('\n'))
 #define SERIAL_PROTOCOLLNPGM(x) (serialprintPGM(PSTR(x)),MYSERIAL.write('\n'))
 
-
 extern const char errormagic[] PROGMEM;
 extern const char echomagic[] PROGMEM;
 
@@ -85,6 +84,8 @@ extern const char echomagic[] PROGMEM;
 #define SERIAL_ECHOLNPGM(x) SERIAL_PROTOCOLLNPGM(x)
 
 #define SERIAL_ECHOPAIR(name,value) (serial_echopair_P(PSTR(name),(value)))
+
+#define SERIAL_EOL SERIAL_ECHOLN("")
 
 void serial_echopair_P(const char *s_P, float v);
 void serial_echopair_P(const char *s_P, double v);
@@ -323,4 +324,4 @@ void FirmwareTest();
 
 extern void calculate_volumetric_multipliers();
 
-#endif
+#endif //MARLIN_H
