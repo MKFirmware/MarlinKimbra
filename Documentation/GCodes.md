@@ -56,8 +56,7 @@
 *  M105 - Read current temp
 *  M106 - Fan on
 *  M107 - Fan off
-*  M109 - S[xxx] Wait for extruder current temp to reach target temp. Waits only when heating
-*         R[xxx] Wait for extruder current temp to reach target temp. Waits when heating and cooling
+*  M109 - S[xxx] Wait for extruder current temp to reach target temp. Waits only when heating - R[xxx] Wait for extruder current temp to reach target temp. Waits when heating and cooling
 *  M111 - Debug Dryrun Repetier
 *  M112 - Emergency stop
 *  M114 - Output current position to serial port
@@ -71,8 +70,7 @@
 *  M128 - EtoP Open (BariCUDA EtoP = electricity to air pressure transducer by jmil)
 *  M129 - EtoP Closed (BariCUDA EtoP = electricity to air pressure transducer by jmil)
 *  M140 - Set bed target temp
-*  M190 - S[xxx] Wait for bed current temp to reach target temp. Waits only when heating
-*         R[xxx] Wait for bed current temp to reach target temp. Waits when heating and cooling
+*  M190 - S[xxx] Wait for bed current temp to reach target temp. Waits only when heating - R[xxx] Wait for bed current temp to reach target temp. Waits when heating and cooling
 *  M200 - D[millimeters]- set filament diameter and set E axis units to cubic millimeters (use S0 to set back to millimeters).
 *  M201 - Set max acceleration in units/s^2 for print moves (M201 X1000 Y1000)
 *  M203 - Set maximum feedrate that your machine can sustain (M203 X200 Y200 Z300 E10000) in mm/sec
