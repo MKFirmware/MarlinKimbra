@@ -64,6 +64,8 @@
 *  M115 - Capabilities string
 *  M117 - display message
 *  M119 - Output Endstop status to serial port
+*  M120 - Disable Endstop
+*  M121 - Enable Endstop
 *  M126 - Solenoid Air Valve Open (BariCUDA support by jmil)
 *  M127 - Solenoid Air Valve Closed (BariCUDA vent to atmospheric pressure by jmil)
 *  M128 - EtoP Open (BariCUDA EtoP = electricity to air pressure transducer by jmil)
