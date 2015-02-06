@@ -6222,7 +6222,14 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) //default argument s
        }
     }
   #endif
-    
+
+  #if defined(PAUSE_PIN) && PAUSE_PIN > -1
+    if (READ(PAUSE_PIN) == 0 && !paused)
+    {
+      pause();
+    }
+  #endif //defined(PAUSE_PIN) && PAUSE_PIN > -1
+
   #if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
     controllerFan(); //Check if fan should be turned on to cool stepper drivers down
   #endif
