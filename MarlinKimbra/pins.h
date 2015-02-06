@@ -4379,32 +4379,32 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 /****************************************************************************************/
 
 #ifdef MKR4
-#if (EXTRUDERS == 2) && (DRIVER_EXTRUDERS==1)     // Use this for one driver and two extruder
-#define E0E1_CHOICE_PIN    5
-#elif (EXTRUDERS == 3) && (DRIVER_EXTRUDERS==2)   // Use this for two driver and 3 extruder
-#define E0E2_CHOICE_PIN    5
-#elif (EXTRUDERS == 4) && (DRIVER_EXTRUDERS==2)   // Use this for two driver and 4 extruder
-#define E0E2_CHOICE_PIN    5
-#define E1E3_CHOICE_PIN    6
-#endif // END EXTRUDERS
-#endif // END MKR4
+  #if (EXTRUDERS == 2) && (DRIVER_EXTRUDERS==1)     // Use this for one driver and two extruder
+    #define E0E1_CHOICE_PIN    5
+  #elif (EXTRUDERS == 3) && (DRIVER_EXTRUDERS==2)   // Use this for two driver and 3 extruder
+    #define E0E2_CHOICE_PIN    5
+  #elif (EXTRUDERS == 4) && (DRIVER_EXTRUDERS==2)   // Use this for two driver and 4 extruder
+    #define E0E2_CHOICE_PIN    5
+    #define E1E3_CHOICE_PIN    6
+  #endif //EXTRUDERS
+#endif //MKR4
 
 #ifdef NPR2
-#ifdef DELTA
-#define E_MIN_PIN          3  // Use pin ORIG_X_MIN_PIN
-#else  // NO DELTA
-#define ORIG_Z_MAX_PIN          -1 // Use pin ORIG_Z_MAX_PIN
-#define E_MIN_PIN          19
-#endif // END DELTA
-#endif // END NPR2
+  #ifdef DELTA
+    #define E_MIN_PIN          3  // Use pin ORIG_X_MIN_PIN
+  #else  // NO DELTA
+    #define ORIG_Z_MAX_PIN          -1 // Use pin ORIG_Z_MAX_PIN
+    #define E_MIN_PIN          19
+  #endif //DELTA
+#endif //NPR2
 
 #ifdef LASERBEAM
-#define LASER_PWR_PIN	42
-#define LASER_TTL_PIN	44
+  #define LASER_PWR_PIN	42
+  #define LASER_TTL_PIN	44
 #endif
 
 #ifdef FILAMENT_END_SWITCH
-#define PAUSE_PIN          5
+  #define PAUSE_PIN          5
 #endif
 /****************************************************************************************/
 
@@ -4465,20 +4465,20 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #endif
 
 #ifdef DISABLE_MAX_ENDSTOPS
-#define ORIG_X_MAX_PIN          -1
-#define ORIG_Y_MAX_PIN          -1
-#define ORIG_Z_MAX_PIN          -1
+  #define ORIG_X_MAX_PIN          -1
+  #define ORIG_Y_MAX_PIN          -1
+  #define ORIG_Z_MAX_PIN          -1
 #endif
 
 #ifdef DISABLE_MIN_ENDSTOPS
-#define ORIG_X_MIN_PIN          -1
-#define ORIG_Y_MIN_PIN          -1
-#define ORIG_Z_MIN_PIN          -1
+  #define ORIG_X_MIN_PIN          -1
+  #define ORIG_Y_MIN_PIN          -1
+  #define ORIG_Z_MIN_PIN          -1
 #endif
 
 #ifdef DELTA
-#define ORIG_X_MIN_PIN          -1
-#define ORIG_Y_MIN_PIN          -1
+  #define ORIG_X_MIN_PIN          -1
+  #define ORIG_Y_MIN_PIN          -1
 #endif
 
 
@@ -4507,17 +4507,17 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define E0_ENABLE_PIN ORIG_E0_ENABLE_PIN
 
 #if DRIVER_EXTRUDERS > 1
-#define E1_STEP_PIN ORIG_E1_STEP_PIN
-#define E1_DIR_PIN ORIG_E1_DIR_PIN
-#define E1_ENABLE_PIN ORIG_E1_ENABLE_PIN
+  #define E1_STEP_PIN ORIG_E1_STEP_PIN
+  #define E1_DIR_PIN ORIG_E1_DIR_PIN
+  #define E1_ENABLE_PIN ORIG_E1_ENABLE_PIN
 #elif DRIVER_EXTRUDERS > 2
-#define E2_STEP_PIN ORIG_E2_STEP_PIN
-#define E2_DIR_PIN ORIG_E2_DIR_PIN
-#define E2_ENABLE_PIN ORIG_E2_ENABLE_PIN
+  #define E2_STEP_PIN ORIG_E2_STEP_PIN
+  #define E2_DIR_PIN ORIG_E2_DIR_PIN
+  #define E2_ENABLE_PIN ORIG_E2_ENABLE_PIN
 #elif DRIVER_EXTRUDERS > 3
-#define E3_STEP_PIN ORIG_E3_STEP_PIN
-#define E3_DIR_PIN ORIG_E3_DIR_PIN
-#define E3_ENABLE_PIN ORIG_E3_ENABLE_PIN
+  #define E3_STEP_PIN ORIG_E3_STEP_PIN
+  #define E3_DIR_PIN ORIG_E3_DIR_PIN
+  #define E3_ENABLE_PIN ORIG_E3_ENABLE_PIN
 #endif
 
 #define FAN_PIN ORIG_FAN_PIN

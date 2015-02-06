@@ -6293,7 +6293,7 @@ void pause()
 {
   #if defined(PAUSE_PIN) && PAUSE_PIN > -1
     paused=true;
-    enquecommand("M600 X0 Z+5");
+    enquecommand("M600");
     enquecommand("G4 P0");
     enquecommand("G4 P0");
     enquecommand("G4 P0");
