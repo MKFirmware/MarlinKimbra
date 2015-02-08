@@ -72,7 +72,7 @@
 // This defines the number of extruder real or virtual
 #define EXTRUDERS 1
 
-// This is used for singlenozzled multiple extrusion configuration
+// This is used for single nozzle and multiple extrusion configuration
 // Uncomment below to enable (One Hotend)
 //#define SINGLENOZZLE
 
@@ -80,16 +80,15 @@
  *********************** Multiextruder MKR4  ***************************
  ***********************************************************************
  *                                                                     *
- * Setting for more extruder width rele system                         *
+ * Setting for more extruder width relay system                         *
  *                                                                     *
  * Firmware by MagoKimbra magokimbra@hotmail.com                       *
  *                                                                     *
- * See pins.h for pin command rele                                     *
+ * See pins.h for pin command relay                                     *
  *                                                                     *
  ***********************************************************************/
 //#define MKR4
 #ifdef MKR4
-  #define DELAY_R 500          // Delay for switch rele
   #define DRIVER_EXTRUDERS 2   // This defines the number of Driver extruder
 #endif // END MKR4
 

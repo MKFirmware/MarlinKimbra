@@ -87,10 +87,10 @@ void FirmwareTest(){
       return;
     }
 #elif X_HOME_DIR == -1
-    SERIAL_ECHOLN("ATTENZIONE! X_HOME_DIR = -1, ma e' definito DISABLE_MIN_ENDSTOPS");
+    SERIAL_ECHOLN("ERROR!!! X_MIN_PIN not defined");
     return;
 #elif X_HOME_DIR == 1
-    SERIAL_ECHOLN("ATTENZIONE! X_HOME_DIR = 1, ma e' definito DISABLE_MAX_ENDSTOPS");
+    SERIAL_ECHOLN("ERROR!!! X_MAX_PIN not defined");
     return;
 #endif
 
@@ -155,10 +155,10 @@ void FirmwareTest(){
       return;
     }
 #elif Y_HOME_DIR == -1
-    SERIAL_ECHOLN("ATTENZIONE! Y_HOME_DIR = -1, ma e' definito DISABLE_MIN_ENDSTOPS");
+    SERIAL_ECHOLN("ERROR!!! Y_MIN_PIN not defined");
     return;
 #elif Y_HOME_DIR == 1
-    SERIAL_ECHOLN("ATTENZIONE! Y_HOME_DIR = 1, ma e' definito DISABLE_MAX_ENDSTOPS");
+    SERIAL_ECHOLN("ERROR!!! Y_MAX_PIN not defined");
     return;
 #endif
 
@@ -223,10 +223,10 @@ void FirmwareTest(){
       return;
     }
 #elif Z_HOME_DIR == -1
-    SERIAL_ECHOLN("ATTENZIONE! Z_HOME_DIR = -1, ma e' definito DISABLE_MIN_ENDSTOPS");
+    SERIAL_ECHOLN("ERROR!!! Z_MIN_PIN not defined");
     return;
 #elif Z_HOME_DIR == 1
-    SERIAL_ECHOLN("ATTENZIONE! Z_HOME_DIR = 1, ma e' definito DISABLE_MAX_ENDSTOPS");
+    SERIAL_ECHOLN("ERROR!!! Z_MAX_PIN not defined");
     return;
 #endif
 

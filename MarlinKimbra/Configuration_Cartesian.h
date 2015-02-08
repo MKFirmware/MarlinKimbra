@@ -29,7 +29,7 @@
 #define ENDSTOPPULLUP_EMIN
 #endif
 
-// The pullups are needed if you directly connect a mechanical endswitch between the signal and ground pins.
+// The pullups are needed if you directly connect a mechanical end switch between the signal and ground pins.
 const bool X_MIN_ENDSTOP_INVERTING = false;      // set to true to invert the logic of the endstop.
 const bool Y_MIN_ENDSTOP_INVERTING = false;      // set to true to invert the logic of the endstop.
 const bool Z_MIN_ENDSTOP_INVERTING = false;      // set to true to invert the logic of the endstop.
@@ -37,21 +37,29 @@ const bool E_MIN_ENDSTOP_INVERTING = false;      // set to true to invert the lo
 const bool X_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the logic of the endstop.
 const bool Y_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the logic of the endstop.
 const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the logic of the endstop.
-//#define DISABLE_MAX_ENDSTOPS
-//#define DISABLE_MIN_ENDSTOPS
+
+// ENDSTOP SETTINGS:
+// Sets direction of endstop when homing; 1=MAX, -1=MIN
+#define X_HOME_DIR -1
+#define Y_HOME_DIR -1
+#define Z_HOME_DIR -1
+#define E_HOME_DIR -1
+
+#define min_software_endstops true // If true, axis won't move to coordinates less than HOME_POS.
+#define max_software_endstops true  // If true, axis won't move to coordinates greater than the defined lengths below.
 
 // For Inverting Stepper Enable Pins (Active Low) use 0, Non Inverting (Active High) use 1
 #define X_ENABLE_ON 0
 #define Y_ENABLE_ON 0
 #define Z_ENABLE_ON 0
-#define E_ENABLE_ON 0      // For all extruders
+#define E_ENABLE_ON 0      // For all extruder
 
 // Disables axis when it's not being used.
 #define DISABLE_X false
 #define DISABLE_Y false
 #define DISABLE_Z false
-#define DISABLE_E false      // For all extruders
-#define DISABLE_INACTIVE_EXTRUDER false //disable only inactive extruders and keep active extruder enabled
+#define DISABLE_E false      // For all extruder
+#define DISABLE_INACTIVE_EXTRUDER false //disable only inactive extruder and keep active extruder enabled
 
 #define INVERT_X_DIR false      // for Mendel set to false, for Orca set to true
 #define INVERT_Y_DIR false      // for Mendel set to true, for Orca set to false
@@ -60,16 +68,6 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the lo
 #define INVERT_E1_DIR false     // for direct drive extruder v9 set to true, for geared extruder set to false
 #define INVERT_E2_DIR false     // for direct drive extruder v9 set to true, for geared extruder set to false
 #define INVERT_E3_DIR false     // for direct drive extruder v9 set to true, for geared extruder set to false
-
-// ENDSTOP SETTINGS:
-// Sets direction of endstops when homing; 1=MAX, -1=MIN
-#define X_HOME_DIR -1
-#define Y_HOME_DIR -1
-#define Z_HOME_DIR -1
-#define E_HOME_DIR -1
-
-#define min_software_endstops true // If true, axis won't move to coordinates less than HOME_POS.
-#define max_software_endstops true  // If true, axis won't move to coordinates greater than the defined lengths below.
 
 // Travel limits after homing
 #define X_MAX_POS 200
@@ -145,11 +143,11 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the lo
 #define Z_RAISE_BEFORE_HOMING 10      // (in mm) Raise Z before homing (G28) for Probe Clearance.
 // Be sure you have this distance over your Z_MAX_POS in case
 
-#define Z_RAISE_BEFORE_PROBING 10    //How much the extruder will be raised before traveling to the first probing point.
-#define Z_RAISE_BETWEEN_PROBINGS 5   //How much the extruder will be raised when traveling from between next probing points
+#define Z_RAISE_BEFORE_PROBING 10    //How much the extruder will be raised before travelling to the first probing point.
+#define Z_RAISE_BETWEEN_PROBINGS 5   //How much the extruder will be raised when travelling from between next probing points
 
 //#define Z_PROBE_SLED // turn on if you have a z-probe mounted on a sled like those designed by Charles Bell
-//#define SLED_DOCKING_OFFSET 5 // the extra distance the X axis must travel to pickup the sled. 0 should be fine but you can push it further if you'd like.
+//#define SLED_DOCKING_OFFSET 5 // the extra distance the X axis must travel to pick up the sled. 0 should be fine but you can push it further if you'd like.
 
 //If defined, the Probe servo will be turned on only during movement and then turned off to avoid jerk
 //The value is the delay to turn the servo off after powered on - depends on the servo speed; 300ms is good value, but you can try lower it.
@@ -158,13 +156,13 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the lo
 #define PROBE_SERVO_DEACTIVATION_DELAY 300
 
 
-//If you have enabled the Auto Bed Leveling and are using the same Z Probe for Z Homing,
+//If you have enabled the Auto Bed Levelling and are using the same Z Probe for Z Homing,
 //it is highly recommended you let this Z_SAFE_HOMING enabled!!!
 
 #define Z_SAFE_HOMING   // This feature is meant to avoid Z homing with probe outside the bed area.
                         // When defined, it will:
                         // - Allow Z homing only after X and Y homing AND stepper drivers still enabled
-                        // - If stepper drivers timeout, it will need X and Y homing again before Z homing
+                        // - If stepper drivers time out, it will need X and Y homing again before Z homing
                         // - Position the probe in a defined XY point before Z Homing when homing all axis (G28)
                         // - Block Z homing only when the probe is outside bed area.
 
@@ -228,8 +226,8 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the lo
 
 // The speed change that does not require acceleration (i.e. the software might assume it can be done instantaneously)
 #define DEFAULT_XYJERK 10.0    // (mm/sec)
-#define DEFAULT_ZJERK 0.4      // (mm/sec)
-#define DEFAULT_EJERK 5.0      // (mm/sec)
+#define DEFAULT_ZJERK   0.4    // (mm/sec)
+#define DEFAULT_EJERK   5.0    // (mm/sec)
 
 //===========================================================================
 //=============================Additional Features===========================

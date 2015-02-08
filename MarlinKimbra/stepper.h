@@ -98,12 +98,10 @@ void microstep_readings();
 
 #ifdef BABYSTEPPING
   void babystep(const uint8_t axis,const bool direction); // perform a short step with a single stepper motor, outside of any convention
-#endif
+#endif //BABYSTEPPING
 
-// Add for MagoKimbra
-#ifdef NPR2
+#ifdef NPR2 //Multiextruder
   void colorstep(long csteps,const bool direction);
-#endif
+#endif //NPR2
 
-
-#endif
+#endif //stepper_h

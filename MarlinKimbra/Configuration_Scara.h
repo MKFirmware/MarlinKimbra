@@ -53,7 +53,7 @@
 #define ENDSTOPPULLUP_EMIN
 #endif
 
-// The pullups are needed if you directly connect a mechanical endswitch between the signal and ground pins.
+// The pullups are needed if you directly connect a mechanical end switch between the signal and ground pins.
 const bool X_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
 const bool Y_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
 const bool Z_MIN_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
@@ -61,31 +61,9 @@ const bool E_MIN_ENDSTOP_INVERTING = false;// set to true to invert the logic of
 const bool X_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
 const bool Y_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
 const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of the endstop.
-//#define DISABLE_MAX_ENDSTOPS
-//#define DISABLE_MIN_ENDSTOPS
-
-// For Inverting Stepper Enable Pins (Active Low) use 0, Non Inverting (Active High) use 1
-#define X_ENABLE_ON 0
-#define Y_ENABLE_ON 0
-#define Z_ENABLE_ON 0
-#define E_ENABLE_ON 0      // For all extruders
-
-// Disables axis when it's not being used.
-#define DISABLE_X false
-#define DISABLE_Y false
-#define DISABLE_Z false
-#define DISABLE_E false      // For all extruders
-#define DISABLE_INACTIVE_EXTRUDER false //disable only inactive extruders and keep active extruder enabled
-
-#define INVERT_X_DIR false    // for Mendel set to false, for Orca set to true
-#define INVERT_Y_DIR false    // for Mendel set to true, for Orca set to false
-#define INVERT_Z_DIR true     // for Mendel set to false, for Orca set to true
-#define INVERT_E0_DIR false   // for direct drive extruder v9 set to true, for geared extruder set to false
-#define INVERT_E1_DIR false    // for direct drive extruder v9 set to true, for geared extruder set to false
-#define INVERT_E2_DIR false   // for direct drive extruder v9 set to true, for geared extruder set to false
 
 // ENDSTOP SETTINGS:
-// Sets direction of endstops when homing; 1=MAX, -1=MIN
+// Sets direction of endstop when homing; 1=MAX, -1=MIN
 #define X_HOME_DIR 1
 #define Y_HOME_DIR 1
 #define Z_HOME_DIR -1
@@ -93,6 +71,26 @@ const bool Z_MAX_ENDSTOP_INVERTING = true; // set to true to invert the logic of
 
 #define min_software_endstops true // If true, axis won't move to coordinates less than HOME_POS.
 #define max_software_endstops true  // If true, axis won't move to coordinates greater than the defined lengths below.
+
+// For Inverting Stepper Enable Pins (Active Low) use 0, Non Inverting (Active High) use 1
+#define X_ENABLE_ON 0
+#define Y_ENABLE_ON 0
+#define Z_ENABLE_ON 0
+#define E_ENABLE_ON 0      // For all extruder
+
+// Disables axis when it's not being used.
+#define DISABLE_X false
+#define DISABLE_Y false
+#define DISABLE_Z false
+#define DISABLE_E false      // For all extruder
+#define DISABLE_INACTIVE_EXTRUDER false //disable only inactive extruder and keep active extruder enabled
+
+#define INVERT_X_DIR false    // for Mendel set to false, for Orca set to true
+#define INVERT_Y_DIR false    // for Mendel set to true, for Orca set to false
+#define INVERT_Z_DIR true     // for Mendel set to false, for Orca set to true
+#define INVERT_E0_DIR false   // for direct drive extruder v9 set to true, for geared extruder set to false
+#define INVERT_E1_DIR false    // for direct drive extruder v9 set to true, for geared extruder set to false
+#define INVERT_E2_DIR false   // for direct drive extruder v9 set to true, for geared extruder set to false
 
 // Travel limits after homing
 #define X_MAX_POS 200

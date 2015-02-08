@@ -68,6 +68,15 @@ const bool X_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 const bool Y_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
 const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic of the endstop.
 
+// ENDSTOP SETTINGS:
+// Sets direction of endstop when homing; 1=MAX, -1=MIN
+#define X_HOME_DIR 1 //DELTA MUST HAVE MAX ENDSTOP
+#define Y_HOME_DIR 1 //DELTA MUST HAVE MAX ENDSTOP
+#define Z_HOME_DIR 1 //DELTA MUST HAVE MAX ENDSTOP
+
+#define min_software_endstops true  // If true, axis won't move to coordinates less than HOME_POS.
+#define max_software_endstops true  // If true, axis won't move to coordinates greater than the defined lengths below.
+
 // For Inverting Stepper Enable Pins (Active Low) use 0, Non Inverting (Active High) use 1
 #define X_ENABLE_ON 0
 #define Y_ENABLE_ON 0
@@ -79,7 +88,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define DISABLE_Y false
 #define DISABLE_Z false
 #define DISABLE_E false      // For all extruder
-#define DISABLE_INACTIVE_EXTRUDER true //disable only inactive extruder and keep active extruder enabled
+#define DISABLE_INACTIVE_EXTRUDER false //disable only inactive extruder and keep active extruder enabled
 
 
 #define INVERT_X_DIR false
@@ -88,15 +97,6 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define INVERT_E0_DIR false      // for direct drive extruder v9 set to true, for geared extruder set to false
 #define INVERT_E1_DIR false      // for direct drive extruder v9 set to true, for geared extruder set to false
 #define INVERT_E2_DIR false      // for direct drive extruder v9 set to true, for geared extruder set to false
-
-// ENDSTOP SETTINGS:
-// Sets direction of endstops when homing; 1=MAX, -1=MIN
-#define X_HOME_DIR 1
-#define Y_HOME_DIR 1
-#define Z_HOME_DIR 1
-
-#define min_software_endstops true  // If true, axis won't move to coordinates less than HOME_POS.
-#define max_software_endstops true  // If true, axis won't move to coordinates greater than the defined lengths below.
 
 // The position of the homing switches
 #define MANUAL_HOME_POSITIONS  // If defined, MANUAL_*_HOME_POS below will be used
@@ -130,10 +130,10 @@ const bool Z_MAX_ENDSTOP_INVERTING = false; // set to true to invert the logic o
 #define DEFAULT_RETRACTION_MAX_FEEDRATE {150,150,150,150}             // E0, E1, E2, E3 (mm/sec)
 #define DEFAULT_MAX_ACCELERATION {2000,2000,2000,1000,1000,1000,1000} // X, Y, Z, E0, E1, E2, E3 maximum start speed for accelerated moves.
 
-#define DEFAULT_ACCELERATION 1000          // X, Y, Z and E max acceleration in mm/s^2 for printing moves
+#define DEFAULT_ACCELERATION         1000  // X, Y, Z and E max acceleration in mm/s^2 for printing moves
 #define DEFAULT_RETRACT_ACCELERATION 2500  // X, Y, Z and E max acceleration in mm/s^2 for retracts
 
 // The speed change that does not require acceleration (i.e. the software might assume it can be done instantaneously)
 #define DEFAULT_XYJERK 20  // (mm/sec)
-#define DEFAULT_ZJERK 20   // (mm/sec)
-#define DEFAULT_EJERK 5    // (mm/sec)
+#define DEFAULT_ZJERK  20  // (mm/sec)
+#define DEFAULT_EJERK   5  // (mm/sec)

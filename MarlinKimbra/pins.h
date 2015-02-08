@@ -918,7 +918,7 @@
     // FMM added for Filament Extruder
     //define analog pin for the filament width sensor input
     //Use the RAMPS 1.4 Analog input 5 on the AUX2 connector
-    #define FILWIDTH_PIN           5
+    #define FILWIDTH_PIN           5   // ANALOG NUMBERING
   #endif
   
   #if defined(REPRAP_DISCOUNT_SMART_CONTROLLER) || defined(G3D_PANEL)
@@ -1113,7 +1113,7 @@
     // FMM added for Filament Extruder
     //define analog pin for the filament width sensor input
     //Use the RAMPS 1.4 Analog input 5 on the AUX2 connector
-    #define FILWIDTH_PIN           5
+    #define FILWIDTH_PIN           5   // ANALOG NUMBERING
   #endif
   
   #if NUM_SERVOS > 0
@@ -1302,7 +1302,7 @@
     // FMM added for Filament Extruder
     //define analog pin for the filament width sensor input
     //Use the RAMPS 1.4 Analog input 5 on the AUX2 connector
-    #define FILWIDTH_PIN           5
+    #define FILWIDTH_PIN           5   // ANALOG NUMBERING
   #endif
   
   #if NUM_SERVOS > 0
@@ -1491,7 +1491,7 @@
     // FMM added for Filament Extruder
     //define analog pin for the filament width sensor input
     //Use the RAMPS 1.4 Analog input 5 on the AUX2 connector
-    #define FILWIDTH_PIN           5
+    #define FILWIDTH_PIN           5   // ANALOG NUMBERING
   #endif
   
   #if NUM_SERVOS > 0
@@ -4390,12 +4390,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #endif //MKR4
 
 #ifdef NPR2
-  #ifdef DELTA
-    #define E_MIN_PIN          3  // Use pin ORIG_X_MIN_PIN
-  #else  // NO DELTA
-    #define ORIG_Z_MAX_PIN          -1 // Use pin ORIG_Z_MAX_PIN
-    #define E_MIN_PIN          19
-  #endif //DELTA
+  #define E_MIN_PIN           19
 #endif //NPR2
 
 #ifdef LASERBEAM
@@ -4404,7 +4399,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #endif
 
 #ifdef FILAMENT_END_SWITCH
-  #define PAUSE_PIN          5
+  #define PAUSE_PIN           19
 #endif
 /****************************************************************************************/
 
@@ -4464,26 +4459,27 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
   #endif
 #endif
 
-#ifdef DISABLE_MAX_ENDSTOPS
+#if X_HOME_DIR > 0        //Home X to MAX
+  #define ORIG_X_MIN_PIN          -1
+#else                     //Home X to MIN
   #define ORIG_X_MAX_PIN          -1
+#endif //X_HOME_DIR > 0
+
+#if Y_HOME_DIR > 0        //Home Y to MAX
+  #define ORIG_Y_MIN_PIN          -1
+#else                     //Home Y to MIN
   #define ORIG_Y_MAX_PIN          -1
-  #define ORIG_Z_MAX_PIN          -1
-#endif
+#endif //Y_HOME_DIR > 0
 
-#ifdef DISABLE_MIN_ENDSTOPS
-  #define ORIG_X_MIN_PIN          -1
-  #define ORIG_Y_MIN_PIN          -1
-  #define ORIG_Z_MIN_PIN          -1
-#endif
+#ifndef DELTA
+  #if Z_HOME_DIR > 0      //Home Z to MAX
+    #define ORIG_Z_MIN_PIN        -1
+  #else                   //Home Z to MIN
+    #define ORIG_Z_MAX_PIN        -1
+  #endif //Z_HOME_DIR > 0
+#endif //!DELTA
 
-#ifdef DELTA
-  #define ORIG_X_MIN_PIN          -1
-  #define ORIG_Y_MIN_PIN          -1
-#endif
-
-
-
-// Original pin assignmats to be used in configuration tool
+// Original pin assignation to be used in configuration tool
 #define X_STEP_PIN ORIG_X_STEP_PIN
 #define X_DIR_PIN ORIG_X_DIR_PIN
 #define X_ENABLE_PIN ORIG_X_ENABLE_PIN

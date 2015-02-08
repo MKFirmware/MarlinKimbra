@@ -440,7 +440,7 @@ static uint8_t tmp_extruder;
 
 bool Stopped = false;
 #if defined(PAUSE_PIN) && PAUSE_PIN > -1
-  bool paused = false;
+  bool paused = true;
 #endif
 
 #if NUM_SERVOS > 0
@@ -6224,10 +6224,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) //default argument s
   #endif
 
   #if defined(PAUSE_PIN) && PAUSE_PIN > -1
-    if (READ(PAUSE_PIN) == 0 && !paused)
-    {
-      pause();
-    }
+    pause();
   #endif //defined(PAUSE_PIN) && PAUSE_PIN > -1
 
   #if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
@@ -6299,11 +6296,18 @@ void kill()
 void pause()
 {
   #if defined(PAUSE_PIN) && PAUSE_PIN > -1
-    paused=true;
-    enquecommand("M600");
-    enquecommand("G4 P0");
-    enquecommand("G4 P0");
-    enquecommand("G4 P0");
+    if (READ(PAUSE_PIN) == 0 && !paused)
+    {
+      paused = true;
+      enquecommand("M600");
+      enquecommand("G4 P0");
+      enquecommand("G4 P0");
+      enquecommand("G4 P0");
+    }
+    else if (READ(PAUSE_PIN) == 1 && paused)
+    {
+      paused = false;
+    }
   #endif // defined(PAUSE_PIN) && PAUSE_PIN > -1
 }
 
