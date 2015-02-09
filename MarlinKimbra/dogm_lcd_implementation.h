@@ -276,7 +276,7 @@ static void lcd_implementation_status_screen() {
       lcd_printPGM(PSTR("dia:"));
       u8g.print(ftostr12ns(filament_width_meas));
       lcd_printPGM(PSTR(" factor:"));
-      u8g.print(itostr3(extrudemultiply));
+      u8g.print(itostr3(volumetric_multiplier[active_extruder]));
       u8g.print('%');
     }
   #endif
