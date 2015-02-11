@@ -520,6 +520,7 @@ your extruder heater takes 2 minutes to hit the target on heating.
 // 11 Dutch
 // 12 Catalan
 // 13 Basque-Euskera
+// 14 Portuguese (Brazil)
 
 #define LANGUAGE_CHOICE 7
 

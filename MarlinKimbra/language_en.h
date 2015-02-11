@@ -81,7 +81,7 @@
 #define MSG_TEMPERATURE                     "Temperature"
 #define MSG_MOTION                          "Motion"
 #define MSG_VOLUMETRIC                      "Filament"
-#define MSG_VOLUMETRIC_ENABLED		          "E in mm" STR_h3
+#define MSG_VOLUMETRIC_ENABLED              "E in mm" STR_h3
 #define MSG_FILAMENT_SIZE_EXTRUDER          "Fil. Dia."
 #define MSG_CONTRAST                        "LCD contrast"
 #define MSG_STORE_EPROM                     "Store memory"

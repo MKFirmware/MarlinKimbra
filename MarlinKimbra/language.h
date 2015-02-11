@@ -7,7 +7,7 @@
 //   ==> ALSO TRY ALL AVAILABLE "LANGUAGE_CHOICE" OPTIONS
 
 // Languages
-// 1  English standard
+// 1  English
 // 2  Polish
 // 3  French
 // 4  German
@@ -209,9 +209,9 @@
 #define TESTSTRING360 "\360\361\362\363\364\365\366\367\370\371\372\373\374\375\376\377"
 */
 
-#include "language_en.h"
-
-#if   LANGUAGE_CHOICE == 2 // Polish
+#if   LANGUAGE_CHOICE == 1 // English
+  #include "language_en.h"
+#elif LANGUAGE_CHOICE == 2 // Polish
   #include "language_pl.h"
 #elif LANGUAGE_CHOICE == 3 // French
   #include "language_fr.h"
