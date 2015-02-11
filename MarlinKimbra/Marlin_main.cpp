@@ -557,6 +557,14 @@ void setup_photpin()
   #endif
 }
 
+void setup_statledpin()
+{
+  #ifdef TEMP_STAT_LEDS
+    pinMode(STAT_LED_BLUE, OUTPUT);
+    pinMode(STAT_LED_RED, OUTPUT);
+  #endif
+}
+
 void setup_laserbeampin()
 {
   #ifdef LASERBEAM
@@ -671,12 +679,13 @@ void setup()
     fromsd[i] = false;
   }
 
-  tp_init();    // Initialize temperature loop
-  plan_init();  // Initialize planner;
+  tp_init();              // Initialize temperature loop
+  plan_init();            // Initialize planner;
   watchdog_init();
-  st_init();    // Initialize stepper, this enables interrupts!
+  st_init();              // Initialize stepper, this enables interrupts!
   setup_photpin();
-  setup_laserbeampin();  // Initialize Laserbeam
+  setup_statledpin();     // Initialize stat led pin
+  setup_laserbeampin();   // Initialize Laserbeam pin
   servo_init();
   
   lcd_init();
@@ -6120,10 +6129,10 @@ void prepare_arc_move(char isclockwise)
         max_temp = max(max_temp, degHotend(cur_extruder));
         max_temp = max(max_temp, degTargetHotend(cur_extruder));
       }
-  #if defined(TEMP_BED_PIN) && TEMP_BED_PIN > -1
-      max_temp = max(max_temp, degTargetBed());
-      max_temp = max(max_temp, degBed());
-  #endif
+      #if defined(TEMP_BED_PIN) && TEMP_BED_PIN > -1
+        max_temp = max(max_temp, degTargetBed());
+        max_temp = max(max_temp, degBed());
+      #endif
       if((max_temp > 55.0) && (red_led == false)) {
         digitalWrite(STAT_LED_RED, 1);
         digitalWrite(STAT_LED_BLUE, 0);
