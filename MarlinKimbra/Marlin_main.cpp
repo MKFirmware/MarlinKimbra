@@ -420,6 +420,8 @@ static int serial_count = 0;
 static boolean comment_mode = false;
 static char *strchr_pointer; ///< A pointer to find chars in the command string (X, Y, Z, E, etc.)
 
+const char* queued_commands_P= NULL; /* pointer to the current line in the active sequence of commands, or NULL when none */
+
 const int sensitive_pins[] = SENSITIVE_PINS; ///< Sensitive pin list for M42
 
 // Inactivity shutdown
@@ -494,38 +496,62 @@ void serial_echopair_P(const char *s_P, unsigned long v)
   }
 #endif //!SDSUPPORT
 
-//adds an command to the main command buffer
-//thats really done in a non-safe way.
-//needs overworking someday
-void enquecommand(const char *cmd)
+//Injects the next command from the pending sequence of commands, when possible
+//Return false if and only if no command was pending
+static bool drain_queued_commands_P()
 {
-  if(buflen < BUFSIZE)
+  char cmd[30];
+  if(!queued_commands_P)
+    return false;
+  // Get the next 30 chars from the sequence of gcodes to run
+  strncpy_P(cmd, queued_commands_P, sizeof(cmd)-1);
+  cmd[sizeof(cmd)-1]= 0;
+  // Look for the end of line, or the end of sequence
+  size_t i= 0;
+  char c;
+  while( (c= cmd[i]) && c!='\n' )
+    ++i; // look for the end of this gcode command
+  cmd[i]= 0;
+  if(enquecommand(cmd)) // buffer was not full (else we will retry later)
   {
-    //this is dangerous if a mixing of serial and this happens
-    strcpy(&(cmdbuffer[bufindw][0]),cmd);
-    SERIAL_ECHO_START;
-    SERIAL_ECHOPGM(MSG_Enqueing);
-    SERIAL_ECHO(cmdbuffer[bufindw]);
-    SERIAL_ECHOLNPGM("\"");
-    bufindw= (bufindw + 1)%BUFSIZE;
-    buflen += 1;
+    if(c)
+      queued_commands_P+= i+1; // move to next command
+    else
+      queued_commands_P= NULL; // will have no more commands in the sequence
   }
+  return true;
 }
 
-void enquecommand_P(const char *cmd)
+//Record one or many commands to run from program memory.
+//Aborts the current queue, if any.
+//Note: drain_queued_commands_P() must be called repeatedly to drain the commands afterwards
+void enquecommands_P(const char* pgcode)
 {
-  if(buflen < BUFSIZE)
-  {
-    //this is dangerous if a mixing of serial and this happens
-    strcpy_P(&(cmdbuffer[bufindw][0]),cmd);
-    SERIAL_ECHO_START;
-    SERIAL_ECHOPGM(MSG_Enqueing);
-    SERIAL_ECHO(cmdbuffer[bufindw]);
-    SERIAL_ECHOLNPGM("\"");
-    bufindw= (bufindw + 1)%BUFSIZE;
-    buflen += 1;
-  }
+    queued_commands_P = pgcode;
+    drain_queued_commands_P(); // first command exectuted asap (when possible)
 }
+
+//adds a single command to the main command buffer, from RAM
+//that is really done in a non-safe way.
+//needs overworking someday
+//Returns false if it failed to do so
+bool enquecommand(const char *cmd)
+{
+  if(*cmd==';')
+    return false;
+  if(buflen >= BUFSIZE)
+    return false;
+  //this is dangerous if a mixing of serial and this happens
+  strcpy(&(cmdbuffer[bufindw][0]),cmd);
+  SERIAL_ECHO_START;
+  SERIAL_ECHOPGM(MSG_Enqueing);
+  SERIAL_ECHO(cmdbuffer[bufindw]);
+  SERIAL_ECHOLNPGM("\"");
+  bufindw= (bufindw + 1)%BUFSIZE;
+  buflen += 1;
+  return true;
+}
+
 
 void setup_killpin()
 {
@@ -622,10 +648,8 @@ void servo_init()
 
   // Set position of Servo Endstops that are defined
   #if (NUM_SERVOS > 0)
-    for(int8_t i = 0; i < 3; i++)
-    {
-      if(servo_endstops[i] > -1)
-      {
+    for(int8_t i = 0; i < 3; i++) {
+      if(servo_endstops[i] > -1) {
         servos[servo_endstops[i]].write(servo_endstop_angles[i * 2 + 1]);
       }
     }
@@ -759,30 +783,27 @@ void loop()
 
 void get_command()
 {
-  while( MYSERIAL.available() > 0  && buflen < BUFSIZE)
-  {
+  if(drain_queued_commands_P()) // priority is given to non-serial commands
+    return;
+
+  while( MYSERIAL.available() > 0  && buflen < BUFSIZE) {
     serial_char = MYSERIAL.read();
     if(serial_char == '\n' ||
        serial_char == '\r' ||
       (serial_char == ':' && comment_mode == false) ||
-       serial_count >= (MAX_CMD_SIZE - 1))
-    {
-      if(!serial_count)  //if empty line
-      {
+       serial_count >= (MAX_CMD_SIZE - 1)) {
+      if(!serial_count) { //if empty line
         comment_mode = false; //for new command
         return;
       }
       cmdbuffer[bufindw][serial_count] = 0; //terminate string
-      if(!comment_mode)
-      {
+      if(!comment_mode) {
         comment_mode = false; //for new command
         fromsd[bufindw] = false;
-        if(strchr(cmdbuffer[bufindw], 'N') != NULL)
-        {
+        if(strchr(cmdbuffer[bufindw], 'N') != NULL) {
           strchr_pointer = strchr(cmdbuffer[bufindw], 'N');
-          gcode_N = (strtol(strchr_pointer + 1, NULL, 10));
-          if(gcode_N != gcode_LastN+1 && (strstr_P(cmdbuffer[bufindw], PSTR("M110")) == NULL) )
-          {
+          gcode_N = (strtol(&cmdbuffer[bufindw][strchr_pointer - cmdbuffer[bufindw] + 1], NULL, 10));
+          if(gcode_N != gcode_LastN+1 && (strstr_P(cmdbuffer[bufindw], PSTR("M110")) == NULL) ) {
             SERIAL_ERROR_START;
             SERIAL_ERRORPGM(MSG_ERR_LINE_NO);
             SERIAL_ERRORLN(gcode_LastN);
@@ -792,15 +813,13 @@ void get_command()
             return;
           }
 
-          if(strchr(cmdbuffer[bufindw], '*') != NULL)
-          {
+          if(strchr(cmdbuffer[bufindw], '*') != NULL) {
             byte checksum = 0;
             byte count = 0;
             while(cmdbuffer[bufindw][count] != '*') checksum = checksum^cmdbuffer[bufindw][count++];
             strchr_pointer = strchr(cmdbuffer[bufindw], '*');
 
-            if( (int)(strtod(strchr_pointer + 1, NULL)) != checksum)
-            {
+            if ((int)(strtod(&cmdbuffer[bufindw][strchr_pointer - cmdbuffer[bufindw] + 1], NULL)) != checksum) {
               SERIAL_ERROR_START;
               SERIAL_ERRORPGM(MSG_ERR_CHECKSUM_MISMATCH);
               SERIAL_ERRORLN(gcode_LastN);
@@ -810,8 +829,7 @@ void get_command()
             }
             //if no errors, continue parsing
           }
-          else
-          {
+          else {
             SERIAL_ERROR_START;
             SERIAL_ERRORPGM(MSG_ERR_NO_CHECKSUM);
             SERIAL_ERRORLN(gcode_LastN);
@@ -823,10 +841,8 @@ void get_command()
           gcode_LastN = gcode_N;
           //if no errors, continue parsing
         }
-        else  // if we don't receive 'N' but still see '*'
-        {
-          if((strchr(cmdbuffer[bufindw], '*') != NULL))
-          {
+        else { // if we don't receive 'N' but still see '*'
+          if((strchr(cmdbuffer[bufindw], '*') != NULL)) {
             SERIAL_ERROR_START;
             SERIAL_ERRORPGM(MSG_ERR_NO_LINENUMBER_WITH_CHECKSUM);
             SERIAL_ERRORLN(gcode_LastN);
@@ -834,17 +850,14 @@ void get_command()
             return;
           }
         }
-        if((strchr(cmdbuffer[bufindw], 'G') != NULL))
-        {
+        if((strchr(cmdbuffer[bufindw], 'G') != NULL)) {
           strchr_pointer = strchr(cmdbuffer[bufindw], 'G');
-          switch((int)((strtod(strchr_pointer + 1, NULL))))
-          {
+          switch((int)((strtod(&cmdbuffer[bufindw][strchr_pointer - cmdbuffer[bufindw] + 1], NULL)))) {
           case 0:
           case 1:
           case 2:
           case 3:
-            if (Stopped == true)
-            {
+            if (Stopped == true) {
               SERIAL_ERRORLNPGM(MSG_ERR_STOPPED);
               LCD_MESSAGEPGM(MSG_STOPPED);
             }
@@ -855,21 +868,22 @@ void get_command()
         }
 
         //If command was e-stop process now
-        if(strcmp(cmdbuffer[bufindw], "M112") == 0) kill();
-        
+        if(strcmp(cmdbuffer[bufindw], "M112") == 0)
+          kill();
         bufindw = (bufindw + 1)%BUFSIZE;
         buflen += 1;
       }
       serial_count = 0; //clear buffer
     }
-    else
-    {
+    else {
       if(serial_char == ';') comment_mode = true;
       if(!comment_mode) cmdbuffer[bufindw][serial_count++] = serial_char;
     }
   }
   #ifdef SDSUPPORT
-    if(!card.sdprinting || serial_count!=0) return;
+    if(!card.sdprinting || serial_count!=0) {
+      return;
+    }
 
     //'#' stops reading from SD to the buffer prematurely, so procedural macro calls are possible
     // if it occurs, stop_buffering is triggered and the buffer is ran dry.
@@ -878,18 +892,15 @@ void get_command()
     static bool stop_buffering=false;
     if(buflen==0) stop_buffering=false;
 
-    while( !card.eof()  && buflen < BUFSIZE && !stop_buffering)
-    {
+    while (!card.eof()  && buflen < BUFSIZE && !stop_buffering) {
       int16_t n=card.get();
       serial_char = (char)n;
-      if(serial_char == '\n' ||
+      if (serial_char == '\n' ||
          serial_char == '\r' ||
         (serial_char == '#' && comment_mode == false) ||
         (serial_char == ':' && comment_mode == false) ||
-         serial_count >= (MAX_CMD_SIZE - 1)||n==-1)
-      {
-        if(card.eof())
-        {
+         serial_count >= (MAX_CMD_SIZE - 1)||n==-1) {
+        if (card.eof()) {
           SERIAL_PROTOCOLLNPGM(MSG_FILE_PRINTED);
           stoptime=millis();
           char time[30];
@@ -904,23 +915,22 @@ void get_command()
           card.printingHasFinished();
           card.checkautostart(true);
         }
-        if(serial_char=='#') stop_buffering=true;
-        if(!serial_count)
-        {
+        if(serial_char=='#')
+          stop_buffering=true;
+        if(!serial_count) {
           comment_mode = false; //for new command
           return; //if empty line
         }
         cmdbuffer[bufindw][serial_count] = 0; //terminate string
-    //      if(!comment_mode){
-        fromsd[bufindw] = true;
-        buflen += 1;
-        bufindw = (bufindw + 1)%BUFSIZE;
-    //      }
+  //      if(!comment_mode){
+          fromsd[bufindw] = true;
+          buflen += 1;
+          bufindw = (bufindw + 1)%BUFSIZE;
+  //      }
         comment_mode = false; //for new command
         serial_count = 0; //clear buffer
       }
-      else
-      {
+      else {
         if(serial_char == ';') comment_mode = true;
         if(!comment_mode) cmdbuffer[bufindw][serial_count++] = serial_char;
       }
@@ -930,12 +940,12 @@ void get_command()
 
 float code_value()
 {
-  return (strtod(strchr_pointer + 1, NULL));
+  return (strtod(&cmdbuffer[bufindr][strchr_pointer - cmdbuffer[bufindr] + 1], NULL));
 }
 
 long code_value_long()
 {
-  return (strtol(strchr_pointer + 1, NULL, 10));
+  return (strtol(&cmdbuffer[bufindr][strchr_pointer - cmdbuffer[bufindr] + 1], NULL, 10));
 }
 
 bool code_seen(char code)
@@ -4819,16 +4829,18 @@ void process_commands()
       #if (LARGE_FLASH == true && ( BEEPER > 0 || defined(ULTRALCD) || defined(LCD_USE_I2C_BUZZER)))
         case 300: //M300
         {
-          int beepS = code_seen('S') ? code_value() : 110;
-          int beepP = code_seen('P') ? code_value() : 1000;
+          int beepS = code_seen('S') ? code_value() : 1000;
+          int beepP = code_seen('P') ? code_value() : 100;
           if (beepS > 0)
           {
             #if BEEPER > 0
-              tone(BEEPER, beepS);
+              SET_OUTPUT(BEEPER);
+              WRITE(BEEPER,HIGH);
               delay(beepP);
-              noTone(BEEPER);
+              WRITE(BEEPER,LOW);
+              delay(beepP);
             #elif defined(ULTRALCD)
-              lcd_buzz(beepS, beepP);
+              lcd_buzz(beepP, beepS);
             #elif defined(LCD_USE_I2C_BUZZER)
               lcd_buzz(beepP, beepS);
             #endif
@@ -5957,17 +5969,15 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) //default argument s
   #endif
    
   
-  if (buflen < (BUFSIZE-1)) get_command();
+  if (buflen < (BUFSIZE-1))
+    get_command();
 
   if ((millis() - previous_millis_cmd) >  max_inactive_time )
     if(max_inactive_time)
       kill();
-  if (stepper_inactive_time)
-  {
-    if ((millis() - previous_millis_cmd) >  stepper_inactive_time)
-    {
-      if(blocks_queued() == false)
-      {
+  if (stepper_inactive_time) {
+    if ((millis() - previous_millis_cmd) >  stepper_inactive_time) {
+      if(blocks_queued() == false) {
         disable_x();
         disable_y();
         disable_z();
@@ -5988,12 +5998,10 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) //default argument s
     // Check if the kill button was pressed and wait just in case it was an accidental
     // key kill key press
     // -------------------------------------------------------------------------------
-    if (READ(KILL_PIN) == 0)
-    {
+    if (READ(KILL_PIN) == 0) {
        killCount++;
     }
-    else if (killCount > 0)
-    {
+    else if (killCount > 0) {
        killCount--;
     }
     // Exceeded threshold and we can confirm that it was not accidental
@@ -6012,7 +6020,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) //default argument s
     {
        if (homeDebounceCount == 0)
        {
-          enquecommand_P((PSTR("G28")));
+          enquecommands_P((PSTR("G28")));
           homeDebounceCount++;
           LCD_ALERTMESSAGEPGM(MSG_AUTO_HOME);
        }

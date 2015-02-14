@@ -329,9 +329,8 @@ static void lcd_sdcard_stop()
     card.sdprinting = false;
     card.closefile();
     quickStop();
-    if(SD_FINISHED_STEPPERRELEASE)
-    {
-        enquecommand_P(PSTR(SD_FINISHED_RELEASECOMMAND));
+    if(SD_FINISHED_STEPPERRELEASE) {
+      enquecommands_P(PSTR(SD_FINISHED_RELEASECOMMAND));
     }
     autotempShutdown();
 
@@ -402,14 +401,11 @@ void lcd_set_home_offsets()
     plan_set_position(0.0, 0.0, 0.0, current_position[E_AXIS]);
 
     // Audio feedback
-    enquecommand_P(PSTR("M300 S659 P200"));
-    enquecommand_P(PSTR("M300 S698 P200"));
+    enquecommands_P(PSTR("M300 S659 P200\nM300 S698 P200"));
     lcd_return_to_status();
 }
 
-
 #ifdef BABYSTEPPING
-
   static void _lcd_babystep(int axis, const char *msg) {
     if (encoderPosition != 0) {
       babystepsTodo[axis] += (int)encoderPosition;
@@ -422,7 +418,6 @@ void lcd_set_home_offsets()
   static void lcd_babystep_x() { _lcd_babystep(X_AXIS, PSTR(MSG_BABYSTEPPING_X)); }
   static void lcd_babystep_y() { _lcd_babystep(Y_AXIS, PSTR(MSG_BABYSTEPPING_Y)); }
   static void lcd_babystep_z() { _lcd_babystep(Z_AXIS, PSTR(MSG_BABYSTEPPING_Z)); }
-
 #endif //BABYSTEPPING
 
 static void lcd_tune_menu()
@@ -1356,7 +1351,7 @@ menu_edit_type(unsigned long, long5, ftostr5, 0.01)
     lcd_move_y();
 	}
 	static void reprapworld_keypad_move_home() {
-		enquecommand_P((PSTR("G28"))); // move all axis home
+		enquecommands_P((PSTR("G28"))); // move all axis home
 	}
 #endif
 
@@ -1372,7 +1367,7 @@ static void lcd_quick_feedback()
 /** Menu action functions **/
 static void menu_action_back(menuFunc_t data) { lcd_goto_menu(data); }
 static void menu_action_submenu(menuFunc_t data) { lcd_goto_menu(data); }
-static void menu_action_gcode(const char* pgcode) { enquecommand_P(pgcode); }
+static void menu_action_gcode(const char* pgcode) { enquecommands_P(pgcode); }
 static void menu_action_function(menuFunc_t data) { (*data)(); }
 static void menu_action_sdfile(const char* filename, char* longFilename)
 {
@@ -1382,7 +1377,7 @@ static void menu_action_sdfile(const char* filename, char* longFilename)
     for(c = &cmd[4]; *c; c++)
         *c = tolower(*c);
     enquecommand(cmd);
-    enquecommand_P(PSTR("M24"));
+    enquecommands_P(PSTR("M24"));
     lcd_return_to_status();
 }
 static void menu_action_sddirectory(const char* filename, char* longFilename)
