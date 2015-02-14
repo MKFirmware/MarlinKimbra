@@ -929,18 +929,15 @@
   
   #if NUM_SERVOS > 0
     #define SERVO0_PIN      11
-  #endif
-  
-  #if NUM_SERVOS > 1
-    #define SERVO1_PIN       6
-  #endif
-  
-  #if NUM_SERVOS > 2
-    #define SERVO2_PIN       5
-  #endif
-  
-  #if NUM_SERVOS > 3
-    #define SERVO3_PIN       4
+    #if NUM_SERVOS > 1
+      #define SERVO1_PIN     6
+      #if NUM_SERVOS > 2
+        #define SERVO2_PIN   5
+        #if NUM_SERVOS > 3
+          #define SERVO3_PIN 4
+        #endif
+      #endif
+    #endif
   #endif
     
   #ifdef ULTRA_LCD
@@ -1115,23 +1112,20 @@
     //Use the RAMPS 1.4 Analog input 5 on the AUX2 connector
     #define FILWIDTH_PIN     5   // ANALOG NUMBERING
   #endif
-  
+
   #if NUM_SERVOS > 0
     #define SERVO0_PIN      11
+    #if NUM_SERVOS > 1
+      #define SERVO1_PIN     6
+      #if NUM_SERVOS > 2
+        #define SERVO2_PIN   5
+        #if NUM_SERVOS > 3
+          #define SERVO3_PIN 4
+        #endif
+      #endif
+    #endif
   #endif
-  
-  #if NUM_SERVOS > 1
-    #define SERVO1_PIN       6
-  #endif
-  
-  #if NUM_SERVOS > 2
-    #define SERVO2_PIN       5
-  #endif
-  
-  #if NUM_SERVOS > 3
-    #define SERVO3_PIN       4
-  #endif
-    
+
   #ifdef ULTRA_LCD
     #ifdef NEWPANEL
       #define LCD_PINS_RS         16
@@ -1140,14 +1134,14 @@
       #define LCD_PINS_D5         25
       #define LCD_PINS_D6         27
       #define LCD_PINS_D7         29
-  
+
       #ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
         #define BEEPER            37
-  
+
         #define BTN_EN1           31
         #define BTN_EN2           33
         #define BTN_ENC           35
-  
+
         #define SDCARDDETECT      49
       #elif defined(LCD_I2C_PANELOLU2)
         #define BTN_EN1           47  //reverse if the encoder turns the wrong way.
@@ -1297,30 +1291,27 @@
   
   #define HEATER_BED_PIN     -1   // BED
   #define TEMP_BED_PIN       14   // ANALOG NUMBERING
-  
+
   #ifdef FILAMENT_SENSOR
     // FMM added for Filament Extruder
     //define analog pin for the filament width sensor input
     //Use the RAMPS 1.4 Analog input 5 on the AUX2 connector
     #define FILWIDTH_PIN           5   // ANALOG NUMBERING
   #endif
-  
+
   #if NUM_SERVOS > 0
-    #define SERVO0_PIN            11
+    #define SERVO0_PIN      11
+    #if NUM_SERVOS > 1
+      #define SERVO1_PIN     6
+      #if NUM_SERVOS > 2
+        #define SERVO2_PIN   5
+        #if NUM_SERVOS > 3
+          #define SERVO3_PIN 4
+        #endif
+      #endif
+    #endif
   #endif
-  
-  #if NUM_SERVOS > 1
-    #define SERVO1_PIN             6
-  #endif
-  
-  #if NUM_SERVOS > 2
-    #define SERVO2_PIN             5
-  #endif
-  
-  #if NUM_SERVOS > 3
-    #define SERVO3_PIN             4
-  #endif
-    
+
   #ifdef ULTRA_LCD
     #ifdef NEWPANEL
       #define LCD_PINS_RS         16
@@ -1493,23 +1484,20 @@
     //Use the RAMPS 1.4 Analog input 5 on the AUX2 connector
     #define FILWIDTH_PIN           5   // ANALOG NUMBERING
   #endif
-  
+
   #if NUM_SERVOS > 0
-    #define SERVO0_PIN            11
+    #define SERVO0_PIN      11
+    #if NUM_SERVOS > 1
+      #define SERVO1_PIN     6
+      #if NUM_SERVOS > 2
+        #define SERVO2_PIN   5
+        #if NUM_SERVOS > 3
+          #define SERVO3_PIN 4
+        #endif
+      #endif
+    #endif
   #endif
-  
-  #if NUM_SERVOS > 1
-    #define SERVO1_PIN             6
-  #endif
-  
-  #if NUM_SERVOS > 2
-    #define SERVO2_PIN             5
-  #endif
-  
-  #if NUM_SERVOS > 3
-    #define SERVO3_PIN             4
-  #endif
-    
+
   #ifdef ULTRA_LCD
     #ifdef NEWPANEL
       #define LCD_PINS_RS         16
@@ -2916,119 +2904,125 @@
 ****************************************************************************************/
 
 #if MB(MEGATRONICS_3)
-#define KNOWN_BOARD 1
- 
- 
-#ifndef __AVR_ATmega2560__
- #error Oops! Make sure you have 'Arduino Mega' selected from the 'Tools -> Boards' menu.
-#endif
- 
-#define LARGE_FLASH        true
- 
+  #define KNOWN_BOARD 1
 
-#define X_STEP_PIN         58
-#define X_DIR_PIN          57
-#define X_ENABLE_PIN       59
-#define X_MIN_PIN          37
-#define X_MAX_PIN          40   //2 //Max endstops default to disabled "-1", set to commented value to enable.
+  #ifndef __AVR_ATmega2560__
+    #error Oops! Make sure you have 'Arduino Mega' selected from the 'Tools -> Boards' menu.
+  #endif
 
-#define Y_STEP_PIN         5 // A6
-#define Y_DIR_PIN          17 // A0
-#define Y_ENABLE_PIN       4
-#define Y_MIN_PIN          41
-#define Y_MAX_PIN          38   //15
+  #define LARGE_FLASH        true
 
-#define Z_STEP_PIN         16 // A2
-#define Z_DIR_PIN          11 // A6
-#define Z_ENABLE_PIN       3 // A1
-#define Z_MIN_PIN          18
-#define Z_MAX_PIN          19
-	 
-#define E0_STEP_PIN         28
-#define E0_DIR_PIN          27
-#define E0_ENABLE_PIN       29
+  #define X_STEP_PIN         58
+  #define X_DIR_PIN          57
+  #define X_ENABLE_PIN       59
+  #define X_MIN_PIN          37
+  #define X_MAX_PIN          40   //2 //Max endstops default to disabled "-1", set to commented value to enable.
 
-#define E1_STEP_PIN         25
-#define E1_DIR_PIN          24
-#define E1_ENABLE_PIN       26
+  #define Y_STEP_PIN         5 // A6
+  #define Y_DIR_PIN          17 // A0
+  #define Y_ENABLE_PIN       4
+  #define Y_MIN_PIN          41
+  #define Y_MAX_PIN          38   //15
 
-#define E2_STEP_PIN         22
-#define E2_DIR_PIN          60
-#define E2_ENABLE_PIN       23
-	 
-#define SDPOWER -1
-#define SDSS 53
-#define LED_PIN 13
- 
-#if NUM_SERVOS > 0
-#define SERVO0_PIN 46
-#endif
+  #define Z_STEP_PIN         16 // A2
+  #define Z_DIR_PIN          11 // A6
+  #define Z_ENABLE_PIN       3 // A1
+  #define Z_MIN_PIN          18
+  #define Z_MAX_PIN          19
 
-#define PS_ON_PIN 12
-#define KILL_PIN -1
- 
+  #define E0_STEP_PIN         28
+  #define E0_DIR_PIN          27
+  #define E0_ENABLE_PIN       29
 
-#define HEATER_0_PIN 2 
-#define HEATER_1_PIN 8 
-#define HEATER_2_PIN 9 
-#define HEATER_BED_PIN 10 
-#define FAN_PIN 6
-#define FAN2_PIN 7
- 
-#if TEMP_SENSOR_0 == -1
-#define TEMP_0_PIN 11 // ANALOG NUMBERING
-#else
-#define TEMP_0_PIN 15 // ANALOG NUMBERING
-#endif
- 
-#if TEMP_SENSOR_1 == -1
-#define TEMP_1_PIN 10 // ANALOG NUMBERING
-#else
-#define TEMP_1_PIN 13 // ANALOG NUMBERING
-#endif
- 
-#if TEMP_SENSOR_2 == -1
-#define TEMP_2_PIN 9 // ANALOG NUMBERING
-#else
-#define TEMP_2_PIN 12 // ANALOG NUMBERING
-#endif
- 
-#if TEMP_SENSOR_BED == -1
-#define TEMP_BED_PIN 8 // ANALOG NUMBERING
-#else 
-#define TEMP_BED_PIN 14 // ANALOG NUMBERING
-#endif
+  #define E1_STEP_PIN         25
+  #define E1_DIR_PIN          24
+  #define E1_ENABLE_PIN       26
 
-#define BEEPER 61	
- 
-#define LCD_PINS_RS 32 
-#define LCD_PINS_ENABLE 31
-#define LCD_PINS_D4 14
-#define LCD_PINS_D5 30 
-#define LCD_PINS_D6 39
-#define LCD_PINS_D7 15
- 
-#define SHIFT_CLK 43
-#define SHIFT_LD 35
-#define SHIFT_OUT 34
-#define SHIFT_EN 44
+  #define E2_STEP_PIN         22
+  #define E2_DIR_PIN          60
+  #define E2_ENABLE_PIN       23
 
-//buttons are directly attached using keypad
-#define BTN_EN1 44
-#define BTN_EN2 45
-#define BTN_ENC 33 //the click
- 
- #define BLEN_C 2
- #define BLEN_B 1
- #define BLEN_A 0
+  #define SDPOWER -1
+  #define SDSS 53
+  #define LED_PIN 13
 
- #define SDCARDDETECT -1	// Megatronics does not use this port
+  #if NUM_SERVOS > 0
+    #define SERVO0_PIN       46 //AUX3-6
+    #if NUM_SERVOS > 1
+      #define SERVO1_PIN     47 //AUX3-5
+      #if NUM_SERVOS > 2
+        #define SERVO2_PIN   48 //AUX3-4
+        #if NUM_SERVOS > 3
+          #define SERVO2_PIN 49 //AUX3-3
+        #endif
+      #endif
+    #endif
+  #endif
 
-   //encoder rotation values
- #define encrot0 0
- #define encrot1 2
- #define encrot2 3
- #define encrot3 1
+  #define PS_ON_PIN 12
+  #define KILL_PIN -1
+
+  #define HEATER_0_PIN 2 
+  #define HEATER_1_PIN 8 
+  #define HEATER_2_PIN 9 
+  #define HEATER_BED_PIN 10 
+  #define FAN_PIN 6
+  #define FAN2_PIN 7
+
+  #if TEMP_SENSOR_0 == -1
+    #define TEMP_0_PIN 11 // ANALOG NUMBERING
+  #else
+    #define TEMP_0_PIN 15 // ANALOG NUMBERING
+  #endif
+
+  #if TEMP_SENSOR_1 == -1
+    #define TEMP_1_PIN 10 // ANALOG NUMBERING
+  #else
+    #define TEMP_1_PIN 13 // ANALOG NUMBERING
+  #endif
+
+  #if TEMP_SENSOR_2 == -1
+    #define TEMP_2_PIN 9 // ANALOG NUMBERING
+  #else
+    #define TEMP_2_PIN 12 // ANALOG NUMBERING
+  #endif
+
+  #if TEMP_SENSOR_BED == -1
+    #define TEMP_BED_PIN 8 // ANALOG NUMBERING
+  #else 
+    #define TEMP_BED_PIN 14 // ANALOG NUMBERING
+  #endif
+
+  #define BEEPER 61	
+
+  #define LCD_PINS_RS 32 
+  #define LCD_PINS_ENABLE 31
+  #define LCD_PINS_D4 14
+  #define LCD_PINS_D5 30 
+  #define LCD_PINS_D6 39
+  #define LCD_PINS_D7 15
+
+  #define SHIFT_CLK 43
+  #define SHIFT_LD 35
+  #define SHIFT_OUT 34
+  #define SHIFT_EN 44
+
+  //buttons are directly attached using keypad
+  #define BTN_EN1 44
+  #define BTN_EN2 45
+  #define BTN_ENC 33 //the click
+
+  #define BLEN_C 2
+  #define BLEN_B 1
+  #define BLEN_A 0
+
+  #define SDCARDDETECT -1	// Megatronics does not use this port
+
+  //encoder rotation values
+  #define encrot0 0
+  #define encrot1 2
+  #define encrot2 3
+  #define encrot3 1
 
 #endif  // MEGATRONICS_3
 /****************************************************************************************/
