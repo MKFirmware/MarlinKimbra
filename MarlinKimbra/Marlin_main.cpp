@@ -2339,6 +2339,7 @@ inline void gcode_G28() {
 #ifdef ENABLE_AUTO_BED_LEVELING
   // G29: Detailed Z-Probe, probes the bed at 3 or more points.
   //      Will fail if the printer has not been homed with G28.
+  //      Override probing area by providing [F]ront [B]ack [L]eft [R]ight Grid[P]oints values
   inline void gcode_G29() {
     float x_tmp, y_tmp, z_tmp, real_z;
 
@@ -2370,27 +2371,27 @@ inline void gcode_G28() {
     feedrate = homing_feedrate[Z_AXIS];
 
     #ifdef AUTO_BED_LEVELING_GRID
-      int r_probe_bed_position = RIGHT_PROBE_BED_POSITION;
-      int l_probe_bed_position = LEFT_PROBE_BED_POSITION;
-      int f_probe_bed_position = FRONT_PROBE_BED_POSITION;
-      int b_probe_bed_position = BACK_PROBE_BED_POSITION;
-      int a_bed_leveling_points = AUTO_BED_LEVELING_GRID_POINTS;
+      int right_probe_bed_position = RIGHT_PROBE_BED_POSITION;
+      int left_probe_bed_position = LEFT_PROBE_BED_POSITION;
+      int front_probe_bed_position = FRONT_PROBE_BED_POSITION;
+      int back_probe_bed_position = BACK_PROBE_BED_POSITION;
+      int auto_bed_leveling_points = AUTO_BED_LEVELING_GRID_POINTS;
 
-      if (code_seen('R')) r_probe_bed_position = code_value();
-      if (code_seen('L')) l_probe_bed_position = code_value();
-      if (code_seen('F')) f_probe_bed_position = code_value();
-      if (code_seen('B')) b_probe_bed_position = code_value();
-      if (code_seen('A')) a_bed_leveling_points = code_value();
+      if (code_seen('R')) right_probe_bed_position = code_value();
+      if (code_seen('L')) left_probe_bed_position = code_value();
+      if (code_seen('F')) front_probe_bed_position = code_value();
+      if (code_seen('B')) back_probe_bed_position = code_value();
+      if (code_seen('A')) auto_bed_leveling_points = code_value();
 
-      if((f_probe_bed_position == b_probe_bed_position) || (r_probe_bed_position == l_probe_bed_position)) {
+      if((front_probe_bed_position == back_probe_bed_position) || (right_probe_bed_position == left_probe_bed_position)) {
         SERIAL_ERROR_START;
         SERIAL_ERRORLNPGM(MSG_EMPTY_PLANE);
         return;
       }
 
       // probe at the points of a lattice grid
-      int xGridSpacing = (r_probe_bed_position - l_probe_bed_position) / (a_bed_leveling_points-1);
-      int yGridSpacing = (b_probe_bed_position - f_probe_bed_position) / (a_bed_leveling_points-1);
+      int xGridSpacing = (right_probe_bed_position - left_probe_bed_position) / (auto_bed_leveling_points-1);
+      int yGridSpacing = (back_probe_bed_position - front_probe_bed_position) / (auto_bed_leveling_points-1);
 
       // solve the plane equation ax + by + d = z
       // A is the matrix with rows [x y 1] for all the probed points
@@ -2399,29 +2400,29 @@ inline void gcode_G28() {
       // so Vx = -a Vy = -b Vz = 1 (we want the vector facing towards positive Z
 
       // "A" matrix of the linear system of equations
-      double eqnAMatrix[a_bed_leveling_points*a_bed_leveling_points*3];
+      double eqnAMatrix[auto_bed_leveling_points*auto_bed_leveling_points*3];
       // "B" vector of Z points
-      double eqnBVector[a_bed_leveling_points*a_bed_leveling_points];
+      double eqnBVector[auto_bed_leveling_points*auto_bed_leveling_points];
 
       int probePointCounter = 0;
       bool zig = true;
 
-      for (int yProbe=f_probe_bed_position; yProbe <= b_probe_bed_position; yProbe += yGridSpacing) {
+      for (int yProbe=front_probe_bed_position; yProbe <= back_probe_bed_position; yProbe += yGridSpacing) {
         int xProbe, xInc;
         if (zig) { //zig
-          xProbe = l_probe_bed_position;
+          xProbe = left_probe_bed_position;
           //xEnd = RIGHT_PROBE_BED_POSITION;
           xInc = xGridSpacing;
           zig = false;
         }
         else { //zag
-          xProbe = r_probe_bed_position;
+          xProbe = right_probe_bed_position;
           //xEnd = LEFT_PROBE_BED_POSITION;
           xInc = -xGridSpacing;
           zig = true;
         }
 
-        for (int xCount=0; xCount < a_bed_leveling_points; xCount++) {
+        for (int xCount=0; xCount < auto_bed_leveling_points; xCount++) {
           float z_before;
           if (probePointCounter == 0) {
             // raise before probing
@@ -2434,9 +2435,9 @@ inline void gcode_G28() {
 
           float measured_z = probe_pt(xProbe, yProbe, z_before);
           eqnBVector[probePointCounter] = measured_z;
-          eqnAMatrix[probePointCounter + 0 * a_bed_leveling_points * a_bed_leveling_points] = xProbe;
-          eqnAMatrix[probePointCounter + 1 * a_bed_leveling_points * a_bed_leveling_points] = yProbe;
-          eqnAMatrix[probePointCounter + 2 * a_bed_leveling_points * a_bed_leveling_points] = 1;
+          eqnAMatrix[probePointCounter + 0 * auto_bed_leveling_points * auto_bed_leveling_points] = xProbe;
+          eqnAMatrix[probePointCounter + 1 * auto_bed_leveling_points * auto_bed_leveling_points] = yProbe;
+          eqnAMatrix[probePointCounter + 2 * auto_bed_leveling_points * auto_bed_leveling_points] = 1;
           probePointCounter++;
           xProbe += xInc;
         }
@@ -2444,7 +2445,7 @@ inline void gcode_G28() {
       clean_up_after_endstop_move();
 
       // solve lsq problem
-      double *plane_equation_coefficients = qr_solve(a_bed_leveling_points * a_bed_leveling_points, 3, eqnAMatrix, eqnBVector);
+      double *plane_equation_coefficients = qr_solve(auto_bed_leveling_points * auto_bed_leveling_points, 3, eqnAMatrix, eqnBVector);
 
       SERIAL_PROTOCOLPGM("Eqn coefficients: a: ");
       SERIAL_PROTOCOL(plane_equation_coefficients[0]);
