@@ -9,24 +9,24 @@
 #define ENDSTOPPULLUPS // Comment this out (using // at the start of the line) to disable the endstop pullup resistors
 
 #ifndef ENDSTOPPULLUPS
-// fine endstop settings: Individual pullups. will be ignored if ENDSTOPPULLUPS is defined
-// #define ENDSTOPPULLUP_XMAX
-// #define ENDSTOPPULLUP_YMAX
-// #define ENDSTOPPULLUP_ZMAX
-// #define ENDSTOPPULLUP_XMIN
-// #define ENDSTOPPULLUP_YMIN
-// #define ENDSTOPPULLUP_ZMIN
-// #define ENDSTOPPULLUP_EMIN
+  // fine endstop settings: Individual pullups. will be ignored if ENDSTOPPULLUPS is defined
+  // #define ENDSTOPPULLUP_XMAX
+  // #define ENDSTOPPULLUP_YMAX
+  // #define ENDSTOPPULLUP_ZMAX
+  // #define ENDSTOPPULLUP_XMIN
+  // #define ENDSTOPPULLUP_YMIN
+  // #define ENDSTOPPULLUP_ZMIN
+  // #define ENDSTOPPULLUP_EMIN
 #endif
 
 #ifdef ENDSTOPPULLUPS
-#define ENDSTOPPULLUP_XMAX
-#define ENDSTOPPULLUP_YMAX
-#define ENDSTOPPULLUP_ZMAX
-#define ENDSTOPPULLUP_XMIN
-#define ENDSTOPPULLUP_YMIN
-#define ENDSTOPPULLUP_ZMIN
-#define ENDSTOPPULLUP_EMIN
+  #define ENDSTOPPULLUP_XMAX
+  #define ENDSTOPPULLUP_YMAX
+  #define ENDSTOPPULLUP_ZMAX
+  #define ENDSTOPPULLUP_XMIN
+  #define ENDSTOPPULLUP_YMIN
+  #define ENDSTOPPULLUP_ZMIN
+  #define ENDSTOPPULLUP_EMIN
 #endif
 
 // The pullups are needed if you directly connect a mechanical end switch between the signal and ground pins.
@@ -82,11 +82,9 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the lo
 #define Y_MAX_LENGTH (Y_MAX_POS - Y_MIN_POS)
 #define Z_MAX_LENGTH (Z_MAX_POS - Z_MIN_POS)
 
-
-//============================= Bed Auto Leveling ===========================
-
-//#define ENABLE_AUTO_BED_LEVELING // Delete the comment to enable (ABL)
-//#define Z_PROBE_REPEATABILITY_TEST  // Delete the comment to enable
+//=====================================================================================
+//============================= Bed Manual or Auto Leveling ===========================
+//=====================================================================================
 
 // set the rectangle in which to probe in manual or automatic
 #define LEFT_PROBE_BED_POSITION 20
@@ -96,82 +94,101 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the lo
 
 #define XY_TRAVEL_SPEED 8000     // X and Y axis travel speed between probes, in mm/min
 
+//#define ENABLE_AUTO_BED_LEVELING    // Delete the comment to enable (ABL)
+//#define Z_PROBE_REPEATABILITY_TEST  // Delete the comment to enable
+
 #ifdef ENABLE_AUTO_BED_LEVELING
+  // There are 2 different ways to pick the X and Y locations to probe:
 
-// There are 2 different ways to pick the X and Y locations to probe:
+  //  - "grid" mode
+  //    Probe every point in a rectangular grid
+  //    You must specify the rectangle, and the density of sample points
+  //    This mode is preferred because there are more measurements.
+  //    It used to be called ACCURATE_BED_LEVELING but "grid" is more descriptive
 
-//  - "grid" mode
-//    Probe every point in a rectangular grid
-//    You must specify the rectangle, and the density of sample points
-//    This mode is preferred because there are more measurements.
-//    It used to be called ACCURATE_BED_LEVELING but "grid" is more descriptive
+  //  - "3-point" mode
+  //    Probe 3 arbitrary points on the bed (that aren't colinear)
+  //    You must specify the X & Y coordinates of all 3 points
 
-//  - "3-point" mode
-//    Probe 3 arbitrary points on the bed (that aren't colinear)
-//    You must specify the X & Y coordinates of all 3 points
+  #define AUTO_BED_LEVELING_GRID
+  // with AUTO_BED_LEVELING_GRID, the bed is sampled in a
+  // AUTO_BED_LEVELING_GRID_POINTSxAUTO_BED_LEVELING_GRID_POINTS grid
+  // and least squares solution is calculated
+  // Note: this feature occupies 10'206 byte
 
-#define AUTO_BED_LEVELING_GRID
-// with AUTO_BED_LEVELING_GRID, the bed is sampled in a
-// AUTO_BED_LEVELING_GRID_POINTSxAUTO_BED_LEVELING_GRID_POINTS grid
-// and least squares solution is calculated
-// Note: this feature occupies 10'206 byte
-#ifdef AUTO_BED_LEVELING_GRID
-// set the number of grid points per dimension
-// I wouldn't see a reason to go above 3 (=9 probing points on the bed)
-#define AUTO_BED_LEVELING_GRID_POINTS 2
+  #ifdef AUTO_BED_LEVELING_GRID
+    // set the number of grid points per dimension
+    // I wouldn't see a reason to go above 3 (=9 probing points on the bed)
+    #define AUTO_BED_LEVELING_GRID_POINTS 2
 
-#else  // not AUTO_BED_LEVELING_GRID
-// with no grid, just probe 3 arbitrary points.  A simple cross-product
-// is used to esimate the plane of the print bed
+  #else  // not AUTO_BED_LEVELING_GRID
+    // with no grid, just probe 3 arbitrary points.  A simple cross-product
+    // is used to estimate the plane of the print bed
 
-#define ABL_PROBE_PT_1_X 15
-#define ABL_PROBE_PT_1_Y 180
-#define ABL_PROBE_PT_2_X 15
-#define ABL_PROBE_PT_2_Y 20
-#define ABL_PROBE_PT_3_X 170
-#define ABL_PROBE_PT_3_Y 20
+    #define ABL_PROBE_PT_1_X 15
+    #define ABL_PROBE_PT_1_Y 180
+    #define ABL_PROBE_PT_2_X 15
+    #define ABL_PROBE_PT_2_Y 20
+    #define ABL_PROBE_PT_3_X 170
+    #define ABL_PROBE_PT_3_Y 20
+  #endif // AUTO_BED_LEVELING_GRID
 
-#endif // AUTO_BED_LEVELING_GRID
+  // these are the offsets to the probe relative to the extruder tip (Hotend - Probe)
+  // X and Y offsets must be integers
+  #define X_PROBE_OFFSET_FROM_EXTRUDER 0
+  #define Y_PROBE_OFFSET_FROM_EXTRUDER 0
+  #define Z_PROBE_OFFSET_FROM_EXTRUDER -1
 
+  #define Z_RAISE_BEFORE_HOMING 10      // (in mm) Raise Z before homing (G28) for Probe Clearance.
+  // Be sure you have this distance over your Z_MAX_POS in case
 
-// these are the offsets to the probe relative to the extruder tip (Hotend - Probe)
-#define X_PROBE_OFFSET_FROM_EXTRUDER 0
-#define Y_PROBE_OFFSET_FROM_EXTRUDER 20
-#define Z_PROBE_OFFSET_FROM_EXTRUDER -3.70
+  #define Z_RAISE_BEFORE_PROBING 10    //How much the extruder will be raised before travelling to the first probing point.
+  #define Z_RAISE_BETWEEN_PROBINGS 5   //How much the extruder will be raised when travelling from between next probing points
 
-#define Z_RAISE_BEFORE_HOMING 10       // (in mm) Raise Z before homing (G28) for Probe Clearance.
-// Be sure you have this distance over your Z_MAX_POS in case
+  //#define Z_PROBE_SLED // turn on if you have a z-probe mounted on a sled like those designed by Charles Bell
+  //#define SLED_DOCKING_OFFSET 5 // the extra distance the X axis must travel to pick up the sled. 0 should be fine but you can push it further if you'd like.
 
-#define Z_RAISE_BEFORE_PROBING 10    //How much the extruder will be raised before traveling to the first probing point.
-#define Z_RAISE_BETWEEN_PROBINGS 5   //How much the extruder will be raised when traveling from between next probing points
+  //If defined, the Probe servo will be turned on only during movement and then turned off to avoid jerk
+  //The value is the delay to turn the servo off after powered on - depends on the servo speed; 300ms is good value, but you can try lower it.
+  // You MUST HAVE the SERVO ENDSTOPS defined to use here a value higher than zero otherwise your code will not compile.
 
-//#define Z_PROBE_SLED // turn on if you have a z-probe mounted on a sled like those designed by Charles Bell
-//#define SLED_DOCKING_OFFSET 5 // the extra distance the X axis must travel to pickup the sled. 0 should be fine but you can push it further if you'd like.
+  #define PROBE_SERVO_DEACTIVATION_DELAY 300
 
-//If defined, the Probe servo will be turned on only during movement and then turned off to avoid jerk
-//The value is the delay to turn the servo off after powered on - depends on the servo speed; 300ms is good value, but you can try lower it.
-// You MUST HAVE the SERVO ENDSTOPS defined to use here a value higher than zero otherwise your code will not compile.
+  //If you have enabled the Auto Bed Levelling and are using the same Z Probe for Z Homing,
+  //it is highly recommended you let this Z_SAFE_HOMING enabled!!!
 
-#define PROBE_SERVO_DEACTIVATION_DELAY 300
+  #define Z_SAFE_HOMING   // This feature is meant to avoid Z homing with probe outside the bed area.
+                          // When defined, it will:
+                          // - Allow Z homing only after X and Y homing AND stepper drivers still enabled
+                          // - If stepper drivers time out, it will need X and Y homing again before Z homing
+                          // - Position the probe in a defined XY point before Z Homing when homing all axis (G28)
+                          // - Block Z homing only when the probe is outside bed area.
 
+  #ifdef Z_SAFE_HOMING
+    #define Z_SAFE_HOMING_X_POINT (X_MAX_LENGTH/2)    // X point for Z homing when homing all axis (G28)
+    #define Z_SAFE_HOMING_Y_POINT (Y_MAX_LENGTH/2)    // Y point for Z homing when homing all axis (G28)
+  #endif
 
-//If you have enabled the Auto Bed Leveling and are using the same Z Probe for Z Homing,
-//it is highly recommended you let this Z_SAFE_HOMING enabled!!!
-
-#define Z_SAFE_HOMING   // This feature is meant to avoid Z homing with probe outside the bed area.
-                        // When defined, it will:
-                        // - Allow Z homing only after X and Y homing AND stepper drivers still enabled
-                        // - If stepper drivers timeout, it will need X and Y homing again before Z homing
-                        // - Position the probe in a defined XY point before Z Homing when homing all axis (G28)
-                        // - Block Z homing only when the probe is outside bed area.
-
-#ifdef Z_SAFE_HOMING
-
-#define Z_SAFE_HOMING_X_POINT (X_MAX_LENGTH/2)    // X point for Z homing when homing all axis (G28)
-#define Z_SAFE_HOMING_Y_POINT (Y_MAX_LENGTH/2)    // Y point for Z homing when homing all axis (G28)
-
-#endif
-
+  #ifdef AUTO_BED_LEVELING_GRID	// Check if Probe_Offset * Grid Points is greater than Probing Range
+    #if X_PROBE_OFFSET_FROM_EXTRUDER < 0
+      #if (-(X_PROBE_OFFSET_FROM_EXTRUDER * (AUTO_BED_LEVELING_GRID_POINTS-1)) >= (RIGHT_PROBE_BED_POSITION - LEFT_PROBE_BED_POSITION))
+        #error "The X axis probing range is not enough to fit all the points defined in AUTO_BED_LEVELING_GRID_POINTS"
+      #endif
+    #else
+      #if ((X_PROBE_OFFSET_FROM_EXTRUDER * (AUTO_BED_LEVELING_GRID_POINTS-1)) >= (RIGHT_PROBE_BED_POSITION - LEFT_PROBE_BED_POSITION))
+        #error "The X axis probing range is not enough to fit all the points defined in AUTO_BED_LEVELING_GRID_POINTS"
+      #endif
+    #endif
+    #if Y_PROBE_OFFSET_FROM_EXTRUDER < 0
+      #if (-(Y_PROBE_OFFSET_FROM_EXTRUDER * (AUTO_BED_LEVELING_GRID_POINTS-1)) >= (BACK_PROBE_BED_POSITION - FRONT_PROBE_BED_POSITION))
+        #error "The Y axis probing range is not enough to fit all the points defined in AUTO_BED_LEVELING_GRID_POINTS"
+      #endif
+    #else
+      #if ((Y_PROBE_OFFSET_FROM_EXTRUDER * (AUTO_BED_LEVELING_GRID_POINTS-1)) >= (BACK_PROBE_BED_POSITION - FRONT_PROBE_BED_POSITION))
+        #error "The Y axis probing range is not enough to fit all the points defined in AUTO_BED_LEVELING_GRID_POINTS"
+      #endif
+    #endif
+  #endif
 #endif // ENABLE_AUTO_BED_LEVELING
 
 
@@ -180,24 +197,22 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the lo
 //#define BED_CENTER_AT_0_0  // If defined, the center of the bed is at (X=0, Y=0)
 
 //Manual homing switch locations:
-// For deltabots this means top and center of the Cartesian print volume.
 #define MANUAL_X_HOME_POS 0
 #define MANUAL_Y_HOME_POS 0
 #define MANUAL_Z_HOME_POS 0
 
-//// MOVEMENT SETTINGS
+// MOVEMENT SETTINGS
 #define NUM_AXIS 4 // The axis order in all axis related arrays is X, Y, Z, E
 #define HOMING_FEEDRATE {100*60,100*60,2*60,0}      // set the homing speeds (mm/min)
 
 // default settings
-
-#define DEFAULT_AXIS_STEPS_PER_UNIT     {80,80,3200,625,625,625,625}    // X, Y, Z, E0, E1, E2, E3 default steps per unit
-#define DEFAULT_MAX_FEEDRATE            {300,300,2,100,100,100,100}     // X, Y, Z, E0, E1, E2, E3 (mm/sec)
-#define DEFAULT_RETRACTION_MAX_FEEDRATE {110,110,110,110}               // E0, E1, E2, E3 (mm/sec)
-#define DEFAULT_MAX_ACCELERATION        {3000,3000,50,1000,1000,1000}             // X, Y, Z, E0, E1, E2, E3 maximum start speed for accelerated moves.
+#define DEFAULT_AXIS_STEPS_PER_UNIT     {80,80,3200,625,625,625,625}       // X, Y, Z, E0, E1, E2, E3 default steps per unit
+#define DEFAULT_MAX_FEEDRATE            {300,300,2,100,100,100,100}        // X, Y, Z, E0, E1, E2, E3 (mm/sec)
+#define DEFAULT_RETRACTION_MAX_FEEDRATE {110,110,110,110}                  // E0, E1, E2, E3 (mm/sec)
+#define DEFAULT_MAX_ACCELERATION        {3000,3000,50,1000,1000,1000,1000} // X, Y, Z, E0, E1, E2, E3 maximum start speed for accelerated moves.
 
 #define DEFAULT_ACCELERATION          2500    // X, Y, Z and E max acceleration in mm/s^2 for printing moves
-#define DEFAULT_RETRACT_ACCELERATION  3000    // X, Y, Z and E max acceleration in mm/s^2 for retracts
+#define DEFAULT_RETRACT_ACCELERATION  10000   // E max acceleration in mm/s^2 for retracts
 
 // Offset of the extruders (uncomment if using more than one and relying on firmware to position when changing).
 // The offset has to be X=0, Y=0 for the extruder 0 hotend (default extruder).
@@ -207,8 +222,8 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the lo
 
 // The speed change that does not require acceleration (i.e. the software might assume it can be done instantaneously)
 #define DEFAULT_XYJERK 10.0    // (mm/sec)
-#define DEFAULT_ZJERK 0.4      // (mm/sec)
-#define DEFAULT_EJERK 5.0      // (mm/sec)
+#define DEFAULT_ZJERK   0.4    // (mm/sec)
+#define DEFAULT_EJERK   5.0    // (mm/sec)
 
 //===========================================================================
 //=============================Additional Features===========================
@@ -217,7 +232,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the lo
 // Custom M code points
 //#define CUSTOM_M_CODES
 #ifdef CUSTOM_M_CODES
-#define CUSTOM_M_CODE_SET_Z_PROBE_OFFSET 851
-#define Z_PROBE_OFFSET_RANGE_MIN -15
-#define Z_PROBE_OFFSET_RANGE_MAX -5
+  #define CUSTOM_M_CODE_SET_Z_PROBE_OFFSET 851
+  #define Z_PROBE_OFFSET_RANGE_MIN -15
+  #define Z_PROBE_OFFSET_RANGE_MAX -5
 #endif
