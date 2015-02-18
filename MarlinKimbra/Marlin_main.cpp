@@ -3461,6 +3461,9 @@ inline void gcode_G92() {
     current_position[E_AXIS] = target[E_AXIS]; //the long retract of L is compensated by manual filament feeding
     plan_set_e_position(current_position[E_AXIS]);
 
+    //reset LCD alert message
+    lcd_reset_alert_level();
+
     #ifdef DELTA
       calculate_delta(lastpos);
       plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver); //move xyz back
