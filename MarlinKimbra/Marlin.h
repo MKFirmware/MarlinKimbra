@@ -245,9 +245,23 @@ extern float volumetric_multiplier[EXTRUDERS]; // reciprocal of cross-sectional 
 extern float current_position[NUM_AXIS];
 extern float destination[NUM_AXIS];
 extern float add_homing[3];
+
+// Extruder offset
+#if EXTRUDERS > 1
+  #ifndef SINGLENOZZLE
+    #ifndef DUAL_X_CARRIAGE
+      #define NUM_EXTRUDER_OFFSETS 2 // only in XY plane
+    #else
+      #define NUM_EXTRUDER_OFFSETS 3 // supports offsets in XYZ plane
+    #endif
+    extern float extruder_offset[NUM_EXTRUDER_OFFSETS][EXTRUDERS];
+  #endif // end SINGLENOZZLE
+#endif // end EXTRUDERS
+
 #ifdef NPR2
 extern int old_color; // old color for system NPR2
 #endif
+
 #ifdef DELTA
 extern float z_probe_offset[3];
 extern float endstop_adj[3];
@@ -257,6 +271,7 @@ extern float delta_diagonal_rod;
 //*extern float Z_MAX_POS;
 //*extern float Z_MAX_LENGTH;
 #endif
+
 #ifdef SCARA
 extern float axis_scaling[3];  // Build size scaling
 #endif
