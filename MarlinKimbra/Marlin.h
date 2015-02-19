@@ -250,11 +250,11 @@ extern float add_homing[3];
 #if EXTRUDERS > 1
   #ifndef SINGLENOZZLE
     #ifndef DUAL_X_CARRIAGE
-      #define NUM_EXTRUDER_OFFSETS 2 // only in XY plane
+      #define NUM_HOTEND_OFFSETS 2 // only in XY plane
     #else
-      #define NUM_EXTRUDER_OFFSETS 3 // supports offsets in XYZ plane
+      #define NUM_HOTEND_OFFSETS 3 // supports offsets in XYZ plane
     #endif
-    extern float extruder_offset[NUM_EXTRUDER_OFFSETS][EXTRUDERS];
+    extern float hotend_offset[NUM_HOTEND_OFFSETS][EXTRUDERS];
   #endif // end SINGLENOZZLE
 #endif // end EXTRUDERS
 

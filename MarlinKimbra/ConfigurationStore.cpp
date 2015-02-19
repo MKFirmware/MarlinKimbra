@@ -70,7 +70,7 @@ void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size)
     EEPROM_WRITE_VAR(i, zprobe_zoffset);
 
     #if EXTRUDERS > 1 && !defined SINGLENOZZLE
-      EEPROM_WRITE_VAR(i, extruder_offset);
+      EEPROM_WRITE_VAR(i, hotend_offset);
     #endif
 
     #ifdef DELTA
@@ -176,7 +176,7 @@ void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size)
       EEPROM_READ_VAR(i,zprobe_zoffset);
 
       #if EXTRUDERS > 1 && !defined SINGLENOZZLE
-        EEPROM_READ_VAR(i, extruder_offset);
+        EEPROM_READ_VAR(i, hotend_offset);
       #endif
 
       #ifdef DELTA
@@ -300,8 +300,8 @@ void Config_ResetDefault()
   {
     max_retraction_feedrate[i] = tmp3[i];
     #if EXTRUDERS > 1 && !defined SINGLENOZZLE
-      extruder_offset[X_AXIS][i] = tmp8[i];
-      extruder_offset[Y_AXIS][i] = tmp9[i];
+      hotend_offset[X_AXIS][i] = tmp8[i];
+      hotend_offset[Y_AXIS][i] = tmp9[i];
     #endif
     #ifdef SCARA
       axis_scaling[i] = 1;
@@ -513,8 +513,8 @@ void Config_ResetDefault()
       for (int e = 0; e < EXTRUDERS; e++) {
         SERIAL_ECHO_START;
         SERIAL_ECHOPAIR("  M218 T", (long unsigned int)e);
-        SERIAL_ECHOPAIR(" X", extruder_offset[X_AXIS][e]);
-        SERIAL_ECHOPAIR(" Y" ,extruder_offset[Y_AXIS][e]);
+        SERIAL_ECHOPAIR(" X", hotend_offset[X_AXIS][e]);
+        SERIAL_ECHOPAIR(" Y" ,hotend_offset[Y_AXIS][e]);
         SERIAL_EOL;
       }
     #endif //EXTRUDERS > 1 && !defined SINGLENOZZLE

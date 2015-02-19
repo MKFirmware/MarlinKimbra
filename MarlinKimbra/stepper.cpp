@@ -43,7 +43,7 @@ block_t *current_block;  // A pointer to the block currently being traced
 //===========================================================================
 //=============================private variables ============================
 //===========================================================================
-//static makes it inpossible to be called from outside of this file by extern.!
+//static makes it impossible to be called from outside of this file by extern.!
 
 // Variables used by The Stepper Driver Interrupt
 static unsigned char out_bits;        // The next stepping-bits to be output
@@ -59,7 +59,7 @@ volatile static unsigned long step_events_completed; // The number of step event
 #endif
 static long acceleration_time, deceleration_time;
 //static unsigned long accelerate_until, decelerate_after, acceleration_rate, initial_rate, final_rate, nominal_rate;
-static unsigned short acc_step_rate; // needed for deccelaration start point
+static unsigned short acc_step_rate; // needed for deceleration start point
 static char step_loops;
 static unsigned short OCR1A_nominal;
 static unsigned short step_loops_nominal;
@@ -95,7 +95,7 @@ volatile long count_position[NUM_AXIS] = { 0, 0, 0, 0};
 volatile signed char count_direction[NUM_AXIS] = { 1, 1, 1, 1};
 
 //===========================================================================
-//=============================functions         ============================
+//============================ Functions ====================================
 //===========================================================================
 
 #define CHECK_ENDSTOPS  if(check_endstops)
@@ -292,7 +292,7 @@ void enable_endstops(bool check)
 //  The trapezoid is the shape the speed curve over time. It starts at block->initial_rate, accelerates
 //  first block->accelerate_until step_events_completed, then keeps going at constant speed until
 //  step_events_completed reaches block->decelerate_after after which it decelerates until the trapezoid generator is reset.
-//  The slope of acceleration is calculated with the leib ramp alghorithm.
+//  The slope of acceleration is calculated with the lib ramp algorithm.
 
 void st_wake_up() {
   //  TCNT1 = 0;
