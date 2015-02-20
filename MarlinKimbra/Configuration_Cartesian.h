@@ -94,6 +94,14 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the lo
 
 #define XY_TRAVEL_SPEED 8000     // X and Y axis travel speed between probes, in mm/min
 
+//If you have enabled the Auto Bed Levelling and are using the same Z Probe for Z Homing,
+//it is highly recommended you let this Z_SAFE_HOMING enabled!!!
+//#define Z_SAFE_HOMING
+#ifdef Z_SAFE_HOMING
+  #define Z_SAFE_HOMING_X_POINT (X_MAX_LENGTH/2)    // X point for Z homing when homing all axis (G28) or homing Z
+  #define Z_SAFE_HOMING_Y_POINT (Y_MAX_LENGTH/2)    // Y point for Z homing when homing all axis (G28) or homing Z
+#endif
+
 //#define ENABLE_AUTO_BED_LEVELING    // Delete the comment to enable (ABL)
 //#define Z_PROBE_REPEATABILITY_TEST  // Delete the comment to enable
 
@@ -153,21 +161,6 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the lo
   // You MUST HAVE the SERVO ENDSTOPS defined to use here a value higher than zero otherwise your code will not compile.
 
   #define PROBE_SERVO_DEACTIVATION_DELAY 300
-
-  //If you have enabled the Auto Bed Levelling and are using the same Z Probe for Z Homing,
-  //it is highly recommended you let this Z_SAFE_HOMING enabled!!!
-
-  #define Z_SAFE_HOMING   // This feature is meant to avoid Z homing with probe outside the bed area.
-                          // When defined, it will:
-                          // - Allow Z homing only after X and Y homing AND stepper drivers still enabled
-                          // - If stepper drivers time out, it will need X and Y homing again before Z homing
-                          // - Position the probe in a defined XY point before Z Homing when homing all axis (G28)
-                          // - Block Z homing only when the probe is outside bed area.
-
-  #ifdef Z_SAFE_HOMING
-    #define Z_SAFE_HOMING_X_POINT (X_MAX_LENGTH/2)    // X point for Z homing when homing all axis (G28)
-    #define Z_SAFE_HOMING_Y_POINT (Y_MAX_LENGTH/2)    // Y point for Z homing when homing all axis (G28)
-  #endif
 
   #ifdef AUTO_BED_LEVELING_GRID	// Check if Probe_Offset * Grid Points is greater than Probing Range
     #if X_PROBE_OFFSET_FROM_EXTRUDER < 0

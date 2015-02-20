@@ -2167,14 +2167,12 @@ inline void gcode_G28() {
 
     if((home_all_axis) || (code_seen(axis_codes[Y_AXIS]))) HOMEAXIS(Y);
 
-    if(code_seen(axis_codes[X_AXIS])) {
-      if(code_value_long() != 0) {
-        #ifdef SCARA
-          current_position[X_AXIS]=code_value();
-        #else
-          current_position[X_AXIS]=code_value()+add_homing[X_AXIS];
-        #endif
-      }
+    if(code_seen(axis_codes[X_AXIS]) && code_value_long() != 0) {
+      #ifdef SCARA
+        current_position[X_AXIS]=code_value();
+      #else
+        current_position[X_AXIS]=code_value()+add_homing[X_AXIS];
+      #endif
     }
 
     if (code_seen(axis_codes[Y_AXIS]) && code_value_long() != 0) {
@@ -2262,7 +2260,7 @@ inline void gcode_G28() {
           #endif
           HOMEAXIS(Z);
         }
-      #else // Z Safe mode activated.
+      #elif defined(Z_SAFE_HOMING) && defined(ENABLE_AUTO_BED_LEVELING)// Z Safe mode activated.
         if (home_all_axis) {
           destination[X_AXIS] = round(Z_SAFE_HOMING_X_POINT - X_PROBE_OFFSET_FROM_EXTRUDER);
           destination[Y_AXIS] = round(Z_SAFE_HOMING_Y_POINT - Y_PROBE_OFFSET_FROM_EXTRUDER);
@@ -2271,7 +2269,7 @@ inline void gcode_G28() {
           current_position[Z_AXIS] = 0;
 
           plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
-          plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder, active_driver);
+          plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate, active_extruder, active_driver);
           st_synchronize();
           current_position[X_AXIS] = destination[X_AXIS];
           current_position[Y_AXIS] = destination[Y_AXIS];
@@ -2303,6 +2301,20 @@ inline void gcode_G28() {
             SERIAL_ECHO_START;
             SERIAL_ECHOLNPGM(MSG_POSITION_UNKNOWN);
           }
+        }
+      #elif defined(Z_SAFE_HOMING)
+        if(home_all_axis || (code_seen(axis_codes[Z_AXIS]))) {
+          destination[X_AXIS] = round(Z_SAFE_HOMING_X_POINT);
+          destination[Y_AXIS] = round(Z_SAFE_HOMING_Y_POINT);
+          feedrate = XY_TRAVEL_SPEED / 60;
+          destination[Z_AXIS] = current_position[Z_AXIS] = 0;
+          plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+          plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate, active_extruder, active_driver);
+          st_synchronize();
+          current_position[X_AXIS] = destination[X_AXIS];
+          current_position[Y_AXIS] = destination[Y_AXIS];
+
+          HOMEAXIS(Z);
         }
       #endif //Z_SAFE_HOMING
     #endif //Z_HOME_DIR < 0

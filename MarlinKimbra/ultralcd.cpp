@@ -10,6 +10,9 @@
 
 int8_t encoderDiff; /* encoderDiff is updated from interrupt context and added to encoderPosition every LCD update */
 
+bool encoderRateMultiplierEnabled;
+int32_t lastEncoderMovementMillis;
+
 /* Configuration settings */
 int plaPreheatHotendTemp;
 int plaPreheatHPBTemp;
@@ -127,6 +130,7 @@ static void menu_action_setting_edit_callback_long5(const char* pstr, unsigned l
 
 /* Helper macros for menus */
 #define START_MENU() do { \
+	encoderRateMultiplierEnabled = false; \
     if (encoderPosition > 0x8000) encoderPosition = 0; \
     if (encoderPosition / ENCODER_STEPS_PER_MENU_ITEM < currentMenuViewOffset) currentMenuViewOffset = encoderPosition / ENCODER_STEPS_PER_MENU_ITEM;\
     uint8_t _lineNr = currentMenuViewOffset, _menuItemNr; \
@@ -151,9 +155,39 @@ static void menu_action_setting_edit_callback_long5(const char* pstr, unsigned l
     }\
     _menuItemNr++;\
 } while(0)
+#ifdef ENCODER_RATE_MULTIPLIER
+#define MENU_MULTIPLIER_ITEM(type, label, args...) do { \
+    if (_menuItemNr == _lineNr) { \
+      if (lcdDrawUpdate) { \
+        const char* _label_pstr = PSTR(label); \
+        if ((encoderPosition / ENCODER_STEPS_PER_MENU_ITEM) == _menuItemNr) { \
+          lcd_implementation_drawmenu_ ## type ## _selected (_drawLineNr, _label_pstr , ## args ); \
+        } \
+        else { \
+          lcd_implementation_drawmenu_ ## type (_drawLineNr, _label_pstr , ## args ); \
+        } \
+      } \
+      if (wasClicked && (encoderPosition / ENCODER_STEPS_PER_MENU_ITEM) == _menuItemNr) { \
+        lcd_quick_feedback(); \
+        encoderRateMultiplierEnabled = true; \
+        lastEncoderMovementMillis = 0; \
+        menu_action_ ## type ( args ); \
+        return; \
+      } \
+    } \
+    _menuItemNr++; \
+} while(0)
+#endif
 #define MENU_ITEM_DUMMY() do { _menuItemNr++; } while(0)
 #define MENU_ITEM_EDIT(type, label, args...) MENU_ITEM(setting_edit_ ## type, label, PSTR(label) , ## args )
 #define MENU_ITEM_EDIT_CALLBACK(type, label, args...) MENU_ITEM(setting_edit_callback_ ## type, label, PSTR(label) , ## args )
+#ifdef ENCODER_RATE_MULTIPLIER
+#define MENU_MULTIPLIER_ITEM_EDIT(type, label, args...) MENU_MULTIPLIER_ITEM(setting_edit_ ## type, label, PSTR(label) , ## args )
+#define MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(type, label, args...) MENU_MULTIPLIER_ITEM(setting_edit_callback_ ## type, label, PSTR(label) , ## args )
+#else
+#define MENU_MULTIPLIER_ITEM_EDIT(type, label, args...) MENU_ITEM(setting_edit_ ## type, label, PSTR(label) , ## args )
+#define MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(type, label, args...) MENU_ITEM(setting_edit_callback_ ## type, label, PSTR(label) , ## args )
+#endif
 #define END_MENU() \
     if (encoderPosition / ENCODER_STEPS_PER_MENU_ITEM >= _menuItemNr) encoderPosition = _menuItemNr * ENCODER_STEPS_PER_MENU_ITEM - 1; \
     if ((uint8_t)(encoderPosition / ENCODER_STEPS_PER_MENU_ITEM) >= currentMenuViewOffset + LCD_HEIGHT) { currentMenuViewOffset = (encoderPosition / ENCODER_STEPS_PER_MENU_ITEM) - LCD_HEIGHT + 1; lcdDrawUpdate = 1; _lineNr = currentMenuViewOffset - 1; _drawLineNr = -1; } \
@@ -212,6 +246,7 @@ static void lcd_goto_menu(menuFunc_t menu, const uint32_t encoder=0, const bool 
 /* Main status screen. It's up to the implementation specific part to show what is needed. As this is very display dependent */
 static void lcd_status_screen()
 {
+	encoderRateMultiplierEnabled = false;
   #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT) && !defined(DOGLCD)
     uint16_t mil = millis();
     #ifndef PROGRESS_BAR_MSG_ONCE
@@ -1512,8 +1547,47 @@ void lcd_update()
 		#endif
         if (abs(encoderDiff) >= ENCODER_PULSES_PER_STEP)
         {
+      int32_t encoderMultiplier = 1;
+
+#ifdef ENCODER_RATE_MULTIPLIER
+      if (encoderRateMultiplierEnabled)
+      {
+        int32_t encoderMovementSteps = abs(encoderDiff) / ENCODER_PULSES_PER_STEP;
+
+        if (lastEncoderMovementMillis != 0)
+        {
+          // Note that the rate is always calculated between to passes through the 
+          // loop and that the abs of the encoderDiff value is tracked.
+          float encoderStepRate =
+            (float)(encoderMovementSteps) / ((float)(millis() - lastEncoderMovementMillis)) * 1000.0;
+
+          if (encoderStepRate >= ENCODER_100X_STEPS_PER_SEC)
+          {
+            encoderMultiplier = 100;
+          }
+          else if (encoderStepRate >= ENCODER_10X_STEPS_PER_SEC)
+          {
+            encoderMultiplier = 10;
+          }
+
+#ifdef ENCODER_RATE_MULTIPLIER_DEBUG
+          SERIAL_ECHO_START;
+          SERIAL_ECHO("Enc Step Rate: ");
+          SERIAL_ECHO(encoderStepRate);
+          SERIAL_ECHO("  Multiplier: ");
+          SERIAL_ECHO(encoderMultiplier);
+          SERIAL_ECHO("  ENCODER_10X_STEPS_PER_SEC: ");
+          SERIAL_ECHO(ENCODER_10X_STEPS_PER_SEC);
+          SERIAL_ECHO("  ENCODER_100X_STEPS_PER_SEC: ");
+          SERIAL_ECHOLN(ENCODER_100X_STEPS_PER_SEC);
+#endif
+        }
+
+        lastEncoderMovementMillis = millis();
+      }
+#endif
             lcdDrawUpdate = 1;
-            encoderPosition += encoderDiff / ENCODER_PULSES_PER_STEP;
+            encoderPosition += (encoderDiff * encoderMultiplier) / ENCODER_PULSES_PER_STEP;
             encoderDiff = 0;
             timeoutToStatus = millis() + LCD_TIMEOUT_TO_STATUS;
         }
