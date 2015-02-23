@@ -2002,6 +2002,40 @@ void refresh_cmd_timeout(void)
   }
 #endif //Z_PROBE_SLED
 
+inline void lcd_beep(int number_beep=3)
+{
+  #ifdef LCD_USE_I2C_BUZZER
+    #if !defined(LCD_FEEDBACK_FREQUENCY_HZ) || !defined(LCD_FEEDBACK_FREQUENCY_DURATION_MS)
+      for(int8_t i=0;i<3;i++) {
+        lcd_buzz(1000/6,100);
+      }
+    #else
+      for(int8_t i=0;i<number_beep;i++) {
+        lcd_buzz(LCD_FEEDBACK_FREQUENCY_DURATION_MS,LCD_FEEDBACK_FREQUENCY_HZ);
+      }
+    #endif
+  #elif defined(BEEPER) && BEEPER > -1
+    SET_OUTPUT(BEEPER);
+    #if !defined(LCD_FEEDBACK_FREQUENCY_HZ) || !defined(LCD_FEEDBACK_FREQUENCY_DURATION_MS)
+      for(int8_t i=0;i<number_beep;i++)
+      {
+        WRITE(BEEPER,HIGH);
+        delay(100);
+        WRITE(BEEPER,LOW);
+        delay(100);
+      }
+    #else
+      for(int8_t i=0;i<number_beep;i++)
+      {
+        WRITE(BEEPER,HIGH);
+        delay(1000000 / LCD_FEEDBACK_FREQUENCY_HZ / 2);
+        WRITE(BEEPER,LOW);
+        delay(1000000 / LCD_FEEDBACK_FREQUENCY_HZ / 2);
+      }
+    #endif
+  #endif
+}
+
 inline void wait_heater()
 {
   setWatch();
@@ -3557,9 +3591,10 @@ inline void gcode_G92() {
     //disable extruder steppers so filament can be removed
     disable_e();
     delay(100);
-    LCD_ALERTMESSAGEPGM(MSG_FILAMENTCHANGE);
     boolean beep = true;
+    boolean sleep = false;
     int cnt = 0;
+    
     #ifndef SINGLENOZZLE
       int old_target_temperature[EXTRUDERS] = { 0 };
       for(int8_t e=0;e<EXTRUDERS;e++)
@@ -3572,50 +3607,27 @@ inline void gcode_G92() {
     }
     int old_target_temperature_bed = target_temperature_bed;
     timer.set_max_delay(60000); // 1 minute
+    
+    PRESSBUTTON:
+    LCD_ALERTMESSAGEPGM(MSG_FILAMENTCHANGE);
     while (!lcd_clicked()) {
       manage_heater();
       manage_inactivity(true);
       lcd_update();
       if (timer.check() && cnt <= 5) beep = true;
-      if (cnt >= 5) {
+      if (cnt >= 5 && !sleep) {
         disable_heater();
         disable_x();
         disable_y();
         disable_z();
-        disable_e();        
+        disable_e();    
+        sleep = true;
+        lcd_reset_alert_level();
+        LCD_ALERTMESSAGEPGM("Zzzz Zzzz Zzzz");
       }
       if (beep) {
         timer.set();        
-        #ifdef LCD_USE_I2C_BUZZER
-          #if !defined(LCD_FEEDBACK_FREQUENCY_HZ) || !defined(LCD_FEEDBACK_FREQUENCY_DURATION_MS)
-            for(int8_t i=0;i<3;i++) {
-              lcd_buzz(1000/6,100);
-            }
-          #else
-            for(int8_t i=0;i<3;i++) {
-              lcd_buzz(LCD_FEEDBACK_FREQUENCY_DURATION_MS,LCD_FEEDBACK_FREQUENCY_HZ);
-            }
-          #endif
-        #elif defined(BEEPER) && BEEPER > -1
-          SET_OUTPUT(BEEPER);
-          #if !defined(LCD_FEEDBACK_FREQUENCY_HZ) || !defined(LCD_FEEDBACK_FREQUENCY_DURATION_MS)
-            for(int8_t i=0;i<3;i++)
-            {
-              WRITE(BEEPER,HIGH);
-              delay(100);
-              WRITE(BEEPER,LOW);
-              delay(100);
-            }
-          #else
-            for(int8_t i=0;i<3;i++)
-            {
-              WRITE(BEEPER,HIGH);
-              delay(1000000 / LCD_FEEDBACK_FREQUENCY_HZ / 2);
-              WRITE(BEEPER,LOW);
-              delay(1000000 / LCD_FEEDBACK_FREQUENCY_HZ / 2);
-            }
-          #endif
-        #endif
+        lcd_beep(3);
         beep = false;
         cnt += 1;
       }
@@ -3624,7 +3636,7 @@ inline void gcode_G92() {
     //reset LCD alert message
     lcd_reset_alert_level();
 
-    if (cnt >= 5) {
+    if (sleep) {
       #ifndef SINGLENOZZLE
         for(int8_t e=0;e<EXTRUDERS;e++)
       #else
@@ -3638,6 +3650,10 @@ inline void gcode_G92() {
       setTargetBed(old_target_temperature_bed);
       CooldownNoWait = true;
       wait_bed();
+      sleep = false;
+      beep = true;
+      cnt = 0;
+      goto PRESSBUTTON;
     }
 
     //return to normal
@@ -3660,13 +3676,16 @@ inline void gcode_G92() {
       calculate_delta(lastpos);
       plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver); //move xyz back
       plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], lastpos[E_AXIS], feedrate/60, active_extruder, active_driver); //final unretract
+      for(int8_t i=0; i < NUM_AXIS; i++) current_position[i]=lastpos[i];
+      calculate_delta(current_position);
+      plan_set_position(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS]);
     #else
       plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver); //move xy back
       plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver); //move z back
       plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], lastpos[E_AXIS], feedrate/60, active_extruder, active_driver); //final unretract
+      for(int8_t i=0; i < NUM_AXIS; i++) current_position[i]=lastpos[i];
+      plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
     #endif
-    for(int8_t i=0; i < NUM_AXIS; i++) current_position[i]=lastpos[i];
-    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
   }
 #endif //FILAMENTCHANGEENABLE
 
