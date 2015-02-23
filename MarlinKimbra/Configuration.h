@@ -47,7 +47,7 @@
 //#define FIRMWARE_TEST
 #ifdef FIRMWARE_TEST
   #undef BAUDRATE
-  #define BAUDRATE 115200  // Baudrate setting to 115200 because serial monitor arduino fuction at max 115200 baudrate.
+  #define BAUDRATE 115200  // Baudrate setting to 115200 because serial monitor arduino function at max 115200 baudrate.
 #endif
 
 /***********************************************************************\

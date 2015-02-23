@@ -86,6 +86,7 @@ M1   - Same as M0
 M03  - Put S<value> in laser beam control
 M04  - Turn on laser beam
 M05  - Turn off laser beam
+M11  - Start printer for pause mode
 M17  - Enable/Power all stepper motors
 M18  - Disable all stepper motors; same as M84
 M20  - List SD card
@@ -156,6 +157,8 @@ M301 - Set PID parameters P I and D
 M302 - Allow cold extrudes, or set the minimum extrude S<temperature>.
 M303 - PID relay autotune S<temperature> sets the target temperature. (default target temperature = 150C)
 M304 - Set bed PID parameters P I and D
+M350 - Set microstepping mode.
+M351 - Toggle MS1 MS2 pins directly.
 M400 - Finish all moves
 M401 - Lower z-probe if present
 M402 - Raise z-probe if present
@@ -173,8 +176,6 @@ M605 - Set dual x-carriage movement mode: S<mode> [ X<duplication x-offset> R<du
 M666 - Set z probe offset or Endstop and delta geometry adjustment
 M907 - Set digital trimpot motor current using axis codes.
 M908 - Control digital trimpot directly.
-M350 - Set microstepping mode.
-M351 - Toggle MS1 MS2 pins directly.
 
 ************ SCARA Specific - This can change to suit future G-code regulations
 M360 - SCARA calibration: Move to calc-position ThetaA (0 deg calibration)
@@ -441,7 +442,8 @@ static uint8_t tmp_extruder;
 
 bool Stopped = false;
 #if defined(PAUSE_PIN) && PAUSE_PIN > -1
-  bool paused = true;
+  bool paused = false;
+  bool printing = false;
 #endif
 
 #if NUM_SERVOS > 0
@@ -459,6 +461,40 @@ bool target_direction;
 //===========================================================================
 //=============================Routines======================================
 //===========================================================================
+class Timer
+{
+  public:
+    Timer(void);
+    void set_max_delay(unsigned long v);
+    void set(void);
+    boolean check(void);
+  private:
+    unsigned long max_delay;
+    unsigned long last_set;
+};
+Timer::Timer(void)
+{
+  max_delay = 3600000UL; // default 1 hour
+}
+void Timer::set_max_delay(unsigned long v)
+{
+  max_delay = v;
+  set();
+}
+void Timer::set()
+{
+  last_set = millis();
+}
+boolean Timer::check()
+{
+  unsigned long now = millis();
+  if (now - last_set > max_delay) {
+    last_set = now;
+    return true;
+  }
+  return false;
+}
+Timer timer;
 
 void get_arc_coordinates();
 bool setTargetedHotend(int code);
@@ -1966,7 +2002,95 @@ void refresh_cmd_timeout(void)
   }
 #endif //Z_PROBE_SLED
 
+inline void wait_heater()
+{
+  setWatch();
+  unsigned long codenum = millis();
+  
+  /* See if we are heating up or cooling down */
+  target_direction = isHeatingHotend(tmp_extruder); // true if heating, false if cooling
+  cancel_heatup = false;
+  
+  #ifdef TEMP_RESIDENCY_TIME
+    long residencyStart;
+    residencyStart = -1;
+    /* continue to loop until we have reached the target temp
+     _and_ until TEMP_RESIDENCY_TIME hasn't passed since we reached it */
+    while ((!cancel_heatup)&&((residencyStart == -1) ||
+      (residencyStart >= 0 && (((unsigned int) (millis() - residencyStart)) < (TEMP_RESIDENCY_TIME * 1000UL)))))
+  #else
+    while ( target_direction ? (isHeatingHotend(tmp_extruder)) : (isCoolingHotend(tmp_extruder)&&(CooldownNoWait==false)))
+  #endif //TEMP_RESIDENCY_TIME
+  {
+    if ((millis() - codenum) > 1000UL)
+    {
+      //Print Temp Reading and remaining time every 1 second while heating up/cooling down
+      SERIAL_PROTOCOLPGM("T:");
+      SERIAL_PROTOCOL_F(degHotend(tmp_extruder),1);
+      SERIAL_PROTOCOLPGM(" E:");
+      SERIAL_PROTOCOL((int)tmp_extruder);
+      #ifdef TEMP_RESIDENCY_TIME
+        SERIAL_PROTOCOLPGM(" W:");
+        if (residencyStart > -1)
+        {
+          codenum = ((TEMP_RESIDENCY_TIME * 1000UL) - (millis() - residencyStart)) / 1000UL;
+          SERIAL_PROTOCOLLN( codenum );
+        }
+        else
+        {
+          SERIAL_PROTOCOLLN( "?" );
+        }
+      #else
+        SERIAL_PROTOCOLLN("");
+      #endif //TEMP_RESIDENCY_TIME
+      codenum = millis();
+    }
+    manage_heater();
+    manage_inactivity();
+    lcd_update();
+    #ifdef TEMP_RESIDENCY_TIME
+      /* start/restart the TEMP_RESIDENCY_TIME timer whenever we reach target temp for the first time
+       or when current temp falls outside the hysteresis after target temp was reached */
+      if ((residencyStart == -1 &&  target_direction && (degHotend(tmp_extruder) >= (degTargetHotend(tmp_extruder)-TEMP_WINDOW))) ||
+        (residencyStart == -1 && !target_direction && (degHotend(tmp_extruder) <= (degTargetHotend(tmp_extruder)+TEMP_WINDOW))) ||
+        (residencyStart > -1 && labs(degHotend(tmp_extruder) - degTargetHotend(tmp_extruder)) > TEMP_HYSTERESIS) )
+      {
+        residencyStart = millis();
+      }
+    #endif //TEMP_RESIDENCY_TIME
+  }
+  LCD_MESSAGEPGM(MSG_HEATING_COMPLETE);
+  starttime=millis();
+  refresh_cmd_timeout();
+}
 
+inline void wait_bed()
+{
+  unsigned long codenum = millis();
+  cancel_heatup = false;
+  target_direction = isHeatingBed(); // true if heating, false if cooling
+
+  while ((target_direction)&&(!cancel_heatup) ? (isHeatingBed()) : (isCoolingBed()&&(CooldownNoWait==false)))
+  {
+    if ((millis() - codenum) > 1000) //Print Temp Reading every 1 second while heating up.
+    {
+      float tt=degHotend(active_extruder);
+      SERIAL_PROTOCOLPGM("T:");
+      SERIAL_PROTOCOL(tt);
+      SERIAL_PROTOCOLPGM(" E:");
+      SERIAL_PROTOCOL((int)active_extruder);
+      SERIAL_PROTOCOLPGM(" B:");
+      SERIAL_PROTOCOL_F(degBed(),1);
+      SERIAL_PROTOCOLLN("");
+      codenum = millis();
+    }
+    manage_heater();
+    manage_inactivity();
+    lcd_update();
+  }
+  LCD_MESSAGEPGM(MSG_BED_DONE);
+  refresh_cmd_timeout();
+}
 
 /******************************************************************************
 ***************************** G-Code Functions ********************************
@@ -2038,7 +2162,7 @@ inline void gcode_G4() {
 #endif //FWRETRACT
 
 // G28: Home all axes, one at a time
-inline void gcode_G28() {
+inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
   #ifdef ENABLE_AUTO_BED_LEVELING
     plan_bed_level_matrix.set_to_identity();  //Reset the plane ("erase" all levelling data)
   #endif //ENABLE_AUTO_BED_LEVELING
@@ -2054,7 +2178,7 @@ inline void gcode_G28() {
 
   feedrate = 0.0;
 
-  home_all_axis = !((code_seen(axis_codes[X_AXIS])) || (code_seen(axis_codes[Y_AXIS])) || (code_seen(axis_codes[Z_AXIS])) || (code_seen(axis_codes[E_AXIS])));
+  home_all_axis = !((code_seen(axis_codes[X_AXIS])) || (code_seen(axis_codes[Y_AXIS])) || (code_seen(axis_codes[Z_AXIS])) || (code_seen(axis_codes[E_AXIS])) || home_x || home_y);
 
   #ifdef NPR2
     if((home_all_axis) || (code_seen(axis_codes[E_AXIS]))) {
@@ -2101,7 +2225,7 @@ inline void gcode_G28() {
     #endif
 
     #ifdef QUICK_HOME
-      if((home_all_axis)||( code_seen(axis_codes[X_AXIS]) && code_seen(axis_codes[Y_AXIS]))) //first diagonal move
+      if((home_all_axis)||( code_seen(axis_codes[X_AXIS]) && code_seen(axis_codes[Y_AXIS])) || home_x  || home_y) //first diagonal move
       {
         current_position[X_AXIS] = current_position[Y_AXIS] = 0;
 
@@ -2146,7 +2270,7 @@ inline void gcode_G28() {
       }
     #endif // QUICK_HOME
 
-    if((home_all_axis) || (code_seen(axis_codes[X_AXIS])))
+    if((home_all_axis) || (code_seen(axis_codes[X_AXIS])) || home_x)
     {
       #ifdef DUAL_X_CARRIAGE
         int tmp_extruder = active_extruder;
@@ -2165,7 +2289,7 @@ inline void gcode_G28() {
       #endif //DUAL_X_CARRIAGE
     }
 
-    if((home_all_axis) || (code_seen(axis_codes[Y_AXIS]))) HOMEAXIS(Y);
+    if((home_all_axis) || (code_seen(axis_codes[Y_AXIS])) || home_y) HOMEAXIS(Y);
 
     if(code_seen(axis_codes[X_AXIS]) && code_value_long() != 0) {
       #ifdef SCARA
@@ -2185,7 +2309,7 @@ inline void gcode_G28() {
 
     #if Z_HOME_DIR < 0  // If homing towards BED do Z last
       #ifndef Z_SAFE_HOMING
-        if (code_seen('M')) {  // Manual G28
+        if (code_seen('M') && !(home_x || home_y)) {  // Manual G28
           #ifdef ULTIPANEL
             if(home_all_axis) {
               boolean zig = true;
@@ -3434,27 +3558,86 @@ inline void gcode_G92() {
     disable_e();
     delay(100);
     LCD_ALERTMESSAGEPGM(MSG_FILAMENTCHANGE);
-    uint8_t cnt = 0;
+    boolean beep = true;
+    int cnt = 4;
+    #ifndef SINGLENOZZLE
+      int old_target_temperature[EXTRUDERS] = { 0 };
+      for(int8_t e=0;e<EXTRUDERS;e++)
+    #else
+      int old_target_temperature[1] = { 0 };
+      int8_t e=0;
+    #endif
+    {
+      old_target_temperature[e]=target_temperature[e];
+    }
+    int old_target_temperature_bed = target_temperature_bed;
+    timer.set_max_delay(60000); // 1 minute
     while (!lcd_clicked()) {
-      cnt++;
       manage_heater();
       manage_inactivity(true);
       lcd_update();
-      if (cnt == 0) {
-        #if BEEPER > 0
-          SET_OUTPUT(BEEPER);
-          WRITE(BEEPER,HIGH);
-          delay(3);
-          WRITE(BEEPER,LOW);
-          delay(3);
-        #else
+      if (timer.check() && cnt <= 5) beep = true;
+      if (cnt >= 5) {
+        disable_heater();
+        disable_x();
+        disable_y();
+        disable_z();
+        disable_e();        
+      }
+      if (beep) {
+        timer.set();        
+        #ifdef LCD_USE_I2C_BUZZER
           #if !defined(LCD_FEEDBACK_FREQUENCY_HZ) || !defined(LCD_FEEDBACK_FREQUENCY_DURATION_MS)
-            lcd_buzz(1000/6, 100);
+            for(int8_t i=0;i<3;i++) {
+              lcd_buzz(1000/6,100);
+            }
           #else
-            lcd_buzz(LCD_FEEDBACK_FREQUENCY_DURATION_MS, LCD_FEEDBACK_FREQUENCY_HZ);
+            for(int8_t i=0;i<3;i++) {
+              lcd_buzz(LCD_FEEDBACK_FREQUENCY_DURATION_MS,LCD_FEEDBACK_FREQUENCY_HZ);
+            }
+          #endif
+        #elif defined(BEEPER) && BEEPER > -1
+          SET_OUTPUT(BEEPER);
+          #if !defined(LCD_FEEDBACK_FREQUENCY_HZ) || !defined(LCD_FEEDBACK_FREQUENCY_DURATION_MS)
+            for(int8_t i=0;i<3;i++)
+            {
+              WRITE(BEEPER,HIGH);
+              delay(100);
+              WRITE(BEEPER,LOW);
+              delay(100);
+            }
+          #else
+            for(int8_t i=0;i<3;i++)
+            {
+              WRITE(BEEPER,HIGH);
+              delay(1000000 / LCD_FEEDBACK_FREQUENCY_HZ / 2);
+              WRITE(BEEPER,LOW);
+              delay(1000000 / LCD_FEEDBACK_FREQUENCY_HZ / 2);
+            }
           #endif
         #endif
+        beep = false;
+        cnt += 1;
       }
+    }
+
+    //reset LCD alert message
+    lcd_reset_alert_level();
+
+    if (cnt >= 5) {
+      #ifndef SINGLENOZZLE
+        for(int8_t e=0;e<EXTRUDERS;e++)
+      #else
+        int8_t e=0;
+      #endif
+      {
+        setTargetHotend(old_target_temperature[e], e);
+        CooldownNoWait = true;
+        wait_heater();
+      }
+      setTargetBed(old_target_temperature_bed);
+      CooldownNoWait = true;
+      wait_bed();
     }
 
     //return to normal
@@ -3466,11 +3649,12 @@ inline void gcode_G92() {
     #if defined(PAUSE_PIN) && PAUSE_PIN > -1
       paused = false;
     #endif
-    current_position[E_AXIS] = target[E_AXIS]; //the long retract of L is compensated by manual filament feeding
-    plan_set_e_position(current_position[E_AXIS]);
 
-    //reset LCD alert message
-    lcd_reset_alert_level();
+    for(int8_t i=0; i < NUM_AXIS; i++) current_position[i]=target[i];
+    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+
+    // HOME X & Y & Z(only Delta)
+    gcode_G28(true,true);
 
     #ifdef DELTA
       calculate_delta(lastpos);
@@ -3481,6 +3665,8 @@ inline void gcode_G92() {
       plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver); //move z back
       plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], lastpos[E_AXIS], feedrate/60, active_extruder, active_driver); //final unretract
     #endif
+    for(int8_t i=0; i < NUM_AXIS; i++) current_position[i]=lastpos[i];
+    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
   }
 #endif //FILAMENTCHANGEENABLE
 
@@ -3735,6 +3921,15 @@ void process_commands()
         }
         break;
       #endif //LASERBEAM
+
+      #if defined(PAUSE_PIN) && PAUSE_PIN > -1
+        case 11: //M11 - Start printing
+        {
+          printing = true;
+          paused = false;
+        }
+        break;
+      #endif
 
       case 17: //M17 - Enable/Power all stepper motors
       {
@@ -4176,65 +4371,7 @@ void process_commands()
             autotemp_enabled=true;
           }
         #endif //AUTOTEMP
-
-        setWatch();
-        codenum = millis();
-
-        /* See if we are heating up or cooling down */
-        target_direction = isHeatingHotend(tmp_extruder); // true if heating, false if cooling
-        cancel_heatup = false;
-
-        #ifdef TEMP_RESIDENCY_TIME
-          long residencyStart;
-          residencyStart = -1;
-          /* continue to loop until we have reached the target temp
-           _and_ until TEMP_RESIDENCY_TIME hasn't passed since we reached it */
-          while ((!cancel_heatup)&&((residencyStart == -1) ||
-            (residencyStart >= 0 && (((unsigned int) (millis() - residencyStart)) < (TEMP_RESIDENCY_TIME * 1000UL)))))
-        #else
-          while ( target_direction ? (isHeatingHotend(tmp_extruder)) : (isCoolingHotend(tmp_extruder)&&(CooldownNoWait==false)))
-        #endif //TEMP_RESIDENCY_TIME
-        {
-          if ((millis() - codenum) > 1000UL)
-          {
-            //Print Temp Reading and remaining time every 1 second while heating up/cooling down
-            SERIAL_PROTOCOLPGM("T:");
-            SERIAL_PROTOCOL_F(degHotend(tmp_extruder),1);
-            SERIAL_PROTOCOLPGM(" E:");
-            SERIAL_PROTOCOL((int)tmp_extruder);
-            #ifdef TEMP_RESIDENCY_TIME
-              SERIAL_PROTOCOLPGM(" W:");
-              if (residencyStart > -1)
-              {
-                codenum = ((TEMP_RESIDENCY_TIME * 1000UL) - (millis() - residencyStart)) / 1000UL;
-                SERIAL_PROTOCOLLN( codenum );
-              }
-              else
-              {
-                SERIAL_PROTOCOLLN( "?" );
-              }
-            #else
-              SERIAL_PROTOCOLLN("");
-            #endif //TEMP_RESIDENCY_TIME
-            codenum = millis();
-          }
-          manage_heater();
-          manage_inactivity();
-          lcd_update();
-          #ifdef TEMP_RESIDENCY_TIME
-            /* start/restart the TEMP_RESIDENCY_TIME timer whenever we reach target temp for the first time
-             or when current temp falls outside the hysteresis after target temp was reached */
-            if ((residencyStart == -1 &&  target_direction && (degHotend(tmp_extruder) >= (degTargetHotend(tmp_extruder)-TEMP_WINDOW))) ||
-              (residencyStart == -1 && !target_direction && (degHotend(tmp_extruder) <= (degTargetHotend(tmp_extruder)+TEMP_WINDOW))) ||
-              (residencyStart > -1 && labs(degHotend(tmp_extruder) - degTargetHotend(tmp_extruder)) > TEMP_HYSTERESIS) )
-            {
-              residencyStart = millis();
-            }
-          #endif //TEMP_RESIDENCY_TIME
-        }
-        LCD_MESSAGEPGM(MSG_HEATING_COMPLETE);
-        starttime=millis();
-        refresh_cmd_timeout();
+        wait_heater();
       }
       break;
       case 111: //M111 - Debug mode
@@ -4435,31 +4572,7 @@ void process_commands()
             setTargetBed(code_value());
             CooldownNoWait = false;
           }
-          codenum = millis();
-
-          cancel_heatup = false;
-          target_direction = isHeatingBed(); // true if heating, false if cooling
-
-          while ((target_direction)&&(!cancel_heatup) ? (isHeatingBed()) : (isCoolingBed()&&(CooldownNoWait==false)))
-          {
-            if ((millis() - codenum) > 1000) //Print Temp Reading every 1 second while heating up.
-            {
-              float tt=degHotend(active_extruder);
-              SERIAL_PROTOCOLPGM("T:");
-              SERIAL_PROTOCOL(tt);
-              SERIAL_PROTOCOLPGM(" E:");
-              SERIAL_PROTOCOL((int)active_extruder);
-              SERIAL_PROTOCOLPGM(" B:");
-              SERIAL_PROTOCOL_F(degBed(),1);
-              SERIAL_PROTOCOLLN("");
-              codenum = millis();
-            }
-            manage_heater();
-            manage_inactivity();
-            lcd_update();
-          }
-          LCD_MESSAGEPGM(MSG_BED_DONE);
-          refresh_cmd_timeout();
+          wait_bed();
         #endif
       }
       break;
@@ -6120,17 +6233,13 @@ void kill()
 void pause()
 {
   #if defined(PAUSE_PIN) && PAUSE_PIN > -1
-    if (READ(PAUSE_PIN) == 0 && !paused)
+    if (READ(PAUSE_PIN) == 0 && printing && !paused)
     {
       paused = true;
       enquecommand("M600");
       enquecommand("G4 P0");
       enquecommand("G4 P0");
       enquecommand("G4 P0");
-    }
-    else if (READ(PAUSE_PIN) == 1 && paused)
-    {
-      paused = false;
     }
   #endif // defined(PAUSE_PIN) && PAUSE_PIN > -1
 }

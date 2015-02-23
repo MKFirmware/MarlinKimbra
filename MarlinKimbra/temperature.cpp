@@ -65,9 +65,11 @@ float current_temperature_bed = 0.0;
   float redundant_temperature = 0.0;
 #endif
 #ifdef PIDTEMP
-  float Kp[4];
-  float Ki[4];
-  float Kd[4];
+  #ifndef SINGLENOZZLE
+    float Kp[EXTRUDERS],Ki[EXTRUDERS],Kd[EXTRUDERS];
+  #else
+    float Kp[1],Ki[1],Kd[1];
+  #endif
 #endif //PIDTEMP
 
 #ifdef PIDTEMPBED
@@ -400,9 +402,7 @@ void updatePID()
        temp_iState_max[e] = PID_INTEGRAL_DRIVE_MAX / Ki[e];  
     }
   #else
-    for(int e = 0; e < 1; e++) { 
-       temp_iState_max[e] = PID_INTEGRAL_DRIVE_MAX / Ki[0];
-    }
+    temp_iState_max[0] = PID_INTEGRAL_DRIVE_MAX / Ki[0];
   #endif
 #endif
 #ifdef PIDTEMPBED
@@ -538,7 +538,7 @@ void manage_heater()
   #ifndef SINGLENOZZLE
     for(int e = 0; e < EXTRUDERS; e++) 
   #else
-    for(int e = 0; e < 1; e++) 
+    int e = 0;
   #endif  // !SINLGENOZZE
   {
 
@@ -1145,19 +1145,18 @@ void setWatch()
 {  
 #ifdef WATCH_TEMP_PERIOD
   #ifndef SINGLENOZZLE
-    for (uint8_t e = 0; e < EXTRUDERS; e++)
-    {
+    for (int e = 0; e < EXTRUDERS; e++)
   #else
-    uint8_t e = 0;
-    {
+    int e = 0;
   #endif // !SINGLENOZZLE
-      if(degHotend(e) < degTargetHotend(e) - (WATCH_TEMP_INCREASE * 2))
-      {
-        watch_start_temp[e] = degHotend(e);
-        watchmillis[e] = millis();
-      } 
-    }
-#endif 
+  {
+    if(degHotend(e) < degTargetHotend(e) - (WATCH_TEMP_INCREASE * 2))
+    {
+      watch_start_temp[e] = degHotend(e);
+      watchmillis[e] = millis();
+    } 
+  }
+#endif //WATCH_TEMP_PERIOD
 }
 
 #if defined (THERMAL_RUNAWAY_PROTECTION_PERIOD) && THERMAL_RUNAWAY_PROTECTION_PERIOD > 0
@@ -1225,18 +1224,18 @@ void thermal_runaway_protection(int *state, unsigned long *timer, float temperat
 void disable_heater()
 {
   #ifndef SINGLENOZZLE
-    for(uint8_t i=0;i<EXTRUDERS;i++)
+    for(int i=0;i<EXTRUDERS;i++)
   #else
-    uint8_t i=0;
+    int i=0;
   #endif // !SINGLENOZZLE
       setTargetHotend(0,i);
   setTargetBed(0);
   #if defined(TEMP_0_PIN) && TEMP_0_PIN > -1
-  target_temperature[0]=0;
-  soft_pwm[0]=0;
-   #if defined(HEATER_0_PIN) && HEATER_0_PIN > -1  
-     WRITE(HEATER_0_PIN,LOW);
-   #endif
+    target_temperature[0]=0;
+    soft_pwm[0]=0;
+    #if defined(HEATER_0_PIN) && HEATER_0_PIN > -1  
+      WRITE(HEATER_0_PIN,LOW);
+    #endif
   #endif
   
 #ifndef SINGLENOZZLE     

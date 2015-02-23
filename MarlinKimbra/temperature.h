@@ -41,19 +41,19 @@ void manage_heater(); //it is critical that this is called periodically.
 // low level conversion routines
 // do not use these routines and variables outside of temperature.cpp
 #ifndef SINGLENOZZLE
-extern int target_temperature[EXTRUDERS];  
-extern float current_temperature[EXTRUDERS];
-#ifdef SHOW_TEMP_ADC_VALUES
-extern int current_temperature_raw[EXTRUDERS];
-extern int current_temperature_bed_raw;
-#endif
+  extern int target_temperature[EXTRUDERS];  
+  extern float current_temperature[EXTRUDERS];
+  #ifdef SHOW_TEMP_ADC_VALUES
+    extern int current_temperature_raw[EXTRUDERS];
+    extern int current_temperature_bed_raw;
+  #endif
 #else
-extern int target_temperature[1];  
-extern float current_temperature[1];
-#ifdef SHOW_TEMP_ADC_VALUES
-extern int current_temperature_raw[1];
-extern int current_temperature_bed_raw;
-#endif
+  extern int target_temperature[1];  
+  extern float current_temperature[1];
+  #ifdef SHOW_TEMP_ADC_VALUES
+    extern int current_temperature_raw[1];
+    extern int current_temperature_bed_raw;
+  #endif
 #endif //SINGLENOZZLE
 
 extern int target_temperature_bed;
@@ -67,18 +67,20 @@ extern float current_temperature_bed;
 #endif
 
 #ifdef PIDTEMP
-  extern float Kp[4],Ki[4],Kd[4];
+  #ifndef SINGLENOZZLE
+    extern float Kp[EXTRUDERS],Ki[EXTRUDERS],Kd[EXTRUDERS];
+  #else
+    extern float Kp[1],Ki[1],Kd[1];
+  #endif
   float scalePID_i(float i);
   float scalePID_d(float d);
   float unscalePID_i(float i);
   float unscalePID_d(float d);
-
 #endif
 
 #ifdef PIDTEMPBED
   extern float bedKp,bedKi,bedKd;
 #endif
-
 
 #ifdef BABYSTEPPING
   extern volatile int babystepsTodo[3];

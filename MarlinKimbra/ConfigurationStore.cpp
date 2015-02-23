@@ -355,7 +355,7 @@ void Config_ResetDefault()
 
   #ifdef PIDTEMP
     #ifndef SINGLENOZZLE
-      for (short e=0;e<EXTRUDERS;e++) 
+      for (int e=0;e<EXTRUDERS;e++) 
     #else
       int e = 0; // only need to write once
     #endif //SINGLENOZZLE
