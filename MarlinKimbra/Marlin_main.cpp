@@ -3559,7 +3559,7 @@ inline void gcode_G92() {
     delay(100);
     LCD_ALERTMESSAGEPGM(MSG_FILAMENTCHANGE);
     boolean beep = true;
-    int cnt = 4;
+    int cnt = 0;
     #ifndef SINGLENOZZLE
       int old_target_temperature[EXTRUDERS] = { 0 };
       for(int8_t e=0;e<EXTRUDERS;e++)
