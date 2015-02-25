@@ -4437,20 +4437,20 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 
 #if X_HOME_DIR > 0        //Home X to MAX
   #define X_MIN_PIN          -1
-#else                     //Home X to MIN
+#elif X_HOME_DIR < 0      //Home X to MIN
   #define X_MAX_PIN          -1
 #endif //X_HOME_DIR > 0
 
 #if Y_HOME_DIR > 0        //Home Y to MAX
   #define Y_MIN_PIN          -1
-#else                     //Home Y to MIN
+#elif Y_HOME_DIR < 0      //Home Y to MIN
   #define Y_MAX_PIN          -1
 #endif //Y_HOME_DIR > 0
 
 #ifndef DELTA
   #if Z_HOME_DIR > 0      //Home Z to MAX
     #define Z_MIN_PIN        -1
-  #else                   //Home Z to MIN
+  #elif Z_HOME_DIR < 0    //Home Z to MIN
     #define Z_MAX_PIN        -1
   #endif //Z_HOME_DIR > 0
 #endif //!DELTA
