@@ -14,10 +14,10 @@
 #define BOARD_GEN3_MONOLITHIC   22   // Gen3 Monolithic Electronics
 
 #define BOARD_RAMPS_OLD         3    // MEGA/RAMPS up to 1.2
-#define BOARD_RAMPS_13_EFB      33   // RAMPS 1.3 / 1.4 (Power outputs: Extruder, Fan, Bed)
-#define BOARD_RAMPS_13_EEB      34   // RAMPS 1.3 / 1.4 (Power outputs: Extruder0, Extruder1, Bed)
-#define BOARD_RAMPS_13_EFF      35   // RAMPS 1.3 / 1.4 (Power outputs: Extruder, Fan, Fan)
-#define BOARD_RAMPS_13_EEF      36   // RAMPS 1.3 / 1.4 (Power outputs: Extruder0, Extruder1, Fan)
+#define BOARD_RAMPS_13_EFB      33   // RAMPS 1.3 / 1.4 (Power outputs: Hotend, Fan, Bed)
+#define BOARD_RAMPS_13_EEB      34   // RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Bed)
+#define BOARD_RAMPS_13_EFF      35   // RAMPS 1.3 / 1.4 (Power outputs: Hotend, Fan, Fan)
+#define BOARD_RAMPS_13_EEF      36   // RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Fan)
 #define BOARD_RAMBO             301  // Rambo
 
 #define BOARD_DUEMILANOVE_328P  4    // Duemilanove w/ ATMega328P pin assignments
