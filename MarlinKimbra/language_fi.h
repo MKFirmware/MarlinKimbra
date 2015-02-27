@@ -122,6 +122,13 @@
 #define MSG_BABYSTEP_Z                      "Babystep Z"
 #define MSG_ENDSTOP_ABORT                   "Endstop abort"
 
+#define MSG_HEATING_FAILED_LCD              "Heating failed"
+#define MSG_ERR_REDUNDANT_TEMP              "Err: REDUNDANT TEMP ERROR"
+#define MSG_THERMAL_RUNAWAY                 "THERMAL RUNAWAY"
+#define MSG_ERR_MAXTEMP                     "Err: MAXTEMP"
+#define MSG_ERR_MINTEMP                     "Err: MINTEMP"
+#define MSG_ERR_MAXTEMP_BED                 "Err: MAXTEMP BED"
+
 #ifdef DELTA
   #define MSG_DELTA_CALIBRATE               "Delta Kalibrointi"
   #define MSG_DELTA_CALIBRATE_X             "Kalibroi X"
