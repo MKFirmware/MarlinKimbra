@@ -336,6 +336,7 @@ your extruder heater takes 2 minutes to hit the target on heating.
 // Character based displays can have different extended charsets.
 #define DISPLAY_CHARSET_HD44780_JAPAN     // "ääööüüß23°"
 //#define DISPLAY_CHARSET_HD44780_WESTERN // "ÄäÖöÜüß²³°" if you see a '~' instead of a 'arrow_right' at the right of submenuitems - this is the right one.
+
 //#define ULTRA_LCD  //general LCD support, also 16x2
 //#define DOGLCD  // Support for SPI LCD 128x64 (Controller ST7565R graphic Display Family)
 //#define SDSUPPORT // Enable SD Card Support in Hardware Console
@@ -348,9 +349,19 @@ your extruder heater takes 2 minutes to hit the target on heating.
 //#define LCD_FEEDBACK_FREQUENCY_HZ 1000	// this is the tone frequency the buzzer plays when on UI feedback. ie Screen Click
 //#define LCD_FEEDBACK_FREQUENCY_DURATION_MS 100 // the duration the buzzer plays the UI feedback sound. ie Screen Click
 
+// PanelOne from T3P3 (via RAMPS 1.4 AUX2/AUX3)
+// http://reprap.org/wiki/PanelOne
+//#define PANEL_ONE
+
 // The MaKr3d Makr-Panel with graphic controller and SD support
 // http://reprap.org/wiki/MaKr3d_MaKrPanel
 //#define MAKRPANEL
+
+// The Panucatt Devices Viki 2.0 and mini Viki with Graphic LCD
+// http://panucatt.com
+// ==> REMEMBER TO INSTALL U8glib to your ARDUINO library folder: http://code.google.com/p/u8glib/wiki/u8glib
+//#define VIKI2
+//#define miniVIKI
 
 // The RepRapDiscount Smart Controller (white PCB)
 // http://reprap.org/wiki/RepRapDiscount_Smart_Controller
@@ -384,6 +395,26 @@ your extruder heater takes 2 minutes to hit the target on heating.
   #define NEWPANEL
   #define DEFAULT_LCD_CONTRAST 17
 #endif //defined (MAKRPANEL)
+
+#if defined(miniVIKI) || defined(VIKI2)
+  #define ULTRA_LCD  //general LCD support, also 16x2
+  #define DOGLCD  // Support for SPI LCD 128x64 (Controller ST7565R graphic Display Family)
+  #define ULTIMAKERCONTROLLER //as available from the Ultimaker online store.
+
+  #ifdef miniVIKI
+    #define DEFAULT_LCD_CONTRAST 95
+  #else
+    #define DEFAULT_LCD_CONTRAST 40
+  #endif
+
+  #define ENCODER_PULSES_PER_STEP 4
+  #define ENCODER_STEPS_PER_MENU_ITEM 1
+#endif //defined(miniVIKI) || defined(VIKI2)
+
+#if defined (PANEL_ONE)
+  #define SDSUPPORT
+  #define ULTIMAKERCONTROLLER
+#endif //defined (PANEL_ONE)
 
 #if defined (REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER)
   #define DOGLCD
