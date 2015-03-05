@@ -28,6 +28,7 @@
 *  M3   - S[0-255] Put output in laser beam control
 *  M4   - Turn on laser beam
 *  M5   - Turn off laser beam
+*  M11  - Start printer for pause mode
 *  M17  - Enable/Power all stepper motors
 *  M18  - Disable all stepper motors; same as M84
 *  M20  - List SD card
