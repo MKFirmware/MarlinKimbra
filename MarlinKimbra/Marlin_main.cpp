@@ -4643,6 +4643,10 @@ void process_commands()
           SERIAL_PROTOCOLPGM(MSG_E_MIN);
           SERIAL_PROTOCOLLN(((READ(E_MIN_PIN)^E_MIN_ENDSTOP_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
         #endif
+        #if defined(PAUSE_PIN) && PAUSE_PIN > -1
+          SERIAL_PROTOCOLPGM(MSG_PAUSE_PIN);
+          SERIAL_PROTOCOLLN(((READ(PAUSE_PIN)^PAUSE_PIN_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
+        #endif
       }
       break;
       case 120: //M120 - Disable Endstop
@@ -6398,7 +6402,7 @@ void kill()
 void pause()
 {
   #if defined(PAUSE_PIN) && PAUSE_PIN > -1
-    if (READ(PAUSE_PIN) == 0 && printing && !paused)
+    if ((READ(PAUSE_PIN)^PAUSE_PIN_INVERTING) && printing && !paused)
     {
       paused = true;
       enquecommand("M600");

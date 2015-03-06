@@ -683,6 +683,9 @@ your extruder heater takes 2 minutes to hit the target on heating.
 
 // Setting firmware for filament end switch
 //#define FILAMENT_END_SWITCH
+#ifdef FILAMENT_END_SWITCH
+  const bool PAUSE_PIN_INVERTING = false;      // set to true to invert the logic of the pause pin.
+#endif
 
 // define laser beam support
 //#define LASERBEAM
