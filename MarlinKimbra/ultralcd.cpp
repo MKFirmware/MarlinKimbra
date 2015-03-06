@@ -802,7 +802,7 @@ static void lcd_control_menu() {
   MENU_ITEM(submenu, MSG_VOLUMETRIC, lcd_control_volumetric_menu);
 
   #ifdef DOGLCD
-  //    MENU_ITEM_EDIT(int3, MSG_CONTRAST, &lcd_contrast, 0, 63);
+    //MENU_ITEM_EDIT(int3, MSG_CONTRAST, &lcd_contrast, 0, 63);
     MENU_ITEM(submenu, MSG_CONTRAST, lcd_set_contrast);
   #endif
   #ifdef FWRETRACT
@@ -869,9 +869,9 @@ static void lcd_control_temperature_menu() {
         #if TEMP_SENSOR_3 != 0
           MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 4", &target_temperature[3], 0, HEATER_3_MAXTEMP - 15);
         #endif
-      #endif
-    #endif
-  #endif
+      #endif //EXTRUDERS > 3
+    #endif //EXTRUDERS > 2
+  #endif //EXTRUDERS > 1
   #if TEMP_SENSOR_BED != 0
     MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP - 15);
   #endif
@@ -1020,24 +1020,25 @@ static void lcd_control_motion_menu() {
 
 static void lcd_control_volumetric_menu()
 {
-	START_MENU();
-	MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
+  START_MENU();
+  MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
 
-	MENU_ITEM_EDIT_CALLBACK(bool, MSG_VOLUMETRIC_ENABLED, &volumetric_enabled, calculate_volumetric_multipliers);
+  MENU_ITEM_EDIT_CALLBACK(bool, MSG_VOLUMETRIC_ENABLED, &volumetric_enabled, calculate_volumetric_multipliers);
 
-	if (volumetric_enabled) {
-		MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float43, MSG_FILAMENT_SIZE_EXTRUDER " 1", &filament_size[0], DEFAULT_NOMINAL_FILAMENT_DIA - .5, DEFAULT_NOMINAL_FILAMENT_DIA + .5, calculate_volumetric_multipliers);
+  if (volumetric_enabled) {
+    MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float43, MSG_FILAMENT_SIZE_EXTRUDER " 1", &filament_size[0], DEFAULT_NOMINAL_FILAMENT_DIA - .5, DEFAULT_NOMINAL_FILAMENT_DIA + .5, calculate_volumetric_multipliers);
     #if EXTRUDERS > 1
-		  MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float43, MSG_FILAMENT_SIZE_EXTRUDER " 2", &filament_size[1], DEFAULT_NOMINAL_FILAMENT_DIA - .5, DEFAULT_NOMINAL_FILAMENT_DIA + .5, calculate_volumetric_multipliers);
+      MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float43, MSG_FILAMENT_SIZE_EXTRUDER " 2", &filament_size[1], DEFAULT_NOMINAL_FILAMENT_DIA - .5, DEFAULT_NOMINAL_FILAMENT_DIA + .5, calculate_volumetric_multipliers);
       #if EXTRUDERS > 2
-		    MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float43, MSG_FILAMENT_SIZE_EXTRUDER " 3", &filament_size[2], DEFAULT_NOMINAL_FILAMENT_DIA - .5, DEFAULT_NOMINAL_FILAMENT_DIA + .5, calculate_volumetric_multipliers);
+        MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float43, MSG_FILAMENT_SIZE_EXTRUDER " 3", &filament_size[2], DEFAULT_NOMINAL_FILAMENT_DIA - .5, DEFAULT_NOMINAL_FILAMENT_DIA + .5, calculate_volumetric_multipliers);
         #if EXTRUDERS > 3
-		      MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float43, MSG_FILAMENT_SIZE_EXTRUDER " 4", &filament_size[3], DEFAULT_NOMINAL_FILAMENT_DIA - .5, DEFAULT_NOMINAL_FILAMENT_DIA + .5, calculate_volumetric_multipliers);
+          MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(float43, MSG_FILAMENT_SIZE_EXTRUDER " 4", &filament_size[3], DEFAULT_NOMINAL_FILAMENT_DIA - .5, DEFAULT_NOMINAL_FILAMENT_DIA + .5, calculate_volumetric_multipliers);
         #endif //EXTRUDERS > 3
       #endif //EXTRUDERS > 2
     #endif //EXTRUDERS > 1
-	}
-	END_MENU();
+  }
+
+  END_MENU();
 }
 
 #ifdef DOGLCD
@@ -1495,20 +1496,30 @@ void lcd_reset_alert_level() { lcd_status_message_level = 0; }
 
 #ifdef ULTIPANEL
 
+// Setup Rotary Encoder Bit Values (for two pin encoders to indicate movement)
+// These values are independent of which pins are used for EN_A and EN_B indications
+// The rotary encoder part is also independent to the chipset used for the LCD
+#if defined(EN_A) && defined(EN_B)
+  #define encrot0 0
+  #define encrot1 2
+  #define encrot2 3
+  #define encrot3 1
+#endif 
+
 /* Warning: This function is called from interrupt context */
 void lcd_buttons_update() {
   #ifdef NEWPANEL
     uint8_t newbutton = 0;
-  #ifdef INVERT_ROTARY_SWITCH
-    if (READ(BTN_EN1) == 0)  newbutton|= EN_B;
-    if (READ(BTN_EN2) == 0)  newbutton|= EN_A;
-  #else
-    if (READ(BTN_EN1) == 0)  newbutton|= EN_A;
-    if (READ(BTN_EN2) == 0)  newbutton|= EN_B;
-  #endif
-  #if BTN_ENC > 0
-    if (millis() > blocking_enc && READ(BTN_ENC) == 0) newbutton |= EN_C;
-  #endif
+    #ifdef INVERT_ROTARY_SWITCH
+      if (READ(BTN_EN1) == 0)  newbutton|= EN_B;
+      if (READ(BTN_EN2) == 0)  newbutton|= EN_A;
+    #else
+      if (READ(BTN_EN1) == 0)  newbutton|= EN_A;
+      if (READ(BTN_EN2) == 0)  newbutton|= EN_B;
+    #endif
+    #if BTN_ENC > 0
+      if (millis() > blocking_enc && READ(BTN_ENC) == 0) newbutton |= EN_C;
+    #endif
     buttons = newbutton;
     #ifdef LCD_HAS_SLOW_BUTTONS
       buttons |= slow_buttons;
@@ -1887,20 +1898,20 @@ char *ftostr52(const float &x)
 // grab the PID i value out of the temp variable; scale it; then update the PID driver
 void copy_and_scalePID_i()
 {
-#ifdef PIDTEMP
-  Ki[active_extruder] = scalePID_i(raw_Ki);
-  updatePID();
-#endif
+  #ifdef PIDTEMP
+    Ki[active_extruder] = scalePID_i(raw_Ki);
+    updatePID();
+  #endif
 }
 
 // Callback for after editing PID d value
 // grab the PID d value out of the temp variable; scale it; then update the PID driver
 void copy_and_scalePID_d()
 {
-#ifdef PIDTEMP
-  Kd[active_extruder] = scalePID_d(raw_Kd);
-  updatePID();
-#endif
+  #ifdef PIDTEMP
+    Kd[active_extruder] = scalePID_d(raw_Kd);
+    updatePID();
+  #endif
 }
 
 #endif //ULTRA_LCD

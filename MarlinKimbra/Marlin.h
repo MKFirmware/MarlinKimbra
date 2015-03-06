@@ -1,8 +1,8 @@
 // Tonokip RepRap firmware rewrite based off of Hydra-mmm firmware.
 // License: GPL
 
-#ifndef MARLIN_H
-#define MARLIN_H
+#ifndef __MARLIN_H
+#define __MARLIN_H
 
 #define  FORCE_INLINE __attribute__((always_inline)) inline
 
@@ -67,6 +67,7 @@
 #define SERIAL_PROTOCOLPGM(x) (serialprintPGM(PSTR(x)))
 #define SERIAL_PROTOCOLLN(x) (MYSERIAL.print(x),MYSERIAL.write('\n'))
 #define SERIAL_PROTOCOLLNPGM(x) (serialprintPGM(PSTR(x)),MYSERIAL.write('\n'))
+
 
 extern const char errormagic[] PROGMEM;
 extern const char echomagic[] PROGMEM;
@@ -143,8 +144,8 @@ void manage_inactivity(bool ignore_stepper_queue=false);
     #define disable_z() { WRITE(Z_ENABLE_PIN,!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }
   #endif
 #else
-  #define enable_z();
-  #define disable_z();
+  #define enable_z() ;
+  #define disable_z() ;
 #endif
 
 #if defined(E0_ENABLE_PIN) && (E0_ENABLE_PIN > -1)
@@ -181,8 +182,12 @@ void manage_inactivity(bool ignore_stepper_queue=false);
 
 #define disable_e() {disable_e0(); disable_e1(); disable_e2(); disable_e3();}
 
-enum AxisEnum {X_AXIS=0, Y_AXIS=1, Z_AXIS=2, E_AXIS=3};
-
+#ifdef COREXY
+  enum AxisEnum {X_AXIS=0, Y_AXIS=1, Z_AXIS=2, E_AXIS=3, X_HEAD=4, Y_HEAD=5};
+  //X_HEAD and Y_HEAD is used for systems that don't have a 1:1 relationship between X_AXIS and X Head movement, like CoreXY bots.
+#else
+  enum AxisEnum {X_AXIS=0, Y_AXIS=1, Z_AXIS=2, E_AXIS=3};
+#endif
 
 void FlushSerialRequestResend();
 void ClearToSend();
@@ -342,4 +347,4 @@ void FirmwareTest();
 
 extern void calculate_volumetric_multipliers();
 
-#endif //MARLIN_H
+#endif //__MARLIN_H

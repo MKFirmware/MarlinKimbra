@@ -5,38 +5,35 @@
 #include "ultralcd.h"
 #include "ConfigurationStore.h"
 
-void _EEPROM_writeData(int &pos, uint8_t* value, uint8_t size)
-{
+void _EEPROM_writeData(int &pos, uint8_t* value, uint8_t size) {
   uint8_t c;
-  while(size--)
-  {
+  while(size--) {
     eeprom_write_byte((unsigned char*)pos, *value);
     c = eeprom_read_byte((unsigned char*)pos);
-    if (c != *value)
-    {
+    if (c != *value) {
       SERIAL_ECHO_START;
       SERIAL_ECHOLNPGM(MSG_ERR_EEPROM_WRITE);
     }
     pos++;
     value++;
-  }
+  };
 }
-void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size)
-{
-  do
-  {
+void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size) {
+  do {
     *value = eeprom_read_byte((unsigned char*)pos);
     pos++;
     value++;
   } while (--size);
 }
-
 #define EEPROM_WRITE_VAR(pos, value) _EEPROM_writeData(pos, (uint8_t*)&value, sizeof(value))
 #define EEPROM_READ_VAR(pos, value) _EEPROM_readData(pos, (uint8_t*)&value, sizeof(value))
 
 //======================================================================================
+
 #define DUMMY_PID_VALUE 3000.0f
+
 #define EEPROM_OFFSET 100
+
 
 // IMPORTANT:  Whenever there are changes made to the variables stored in EEPROM
 // in the functions below, also increment the version number. This makes sure that
@@ -47,8 +44,7 @@ void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size)
 #define EEPROM_VERSION "V13"
 
 #ifdef EEPROM_SETTINGS
-  void Config_StoreSettings()
-  {
+  void Config_StoreSettings() {
     float dummy = 0.0f;
     char ver[4] = "000";
     int i = EEPROM_OFFSET;

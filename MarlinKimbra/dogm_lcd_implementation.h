@@ -14,24 +14,20 @@
 #ifndef DOGM_LCD_IMPLEMENTATION_H
 #define DOGM_LCD_IMPLEMENTATION_H
 
-#define MARLIN_VERSION "4.0.2"
+#define MARLIN_VERSION " 4.0.3"
 
 /**
 * Implementation of the LCD display routines for a DOGM128 graphic display. These are common LCD 128x64 pixel graphic displays.
 **/
 
 #ifdef ULTIPANEL
-#define BLEN_A 0
-#define BLEN_B 1
-#define BLEN_C 2
-#define EN_A (1<<BLEN_A)
-#define EN_B (1<<BLEN_B)
-#define EN_C (1<<BLEN_C)
-#define encrot0 0
-#define encrot1 2
-#define encrot2 3
-#define encrot3 1
-#define LCD_CLICKED (buttons&EN_C)
+  #define BLEN_A 0
+  #define BLEN_B 1
+  #define BLEN_C 2
+  #define EN_A (1<<BLEN_A)
+  #define EN_B (1<<BLEN_B)
+  #define EN_C (1<<BLEN_C)
+  #define LCD_CLICKED (buttons&EN_C)
 #endif
 
 #include <U8glib.h>

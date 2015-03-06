@@ -204,8 +204,8 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the lo
 #define DEFAULT_RETRACTION_MAX_FEEDRATE {110,110,110,110}                  // E0, E1, E2, E3 (mm/sec)
 #define DEFAULT_MAX_ACCELERATION        {3000,3000,50,1000,1000,1000,1000} // X, Y, Z, E0, E1, E2, E3 maximum start speed for accelerated moves.
 
-#define DEFAULT_ACCELERATION          2500    // X, Y, Z and E max acceleration in mm/s^2 for printing moves
-#define DEFAULT_RETRACT_ACCELERATION  10000   // E max acceleration in mm/s^2 for retracts
+#define DEFAULT_ACCELERATION          2500      // X, Y, Z and E max acceleration in mm/s^2 for printing moves
+#define DEFAULT_RETRACT_ACCELERATION 10000      // E max acceleration in mm/s^2 for retracts
 
 // Offset of the extruders (uncomment if using more than one and relying on firmware to position when changing).
 // The offset has to be X=0, Y=0 for the extruder 0 hotend (default extruder).
@@ -214,9 +214,9 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the lo
 //#define HOTEND_OFFSET_Y {0.0, 5.00, 0.0, 0.0} // (in mm) for each extruder, offset of the hotend on the Y axis
 
 // The speed change that does not require acceleration (i.e. the software might assume it can be done instantaneously)
-#define DEFAULT_XYJERK 10.0    // (mm/sec)
-#define DEFAULT_ZJERK   0.4    // (mm/sec)
-#define DEFAULT_EJERK   5.0    // (mm/sec)
+#define DEFAULT_XYJERK 10.0     // (mm/sec)
+#define DEFAULT_ZJERK   0.4     // (mm/sec)
+#define DEFAULT_EJERK   5.0     // (mm/sec)
 
 //===========================================================================
 //=============================Additional Features===========================

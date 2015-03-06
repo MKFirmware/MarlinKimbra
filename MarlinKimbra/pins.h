@@ -473,12 +473,6 @@
   //Cheaptronic v1.0 does not use this port
   #define SDCARDDETECT -1
   
-  //encoder rotation values
-  #define encrot0 0
-  #define encrot1 2
-  #define encrot2 3
-  #define encrot3 1
-
 #endif // CHEAPTRONIC
 /****************************************************************************************/
 
@@ -643,13 +637,6 @@
     #define BLEN_C           2
     #define BLEN_B           1
     #define BLEN_A           0
-
-    //encoder rotation values
-    #define encrot0          0
-    #define encrot1          2
-    #define encrot2          3
-    #define encrot3          1
-
   #endif //RA_CONTROL_PANEL
   
   #ifdef RA_DISCO
@@ -1061,7 +1048,7 @@
 
   #define LARGE_FLASH true
 
-    //X axis pins
+  //X axis pins
   #define X_STEP_PIN        54
   #define X_DIR_PIN         55
   #define X_ENABLE_PIN      38
@@ -1743,11 +1730,6 @@
 
     #define SDCARDDETECT 81    // Ramps does not use this port
 
-    //encoder rotation values
-    #define encrot0 0
-    #define encrot1 2
-    #define encrot2 3
-    #define encrot3 1
   #else //old style panel with shift register
     //arduino pin witch triggers an piezzo beeper
     #define BEEPER 33    No Beeper added
@@ -1764,12 +1746,6 @@
     #define LCD_PINS_D5 25
     #define LCD_PINS_D6 27
     #define LCD_PINS_D7 29
-
-    //encoder rotation values
-    #define encrot0 0
-    #define encrot1 2
-    #define encrot2 3
-    #define encrot3 1
 
     //bits in the shift register that carry the buttons for:
     // left up center down right red
@@ -2715,13 +2691,8 @@
     #define BLEN_A 0
 
     #define SDCARDDETECT -1   // Ramps does not use this port
+  #endif //NEWPANEL
 
-      //encoder rotation values
-    #define encrot0 0
-    #define encrot1 2
-    #define encrot2 3
-    #define encrot3 1
-#endif
 #endif //ULTRA_LCD
 
 #endif // MEGATRONICS
@@ -2836,12 +2807,6 @@
 
  #define SDCARDDETECT -1  // Megatronics does not use this port
 
-   //encoder rotation values
- #define encrot0 0
- #define encrot1 2
- #define encrot2 3
- #define encrot3 1
-
 #endif // MEGATRONICS_2
 /****************************************************************************************/
 
@@ -2938,12 +2903,6 @@
  #define BLEN_A 0
 
  #define SDCARDDETECT -1  // Megatronics does not use this port
-
-   //encoder rotation values
- #define encrot0 0
- #define encrot1 2
- #define encrot2 3
- #define encrot3 1
 
 #endif // MEGATRONICS_1
 /****************************************************************************************/
@@ -3069,12 +3028,6 @@
   #define BLEN_A 0
 
   #define SDCARDDETECT -1	// Megatronics does not use this port
-
-  //encoder rotation values
-  #define encrot0 0
-  #define encrot1 2
-  #define encrot2 3
-  #define encrot3 1
 
 #endif  // MEGATRONICS_3
 /****************************************************************************************/
@@ -4424,6 +4377,21 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 ************************************* FEATURE *******************************************
 /****************************************************************************************/
 
+#ifdef SINGLENOZZLE
+  #undef HEATER_1_PIN
+  #undef HEATER_2_PIN
+  #undef HEATER_3_PIN
+  #define HEATER_1_PIN  -1
+  #define HEATER_2_PIN  -1
+  #define HEATER_3_PIN  -1
+  #undef TEMP_1_PIN
+  #undef TEMP_2_PIN
+  #undef TEMP_3_PIN
+  #define TEMP_1_PIN    -1
+  #define TEMP_2_PIN    -1
+  #define TEMP_3_PIN    -1
+#endif //SINGLENOZZLE
+
 #ifdef MKR4
   #if (EXTRUDERS == 2) && (DRIVER_EXTRUDERS==1)     // Use this for one driver and two extruder
     #define E0E1_CHOICE_PIN    5
@@ -4488,21 +4456,27 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #endif
 
 #if X_HOME_DIR > 0        //Home X to MAX
+  #undef X_MIN_PIN
   #define X_MIN_PIN          -1
 #elif X_HOME_DIR < 0      //Home X to MIN
+  #undef X_MAX_PIN
   #define X_MAX_PIN          -1
 #endif //X_HOME_DIR > 0
 
 #if Y_HOME_DIR > 0        //Home Y to MAX
+  #undef Y_MIN_PIN
   #define Y_MIN_PIN          -1
 #elif Y_HOME_DIR < 0      //Home Y to MIN
+  #undef Y_MAX_PIN
   #define Y_MAX_PIN          -1
 #endif //Y_HOME_DIR > 0
 
 #ifndef DELTA
   #if Z_HOME_DIR > 0      //Home Z to MAX
+    #undef Z_MIN_PIN
     #define Z_MIN_PIN        -1
   #elif Z_HOME_DIR < 0    //Home Z to MIN
+    #undef Z_MAX_PIN
     #define Z_MAX_PIN        -1
   #endif //Z_HOME_DIR > 0
 #endif //!DELTA

@@ -1,5 +1,5 @@
-#ifndef LANGUAGE_H
-#define LANGUAGE_H
+#ifndef __LANGUAGE_H
+#define __LANGUAGE_H
 
 // NOTE: IF YOU CHANGE LANGUAGE FILES OR MERGE A FILE WITH CHANGES
 //
@@ -149,6 +149,7 @@
 
 #define MSG_ERR_EEPROM_WRITE                "Error writing to EEPROM!"
 
+// temperature.cpp strings
 #define MSG_PID_AUTOTUNE                    "PID Autotune"
 #define MSG_PID_AUTOTUNE_START              MSG_PID_AUTOTUNE " start"
 #define MSG_PID_AUTOTUNE_FAILED             MSG_PID_AUTOTUNE " failed!"
@@ -185,6 +186,7 @@
 #define MSG_MAXTEMP_EXTRUDER_OFF            ": Extruder" MSG_SWITCHED_OFF_MAX
 #define MSG_MAXTEMP_BED_OFF                 "Heated bed" MSG_SWITCHED_OFF_MAX
 
+// LCD Menu Messages
 // Add your own character. Reference: https://www.sparkfun.com/datasheets/LCD/HD44780.pdf page 17-18
 #ifdef DOGLCD
   #define STR_Ae "\304"               // 'Ä' U8glib

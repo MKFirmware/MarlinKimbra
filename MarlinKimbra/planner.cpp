@@ -669,16 +669,24 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
   {
     block->direction_bits |= (1<<Y_AXIS); 
   }
-#else
+#else //COREXY
+  if (target[X_AXIS] < position[X_AXIS])
+  {
+    block->direction_bits |= (1<<X_HEAD);
+  }
+  if (target[Y_AXIS] < position[Y_AXIS])
+  {
+    block->direction_bits |= (1<<Y_HEAD);
+  }
   if ((target[X_AXIS]-position[X_AXIS]) + (target[Y_AXIS]-position[Y_AXIS]) < 0)
   {
-    block->direction_bits |= (1<<X_AXIS); 
+    block->direction_bits |= (1<<X_AXIS);
   }
   if ((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-position[Y_AXIS]) < 0)
   {
-    block->direction_bits |= (1<<Y_AXIS); 
+    block->direction_bits |= (1<<Y_AXIS);
   }
-#endif
+#endif //COREXY
   if (target[Z_AXIS] < position[Z_AXIS])
   {
     block->direction_bits |= (1<<Z_AXIS); 
@@ -692,15 +700,14 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
 
   //enable active axes
   #ifdef COREXY
-  if((block->steps_x != 0) || (block->steps_y != 0))
-  {
+    if((block->steps_x != 0) || (block->steps_y != 0)) {
     enable_x();
     enable_y();
-  }
-  #else
-  if(block->steps_x != 0) enable_x();
-  if(block->steps_y != 0) enable_y();
-  #endif // COREXY
+    }
+  #else //NO COREXY
+    if(block->steps_x != 0) enable_x();
+    if(block->steps_y != 0) enable_y();
+  #endif //NOCOREXY
 #ifndef Z_LATE_ENABLE
   if(block->steps_z != 0) enable_z();
 #endif
@@ -770,14 +777,24 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
     if(feed_rate<minimumfeedrate) feed_rate=minimumfeedrate;
   } 
 
-  float delta_mm[4];
+/* This part of the code calculates the total length of the movement. 
+For cartesian bots, the X_AXIS is the real X movement and same for Y_AXIS.
+But for corexy bots, that is not true. The "X_AXIS" and "Y_AXIS" motors (that should be named to A_AXIS
+and B_AXIS) cannot be used for X and Y length, because A=X+Y and B=X-Y.
+So we need to create other 2 "AXIS", named X_HEAD and Y_HEAD, meaning the real displacement of the Head. 
+Having the real displacement of the head, we can calculate the total movement length and apply the desired speed.
+*/ 
   #ifndef COREXY
+    float delta_mm[4];
     delta_mm[X_AXIS] = (target[X_AXIS]-position[X_AXIS])/axis_steps_per_unit[X_AXIS];
     delta_mm[Y_AXIS] = (target[Y_AXIS]-position[Y_AXIS])/axis_steps_per_unit[Y_AXIS];
   #else
+    float delta_mm[6];
+    delta_mm[X_HEAD] = (target[X_AXIS]-position[X_AXIS])/axis_steps_per_unit[X_AXIS];
+    delta_mm[Y_HEAD] = (target[Y_AXIS]-position[Y_AXIS])/axis_steps_per_unit[Y_AXIS];
     delta_mm[X_AXIS] = ((target[X_AXIS]-position[X_AXIS]) + (target[Y_AXIS]-position[Y_AXIS]))/axis_steps_per_unit[X_AXIS];
     delta_mm[Y_AXIS] = ((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-position[Y_AXIS]))/axis_steps_per_unit[Y_AXIS];
-  #endif // COREXY
+  #endif
   delta_mm[Z_AXIS] = (target[Z_AXIS]-position[Z_AXIS])/axis_steps_per_unit[Z_AXIS];
   delta_mm[E_AXIS] = ((target[E_AXIS]-position[E_AXIS])/axis_steps_per_unit[active_extruder+3])*volumetric_multiplier[active_extruder]*extruder_multiplier[active_extruder]/100.0;
   if ( block->steps_x <=dropsegments && block->steps_y <=dropsegments && block->steps_z <=dropsegments )
@@ -786,7 +803,11 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
   } 
   else
   {
-    block->millimeters = sqrt(square(delta_mm[X_AXIS]) + square(delta_mm[Y_AXIS]) + square(delta_mm[Z_AXIS]));
+    #ifndef COREXY
+      block->millimeters = sqrt(square(delta_mm[X_AXIS]) + square(delta_mm[Y_AXIS]) + square(delta_mm[Z_AXIS]));
+    #else
+      block->millimeters = sqrt(square(delta_mm[X_HEAD]) + square(delta_mm[Y_HEAD]) + square(delta_mm[Z_AXIS]));
+    #endif	
   }
   float inverse_millimeters = 1.0/block->millimeters;  // Inverse millimeters to remove multiple divides 
 
@@ -809,9 +830,9 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
     if (segment_time < minsegmenttime)
     { // buffer is draining, add extra time.  The amount of time added increases if the buffer is still emptied more.
       inverse_second=1000000.0/(segment_time+lround(2*(minsegmenttime-segment_time)/moves_queued));
-#ifdef XY_FREQUENCY_LIMIT
-      segment_time = lround(1000000.0/inverse_second);
-#endif // XY_FREQUENCY_LIMIT
+      #ifdef XY_FREQUENCY_LIMIT
+         segment_time = lround(1000000.0/inverse_second);
+      #endif
     }
   }
 #endif // SLOWDOWN
@@ -1136,17 +1157,12 @@ uint8_t movesplanned()
 }
 
 #ifdef PREVENT_DANGEROUS_EXTRUDE
-void set_extrude_min_temp(float temp)
-{
-  extrude_min_temp=temp;
-}
+void set_extrude_min_temp(float temp) { extrude_min_temp = temp; }
 #endif
 
 // Calculate the steps/s^2 acceleration rates, based on the mm/s^s
-void reset_acceleration_rates()
-{
-	for(int8_t i=0; i < 3 + EXTRUDERS; i++)
-        {
-        axis_steps_per_sqr_second[i] = max_acceleration_units_per_sq_second[i] * axis_steps_per_unit[i];
-        }
+void reset_acceleration_rates() {
+	for(int8_t i=0; i < 3 + EXTRUDERS; i++) {
+    axis_steps_per_sqr_second[i] = max_acceleration_units_per_sq_second[i] * axis_steps_per_unit[i];
+  }
 }
