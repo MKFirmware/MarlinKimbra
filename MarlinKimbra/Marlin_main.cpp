@@ -4092,6 +4092,7 @@ void process_commands()
         {
           printing = true;
           paused = false;
+          SERIAL_ECHOLN("Start Printing, pause pin active.");
         }
         break;
       #endif
