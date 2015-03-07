@@ -2365,10 +2365,7 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
                 }
               }
               lcd_setstatus("Finish           ");
-              enquecommand("G28 X0 Y0");
-              enquecommand("G4 P0");
-              enquecommand("G4 P0");
-              enquecommand("G4 P0");
+              enquecommands_P(PSTR("G28 X0 Y0\nG4 P0\nG4 P0\nG4 P0"));
             }
           #endif // ULTIPANEL
         }
@@ -6408,10 +6405,7 @@ void pause()
     if ((READ(PAUSE_PIN)^PAUSE_PIN_INVERTING) && printing && !paused)
     {
       paused = true;
-      enquecommand("M600");
-      enquecommand("G4 P0");
-      enquecommand("G4 P0");
-      enquecommand("G4 P0");
+      enquecommands_P(PSTR("M600\nG4 P0\nG4 P0\nG4 P0"));
     }
   #endif // defined(PAUSE_PIN) && PAUSE_PIN > -1
 }
