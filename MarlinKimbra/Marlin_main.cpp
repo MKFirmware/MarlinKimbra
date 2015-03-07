@@ -606,7 +606,9 @@ void setup_pausepin()
 {
   #if defined(PAUSE_PIN) && PAUSE_PIN > -1
     SET_INPUT(PAUSE_PIN);
-    WRITE(PAUSE_PIN,HIGH);
+    #ifdef PAUSEPINPULLUP
+      WRITE(PAUSE_PIN,HIGH);
+    #endif
   #endif
 }
 
