@@ -96,7 +96,7 @@
 *  M400 - Finish all moves
 *  M401 - Lower z-probe if present
 *  M402 - Raise z-probe if present
-*  M404 - N[dia in mm] Enter the nominal filament width (3mm, 1.75mm) or will display nominal filament width without parameters
+*  M404 - D[dia in mm] Enter the nominal filament width (3mm, 1.75mm) or will display nominal filament width without parameters
 *  M405 - Turn on Filament Sensor extrusion control.  Optional D[delay in cm] to set delay in centimeters between sensor and extruder
 *  M406 - Turn off Filament Sensor extrusion control
 *  M407 - Displays measured filament diameter

@@ -28,6 +28,8 @@
   #endif
 #endif // ENABLE_AUTO_BED_LEVELING
 
+#define SERVO_LEVELING defined(ENABLE_AUTO_BED_LEVELING) && PROBE_SERVO_DEACTIVATION_DELAY > 0
+
 #include "ultralcd.h"
 #include "planner.h"
 #include "stepper.h"
@@ -162,7 +164,7 @@ M351 - Toggle MS1 MS2 pins directly.
 M400 - Finish all moves
 M401 - Lower z-probe if present
 M402 - Raise z-probe if present
-M404 - N<dia in mm> Enter the nominal filament width (3mm, 1.75mm ) or will display nominal filament width without parameters
+M404 - D<dia in mm> Enter the nominal filament width (3mm, 1.75mm ) or will display nominal filament width without parameters
 M405 - Turn on Filament Sensor extrusion control.  Optional D<delay in cm> to set delay in centimeters between sensor and extruder 
 M406 - Turn off Filament Sensor extrusion control 
 M407 - Displays measured filament diameter 
@@ -683,7 +685,7 @@ void servo_init()
     }
   #endif //NUM_SERVOS
 
-  #if defined (ENABLE_AUTO_BED_LEVELING) && (PROBE_SERVO_DEACTIVATION_DELAY > 0)
+  #if SERVO_LEVELING
     delay(PROBE_SERVO_DEACTIVATION_DELAY);
     servos[servo_endstops[Z_AXIS]].detach();
   #endif
@@ -1243,36 +1245,34 @@ XYZ_CONSTS_FROM_CONFIG(signed char, home_dir,  HOME_DIR);
 
     static void engage_z_probe() {
       // Engage Z Servo endstop if enabled
-      #if defined(SERVO_ENDSTOPS) && (NUM_SERVOS > 0)
-        if (servo_endstops[Z_AXIS] > -1)
-        {
-          #if defined (ENABLE_AUTO_BED_LEVELING) && (PROBE_SERVO_DEACTIVATION_DELAY > 0)
+      #if NUM_SERVOS > 0
+        if (servo_endstops[Z_AXIS] > -1) {
+          #if SERVO_LEVELING
             servos[servo_endstops[Z_AXIS]].attach(0);
           #endif
           servos[servo_endstops[Z_AXIS]].write(servo_endstop_angles[Z_AXIS * 2]);
-          #if defined (ENABLE_AUTO_BED_LEVELING) && (PROBE_SERVO_DEACTIVATION_DELAY > 0)
+          #if SERVO_LEVELING
             delay(PROBE_SERVO_DEACTIVATION_DELAY);
             servos[servo_endstops[Z_AXIS]].detach();
           #endif
         }
-      #endif
+      #endif //NUM_SERVOS > 0
     }
 
     static void retract_z_probe() {
       // Retract Z Servo endstop if enabled
-      #if defined(SERVO_ENDSTOPS) && (NUM_SERVOS > 0)
-        if (servo_endstops[Z_AXIS] > -1)
-        {
-          #if defined (ENABLE_AUTO_BED_LEVELING) && (PROBE_SERVO_DEACTIVATION_DELAY > 0)
+      #if NUM_SERVOS > 0
+        if (servo_endstops[Z_AXIS] > -1) {
+          #if SERVO_LEVELING
             servos[servo_endstops[Z_AXIS]].attach(0);
           #endif
             servos[servo_endstops[Z_AXIS]].write(servo_endstop_angles[Z_AXIS * 2 + 1]);
-          #if defined (ENABLE_AUTO_BED_LEVELING) && (PROBE_SERVO_DEACTIVATION_DELAY > 0)
+          #if SERVO_LEVELING
             delay(PROBE_SERVO_DEACTIVATION_DELAY);
             servos[servo_endstops[Z_AXIS]].detach();
           #endif
         }
-      #endif // SERVO_ENDSTOPS
+      #endif //NUM_SERVOS > 0
     }
 
     /// Probe bed height at position (x,y), returns the measured z value
@@ -1291,17 +1291,16 @@ XYZ_CONSTS_FROM_CONFIG(signed char, home_dir,  HOME_DIR);
       #endif // Z_PROBE_SLED
 
       SERIAL_PROTOCOLPGM(MSG_BED);
-      SERIAL_PROTOCOLPGM(" x: ");
-      SERIAL_PROTOCOL(x);
-      SERIAL_PROTOCOLPGM(" y: ");
-      SERIAL_PROTOCOL(y);
-      SERIAL_PROTOCOLPGM(" z: ");
-      SERIAL_PROTOCOL(measured_z);
-      SERIAL_PROTOCOLPGM("\n");
+      SERIAL_PROTOCOLPGM(" X: ");
+      SERIAL_PROTOCOL(x + 0.0001);
+      SERIAL_PROTOCOLPGM(" Y: ");
+      SERIAL_PROTOCOL(y + 0.0001);
+      SERIAL_PROTOCOLPGM(" Z: ");
+      SERIAL_PROTOCOL(measured_z + 0.0001);
+      SERIAL_EOL;
       return measured_z;
     }
-
-  #endif // #ifdef ENABLE_AUTO_BED_LEVELING
+  #endif //ENABLE_AUTO_BED_LEVELING
 
   static void homeaxis(int axis) {
   #define HOMEAXIS_DO(LETTER) \
@@ -1310,8 +1309,7 @@ XYZ_CONSTS_FROM_CONFIG(signed char, home_dir,  HOME_DIR);
     if (axis==X_AXIS ? HOMEAXIS_DO(X) :
         axis==Y_AXIS ? HOMEAXIS_DO(Y) :
         axis==Z_AXIS ? HOMEAXIS_DO(Z) :
-        0)
-    {
+        0) {
       int axis_home_dir = home_dir(axis);
       #ifdef DUAL_X_CARRIAGE
         if (axis == X_AXIS) axis_home_dir = x_home_dir(active_extruder);
@@ -1323,15 +1321,13 @@ XYZ_CONSTS_FROM_CONFIG(signed char, home_dir,  HOME_DIR);
       #ifndef Z_PROBE_SLED
         // Engage Servo endstop if enabled
         #if defined(SERVO_ENDSTOPS) && (NUM_SERVOS > 0)
-          #if defined (ENABLE_AUTO_BED_LEVELING) && (PROBE_SERVO_DEACTIVATION_DELAY > 0)
-            if (axis==Z_AXIS)
-            {
+          #if SERVO_LEVELING
+            if (axis==Z_AXIS) {
               engage_z_probe();
             }
             else
           #endif
-          if (servo_endstops[axis] > -1)
-          {
+          if (servo_endstops[axis] > -1) {
             servos[servo_endstops[axis]].write(servo_endstop_angles[axis * 2]);
           }
         #endif
@@ -1358,13 +1354,13 @@ XYZ_CONSTS_FROM_CONFIG(signed char, home_dir,  HOME_DIR);
       axis_known_position[axis] = true;
 
       // Retract Servo endstop if enabled
-      #if defined(SERVO_ENDSTOPS) && (NUM_SERVOS > 0)
+      #if NUM_SERVOS > 0
         if (servo_endstops[axis] > -1)
         {
           servos[servo_endstops[axis]].write(servo_endstop_angles[axis * 2 + 1]);
         }
       #endif
-      #if defined (ENABLE_AUTO_BED_LEVELING) && (PROBE_SERVO_DEACTIVATION_DELAY > 0)
+      #if SERVO_LEVELING
         #ifndef Z_PROBE_SLED
           if (axis==Z_AXIS) retract_z_probe();
         #endif
@@ -2685,15 +2681,15 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
 
       if (verbose_level) {
         SERIAL_PROTOCOLPGM("Eqn coefficients: a: ");
-        SERIAL_PROTOCOL(plane_equation_coefficients[0]);
+        SERIAL_PROTOCOL(plane_equation_coefficients[0] + 0.0001);
         SERIAL_PROTOCOLPGM(" b: ");
-        SERIAL_PROTOCOL(plane_equation_coefficients[1]);
+        SERIAL_PROTOCOL(plane_equation_coefficients[1] + 0.0001);
         SERIAL_PROTOCOLPGM(" d: ");
-        SERIAL_PROTOCOLLN(plane_equation_coefficients[2]);
+        SERIAL_PROTOCOLLN(plane_equation_coefficients[2] + 0.0001);
         if (verbose_level > 2) {
           SERIAL_PROTOCOLPGM("Mean of sampled points: ");
           SERIAL_PROTOCOL_F(mean, 6);
-          SERIAL_PROTOCOLPGM(" \n");
+          SERIAL_EOL;
         }
       }
 
@@ -2725,14 +2721,14 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
                 ;
                 float diff = eqnBVector[ind] - mean;
                 if (diff >= 0.0)
-                  SERIAL_PROTOCOLPGM(" +");   // Watch column alignment in Pronterface
+                  SERIAL_PROTOCOLPGM(" +");   // Include + for column alignment
                 else
-                  SERIAL_PROTOCOLPGM(" -");
+                  SERIAL_PROTOCOLPGM(" ");
                 SERIAL_PROTOCOL_F(diff, 5);
               } // xx
-              SERIAL_PROTOCOLPGM("\n");
+              SERIAL_EOL;
           } // yy
-          SERIAL_PROTOCOLPGM("\n");
+          SERIAL_EOL;
 
       } //topo_flag
 
@@ -2765,7 +2761,7 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
     if (verbose_level > 0)
       plan_bed_level_matrix.debug(" \n\nBed Level Correction Matrix:");
 
-    // The following code correct the Z height difference from z-probe position and hotend tip position.
+    // Correct the Z height difference from z-probe position and hotend tip position.
     // The Z height on homing is measured by Z-Probe, but the probe is quite far from the hotend.
     // When the bed is uneven, this height must be corrected.
     real_z = float(st_get_position(Z_AXIS)) / axis_steps_per_unit[Z_AXIS];  //get the real Z (since the auto bed leveling is already correcting the plane)
@@ -2794,12 +2790,12 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
       run_z_probe();
       SERIAL_PROTOCOLPGM(MSG_BED);
       SERIAL_PROTOCOLPGM(" X: ");
-      SERIAL_PROTOCOL(current_position[X_AXIS]);
+      SERIAL_PROTOCOL(current_position[X_AXIS] + 0.0001);
       SERIAL_PROTOCOLPGM(" Y: ");
-      SERIAL_PROTOCOL(current_position[Y_AXIS]);
+      SERIAL_PROTOCOL(current_position[Y_AXIS] + 0.0001);
       SERIAL_PROTOCOLPGM(" Z: ");
-      SERIAL_PROTOCOL(current_position[Z_AXIS]);
-      SERIAL_PROTOCOLPGM("\n");
+      SERIAL_PROTOCOL(current_position[Z_AXIS] + 0.0001);
+      SERIAL_EOL;
 
       clean_up_after_endstop_move();
       retract_z_probe(); // Retract Z Servo endstop if available
@@ -3640,8 +3636,7 @@ inline void gcode_G92() {
         SERIAL_PROTOCOL_F(sigma,6);
       }
 
-      if (verbose_level > 0) 
-        SERIAL_PROTOCOLPGM("\n");
+      if (verbose_level > 0) SERIAL_EOL;
 
       plan_buffer_line(X_probe_location, Y_probe_location, Z_start_location, current_position[E_AXIS], homing_feedrate[Z_AXIS]/60, active_extruder, active_driver);
       st_synchronize();
@@ -3660,12 +3655,12 @@ inline void gcode_G92() {
     if (verbose_level > 0) {
       SERIAL_PROTOCOLPGM("Mean: ");
       SERIAL_PROTOCOL_F(mean, 6);
-      SERIAL_PROTOCOLPGM("\n");
+      SERIAL_EOL;
     }
 
     SERIAL_PROTOCOLPGM("Standard Deviation: ");
     SERIAL_PROTOCOL_F(sigma, 6);
-    SERIAL_PROTOCOLPGM("\n\n");
+    SERIAL_EOL; SERIAL_EOL;
   }
 #endif // ENABLE_AUTO_BED_LEVELING && Z_PROBE_REPEATABILITY_TEST
 
@@ -5081,34 +5076,28 @@ void process_commands()
       #if NUM_SERVOS > 0
         case 280: //M280 - set servo position absolute. P: servo index, S: angle or microseconds
         {
-          int servo_index = -1;
+          int servo_index = code_seen('P') ? code_value() : -1;
           int servo_position = 0;
-          if (code_seen('P'))
-            servo_index = code_value();
-          if (code_seen('S'))
-          {
+          if (code_seen('S')) {
             servo_position = code_value();
-            if ((servo_index >= 0) && (servo_index < NUM_SERVOS))
-            {
-              #if defined (ENABLE_AUTO_BED_LEVELING) && (PROBE_SERVO_DEACTIVATION_DELAY > 0)
+            if ((servo_index >= 0) && (servo_index < NUM_SERVOS)) {
+              #if SERVO_LEVELING
                 servos[servo_index].attach(0);
               #endif
               servos[servo_index].write(servo_position);
-              #if defined (ENABLE_AUTO_BED_LEVELING) && (PROBE_SERVO_DEACTIVATION_DELAY > 0)
+              #if SERVO_LEVELING
                 delay(PROBE_SERVO_DEACTIVATION_DELAY);
                 servos[servo_index].detach();
               #endif
             }
-            else
-            {
+            else {
               SERIAL_ECHO_START;
               SERIAL_ECHO("Servo ");
               SERIAL_ECHO(servo_index);
               SERIAL_ECHOLN(" out of range");
             }
           }
-          else if (servo_index >= 0)
-          {
+          else if (servo_index >= 0) {
             SERIAL_PROTOCOL(MSG_OK);
             SERIAL_PROTOCOL(" Servo ");
             SERIAL_PROTOCOL(servo_index);
@@ -5385,7 +5374,7 @@ void process_commands()
         case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or display nominal filament width 
         {
           #if (FILWIDTH_PIN > -1)
-            if(code_seen('N')) filament_width_nominal=code_value();
+            if(code_seen('D')) filament_width_nominal=code_value();
             else
             {
               SERIAL_PROTOCOLPGM("Filament dia (nominal mm):");
