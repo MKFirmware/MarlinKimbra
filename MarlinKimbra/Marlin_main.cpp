@@ -4400,6 +4400,9 @@ void process_commands()
       {
         if(setTargetedHotend(104)) break;
         if(debugDryrun()) break;
+        #ifdef SINGLENOZZLE
+          if (tmp_extruder != active_extruder) break;
+        #endif
         if (code_seen('S')) setTargetHotend(code_value(), tmp_extruder);
         #ifdef DUAL_X_CARRIAGE
           if (dual_x_carriage_mode == DXC_DUPLICATION_MODE && tmp_extruder == 0)
@@ -4500,6 +4503,9 @@ void process_commands()
       {
         if(setTargetedHotend(109)) break;
         if(debugDryrun()) break;
+        #ifdef SINGLENOZZLE
+          if (tmp_extruder != active_extruder) break;
+        #endif
         LCD_MESSAGEPGM(MSG_HEATING);
         #ifdef AUTOTEMP
           autotemp_enabled=false;

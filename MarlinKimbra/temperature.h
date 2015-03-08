@@ -125,9 +125,7 @@ FORCE_INLINE void setTargetHotend(const float &celsius, uint8_t extruder) {
   #ifndef SINGLENOZZLE  
     target_temperature[extruder] = celsius;
   #else
-    if (extruder == active_extruder) {
-      target_temperature[0] = celsius;
-    }
+    target_temperature[0] = celsius;
   #endif
 }
 FORCE_INLINE void setTargetBed(const float &celsius) { target_temperature_bed = celsius; }

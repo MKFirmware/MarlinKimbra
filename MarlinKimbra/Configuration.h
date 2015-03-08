@@ -80,11 +80,11 @@
  *********************** Multiextruder MKR4  ***************************
  ***********************************************************************
  *                                                                     *
- * Setting for more extruder width relay system                         *
+ * Setting for more extruder width relay system                        *
  *                                                                     *
  * Firmware by MagoKimbra magokimbra@hotmail.com                       *
  *                                                                     *
- * See pins.h for pin command relay                                     *
+ * See pins.h for pin command relay                                    *
  *                                                                     *
  ***********************************************************************/
 //#define MKR4
