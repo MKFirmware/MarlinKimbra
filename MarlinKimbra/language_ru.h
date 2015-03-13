@@ -71,6 +71,7 @@
 #define MSG_VTRAV_MIN                       "VTrav min"
 #define MSG_AMAX                            "Amax "
 #define MSG_A_RETRACT                       "A-retract"
+#define MSG_A_TRAVEL                        "A-travel"
 #define MSG_XSTEPS                          "X шаг/mm"
 #define MSG_YSTEPS                          "Y шаг/mm"
 #define MSG_ZSTEPS                          "Z шаг/mm"

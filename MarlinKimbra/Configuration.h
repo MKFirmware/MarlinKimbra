@@ -174,7 +174,7 @@
 #define TEMP_SENSOR_1 0
 #define TEMP_SENSOR_2 0
 #define TEMP_SENSOR_3 0
-#define TEMP_SENSOR_BED 1
+#define TEMP_SENSOR_BED 0
 
 // This makes temp sensor 1 a redundant sensor for sensor 0.
 // If the temperatures difference between these sensors is to high the print will be aborted.
@@ -693,4 +693,5 @@ your extruder heater takes 2 minutes to hit the target on heating.
 
 
 #include "Configuration_adv.h"
+#include "thermistortables.h"
 #endif //__CONFIGURATION_H

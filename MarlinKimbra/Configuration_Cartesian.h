@@ -92,7 +92,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the lo
 #define FRONT_PROBE_BED_POSITION 20
 #define BACK_PROBE_BED_POSITION 180
 
-#define XY_TRAVEL_SPEED 8000     // X and Y axis travel speed between probes, in mm/min
+#define XY_TRAVEL_SPEED 10000     // X and Y axis travel speed between probes, in mm/min
 
 //If you have enabled the Auto Bed Levelling and are using the same Z Probe for Z Homing,
 //it is highly recommended you let this Z_SAFE_HOMING enabled!!!
@@ -123,6 +123,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the lo
   #define AUTO_BED_LEVELING_GRID
 
   #ifdef AUTO_BED_LEVELING_GRID
+    #define MIN_PROBE_EDGE 10 // The probe square sides can be no smaller than this
     #define AUTO_BED_LEVELING_GRID_POINTS 2
   #else  // not AUTO_BED_LEVELING_GRID
     // with no grid, just probe 3 arbitrary points.  A simple cross-product
@@ -136,7 +137,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the lo
   #endif // AUTO_BED_LEVELING_GRID
 
   // Offsets to the probe relative to the extruder tip (Hotend - Probe)
-  // X and Y offsets must be integers
+  // X and Y offsets MUST be INTEGERS
   #define X_PROBE_OFFSET_FROM_EXTRUDER 0      // -left  +right
   #define Y_PROBE_OFFSET_FROM_EXTRUDER 0      // -front +behind
   #define Z_PROBE_OFFSET_FROM_EXTRUDER -1     // -below (always!)
@@ -180,6 +181,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the lo
 
 #define DEFAULT_ACCELERATION          2500      // X, Y, Z and E max acceleration in mm/s^2 for printing moves
 #define DEFAULT_RETRACT_ACCELERATION 10000      // E max acceleration in mm/s^2 for retracts
+#define DEFAULT_TRAVEL_ACCELERATION   3000      // X, Y, Z acceleration in mm/s^2 for travel (non printing) moves
 
 // Offset of the extruders (uncomment if using more than one and relying on firmware to position when changing).
 // The offset has to be X=0, Y=0 for the extruder 0 hotend (default extruder).

@@ -71,6 +71,7 @@
 #define MSG_VTRAV_MIN                       "VTrav min"
 #define MSG_AMAX                            "Amax "
 #define MSG_A_RETRACT                       "A-Retract"
+#define MSG_A_TRAVEL                        "A-travel"
 #define MSG_XSTEPS                          "X steps/mm"
 #define MSG_YSTEPS                          "Y steps/mm"
 #define MSG_ZSTEPS                          "Z steps/mm"

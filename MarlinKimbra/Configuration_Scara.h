@@ -147,6 +147,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;       // set to true to invert the lo
   #define AUTO_BED_LEVELING_GRID
 
   #ifdef AUTO_BED_LEVELING_GRID
+    #define MIN_PROBE_EDGE 10 // The probe square sides can be no smaller than this
     #define AUTO_BED_LEVELING_GRID_POINTS 2
   #else  // not AUTO_BED_LEVELING_GRID
     // with no grid, just probe 3 arbitrary points.  A simple cross-product
@@ -189,8 +190,8 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;       // set to true to invert the lo
 
 //Manual homing switch locations:
 // For SCARA: Offset between HomingPosition and Bed X=0 / Y=0
-#define MANUAL_X_HOME_POS -22.
-#define MANUAL_Y_HOME_POS -52.
+#define MANUAL_X_HOME_POS -22
+#define MANUAL_Y_HOME_POS -52
 #define MANUAL_Z_HOME_POS 0.1  // Distance between nozzle and print surface after homing.
 
 // MOVEMENT SETTINGS
@@ -203,8 +204,9 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;       // set to true to invert the lo
 #define DEFAULT_RETRACTION_MAX_FEEDRATE {80,80,80,80}                                   // E0, E1, E2, E3 (mm/sec)
 #define DEFAULT_MAX_ACCELERATION        {5000,5000,50,5000,5000,5000,5000}     // X, Y, Z, E0, E1, E2, E3 maximum start speed for accelerated moves.
 
-#define DEFAULT_ACCELERATION          400    // X, Y, Z and E max acceleration in mm/s^2 for printing moves
-#define DEFAULT_RETRACT_ACCELERATION  2000   // X, Y, Z and E max acceleration in mm/s^2 for retracts
+#define DEFAULT_ACCELERATION           400      // X, Y, Z and E max acceleration in mm/s^2 for printing moves
+#define DEFAULT_RETRACT_ACCELERATION  2000      // X, Y, Z and E max acceleration in mm/s^2 for retracts
+#define DEFAULT_TRAVEL_ACCELERATION    400      // X, Y, Z acceleration in mm/s^2 for travel (non printing) moves
 
 // Offset of the extruders (uncomment if using more than one and relying on firmware to position when changing).
 // The offset has to be X=0, Y=0 for the extruder 0 hotend (default extruder).

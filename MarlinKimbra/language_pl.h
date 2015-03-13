@@ -71,6 +71,7 @@
 #define MSG_VTRAV_MIN                       "Vskok min"
 #define MSG_AMAX                            "Amax"
 #define MSG_A_RETRACT                       "A-wycofanie"
+#define MSG_A_TRAVEL                        "A-travel"
 #define MSG_XSTEPS                          "krokiX/mm"
 #define MSG_YSTEPS                          "krokiY/mm"
 #define MSG_ZSTEPS                          "krokiZ/mm"

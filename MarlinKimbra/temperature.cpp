@@ -33,7 +33,6 @@
 #include "ultralcd.h"
 #include "temperature.h"
 #include "watchdog.h"
-#include "thermistortables.h"
 #include "language.h"
 
 #include "Sd2PinMap.h"
@@ -186,11 +185,9 @@ static volatile bool temp_meas_ready = false;
 #ifdef FAN_SOFT_PWM
   static unsigned char soft_pwm_fan;
 #endif
-#if (defined(EXTRUDER_0_AUTO_FAN_PIN) && EXTRUDER_0_AUTO_FAN_PIN > -1) || \
-    (defined(EXTRUDER_1_AUTO_FAN_PIN) && EXTRUDER_1_AUTO_FAN_PIN > -1) || \
-    (defined(EXTRUDER_2_AUTO_FAN_PIN) && EXTRUDER_2_AUTO_FAN_PIN > -1)
+#if HAS_AUTO_FAN
   static unsigned long extruder_autofan_last_check;
-#endif  
+#endif
 
 // Init min and max temp with extreme values to prevent false errors during startup
 #ifndef SINGLENOZZLE
@@ -329,8 +326,8 @@ void PID_autotune(float temp, int extruder, int ncycles) {
 
             SERIAL_PROTOCOLPGM(MSG_BIAS); SERIAL_PROTOCOL(bias);
             SERIAL_PROTOCOLPGM(MSG_D);    SERIAL_PROTOCOL(d);
-            SERIAL_PROTOCOLPGM(MSG_MIN);  SERIAL_PROTOCOL(min);
-            SERIAL_PROTOCOLPGM(MSG_MAX);  SERIAL_PROTOCOLLN(max);
+            SERIAL_PROTOCOLPGM(MSG_T_MIN);  SERIAL_PROTOCOL(min);
+            SERIAL_PROTOCOLPGM(MSG_T_MAX);  SERIAL_PROTOCOLLN(max);
             if (cycles > 2) {
               Ku = (4.0 * d) / (3.14159265 * (max - min) / 2.0);
               Tu = ((float)(t_low + t_high) / 1000.0);
@@ -348,16 +345,16 @@ void PID_autotune(float temp, int extruder, int ncycles) {
               Ki = Kp/Tu;
               Kd = Kp*Tu/3;
               SERIAL_PROTOCOLLNPGM(" Some overshoot ");
-              SERIAL_PROTOCOLPGM(MSG_KP); SERIAL_PROTOCOLLN(Kp);
-              SERIAL_PROTOCOLPGM(MSG_KI); SERIAL_PROTOCOLLN(Ki);
-              SERIAL_PROTOCOLPGM(MSG_KD); SERIAL_PROTOCOLLN(Kd);
+              SERIAL_PROTOCOLPGM(" Kp: "); SERIAL_PROTOCOLLN(Kp);
+              SERIAL_PROTOCOLPGM(" Ki: "); SERIAL_PROTOCOLLN(Ki);
+              SERIAL_PROTOCOLPGM(" Kd: "); SERIAL_PROTOCOLLN(Kd);
               Kp = 0.2*Ku;
               Ki = 2*Kp/Tu;
               Kd = Kp*Tu/3;
               SERIAL_PROTOCOLLNPGM(" No overshoot ");
-              SERIAL_PROTOCOLPGM(MSG_KP); SERIAL_PROTOCOLLN(Kp);
-              SERIAL_PROTOCOLPGM(MSG_KI); SERIAL_PROTOCOLLN(Ki);
-              SERIAL_PROTOCOLPGM(MSG_KD); SERIAL_PROTOCOLLN(Kd);
+              SERIAL_PROTOCOLPGM(" Kp: "); SERIAL_PROTOCOLLN(Kp);
+              SERIAL_PROTOCOLPGM(" Ki: "); SERIAL_PROTOCOLLN(Ki);
+              SERIAL_PROTOCOLPGM(" Kd: "); SERIAL_PROTOCOLLN(Kd);
               */
             }
           }
@@ -366,7 +363,7 @@ void PID_autotune(float temp, int extruder, int ncycles) {
           else
             soft_pwm[extruder] = (bias + d) >> 1;
           cycles++;
-          min=temp;
+          min = temp;
         }
       }
     }
@@ -419,7 +416,7 @@ void updatePID() {
     temp_iState_max_bed = PID_INTEGRAL_DRIVE_MAX / bedKi;
   #endif
 }
-  
+
 int getHeaterPower(int heater) {
   return heater < 0 ? soft_pwm_bed : soft_pwm[heater];
 }
@@ -441,79 +438,82 @@ int getHeaterPower(int heater) {
     #endif
   #endif 
 
-  void setExtruderAutoFanState(int pin, bool state) {
-    unsigned char newFanSpeed = (state != 0) ? EXTRUDER_AUTO_FAN_SPEED : 0;
-    // this idiom allows both digital and PWM fan outputs (see M42 handling).
-    pinMode(pin, OUTPUT);
-    digitalWrite(pin, newFanSpeed);
-    analogWrite(pin, newFanSpeed);
-  }
+void setExtruderAutoFanState(int pin, bool state)
+{
+  unsigned char newFanSpeed = (state != 0) ? EXTRUDER_AUTO_FAN_SPEED : 0;
+  // this idiom allows both digital and PWM fan outputs (see M42 handling).
+  pinMode(pin, OUTPUT);
+  digitalWrite(pin, newFanSpeed);
+  analogWrite(pin, newFanSpeed);
+}
 
-  void checkExtruderAutoFans() {
-    uint8_t fanState = 0;
+void checkExtruderAutoFans()
+{
+  uint8_t fanState = 0;
 
-    // which fan pins need to be turned on?      
-    #if HAS_AUTO_FAN_0
-      if (current_temperature[0] > EXTRUDER_AUTO_FAN_TEMPERATURE)
+  // which fan pins need to be turned on?      
+  #if HAS_AUTO_FAN_0
+    if (current_temperature[0] > EXTRUDER_AUTO_FAN_TEMPERATURE)
+      fanState |= 1;
+  #endif
+
+#ifndef SINGLENOZZLE
+  #if HAS_AUTO_FAN_1
+    if (current_temperature[1] > EXTRUDER_AUTO_FAN_TEMPERATURE) 
+    {
+      if (EXTRUDER_1_AUTO_FAN_PIN == EXTRUDER_0_AUTO_FAN_PIN)
         fanState |= 1;
-    #endif
+      else
+        fanState |= 2;
+    }
+  #endif
+  #if HAS_AUTO_FAN_2
+    if (current_temperature[2] > EXTRUDER_AUTO_FAN_TEMPERATURE) {
+      if (EXTRUDER_2_AUTO_FAN_PIN == EXTRUDER_0_AUTO_FAN_PIN)
+        fanState |= 1;
+      else if (EXTRUDER_2_AUTO_FAN_PIN == EXTRUDER_1_AUTO_FAN_PIN)
+        fanState |= 2;
+      else
+        fanState |= 4;
+    }
+  #endif
+  #if HAS_AUTO_FAN_3
+    if (current_temperature[3] > EXTRUDER_AUTO_FAN_TEMPERATURE) {
+      if (EXTRUDER_3_AUTO_FAN_PIN == EXTRUDER_0_AUTO_FAN_PIN)
+        fanState |= 1;
+      else if (EXTRUDER_3_AUTO_FAN_PIN == EXTRUDER_1_AUTO_FAN_PIN)
+        fanState |= 2;
+      else if (EXTRUDER_3_AUTO_FAN_PIN == EXTRUDER_2_AUTO_FAN_PIN)
+        fanState |= 4;
+      else
+        fanState |= 8;
+    }
+  #endif
+#endif // !SINLGENOZZE
 
-    #ifndef SINGLENOZZLE
-      #if HAS_AUTO_FAN_1
-        if (current_temperature[1] > EXTRUDER_AUTO_FAN_TEMPERATURE) {
-          if (EXTRUDER_1_AUTO_FAN_PIN == EXTRUDER_0_AUTO_FAN_PIN)
-            fanState |= 1;
-          else
-            fanState |= 2;
-        }
-      #endif
-      #if HAS_AUTO_FAN_2
-        if (current_temperature[2] > EXTRUDER_AUTO_FAN_TEMPERATURE) {
-          if (EXTRUDER_2_AUTO_FAN_PIN == EXTRUDER_0_AUTO_FAN_PIN)
-            fanState |= 1;
-          else if (EXTRUDER_2_AUTO_FAN_PIN == EXTRUDER_1_AUTO_FAN_PIN)
-            fanState |= 2;
-          else
-            fanState |= 4;
-        }
-      #endif
-      #if HAS_AUTO_FAN_3
-        if (current_temperature[3] > EXTRUDER_AUTO_FAN_TEMPERATURE) {
-          if (EXTRUDER_3_AUTO_FAN_PIN == EXTRUDER_0_AUTO_FAN_PIN)
-            fanState |= 1;
-          else if (EXTRUDER_3_AUTO_FAN_PIN == EXTRUDER_1_AUTO_FAN_PIN)
-            fanState |= 2;
-          else if (EXTRUDER_3_AUTO_FAN_PIN == EXTRUDER_2_AUTO_FAN_PIN)
-            fanState |= 4;
-          else
-            fanState |= 8;
-        }
-      #endif
-    #endif // !SINLGENOZZE
+  // update extruder auto fan states
+  #if HAS_AUTO_FAN_0
+    setExtruderAutoFanState(EXTRUDER_0_AUTO_FAN_PIN, (fanState & 1) != 0);
+  #endif 
 
-    // update extruder auto fan states
-    #if HAS_AUTO_FAN_0
-      setExtruderAutoFanState(EXTRUDER_0_AUTO_FAN_PIN, (fanState & 1) != 0);
-    #endif 
-
-    #ifndef SINGLENOZZLE
-      #if HAS_AUTO_FAN_1
-        if (EXTRUDER_1_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN) 
-          setExtruderAutoFanState(EXTRUDER_1_AUTO_FAN_PIN, (fanState & 2) != 0);
-      #endif 
-      #if HAS_AUTO_FAN_2
-        if (EXTRUDER_2_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN 
-            && EXTRUDER_2_AUTO_FAN_PIN != EXTRUDER_1_AUTO_FAN_PIN)
-          setExtruderAutoFanState(EXTRUDER_2_AUTO_FAN_PIN, (fanState & 4) != 0);
-      #endif
-      #if HAS_AUTO_FAN_3
-        if (EXTRUDER_3_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN 
-            && EXTRUDER_3_AUTO_FAN_PIN != EXTRUDER_1_AUTO_FAN_PIN)
-            && EXTRUDER_3_AUTO_FAN_PIN != EXTRUDER_2_AUTO_FAN_PIN)
-          setExtruderAutoFanState(EXTRUDER_3_AUTO_FAN_PIN, (fanState & 8) != 0);
-      #endif
-    #endif // !SINLGENOZZE
-  }
+#ifndef SINGLENOZZLE
+  #if HAS_AUTO_FAN_1
+    if (EXTRUDER_1_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN)
+      setExtruderAutoFanState(EXTRUDER_1_AUTO_FAN_PIN, (fanState & 2) != 0);
+  #endif 
+  #if HAS_AUTO_FAN_2
+    if (EXTRUDER_2_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN
+        && EXTRUDER_2_AUTO_FAN_PIN != EXTRUDER_1_AUTO_FAN_PIN)
+      setExtruderAutoFanState(EXTRUDER_2_AUTO_FAN_PIN, (fanState & 4) != 0);
+  #endif
+  #if HAS_AUTO_FAN_3
+    if (EXTRUDER_3_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN
+        && EXTRUDER_3_AUTO_FAN_PIN != EXTRUDER_1_AUTO_FAN_PIN
+        && EXTRUDER_3_AUTO_FAN_PIN != EXTRUDER_2_AUTO_FAN_PIN)
+      setExtruderAutoFanState(EXTRUDER_3_AUTO_FAN_PIN, (fanState & 8) != 0);
+  #endif
+#endif //!SINGLENOZZLE
+}
 #endif // any extruder auto fan pins set
 
 //
@@ -557,6 +557,36 @@ int getHeaterPower(int heater) {
   #define WRITE_FAN(v) WRITE(FAN_PIN, v)
 #endif
 
+inline void _temp_error(int e, const char *msg1, const char *msg2) {
+  if (!IsStopped()) {
+    SERIAL_ERROR_START;
+    if (e >= 0) SERIAL_ERRORLN((int)e);
+    serialprintPGM(msg1);
+    MYSERIAL.write('\n');
+    #ifdef ULTRA_LCD
+      lcd_setalertstatuspgm(msg2);
+    #endif
+  }
+  #ifndef BOGUS_TEMPERATURE_FAILSAFE_OVERRIDE
+    Stop();
+  #endif
+}
+
+void max_temp_error(uint8_t e) {
+  disable_heater();
+  _temp_error(e, MSG_MAXTEMP_EXTRUDER_OFF, MSG_ERR_MAXTEMP);
+}
+void min_temp_error(uint8_t e) {
+  disable_heater();
+  _temp_error(e, MSG_MINTEMP_EXTRUDER_OFF, MSG_ERR_MINTEMP);
+}
+void bed_max_temp_error(void) {
+  #if HAS_HEATER_BED
+    WRITE_HEATER_BED(0);
+  #endif
+  _temp_error(-1, MSG_MAXTEMP_BED_OFF, MSG_ERR_MAXTEMP_BED);
+}
+
 void manage_heater() {
 
   if (!temp_meas_ready) return;
@@ -575,10 +605,10 @@ void manage_heater() {
 
   // Loop through all extruders
   #ifndef SINGLENOZZLE
-    for(int e = 0; e < EXTRUDERS; e++) 
+    for (int e = 0; e < EXTRUDERS; e++) 
   #else
     int e = 0;
-  #endif  // !SINLGENOZZE
+  #endif  // !SINGLENOZZLE
   {
 
     #if defined (THERMAL_RUNAWAY_PROTECTION_PERIOD) && THERMAL_RUNAWAY_PROTECTION_PERIOD > 0
@@ -668,17 +698,10 @@ void manage_heater() {
     #ifdef TEMP_SENSOR_1_AS_REDUNDANT
       if (fabs(current_temperature[0] - redundant_temperature) > MAX_REDUNDANT_TEMP_SENSOR_DIFF) {
         disable_heater();
-        if (IsStopped() == false) {
-          SERIAL_ERROR_START;
-          SERIAL_ERRORLNPGM(MSG_EXTRUDER_SWITCHED_OFF);
-          LCD_ALERTMESSAGEPGM(MSG_ERR_REDUNDANT_TEMP);
-        }
-        #ifndef BOGUS_TEMPERATURE_FAILSAFE_OVERRIDE
-          Stop();
-        #endif
+        _temp_error(-1, MSG_EXTRUDER_SWITCHED_OFF, MSG_ERR_REDUNDANT_TEMP);
       }
     #endif //TEMP_SENSOR_1_AS_REDUNDANT
-  } //End extruder for loop
+  } // Extruders Loop
 
   #if HAS_AUTO_FAN
     if (ms > extruder_autofan_last_check + 2500) { // only need to check fan state very infrequently
@@ -802,16 +825,21 @@ static float analog2temp(int raw, uint8_t e) {
   } 
   #ifdef HEATER_0_USES_MAX6675
     if (e == 0)
+    {
       return 0.25 * raw;
+    }
   #endif
 
-  if(heater_ttbl_map[e] != NULL) {
+  if(heater_ttbl_map[e] != NULL)
+  {
     float celsius = 0;
     uint8_t i;
     short (*tt)[][2] = (short (*)[][2])(heater_ttbl_map[e]);
 
-    for (i=1; i<heater_ttbllen_map[e]; i++) {
-      if (PGM_RD_W((*tt)[i][0]) > raw) {
+    for (i=1; i<heater_ttbllen_map[e]; i++)
+    {
+      if (PGM_RD_W((*tt)[i][0]) > raw)
+      {
         celsius = PGM_RD_W((*tt)[i-1][1]) + 
           (raw - PGM_RD_W((*tt)[i-1][0])) * 
           (float)(PGM_RD_W((*tt)[i][1]) - PGM_RD_W((*tt)[i-1][1])) /
@@ -835,8 +863,10 @@ static float analog2tempBed(int raw) {
     float celsius = 0;
     byte i;
 
-    for (i=1; i<BEDTEMPTABLE_LEN; i++) {
-      if (PGM_RD_W(BEDTEMPTABLE[i][0]) > raw) {
+    for (i=1; i<BEDTEMPTABLE_LEN; i++)
+    {
+      if (PGM_RD_W(BEDTEMPTABLE[i][0]) > raw)
+      {
         celsius  = PGM_RD_W(BEDTEMPTABLE[i-1][1]) +
           (raw - PGM_RD_W(BEDTEMPTABLE[i-1][0])) *
           (float)(PGM_RD_W(BEDTEMPTABLE[i][1]) - PGM_RD_W(BEDTEMPTABLE[i-1][1])) /
@@ -864,9 +894,9 @@ static void updateTemperaturesFromRawValues() {
   #endif
 
   #ifndef SINGLENOZZLE
-    for(int e=0;e<EXTRUDERS;e++)
+    for (int e = 0; e < EXTRUDERS; e++)
   #else
-    int e=0;
+    int e = 0;
   #endif // !SINGLENOZZLE
   {
     current_temperature[e] = analog2temp(current_temperature_raw[e], e);
@@ -905,7 +935,8 @@ static void updateTemperaturesFromRawValues() {
 
 #endif
 
-void tp_init() {
+void tp_init()
+{
   #if MB(RUMBA) && ((TEMP_SENSOR_0==-1)||(TEMP_SENSOR_1==-1)||(TEMP_SENSOR_2==-1)||(TEMP_SENSOR_BED==-1))
     //disable RUMBA JTAG in case the thermocouple extension is plugged on top of JTAG connector
     MCUCR=(1<<JTD);
@@ -936,18 +967,16 @@ void tp_init() {
   #endif
   #if HAS_HEATER_1
     SET_OUTPUT(HEATER_1_PIN);
-  #endif  
+  #endif
   #if HAS_HEATER_2
     SET_OUTPUT(HEATER_2_PIN);
   #endif
   #if HAS_HEATER_3
     SET_OUTPUT(HEATER_3_PIN);
   #endif
-
   #if HAS_HEATER_BED
     SET_OUTPUT(HEATER_BED_PIN);
   #endif
-
   #if HAS_FAN
     SET_OUTPUT(FAN_PIN);
     #ifdef FAST_PWM_FAN
@@ -961,21 +990,16 @@ void tp_init() {
   #ifdef HEATER_0_USES_MAX6675
 
     #ifndef SDSUPPORT
-      SET_OUTPUT(SCK_PIN);
-      WRITE(SCK_PIN,0);
-    
-      SET_OUTPUT(MOSI_PIN);
-      WRITE(MOSI_PIN,1);
-    
-      SET_INPUT(MISO_PIN);
-      WRITE(MISO_PIN,1);
+      OUT_WRITE(SCK_PIN, LOW);
+      OUT_WRITE(MOSI_PIN, HIGH);
+      OUT_WRITE(MISO_PIN, HIGH);
     #else
       pinMode(SS_PIN, OUTPUT);
       digitalWrite(SS_PIN, HIGH);
     #endif //SDSUPPORT
-    
-    SET_OUTPUT(MAX6675_SS);
-    WRITE(MAX6675_SS,1);
+
+    OUT_WRITE(MAX6675_SS,HIGH);
+
   #endif //HEATER_0_USES_MAX6675
 
   #ifdef DIDR2
@@ -1108,65 +1132,69 @@ void setWatch() {
 }
 
 #if defined(THERMAL_RUNAWAY_PROTECTION_PERIOD) && THERMAL_RUNAWAY_PROTECTION_PERIOD > 0
-  void thermal_runaway_protection(int *state, unsigned long *timer, float temperature, float target_temperature, int heater_id, int period_seconds, int hysteresis_degc) {
-  /*
-        SERIAL_ECHO_START;
-        SERIAL_ECHO("Thermal Thermal Runaway Running. Heater ID:");
-        SERIAL_ECHO(heater_id);
-        SERIAL_ECHO(" ;  State:");
-        SERIAL_ECHO(*state);
-        SERIAL_ECHO(" ;  Timer:");
-        SERIAL_ECHO(*timer);
-        SERIAL_ECHO(" ;  Temperature:");
-        SERIAL_ECHO(temperature);
-        SERIAL_ECHO(" ;  Target Temp:");
-        SERIAL_ECHO(target_temperature);
-        SERIAL_ECHOLN("");    
-  */
-    if ((target_temperature == 0) || thermal_runaway)
-    {
-      *state = 0;
-      *timer = 0;
-      return;
-    }
-    switch (*state)
-    {
-      case 0: // "Heater Inactive" state
-        if (target_temperature > 0) *state = 1;
-        break;
-      case 1: // "First Heating" state
-        if (temperature >= target_temperature) *state = 2;
-        break;
-      case 2: // "Temperature Stable" state
-        if (temperature >= (target_temperature - hysteresis_degc))
-        {
-          *timer = ms;
-        } 
-        else if ( (ms - *timer) > ((unsigned long) period_seconds) * 1000)
-        {
-          SERIAL_ERROR_START;
-          SERIAL_ERRORLNPGM(MSG_THERMAL_RUNAWAY_STOP);
-          SERIAL_ERRORLN((int)heater_id);
-          LCD_ALERTMESSAGEPGM(MSG_THERMAL_RUNAWAY);
-          thermal_runaway = true;
-          while(1)
-          {
-            disable_heater();
-            disable_x();
-            disable_y();
-            disable_z();
-            disable_e0();
-            disable_e1();
-            disable_e2();
-            disable_e3();
-            manage_heater();
-            lcd_update();
-          }
-        }
-        break;
-    }
+void thermal_runaway_protection(int *state, unsigned long *timer, float temperature, float target_temperature, int heater_id, int period_seconds, int hysteresis_degc)
+{
+/*
+      SERIAL_ECHO_START;
+      SERIAL_ECHO("Thermal Thermal Runaway Running. Heater ID:");
+      SERIAL_ECHO(heater_id);
+      SERIAL_ECHO(" ;  State:");
+      SERIAL_ECHO(*state);
+      SERIAL_ECHO(" ;  Timer:");
+      SERIAL_ECHO(*timer);
+      SERIAL_ECHO(" ;  Temperature:");
+      SERIAL_ECHO(temperature);
+      SERIAL_ECHO(" ;  Target Temp:");
+      SERIAL_ECHO(target_temperature);
+      SERIAL_ECHOLN("");    
+*/
+  if ((target_temperature == 0) || thermal_runaway)
+  {
+    *state = 0;
+    *timer = 0;
+    return;
   }
-#endif //defined (THERMAL_RUNAWAY_PROTECTION_PERIOD) && THERMAL_RUNAWAY_PROTECTION_PERIOD > 0
+  switch (*state)
+  {
+    case 0: // "Heater Inactive" state
+      if (target_temperature > 0) *state = 1;
+      break;
+    case 1: // "First Heating" state
+      if (temperature >= target_temperature) *state = 2;
+      break;
+    case 2: // "Temperature Stable" state
+    {
+      unsigned long ms = millis();
+      if (temperature >= (target_temperature - hysteresis_degc))
+      {
+        *timer = ms;
+      } 
+      else if ( (ms - *timer) > ((unsigned long) period_seconds) * 1000)
+      {
+        SERIAL_ERROR_START;
+        SERIAL_ERRORLNPGM(MSG_THERMAL_RUNAWAY_STOP);
+        SERIAL_ERRORLN((int)heater_id);
+        LCD_ALERTMESSAGEPGM(MSG_THERMAL_RUNAWAY);
+        thermal_runaway = true;
+        while(1)
+        {
+          disable_heater();
+          disable_x();
+          disable_y();
+          disable_z();
+          disable_e0();
+          disable_e1();
+          disable_e2();
+          disable_e3();
+          manage_heater();
+          lcd_update();
+        }
+      }
+    } break;
+  }
+}
+#endif //THERMAL_RUNAWAY_PROTECTION_PERIOD
+
 
 void disable_heater() {
   #ifndef SINGLENOZZLE
@@ -1206,46 +1234,6 @@ void disable_heater() {
     #if HAS_HEATER_BED
       WRITE_HEATER_BED(LOW);
     #endif
-  #endif
-}
-
-void max_temp_error(uint8_t e) {
-  disable_heater();
-  if(IsStopped() == false) {
-    SERIAL_ERROR_START;
-    SERIAL_ERRORLN((int)e);
-    SERIAL_ERRORLNPGM(MSG_MAXTEMP_EXTRUDER_OFF);
-    LCD_ALERTMESSAGEPGM(MSG_ERR_MAXTEMP);
-  }
-  #ifndef BOGUS_TEMPERATURE_FAILSAFE_OVERRIDE
-  Stop();
-  #endif
-}
-
-void min_temp_error(uint8_t e) {
-  disable_heater();
-  if(IsStopped() == false) {
-    SERIAL_ERROR_START;
-    SERIAL_ERRORLN((int)e);
-    SERIAL_ERRORLNPGM(MSG_MINTEMP_EXTRUDER_OFF);
-    LCD_ALERTMESSAGEPGM(MSG_ERR_MINTEMP);
-  }
-  #ifndef BOGUS_TEMPERATURE_FAILSAFE_OVERRIDE
-    Stop();
-  #endif
-}
-
-void bed_max_temp_error(void) {
-  #if HAS_HEATER_BED
-    WRITE_HEATER_BED(0);
-  #endif
-  if (IsStopped() == false) {
-    SERIAL_ERROR_START;
-    SERIAL_ERRORLNPGM(MSG_MAXTEMP_BED_OFF);
-    LCD_ALERTMESSAGEPGM(MSG_ERR_MAXTEMP_BED);
-  }
-  #ifndef BOGUS_TEMPERATURE_FAILSAFE_OVERRIDE
-    Stop();
   #endif
 }
 

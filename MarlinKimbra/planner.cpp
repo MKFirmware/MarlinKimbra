@@ -68,8 +68,9 @@ float max_retraction_feedrate[EXTRUDERS]; // set the max speeds for retraction
 float axis_steps_per_unit[3 + EXTRUDERS];
 unsigned long max_acceleration_units_per_sq_second[3 + EXTRUDERS]; // Use M201 to override by software
 float minimumfeedrate;
-float acceleration;         // Normal acceleration mm/s^2  THIS IS THE DEFAULT ACCELERATION for all moves. M204 SXXXX
+float acceleration;         // Normal acceleration mm/s^2  THIS IS THE DEFAULT ACCELERATION for all printing moves. M204 SXXXX
 float retract_acceleration; //  mm/s^2   filament pull-pack and push-forward  while standing still in the other axis M204 TXXXX
+float travel_acceleration;  // Travel acceleration mm/s^2  THIS IS THE DEFAULT ACCELERATION for all NON printing moves. M204 MXXXX
 float max_xy_jerk; //speed than can be stopped at once, if i understand correctly.
 float max_z_jerk;
 float max_e_jerk;
@@ -708,64 +709,82 @@ block->steps_y = labs((target[X_AXIS]-position[X_AXIS]) - (target[Y_AXIS]-positi
     if(block->steps_x != 0) enable_x();
     if(block->steps_y != 0) enable_y();
   #endif //NOCOREXY
-#ifndef Z_LATE_ENABLE
-  if(block->steps_z != 0) enable_z();
-#endif
+  #ifndef Z_LATE_ENABLE
+    if(block->steps_z != 0) enable_z();
+  #endif
 
   // Enable extruder(s)
   if(block->steps_e != 0)
   {
-    if (DISABLE_INACTIVE_EXTRUDER) //enable only selected extruder
-    {
+    #if !defined(MKR4) && !defined(NPR2)
+      if (DISABLE_INACTIVE_EXTRUDER) //enable only selected extruder
+      {
 
-      if(g_uc_extruder_last_move[0] > 0) g_uc_extruder_last_move[0]--;
-      if(g_uc_extruder_last_move[1] > 0) g_uc_extruder_last_move[1]--;
-      if(g_uc_extruder_last_move[2] > 0) g_uc_extruder_last_move[2]--;
-      if(g_uc_extruder_last_move[3] > 0) g_uc_extruder_last_move[3]--;
-      
+        if(g_uc_extruder_last_move[0] > 0) g_uc_extruder_last_move[0]--;
+        if(g_uc_extruder_last_move[1] > 0) g_uc_extruder_last_move[1]--;
+        if(g_uc_extruder_last_move[2] > 0) g_uc_extruder_last_move[2]--;
+        if(g_uc_extruder_last_move[3] > 0) g_uc_extruder_last_move[3]--;
+
+        switch(extruder)
+        {
+          case 0:
+            enable_e0();
+            g_uc_extruder_last_move[0] = BLOCK_BUFFER_SIZE*2;
+
+            if(g_uc_extruder_last_move[1] == 0) disable_e1();
+            if(g_uc_extruder_last_move[2] == 0) disable_e2();
+            if(g_uc_extruder_last_move[3] == 0) disable_e3();
+          break;
+          case 1:
+            enable_e1();
+            g_uc_extruder_last_move[1] = BLOCK_BUFFER_SIZE*2;
+
+            if(g_uc_extruder_last_move[0] == 0) disable_e0();
+            if(g_uc_extruder_last_move[2] == 0) disable_e2();
+            if(g_uc_extruder_last_move[3] == 0) disable_e3();
+          break;
+          case 2:
+            enable_e2();
+            g_uc_extruder_last_move[2] = BLOCK_BUFFER_SIZE*2;
+
+            if(g_uc_extruder_last_move[0] == 0) disable_e0();
+            if(g_uc_extruder_last_move[1] == 0) disable_e1();
+            if(g_uc_extruder_last_move[3] == 0) disable_e3();
+          break;
+          case 3:
+            enable_e3();
+            g_uc_extruder_last_move[3] = BLOCK_BUFFER_SIZE*2;
+
+            if(g_uc_extruder_last_move[0] == 0) disable_e0();
+            if(g_uc_extruder_last_move[1] == 0) disable_e1();
+            if(g_uc_extruder_last_move[2] == 0) disable_e2();
+          break;
+        }
+      }
+      else //enable all
+      {
+        enable_e0();
+        enable_e1();
+        enable_e2();
+        enable_e3();
+      }
+    #else //MKR4 or NPr2
       switch(extruder)
       {
-        case 0: 
-          enable_e0(); 
-          g_uc_extruder_last_move[0] = BLOCK_BUFFER_SIZE*2;
-          
-          if(g_uc_extruder_last_move[1] == 0) disable_e1(); 
-          if(g_uc_extruder_last_move[2] == 0) disable_e2(); 
-          if(g_uc_extruder_last_move[3] == 0) disable_e3(); 
+        case 0:
+          enable_e0();
         break;
         case 1:
-          enable_e1(); 
-          g_uc_extruder_last_move[1] = BLOCK_BUFFER_SIZE*2;
-          
-          if(g_uc_extruder_last_move[0] == 0) disable_e0(); 
-          if(g_uc_extruder_last_move[2] == 0) disable_e2(); 
-          if(g_uc_extruder_last_move[3] == 0) disable_e3(); 
+          enable_e1();
         break;
         case 2:
-          enable_e2(); 
-          g_uc_extruder_last_move[2] = BLOCK_BUFFER_SIZE*2;
-          
-          if(g_uc_extruder_last_move[0] == 0) disable_e0(); 
-          if(g_uc_extruder_last_move[1] == 0) disable_e1(); 
-          if(g_uc_extruder_last_move[3] == 0) disable_e3(); 
-        break;        
+          enable_e0();
+        break;
         case 3:
-          enable_e3(); 
-          g_uc_extruder_last_move[3] = BLOCK_BUFFER_SIZE*2;
-          
-          if(g_uc_extruder_last_move[0] == 0) disable_e0(); 
-          if(g_uc_extruder_last_move[1] == 0) disable_e1(); 
-          if(g_uc_extruder_last_move[2] == 0) disable_e2(); 
-        break;        
+          enable_e1();
+        break;
       }
-    }
-    else //enable all
-    {
-      enable_e0();
-      enable_e1();
-      enable_e2();
-      enable_e3();
-    }
+    #endif //!MKR4 && !NPR2
   }
 
   if (block->steps_e == 0)
@@ -959,19 +978,24 @@ Having the real displacement of the head, we can calculate the total movement le
   {
     block->acceleration_st = ceil(retract_acceleration * steps_per_mm); // convert to: acceleration steps/sec^2
   }
+  else if(block->steps_e == 0)
+  {
+    block->acceleration_st = ceil(travel_acceleration * steps_per_mm); // convert to: acceleration steps/sec^2
+  }
   else
   {
     block->acceleration_st = ceil(acceleration * steps_per_mm); // convert to: acceleration steps/sec^2
-    // Limit acceleration per axis
-    if(((float)block->acceleration_st * (float)block->steps_x / (float)block->step_event_count) > axis_steps_per_sqr_second[X_AXIS])
-      block->acceleration_st = axis_steps_per_sqr_second[X_AXIS];
-    if(((float)block->acceleration_st * (float)block->steps_y / (float)block->step_event_count) > axis_steps_per_sqr_second[Y_AXIS])
-      block->acceleration_st = axis_steps_per_sqr_second[Y_AXIS];
-    if(((float)block->acceleration_st * (float)block->steps_z / (float)block->step_event_count ) > axis_steps_per_sqr_second[Z_AXIS])
-      block->acceleration_st = axis_steps_per_sqr_second[Z_AXIS];
-    if(((float)block->acceleration_st * (float)block->steps_e / (float)block->step_event_count) > axis_steps_per_sqr_second[E_AXIS])
-      block->acceleration_st = axis_steps_per_sqr_second[E_AXIS];
   }
+  // Limit acceleration per axis
+  if(((float)block->acceleration_st * (float)block->steps_x / (float)block->step_event_count) > axis_steps_per_sqr_second[X_AXIS])
+    block->acceleration_st = axis_steps_per_sqr_second[X_AXIS];
+  if(((float)block->acceleration_st * (float)block->steps_y / (float)block->step_event_count) > axis_steps_per_sqr_second[Y_AXIS])
+    block->acceleration_st = axis_steps_per_sqr_second[Y_AXIS];
+  if(((float)block->acceleration_st * (float)block->steps_e / (float)block->step_event_count) > axis_steps_per_sqr_second[E_AXIS])
+    block->acceleration_st = axis_steps_per_sqr_second[E_AXIS];
+  if(((float)block->acceleration_st * (float)block->steps_z / (float)block->step_event_count ) > axis_steps_per_sqr_second[Z_AXIS])
+    block->acceleration_st = axis_steps_per_sqr_second[Z_AXIS];
+ 
   block->acceleration = block->acceleration_st / steps_per_mm;
   block->acceleration_rate = (long)((float)block->acceleration_st * (16777216.0 / (F_CPU / 8.0)));
 
