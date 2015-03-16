@@ -54,7 +54,7 @@
   #include "Servo.h"
 #endif
 
-#if defined(DIGIPOTSS_PIN) && DIGIPOTSS_PIN > -1
+#if HAS_DIGIPOTSS
   #include <SPI.h>
 #endif
 
@@ -5693,7 +5693,7 @@ void process_commands()
       
       case 907: // M907 Set digital trim pot motor current using axis codes.
       {
-        #if defined(DIGIPOTSS_PIN) && DIGIPOTSS_PIN > -1
+        #if HAS_DIGIPOTSS
           for(int i=0;i<NUM_AXIS;i++) if(code_seen(axis_codes[i])) digipot_current(i,code_value());
           if(code_seen('B')) digipot_current(4,code_value());
           if(code_seen('S')) for(int i=0;i<=4;i++) digipot_current(i,code_value());
@@ -5717,7 +5717,7 @@ void process_commands()
       break;
       case 908: // M908 Control digital trimpot directly.
       {
-        #if defined(DIGIPOTSS_PIN) && DIGIPOTSS_PIN > -1
+        #if HAS_DIGIPOTSS
           uint8_t channel,current;
           if(code_seen('P')) channel=code_value();
           if(code_seen('S')) current=code_value();

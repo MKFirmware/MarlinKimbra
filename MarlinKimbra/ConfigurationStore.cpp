@@ -433,16 +433,16 @@ void Config_PrintSettings()
 
   SERIAL_ECHOLNPGM("Maximum feedrates (mm/s):");
   SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("  M203 X ",max_feedrate[X_AXIS]);
-  SERIAL_ECHOPAIR(" Y ",max_feedrate[Y_AXIS] ); 
-  SERIAL_ECHOPAIR(" Z ", max_feedrate[Z_AXIS] ); 
-  SERIAL_ECHOPAIR(" E0 ", max_feedrate[E_AXIS + 0]);
+  SERIAL_ECHOPAIR("  M203 X",max_feedrate[X_AXIS]);
+  SERIAL_ECHOPAIR(" Y",max_feedrate[Y_AXIS] ); 
+  SERIAL_ECHOPAIR(" Z", max_feedrate[Z_AXIS] ); 
+  SERIAL_ECHOPAIR(" E0 S", max_feedrate[E_AXIS + 0]);
   #if EXTRUDERS > 1
-    SERIAL_ECHOPAIR(" E1 ", max_feedrate[E_AXIS + 1]);
+    SERIAL_ECHOPAIR(" E1 S", max_feedrate[E_AXIS + 1]);
     #if EXTRUDERS > 2
-      SERIAL_ECHOPAIR(" E2 ", max_feedrate[E_AXIS + 2]);
+      SERIAL_ECHOPAIR(" E2 S", max_feedrate[E_AXIS + 2]);
       #if EXTRUDERS > 3
-        SERIAL_ECHOPAIR(" E3 ", max_feedrate[E_AXIS + 3]);
+        SERIAL_ECHOPAIR(" E3 S", max_feedrate[E_AXIS + 3]);
       #endif //EXTRUDERS > 3
     #endif //EXTRUDERS > 2
   #endif //EXTRUDERS > 1
@@ -464,16 +464,16 @@ void Config_PrintSettings()
   SERIAL_ECHO_START;
   SERIAL_ECHOLNPGM("Maximum Acceleration (mm/s2):");
   SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("  M201 X " ,max_acceleration_units_per_sq_second[X_AXIS] ); 
-  SERIAL_ECHOPAIR(" Y " , max_acceleration_units_per_sq_second[Y_AXIS] ); 
-  SERIAL_ECHOPAIR(" Z " ,max_acceleration_units_per_sq_second[Z_AXIS] );
-  SERIAL_ECHOPAIR(" E0 " ,max_acceleration_units_per_sq_second[E_AXIS]);
+  SERIAL_ECHOPAIR("  M201 X" ,max_acceleration_units_per_sq_second[X_AXIS] ); 
+  SERIAL_ECHOPAIR(" Y" , max_acceleration_units_per_sq_second[Y_AXIS] ); 
+  SERIAL_ECHOPAIR(" Z" ,max_acceleration_units_per_sq_second[Z_AXIS] );
+  SERIAL_ECHOPAIR(" E0 S" ,max_acceleration_units_per_sq_second[E_AXIS]);
   #if EXTRUDERS > 1
-    SERIAL_ECHOPAIR(" E1 " ,max_acceleration_units_per_sq_second[E_AXIS+1]);
+    SERIAL_ECHOPAIR(" E1 S" ,max_acceleration_units_per_sq_second[E_AXIS+1]);
     #if EXTRUDERS > 2
-      SERIAL_ECHOPAIR(" E2 " ,max_acceleration_units_per_sq_second[E_AXIS+2]);
+      SERIAL_ECHOPAIR(" E2 S" ,max_acceleration_units_per_sq_second[E_AXIS+2]);
       #if EXTRUDERS > 3
-        SERIAL_ECHOPAIR(" E3 " ,max_acceleration_units_per_sq_second[E_AXIS+3]);
+        SERIAL_ECHOPAIR(" E3 S" ,max_acceleration_units_per_sq_second[E_AXIS+3]);
       #endif //EXTRUDERS > 3
     #endif //EXTRUDERS > 2
   #endif //EXTRUDERS > 1

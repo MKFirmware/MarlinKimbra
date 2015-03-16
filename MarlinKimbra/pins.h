@@ -63,7 +63,7 @@
 
 #include "boards.h"
 
-#if !MB(5DPRINT)
+// Preset optional pins
 #define X_MS1_PIN -1
 #define X_MS2_PIN -1
 #define Y_MS1_PIN -1
@@ -75,7 +75,6 @@
 #define E1_MS1_PIN -1
 #define E1_MS2_PIN -1
 #define DIGIPOTSS_PIN -1
-#endif
 
 
 /******************************************************************************
@@ -4418,6 +4417,18 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 /****************************************************************************************/
 
 
+#ifndef HEATER_1_PIN
+  #define HEATER_1_PIN -1
+#endif
+#ifndef TEMP_1_PIN
+  #define TEMP_1_PIN -1
+#endif
+#ifndef HEATER_2_PIN
+  #define HEATER_2_PIN -1
+#endif
+#ifndef TEMP_2_PIN
+  #define TEMP_2_PIN -1
+#endif
 #ifndef HEATER_3_PIN
   #define HEATER_3_PIN -1
 #endif
@@ -4456,27 +4467,21 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #endif
 
 #if X_HOME_DIR > 0        //Home X to MAX
-  #undef X_MIN_PIN
   #define X_MIN_PIN          -1
 #elif X_HOME_DIR < 0      //Home X to MIN
-  #undef X_MAX_PIN
   #define X_MAX_PIN          -1
 #endif //X_HOME_DIR > 0
 
 #if Y_HOME_DIR > 0        //Home Y to MAX
-  #undef Y_MIN_PIN
   #define Y_MIN_PIN          -1
 #elif Y_HOME_DIR < 0      //Home Y to MIN
-  #undef Y_MAX_PIN
   #define Y_MAX_PIN          -1
 #endif //Y_HOME_DIR > 0
 
 #ifndef DELTA
   #if Z_HOME_DIR > 0      //Home Z to MAX
-    #undef Z_MIN_PIN
     #define Z_MIN_PIN        -1
   #elif Z_HOME_DIR < 0    //Home Z to MIN
-    #undef Z_MAX_PIN
     #define Z_MAX_PIN        -1
   #endif //Z_HOME_DIR > 0
 #endif //!DELTA
@@ -4501,8 +4506,11 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
   #define _E3_PINS
 #endif
 
-#define SENSITIVE_PINS {0, 1, X_STEP_PIN, X_DIR_PIN, X_ENABLE_PIN, X_MIN_PIN, X_MAX_PIN, Y_STEP_PIN, Y_DIR_PIN, Y_ENABLE_PIN, Y_MIN_PIN, Y_MAX_PIN, Z_STEP_PIN, Z_DIR_PIN, Z_ENABLE_PIN, Z_MIN_PIN, Z_MAX_PIN, PS_ON_PIN, \
-                        HEATER_BED_PIN, FAN_PIN,                  \
-                        _E0_PINS _E1_PINS _E2_PINS _E3_PINS           \
+#define SENSITIVE_PINS { 0, 1, X_STEP_PIN, X_DIR_PIN, X_ENABLE_PIN, X_MIN_PIN, X_MAX_PIN, Y_STEP_PIN, Y_DIR_PIN, Y_ENABLE_PIN, Y_MIN_PIN, Y_MAX_PIN, Z_STEP_PIN, Z_DIR_PIN, Z_ENABLE_PIN, Z_MIN_PIN, Z_MAX_PIN, PS_ON_PIN, \
+                        HEATER_BED_PIN, FAN_PIN, \
+                        _E0_PINS _E1_PINS _E2_PINS _E3_PINS \
                         analogInputToDigitalPin(TEMP_0_PIN), analogInputToDigitalPin(TEMP_1_PIN), analogInputToDigitalPin(TEMP_2_PIN), analogInputToDigitalPin(TEMP_3_PIN), analogInputToDigitalPin(TEMP_BED_PIN) }
+
+#define HAS_DIGIPOTSS (DIGIPOTSS_PIN >= 0)
+
 #endif //__PINS_H

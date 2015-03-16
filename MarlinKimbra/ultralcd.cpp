@@ -1511,11 +1511,11 @@ void lcd_buttons_update() {
   #ifdef NEWPANEL
     uint8_t newbutton = 0;
     #ifdef INVERT_ROTARY_SWITCH
-      if (READ(BTN_EN1) == 0)  newbutton|= EN_B;
-      if (READ(BTN_EN2) == 0)  newbutton|= EN_A;
+      if (READ(BTN_EN1) == 0)  newbutton |= EN_B;
+      if (READ(BTN_EN2) == 0)  newbutton |= EN_A;
     #else
-      if (READ(BTN_EN1) == 0)  newbutton|= EN_A;
-      if (READ(BTN_EN2) == 0)  newbutton|= EN_B;
+      if (READ(BTN_EN1) == 0)  newbutton |= EN_A;
+      if (READ(BTN_EN2) == 0)  newbutton |= EN_B;
     #endif
     #if BTN_ENC > 0
       if (millis() > blocking_enc && READ(BTN_ENC) == 0) newbutton |= EN_C;
