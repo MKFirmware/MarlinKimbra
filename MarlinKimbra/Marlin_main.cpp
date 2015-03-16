@@ -463,7 +463,7 @@ static uint8_t tmp_extruder;
 #endif
 
 bool Stopped = false;
-#if defined(PAUSE_PIN) && PAUSE_PIN > -1
+#ifdef FILAMENT_END_SWITCH
   bool paused = false;
   bool printing = false;
 #endif
@@ -3923,7 +3923,7 @@ inline void gcode_M204() {
       else target[E_AXIS] -= FILAMENTCHANGE_FINALRETRACT;
     #endif
 
-    #if defined(PAUSE_PIN) && PAUSE_PIN > -1
+    #ifdef FILAMENT_END_SWITCH
       paused = false;
     #endif
 
@@ -4202,7 +4202,7 @@ void process_commands()
         break;
       #endif //LASERBEAM
 
-      #if defined(PAUSE_PIN) && PAUSE_PIN > -1
+      #ifdef FILAMENT_END_SWITCH
         case 11: //M11 - Start printing
         {
           printing = true;
@@ -4765,7 +4765,7 @@ void process_commands()
           SERIAL_PROTOCOLPGM(MSG_E_MIN);
           SERIAL_PROTOCOLLN(((READ(E_MIN_PIN)^E_MIN_ENDSTOP_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
         #endif
-        #if defined(PAUSE_PIN) && PAUSE_PIN > -1
+        #if defined(FILAMENT_END_SWITCH) && defined(PAUSE_PIN) && PAUSE_PIN > -1
           SERIAL_PROTOCOLPGM(MSG_PAUSE_PIN);
           SERIAL_PROTOCOLLN(((READ(PAUSE_PIN)^PAUSE_PIN_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
         #endif
@@ -6455,9 +6455,9 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) //default argument s
     }
   #endif
 
-  #if defined(PAUSE_PIN) && PAUSE_PIN > -1
+  #if defined(FILAMENT_END_SWITCH) && defined(PAUSE_PIN) && PAUSE_PIN > -1
     pause();
-  #endif //defined(PAUSE_PIN) && PAUSE_PIN > -1
+  #endif
 
   #if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
     controllerFan(); //Check if fan should be turned on to cool stepper drivers down
@@ -6527,13 +6527,13 @@ void kill()
 
 void pause()
 {
-  #if defined(PAUSE_PIN) && PAUSE_PIN > -1
+  #if defined(FILAMENT_END_SWITCH) && defined(PAUSE_PIN) && PAUSE_PIN > -1
     if ((READ(PAUSE_PIN)^PAUSE_PIN_INVERTING) && printing && !paused)
     {
       paused = true;
       enquecommands_P(PSTR("M600\nG4 P0\nG4 P0\nG4 P0"));
     }
-  #endif // defined(PAUSE_PIN) && PAUSE_PIN > -1
+  #endif
 }
 
 void Stop()
