@@ -74,7 +74,7 @@ static void lcd_control_temperature_preheat_abs_settings_menu();
 static void lcd_control_temperature_preheat_gum_settings_menu();
 static void lcd_control_motion_menu();
 static void lcd_control_volumetric_menu();
-#ifdef DOGLCD
+#if defined(DOGLCD) && LCD_CONTRAST >= 0
 static void lcd_set_contrast();
 #endif
 static void lcd_control_retract_menu();
@@ -898,8 +898,8 @@ static void lcd_control_menu() {
   MENU_ITEM(submenu, MSG_TEMPERATURE, lcd_control_temperature_menu);
   MENU_ITEM(submenu, MSG_MOTION, lcd_control_motion_menu);
   MENU_ITEM(submenu, MSG_VOLUMETRIC, lcd_control_volumetric_menu);
-
-  #ifdef DOGLCD
+  
+  #if defined(DOGLCD) && LCD_CONTRAST >= 0
     //MENU_ITEM_EDIT(int3, MSG_CONTRAST, &lcd_contrast, 0, 63);
     MENU_ITEM(submenu, MSG_CONTRAST, lcd_set_contrast);
   #endif
@@ -1139,7 +1139,7 @@ static void lcd_control_volumetric_menu() {
   END_MENU();
 }
 
-#ifdef DOGLCD
+#if defined(DOGLCD) && LCD_CONTRAST >= 0
 
 static void lcd_set_contrast() {
   if (encoderPosition != 0) {
@@ -1585,7 +1585,7 @@ void lcd_setalertstatuspgm(const char* message) {
 
 void lcd_reset_alert_level() { lcd_status_message_level = 0; }
 
-#ifdef DOGLCD
+#if defined(DOGLCD) && LCD_CONTRAST >= 0
   void lcd_setcontrast(uint8_t value) {
     lcd_contrast = value & 63;
     u8g.setContrast(lcd_contrast);
@@ -2013,3 +2013,4 @@ void copy_and_scalePID_d()
 }
 
 #endif //ULTRA_LCD
+
