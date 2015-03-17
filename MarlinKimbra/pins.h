@@ -2026,78 +2026,78 @@
 /* On some broken versions of the Sanguino libraries the pin definitions are wrong, which then needs SDSS as pin 24. But you better upgrade your Sanguino libraries! See #368. */
 //#define SDSS               24
 
- #ifdef ULTRA_LCD
-   #ifdef NEWPANEL
-     //we have no buzzer installed
-     #define BEEPER -1
-	 //we can't regulate contrast by default
-	 #define LCD_CONTRAST -1
-     //LCD Pins
-     #ifdef DOGLCD
-	   #ifdef U8GLIB_ST7920 //SPI GLCD 12864 ST7920 ( like [www.digole.com] ) For Melzi V2.0
-	  	 #define LCD_PINS_RS 30 //CS chip select /SS chip slave select
-	  	 #define LCD_PINS_ENABLE 29 //SID (MOSI)
-	  	 #define LCD_PINS_D4 17 //SCK (CLK) clock
-	  	 #define BEEPER 27 // Pin 27 is take by LED_Pin, but Melzi LED do nothing with Marlin and I take this pin for BEEPER.... See here > [github.com] , If you want use this pin with Gcode M42 instead BEEPER
-	   #else
-	  	 // Pins for DOGM SPI LCD Support
-	  	 #define DOGLCD_A0 30
-	  	 #define DOGLCD_CS 29
-		 #define LCD_CONTRAST 1
-	   #endif
-       // Uncomment screen orientation
-       #define LCD_SCREEN_ROT_0
-         // #define LCD_SCREEN_ROT_90
-         // #define LCD_SCREEN_ROT_180
-         // #define LCD_SCREEN_ROT_270
-       #else // standard Hitachi LCD controller
-       #define LCD_PINS_RS        4
-       #define LCD_PINS_ENABLE    17
-       #define LCD_PINS_D4        30
-       #define LCD_PINS_D5        29
-       #define LCD_PINS_D6        28
-       #define LCD_PINS_D7        27
-     #endif
-     //The encoder and click button
-     #define BTN_EN1 11
-     #define BTN_EN2 10
-     #ifdef LCD_I2C_PANELOLU2
-       #ifdef MELZI
-         #define BTN_ENC 29 //the click switch
-         #define LCD_SDSS 30 //to use the SD card reader on the Panelolu2 rather than the melzi board
-       #else
-         #define BTN_ENC 30 //the click switch
-       #endif
-     #else
-       #define BTN_ENC 16  //the click switch
-       #define LCD_SDSS 28 //to use the SD card reader on the smart controller rather than the melzi board
-     #endif //Panelolu2
-     //not connected to a pin
-     #define SDCARDDETECT -1
+#ifdef ULTRA_LCD
+  #ifdef NEWPANEL
+    //we have no buzzer installed
+    #define BEEPER -1
+    //we can't regulate contrast by default
+    #define LCD_CONTRAST -1
+    //LCD Pins
+    #ifdef DOGLCD
+      #ifdef U8GLIB_ST7920 //SPI GLCD 12864 ST7920 ( like [www.digole.com] ) For Melzi V2.0
+        #define LCD_PINS_RS 30 //CS chip select /SS chip slave select
+        #define LCD_PINS_ENABLE 29 //SID (MOSI)
+        #define LCD_PINS_D4 17 //SCK (CLK) clock
+        #define BEEPER 27 // Pin 27 is take by LED_Pin, but Melzi LED do nothing with Marlin and I take this pin for BEEPER.... See here > [github.com] , If you want use this pin with Gcode M42 instead BEEPER
+      #else
+	  	  // Pins for DOGM SPI LCD Support
+	  	  #define DOGLCD_A0 30
+	  	  #define DOGLCD_CS 29
+		    #define LCD_CONTRAST 1
+      #endif
+      // Uncomment screen orientation
+      #define LCD_SCREEN_ROT_0
+      // #define LCD_SCREEN_ROT_90
+      // #define LCD_SCREEN_ROT_180
+      // #define LCD_SCREEN_ROT_270
+    #else // standard Hitachi LCD controller
+      #define LCD_PINS_RS        4
+      #define LCD_PINS_ENABLE    17
+      #define LCD_PINS_D4        30
+      #define LCD_PINS_D5        29
+      #define LCD_PINS_D6        28
+      #define LCD_PINS_D7        27
+    #endif
+    //The encoder and click button
+    #define BTN_EN1 11
+    #define BTN_EN2 10
+    #ifdef LCD_I2C_PANELOLU2
+      #ifdef MELZI
+        #define BTN_ENC 29 //the click switch
+        #define LCD_SDSS 30 //to use the SD card reader on the Panelolu2 rather than the melzi board
+      #else
+        #define BTN_ENC 30 //the click switch
+      #endif
+    #else
+      #define BTN_ENC 16  //the click switch
+      #define LCD_SDSS 28 //to use the SD card reader on the smart controller rather than the melzi board
+    #endif //Panelolu2
+    //not connected to a pin
+    #define SDCARDDETECT -1
 
-   #endif //Newpanel
- #endif //Ultipanel
+  #endif //Newpanel
+#endif //ULTRA_LCD
 
- #ifdef MAKRPANEL
-     #define BEEPER 29
-     // Pins for DOGM SPI LCD Support
-     #define DOGLCD_A0  30
-     #define DOGLCD_CS  17
-     #define LCD_PIN_BL 28  // backlight LED on PA3
-     // GLCD features
-     #define LCD_CONTRAST 1
-     // Uncomment screen orientation
-     #define LCD_SCREEN_ROT_0
-       // #define LCD_SCREEN_ROT_90
-       // #define LCD_SCREEN_ROT_180
-       // #define LCD_SCREEN_ROT_270
-     //The encoder and click button
-     #define BTN_EN1 11
-     #define BTN_EN2 10
-     #define BTN_ENC 16  //the click switch
-     //not connected to a pin
-     #define SDCARDDETECT -1
- #endif //Makrpanel
+#ifdef MAKRPANEL
+  #define BEEPER 29
+  // Pins for DOGM SPI LCD Support
+  #define DOGLCD_A0  30
+  #define DOGLCD_CS  17
+  #define LCD_PIN_BL 28  // backlight LED on PA3
+  // GLCD features
+  #define LCD_CONTRAST 1
+  // Uncomment screen orientation
+  #define LCD_SCREEN_ROT_0
+  // #define LCD_SCREEN_ROT_90
+  // #define LCD_SCREEN_ROT_180
+  // #define LCD_SCREEN_ROT_270
+  //The encoder and click button
+  #define BTN_EN1 11
+  #define BTN_EN2 10
+  #define BTN_ENC 16  //the click switch
+  //not connected to a pin
+  #define SDCARDDETECT -1
+#endif //Makrpanel
 
 #endif // SANGUINOLOLU_11
 /****************************************************************************************/

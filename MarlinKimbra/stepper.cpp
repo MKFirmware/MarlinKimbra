@@ -596,10 +596,10 @@ ISR(TIMER1_COMPA_vect) {
         #endif
 
         #define STEP_IF_COUNTER(axis, AXIS) \
-          if (counter_## axis > 0) {
+          if (counter_## axis > 0) { \
             counter_## axis -= current_block->step_event_count; \
             count_position[AXIS ##_AXIS] += count_direction[AXIS ##_AXIS]; \
-            AXIS ##_STEP_WRITE(LOW);
+            AXIS ##_STEP_WRITE(LOW); \
           }
 
         STEP_IF_COUNTER(x, X);
@@ -711,7 +711,7 @@ ISR(TIMER1_COMPA_vect) {
     // Set E direction (Depends on E direction + advance)
     for(unsigned char i=0; i<4;i++) {
       if (e_steps[0] != 0) {
-        E0_STEP_WRITE( INVERT_E_STEP_PIN);
+        E0_STEP_WRITE(INVERT_E_STEP_PIN);
         if (e_steps[0] < 0) {
           E0_DIR_WRITE(INVERT_E0_DIR);
           e_steps[0]++;
@@ -785,7 +785,6 @@ void st_init() {
   #ifdef HAVE_L6470DRIVER
     L6470_init();
   #endif
-  
   
   // Initialize Dir Pins
   #if defined(X_DIR_PIN) && X_DIR_PIN >= 0
