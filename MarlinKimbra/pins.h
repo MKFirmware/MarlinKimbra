@@ -64,17 +64,18 @@
 #include "boards.h"
 
 // Preset optional pins
-#define X_MS1_PIN -1
-#define X_MS2_PIN -1
-#define Y_MS1_PIN -1
-#define Y_MS2_PIN -1
-#define Z_MS1_PIN -1
-#define Z_MS2_PIN -1
-#define E0_MS1_PIN -1
-#define E0_MS2_PIN -1
-#define E1_MS1_PIN -1
-#define E1_MS2_PIN -1
+#define X_MS1_PIN     -1
+#define X_MS2_PIN     -1
+#define Y_MS1_PIN     -1
+#define Y_MS2_PIN     -1
+#define Z_MS1_PIN     -1
+#define Z_MS2_PIN     -1
+#define E0_MS1_PIN    -1
+#define E0_MS2_PIN    -1
+#define E1_MS1_PIN    -1
+#define E1_MS2_PIN    -1
 #define DIGIPOTSS_PIN -1
+#define LCD_CONTRAST  -1
 
 
 /******************************************************************************
@@ -946,7 +947,6 @@
   
       #ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
         #define BEEPER        37
-        #define LCD_CONTRAST  -1
 
         #define BTN_EN1       31
         #define BTN_EN2       33
@@ -1146,7 +1146,6 @@
   
       #ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
         #define BEEPER        37
-        #define LCD_CONTRAST  -1
 
         #define BTN_EN1       31
         #define BTN_EN2       33
@@ -1346,7 +1345,6 @@
   
       #ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
         #define BEEPER        37
-        #define LCD_CONTRAST  -1
 
         #define BTN_EN1       31
         #define BTN_EN2       33
@@ -1546,7 +1544,6 @@
   
       #ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
         #define BEEPER        37
-        #define LCD_CONTRAST  -1
 
         #define BTN_EN1       31
         #define BTN_EN2       33
@@ -2030,8 +2027,6 @@
   #ifdef NEWPANEL
     //we have no buzzer installed
     #define BEEPER -1
-    //we can't regulate contrast by default
-    #define LCD_CONTRAST -1
     //LCD Pins
     #ifdef DOGLCD
       #ifdef U8GLIB_ST7920 //SPI GLCD 12864 ST7920 ( like [www.digole.com] ) For Melzi V2.0
@@ -2211,8 +2206,7 @@
 
     #ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
       #define BEEPER 37
-	  #define LCD_CONTRAST -1
-	  
+
       #define BTN_EN1 31
       #define BTN_EN2 33
       #define BTN_ENC 35
@@ -2416,7 +2410,6 @@
 
     #ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
       #define BEEPER 37
-      #define LCD_CONTRAST  -1
 
       #define BTN_EN1 31
       #define BTN_EN2 33
@@ -4526,4 +4519,3 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define HAS_DIGIPOTSS (DIGIPOTSS_PIN >= 0)
 
 #endif //__PINS_H
-
