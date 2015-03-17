@@ -146,7 +146,7 @@ FORCE_INLINE bool isCoolingHotend(uint8_t extruder) {
 #else
   return target_temperature[0] < current_temperature[0];
 #endif
-};
+}
 
 FORCE_INLINE bool isCoolingBed() { return target_temperature_bed < current_temperature_bed; }
 

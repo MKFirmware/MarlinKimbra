@@ -1166,6 +1166,24 @@ bool extruder_duplication_enabled = false; // used in mode 2
     #endif // SCARA
   }
 
+  static void do_blocking_move_to(float x, float y, float z) {
+    float oldFeedRate = feedrate;
+    feedrate = homing_feedrate[Z_AXIS];
+
+    current_position[Z_AXIS] = z;
+    plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], feedrate/60, active_extruder, active_driver);
+    st_synchronize();
+
+    feedrate = XY_TRAVEL_SPEED;
+
+    current_position[X_AXIS] = x;
+    current_position[Y_AXIS] = y;
+    plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], feedrate/60, active_extruder, active_driver);
+    st_synchronize();
+
+    feedrate = oldFeedRate;
+  }
+    
   #ifdef ENABLE_AUTO_BED_LEVELING
     #ifdef AUTO_BED_LEVELING_GRID
       static void set_bed_level_equation_lsq(double *plane_equation_coefficients) {
@@ -1250,24 +1268,6 @@ bool extruder_duplication_enabled = false; // used in mode 2
       current_position[Z_AXIS] = st_get_position_mm(Z_AXIS);
       // make sure the planner knows where we are as it may be a bit different than we last said to move to
       plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
-    }
-
-    static void do_blocking_move_to(float x, float y, float z) {
-      float oldFeedRate = feedrate;
-      feedrate = homing_feedrate[Z_AXIS];
-
-      current_position[Z_AXIS] = z;
-      plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], feedrate/60, active_extruder, active_driver);
-      st_synchronize();
-
-      feedrate = xy_travel_speed;
-
-      current_position[X_AXIS] = x;
-      current_position[Y_AXIS] = y;
-      plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], feedrate/60, active_extruder, active_driver);
-      st_synchronize();
-
-      feedrate = oldFeedRate;
     }
 
     static void do_blocking_move_relative(float offset_x, float offset_y, float offset_z) {
@@ -2365,66 +2365,107 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
 
     #if Z_HOME_DIR < 0  // If homing towards BED do Z last
       #ifndef Z_SAFE_HOMING
-        if (code_seen('M') && !(home_x || home_y)) {  // Manual G28
+        if (code_seen('M') && !(home_x || home_y)) {
+          // Manual G28 bed level
           #ifdef ULTIPANEL
-            if(home_all_axis) {
-              boolean zig = true;
-              int xGridSpacing = (RIGHT_PROBE_BED_POSITION - LEFT_PROBE_BED_POSITION);
-              int yGridSpacing = (BACK_PROBE_BED_POSITION - FRONT_PROBE_BED_POSITION);
-              for (int yProbe=FRONT_PROBE_BED_POSITION; yProbe <= BACK_PROBE_BED_POSITION; yProbe += yGridSpacing) {
-                int xProbe, xInc;
-                if (zig) { // zig
-                  xProbe = LEFT_PROBE_BED_POSITION;
-                  xInc = xGridSpacing;
-                  zig = false;
-                } 
-                else // zag
-                {
-                  xProbe = RIGHT_PROBE_BED_POSITION;
-                  xInc = -xGridSpacing;
-                  zig = true;
-                }
-                for (int xCount=0; xCount < 2; xCount++) {
-                  destination[X_AXIS] = xProbe;
-                  destination[Y_AXIS] = yProbe;
-                  destination[Z_AXIS] = 5 * home_dir(Z_AXIS) * (-1);
-                  feedrate = XY_TRAVEL_SPEED;
-                  current_position[Z_AXIS] = 0;
-                  plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
-                  plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate/60, active_extruder, active_driver);
-                  st_synchronize();
-                  current_position[X_AXIS] = destination[X_AXIS];
-                  current_position[Y_AXIS] = destination[Y_AXIS];
-                  HOMEAXIS(Z);
-                  lcd_setstatus("Press button       ");
-                  boolean beepbutton=true;
-                  while(!lcd_clicked()) {
-                    manage_heater();
-                    manage_inactivity();
-                    lcd_update();
-                    if(beepbutton) {
-                      #if BEEPER > 0
-                        SET_OUTPUT(BEEPER);
-                        WRITE(BEEPER,HIGH);
-                        delay(100);
-                        WRITE(BEEPER,LOW);
-                        delay(3);
-                      #else
-                        #if !defined(LCD_FEEDBACK_FREQUENCY_HZ) || !defined(LCD_FEEDBACK_FREQUENCY_DURATION_MS)
-                          lcd_buzz(1000/6,100);
-                        #else
-                          lcd_buzz(LCD_FEEDBACK_FREQUENCY_DURATION_MS,LCD_FEEDBACK_FREQUENCY_HZ);
-                        #endif
-                      #endif
-                      beepbutton=false;
-                    }
-                  }
-                  xProbe += xInc;
-                }
-              }
-              lcd_setstatus("Finish           ");
-              enquecommands_P(PSTR("G28 X0 Y0\nG4 P0\nG4 P0\nG4 P0"));
+            SERIAL_ECHOLN(" --LEVEL PLATE SCRIPT--");
+            set_ChangeScreen(true);
+            while(!lcd_clicked()) {
+              set_pageShowInfo(0);
+              lcd_update();
             }
+            saved_feedrate = feedrate;
+            saved_feedmultiply = feedmultiply;
+            feedmultiply = 100;
+            previous_millis_cmd = millis();
+
+            enable_endstops(true);
+            for(int8_t i=0; i < NUM_AXIS; i++) {
+              destination[i] = current_position[i];
+            }
+            feedrate = 0.0;
+            #if Z_HOME_DIR > 0  // If homing away from BED do Z first
+              HOMEAXIS(Z);
+            #endif
+            HOMEAXIS(X);
+            HOMEAXIS(Y);
+            #if Z_HOME_DIR < 0
+              HOMEAXIS(Z);
+            #endif
+            plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+
+            #ifdef ENDSTOPS_ONLY_FOR_HOMING
+              enable_endstops(false);
+            #endif
+
+            feedrate = saved_feedrate;
+            feedmultiply = saved_feedmultiply;
+            previous_millis_cmd = millis();
+            endstops_hit_on_purpose();
+
+            plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+
+            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], Z_MIN_POS + 5);
+
+            // PROBE FIRST POINT
+            set_pageShowInfo(1);
+            set_ChangeScreen(true);
+            do_blocking_move_to(LEFT_PROBE_BED_POSITION, FRONT_PROBE_BED_POSITION, current_position[Z_AXIS]);
+            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], Z_MIN_POS);
+            while(!lcd_clicked()) {          
+              manage_heater();
+              manage_inactivity();
+            }
+
+            // PROBE SECOND POINT
+            set_ChangeScreen(true);
+            set_pageShowInfo(2);
+            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS + 5);
+            do_blocking_move_to(RIGHT_PROBE_BED_POSITION, FRONT_PROBE_BED_POSITION, current_position[Z_AXIS]);
+            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS);
+            while(!lcd_clicked()) {
+              manage_heater();
+              manage_inactivity();
+            }
+
+            // PROBE THIRD POINT
+            set_ChangeScreen(true);
+            set_pageShowInfo(3);
+            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS + 5);
+            do_blocking_move_to(RIGHT_PROBE_BED_POSITION, BACK_PROBE_BED_POSITION, current_position[Z_AXIS]);
+            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS);
+            while(!lcd_clicked()) {
+              manage_heater();
+              manage_inactivity();
+            }     
+
+            // PROBE FOURTH POINT
+            set_ChangeScreen(true);
+            set_pageShowInfo(4);
+            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS + 5);
+            do_blocking_move_to(LEFT_PROBE_BED_POSITION, BACK_PROBE_BED_POSITION, current_position[Z_AXIS]);
+            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS);
+            while(!lcd_clicked()) {
+              manage_heater();
+              manage_inactivity();
+            }
+
+            // PROBE CENTER
+            set_ChangeScreen(true);
+            set_pageShowInfo(5);
+            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS + 5);
+            do_blocking_move_to((X_MAX_POS-X_MIN_POS)/2, (Y_MAX_POS-Y_MIN_POS)/2, current_position[Z_AXIS]);
+            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS);
+            while(!lcd_clicked()) {
+              manage_heater();
+              manage_inactivity();
+            }
+
+            // FINISH MANUAL BED LEVEL
+            set_ChangeScreen(true);
+            set_pageShowInfo(6);
+            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS + 5);
+            enquecommands_P(PSTR("G28 X0 Y0\nG4 P0\nG4 P0\nG4 P0"));
           #endif // ULTIPANEL
         }
         else if((home_all_axis) || (code_seen(axis_codes[Z_AXIS])))
@@ -2593,12 +2634,6 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
    *     Usage: "G29 E" or "G29 e"
    *
    */
-
-  // Use one of these defines to specify the origin
-  // for a topographical map to be printed for your bed.
-  enum { OriginBackLeft, OriginFrontLeft, OriginBackRight, OriginFrontRight };
-  #define TOPO_ORIGIN OriginFrontLeft
-
   inline void gcode_G29() {
 
     // Prevent user from running a G29 without first homing in X and Y
@@ -2624,7 +2659,7 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
 
     #ifdef AUTO_BED_LEVELING_GRID
 
-      bool topo_flag = verbose_level > 2 || code_seen('T') || code_seen('t');
+      bool topo_flag = code_seen('T') || code_seen('t');
 
       if (verbose_level > 0) SERIAL_PROTOCOLPGM("G29 Auto Bed Leveling\n");
 

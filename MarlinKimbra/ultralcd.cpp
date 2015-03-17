@@ -13,6 +13,11 @@ int8_t encoderDiff; /* encoderDiff is updated from interrupt context and added t
 bool encoderRateMultiplierEnabled;
 int32_t lastEncoderMovementMillis;
 
+int  pageShowInfo = 0;
+boolean ChangeScreen = false;
+void set_pageShowInfo(int value){ pageShowInfo = value; }
+void set_ChangeScreen(boolean state) { ChangeScreen = state; }
+
 /* Configuration settings */
 int plaPreheatHotendTemp;
 int plaPreheatHPBTemp;
@@ -651,6 +656,99 @@ void lcd_cooldown() {
   lcd_return_to_status();
 }
 
+void config_lcd_level_bed()
+{
+	setTargetHotend(0,0);
+
+	SERIAL_ECHOLN("Leveling...");	
+	currentMenu = lcd_level_bed;
+	enquecommands_P(PSTR("G28 M"));
+	pageShowInfo = 0;
+}
+
+void lcd_level_bed()
+{
+        if(ChangeScreen){
+       lcd.clear(); 
+    switch(pageShowInfo){
+      
+      case 0:
+        {      
+          lcd.setCursor(0, 1);
+          lcd_printPGM(PSTR(MSG_LP_INTRO));
+           currentMenu = lcd_level_bed;
+           ChangeScreen=false;
+        }
+        break;
+
+      case 1:
+        {      
+          lcd.setCursor(0, 1);
+          lcd_printPGM(PSTR(MSG_LP_1));
+              currentMenu = lcd_level_bed;
+           ChangeScreen=false;         
+        }
+              
+        break;
+      case 2:
+        {      
+          lcd.setCursor(0, 1);
+          lcd_printPGM(PSTR(MSG_LP_2));
+              currentMenu = lcd_level_bed;
+           ChangeScreen=false;       
+        }
+              
+        break;        
+      case 3:
+        {      
+          lcd.setCursor(0, 1);
+          lcd_printPGM(PSTR(MSG_LP_3));
+              currentMenu = lcd_level_bed;
+           ChangeScreen=false;         
+        }
+              
+        break;        
+     case 4:
+        {     
+          lcd.setCursor(0, 1);
+          lcd_printPGM(PSTR(MSG_LP_4));
+              currentMenu = lcd_level_bed;
+           ChangeScreen=false;         
+        }
+              
+        break;
+
+     case 5:
+        {     
+          lcd.setCursor(0, 1);
+          lcd_printPGM(PSTR(MSG_LP_5));
+              currentMenu = lcd_level_bed;
+           ChangeScreen=false;         
+        }
+              
+        break;
+    
+     case 6:
+        {
+          lcd.setCursor(2, 2);          
+          lcd_printPGM(PSTR(MSG_LP_6));         
+          
+          ChangeScreen=false;
+          delay(1200);    
+          
+          encoderPosition = 0;
+          lcd.clear(); 
+          currentMenu = lcd_status_screen;
+          lcd_status_screen();
+          pageShowInfo=0;
+     
+        }
+        break; 
+    }
+   }
+}
+
+
 static void lcd_prepare_menu() {
   START_MENU();
   MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
@@ -662,7 +760,7 @@ static void lcd_prepare_menu() {
   MENU_ITEM(gcode, MSG_DISABLE_STEPPERS, PSTR("M84"));
   MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
   #ifndef DELTA
-    MENU_ITEM(gcode, MSG_BED_SETTING, PSTR("G28 M"));
+    MENU_ITEM(function, MSG_BED_SETTING, config_lcd_level_bed);
   #endif
   MENU_ITEM(function, MSG_SET_HOME_OFFSETS, lcd_set_home_offsets);
   //MENU_ITEM(gcode, MSG_SET_ORIGIN, PSTR("G92 X0 Y0 Z0"));
@@ -1531,7 +1629,7 @@ void lcd_buttons_update() {
       WRITE(SHIFT_LD, HIGH);
       for(int8_t i = 0; i < 8; i++) {
         newbutton_reprapworld_keypad >>= 1;
-        if (READ(SHIFT_OUT)) newbutton_reprapworld_keypad |= (1 << 7);
+        if (READ(SHIFT_OUT)) newbutton_reprapworld_keypad |= BIT(7);
         WRITE(SHIFT_CLK, HIGH);
         WRITE(SHIFT_CLK, LOW);
       }
@@ -1544,7 +1642,7 @@ void lcd_buttons_update() {
     unsigned char tmp_buttons = 0;
     for(int8_t i=0; i<8; i++) {
       newbutton >>= 1;
-      if (READ(SHIFT_OUT)) newbutton |= (1 << 7);
+      if (READ(SHIFT_OUT)) newbutton |= BIT(7);
       WRITE(SHIFT_CLK, HIGH);
       WRITE(SHIFT_CLK, LOW);
     }

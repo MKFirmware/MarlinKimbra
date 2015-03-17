@@ -4363,6 +4363,8 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #endif // 99
 /****************************************************************************************/
 
+
+
 /****************************************************************************************
 ********************************* END MOTHERBOARD ***************************************
 /****************************************************************************************/
@@ -4370,52 +4372,6 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #ifndef KNOWN_BOARD
   #error Unknown MOTHERBOARD value in configuration.h
 #endif
-
-
-/****************************************************************************************
-************************************* FEATURE *******************************************
-/****************************************************************************************/
-
-#ifdef SINGLENOZZLE
-  #undef HEATER_1_PIN
-  #undef HEATER_2_PIN
-  #undef HEATER_3_PIN
-  #define HEATER_1_PIN  -1
-  #define HEATER_2_PIN  -1
-  #define HEATER_3_PIN  -1
-  #undef TEMP_1_PIN
-  #undef TEMP_2_PIN
-  #undef TEMP_3_PIN
-  #define TEMP_1_PIN    -1
-  #define TEMP_2_PIN    -1
-  #define TEMP_3_PIN    -1
-#endif //SINGLENOZZLE
-
-#ifdef MKR4
-  #if (EXTRUDERS == 2) && (DRIVER_EXTRUDERS==1)     // Use this for one driver and two extruder
-    #define E0E1_CHOICE_PIN    5
-  #elif (EXTRUDERS == 3) && (DRIVER_EXTRUDERS==2)   // Use this for two driver and 3 extruder
-    #define E0E2_CHOICE_PIN    5
-  #elif (EXTRUDERS == 4) && (DRIVER_EXTRUDERS==2)   // Use this for two driver and 4 extruder
-    #define E0E2_CHOICE_PIN    5
-    #define E1E3_CHOICE_PIN    6
-  #endif //EXTRUDERS
-#endif //MKR4
-
-#ifdef NPR2
-  #define E_MIN_PIN           19
-#endif //NPR2
-
-#ifdef LASERBEAM
-  #define LASER_PWR_PIN	42
-  #define LASER_TTL_PIN	44
-#endif
-
-#ifdef FILAMENT_END_SWITCH
-  #define PAUSE_PIN           19
-#endif
-/****************************************************************************************/
-
 
 #ifndef HEATER_1_PIN
   #define HEATER_1_PIN -1
@@ -4485,6 +4441,54 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
     #define Z_MAX_PIN        -1
   #endif //Z_HOME_DIR > 0
 #endif //!DELTA
+/****************************************************************************************/
+
+
+
+/****************************************************************************************
+************************************* FEATURE *******************************************
+/****************************************************************************************/
+
+#ifdef SINGLENOZZLE
+  #undef HEATER_1_PIN
+  #undef HEATER_2_PIN
+  #undef HEATER_3_PIN
+  #define HEATER_1_PIN  -1
+  #define HEATER_2_PIN  -1
+  #define HEATER_3_PIN  -1
+  #undef TEMP_1_PIN
+  #undef TEMP_2_PIN
+  #undef TEMP_3_PIN
+  #define TEMP_1_PIN    -1
+  #define TEMP_2_PIN    -1
+  #define TEMP_3_PIN    -1
+#endif //SINGLENOZZLE
+
+#ifdef MKR4
+  #if (EXTRUDERS == 2) && (DRIVER_EXTRUDERS==1)     // Use this for one driver and two extruder
+    #define E0E1_CHOICE_PIN    5
+  #elif (EXTRUDERS == 3) && (DRIVER_EXTRUDERS==2)   // Use this for two driver and 3 extruder
+    #define E0E2_CHOICE_PIN    5
+  #elif (EXTRUDERS == 4) && (DRIVER_EXTRUDERS==2)   // Use this for two driver and 4 extruder
+    #define E0E2_CHOICE_PIN    5
+    #define E1E3_CHOICE_PIN    6
+  #endif //EXTRUDERS
+#endif //MKR4
+
+#ifdef NPR2
+  #define E_MIN_PIN           19
+#endif //NPR2
+
+#ifdef LASERBEAM
+  #define LASER_PWR_PIN	42
+  #define LASER_TTL_PIN	44
+#endif
+
+#ifdef FILAMENT_END_SWITCH
+  #define PAUSE_PIN           19
+#endif
+/****************************************************************************************/
+
 
 #include "pins2tool.h"
 
