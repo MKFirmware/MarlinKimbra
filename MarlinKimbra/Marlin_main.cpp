@@ -5246,7 +5246,7 @@ void process_commands()
       }
       break;
 
-      #ifdef DOGLCD
+      #if defined(DOGLCD) && LCD_CONTRAST >= 0
         case 250: //M250  Set LCD contrast value: C<value> (value 0..63)
         {
           if (code_seen('C')) lcd_setcontrast(((int)code_value())&63);
@@ -6694,3 +6694,4 @@ void calculate_volumetric_multipliers() {
   for (int i=0; i<EXTRUDERS; i++)
     volumetric_multiplier[i] = calculate_volumetric_multiplier(filament_size[i]);
 }
+
