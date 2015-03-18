@@ -168,6 +168,7 @@
   #define MSG_FWTEST_03                     "Inizio controllo ENDSTOP"
   #define MSG_FWTEST_04                     "Inizio controllo MOTORI"
   #define MSG_FWTEST_ATTENTION              "ATTENZIONE! Controlla che i tre assi siano a piu' di 5 mm dagli endstop!"
+  #define MSG_FWTEST_END                    "Test finito. Disabilitare FIRMWARE_TEST e ricompilare."
 #endif // FIRMWARE_TEST
 
 #endif // LANGUAGE_IT_H
