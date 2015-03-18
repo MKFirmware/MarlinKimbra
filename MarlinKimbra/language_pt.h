@@ -168,6 +168,7 @@
   #define MSG_FWTEST_03                     "Start check ENDSTOP"
   #define MSG_FWTEST_04                     "Start check MOTOR"
   #define MSG_FWTEST_ATTENTION              "ATTENTION! Check that the three axes are more than 5 mm from the endstop!"
+  #define MSG_FWTEST_END                    "Finish Test. Disable FIRMWARE_TEST and recompile."
 #endif // FIRMWARE_TEST
 
 #endif // LANGUAGE_PT_H
