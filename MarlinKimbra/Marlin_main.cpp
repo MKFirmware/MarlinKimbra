@@ -2184,7 +2184,7 @@ inline void gcode_G2_G3(bool clockwise) {
 
 // G4: Dwell S<seconds> or P<milliseconds>
 inline void gcode_G4() {
-  unsigned long codenum;
+  unsigned long codenum = 0;
   LCD_MESSAGEPGM(MSG_DWELL);
 
   if (code_seen('P')) codenum = code_value_long(); // milliseconds to wait
