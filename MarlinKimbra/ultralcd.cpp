@@ -77,7 +77,9 @@ static void lcd_control_volumetric_menu();
 #if defined(DOGLCD) && LCD_CONTRAST >= 0
 static void lcd_set_contrast();
 #endif
+#ifdef FWRETRACT
 static void lcd_control_retract_menu();
+#endif
 static void lcd_sdcard_menu();
 
 #ifdef DELTA
@@ -418,7 +420,7 @@ static void lcd_main_menu() {
   END_MENU();
 }
 
-#ifdef SDSUPPORT
+#if defined( SDSUPPORT ) && defined( MENU_ADDAUTOSTART )
   static void lcd_autostart_sd() {
     card.autostart_index = 0;
     card.setroot();
@@ -752,10 +754,8 @@ void lcd_level_bed()
 static void lcd_prepare_menu() {
   START_MENU();
   MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
-  #ifdef SDSUPPORT
-    #ifdef MENU_ADDAUTOSTART
-      MENU_ITEM(function, MSG_AUTOSTART, lcd_autostart_sd);
-    #endif
+  #if defined( SDSUPPORT ) && defined( MENU_ADDAUTOSTART )
+    MENU_ITEM(function, MSG_AUTOSTART, lcd_autostart_sd);
   #endif
   MENU_ITEM(gcode, MSG_DISABLE_STEPPERS, PSTR("M84"));
   MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
@@ -804,7 +804,8 @@ static void lcd_prepare_menu() {
 }
 
 #ifdef DELTA
-  static void lcd_delta_calibrate_menu() {
+  static void lcd_delta_calibrate_menu()
+  {
     START_MENU();
     MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
     MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
@@ -1445,7 +1446,7 @@ void lcd_update() {
     }
   #endif//CARDINSERTED
 
-  long ms = millis();
+  uint32_t ms = millis();
   if (ms > lcd_next_update_millis) {
 
     #ifdef ULTIPANEL

@@ -376,6 +376,7 @@ uint8_t debugLevel = 0;
 
 #ifdef SCARA
   float axis_scaling[3] = { 1, 1, 1 };    // Build size scaling, default to 1
+  static float delta[3] = { 0, 0, 0 };
 #endif //SCARA
 
 #ifdef FILAMENT_SENSOR
@@ -2718,7 +2719,7 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
     //corrected_position.debug("position before G29");
     plan_bed_level_matrix.set_to_identity();
     vector_3 uncorrected_position = plan_get_position();
-    //uncorrected_position.debug("position durring G29");
+    //uncorrected_position.debug("position during G29");
     current_position[X_AXIS] = uncorrected_position.x;
     current_position[Y_AXIS] = uncorrected_position.y;
     current_position[Z_AXIS] = uncorrected_position.z;
@@ -2730,8 +2731,8 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
     #ifdef AUTO_BED_LEVELING_GRID
 
       // probe at the points of a lattice grid
-      int xGridSpacing = (right_probe_bed_position - left_probe_bed_position) / (auto_bed_leveling_grid_points - 1);
-      int yGridSpacing = (back_probe_bed_position - front_probe_bed_position) / (auto_bed_leveling_grid_points - 1);
+      const int xGridSpacing = (right_probe_bed_position - left_probe_bed_position) / (auto_bed_leveling_grid_points - 1);
+      const int yGridSpacing = (back_probe_bed_position - front_probe_bed_position) / (auto_bed_leveling_grid_points - 1);
 
       // solve the plane equation ax + by + d = z
       // A is the matrix with rows [x y 1] for all the probed points
@@ -6415,7 +6416,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) //default argument s
 {
   #if defined(KILL_PIN) && KILL_PIN > -1
     static int killCount = 0;   // make the inactivity button a bit less responsive
-    const int KILL_DELAY = 10000;
+    const int KILL_DELAY = 750;
   #endif
 
   #if defined(HOME_PIN) && HOME_PIN > -1
