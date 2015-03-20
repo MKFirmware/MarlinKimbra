@@ -300,7 +300,7 @@ extern int EtoPPressure;
 extern unsigned char fanSpeedSoftPwm;
 #endif
 
-#ifdef FILAMENT_SENSOR
+#if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0)
   extern float filament_width_nominal;  //holds the theoretical filament diameter ie., 3.00 or 1.75
   extern bool filament_sensor;  //indicates that filament sensor readings should control extrusion
   extern float filament_width_meas; //holds the filament diameter as accurately measured
@@ -310,6 +310,10 @@ extern unsigned char fanSpeedSoftPwm;
   extern int meas_delay_cm; //delay distance
 #endif
 
+#if (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0)
+  extern unsigned int power_consumption_meas; //holds the power consumption as accurately measured
+  extern unsigned long power_consumption_hour; //holds the power consumption per hour as accurately measured
+#endif
 #ifdef FWRETRACT
 extern bool autoretract_enabled;
 extern bool retracted[EXTRUDERS];
