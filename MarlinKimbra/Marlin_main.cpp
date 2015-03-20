@@ -2749,19 +2749,34 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
       int probePointCounter = 0;
       bool zig = true;
 
-      for (int yProbe = front_probe_bed_position; yProbe <= back_probe_bed_position; yProbe += yGridSpacing) {
-        int xProbe, xInc;
+      for (int yCount=0; yCount < auto_bed_leveling_grid_points; yCount++)
+      {
+        double yProbe = front_probe_bed_position + yGridSpacing * yCount;
+        int xStart, xStop, xInc;
 
         if (zig)
-          xProbe = left_probe_bed_position, xInc = xGridSpacing;
+        {
+          xStart = 0;
+          xStop = auto_bed_leveling_grid_points;
+          xInc = 1;
+          zig = false;
+        }
         else
-          xProbe = right_probe_bed_position, xInc = -xGridSpacing;
+        {
+          xStart = auto_bed_leveling_grid_points - 1;
+          xStop = -1;
+          xInc = -1;
+          zig = true;
+        }
+
 
         // If topo_flag is set then don't zig-zag. Just scan in one direction.
         // This gets the probe points in more readable order.
-        if (!topo_flag) zig = !zig;
+        if (topo_flag) zig = !zig;
+        for (int xCount=xStart; xCount != xStop; xCount += xInc)
+        {
+          double xProbe = left_probe_bed_position + xGridSpacing * xCount;
 
-        for (int xCount = 0; xCount < auto_bed_leveling_grid_points; xCount++) {
           // raise extruder
           float measured_z,
                 z_before = probePointCounter == 0 ? Z_RAISE_BEFORE_PROBING : current_position[Z_AXIS] + Z_RAISE_BETWEEN_PROBINGS;
@@ -2789,10 +2804,7 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
           eqnAMatrix[probePointCounter + 2 * abl2] = 1;
 
           probePointCounter++;
-          xProbe += xInc;
-
         } //xProbe
-
       } //yProbe
 
       clean_up_after_endstop_move();
@@ -2877,15 +2889,16 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
         z_at_pt_3 = probe_pt(ABL_PROBE_PT_3_X, ABL_PROBE_PT_3_Y, current_position[Z_AXIS] + Z_RAISE_BETWEEN_PROBINGS, ProbeRetract, verbose_level);
       }
       else {
-        z_at_pt_1 = probe_pt(ABL_PROBE_PT_1_X, ABL_PROBE_PT_1_Y, Z_RAISE_BEFORE_PROBING, verbose_level);
-        z_at_pt_2 = probe_pt(ABL_PROBE_PT_2_X, ABL_PROBE_PT_2_Y, current_position[Z_AXIS] + Z_RAISE_BETWEEN_PROBINGS, verbose_level);
-        z_at_pt_3 = probe_pt(ABL_PROBE_PT_3_X, ABL_PROBE_PT_3_Y, current_position[Z_AXIS] + Z_RAISE_BETWEEN_PROBINGS, verbose_level);
+        z_at_pt_1 = probe_pt(ABL_PROBE_PT_1_X, ABL_PROBE_PT_1_Y, Z_RAISE_BEFORE_PROBING, verbose_level=verbose_level);
+        z_at_pt_2 = probe_pt(ABL_PROBE_PT_2_X, ABL_PROBE_PT_2_Y, current_position[Z_AXIS] + Z_RAISE_BETWEEN_PROBINGS, verbose_level=verbose_level);
+        z_at_pt_3 = probe_pt(ABL_PROBE_PT_3_X, ABL_PROBE_PT_3_Y, current_position[Z_AXIS] + Z_RAISE_BETWEEN_PROBINGS, verbose_level=verbose_level);
       }
       clean_up_after_endstop_move();
       set_bed_level_equation_3pts(z_at_pt_1, z_at_pt_2, z_at_pt_3);
 
     #endif // !AUTO_BED_LEVELING_GRID
 
+    do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], Z_RAISE_AFTER_PROBING);
     st_synchronize();
 
     if (verbose_level > 0)
@@ -4281,7 +4294,8 @@ void process_commands()
         break;
         case 23: //M23 - Select file
         {
-          starpos = (strchr(strchr_pointer + 4,'*'));
+          char* codepos = strchr_pointer + 4;
+          char* starpos = strchr(codepos, '*');
           if(starpos!=NULL) *(starpos)='\0';
           card.openFile(strchr_pointer + 4,true);
         }
@@ -4312,14 +4326,15 @@ void process_commands()
         break;
         case 28: //M28 - Start SD write
         {
-          starpos = (strchr(strchr_pointer + 4,'*'));
+          char* codepos = strchr_pointer + 4;
+          char* starpos = strchr(codepos, '*');
           if(starpos != NULL)
           {
             char* npos = strchr(cmdbuffer[bufindr], 'N');
             strchr_pointer = strchr(npos,' ') + 1;
             *(starpos) = '\0';
           }
-          card.openFile(strchr_pointer+4,false);
+          card.openFile(codepos, false);
         }
         break;
         case 29: //M29 - Stop SD write

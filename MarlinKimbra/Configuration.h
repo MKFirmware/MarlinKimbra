@@ -216,8 +216,11 @@
 // If you want the M105 heater power reported in watts, define the BED_WATTS, and (shared for all hotend) HOTEND_WATTS
 //#define HOTEND_WATTS (12.0*12.0/6.7)  //  P=I^2/R
 //#define BED_WATTS (12.0*12.0/1.1)     // P=I^2/R
+//===========================================================================
+//============================= PID Settings ================================
+//===========================================================================
+// PID Tuning Guide here: http://reprap.org/wiki/PID_Tuning
 
-//=============================== PID settings ==============================
 // Comment the following line to disable PID and enable bang-bang.
 #define PIDTEMP
 #define BANG_MAX 255      // limits current to nozzle while in bang-bang mode; 255=full current
