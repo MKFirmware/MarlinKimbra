@@ -379,7 +379,7 @@ uint8_t debugLevel = 0;
   static float delta[3] = { 0, 0, 0 };
 #endif //SCARA
 
-#ifdef FILAMENT_SENSOR
+#if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0)
   //Variables for Filament Sensor input 
   float filament_width_nominal=DEFAULT_NOMINAL_FILAMENT_DIA;  //Set nominal filament width, can be changed with M404 
   bool filament_sensor=false;  //M405 turns on filament_sensor control, M406 turns it off 
@@ -389,6 +389,11 @@ uint8_t debugLevel = 0;
   int delay_index2=-1;  //index into ring buffer - set to -1 on startup to indicate ring buffer needs to be initialized
   float delay_dist=0; //delay distance counter  
   int meas_delay_cm = MEASUREMENT_DELAY_CM;  //distance delay setting
+#endif
+
+#if (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0)
+ unsigned int power_consumption_meas = 0;
+ unsigned long power_consumption_hour = 0.0;
 #endif
 
 #ifdef LASERBEAM
@@ -5570,17 +5575,15 @@ void process_commands()
         break;
       #endif // NABLE_AUTO_BED_LEVELING
 
-      #ifdef FILAMENT_SENSOR
+      #if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0)
         case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or display nominal filament width 
         {
-          #if (FILWIDTH_PIN > -1)
-            if(code_seen('D')) filament_width_nominal=code_value();
-            else
-            {
-              SERIAL_PROTOCOLPGM("Filament dia (nominal mm):");
-              SERIAL_PROTOCOLLN(filament_width_nominal);
-            }
-          #endif
+          if(code_seen('D')) filament_width_nominal=code_value();
+          else
+          {
+            SERIAL_PROTOCOLPGM("Filament dia (nominal mm):");
+            SERIAL_PROTOCOLLN(filament_width_nominal);
+          }
         }
         break;
         case 405:  //M405 Turn on filament sensor for control
