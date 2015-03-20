@@ -325,6 +325,9 @@
   #ifdef FILAMENT_LCD_DISPLAY
     #error LCD_PROGRESS_BAR and FILAMENT_LCD_DISPLAY are not fully compatible. Comment out this line to use both.
   #endif
+  #ifdef POWER_CONSUMPTION_LCD_DISPLAY
+    #error LCD_PROGRESS_BAR and POWER_CONSUMPTION_LCD_DISPLAY are not fully compatible. Comment out this line to use both.
+  #endif
 #endif
 
 
