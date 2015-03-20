@@ -907,6 +907,9 @@
     //Use the RAMPS 1.4 Analog input 5 on the AUX2 connector
     #define FILWIDTH_PIN     5   // ANALOG NUMBERING
   #endif
+  #ifdef POWER_CONSUMPTION
+    #define POWER_CONSUMPTION_PIN     4   // ANALOG NUMBERING
+  #endif
 
   #if defined(REPRAP_DISCOUNT_SMART_CONTROLLER) || defined(G3D_PANEL)
     #define KILL_PIN        41
@@ -1112,6 +1115,9 @@
     //Use the RAMPS 1.4 Analog input 5 on the AUX2 connector
     #define FILWIDTH_PIN     5   // ANALOG NUMBERING
   #endif
+  #ifdef POWER_CONSUMPTION
+    #define POWER_CONSUMPTION_PIN     4   // ANALOG NUMBERING
+  #endif
 
   #if NUM_SERVOS > 0
     #define SERVO0_PIN      11
@@ -1311,6 +1317,9 @@
     //Use the RAMPS 1.4 Analog input 5 on the AUX2 connector
     #define FILWIDTH_PIN           5   // ANALOG NUMBERING
   #endif
+  #ifdef POWER_CONSUMPTION
+    #define POWER_CONSUMPTION_PIN     4   // ANALOG NUMBERING
+  #endif
 
   #if NUM_SERVOS > 0
     #define SERVO0_PIN      11
@@ -1509,6 +1518,9 @@
     //define analog pin for the filament width sensor input
     //Use the RAMPS 1.4 Analog input 5 on the AUX2 connector
     #define FILWIDTH_PIN           5   // ANALOG NUMBERING
+  #endif
+  #ifdef POWER_CONSUMPTION
+    #define POWER_CONSUMPTION_PIN     4   // ANALOG NUMBERING
   #endif
 
   #if NUM_SERVOS > 0
@@ -1764,6 +1776,9 @@
   //Filip added pin for Filament sensor analog input 
   #define FILWIDTH_PIN        3
 #endif //FILAMENT_SENSOR
+#ifdef POWER_CONSUMPTION
+  #define POWER_CONSUMPTION_PIN     -1   // ANALOG NUMBERING
+#endif //POWER_CONSUMPTION
 
 #endif // RAMBO
 /****************************************************************************************/
@@ -2038,7 +2053,7 @@
 	  	  // Pins for DOGM SPI LCD Support
 	  	  #define DOGLCD_A0 30
 	  	  #define DOGLCD_CS 29
-		    #define LCD_CONTRAST 1
+		  #define LCD_CONTRAST 1
       #endif
       // Uncomment screen orientation
       #define LCD_SCREEN_ROT_0
@@ -3511,6 +3526,9 @@
   #ifdef FILAMENT_SENSOR
    #define FILWIDTH_PIN        2
   #endif //FILAMENT_SENSOR
+  #ifdef POWER_CONSUMPTION
+    #define POWER_CONSUMPTION_PIN     -1   // ANALOG NUMBERING
+  #endif //POWER_CONSUMPTION
 #endif
 
 #define TEMP_1_PIN         -1
@@ -4373,6 +4391,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #ifndef KNOWN_BOARD
   #error Unknown MOTHERBOARD value in configuration.h
 #endif
+
 
 #ifndef HEATER_1_PIN
   #define HEATER_1_PIN -1
