@@ -43,6 +43,7 @@
 *   Laserbeam support
 *   Firmware test
 *   Support for a filament diameter sensor, which adjusts extrusion volume
+*   Support for a hall effect sensor for calucalte Wh
 
 The default baudrate is 250000. This baudrate has less jitter and hence errors than the usual 115200 baud, but is less supported by drivers and host-environments.
 
