@@ -957,7 +957,7 @@ static void updateTemperaturesFromRawValues() {
 
   // Convert raw Power Consumption to watt
   float analog2power() {
-	return (((((5.0 * current_raw_powconsumption) / (1023.0 * OVERSAMPLENR)) - 2.5) * (POWER_VOLTAGE * 100.0)) / (POWER_SENSITIVITY * POWER_EFFICIENCY));
+	return (((((5.0 * current_raw_powconsumption) / (1023.0 * OVERSAMPLENR)) - POWER_ZERO) * (POWER_VOLTAGE * 100.0)) / (POWER_SENSITIVITY * POWER_EFFICIENCY));
   }
 
 #endif
