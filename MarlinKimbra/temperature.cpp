@@ -1656,11 +1656,8 @@ ISR(TIMER0_COMPB_vect) {
     case Measure_POWCONSUMPTION:
       #if HAS_POWER_CONSUMPTION_SENSOR
         // raw_powconsumption_value += ADC;  //remove to use an IIR filter approach
-        if (ADC < (POWER_ZERO*1023)/5.0) { //check that ADC is reading a voltage < POWER_ZERO volts.
-          ADC += (unsigned long)((POWER_ZERO*1023)/5.0);
-        }
         raw_powconsumption_value -= (raw_powconsumption_value>>7);  //multiply raw_powconsumption_value by 127/128
-        raw_powconsumption_value += ((unsigned long)ADC<<7);  //add new ADC reading
+        raw_powconsumption_value += ((unsigned long)((ADC < (POWER_ZERO*1023)/5.0) ? (1023 - ADC) : (ADC))<<7);  //add new ADC reading
       #endif
       temp_state = PrepareTemp_0;
       temp_count++;
