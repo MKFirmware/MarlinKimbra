@@ -333,6 +333,27 @@ uint8_t debugLevel = 0;
   int EtoPPressure = 0;
 #endif //BARICUDA
 
+#ifdef FILAMENTCHANGEENABLE
+	bool filament_changing = false;
+#endif
+#ifdef IDLE_OOZING_PREVENT || EXTRUDER_RUNOUT_PREVENT
+   unsigned long axis_last_activity = 0;
+   bool axis_is_moving = false;
+#endif
+#ifdef IDLE_OOZING_PREVENT
+	bool IDLE_OOZING_retracted[EXTRUDERS] = { false
+    #if EXTRUDERS > 1
+      , false
+      #if EXTRUDERS > 2
+        , false
+        #if EXTRUDERS > 3
+          , false
+        #endif
+      #endif
+    #endif
+  };
+#endif
+
 #ifdef FWRETRACT
   bool autoretract_enabled = false;
   bool retracted[EXTRUDERS] = { false
@@ -1937,6 +1958,40 @@ bool extruder_duplication_enabled = false; // used in mode 2
 
 void refresh_cmd_timeout(void) { previous_millis_cmd = millis(); }
 
+#ifdef IDLE_OOZING_PREVENT
+  void IDLE_OOZING_retract(bool retracting)
+  {  
+    if(retracting && !IDLE_OOZING_retracted[active_extruder]) {
+	  SERIAL_ECHOLN("RETRACT");
+	  destination[X_AXIS]=current_position[X_AXIS];
+	  destination[Y_AXIS]=current_position[Y_AXIS];
+	  destination[Z_AXIS]=current_position[Z_AXIS];
+	  destination[E_AXIS]=current_position[E_AXIS];
+	  current_position[E_AXIS]+=IDLE_OOZING_LENGTH/volumetric_multiplier[active_extruder];
+	  plan_set_e_position(current_position[E_AXIS]);
+	  float oldFeedrate = feedrate;
+	  feedrate=IDLE_OOZING_FEEDRATE*60;
+	  IDLE_OOZING_retracted[active_extruder]=true;
+	  prepare_move();
+	  feedrate = oldFeedrate;
+    }
+    else if(!retracting && IDLE_OOZING_retracted[active_extruder]){
+	  SERIAL_ECHOLN("RECOVER");
+	  destination[X_AXIS]=current_position[X_AXIS];
+	  destination[Y_AXIS]=current_position[Y_AXIS];
+	  destination[Z_AXIS]=current_position[Z_AXIS];
+	  destination[E_AXIS]=current_position[E_AXIS];
+	  current_position[E_AXIS]-=(IDLE_OOZING_LENGTH+IDLE_OOZING_RECOVER_LENGTH)/volumetric_multiplier[active_extruder];
+	  plan_set_e_position(current_position[E_AXIS]);
+	  float oldFeedrate = feedrate;
+	  feedrate=IDLE_OOZING_RECOVER_FEEDRATE * 60;
+	  IDLE_OOZING_retracted[active_extruder] = false;
+	  prepare_move();
+      feedrate = oldFeedrate;
+    }
+  }
+#endif
+
 #ifdef FWRETRACT
   void retract(bool retracting, bool swapretract = false)
   {
@@ -2160,6 +2215,9 @@ inline void wait_bed() {
 // G0-G1: Coordinated movement of X Y Z E axes
 inline void gcode_G0_G1() {
   if (!Stopped) {
+  #ifdef IDLE_OOZING_PREVENT
+	IDLE_OOZING_retract(false);
+  #endif
     get_coordinates(); // For X Y Z E F
     #ifdef FWRETRACT
       if (autoretract_enabled) {
@@ -3842,6 +3900,7 @@ inline void gcode_M204() {
 #ifdef FILAMENTCHANGEENABLE
   //M600: Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
   inline void gcode_M600() {
+	filament_changing = true;
     float target[NUM_AXIS];
     for (int i=0; i < NUM_AXIS; i++) target[i] = lastpos[i] = current_position[i];
 
@@ -4001,6 +4060,7 @@ inline void gcode_M204() {
       for(int8_t i=0; i < NUM_AXIS; i++) current_position[i]=lastpos[i];
       plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
     #endif
+	filament_changing = false;
   }
 #endif //FILAMENTCHANGEENABLE
 
@@ -6124,6 +6184,9 @@ void clamp_to_software_endstops(float target[3])
 
 void prepare_move()
 {
+#ifdef IDLE_OOZING_PREVENT || EXTRUDER_RUNOUT_PREVENT
+  axis_is_moving = true;
+#endif
   clamp_to_software_endstops(destination);
   refresh_cmd_timeout();
 
@@ -6143,6 +6206,7 @@ void prepare_move()
     return; 
   }
   float seconds = 6000 * cartesian_mm / feedrate / feedmultiply;
+
   int steps = max(1, int(scara_segments_per_second * seconds));
   //SERIAL_ECHOPGM("mm="); SERIAL_ECHO(cartesian_mm);
   //SERIAL_ECHOPGM(" seconds="); SERIAL_ECHO(seconds);
@@ -6251,6 +6315,11 @@ void prepare_move()
     plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate*feedmultiply/60/100.0, active_extruder, active_driver);
   }
 #endif // !(DELTA || SCARA)
+
+#ifdef IDLE_OOZING_PREVENT || EXTRUDER_RUNOUT_PREVENT
+  axis_last_activity = millis();
+  axis_is_moving = false;
+#endif
 
   for(int8_t i=0; i < NUM_AXIS; i++) {
     current_position[i] = destination[i];
@@ -6516,23 +6585,26 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) //default argument s
   #if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
     controllerFan(); //Check if fan should be turned on to cool stepper drivers down
   #endif
+  #ifdef IDLE_OOZING_PREVENT
+	if(!debugDryrun() && !axis_is_moving && !filament_changing && (millis() - axis_last_activity) >  IDLE_OOZING_SECONDS*1000 && degHotend(active_extruder) > IDLE_OOZING_MINTEMP) {
+	  IDLE_OOZING_retract(true);
+	}
+  #endif
   #ifdef EXTRUDER_RUNOUT_PREVENT
-    if( (millis() - previous_millis_cmd) >  EXTRUDER_RUNOUT_SECONDS*1000 )
-    if(degHotend(active_extruder)>EXTRUDER_RUNOUT_MINTEMP)
+    if(!debugDryrun() && !axis_is_moving && !filament_changing && (millis() - axis_last_activity) >  EXTRUDER_RUNOUT_SECONDS*1000 && degHotend(active_extruder)>EXTRUDER_RUNOUT_MINTEMP)
     {
-     bool oldstatus=READ(E0_ENABLE_PIN);
-     enable_e0();
-     float oldepos=current_position[E_AXIS];
-     float oldedes=destination[E_AXIS];
-     plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS],
+      bool oldstatus=READ(E0_ENABLE_PIN);
+      enable_e0();
+      float oldepos=current_position[E_AXIS];
+      float oldedes=destination[E_AXIS];
+      plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS],
                       destination[E_AXIS]+EXTRUDER_RUNOUT_EXTRUDE*EXTRUDER_RUNOUT_ESTEPS/axis_steps_per_unit[active_extruder+3],
                       EXTRUDER_RUNOUT_SPEED/60.*EXTRUDER_RUNOUT_ESTEPS/axis_steps_per_unit[active_extruder+3], active_extruder, active_driver);
-     current_position[E_AXIS]=oldepos;
-     destination[E_AXIS]=oldedes;
-     plan_set_e_position(oldepos);
-     previous_millis_cmd=millis();
-     st_synchronize();
-     WRITE(E0_ENABLE_PIN,oldstatus);
+      current_position[E_AXIS]=oldepos;
+      destination[E_AXIS]=oldedes;
+      plan_set_e_position(oldepos);
+      st_synchronize();
+      WRITE(E0_ENABLE_PIN,oldstatus);
     }
   #endif
   #if defined(DUAL_X_CARRIAGE)
