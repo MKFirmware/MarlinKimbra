@@ -252,19 +252,17 @@ extern float filament_size[EXTRUDERS]; // cross-sectional area of filament (in m
 extern float volumetric_multiplier[EXTRUDERS]; // reciprocal of cross-sectional area of filament (in square millimeters), stored this way to reduce computational burden in planner
 extern float current_position[NUM_AXIS];
 extern float destination[NUM_AXIS];
-extern float add_homing[3];
+extern float home_offset[3];
 
-// Extruder offset
-#if EXTRUDERS > 1
-  #ifndef SINGLENOZZLE
-    #ifndef DUAL_X_CARRIAGE
-      #define NUM_HOTEND_OFFSETS 2 // only in XY plane
-    #else
-      #define NUM_HOTEND_OFFSETS 3 // supports offsets in XYZ plane
-    #endif
-    extern float hotend_offset[NUM_HOTEND_OFFSETS][EXTRUDERS];
-  #endif // end SINGLENOZZLE
-#endif // end EXTRUDERS
+// Hotend offset
+#if HOTENDS > 1
+  #ifndef DUAL_X_CARRIAGE
+    #define NUM_HOTEND_OFFSETS 2 // only in XY plane
+  #else
+    #define NUM_HOTEND_OFFSETS 3 // supports offsets in XYZ plane
+  #endif
+  extern float hotend_offset[NUM_HOTEND_OFFSETS][HOTENDS];
+#endif // HOTENDS > 1
 
 #ifdef NPR2
 extern int old_color; // old color for system NPR2
@@ -300,20 +298,21 @@ extern int EtoPPressure;
 extern unsigned char fanSpeedSoftPwm;
 #endif
 
-#if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0)
-  extern float filament_width_nominal;  //holds the theoretical filament diameter ie., 3.00 or 1.75
-  extern bool filament_sensor;  //indicates that filament sensor readings should control extrusion
-  extern float filament_width_meas; //holds the filament diameter as accurately measured
-  extern signed char measurement_delay[];  //ring buffer to delay measurement
+#if defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && (FILWIDTH_PIN >= 0)
+  extern float filament_width_nominal;    //holds the theoretical filament diameter ie., 3.00 or 1.75
+  extern bool filament_sensor;            //indicates that filament sensor readings should control extrusion
+  extern float filament_width_meas;       //holds the filament diameter as accurately measured
+  extern signed char measurement_delay[]; //ring buffer to delay measurement
   extern int delay_index1, delay_index2;  //index into ring buffer
-  extern float delay_dist; //delay distance counter
-  extern int meas_delay_cm; //delay distance
+  extern float delay_dist;                //delay distance counter
+  extern int meas_delay_cm;               //delay distance
 #endif
 
 #if (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0)
-  extern unsigned int power_consumption_meas; //holds the power consumption as accurately measured
-  extern unsigned long power_consumption_hour; //holds the power consumption per hour as accurately measured
+  extern unsigned int power_consumption_meas;   //holds the power consumption as accurately measured
+  extern unsigned long power_consumption_hour;  //holds the power consumption per hour as accurately measured
 #endif
+
 #ifdef FWRETRACT
 extern bool autoretract_enabled;
 extern bool retracted[EXTRUDERS];
