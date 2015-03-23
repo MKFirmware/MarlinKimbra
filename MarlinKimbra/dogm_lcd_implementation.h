@@ -268,34 +268,37 @@ static void lcd_implementation_status_screen() {
   u8g.setFont(FONT_STATUSMENU);
   u8g.setPrintPos(0,63);
   #if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY) || (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
+
+
+
     if (millis() < message_millis + 5000) {  //Display both Status message line and Filament display on the last line
       u8g.print(lcd_status_message);
     }
-    #if (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
-      #if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY)
-        else if (millis() < message_millis + 10000)
-      #else
-        else
-      #endif
-      {
-        lcd_printPGM(PSTR("P:"));
-        u8g.print(itostr3(power_consumption_meas));
-        lcd_printPGM(PSTR("W C:"));
-        u8g.print(ltostr7(power_consumption_hour));
-        lcd_printPGM(PSTR("Wh"));
-      }
-    #endif
-    #if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY)
-      else {
-        lcd_printPGM(PSTR("D:"));
-        u8g.print(ftostr12ns(filament_width_meas));
-        lcd_printPGM(PSTR("mm F:"));
-        u8g.print(itostr3(volumetric_multiplier[active_extruder] * 100));
-        u8g.print('%');
-      }
-    #endif
+	#if (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
+	#if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY)
+	else if (millis() < message_millis + 10000)
+	#else
+	else
+	#endif
+	{
+	  lcd_printPGM(PSTR("P:"));
+      u8g.print(itostr3(power_consumption_meas));
+      lcd_printPGM(PSTR("W C:"));
+      u8g.print(ltostr7(power_consumption_hour));
+      lcd_printPGM(PSTR("Wh"));
+	}
+	#endif
+	#if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY)
+    else {
+      lcd_printPGM(PSTR("D:"));
+      u8g.print(ftostr12ns(filament_width_meas));
+      lcd_printPGM(PSTR("mm F:"));
+      u8g.print(itostr3(volumetric_multiplier[active_extruder] * 100));
+      u8g.print('%');
+    }
+	#endif
   #else
-    u8g.print(lcd_status_message);
+  u8g.print(lcd_status_message);
   #endif
 }
 

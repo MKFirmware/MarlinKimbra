@@ -84,7 +84,7 @@
 #ifdef PID_dT
   #undef PID_dT
 #endif
-#define PID_dT ((OVERSAMPLENR * 14.0)/(F_CPU / 64.0 / 256.0))
+#define PID_dT ((OVERSAMPLENR * 12.0)/(F_CPU / 64.0 / 256.0))
 
 #ifndef SINGLENOZZLE
   int target_temperature[EXTRUDERS] = { 0 };
@@ -133,7 +133,6 @@ unsigned char soft_pwm_bed;
 #if HAS_POWER_CONSUMPTION_SENSOR
   int current_raw_powconsumption = 0;  //Holds measured power consumption
 #endif
-
 //===========================================================================
 //=============================private variables============================
 //===========================================================================
@@ -181,7 +180,7 @@ static volatile bool temp_meas_ready = false;
   static float temp_iState_min_bed;
   static float temp_iState_max_bed;
 #else //PIDTEMPBED
-  static unsigned long  previous_millis_bed_heater;
+	static unsigned long  previous_millis_bed_heater;
 #endif //PIDTEMPBED
 #ifndef SINGLENOZZLE
   static unsigned char soft_pwm[EXTRUDERS];
@@ -801,8 +800,8 @@ void manage_heater() {
   #if HAS_FILAMENT_SENSOR
     if (filament_sensor) {
       meas_shift_index = delay_index1 - meas_delay_cm;
-      if (meas_shift_index < 0) meas_shift_index += MAX_MEASUREMENT_DELAY + 1;  //loop around buffer if needed
-
+		  if (meas_shift_index < 0) meas_shift_index += MAX_MEASUREMENT_DELAY + 1;  //loop around buffer if needed
+		  
       // Get the delayed info and add 100 to reconstitute to a percent of
       // the nominal filament diameter then square it to get an area
       meas_shift_index = constrain(meas_shift_index, 0, MAX_MEASUREMENT_DELAY);
@@ -859,7 +858,7 @@ static float analog2temp(int raw, uint8_t e) {
 
     return celsius;
   }
-  return ((raw * ((5.0 * 100) / 1024) / OVERSAMPLENR) * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET;
+  return ((raw * ((5.0 * 100.0) / 1024.0) / OVERSAMPLENR) * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET;
 }
 
 // Derived from RepRap FiveD extruder::getTemperature()
@@ -873,7 +872,7 @@ static float analog2tempBed(int raw) {
     {
       if (PGM_RD_W(BEDTEMPTABLE[i][0]) > raw)
       {
-        celsius = PGM_RD_W(BEDTEMPTABLE[i-1][1]) +
+        celsius  = PGM_RD_W(BEDTEMPTABLE[i-1][1]) +
           (raw - PGM_RD_W(BEDTEMPTABLE[i-1][0])) *
           (float)(PGM_RD_W(BEDTEMPTABLE[i][1]) - PGM_RD_W(BEDTEMPTABLE[i-1][1])) /
           (float)(PGM_RD_W(BEDTEMPTABLE[i][0]) - PGM_RD_W(BEDTEMPTABLE[i-1][0]));
@@ -886,7 +885,7 @@ static float analog2tempBed(int raw) {
 
     return celsius;
   #elif defined BED_USES_AD595
-    return ((raw * ((5.0 * 100) / 1024) / OVERSAMPLENR) * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET;
+    return ((raw * ((5.0 * 100.0) / 1024.0) / OVERSAMPLENR) * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET;
   #else //NO BED_USES_THERMISTOR
     return 0;
   #endif //BED_USES_THERMISTOR
@@ -915,17 +914,17 @@ static void updateTemperaturesFromRawValues() {
     filament_width_meas = analog2widthFil();
   #endif
   #if HAS_POWER_CONSUMPTION_SENSOR
-    static float watt_overflow = 0.0;
-    static unsigned long last_power_update = millis();
-    unsigned long temp_last_power_update = millis();
-    float power_temp = analog2power();
+	static float watt_overflow = 0.0;
+	static unsigned long last_power_update = millis();
+	unsigned long temp_last_power_update = millis();
+	float power_temp = analog2power();
     power_consumption_meas = (unsigned int)power_temp;
-    watt_overflow += (power_temp*(temp_last_power_update-last_power_update))/3600000.0;
-    if(watt_overflow >= 1.0) {
-      power_consumption_hour++;
-      watt_overflow--;
-    }
-    last_power_update = temp_last_power_update;
+	watt_overflow += (power_temp*(temp_last_power_update-last_power_update))/3600000.0;
+	if(watt_overflow >= 1.0) {
+		power_consumption_hour++;
+		watt_overflow--;
+	}
+	last_power_update = temp_last_power_update;
   #endif
   //Reset the watchdog after we know we have a temperature measurement.
   watchdog_reset();
@@ -937,9 +936,10 @@ static void updateTemperaturesFromRawValues() {
 
 
 #if HAS_FILAMENT_SENSOR
+
   // Convert raw Filament Width to millimeters
   float analog2widthFil() {
-    return current_raw_filwidth / (1024 * OVERSAMPLENR) * 5.0;
+    return current_raw_filwidth / (1023.0 * OVERSAMPLENR) * 5.0;
     //return current_raw_filwidth;
   }
 
@@ -954,10 +954,12 @@ static void updateTemperaturesFromRawValues() {
 #endif
 
 #if HAS_POWER_CONSUMPTION_SENSOR
+
   // Convert raw Power Consumption to watt
   float analog2power() {
-    return (((((5.0 * current_raw_powconsumption) / (1024.0 * OVERSAMPLENR)) - POWER_ZERO) * (POWER_VOLTAGE * 100.0)) / (POWER_SENSITIVITY * POWER_EFFICIENCY));
+	return (((((5.0 * current_raw_powconsumption) / (1023.0 * OVERSAMPLENR)) - POWER_ZERO) * (POWER_VOLTAGE * 100.0)) / (POWER_SENSITIVITY * POWER_EFFICIENCY));
   }
+
 #endif
 
 void tp_init()
@@ -975,7 +977,7 @@ void tp_init()
     int e = 0;
   #endif // !SINGLENOZZLE
   {
-    // populate with the first value
+    // populate with the first value 
     maxttemp[e] = maxttemp[0];
     #ifdef PIDTEMP
       temp_iState_min[e] = 0.0;
@@ -1643,8 +1645,8 @@ ISR(TIMER0_COMPB_vect) {
         }
       #endif
       temp_state = Prepare_POWCONSUMPTION;
-    break;
-    case Prepare_POWCONSUMPTION:
+      break;
+	case Prepare_POWCONSUMPTION:
       #if HAS_POWER_CONSUMPTION_SENSOR
         START_ADC(POWER_CONSUMPTION_PIN);
       #endif
@@ -1655,7 +1657,7 @@ ISR(TIMER0_COMPB_vect) {
       #if HAS_POWER_CONSUMPTION_SENSOR
         // raw_powconsumption_value += ADC;  //remove to use an IIR filter approach
         raw_powconsumption_value -= (raw_powconsumption_value>>7);  //multiply raw_powconsumption_value by 127/128
-        raw_powconsumption_value += ((unsigned long)((ADC < (POWER_ZERO*1024)/5.0) ? (1024 - ADC) : (ADC))<<7);  //add new ADC reading
+        raw_powconsumption_value += ((unsigned long)((ADC < (POWER_ZERO*1023)/5.0) ? (1023 - ADC) : (ADC))<<7);  //add new ADC reading
       #endif
       temp_state = PrepareTemp_0;
       temp_count++;

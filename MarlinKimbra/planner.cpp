@@ -78,12 +78,12 @@ float mintravelfeedrate;
 unsigned long axis_steps_per_sqr_second[3 + EXTRUDERS];
 
 #ifdef ENABLE_AUTO_BED_LEVELING
-  // this holds the required transform to compensate for bed level
-  matrix_3x3 plan_bed_level_matrix = {
-    1.0, 0.0, 0.0,
-    0.0, 1.0, 0.0,
-    0.0, 0.0, 1.0
-  };
+// this holds the required transform to compensate for bed level
+matrix_3x3 plan_bed_level_matrix = {
+	1.0, 0.0, 0.0,
+	0.0, 1.0, 0.0,
+	0.0, 0.0, 1.0
+};
 #endif // #ifdef ENABLE_AUTO_BED_LEVELING
 
 // The current position of the tool in absolute steps
@@ -92,26 +92,26 @@ static float previous_speed[NUM_AXIS]; // Speed of previous path line segment
 static float previous_nominal_speed; // Nominal speed of previous path line segment
 
 #ifdef AUTOTEMP
-  float autotemp_max = 250;
-  float autotemp_min = 210;
-  float autotemp_factor = 0.1;
-  bool autotemp_enabled = false;
+float autotemp_max=250;
+float autotemp_min=210;
+float autotemp_factor=0.1;
+bool autotemp_enabled=false;
 #endif
 
 unsigned char g_uc_extruder_last_move[4] = {0,0,0,0};
 
 //===========================================================================
-//=================semi-private variables, used in inline functions =========
+//=================semi-private variables, used in inline  functions    =====
 //===========================================================================
-block_t block_buffer[BLOCK_BUFFER_SIZE];  // A ring buffer for motion instructions
-volatile unsigned char block_buffer_head; // Index of the next block to be pushed
-volatile unsigned char block_buffer_tail; // Index of the block to process now
+block_t block_buffer[BLOCK_BUFFER_SIZE];            // A ring buffer for motion instfructions
+volatile unsigned char block_buffer_head;           // Index of the next block to be pushed
+volatile unsigned char block_buffer_tail;           // Index of the block to process now
 
 //===========================================================================
 //=============================private variables ============================
 //===========================================================================
 #ifdef PREVENT_DANGEROUS_EXTRUDE
-  float extrude_min_temp = EXTRUDE_MINTEMP;
+float extrude_min_temp=EXTRUDE_MINTEMP;
 #endif
 #ifdef XY_FREQUENCY_LIMIT
 #define MAX_FREQ_TIME (1000000.0/XY_FREQUENCY_LIMIT)
@@ -151,9 +151,15 @@ static int8_t prev_block_index(int8_t block_index) {
 
 // Calculates the distance (not time) it takes to accelerate from initial_rate to target_rate using the 
 // given acceleration:
-FORCE_INLINE float estimate_acceleration_distance(float initial_rate, float target_rate, float acceleration) {
-  if (acceleration == 0) return 0; // acceleration was 0, set acceleration distance to 0
-  return (target_rate * target_rate - initial_rate * initial_rate) / (acceleration * 2);
+FORCE_INLINE float estimate_acceleration_distance(float initial_rate, float target_rate, float acceleration)
+{
+  if (acceleration!=0) {
+    return((target_rate*target_rate-initial_rate*initial_rate)/
+      (2.0*acceleration));
+  }
+  else {
+    return 0.0;  // acceleration was 0, set acceleration distance to 0
+  }
 }
 
 // This function gives you the point at which you must start braking (at the rate of -acceleration) if 
@@ -161,42 +167,54 @@ FORCE_INLINE float estimate_acceleration_distance(float initial_rate, float targ
 // a total travel of distance. This can be used to compute the intersection point between acceleration and
 // deceleration in the cases where the trapezoid has no plateau (i.e. never reaches maximum speed)
 
-FORCE_INLINE float intersection_distance(float initial_rate, float final_rate, float acceleration, float distance) {
-  if (acceleration == 0) return 0; // acceleration was 0, set intersection distance to 0
-  return (acceleration * 2 * distance - initial_rate * initial_rate + final_rate * final_rate) / (acceleration * 4);
+FORCE_INLINE float intersection_distance(float initial_rate, float final_rate, float acceleration, float distance) 
+{
+  if (acceleration!=0) {
+    return((2.0*acceleration*distance-initial_rate*initial_rate+final_rate*final_rate)/
+      (4.0*acceleration) );
+  }
+  else {
+    return 0.0;  // acceleration was 0, set intersection distance to 0
+  }
 }
 
 // Calculates trapezoid parameters so that the entry- and exit-speed is compensated by the provided factors.
 
 void calculate_trapezoid_for_block(block_t *block, float entry_factor, float exit_factor) {
-  unsigned long initial_rate = ceil(block->nominal_rate * entry_factor); // (step/min)
-  unsigned long final_rate = ceil(block->nominal_rate * exit_factor); // (step/min)
+  unsigned long initial_rate = ceil(block->nominal_rate*entry_factor); // (step/min)
+  unsigned long final_rate = ceil(block->nominal_rate*exit_factor); // (step/min)
 
   // Limit minimal step rate (Otherwise the timer will overflow.)
-  if (initial_rate < 120) initial_rate = 120;
-  if (final_rate < 120) final_rate = 120;
+  if(initial_rate <120) {
+    initial_rate=120; 
+  }
+  if(final_rate < 120) {
+    final_rate=120;  
+  }
 
   long acceleration = block->acceleration_st;
-  int32_t accelerate_steps = ceil(estimate_acceleration_distance(initial_rate, block->nominal_rate, acceleration));
-  int32_t decelerate_steps = floor(estimate_acceleration_distance(block->nominal_rate, final_rate, -acceleration));
+  int32_t accelerate_steps =
+    ceil(estimate_acceleration_distance(initial_rate, block->nominal_rate, acceleration));
+  int32_t decelerate_steps =
+    floor(estimate_acceleration_distance(block->nominal_rate, final_rate, -acceleration));
 
   // Calculate the size of Plateau of Nominal Rate.
-  int32_t plateau_steps = block->step_event_count - accelerate_steps - decelerate_steps;
+  int32_t plateau_steps = block->step_event_count-accelerate_steps-decelerate_steps;
 
   // Is the Plateau of Nominal Rate smaller than nothing? That means no cruising, and we will
   // have to use intersection_distance() to calculate when to abort acceleration and start braking
   // in order to reach the final_rate exactly at the end of this block.
   if (plateau_steps < 0) {
     accelerate_steps = ceil(intersection_distance(initial_rate, final_rate, acceleration, block->step_event_count));
-    accelerate_steps = max(accelerate_steps, 0); // Check limits due to numerical round-off
-    accelerate_steps = min((uint32_t)accelerate_steps, block->step_event_count);//(We can cast here to unsigned, because the above line ensures that we are above zero)
+    accelerate_steps = max(accelerate_steps,0); // Check limits due to numerical round-off
+    accelerate_steps = min((uint32_t)accelerate_steps,block->step_event_count);//(We can cast here to unsigned, because the above line ensures that we are above zero)
     plateau_steps = 0;
   }
 
-  #ifdef ADVANCE
-    volatile long initial_advance = block->advance * entry_factor * entry_factor; 
-    volatile long final_advance = block->advance * exit_factor * exit_factor;
-  #endif // ADVANCE
+#ifdef ADVANCE
+  volatile long initial_advance = block->advance*entry_factor*entry_factor; 
+  volatile long final_advance = block->advance*exit_factor*exit_factor;
+#endif // ADVANCE
 
   // block->accelerate_until = accelerate_steps;
   // block->decelerate_after = accelerate_steps+plateau_steps;
