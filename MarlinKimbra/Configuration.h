@@ -20,7 +20,7 @@
 // User-specified version info of this build to display in [Pronterface, etc] terminal window during
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
 // build by the user have been successfully uploaded into firmware.
-#define STRING_VERSION " 4.0.3"
+#define STRING_VERSION " 4.0.4"
 #define STRING_URL "reprap.org"
 #define STRING_VERSION_CONFIG_H __DATE__ " " __TIME__     // build date and time
 #define STRING_CONFIG_H_AUTHOR "(none, default config)"   // Who made the changes.
@@ -646,7 +646,28 @@ your extruder heater takes 2 minutes to hit the target on heating.
 //When using an LCD, uncomment the line below to display the Filament sensor data on the last line instead of status.  Status will appear for 5 sec.
 //#define FILAMENT_LCD_DISPLAY
 
+/**********************************************************************\
+ * Support for a current sensor (Hall effect sensor like ACS712) for measure the power consumption
+ * Since it's more simple to deal with, we measure the DC current and we assume that POWER_VOLTAGE that comes from your power supply it's almost stable.
+ * You have to change the SENSITIVITY with the one that you can find in the datasheet. (in case of ACS712: set to .100 for 20A version or set .066 for 30A version)
+ * With this module we measure the Printer power consumption ignoring the Power Supply power consumption, so we consider the EFFICIENCY of our supply to be 100% so without
+ * any power dispersion. If you want to approximately add the supply consumption you can decrease the EFFICIENCY to a value less than 100. Eg: 85 is a good value.
+ * You can find a better value measuring the AC current with a good multimeter and moltiple it with the mains voltage.
+ * MULTIMETER_WATT := MULTIMETER_CURRENT*MAINS_VOLTAGE
+ * Now you have a Wattage value that you can compare with the one measured from ACS712.
+ * NEW_EFFICENCY := (SENSOR_WATT*EFFICIENCY)/MULTIMETER_WATT
+ * For now this feature is to be consider BETA as i'll have to do some accurate test to see the affidability
+ **********************************************************************/
+// Uncomment below to enable
+//#define POWER_CONSUMPTION
 
+#define POWER_VOLTAGE			12.00  		//(V) 	The power supply OUT voltage
+#define POWER_ZERO				2.5			//(V) 	The /\V coming out from the sensor when no current flow.
+#define POWER_SENSITIVITY		0.066		//(V/A)	How much increase V for 1A of increase
+#define POWER_EFFICIENCY		100.0			//(%)	The power efficency of the power supply
+
+//When using an LCD, uncomment the line below to display the Power consumption sensor data on the last line instead of status.  Status will appear for 5 sec.
+//#define POWER_CONSUMPTION_LCD_DISPLAY
 //=================================== Misc =================================
 
 // Temperature status LEDs that display the hotend and bet temperature.
