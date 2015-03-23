@@ -34,7 +34,7 @@
 // the source g-code and may never actually be reached if acceleration management is active.
 typedef struct {
   // Fields used by the bresenham algorithm for tracing the line
-  long steps[NUM_AXIS];                     // Step count along each axis
+  long steps_x, steps_y, steps_z, steps_e;  // Step count along each axis
   unsigned long step_event_count;           // The number of step events required to complete this block
   long accelerate_until;                    // The index of the step event on which to stop acceleration
   long decelerate_after;                    // The index of the step event on which to start decelerating
@@ -49,7 +49,7 @@ typedef struct {
   #endif
 
   // Fields used by the motion planner to manage acceleration
-  // float speed_x, speed_y, speed_z, speed_e;       // Nominal mm/sec for each axis
+  //  float speed_x, speed_y, speed_z, speed_e;      // Nominal mm/sec for each axis
   float nominal_speed;                               // The nominal speed for this block in mm/sec 
   float entry_speed;                                 // Entry speed at previous-current junction in mm/sec
   float max_entry_speed;                             // Maximum allowable junction entry speed in mm/sec
@@ -73,8 +73,6 @@ typedef struct {
   #endif
   volatile char busy;
 } block_t;
-
-#define BLOCK_MOD(n) ((n)&(BLOCK_BUFFER_SIZE-1))
 
 #ifdef ENABLE_AUTO_BED_LEVELING
 // this holds the required transform to compensate for bed level

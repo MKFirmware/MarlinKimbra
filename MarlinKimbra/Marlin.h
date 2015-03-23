@@ -252,17 +252,19 @@ extern float filament_size[EXTRUDERS]; // cross-sectional area of filament (in m
 extern float volumetric_multiplier[EXTRUDERS]; // reciprocal of cross-sectional area of filament (in square millimeters), stored this way to reduce computational burden in planner
 extern float current_position[NUM_AXIS];
 extern float destination[NUM_AXIS];
-extern float home_offset[3];
+extern float add_homing[3];
 
-// Hotend offset
-#if HOTENDS > 1
-  #ifndef DUAL_X_CARRIAGE
-    #define NUM_HOTEND_OFFSETS 2 // only in XY plane
-  #else
-    #define NUM_HOTEND_OFFSETS 3 // supports offsets in XYZ plane
-  #endif
-  extern float hotend_offset[NUM_HOTEND_OFFSETS][HOTENDS];
-#endif // HOTENDS > 1
+// Extruder offset
+#if EXTRUDERS > 1
+  #ifndef SINGLENOZZLE
+    #ifndef DUAL_X_CARRIAGE
+      #define NUM_HOTEND_OFFSETS 2 // only in XY plane
+    #else
+      #define NUM_HOTEND_OFFSETS 3 // supports offsets in XYZ plane
+    #endif
+    extern float hotend_offset[NUM_HOTEND_OFFSETS][EXTRUDERS];
+  #endif // end SINGLENOZZLE
+#endif // end EXTRUDERS
 
 #ifdef NPR2
 extern int old_color; // old color for system NPR2

@@ -245,7 +245,7 @@ float volumetric_multiplier[EXTRUDERS] = {1.0
 };
 float current_position[NUM_AXIS] = { 0.0, 0.0, 0.0, 0.0 };
 float destination[NUM_AXIS] = { 0.0, 0.0, 0.0, 0.0 };
-float home_offset[3] = { 0, 0, 0 };
+float add_homing[3]={ 0, 0, 0 };
 int fanSpeed = 0;
 bool cancel_heatup = false;
 
@@ -294,27 +294,29 @@ bool axis_known_position[3] = { false, false, false };
 float zprobe_zoffset;
 float lastpos[4];
 
-// Hotend offset
-#if HOTENDS > 1  
-  #ifndef DUAL_X_CARRIAGE
-    #define NUM_HOTENDS_OFFSETS 2 // only in XY plane
-  #else
-    #define NUM_HOTENDS_OFFSETS 3 // supports offsets in XYZ plane
-  #endif
-  float hotend_offset[NUM_HOTENDS_OFFSETS][HOTENDS] = {
-    #if defined(HOTEND_OFFSET_X)
-      HOTEND_OFFSET_X
+// Extruder offset
+#ifndef SINGLENOZZLE
+  #if EXTRUDERS > 1  
+    #ifndef DUAL_X_CARRIAGE
+      #define NUM_EXTRUDER_OFFSETS 2 // only in XY plane
     #else
-      0
+      #define NUM_EXTRUDER_OFFSETS 3 // supports offsets in XYZ plane
     #endif
-    ,
-    #if defined(HOTEND_OFFSET_Y)
-      HOTEND_OFFSET_Y
-    #else
-      0
-    #endif
-  };
-#endif //HOTENDS > 1
+    float hotend_offset[NUM_EXTRUDER_OFFSETS][EXTRUDERS] = {
+      #if defined(EXTRUDER_OFFSET_X)
+        EXTRUDER_OFFSET_X
+      #else
+        0
+      #endif
+      ,
+      #if defined(EXTRUDER_OFFSET_Y)
+        EXTRUDER_OFFSET_Y
+      #else
+        0
+      #endif
+    };
+  #endif //EXTRUDERS > 1
+#endif //SINGLENOZZLE
 
 
 uint8_t active_extruder = 0;
@@ -1078,13 +1080,13 @@ static int dual_x_carriage_mode = DEFAULT_DUAL_X_CARRIAGE_MODE;
 
 static float x_home_pos(int extruder) {
   if (extruder == 0)
-    return base_home_pos(X_AXIS) + home_offset[X_AXIS];
+    return base_home_pos(X_AXIS) + add_homing[X_AXIS];
   else
     // In dual carriage mode the extruder offset provides an override of the
     // second X-carriage offset when homed - otherwise X2_HOME_POS is used.
     // This allow soft recalibration of the second extruder offset position without firmware reflash
     // (through the M218 command).
-    return (hotend_offset[X_AXIS][1] > 0) ? hotend_offset[X_AXIS][1] : X2_HOME_POS;
+    return (extruder_offset[X_AXIS][1] > 0) ? extruder_offset[X_AXIS][1] : X2_HOME_POS;
 }
 
 static int x_home_dir(int extruder) {
@@ -1114,9 +1116,9 @@ bool extruder_duplication_enabled = false; // used in mode 2
         }
         else if (dual_x_carriage_mode == DXC_DUPLICATION_MODE && active_extruder == 0)
         {
-          current_position[X_AXIS] = base_home_pos(X_AXIS) + home_offset[X_AXIS];
-          min_pos[X_AXIS]          = base_min_pos(X_AXIS) + home_offset[X_AXIS];
-          max_pos[X_AXIS]          = min(base_max_pos(X_AXIS) + home_offset[X_AXIS],
+          current_position[X_AXIS] = base_home_pos(X_AXIS) + add_homing[X_AXIS];
+          min_pos[X_AXIS] =          base_min_pos(X_AXIS) + add_homing[X_AXIS];
+          max_pos[X_AXIS] =          min(base_max_pos(X_AXIS) + add_homing[X_AXIS],
                                      max(hotend_offset[X_AXIS][1], X2_MAX_POS) - duplicate_extruder_x_offset);
           return;
         }
@@ -1141,11 +1143,11 @@ bool extruder_duplication_enabled = false; // used in mode 2
         // SERIAL_ECHOPGM(" base Psi+Theta="); SERIAL_ECHOLN(delta[Y_AXIS]);
 
         for (i=0; i<2; i++) {
-          delta[i] -= home_offset[i];
+          delta[i] -= add_homing[i];
         }
 
-        // SERIAL_ECHOPGM("addhome X="); SERIAL_ECHO(home_offset[X_AXIS]);
-        // SERIAL_ECHOPGM(" addhome Y="); SERIAL_ECHO(home_offset[Y_AXIS]);
+        // SERIAL_ECHOPGM("addhome X="); SERIAL_ECHO(add_homing[X_AXIS]);
+        // SERIAL_ECHOPGM(" addhome Y="); SERIAL_ECHO(add_homing[Y_AXIS]);
         // SERIAL_ECHOPGM(" addhome Theta="); SERIAL_ECHO(delta[X_AXIS]);
         // SERIAL_ECHOPGM(" addhome Psi+Theta="); SERIAL_ECHOLN(delta[Y_AXIS]);
 
@@ -1163,14 +1165,14 @@ bool extruder_duplication_enabled = false; // used in mode 2
       } 
       else
       {
-        current_position[axis] = base_home_pos(axis) + home_offset[axis];
-        min_pos[axis] =          base_min_pos(axis) + home_offset[axis];
-        max_pos[axis] =          base_max_pos(axis) + home_offset[axis];
+        current_position[axis] = base_home_pos(axis) + add_homing[axis];
+        min_pos[axis] =          base_min_pos(axis) + add_homing[axis];
+        max_pos[axis] =          base_max_pos(axis) + add_homing[axis];
       }
     #else // NO SCARA
-      current_position[axis] = base_home_pos(axis) + home_offset[axis];
-      min_pos[axis] =          base_min_pos(axis) + home_offset[axis];
-      max_pos[axis] =          base_max_pos(axis) + home_offset[axis];
+      current_position[axis] = base_home_pos(axis) + add_homing[axis];
+      min_pos[axis] =          base_min_pos(axis) + add_homing[axis];
+      max_pos[axis] =          base_max_pos(axis) + add_homing[axis];
     #endif // SCARA
   }
 
@@ -1331,15 +1333,10 @@ bool extruder_duplication_enabled = false; // used in mode 2
       #endif //NUM_SERVOS > 0
     }
 
-    enum ProbeAction {
-      ProbeStay             = 0,
-      ProbeEngage           = BIT(0),
-      ProbeRetract          = BIT(1),
-      ProbeEngageAndRetract = (ProbeEngage | ProbeRetract)
-    };
+    enum ProbeAction { ProbeStay, ProbeEngage, ProbeRetract, ProbeEngageRetract };
 
     // Probe bed height at position (x,y), returns the measured z value
-    static float probe_pt(float x, float y, float z_before, ProbeAction retract_action=ProbeEngageAndRetract, int verbose_level=1) {
+    static float probe_pt(float x, float y, float z_before, ProbeAction retract_action=ProbeEngageRetract, int verbose_level=1) {
       // move to right place
       do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], z_before);
       do_blocking_move_to(x - X_PROBE_OFFSET_FROM_EXTRUDER, y - Y_PROBE_OFFSET_FROM_EXTRUDER, current_position[Z_AXIS]);
@@ -1448,9 +1445,9 @@ bool extruder_duplication_enabled = false; // used in mode 2
 #ifdef DELTA
   static void axis_is_at_home(int axis)
   {
-    current_position[axis] = base_home_pos[axis] + home_offset[axis];
-    min_pos[axis] =          base_min_pos(axis) + home_offset[axis];
-    max_pos[axis] =          base_max_pos[axis] + home_offset[axis];
+    current_position[axis] = base_home_pos[axis] + add_homing[axis];
+    min_pos[axis] =          base_min_pos(axis) + add_homing[axis];
+    max_pos[axis] =          base_max_pos[axis] + add_homing[axis];
   }
 
   static void homeaxis(int axis)
@@ -2369,7 +2366,7 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
       #ifdef SCARA
         current_position[X_AXIS]=code_value();
       #else
-        current_position[X_AXIS]=code_value() + home_offset[X_AXIS];
+        current_position[X_AXIS]=code_value()+add_homing[X_AXIS];
       #endif
     }
 
@@ -2377,7 +2374,7 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
       #ifdef SCARA
         current_position[Y_AXIS]=code_value();
       #else
-        current_position[Y_AXIS]=code_value() + home_offset[Y_AXIS];
+        current_position[Y_AXIS]=code_value()+add_homing[Y_AXIS];
       #endif
     }
 
@@ -2556,7 +2553,7 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
     #endif //Z_HOME_DIR < 0
 
     if (code_seen(axis_codes[Z_AXIS]) && code_value_long() != 0)
-      current_position[Z_AXIS] = code_value() + home_offset[Z_AXIS];
+      current_position[Z_AXIS] = code_value() + add_homing[Z_AXIS];
 
     #ifdef ENABLE_AUTO_BED_LEVELING
       if (home_all_axis || code_seen(axis_codes[Z_AXIS]))
@@ -2677,7 +2674,7 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
 
     #ifdef AUTO_BED_LEVELING_GRID
 
-      bool do_topography_map = verbose_level > 2 || code_seen('T') || code_seen('t');
+      bool topo_flag = code_seen('T') || code_seen('t');
 
       if (verbose_level > 0) SERIAL_PROTOCOLPGM("G29 Auto Bed Leveling\n");
 
@@ -2789,7 +2786,7 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
 
         // If topo_flag is set then don't zig-zag. Just scan in one direction.
         // This gets the probe points in more readable order.
-        if (do_topography_map) zig = !zig;
+        if (topo_flag) zig = !zig;
         for (int xCount=xStart; xCount != xStop; xCount += xInc)
         {
           double xProbe = left_probe_bed_position + xGridSpacing * xCount;
@@ -2809,7 +2806,7 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
               act = ProbeStay;
           }
           else
-            act = ProbeEngageAndRetract;
+            act = ProbeEngageRetract;
 
           measured_z = probe_pt(xProbe, yProbe, z_before, act, verbose_level);
 
@@ -2846,30 +2843,49 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
         }
       }
 
-      if (do_topography_map) {
+      if (topo_flag) {
+
+        int xx, yy;
 
         SERIAL_PROTOCOLPGM(" \nBed Height Topography: \n");
-        SERIAL_PROTOCOLPGM("+-----------+\n");
-        SERIAL_PROTOCOLPGM("|...Back....|\n");
-        SERIAL_PROTOCOLPGM("|Left..Right|\n");
-        SERIAL_PROTOCOLPGM("|...Front...|\n");
-        SERIAL_PROTOCOLPGM("+-----------+\n");
-
-        for (int yy = auto_bed_leveling_grid_points - 1; yy >= 0; yy--) {
-          for (int xx = auto_bed_leveling_grid_points - 1; xx >= 0; xx--) {
-            int ind = yy * auto_bed_leveling_grid_points + xx;
-            float diff = eqnBVector[ind] - mean;
-            if (diff >= 0.0)
-              SERIAL_PROTOCOLPGM(" +");   // Include + for column alignment
-            else
-              SERIAL_PROTOCOLPGM(" ");
-            SERIAL_PROTOCOL_F(diff, 5);
-          } // xx
+        #if TOPO_ORIGIN == OriginFrontLeft
+          SERIAL_PROTOCOLPGM("+-----------+\n");
+          SERIAL_PROTOCOLPGM("|...Back....|\n");
+          SERIAL_PROTOCOLPGM("|Left..Right|\n");
+          SERIAL_PROTOCOLPGM("|...Front...|\n");
+          SERIAL_PROTOCOLPGM("+-----------+\n");
+          for (yy = auto_bed_leveling_grid_points - 1; yy >= 0; yy--)
+        #else
+          for (yy = 0; yy < auto_bed_leveling_grid_points; yy++)
+        #endif
+          {
+            #if TOPO_ORIGIN == OriginBackRight
+              for (xx = 0; xx < auto_bed_leveling_grid_points; xx++)
+            #else
+              for (xx = auto_bed_leveling_grid_points - 1; xx >= 0; xx--)
+            #endif
+              {
+                int ind =
+                  #if TOPO_ORIGIN == OriginBackRight || TOPO_ORIGIN == OriginFrontLeft
+                    yy * auto_bed_leveling_grid_points + xx
+                  #elif TOPO_ORIGIN == OriginBackLeft
+                    xx * auto_bed_leveling_grid_points + yy
+                  #elif TOPO_ORIGIN == OriginFrontRight
+                    abl2 - xx * auto_bed_leveling_grid_points - yy - 1
+                  #endif
+                ;
+                float diff = eqnBVector[ind] - mean;
+                if (diff >= 0.0)
+                  SERIAL_PROTOCOLPGM(" +");   // Include + for column alignment
+                else
+                  SERIAL_PROTOCOLPGM(" ");
+                SERIAL_PROTOCOL_F(diff, 5);
+              } // xx
+              SERIAL_EOL;
+          } // yy
           SERIAL_EOL;
-        } // yy
-        SERIAL_EOL;
 
-      } //do_topography_map
+      } //topo_flag
 
 
       set_bed_level_equation_lsq(plane_equation_coefficients);
@@ -2895,6 +2911,9 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
       set_bed_level_equation_3pts(z_at_pt_1, z_at_pt_2, z_at_pt_3);
 
     #endif // !AUTO_BED_LEVELING_GRID
+
+    do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], Z_RAISE_AFTER_PROBING);
+    st_synchronize();
 
     if (verbose_level > 0)
       plan_bed_level_matrix.debug(" \n\nBed Level Correction Matrix:");
@@ -3478,9 +3497,9 @@ inline void gcode_G92() {
       }
       else {
         #ifdef SCARA
-          current_position[i] = code_value() + ((i != X_AXIS && i != Y_AXIS) ? home_offset[i] : 0);
+          current_position[i] = code_value() + ((i != X_AXIS && i != Y_AXIS) ? add_homing[i] : 0);
         #else
-          current_position[i] = code_value() + home_offset[i];
+          current_position[i] = code_value() + add_homing[i];
         #endif
         plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
       }
@@ -3901,10 +3920,15 @@ inline void gcode_M204() {
     boolean sleep = false;
     int cnt = 0;
     
-    int old_target_temperature[HOTENDS] = { 0 };
-    for(int8_t e = 0; e < HOTENDS; e++)
+    #ifndef SINGLENOZZLE
+      int old_target_temperature[EXTRUDERS] = { 0 };
+      for(int8_t e=0;e<EXTRUDERS;e++)
+    #else
+      int old_target_temperature[1] = { 0 };
+      int8_t e=0;
+    #endif
     {
-      old_target_temperature[e] = target_temperature[e];
+      old_target_temperature[e]=target_temperature[e];
     }
     int old_target_temperature_bed = target_temperature_bed;
     timer.set_max_delay(60000); // 1 minute
@@ -3938,7 +3962,11 @@ inline void gcode_M204() {
     lcd_reset_alert_level();
 
     if (sleep) {
-      for(int8_t e = 0; e < HOTENDS; e++)
+      #ifndef SINGLENOZZLE
+        for(int8_t e=0;e<EXTRUDERS;e++)
+      #else
+        int8_t e=0;
+      #endif
       {
         setTargetHotend(old_target_temperature[e], e);
         CooldownNoWait = true;
@@ -4560,7 +4588,7 @@ void process_commands()
       {
         if(setTargetedHotend(104)) break;
         if(debugDryrun()) break;
-        #if HOTENDS == 1
+        #ifdef SINGLENOZZLE
           if (tmp_extruder != active_extruder) break;
         #endif
         if (code_seen('S')) setTargetHotend(code_value(), tmp_extruder);
@@ -4663,7 +4691,7 @@ void process_commands()
       {
         if(setTargetedHotend(109)) break;
         if(debugDryrun()) break;
-        #if HOTENDS == 1
+        #ifdef SINGLENOZZLE
           if (tmp_extruder != active_extruder) break;
         #endif
         LCD_MESSAGEPGM(MSG_HEATING);
@@ -4746,9 +4774,9 @@ void process_commands()
           SERIAL_PROTOCOLLN("");
 
           SERIAL_PROTOCOLPGM("SCARA Cal - Theta:");
-          SERIAL_PROTOCOL(delta[X_AXIS] + home_offset[X_AXIS]);
+          SERIAL_PROTOCOL(delta[X_AXIS]+add_homing[X_AXIS]);
           SERIAL_PROTOCOLPGM("   Psi+Theta (90):");
-          SERIAL_PROTOCOL(delta[Y_AXIS] - delta[X_AXIS] - 90 + home_offset[Y_AXIS]);
+          SERIAL_PROTOCOL(delta[Y_AXIS]-delta[X_AXIS]-90+add_homing[Y_AXIS]);
           SERIAL_PROTOCOLLN("");
 
           SERIAL_PROTOCOLPGM("SCARA step Cal - Theta:");
@@ -5018,16 +5046,16 @@ void process_commands()
       {
         for(int8_t i=0; i < 3; i++)
         {
-          if(code_seen(axis_codes[i])) home_offset[i] = code_value();
+          if(code_seen(axis_codes[i])) add_homing[i] = code_value();
         }
         #ifdef SCARA
           if(code_seen('T'))       // Theta
           {
-            home_offset[X_AXIS] = code_value() ;
+            add_homing[X_AXIS] = code_value() ;
           }
           if(code_seen('P'))       // Psi
           {
-            home_offset[Y_AXIS] = code_value() ;
+            add_homing[Y_AXIS] = code_value() ;
           }
         #endif
       }
@@ -5110,41 +5138,43 @@ void process_commands()
         break;
       #endif // FWRETRACT
 
-      #if HOTENDS > 1
-        case 218: //M218 - set hotend offset (in mm), T<extruder_number> X<offset_on_X> Y<offset_on_Y>
-        {
-          if(setTargetedHotend(218)) break;
-          if(code_seen('X'))
+      #ifndef SINGLENOZZLE
+        #if EXTRUDERS > 1
+          case 218: //M218 - set hotend offset (in mm), T<extruder_number> X<offset_on_X> Y<offset_on_Y>
           {
-            hotend_offset[X_AXIS][tmp_extruder] = code_value();
-          }
-          if(code_seen('Y'))
-          {
-            hotend_offset[Y_AXIS][tmp_extruder] = code_value();
-          }
-          #ifdef DUAL_X_CARRIAGE
-            if(code_seen('Z'))
+            if(setTargetedHotend(218)) break;
+            if(code_seen('X'))
             {
-              hotend_offset[Z_AXIS][tmp_extruder] = code_value();
+              hotend_offset[X_AXIS][tmp_extruder] = code_value();
             }
-          #endif
-          SERIAL_ECHO_START;
-          SERIAL_ECHOPGM(MSG_HOTEND_OFFSET);
-          for(tmp_extruder = 0; tmp_extruder < EXTRUDERS; tmp_extruder++)
-          {
-            SERIAL_ECHO(" ");
-            SERIAL_ECHO(hotend_offset[X_AXIS][tmp_extruder]);
-            SERIAL_ECHO(",");
-            SERIAL_ECHO(hotend_offset[Y_AXIS][tmp_extruder]);
+            if(code_seen('Y'))
+            {
+              hotend_offset[Y_AXIS][tmp_extruder] = code_value();
+            }
             #ifdef DUAL_X_CARRIAGE
-              SERIAL_ECHO(",");
-              SERIAL_ECHO(hotend_offset[Z_AXIS][tmp_extruder]);
+              if(code_seen('Z'))
+              {
+                hotend_offset[Z_AXIS][tmp_extruder] = code_value();
+              }
             #endif
+            SERIAL_ECHO_START;
+            SERIAL_ECHOPGM(MSG_HOTEND_OFFSET);
+            for(tmp_extruder = 0; tmp_extruder < EXTRUDERS; tmp_extruder++)
+            {
+              SERIAL_ECHO(" ");
+              SERIAL_ECHO(hotend_offset[X_AXIS][tmp_extruder]);
+              SERIAL_ECHO(",");
+              SERIAL_ECHO(hotend_offset[Y_AXIS][tmp_extruder]);
+              #ifdef DUAL_X_CARRIAGE
+                SERIAL_ECHO(",");
+                SERIAL_ECHO(hotend_offset[Z_AXIS][tmp_extruder]);
+              #endif
+            }
+            SERIAL_EOL;
           }
-          SERIAL_EOL;
-        }
-        break;
-      #endif //EXTRUDERS > 1
+          break;
+        #endif //EXTRUDERS > 1
+      #endif // SINGLENOZZLE
 
       case 220: //M220 S<factor in percent>- set speed factor override percentage
       {
@@ -5866,11 +5896,16 @@ void process_commands()
               delayed_move_time = 0;
             }
           #else
-            // Offset hotend (only by XY)
-            #if HOTENDS > 1
-              for (int i=X_AXIS; i<=Y_AXIS; i++)
-                current_position[i] += hotend_offset[i][tmp_extruder] - hotend_offset[i][active_extruder];
-            #endif // HOTENDS > 1
+            // Offset extruder (only by XY)
+            #ifndef SINGLENOZZLE
+              int i;
+              for(i = 0; i < 2; i++)
+              {
+                current_position[i] = current_position[i] -
+                  hotend_offset[i][active_extruder] +
+                  hotend_offset[i][tmp_extruder];
+              }
+            #endif // SINGLENOZZLE
 
             #if defined(MKR4) && (EXTRUDERS > 1)
               #if (EXTRUDERS == 4) && (E0E2_CHOICE_PIN >1) && (E1E3_CHOICE_PIN > 1)
@@ -6085,7 +6120,7 @@ void clamp_to_software_endstops(float target[3])
     float negative_z_offset = 0;
     #ifdef ENABLE_AUTO_BED_LEVELING
       if (Z_PROBE_OFFSET_FROM_EXTRUDER < 0) negative_z_offset = negative_z_offset + Z_PROBE_OFFSET_FROM_EXTRUDER;
-      if (home_offset[Z_AXIS] < 0) negative_z_offset = negative_z_offset + home_offset[Z_AXIS];
+      if (add_homing[Z_AXIS] < 0) negative_z_offset = negative_z_offset + add_homing[Z_AXIS];
     #endif
     
     if (target[Z_AXIS] < min_pos[Z_AXIS]+negative_z_offset) target[Z_AXIS] = min_pos[Z_AXIS]+negative_z_offset;

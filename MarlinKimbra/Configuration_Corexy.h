@@ -126,6 +126,11 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the lo
 
   #ifdef AUTO_BED_LEVELING_GRID
 
+    // Use one of these defines to specify the origin
+    // for a topographical map to be printed for your bed.
+    enum { OriginBackLeft, OriginFrontLeft, OriginBackRight, OriginFrontRight };
+    #define TOPO_ORIGIN OriginFrontLeft
+
     #define MIN_PROBE_EDGE 10 // The probe square sides can be no smaller than this
 
     // Set the number of grid points per dimension
