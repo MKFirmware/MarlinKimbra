@@ -4488,6 +4488,10 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #ifdef FILAMENT_END_SWITCH
   #define PAUSE_PIN           19
 #endif
+
+#ifdef POWER_CONSUMPTION
+  #define POWER_CONSUMPTION_PIN 4   // ANALOG NUMBERING
+#endif
 /****************************************************************************************/
 
 

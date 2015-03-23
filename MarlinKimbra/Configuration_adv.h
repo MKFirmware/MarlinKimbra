@@ -325,6 +325,9 @@
   #ifdef FILAMENT_LCD_DISPLAY
     #error LCD_PROGRESS_BAR and FILAMENT_LCD_DISPLAY are not fully compatible. Comment out this line to use both.
   #endif
+  #ifdef POWER_CONSUMPTION_LCD_DISPLAY
+    #error LCD_PROGRESS_BAR and POWER_CONSUMPTION_LCD_DISPLAY are not fully compatible. Comment out this line to use both.
+  #endif
 #endif
 
 
@@ -439,7 +442,7 @@ const unsigned int dropsegments=5; //everything with less than this number of st
 // until then, intended retractions can be detected by moves that only extrude and the direction.
 // the moves are than replaced by the firmware controlled ones.
 
-// #define FWRETRACT  //ONLY PARTIALLY TESTED
+//#define FWRETRACT  //ONLY PARTIALLY TESTED
 #ifdef FWRETRACT
   #define MIN_RETRACT 0.1                //minimum extruded mm to accept a automatic gcode retraction attempt
   #define RETRACT_LENGTH 3               //default retract length (positive mm)
@@ -448,7 +451,7 @@ const unsigned int dropsegments=5; //everything with less than this number of st
   #define RETRACT_ZLIFT 0                //default retract Z-lift
   #define RETRACT_RECOVER_LENGTH 0       //default additional recover length (mm, added to retract length when recovering)
   #define RETRACT_RECOVER_LENGTH_SWAP 0  //default additional swap recover length (mm, added to retract length when recovering from extruder change)
-  #define RETRACT_RECOVER_FEEDRATE 8     //default feedrate for recovering from retraction (mm/s)
+  #define RETRACT_RECOVER_FEEDRATE 80     //default feedrate for recovering from retraction (mm/s)
 #endif
 
 //adds support for experimental filament exchange support M600; requires display

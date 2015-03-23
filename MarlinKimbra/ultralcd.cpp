@@ -33,7 +33,8 @@ int gumPreheatFanSpeed;
 
 const long baudrates[] = {9600,14400,19200,28800,38400,56000,115200,250000};
 int baudrate_position = -1;
-#ifdef FILAMENT_LCD_DISPLAY
+
+#if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY) || (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
   unsigned long message_millis = 0;
 #endif
 
@@ -310,6 +311,12 @@ static void lcd_status_screen()
     lcd_status_update_delay = 10;   /* redraw the main screen every second. This is easier then trying keep track of all things that change on the screen */
   }
 
+  #if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY) || (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
+    if (millis() > message_millis + 15000) message_millis = millis();
+  #else
+    if (millis() > message_millis + 10000) message_millis = millis();
+	#endif
+
 #ifdef ULTIPANEL
 
     bool current_click = LCD_CLICKED;
@@ -338,9 +345,6 @@ static void lcd_status_screen()
             currentMenu == lcd_status_screen
           #endif
         );
-        #ifdef FILAMENT_LCD_DISPLAY
-          message_millis = millis();  // get status message to show up for a while
-        #endif
     }
 
 #ifdef ULTIPANEL_FEEDMULTIPLY
@@ -685,9 +689,9 @@ void config_lcd_level_bed()
 
 void lcd_level_bed()
 {
-        if(ChangeScreen){
-       lcd.clear(); 
-    switch(pageShowInfo){
+  if(ChangeScreen) {
+    lcd.clear();
+    switch(pageShowInfo) {
       
       case 0:
         {      
@@ -1571,10 +1575,6 @@ void lcd_finishstatus() {
     progressBarTick = millis();
   #endif
   lcdDrawUpdate = 2;
-
-  #ifdef FILAMENT_LCD_DISPLAY
-    message_millis = millis();  //get status message to show up for a while
-  #endif
 }
 
 void lcd_setstatus(const char* message) {

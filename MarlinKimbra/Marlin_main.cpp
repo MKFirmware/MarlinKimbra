@@ -331,6 +331,10 @@ uint8_t debugLevel = 0;
   int EtoPPressure = 0;
 #endif //BARICUDA
 
+#ifdef FILAMENTCHANGEENABLE
+	bool filament_changing = false;
+#endif
+
 #ifdef FWRETRACT
   bool autoretract_enabled = false;
   bool retracted[EXTRUDERS] = { false
@@ -377,16 +381,21 @@ uint8_t debugLevel = 0;
   static float delta[3] = { 0, 0, 0 };
 #endif //SCARA
 
-#ifdef FILAMENT_SENSOR
+#if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0)
   //Variables for Filament Sensor input 
   float filament_width_nominal=DEFAULT_NOMINAL_FILAMENT_DIA;  //Set nominal filament width, can be changed with M404 
-  bool filament_sensor=false;  //M405 turns on filament_sensor control, M406 turns it off 
-  float filament_width_meas=DEFAULT_MEASURED_FILAMENT_DIA; //Stores the measured filament diameter 
-  signed char measurement_delay[MAX_MEASUREMENT_DELAY+1];  //ring buffer to delay measurement  store extruder factor after subtracting 100 
-  int delay_index1=0;  //index into ring buffer
-  int delay_index2=-1;  //index into ring buffer - set to -1 on startup to indicate ring buffer needs to be initialized
-  float delay_dist=0; //delay distance counter  
-  int meas_delay_cm = MEASUREMENT_DELAY_CM;  //distance delay setting
+  bool filament_sensor=false;                                 //M405 turns on filament_sensor control, M406 turns it off 
+  float filament_width_meas=DEFAULT_MEASURED_FILAMENT_DIA;    //Stores the measured filament diameter 
+  signed char measurement_delay[MAX_MEASUREMENT_DELAY+1];     //ring buffer to delay measurement  store extruder factor after subtracting 100 
+  int delay_index1=0;                                         //index into ring buffer
+  int delay_index2=-1;                                        //index into ring buffer - set to -1 on startup to indicate ring buffer needs to be initialized
+  float delay_dist=0;                                         //delay distance counter
+  int meas_delay_cm = MEASUREMENT_DELAY_CM;                   //distance delay setting
+#endif
+
+#if (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0)
+  unsigned int power_consumption_meas = 0;
+  unsigned long power_consumption_hour = 0.0;
 #endif
 
 #ifdef LASERBEAM
@@ -3823,6 +3832,7 @@ inline void gcode_M204() {
 #ifdef FILAMENTCHANGEENABLE
   //M600: Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
   inline void gcode_M600() {
+    filament_changing = true;
     float target[NUM_AXIS];
     for (int i=0; i < NUM_AXIS; i++) target[i] = lastpos[i] = current_position[i];
 
@@ -3973,6 +3983,7 @@ inline void gcode_M204() {
       for(int8_t i=0; i < NUM_AXIS; i++) current_position[i]=lastpos[i];
       plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
     #endif
+    filament_changing = false;
   }
 #endif //FILAMENTCHANGEENABLE
 
@@ -5545,17 +5556,15 @@ void process_commands()
         break;
       #endif // NABLE_AUTO_BED_LEVELING
 
-      #ifdef FILAMENT_SENSOR
+      #if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0)
         case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or display nominal filament width 
         {
-          #if (FILWIDTH_PIN > -1)
-            if(code_seen('D')) filament_width_nominal=code_value();
-            else
-            {
-              SERIAL_PROTOCOLPGM("Filament dia (nominal mm):");
-              SERIAL_PROTOCOLLN(filament_width_nominal);
-            }
-          #endif
+          if(code_seen('D')) filament_width_nominal=code_value();
+          else
+          {
+            SERIAL_PROTOCOLPGM("Filament dia (nominal mm):");
+            SERIAL_PROTOCOLLN(filament_width_nominal);
+          }
         }
         break;
         case 405:  //M405 Turn on filament sensor for control
@@ -6484,22 +6493,20 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) //default argument s
     controllerFan(); //Check if fan should be turned on to cool stepper drivers down
   #endif
   #ifdef EXTRUDER_RUNOUT_PREVENT
-    if( (millis() - previous_millis_cmd) >  EXTRUDER_RUNOUT_SECONDS*1000 )
-    if(degHotend(active_extruder)>EXTRUDER_RUNOUT_MINTEMP)
+    if(!debugDryrun() && !axis_is_moving && !filament_changing && (millis() - axis_last_activity) >  EXTRUDER_RUNOUT_SECONDS*1000 && degHotend(active_extruder)>EXTRUDER_RUNOUT_MINTEMP)
     {
-     bool oldstatus=READ(E0_ENABLE_PIN);
-     enable_e0();
-     float oldepos=current_position[E_AXIS];
-     float oldedes=destination[E_AXIS];
-     plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS],
+      bool oldstatus=READ(E0_ENABLE_PIN);
+      enable_e0();
+      float oldepos=current_position[E_AXIS];
+      float oldedes=destination[E_AXIS];
+      plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS],
                       destination[E_AXIS]+EXTRUDER_RUNOUT_EXTRUDE*EXTRUDER_RUNOUT_ESTEPS/axis_steps_per_unit[active_extruder+3],
                       EXTRUDER_RUNOUT_SPEED/60.*EXTRUDER_RUNOUT_ESTEPS/axis_steps_per_unit[active_extruder+3], active_extruder, active_driver);
-     current_position[E_AXIS]=oldepos;
-     destination[E_AXIS]=oldedes;
-     plan_set_e_position(oldepos);
-     previous_millis_cmd=millis();
-     st_synchronize();
-     WRITE(E0_ENABLE_PIN,oldstatus);
+      current_position[E_AXIS]=oldepos;
+      destination[E_AXIS]=oldedes;
+      plan_set_e_position(oldepos);
+      st_synchronize();
+      WRITE(E0_ENABLE_PIN,oldstatus);
     }
   #endif
   #if defined(DUAL_X_CARRIAGE)

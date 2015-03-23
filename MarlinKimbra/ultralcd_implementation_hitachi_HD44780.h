@@ -468,10 +468,17 @@ static void lcd_implementation_status_screen() {
     lcd.print('/');
     lcd.print(itostr3left(tTarget));
 
+<<<<<<< HEAD
     #if HOTENDS > 1 || TEMP_SENSOR_BED != 0
       //If we have an 2nd extruder or heated bed, show that in the top right corner
       lcd.setCursor(8, 0);
       #if HOTENDS > 1
+=======
+    #if (EXTRUDERS > 1 && !defined(SINGLENOZZLE)) || TEMP_SENSOR_BED != 0
+      //If we have an 2nd extruder or heated bed, show that in the top right corner
+      lcd.setCursor(8, 0);
+      #if EXTRUDERS > 1 && !defined(SINGLENOZZLE)
+>>>>>>> origin/master
         tHotend = int(degHotend(1) + 0.5);
         tTarget = int(degTargetHotend(1) + 0.5);
         lcd.print(LCD_STR_THERMOMETER[0]);
@@ -483,7 +490,11 @@ static void lcd_implementation_status_screen() {
       lcd.print(itostr3(tHotend));
       lcd.print('/');
       lcd.print(itostr3left(tTarget));
+<<<<<<< HEAD
     #endif //HOTENDS > 1 || TEMP_SENSOR_BED != 0
+=======
+    #endif //(EXTRUDERS > 1 && !defined(SINGLENOZZLE)) || TEMP_SENSOR_BED != 0
+>>>>>>> origin/master
 
   #else//LCD_WIDTH > 19
     lcd.setCursor(0, 0);
@@ -494,10 +505,17 @@ static void lcd_implementation_status_screen() {
     lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
     if (tTarget < 10) lcd.print(' ');
 
+<<<<<<< HEAD
     #if HOTENDS > 1 || TEMP_SENSOR_BED != 0
       //If we have an 2nd extruder or heated bed, show that in the top right corner
       lcd.setCursor(10, 0);
       #if HOTENDS > 1
+=======
+    #if (EXTRUDERS > 1 && !defined(SINGLENOZZLE)) || TEMP_SENSOR_BED != 0
+      //If we have an 2nd extruder or heated bed, show that in the top right corner
+      lcd.setCursor(10, 0);
+      #if EXTRUDERS > 1 && !defined(SINGLENOZZLE)
+>>>>>>> origin/master
         tHotend = int(degHotend(1) + 0.5);
         tTarget = int(degTargetHotend(1) + 0.5);
         lcd.print(LCD_STR_THERMOMETER[0]);
@@ -511,6 +529,7 @@ static void lcd_implementation_status_screen() {
       lcd.print(itostr3left(tTarget));
       lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
       if (tTarget < 10) lcd.print(' ');
+<<<<<<< HEAD
     #endif//HOTENDS > 1 || TEMP_SENSOR_BED != 0
   #endif//LCD_WIDTH > 19
 
@@ -560,6 +579,58 @@ static void lcd_implementation_status_screen() {
   #endif //LCD_HEIGHT > 2
 
   #if LCD_HEIGHT > 3
+=======
+    #endif//(EXTRUDERS > 1 && !defined(SINGLENOZZLE)) || TEMP_SENSOR_BED != 0
+  #endif//LCD_WIDTH > 19
+
+#if LCD_HEIGHT > 2
+//Lines 2 for 4 line LCD
+# if LCD_WIDTH < 20
+#  ifdef SDSUPPORT
+    lcd.setCursor(0, 2);
+    lcd_printPGM(PSTR("SD"));
+    if (IS_SD_PRINTING)
+        lcd.print(itostr3(card.percentDone()));
+    else
+        lcd_printPGM(PSTR("---"));
+    lcd.print('%');
+#  endif//SDSUPPORT
+# else//LCD_WIDTH > 19
+#  if EXTRUDERS > 1 && TEMP_SENSOR_BED != 0 && !defined(SINGLENOZZLE)
+    //If we both have a 2nd extruder and a heated bed, show the heated bed temp on the 2nd line on the left, as the first line is filled with extruder temps
+    tHotend=int(degBed() + 0.5);
+    tTarget=int(degTargetBed() + 0.5);
+
+    lcd.setCursor(0, 1);
+    lcd.print(LCD_STR_BEDTEMP[0]);
+    lcd.print(itostr3(tHotend));
+    lcd.print('/');
+    lcd.print(itostr3left(tTarget));
+    lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
+    if (tTarget < 10)
+      lcd.print(' ');
+#   else
+      lcd.setCursor(0,1);
+#     ifdef DELTA
+        lcd.print('X');
+        lcd.print(ftostr30(current_position[X_AXIS]));
+        lcd_printPGM(PSTR(" Y"));
+        lcd.print(ftostr30(current_position[Y_AXIS]));
+#     else
+        lcd.print('X');
+        lcd.print(ftostr3(current_position[X_AXIS]));
+        lcd_printPGM(PSTR(" Y"));
+        lcd.print(ftostr3(current_position[Y_AXIS]));
+#     endif // DELTA
+#  endif//EXTRUDERS > 1 || TEMP_SENSOR_BED != 0
+# endif//LCD_WIDTH > 19
+    lcd.setCursor(LCD_WIDTH - 8, 1);
+    lcd.print('Z');
+    lcd.print(ftostr32sp(current_position[Z_AXIS] + 0.00001));
+#endif//LCD_HEIGHT > 2
+
+#if LCD_HEIGHT > 3
+>>>>>>> origin/master
     lcd.setCursor(0, 2);
     lcd.print(LCD_STR_FEEDRATE[0]);
     lcd.print(itostr3(feedmultiply));
@@ -617,6 +688,7 @@ static void lcd_implementation_status_screen() {
   #endif //LCD_PROGRESS_BAR
 
   //Display both Status message line and Filament display on the last line
+<<<<<<< HEAD
   #ifdef FILAMENT_LCD_DISPLAY
     if (message_millis + 5000 <= millis()) {  //display any status for the first 5 sec after screen is initiated
       lcd_printPGM(PSTR("Dia "));
@@ -625,10 +697,38 @@ static void lcd_implementation_status_screen() {
       lcd.print(itostr3(100.0*volumetric_multiplier[FILAMENT_SENSOR_EXTRUDER_NUM]));
       lcd.print('%');
       return;
+=======
+  #if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY) || (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
+    if (millis() < message_millis + 5000) {  //Display both Status message line and Filament display on the last line
+      lcd.print(lcd_status_message);
+>>>>>>> origin/master
     }
-  #endif //FILAMENT_LCD_DISPLAY
-
-  lcd.print(lcd_status_message);
+    #if (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
+      #if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY)
+        else if (millis() < message_millis + 10000)
+      #else
+        else
+      #endif
+      {
+        lcd_printPGM(PSTR("P:"));
+        lcd.print(itostr3(power_consumption_meas));
+        lcd_printPGM(PSTR("W C:"));
+        lcd.print(ltostr7(power_consumption_hour));
+        lcd_printPGM(PSTR("Wh"));
+      }
+    #endif
+    #if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY)
+      else {
+        lcd_printPGM(PSTR("D:"));
+        lcd.print(ftostr12ns(filament_width_meas));
+        lcd_printPGM(PSTR("mm F:"));
+        lcd.print(itostr3(100.0 * volumetric_multiplier[FILAMENT_SENSOR_EXTRUDER_NUM]));
+        lcd.print('%');
+        return;
+      }
+    #else
+    lcd.print(lcd_status_message);
+  #endif
 }
 
 static void lcd_implementation_drawmenu_generic(bool sel, uint8_t row, const char* pstr, char pre_char, char post_char) {
