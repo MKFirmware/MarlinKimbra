@@ -620,19 +620,37 @@ static void lcd_implementation_status_screen()
 
   #endif //LCD_PROGRESS_BAR
 
-  //Display both Status message line and Filament display on the last line
-  #ifdef FILAMENT_LCD_DISPLAY
-    if (message_millis + 5000 <= millis()) {  //display any status for the first 5 sec after screen is initiated
-      lcd_printPGM(PSTR("Dia "));
+ //Display both Status message line and Filament display on the last line
+  #if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY) || (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
+    if (millis() < message_millis + 5000) {  //Display both Status message line and Filament display on the last line
+      lcd.print(lcd_status_message);
+    }
+	#if (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
+	#if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY)
+	else if (millis() < message_millis + 10000)
+	#else
+	else
+	#endif
+	{
+	  lcd_printPGM(PSTR("P:"));
+      lcd.print(itostr3(power_consumption_meas));
+	  lcd_printPGM(PSTR("W C:"));
+      lcd.print(ltostr7(power_consumption_hour));
+	  lcd_printPGM(PSTR("Wh"));
+	}
+	#endif
+	#if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY)
+	else {
+      lcd_printPGM(PSTR("D:"));
       lcd.print(ftostr12ns(filament_width_meas));
-      lcd_printPGM(PSTR(" V"));
+      lcd_printPGM(PSTR("mm F:"));
       lcd.print(itostr3(100.0*volumetric_multiplier[FILAMENT_SENSOR_EXTRUDER_NUM]));
   	  lcd.print('%');
-  	  return;
-    }
-  #endif //FILAMENT_LCD_DISPLAY
 
+    }
+  #else
   lcd.print(lcd_status_message);
+  #endif
 }
 
 static void lcd_implementation_drawmenu_generic(bool sel, uint8_t row, const char* pstr, char pre_char, char post_char) {
