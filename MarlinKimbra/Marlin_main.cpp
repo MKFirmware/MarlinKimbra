@@ -1962,7 +1962,7 @@ void refresh_cmd_timeout(void) { previous_millis_cmd = millis(); }
   void IDLE_OOZING_retract(bool retracting)
   {  
     if(retracting && !IDLE_OOZING_retracted[active_extruder]) {
-	  SERIAL_ECHOLN("RETRACT");
+	  //SERIAL_ECHOLN("RETRACT FOR OOZING PREVENT");
 	  destination[X_AXIS]=current_position[X_AXIS];
 	  destination[Y_AXIS]=current_position[Y_AXIS];
 	  destination[Z_AXIS]=current_position[Z_AXIS];
@@ -1976,7 +1976,7 @@ void refresh_cmd_timeout(void) { previous_millis_cmd = millis(); }
 	  feedrate = oldFeedrate;
     }
     else if(!retracting && IDLE_OOZING_retracted[active_extruder]){
-	  SERIAL_ECHOLN("RECOVER");
+	  //SERIAL_ECHOLN("EXTRUDE FOR OOZING PREVENT");
 	  destination[X_AXIS]=current_position[X_AXIS];
 	  destination[Y_AXIS]=current_position[Y_AXIS];
 	  destination[Z_AXIS]=current_position[Z_AXIS];
