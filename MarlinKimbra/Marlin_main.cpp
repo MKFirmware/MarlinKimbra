@@ -336,23 +336,6 @@ uint8_t debugLevel = 0;
 #ifdef FILAMENTCHANGEENABLE
 	bool filament_changing = false;
 #endif
-#ifdef IDLE_OOZING_PREVENT || EXTRUDER_RUNOUT_PREVENT
-   unsigned long axis_last_activity = 0;
-   bool axis_is_moving = false;
-#endif
-#ifdef IDLE_OOZING_PREVENT
-	bool IDLE_OOZING_retracted[EXTRUDERS] = { false
-    #if EXTRUDERS > 1
-      , false
-      #if EXTRUDERS > 2
-        , false
-        #if EXTRUDERS > 3
-          , false
-        #endif
-      #endif
-    #endif
-  };
-#endif
 
 #ifdef FWRETRACT
   bool autoretract_enabled = false;
@@ -403,18 +386,18 @@ uint8_t debugLevel = 0;
 #if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0)
   //Variables for Filament Sensor input 
   float filament_width_nominal=DEFAULT_NOMINAL_FILAMENT_DIA;  //Set nominal filament width, can be changed with M404 
-  bool filament_sensor=false;  //M405 turns on filament_sensor control, M406 turns it off 
-  float filament_width_meas=DEFAULT_MEASURED_FILAMENT_DIA; //Stores the measured filament diameter 
-  signed char measurement_delay[MAX_MEASUREMENT_DELAY+1];  //ring buffer to delay measurement  store extruder factor after subtracting 100 
-  int delay_index1=0;  //index into ring buffer
-  int delay_index2=-1;  //index into ring buffer - set to -1 on startup to indicate ring buffer needs to be initialized
-  float delay_dist=0; //delay distance counter  
-  int meas_delay_cm = MEASUREMENT_DELAY_CM;  //distance delay setting
+  bool filament_sensor=false;                                 //M405 turns on filament_sensor control, M406 turns it off 
+  float filament_width_meas=DEFAULT_MEASURED_FILAMENT_DIA;    //Stores the measured filament diameter 
+  signed char measurement_delay[MAX_MEASUREMENT_DELAY+1];     //ring buffer to delay measurement  store extruder factor after subtracting 100 
+  int delay_index1=0;                                         //index into ring buffer
+  int delay_index2=-1;                                        //index into ring buffer - set to -1 on startup to indicate ring buffer needs to be initialized
+  float delay_dist=0;                                         //delay distance counter
+  int meas_delay_cm = MEASUREMENT_DELAY_CM;                   //distance delay setting
 #endif
 
 #if (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0)
- unsigned int power_consumption_meas = 0;
- unsigned long power_consumption_hour = 0.0;
+  unsigned int power_consumption_meas = 0;
+  unsigned long power_consumption_hour = 0.0;
 #endif
 
 #ifdef LASERBEAM
@@ -1341,7 +1324,7 @@ bool extruder_duplication_enabled = false; // used in mode 2
           #if SERVO_LEVELING
             servos[servo_endstops[Z_AXIS]].attach(0);
           #endif
-            servos[servo_endstops[Z_AXIS]].write(servo_endstop_angles[Z_AXIS * 2 + 1]);
+          servos[servo_endstops[Z_AXIS]].write(servo_endstop_angles[Z_AXIS * 2 + 1]);
           #if SERVO_LEVELING
             delay(PROBE_SERVO_DEACTIVATION_DELAY);
             servos[servo_endstops[Z_AXIS]].detach();
@@ -1958,40 +1941,6 @@ bool extruder_duplication_enabled = false; // used in mode 2
 
 void refresh_cmd_timeout(void) { previous_millis_cmd = millis(); }
 
-#ifdef IDLE_OOZING_PREVENT
-  void IDLE_OOZING_retract(bool retracting)
-  {  
-    if(retracting && !IDLE_OOZING_retracted[active_extruder]) {
-	  //SERIAL_ECHOLN("RETRACT FOR OOZING PREVENT");
-	  destination[X_AXIS]=current_position[X_AXIS];
-	  destination[Y_AXIS]=current_position[Y_AXIS];
-	  destination[Z_AXIS]=current_position[Z_AXIS];
-	  destination[E_AXIS]=current_position[E_AXIS];
-	  current_position[E_AXIS]+=IDLE_OOZING_LENGTH/volumetric_multiplier[active_extruder];
-	  plan_set_e_position(current_position[E_AXIS]);
-	  float oldFeedrate = feedrate;
-	  feedrate=IDLE_OOZING_FEEDRATE*60;
-	  IDLE_OOZING_retracted[active_extruder]=true;
-	  prepare_move();
-	  feedrate = oldFeedrate;
-    }
-    else if(!retracting && IDLE_OOZING_retracted[active_extruder]){
-	  //SERIAL_ECHOLN("EXTRUDE FOR OOZING PREVENT");
-	  destination[X_AXIS]=current_position[X_AXIS];
-	  destination[Y_AXIS]=current_position[Y_AXIS];
-	  destination[Z_AXIS]=current_position[Z_AXIS];
-	  destination[E_AXIS]=current_position[E_AXIS];
-	  current_position[E_AXIS]-=(IDLE_OOZING_LENGTH+IDLE_OOZING_RECOVER_LENGTH)/volumetric_multiplier[active_extruder];
-	  plan_set_e_position(current_position[E_AXIS]);
-	  float oldFeedrate = feedrate;
-	  feedrate=IDLE_OOZING_RECOVER_FEEDRATE * 60;
-	  IDLE_OOZING_retracted[active_extruder] = false;
-	  prepare_move();
-      feedrate = oldFeedrate;
-    }
-  }
-#endif
-
 #ifdef FWRETRACT
   void retract(bool retracting, bool swapretract = false)
   {
@@ -2215,9 +2164,6 @@ inline void wait_bed() {
 // G0-G1: Coordinated movement of X Y Z E axes
 inline void gcode_G0_G1() {
   if (!Stopped) {
-  #ifdef IDLE_OOZING_PREVENT
-	IDLE_OOZING_retract(false);
-  #endif
     get_coordinates(); // For X Y Z E F
     #ifdef FWRETRACT
       if (autoretract_enabled) {
@@ -2337,6 +2283,11 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
 
   #endif //DELTA
 
+  #ifdef SCARA
+    calculate_delta(current_position);
+    plan_set_position(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS]);
+  #endif
+  
   #if defined(CARTESIAN) || defined(COREXY) || defined(SCARA)
     #if Z_HOME_DIR > 0  // If homing away from BED do Z first
       if((home_all_axis) || (code_seen(axis_codes[Z_AXIS]))) {
@@ -2787,8 +2738,8 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
     current_position[Y_AXIS] = uncorrected_position.y;
     current_position[Z_AXIS] = uncorrected_position.z;
     plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
-    setup_for_endstop_move();
 
+    setup_for_endstop_move();
     feedrate = homing_feedrate[Z_AXIS];
 
     #ifdef AUTO_BED_LEVELING_GRID
@@ -3900,7 +3851,7 @@ inline void gcode_M204() {
 #ifdef FILAMENTCHANGEENABLE
   //M600: Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
   inline void gcode_M600() {
-	filament_changing = true;
+    filament_changing = true;
     float target[NUM_AXIS];
     for (int i=0; i < NUM_AXIS; i++) target[i] = lastpos[i] = current_position[i];
 
@@ -4060,7 +4011,7 @@ inline void gcode_M204() {
       for(int8_t i=0; i < NUM_AXIS; i++) current_position[i]=lastpos[i];
       plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
     #endif
-	filament_changing = false;
+    filament_changing = false;
   }
 #endif //FILAMENTCHANGEENABLE
 
@@ -6184,9 +6135,6 @@ void clamp_to_software_endstops(float target[3])
 
 void prepare_move()
 {
-#ifdef IDLE_OOZING_PREVENT || EXTRUDER_RUNOUT_PREVENT
-  axis_is_moving = true;
-#endif
   clamp_to_software_endstops(destination);
   refresh_cmd_timeout();
 
@@ -6206,7 +6154,6 @@ void prepare_move()
     return; 
   }
   float seconds = 6000 * cartesian_mm / feedrate / feedmultiply;
-
   int steps = max(1, int(scara_segments_per_second * seconds));
   //SERIAL_ECHOPGM("mm="); SERIAL_ECHO(cartesian_mm);
   //SERIAL_ECHOPGM(" seconds="); SERIAL_ECHO(seconds);
@@ -6315,11 +6262,6 @@ void prepare_move()
     plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate*feedmultiply/60/100.0, active_extruder, active_driver);
   }
 #endif // !(DELTA || SCARA)
-
-#ifdef IDLE_OOZING_PREVENT || EXTRUDER_RUNOUT_PREVENT
-  axis_last_activity = millis();
-  axis_is_moving = false;
-#endif
 
   for(int8_t i=0; i < NUM_AXIS; i++) {
     current_position[i] = destination[i];
@@ -6584,11 +6526,6 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) //default argument s
 
   #if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
     controllerFan(); //Check if fan should be turned on to cool stepper drivers down
-  #endif
-  #ifdef IDLE_OOZING_PREVENT
-	if(!debugDryrun() && !axis_is_moving && !filament_changing && (millis() - axis_last_activity) >  IDLE_OOZING_SECONDS*1000 && degHotend(active_extruder) > IDLE_OOZING_MINTEMP) {
-	  IDLE_OOZING_retract(true);
-	}
   #endif
   #ifdef EXTRUDER_RUNOUT_PREVENT
     if(!debugDryrun() && !axis_is_moving && !filament_changing && (millis() - axis_last_activity) >  EXTRUDER_RUNOUT_SECONDS*1000 && degHotend(active_extruder)>EXTRUDER_RUNOUT_MINTEMP)

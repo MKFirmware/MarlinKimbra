@@ -31,16 +31,16 @@ void tp_init();  //initialize the heating
 void manage_heater(); //it is critical that this is called periodically.
 
 #if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0)
-// For converting raw Filament Width to milimeters 
- float analog2widthFil(); 
- 
-// For converting raw Filament Width to an extrusion ratio 
- int widthFil_to_size_ratio();
+  // For converting raw Filament Width to milimeters 
+  float analog2widthFil(); 
+
+  // For converting raw Filament Width to an extrusion ratio 
+  int widthFil_to_size_ratio();
 #endif
 
 #if (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0)
-// For converting raw Power Consumption to watt
- float analog2power();
+  // For converting raw Power Consumption to watt
+  float analog2power();
 #endif
 
 // low level conversion routines

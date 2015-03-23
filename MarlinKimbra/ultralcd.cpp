@@ -310,16 +310,12 @@ static void lcd_status_screen()
     lcd_implementation_status_screen();
     lcd_status_update_delay = 10;   /* redraw the main screen every second. This is easier then trying keep track of all things that change on the screen */
   }
+
   #if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY) || (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
-	#if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY) && (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
-	if (millis() > message_millis + 15000)
-	#else
-	if (millis() > message_millis + 10000)
+    if (millis() > message_millis + 15000) message_millis = millis();
+  #else
+    if (millis() > message_millis + 10000) message_millis = millis();
 	#endif
-    {
-      message_millis = millis();
-	}
-  #endif
 
 #ifdef ULTIPANEL
 
@@ -693,12 +689,13 @@ void config_lcd_level_bed()
 
 void lcd_level_bed()
 {
- if(ChangeScreen){
-    switch(pageShowInfo){
+  if(ChangeScreen) {
+    lcd.clear();
+    switch(pageShowInfo) {
       
       case 0:
         {      
-          u8g.setPrintPos(0, 1);
+          lcd.setCursor(0, 1);
           lcd_printPGM(PSTR(MSG_LP_INTRO));
            currentMenu = lcd_level_bed;
            ChangeScreen=false;
@@ -707,7 +704,7 @@ void lcd_level_bed()
 
       case 1:
         {      
-          u8g.setPrintPos(0, 1);
+          lcd.setCursor(0, 1);
           lcd_printPGM(PSTR(MSG_LP_1));
               currentMenu = lcd_level_bed;
            ChangeScreen=false;         
@@ -716,7 +713,7 @@ void lcd_level_bed()
         break;
       case 2:
         {      
-          u8g.setPrintPos(0, 1);
+          lcd.setCursor(0, 1);
           lcd_printPGM(PSTR(MSG_LP_2));
               currentMenu = lcd_level_bed;
            ChangeScreen=false;       
@@ -725,7 +722,7 @@ void lcd_level_bed()
         break;        
       case 3:
         {      
-          u8g.setPrintPos(0, 1);
+          lcd.setCursor(0, 1);
           lcd_printPGM(PSTR(MSG_LP_3));
               currentMenu = lcd_level_bed;
            ChangeScreen=false;         
@@ -734,7 +731,7 @@ void lcd_level_bed()
         break;        
      case 4:
         {     
-          u8g.setPrintPos(0, 1);
+          lcd.setCursor(0, 1);
           lcd_printPGM(PSTR(MSG_LP_4));
               currentMenu = lcd_level_bed;
            ChangeScreen=false;         
@@ -744,7 +741,7 @@ void lcd_level_bed()
 
      case 5:
         {     
-          u8g.setPrintPos(0, 1);
+          lcd.setCursor(0, 1);
           lcd_printPGM(PSTR(MSG_LP_5));
               currentMenu = lcd_level_bed;
            ChangeScreen=false;         
@@ -754,13 +751,14 @@ void lcd_level_bed()
     
      case 6:
         {
-          u8g.setPrintPos(2, 2);          
+          lcd.setCursor(2, 2);          
           lcd_printPGM(PSTR(MSG_LP_6));         
           
           ChangeScreen=false;
           delay(1200);    
           
           encoderPosition = 0;
+          lcd.clear(); 
           currentMenu = lcd_status_screen;
           lcd_status_screen();
           pageShowInfo=0;
