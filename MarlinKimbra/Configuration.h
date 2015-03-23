@@ -75,6 +75,11 @@
 // This is used for single nozzle and multiple extrusion configuration
 // Uncomment below to enable (One Hotend)
 //#define SINGLENOZZLE
+#ifdef SINGLENOZZLE
+  #define HOTENDS 1
+#else
+  #define HOTENDS EXTRUDERS
+#endif
 
 /***********************************************************************
  *********************** Multiextruder MKR4  ***************************

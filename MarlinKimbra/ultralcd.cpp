@@ -214,8 +214,8 @@ static void menu_action_setting_edit_callback_long5(const char* pstr, unsigned l
   #define MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(type, label, args...) MENU_ITEM(setting_edit_callback_ ## type, label, PSTR(label), ## args)
 #endif //!ENCODER_RATE_MULTIPLIER
 #define END_MENU() \
-    if (encoderPosition / ENCODER_STEPS_PER_MENU_ITEM >= _menuItemNr) encoderPosition = _menuItemNr * ENCODER_STEPS_PER_MENU_ITEM - 1; \
-    if ((uint8_t)(encoderPosition / ENCODER_STEPS_PER_MENU_ITEM) >= currentMenuViewOffset + LCD_HEIGHT) { currentMenuViewOffset = (encoderPosition / ENCODER_STEPS_PER_MENU_ITEM) - LCD_HEIGHT + 1; lcdDrawUpdate = 1; _lineNr = currentMenuViewOffset - 1; _drawLineNr = -1; } \
+    if (encoderLine >= _menuItemNr) encoderPosition = _menuItemNr * ENCODER_STEPS_PER_MENU_ITEM - 1; encoderLine = encoderPosition / ENCODER_STEPS_PER_MENU_ITEM;\
+    if (encoderLine >= currentMenuViewOffset + LCD_HEIGHT) { currentMenuViewOffset = encoderLine - LCD_HEIGHT + 1; lcdDrawUpdate = 1; _lineNr = currentMenuViewOffset - 1; _drawLineNr = -1; } \
     } } while(0)
 
 /** Used variables to keep track of the menu */
@@ -446,7 +446,7 @@ static void lcd_main_menu() {
 void lcd_set_home_offsets() {
   for(int8_t i=0; i < NUM_AXIS; i++) {
     if (i != E_AXIS) {
-      add_homing[i] -= current_position[i];
+      home_offset[i] -= current_position[i];
       current_position[i] = 0.0;
     }
   }
@@ -971,21 +971,21 @@ static void lcd_control_temperature_menu() {
   #if TEMP_SENSOR_0 != 0
     MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE, &target_temperature[0], 0, HEATER_0_MAXTEMP - 15);
   #endif
-  #if EXTRUDERS > 1
+  #if HOTENDS > 1
     #if TEMP_SENSOR_1 != 0
       MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 2", &target_temperature[1], 0, HEATER_1_MAXTEMP - 15);
     #endif
-    #if EXTRUDERS > 2
+    #if HOTENDS > 2
       #if TEMP_SENSOR_2 != 0
         MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 3", &target_temperature[2], 0, HEATER_2_MAXTEMP - 15);
       #endif
-      #if EXTRUDERS > 3
+      #if HOTENDS > 3
         #if TEMP_SENSOR_3 != 0
           MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 4", &target_temperature[3], 0, HEATER_3_MAXTEMP - 15);
         #endif
-      #endif //EXTRUDERS > 3
-    #endif //EXTRUDERS > 2
-  #endif //EXTRUDERS > 1
+      #endif //HOTENDS > 3
+    #endif //HOTENDS > 2
+  #endif //HOTENDS > 1
   #if TEMP_SENSOR_BED != 0
     MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP - 15);
   #endif
@@ -997,42 +997,40 @@ static void lcd_control_temperature_menu() {
     MENU_ITEM_EDIT(float32, MSG_FACTOR, &autotemp_factor, 0.0, 1.0);
   #endif
   #ifdef PIDTEMP
-  	// set up temp variables - undo the default scaling
+    // set up temp variables - undo the default scaling
     raw_Ki = unscalePID_i(Ki[0]);
     raw_Kd = unscalePID_d(Kd[0]);
     MENU_ITEM_EDIT(float52, MSG_PID_P, &Kp[0], 1, 9990);
     // i is typically a small value so allows values below 1
     MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_I, &raw_Ki, 0.01, 9990, copy_and_scalePID_i);
     MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_D, &raw_Kd, 1, 9990, copy_and_scalePID_d);
-    #ifndef SINGLENOZZLE
-      #if EXTRUDERS > 1
-        // set up temp variables - undo the default scaling
-        raw_Ki = unscalePID_i(Ki[1]);
-      	raw_Kd = unscalePID_d(Kd[1]);
-      	MENU_ITEM_EDIT(float52, MSG_PID_P " E2", &Kp[1], 1, 9990);
-        // i is typically a small value so allows values below 1
-        MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_I " E2", &raw_Ki, 0.01, 9990, copy_and_scalePID_i);
-        MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_D " E2", &raw_Kd, 1, 9990, copy_and_scalePID_d);
-      #endif //EXTRUDERS > 1
-      #if EXTRUDERS > 2
-        // set up temp variables - undo the default scaling
-        raw_Ki = unscalePID_i(Ki[2]);
-      	raw_Kd = unscalePID_d(Kd[2]);
-        MENU_ITEM_EDIT(float52, MSG_PID_P " E3", &Kp[2], 1, 9990);
-        // i is typically a small value so allows values below 1
-        MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_I " E3", &raw_Ki, 0.01, 9990, copy_and_scalePID_i);
-        MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_D " E3", &raw_Kd, 1, 9990, copy_and_scalePID_d);
-      #endif //EXTRUDERS > 2
-      #if EXTRUDERS > 3
-        // set up temp variables - undo the default scaling
-        raw_Ki = unscalePID_i(Ki[3]);
-      	raw_Kd = unscalePID_d(Kd[3]);
-        MENU_ITEM_EDIT(float52, MSG_PID_P " E4", &Kp[3], 1, 9990);
-        // i is typically a small value so allows values below 1
-        MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_I " E4", &raw_Ki, 0.01, 9990, copy_and_scalePID_i);
-        MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_D " E4", &raw_Kd, 1, 9990, copy_and_scalePID_d);
-      #endif //EXTRUDERS > 2
-    #endif //SINGLENOZZLE
+    #if HOTENDS > 1
+      // set up temp variables - undo the default scaling
+      raw_Ki = unscalePID_i(Ki[1]);
+      raw_Kd = unscalePID_d(Kd[1]);
+      MENU_ITEM_EDIT(float52, MSG_PID_P " E2", &Kp[1], 1, 9990);
+      // i is typically a small value so allows values below 1
+      MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_I " E2", &raw_Ki, 0.01, 9990, copy_and_scalePID_i);
+      MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_D " E2", &raw_Kd, 1, 9990, copy_and_scalePID_d);
+    #endif //HOTENDS > 1
+    #if HOTENDS > 2
+      // set up temp variables - undo the default scaling
+      raw_Ki = unscalePID_i(Ki[2]);
+      raw_Kd = unscalePID_d(Kd[2]);
+      MENU_ITEM_EDIT(float52, MSG_PID_P " E3", &Kp[2], 1, 9990);
+      // i is typically a small value so allows values below 1
+      MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_I " E3", &raw_Ki, 0.01, 9990, copy_and_scalePID_i);
+      MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_D " E3", &raw_Kd, 1, 9990, copy_and_scalePID_d);
+    #endif //HOTENDS > 2
+    #if HOTENDS > 3
+      // set up temp variables - undo the default scaling
+      raw_Ki = unscalePID_i(Ki[3]);
+      raw_Kd = unscalePID_d(Kd[3]);
+      MENU_ITEM_EDIT(float52, MSG_PID_P " E4", &Kp[3], 1, 9990);
+      // i is typically a small value so allows values below 1
+      MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_I " E4", &raw_Ki, 0.01, 9990, copy_and_scalePID_i);
+      MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_D " E4", &raw_Kd, 1, 9990, copy_and_scalePID_d);
+    #endif //HOTENDS > 2
   #endif //PIDTEMP
   MENU_ITEM(submenu, MSG_PREHEAT_PLA_SETTINGS, lcd_control_temperature_preheat_pla_settings_menu);
   MENU_ITEM(submenu, MSG_PREHEAT_ABS_SETTINGS, lcd_control_temperature_preheat_abs_settings_menu);
