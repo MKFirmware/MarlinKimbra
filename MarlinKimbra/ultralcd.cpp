@@ -758,7 +758,7 @@ void lcd_level_bed()
           delay(1200);    
           
           encoderPosition = 0;
-          lcd.clear(); 
+          lcd.clear();
           currentMenu = lcd_status_screen;
           lcd_status_screen();
           pageShowInfo=0;
@@ -1001,7 +1001,7 @@ static void lcd_control_temperature_menu() {
     MENU_ITEM_EDIT(float32, MSG_FACTOR, &autotemp_factor, 0.0, 1.0);
   #endif
   #ifdef PIDTEMP
-  	// set up temp variables - undo the default scaling
+    // set up temp variables - undo the default scaling
     raw_Ki = unscalePID_i(Ki[0]);
     raw_Kd = unscalePID_d(Kd[0]);
     MENU_ITEM_EDIT(float52, MSG_PID_P, &Kp[0], 1, 9990);
