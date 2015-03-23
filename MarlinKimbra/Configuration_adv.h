@@ -44,15 +44,35 @@
 //The M105 command return, besides traditional information, the ADC value read from temperature sensors.
 //#define SHOW_TEMP_ADC_VALUES
 
+//  extruder idle oozing prevention
+//if the extruder motor is idle for more than SECONDS, and the temperature over MINTEMP, some filament is retracted. The filament retracted is re-added before the next extrusion
+//#define IDLE_OOZING_PREVENT
+#define IDLE_OOZING_MINTEMP 170
+#define IDLE_OOZING_FEEDRATE 45			  //default feedrate for retracting (mm/s)
+#define IDLE_OOZING_SECONDS 10			  
+#define IDLE_OOZING_LENGTH 15 			  //default retract length (positive mm)
+#define IDLE_OOZING_RECOVER_LENGTH 0       //default additional recover length (mm, added to retract length when recovering)
+#define IDLE_OOZING_RECOVER_FEEDRATE 50     //default feedrate for recovering from retraction (mm/s)
+
+#if defined(IDLE_OOZING_PREVENT) && IDLE_OOZING_MINTEMP < EXTRUDE_MINTEMP
+	#error IDLE_OOZING_MINTEMP have to be greater than EXTRUDE_MINTEMP
+#endif
 //  extruder run-out prevention.
 //if the machine is idle, and the temperature over MINTEMP, every couple of SECONDS some filament is extruded
 //#define EXTRUDER_RUNOUT_PREVENT
 #define EXTRUDER_RUNOUT_MINTEMP 190
-#define EXTRUDER_RUNOUT_SECONDS 30.
-#define EXTRUDER_RUNOUT_ESTEPS 14. //mm filament
-#define EXTRUDER_RUNOUT_SPEED 1500.  //extrusion speed
+#define EXTRUDER_RUNOUT_SECONDS 30
+#define EXTRUDER_RUNOUT_ESTEPS 14 //mm filament
+#define EXTRUDER_RUNOUT_SPEED 1500  //extrusion speed
 #define EXTRUDER_RUNOUT_EXTRUDE 100
 
+#if defined(EXTRUDER_RUNOUT_PREVENT) && EXTRUDER_RUNOUT_MINTEMP < EXTRUDE_MINTEMP
+	#error EXTRUDER_RUNOUT_MINTEMP have to be greater than EXTRUDE_MINTEMP
+#endif
+
+#if defined(EXTRUDER_RUNOUT_PREVENT) && defined(IDLE_OOZING_PREVENT)
+	#error EXTRUDER_RUNOUT_PREVENT and IDLE_OOZING_PREVENT are incopatible. Please comment one of them.
+#endif
 //These defines help to calibrate the AD595 sensor in case you get wrong temperature measurements.
 //The measured temperature is defined as "actualTemp = (measuredTemp * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET"
 #define TEMP_SENSOR_AD595_OFFSET 0.0
@@ -325,6 +345,9 @@
   #ifdef FILAMENT_LCD_DISPLAY
     #error LCD_PROGRESS_BAR and FILAMENT_LCD_DISPLAY are not fully compatible. Comment out this line to use both.
   #endif
+  #ifdef POWER_CONSUMPTION_LCD_DISPLAY
+    #error LCD_PROGRESS_BAR and POWER_CONSUMPTION_LCD_DISPLAY are not fully compatible. Comment out this line to use both.
+  #endif
 #endif
 
 
@@ -439,7 +462,7 @@ const unsigned int dropsegments=5; //everything with less than this number of st
 // until then, intended retractions can be detected by moves that only extrude and the direction.
 // the moves are than replaced by the firmware controlled ones.
 
-// #define FWRETRACT  //ONLY PARTIALLY TESTED
+//#define FWRETRACT  //ONLY PARTIALLY TESTED
 #ifdef FWRETRACT
   #define MIN_RETRACT 0.1                //minimum extruded mm to accept a automatic gcode retraction attempt
   #define RETRACT_LENGTH 3               //default retract length (positive mm)
@@ -448,7 +471,7 @@ const unsigned int dropsegments=5; //everything with less than this number of st
   #define RETRACT_ZLIFT 0                //default retract Z-lift
   #define RETRACT_RECOVER_LENGTH 0       //default additional recover length (mm, added to retract length when recovering)
   #define RETRACT_RECOVER_LENGTH_SWAP 0  //default additional swap recover length (mm, added to retract length when recovering from extruder change)
-  #define RETRACT_RECOVER_FEEDRATE 8     //default feedrate for recovering from retraction (mm/s)
+  #define RETRACT_RECOVER_FEEDRATE 80     //default feedrate for recovering from retraction (mm/s)
 #endif
 
 //adds support for experimental filament exchange support M600; requires display
@@ -460,12 +483,6 @@ const unsigned int dropsegments=5; //everything with less than this number of st
     #define FILAMENTCHANGE_ZADD 5
     #define FILAMENTCHANGE_FIRSTRETRACT -2
     #define FILAMENTCHANGE_FINALRETRACT -100
-  #endif
-#endif
-
-#ifdef FILAMENTCHANGEENABLE
-  #ifdef EXTRUDER_RUNOUT_PREVENT
-    #error EXTRUDER_RUNOUT_PREVENT currently incompatible with FILAMENTCHANGE
   #endif
 #endif
 
