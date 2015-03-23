@@ -56,7 +56,7 @@
 
   extern bool cancel_heatup;
   
-#ifdef FILAMENT_LCD_DISPLAY
+#if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY) || (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
   extern unsigned long message_millis;
 #endif
 
