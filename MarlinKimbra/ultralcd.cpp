@@ -33,7 +33,8 @@ int gumPreheatFanSpeed;
 
 const long baudrates[] = {9600,14400,19200,28800,38400,56000,115200,250000};
 int baudrate_position = -1;
-#ifdef FILAMENT_LCD_DISPLAY
+
+#if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY) || (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
   unsigned long message_millis = 0;
 #endif
 
@@ -309,6 +310,16 @@ static void lcd_status_screen()
     lcd_implementation_status_screen();
     lcd_status_update_delay = 10;   /* redraw the main screen every second. This is easier then trying keep track of all things that change on the screen */
   }
+  #if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY) || (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
+	#if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY) && (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
+	if (millis() > message_millis + 15000)
+	#else
+	if (millis() > message_millis + 10000)
+	#endif
+    {
+      message_millis = millis();
+	}
+  #endif
 
 #ifdef ULTIPANEL
 
@@ -338,9 +349,6 @@ static void lcd_status_screen()
             currentMenu == lcd_status_screen
           #endif
         );
-        #ifdef FILAMENT_LCD_DISPLAY
-          message_millis = millis();  // get status message to show up for a while
-        #endif
     }
 
 #ifdef ULTIPANEL_FEEDMULTIPLY
@@ -685,13 +693,12 @@ void config_lcd_level_bed()
 
 void lcd_level_bed()
 {
-        if(ChangeScreen){
-       lcd.clear(); 
+ if(ChangeScreen){
     switch(pageShowInfo){
       
       case 0:
         {      
-          lcd.setCursor(0, 1);
+          u8g.setPrintPos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_INTRO));
            currentMenu = lcd_level_bed;
            ChangeScreen=false;
@@ -700,7 +707,7 @@ void lcd_level_bed()
 
       case 1:
         {      
-          lcd.setCursor(0, 1);
+          u8g.setPrintPos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_1));
               currentMenu = lcd_level_bed;
            ChangeScreen=false;         
@@ -709,7 +716,7 @@ void lcd_level_bed()
         break;
       case 2:
         {      
-          lcd.setCursor(0, 1);
+          u8g.setPrintPos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_2));
               currentMenu = lcd_level_bed;
            ChangeScreen=false;       
@@ -718,7 +725,7 @@ void lcd_level_bed()
         break;        
       case 3:
         {      
-          lcd.setCursor(0, 1);
+          u8g.setPrintPos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_3));
               currentMenu = lcd_level_bed;
            ChangeScreen=false;         
@@ -727,7 +734,7 @@ void lcd_level_bed()
         break;        
      case 4:
         {     
-          lcd.setCursor(0, 1);
+          u8g.setPrintPos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_4));
               currentMenu = lcd_level_bed;
            ChangeScreen=false;         
@@ -737,7 +744,7 @@ void lcd_level_bed()
 
      case 5:
         {     
-          lcd.setCursor(0, 1);
+          u8g.setPrintPos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_5));
               currentMenu = lcd_level_bed;
            ChangeScreen=false;         
@@ -747,14 +754,13 @@ void lcd_level_bed()
     
      case 6:
         {
-          lcd.setCursor(2, 2);          
+          u8g.setPrintPos(2, 2);          
           lcd_printPGM(PSTR(MSG_LP_6));         
           
           ChangeScreen=false;
           delay(1200);    
           
           encoderPosition = 0;
-          lcd.clear(); 
           currentMenu = lcd_status_screen;
           lcd_status_screen();
           pageShowInfo=0;
@@ -1573,10 +1579,6 @@ void lcd_finishstatus() {
     progressBarTick = millis();
   #endif
   lcdDrawUpdate = 2;
-
-  #ifdef FILAMENT_LCD_DISPLAY
-    message_millis = millis();  //get status message to show up for a while
-  #endif
 }
 
 void lcd_setstatus(const char* message) {
