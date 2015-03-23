@@ -48,6 +48,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the lo
 #define min_software_endstops true // If true, axis won't move to coordinates less than HOME_POS.
 #define max_software_endstops true  // If true, axis won't move to coordinates greater than the defined lengths below.
 
+
 // For Inverting Stepper Enable Pins (Active Low) use 0, Non Inverting (Active High) use 1
 #define X_ENABLE_ON 0
 #define Y_ENABLE_ON 0
@@ -61,13 +62,14 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;      // set to true to invert the lo
 #define DISABLE_E false      // For all extruder
 #define DISABLE_INACTIVE_EXTRUDER false //disable only inactive extruder and keep active extruder enabled
 
-#define INVERT_X_DIR false      // for Mendel set to false, for Orca set to true
-#define INVERT_Y_DIR false      // for Mendel set to true, for Orca set to false
-#define INVERT_Z_DIR false      // for Mendel set to false, for Orca set to true
-#define INVERT_E0_DIR false     // for direct drive extruder v9 set to true, for geared extruder set to false
-#define INVERT_E1_DIR false     // for direct drive extruder v9 set to true, for geared extruder set to false
-#define INVERT_E2_DIR false     // for direct drive extruder v9 set to true, for geared extruder set to false
-#define INVERT_E3_DIR false     // for direct drive extruder v9 set to true, for geared extruder set to false
+// If you motor turns to wrong direction, you can invert it here:
+#define INVERT_X_DIR false
+#define INVERT_Y_DIR false
+#define INVERT_Z_DIR false
+#define INVERT_E0_DIR false
+#define INVERT_E1_DIR false
+#define INVERT_E2_DIR false
+#define INVERT_E3_DIR false
 
 // Travel limits after homing
 #define X_MAX_POS 200

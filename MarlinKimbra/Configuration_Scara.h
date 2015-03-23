@@ -54,13 +54,13 @@
 #endif
 
 // The pullups are needed if you directly connect a mechanical end switch between the signal and ground pins.
-const bool X_MIN_ENDSTOP_INVERTING = true;       // set to true to invert the logic of the endstop.
-const bool Y_MIN_ENDSTOP_INVERTING = true;       // set to true to invert the logic of the endstop.
-const bool Z_MIN_ENDSTOP_INVERTING = true;       // set to true to invert the logic of the endstop.
-const bool E_MIN_ENDSTOP_INVERTING = false;      // set to true to invert the logic of the endstop.
-const bool X_MAX_ENDSTOP_INVERTING = true;       // set to true to invert the logic of the endstop.
-const bool Y_MAX_ENDSTOP_INVERTING = true;       // set to true to invert the logic of the endstop.
-const bool Z_MAX_ENDSTOP_INVERTING = true;       // set to true to invert the logic of the endstop.
+const bool X_MIN_ENDSTOP_INVERTING = true;      // set to true to invert the logic of the endstop.
+const bool Y_MIN_ENDSTOP_INVERTING = true;      // set to true to invert the logic of the endstop.
+const bool Z_MIN_ENDSTOP_INVERTING = true;      // set to true to invert the logic of the endstop.
+const bool E_MIN_ENDSTOP_INVERTING = false;     // set to true to invert the logic of the endstop.
+const bool X_MAX_ENDSTOP_INVERTING = true;      // set to true to invert the logic of the endstop.
+const bool Y_MAX_ENDSTOP_INVERTING = true;      // set to true to invert the logic of the endstop.
+const bool Z_MAX_ENDSTOP_INVERTING = true;      // set to true to invert the logic of the endstop.
 
 // ENDSTOP SETTINGS:
 // Sets direction of endstop when homing; 1=MAX, -1=MIN
@@ -69,8 +69,9 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;       // set to true to invert the lo
 #define Z_HOME_DIR -1
 #define E_HOME_DIR -1
 
-#define min_software_endstops true // If true, axis won't move to coordinates less than HOME_POS.
+#define min_software_endstops true  // If true, axis won't move to coordinates less than HOME_POS.
 #define max_software_endstops true  // If true, axis won't move to coordinates greater than the defined lengths below.
+
 
 // For Inverting Stepper Enable Pins (Active Low) use 0, Non Inverting (Active High) use 1
 #define X_ENABLE_ON 0
@@ -85,13 +86,14 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;       // set to true to invert the lo
 #define DISABLE_E false      // For all extruder
 #define DISABLE_INACTIVE_EXTRUDER false //disable only inactive extruder and keep active extruder enabled
 
-#define INVERT_X_DIR false      // for Mendel set to false, for Orca set to true
-#define INVERT_Y_DIR false      // for Mendel set to true, for Orca set to false
-#define INVERT_Z_DIR true       // for Mendel set to false, for Orca set to true
-#define INVERT_E0_DIR false     // for direct drive extruder v9 set to true, for geared extruder set to false
-#define INVERT_E1_DIR false     // for direct drive extruder v9 set to true, for geared extruder set to false
-#define INVERT_E2_DIR false     // for direct drive extruder v9 set to true, for geared extruder set to false
-#define INVERT_E3_DIR false     // for direct drive extruder v9 set to true, for geared extruder set to false
+// If you motor turns to wrong direction, you can invert it here:
+#define INVERT_X_DIR false
+#define INVERT_Y_DIR false
+#define INVERT_Z_DIR true
+#define INVERT_E0_DIR false
+#define INVERT_E1_DIR false
+#define INVERT_E2_DIR false
+#define INVERT_E3_DIR false
 
 // Travel limits after homing
 #define X_MAX_POS 200
@@ -214,7 +216,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;       // set to true to invert the lo
 #define DEFAULT_AXIS_STEPS_PER_UNIT     {103.69,103.69,200/1.25,1000,1000,1000,1000}    // X, Y, Z, E0, E1, E2, E3
 #define DEFAULT_MAX_FEEDRATE            {300,300,4,45,45,45,45}                         // X, Y, Z, E0, E1, E2, E3 (mm/sec)
 #define DEFAULT_RETRACTION_MAX_FEEDRATE {80,80,80,80}                                   // E0, E1, E2, E3 (mm/sec)
-#define DEFAULT_MAX_ACCELERATION        {5000,5000,50,5000,5000,5000,5000}     // X, Y, Z, E0, E1, E2, E3 maximum start speed for accelerated moves.
+#define DEFAULT_MAX_ACCELERATION        {5000,5000,50,5000,5000,5000,5000}              // X, Y, Z, E0, E1, E2, E3 maximum start speed for accelerated moves.
 
 #define DEFAULT_ACCELERATION           400      // X, Y, Z and E max acceleration in mm/s^2 for printing moves
 #define DEFAULT_RETRACT_ACCELERATION  2000      // X, Y, Z and E max acceleration in mm/s^2 for retracts
