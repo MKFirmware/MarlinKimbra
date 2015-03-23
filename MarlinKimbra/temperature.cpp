@@ -63,6 +63,7 @@
 #define HAS_TEMP_3 (defined(TEMP_3_PIN) && TEMP_3_PIN >= 0)
 #define HAS_TEMP_BED (defined(TEMP_BED_PIN) && TEMP_BED_PIN >= 0)
 #define HAS_FILAMENT_SENSOR (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0)
+#define HAS_POWER_CONSUMPTION_SENSOR (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0)
 #define HAS_HEATER_0 (defined(HEATER_0_PIN) && HEATER_0_PIN >= 0)
 #define HAS_HEATER_1 (defined(HEATER_1_PIN) && HEATER_1_PIN >= 0)
 #define HAS_HEATER_2 (defined(HEATER_2_PIN) && HEATER_2_PIN >= 0)
@@ -125,9 +126,13 @@ unsigned char soft_pwm_bed;
   volatile int babystepsTodo[3] = { 0 };
 #endif
 
-#ifdef FILAMENT_SENSOR
+#if HAS_FILAMENT_SENSOR
   int current_raw_filwidth = 0;  //Holds measured filament diameter - one extruder only
 #endif  
+
+#if HAS_POWER_CONSUMPTION_SENSOR
+  int current_raw_powconsumption = 0;  //Holds measured power consumption
+#endif
 //===========================================================================
 //=============================private variables============================
 //===========================================================================
@@ -234,7 +239,7 @@ static void updateTemperaturesFromRawValues();
   #define SOFT_PWM_SCALE 0
 #endif
 
-#ifdef FILAMENT_SENSOR
+#if HAS_FILAMENT_SENSOR
   static int meas_shift_index;  //used to point to a delayed sample in buffer for filament width sensor
 #endif
 
@@ -792,7 +797,7 @@ void manage_heater() {
   #endif //TEMP_SENSOR_BED != 0
   
   // Control the extruder rate based on the width sensor
-  #ifdef FILAMENT_SENSOR
+  #if HAS_FILAMENT_SENSOR
     if (filament_sensor) {
       meas_shift_index = delay_index1 - meas_delay_cm;
 		  if (meas_shift_index < 0) meas_shift_index += MAX_MEASUREMENT_DELAY + 1;  //loop around buffer if needed
@@ -804,7 +809,7 @@ void manage_heater() {
       if (vm < 0.01) vm = 0.01;
       volumetric_multiplier[FILAMENT_SENSOR_EXTRUDER_NUM] = vm;
     }
-  #endif //FILAMENT_SENSOR
+  #endif //HAS_FILAMENT_SENSOR
 }
 
 #define PGM_RD_W(x)   (short)pgm_read_word(&x)
@@ -908,6 +913,19 @@ static void updateTemperaturesFromRawValues() {
   #if HAS_FILAMENT_SENSOR
     filament_width_meas = analog2widthFil();
   #endif
+  #if HAS_POWER_CONSUMPTION_SENSOR
+	static float watt_overflow = 0.0;
+	static unsigned long last_power_update = millis();
+	unsigned long temp_last_power_update = millis();
+	float power_temp = analog2power();
+    power_consumption_meas = (unsigned int)power_temp;
+	watt_overflow += (power_temp*(temp_last_power_update-last_power_update))/3600000.0;
+	if(watt_overflow >= 1.0) {
+		power_consumption_hour++;
+		watt_overflow--;
+	}
+	last_power_update = temp_last_power_update;
+  #endif
   //Reset the watchdog after we know we have a temperature measurement.
   watchdog_reset();
 
@@ -917,11 +935,11 @@ static void updateTemperaturesFromRawValues() {
 }
 
 
-#ifdef FILAMENT_SENSOR
+#if HAS_FILAMENT_SENSOR
 
   // Convert raw Filament Width to millimeters
   float analog2widthFil() {
-    return current_raw_filwidth / 16383.0 * 5.0;
+    return current_raw_filwidth / (1023.0 * OVERSAMPLENR) * 5.0;
     //return current_raw_filwidth;
   }
 
@@ -931,6 +949,15 @@ static void updateTemperaturesFromRawValues() {
     if (temp < MEASURED_LOWER_LIMIT) temp = filament_width_nominal;  //assume sensor cut out
     else if (temp > MEASURED_UPPER_LIMIT) temp = MEASURED_UPPER_LIMIT;
     return filament_width_nominal / temp * 100;
+  }
+
+#endif
+
+#if HAS_POWER_CONSUMPTION_SENSOR
+
+  // Convert raw Power Consumption to watt
+  float analog2power() {
+	return (((((5.0 * current_raw_powconsumption) / (1023.0 * OVERSAMPLENR)) - POWER_ZERO) * (POWER_VOLTAGE * 100.0)) / (POWER_SENSITIVITY * POWER_EFFICIENCY));
   }
 
 #endif
@@ -1031,6 +1058,9 @@ void tp_init()
   #endif
   #if HAS_FILAMENT_SENSOR
     ANALOG_SELECT(FILWIDTH_PIN);
+  #endif
+  #if HAS_POWER_CONSUMPTION_SENSOR
+    ANALOG_SELECT(POWER_CONSUMPTION_PIN);
   #endif
   
   // Use timer0 for temperature measurement
@@ -1306,6 +1336,8 @@ enum TempState {
   MeasureTemp_3,
   Prepare_FILWIDTH,
   Measure_FILWIDTH,
+  Prepare_POWCONSUMPTION,
+  Measure_POWCONSUMPTION,
   StartupDelay // Startup, delay initial temp reading a tiny bit so the hardware can settle
 };
 
@@ -1351,6 +1383,10 @@ ISR(TIMER0_COMPB_vect) {
 
   #if HAS_FILAMENT_SENSOR
     static unsigned long raw_filwidth_value = 0;
+  #endif
+  
+  #if HAS_POWER_CONSUMPTION_SENSOR
+    static unsigned long raw_powconsumption_value = 0;
   #endif
   
   #ifndef SLOW_PWM_HEATERS
@@ -1608,6 +1644,21 @@ ISR(TIMER0_COMPB_vect) {
           raw_filwidth_value += ((unsigned long)ADC<<7);  //add new ADC reading
         }
       #endif
+      temp_state = Prepare_POWCONSUMPTION;
+      break;
+	case Prepare_POWCONSUMPTION:
+      #if HAS_POWER_CONSUMPTION_SENSOR
+        START_ADC(POWER_CONSUMPTION_PIN);
+      #endif
+      lcd_buttons_update();
+      temp_state = Measure_POWCONSUMPTION;
+      break;
+    case Measure_POWCONSUMPTION:
+      #if HAS_POWER_CONSUMPTION_SENSOR
+        // raw_powconsumption_value += ADC;  //remove to use an IIR filter approach
+        raw_powconsumption_value -= (raw_powconsumption_value>>7);  //multiply raw_powconsumption_value by 127/128
+        raw_powconsumption_value += ((unsigned long)((ADC < (POWER_ZERO*1023)/5.0) ? (1023 - ADC) : (ADC))<<7);  //add new ADC reading
+      #endif
       temp_state = PrepareTemp_0;
       temp_count++;
       break;
@@ -1646,6 +1697,10 @@ ISR(TIMER0_COMPB_vect) {
     // Filament Sensor - can be read any time since IIR filtering is used
     #if HAS_FILAMENT_SENSOR
       current_raw_filwidth = raw_filwidth_value >> 10;  // Divide to get to 0-16384 range since we used 1/128 IIR filter approach
+    #endif
+	// Power Sensor - can be read any time since IIR filtering is used
+	#if HAS_POWER_CONSUMPTION_SENSOR
+      current_raw_powconsumption = raw_powconsumption_value >> 10;  // Divide to get to 0-16384 range since we used 1/128 IIR filter approach
     #endif
     
     temp_meas_ready = true;
