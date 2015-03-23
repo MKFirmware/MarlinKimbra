@@ -121,7 +121,7 @@ static long x_segment_time[3]={MAX_FREQ_TIME + 1,0,0};     // Segment times (in 
 static long y_segment_time[3]={MAX_FREQ_TIME + 1,0,0};
 #endif
 
-#ifdef FILAMENT_SENSOR
+#if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0)
  static char meas_sample; //temporary variable to hold filament measurement sample
 #endif
 
@@ -861,7 +861,7 @@ Having the real displacement of the head, we can calculate the total movement le
   block->nominal_speed = block->millimeters * inverse_second; // (mm/sec) Always > 0
   block->nominal_rate = ceil(block->step_event_count * inverse_second); // (step/sec) Always > 0
 
-#ifdef FILAMENT_SENSOR
+#if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0)
   //FMM update ring buffer used for delay with filament measurements
   
   
