@@ -667,7 +667,7 @@ your extruder heater takes 2 minutes to hit the target on heating.
 // Uncomment below to enable
 //#define POWER_CONSUMPTION
 
-#define POWER_VOLTAGE      12.00    //(V)   The power supply OUT voltage
+#define POWER_VOLTAGE       12.00   //(V)   The power supply OUT voltage
 #define POWER_ZERO          2.5     //(V)   The /\V coming out from the sensor when no current flow.
 #define POWER_SENSITIVITY   0.066   //(V/A) How much increase V for 1A of increase
 #define POWER_EFFICIENCY    100.0   //(%) The power efficency of the power supply
