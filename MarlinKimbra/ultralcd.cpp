@@ -690,11 +690,10 @@ void config_lcd_level_bed()
 void lcd_level_bed()
 {
   if(ChangeScreen) {
-    lcd.clear();
     switch(pageShowInfo) {
       case 0:
         {
-          lcd.setCursor(0, 1);
+          u8g.setPrintPos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_INTRO));
           currentMenu = lcd_level_bed;
           ChangeScreen=false;
@@ -702,7 +701,7 @@ void lcd_level_bed()
       break;
       case 1:
         {
-          lcd.setCursor(0, 1);
+          u8g.setPrintPos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_1));
           currentMenu = lcd_level_bed;
           ChangeScreen=false;
@@ -710,7 +709,7 @@ void lcd_level_bed()
       break;
       case 2:
         {
-          lcd.setCursor(0, 1);
+          u8g.setPrintPos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_2));
               currentMenu = lcd_level_bed;
            ChangeScreen=false;
@@ -718,7 +717,7 @@ void lcd_level_bed()
       break;
       case 3:
         {  
-          lcd.setCursor(0, 1);
+          u8g.setPrintPos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_3));
           currentMenu = lcd_level_bed;
           ChangeScreen=false;
@@ -726,7 +725,7 @@ void lcd_level_bed()
       break;        
       case 4:
         {
-          lcd.setCursor(0, 1);
+          u8g.setPrintPos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_4));
           currentMenu = lcd_level_bed;
           ChangeScreen=false; 
@@ -734,7 +733,7 @@ void lcd_level_bed()
       break;
       case 5:
         {
-          lcd.setCursor(0, 1);
+          u8g.setPrintPos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_5));
           currentMenu = lcd_level_bed;
           ChangeScreen=false;
@@ -742,12 +741,12 @@ void lcd_level_bed()
       break;
       case 6:
         {
-          lcd.setCursor(2, 2);
+          u8g.setPrintPos(2, 2);
           lcd_printPGM(PSTR(MSG_LP_6));
           ChangeScreen=false;
           delay(1200);
           encoderPosition = 0;
-          lcd.clear();
+          lcd_implementation_clear();
           currentMenu = lcd_status_screen;
           lcd_status_screen();
           pageShowInfo=0;

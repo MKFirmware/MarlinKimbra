@@ -267,7 +267,7 @@ static void lcd_implementation_status_screen() {
   // Status line
   u8g.setFont(FONT_STATUSMENU);
   u8g.setPrintPos(0,63);
-  #if defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && (FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY) || (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && (POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
+  #if defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && (FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY) || defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && (POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
     if (millis() < message_millis + 5000) {  //Display both Status message line and Filament display on the last line
       u8g.print(lcd_status_message);
     }
@@ -279,7 +279,7 @@ static void lcd_implementation_status_screen() {
       #endif
       {
         lcd_printPGM(PSTR("P:"));
-        u8g.print(itostr3(power_consumption_meas));
+        u8g.print(ftostr31(power_consumption_meas));
         lcd_printPGM(PSTR("W C:"));
         u8g.print(ltostr7(power_consumption_hour));
         lcd_printPGM(PSTR("Wh"));

@@ -20,7 +20,7 @@
 // User-specified version info of this build to display in [Pronterface, etc] terminal window during
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
 // build by the user have been successfully uploaded into firmware.
-#define STRING_VERSION " 4.0.4"
+#define STRING_VERSION " 4.0.5"
 #define STRING_URL "reprap.org"
 #define STRING_VERSION_CONFIG_H __DATE__ " " __TIME__     // build date and time
 #define STRING_CONFIG_H_AUTHOR "(none, default config)"   // Who made the changes.
@@ -667,10 +667,12 @@ your extruder heater takes 2 minutes to hit the target on heating.
 // Uncomment below to enable
 //#define POWER_CONSUMPTION
 
-#define POWER_VOLTAGE      12.00    //(V)   The power supply OUT voltage
-#define POWER_ZERO          2.5     //(V)   The /\V coming out from the sensor when no current flow.
-#define POWER_SENSITIVITY   0.066   //(V/A) How much increase V for 1A of increase
-#define POWER_EFFICIENCY    100.0   //(%) The power efficency of the power supply
+#define POWER_VOLTAGE			12.00     //(V) The power supply OUT voltage
+#define POWER_ZERO			2.54459   //(V) The /\V coming out from the sensor when no current flow.
+#define POWER_SENSITIVITY		0.066     //(V/A) How much increase V for 1A of increase
+#define POWER_OFFSET			0.015     //(A) Help to get 0A when no load is connected.
+#define POWER_ERROR			3.0       //(%) Ammortize measure error.
+#define POWER_EFFICIENCY		100.0     //(%) The power efficency of the power supply
 
 //When using an LCD, uncomment the line below to display the Power consumption sensor data on the last line instead of status.  Status will appear for 5 sec.
 //#define POWER_CONSUMPTION_LCD_DISPLAY

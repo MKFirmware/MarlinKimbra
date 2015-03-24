@@ -40,6 +40,7 @@ void manage_heater(); //it is critical that this is called periodically.
 
 #if (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0)
   // For converting raw Power Consumption to watt
+  float analog2current();
   float analog2power();
 #endif
 
