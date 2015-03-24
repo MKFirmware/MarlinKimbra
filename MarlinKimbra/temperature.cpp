@@ -857,6 +857,7 @@ static void updateTemperaturesFromRawValues() {
     static unsigned long last_power_update = millis();
     unsigned long temp_last_power_update = millis();
     power_consumption_meas = analog2power();
+	//MYSERIAL.println(analog2current(),3);
     watt_overflow += (power_consumption_meas*(temp_last_power_update-last_power_update))/3600000.0;
     if(watt_overflow >= 1.0) {
       power_consumption_hour++;
@@ -876,7 +877,7 @@ static void updateTemperaturesFromRawValues() {
 #if HAS_FILAMENT_SENSOR
   // Convert raw Filament Width to millimeters
   float analog2widthFil() {
-    return current_raw_filwidth / (1024 * OVERSAMPLENR - 1) * 5.0;
+    return current_raw_filwidth / (1023 * OVERSAMPLENR) * 5.0;
     //return current_raw_filwidth;
   }
 
@@ -892,8 +893,13 @@ static void updateTemperaturesFromRawValues() {
 
 #if HAS_POWER_CONSUMPTION_SENSOR
   // Convert raw Power Consumption to watt
+  float analog2current() {
+	  float temp = (((5.0 * current_raw_powconsumption) / (1023 * OVERSAMPLENR)) - POWER_ZERO) / POWER_SENSITIVITY;
+	  temp = ((100-POWER_ERROR)/100)*(temp + (temp / 100)) - POWER_OFFSET;
+	  return temp > 0 ? temp : 0;
+  }
   float analog2power() {
-    return (((5.0 * current_raw_powconsumption / (1024 * OVERSAMPLENR - 1)) - POWER_ZERO) * POWER_VOLTAGE * 100) / POWER_SENSITIVITY * POWER_EFFICIENCY;
+    return (analog2current() * POWER_VOLTAGE * 100) /  POWER_EFFICIENCY;
   }
 #endif
 
@@ -1569,9 +1575,7 @@ ISR(TIMER0_COMPB_vect) {
       break;
     case Measure_POWCONSUMPTION:
       #if HAS_POWER_CONSUMPTION_SENSOR
-        // raw_powconsumption_value += ADC;  //remove to use an IIR filter approach
-        raw_powconsumption_value -= (raw_powconsumption_value>>7);  //multiply raw_powconsumption_value by 127/128
-        raw_powconsumption_value += ((unsigned long)((ADC < ((POWER_ZERO * 1024 - 1)/ 5.0)) ? (1023 - ADC) : (ADC))<<7);  //add new ADC reading
+        raw_powconsumption_value += ADC;
       #endif
       temp_state = PrepareTemp_0;
       temp_count++;
@@ -1604,19 +1608,25 @@ ISR(TIMER0_COMPB_vect) {
       #ifdef TEMP_SENSOR_1_AS_REDUNDANT
         redundant_temperature_raw = raw_temp_value[1];
       #endif
+	  #if HAS_POWER_CONSUMPTION_SENSOR
+	    float power_zero_raw = (POWER_ZERO * 1023 * OVERSAMPLENR) / 5.0;
+	    current_raw_powconsumption = (raw_powconsumption_value < power_zero_raw) ? (2 * power_zero_raw - raw_powconsumption_value) : (raw_powconsumption_value);
+      #endif
       current_temperature_bed_raw = raw_temp_bed_value;
     } //!temp_meas_ready
 
     // Filament Sensor - can be read any time since IIR filtering is used
     #if HAS_FILAMENT_SENSOR
-      current_raw_filwidth = raw_filwidth_value >> 10;  // Divide to get to 0-16384 range since we used 1/128 IIR filter approach
+      current_raw_filwidth = raw_filwidth_value >> 10;  // Divide to get to 0-16368 range since we used 1/128 IIR filter approach
     #endif
     
     temp_meas_ready = true;
     temp_count = 0;
     for (int i = 0; i < HOTENDS; i++) raw_temp_value[i] = 0;
     raw_temp_bed_value = 0;
-
+	#if HAS_POWER_CONSUMPTION_SENSOR
+      raw_powconsumption_value = 0;
+	#endif
     #if HEATER_0_RAW_LO_TEMP > HEATER_0_RAW_HI_TEMP
       #define GE0 <=
       #define LE0 >=
