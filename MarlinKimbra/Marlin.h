@@ -309,7 +309,7 @@ extern unsigned char fanSpeedSoftPwm;
 #endif
 
 #if (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0)
-  extern unsigned int power_consumption_meas;   //holds the power consumption as accurately measured
+  extern float power_consumption_meas;          //holds the power consumption as accurately measured
   extern unsigned long power_consumption_hour;  //holds the power consumption per hour as accurately measured
 #endif
 
