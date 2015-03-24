@@ -629,7 +629,7 @@ static void lcd_implementation_status_screen() {
       #endif
       {
         lcd_printPGM(PSTR("P:"));
-        lcd.print(itostr3(power_consumption_meas));
+        lcd.print(ftostr31(power_consumption_meas));
         lcd_printPGM(PSTR("W C:"));
         lcd.print(ltostr7(power_consumption_hour));
         lcd_printPGM(PSTR("Wh"));
