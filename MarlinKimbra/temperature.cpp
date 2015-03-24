@@ -856,9 +856,8 @@ static void updateTemperaturesFromRawValues() {
     static float watt_overflow = 0.0;
     static unsigned long last_power_update = millis();
     unsigned long temp_last_power_update = millis();
-    float power_temp = analog2power();
-    power_consumption_meas = (unsigned int)power_temp;
-    watt_overflow += (power_temp*(temp_last_power_update-last_power_update))/3600000.0;
+    power_consumption_meas = analog2power();
+    watt_overflow += (power_consumption_meas*(temp_last_power_update-last_power_update))/3600000.0;
     if(watt_overflow >= 1.0) {
       power_consumption_hour++;
       watt_overflow--;
@@ -877,7 +876,7 @@ static void updateTemperaturesFromRawValues() {
 #if HAS_FILAMENT_SENSOR
   // Convert raw Filament Width to millimeters
   float analog2widthFil() {
-    return current_raw_filwidth / (1024 * OVERSAMPLENR) * 5.0;
+    return current_raw_filwidth / (1024 * OVERSAMPLENR - 1) * 5.0;
     //return current_raw_filwidth;
   }
 
@@ -894,7 +893,7 @@ static void updateTemperaturesFromRawValues() {
 #if HAS_POWER_CONSUMPTION_SENSOR
   // Convert raw Power Consumption to watt
   float analog2power() {
-    return (((((5.0 * current_raw_powconsumption) / (1024.0 * OVERSAMPLENR)) - POWER_ZERO) * (POWER_VOLTAGE * 100.0)) / (POWER_SENSITIVITY * POWER_EFFICIENCY));
+    return (((5.0 * current_raw_powconsumption / (1024 * OVERSAMPLENR - 1)) - POWER_ZERO) * POWER_VOLTAGE * 100) / POWER_SENSITIVITY * POWER_EFFICIENCY;
   }
 #endif
 
@@ -1572,7 +1571,7 @@ ISR(TIMER0_COMPB_vect) {
       #if HAS_POWER_CONSUMPTION_SENSOR
         // raw_powconsumption_value += ADC;  //remove to use an IIR filter approach
         raw_powconsumption_value -= (raw_powconsumption_value>>7);  //multiply raw_powconsumption_value by 127/128
-        raw_powconsumption_value += ((unsigned long)((ADC < (POWER_ZERO*1024)/5.0) ? (1024 - ADC) : (ADC))<<7);  //add new ADC reading
+        raw_powconsumption_value += ((unsigned long)((ADC < ((POWER_ZERO * 1024 - 1)/ 5.0)) ? (1023 - ADC) : (ADC))<<7);  //add new ADC reading
       #endif
       temp_state = PrepareTemp_0;
       temp_count++;
