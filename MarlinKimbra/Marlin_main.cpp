@@ -331,7 +331,7 @@ uint8_t debugLevel = 0;
   int EtoPPressure = 0;
 #endif //BARICUDA
 
-#if defined(FILAMENTCHANGEENABLE) || defined(IDLE_OOZING_PREVENT)
+#ifdef FILAMENTCHANGEENABLE
 	bool filament_changing = false;
 #endif
 
@@ -6563,26 +6563,34 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) //default argument s
   #endif
 
   #ifdef IDLE_OOZING_PREVENT
-    if(!debugDryrun() && !axis_is_moving && !filament_changing && (millis() - axis_last_activity) >  IDLE_OOZING_SECONDS*1000 && degHotend(active_extruder) > IDLE_OOZING_MINTEMP) {
+    if (!debugDryrun() && !axis_is_moving && (millis() - axis_last_activity) >  IDLE_OOZING_SECONDS * 1000 && degHotend(active_extruder) > IDLE_OOZING_MINTEMP) {
+      #ifdef FILAMENTCHANGEENABLE
+        if (!filament_changing)
+      #endif
       IDLE_OOZING_retract(true);
     }
   #endif
 
   #ifdef EXTRUDER_RUNOUT_PREVENT
-    if(!debugDryrun() && !axis_is_moving && !filament_changing && (millis() - axis_last_activity) >  EXTRUDER_RUNOUT_SECONDS*1000 && degHotend(active_extruder)>EXTRUDER_RUNOUT_MINTEMP)
+    if (!debugDryrun() && !axis_is_moving && (millis() - axis_last_activity) >  EXTRUDER_RUNOUT_SECONDS * 1000 && degHotend(active_extruder) > EXTRUDER_RUNOUT_MINTEMP)
     {
-      bool oldstatus=READ(E0_ENABLE_PIN);
-      enable_e0();
-      float oldepos=current_position[E_AXIS];
-      float oldedes=destination[E_AXIS];
-      plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS],
-                      destination[E_AXIS]+EXTRUDER_RUNOUT_EXTRUDE*EXTRUDER_RUNOUT_ESTEPS/axis_steps_per_unit[active_extruder+3],
-                      EXTRUDER_RUNOUT_SPEED/60.*EXTRUDER_RUNOUT_ESTEPS/axis_steps_per_unit[active_extruder+3], active_extruder, active_driver);
-      current_position[E_AXIS]=oldepos;
-      destination[E_AXIS]=oldedes;
-      plan_set_e_position(oldepos);
-      st_synchronize();
-      WRITE(E0_ENABLE_PIN,oldstatus);
+      #ifdef FILAMENTCHANGEENABLE
+        if (!filament_changing)
+      #endif
+      {
+        bool oldstatus = READ(E0_ENABLE_PIN);
+        enable_e0();
+        float oldepos = current_position[E_AXIS];
+        float oldedes = destination[E_AXIS];
+        plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS],
+                        destination[E_AXIS] + EXTRUDER_RUNOUT_EXTRUDE * EXTRUDER_RUNOUT_ESTEPS / axis_steps_per_unit[E_AXIS + active_extruder],
+                        EXTRUDER_RUNOUT_SPEED / 60 * EXTRUDER_RUNOUT_ESTEPS / axis_steps_per_unit[E_AXIS + active_extruder], active_extruder, active_driver);
+        current_position[E_AXIS] = oldepos;
+        destination[E_AXIS] = oldedes;
+        plan_set_e_position(oldepos);
+        st_synchronize();
+        WRITE(E0_ENABLE_PIN,oldstatus);
+      }
     }
   #endif
 
