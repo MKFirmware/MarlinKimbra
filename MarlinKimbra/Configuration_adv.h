@@ -48,8 +48,9 @@
 //if the extruder motor is idle for more than SECONDS, and the temperature over MINTEMP, some filament is retracted. The filament retracted is re-added before the next extrusion
 //or when the target temperature is less than EXTRUDE_MINTEMP and the actual temperature is greater than IDLE_OOZING_MINTEMP and less than IDLE_OOZING_FEEDRATE
 //#define IDLE_OOZING_PREVENT
-#define IDLE_OOZING_MINTEMP           EXTRUDE_MINTEMP+5
-#define IDLE_OOZING_FEEDRATE          IDLE_OOZING_MINTEMP+5     //default feedrate for retracting (mm/s)
+#define IDLE_OOZING_MINTEMP          EXTRUDE_MINTEMP+5
+#define IDLE_OOZING_MAXTEMP          IDLE_OOZING_MINTEMP+5
+#define IDLE_OOZING_FEEDRATE         45	                        //default feedrate for retracting (mm/s)
 #define IDLE_OOZING_SECONDS           10
 #define IDLE_OOZING_LENGTH            15                        //default retract length (positive mm)
 #define IDLE_OOZING_RECOVER_LENGTH     0                        //default additional recover length (mm, added to retract length when recovering)
