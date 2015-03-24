@@ -38,4 +38,4 @@ The current MarlinKimbra dev team consists of:
   
 
 More features have been added by:
-  - 
+ - simone97 (https://github.com/simone97)
