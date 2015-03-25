@@ -1,8 +1,8 @@
 // Tonokip RepRap firmware rewrite based off of Hydra-mmm firmware.
 // License: GPL
 
-#ifndef __MARLIN_H
-#define __MARLIN_H
+#ifndef MARLIN_H
+#define MARLIN_H
 
 #define  FORCE_INLINE __attribute__((always_inline)) inline
 
@@ -21,16 +21,6 @@
 #include "fastio.h"
 #include "Configuration.h"
 #include "pins.h"
-
-#ifndef AT90USB
-  #define  HardwareSerial_h // trick to disable the standard HWserial
-#endif
-
-#if (ARDUINO >= 100)
-  #include "Arduino.h"
-#else
-  #include "WProgram.h"
-#endif
 
 #define BIT(b) (1<<(b))
 #define TEST(n,b) (((n)&BIT(b))!=0)
@@ -265,21 +255,19 @@ extern float home_offset[3];
 #endif // HOTENDS > 1
 
 #ifdef NPR2
-extern int old_color; // old color for system NPR2
+  extern int old_color; // old color for system NPR2
 #endif
 
 #ifdef DELTA
-extern float z_probe_offset[3];
-extern float endstop_adj[3];
-extern float tower_adj[6];
-extern float delta_radius;
-extern float delta_diagonal_rod;
-//*extern float Z_MAX_POS;
-//*extern float Z_MAX_LENGTH;
+  extern float z_probe_offset[3];
+  extern float endstop_adj[3];
+  extern float tower_adj[6];
+  extern float delta_radius;
+  extern float delta_diagonal_rod;
 #endif
 
 #ifdef SCARA
-extern float axis_scaling[3];  // Build size scaling
+  extern float axis_scaling[3];  // Build size scaling
 #endif
 
 extern float min_pos[3];
@@ -290,8 +278,8 @@ extern float zprobe_zoffset;
 extern int fanSpeed;
 
 #ifdef BARICUDA
-extern int ValvePressure;
-extern int EtoPPressure;
+  extern int ValvePressure;
+  extern int EtoPPressure;
 #endif
 
 #ifdef FAN_SOFT_PWM
@@ -309,23 +297,23 @@ extern unsigned char fanSpeedSoftPwm;
 #endif
 
 #if (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0)
-  extern unsigned int power_consumption_meas;   //holds the power consumption as accurately measured
+  extern float power_consumption_meas;          //holds the power consumption as accurately measured
   extern unsigned long power_consumption_hour;  //holds the power consumption per hour as accurately measured
 #endif
 
 #ifdef FWRETRACT
-extern bool autoretract_enabled;
-extern bool retracted[EXTRUDERS];
-extern float retract_length, retract_length_swap, retract_feedrate, retract_zlift;
-extern float retract_recover_length, retract_recover_length_swap, retract_recover_feedrate;
+  extern bool autoretract_enabled;
+  extern bool retracted[EXTRUDERS];
+  extern float retract_length, retract_length_swap, retract_feedrate, retract_zlift;
+  extern float retract_recover_length, retract_recover_length_swap, retract_recover_feedrate;
 #endif
 
 #ifdef EASY_LOAD
-extern bool allow_lengthy_extrude_once; // for load/unload
+  extern bool allow_lengthy_extrude_once; // for load/unload
 #endif
 
 #ifdef LASERBEAM
-extern int laser_ttl_modulation;
+  extern int laser_ttl_modulation;
 #endif
 
 extern unsigned long starttime;
@@ -336,8 +324,8 @@ extern uint8_t active_extruder;
 extern uint8_t active_driver;
 
 #ifdef DIGIPOT_I2C
-extern void digipot_i2c_set_current( int channel, float current );
-extern void digipot_i2c_init();
+  extern void digipot_i2c_set_current( int channel, float current );
+  extern void digipot_i2c_init();
 #endif
 
 // Debug with repetier
@@ -348,9 +336,9 @@ extern inline bool debugDryrun()
 }
 
 #ifdef FIRMWARE_TEST
-void FirmwareTest();
+  void FirmwareTest();
 #endif
 
 extern void calculate_volumetric_multipliers();
 
-#endif //__MARLIN_H
+#endif //MARLIN_H

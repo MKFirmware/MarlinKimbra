@@ -22,9 +22,6 @@
 #include "Marlin.h"
 
 #ifdef ENABLE_AUTO_BED_LEVELING
-  #if Z_MIN_PIN == -1
-    #error "You must have a Z_MIN endstop to enable Auto Bed Leveling feature. Z_MIN_PIN must point to a valid hardware pin."
-  #endif
   #include "vector_3.h"
   #ifdef AUTO_BED_LEVELING_GRID
     #include "qr_solve.h"
@@ -202,9 +199,7 @@ M999 - Restart after being stopped by error
 
 unsigned long baudrate;
 float homing_feedrate[] = HOMING_FEEDRATE;
-#ifdef ENABLE_AUTO_BED_LEVELING
-  int xy_travel_speed = XY_TRAVEL_SPEED;
-#endif
+int xy_travel_speed = XY_TRAVEL_SPEED;
 int homing_bump_divisor[] = HOMING_BUMP_DIVISOR;
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
 int feedmultiply = 100; //100->1 200->2
@@ -316,12 +311,11 @@ float lastpos[4];
   };
 #endif //HOTENDS > 1
 
-
 uint8_t active_extruder = 0;
 uint8_t active_driver = 0;
 uint8_t debugLevel = 0;
 
-#ifdef NUM_SERVOS > 0
+#if NUM_SERVOS > 0
   int servo_endstops[] = SERVO_ENDSTOPS;
   int servo_endstop_angles[] = SERVO_ENDSTOP_ANGLES;
 #endif //NUM_SERVOS > 0
@@ -413,7 +407,7 @@ uint8_t debugLevel = 0;
 #endif
 
 #if defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0
-  unsigned int power_consumption_meas = 0;
+  float power_consumption_meas = 0;
   unsigned long power_consumption_hour = 0.0;
 #endif
 
@@ -424,11 +418,9 @@ uint8_t debugLevel = 0;
 const char errormagic[] PROGMEM = "Error:";
 const char echomagic[] PROGMEM = "echo:";
 
-//===========================================================================
-//=============================Private Variables=============================
-//===========================================================================
 const char axis_codes[NUM_AXIS] = {'X', 'Y', 'Z', 'E'};
-static float offset[3] = { 0.0, 0.0, 0.0 };
+
+static float offset[3] = { 0, 0, 0 };
 static bool home_all_axis = true;
 
 #ifdef DELTA
@@ -443,16 +435,16 @@ static bool home_all_axis = true;
       { 0, 0, 0, 0, 0, 0, 0 },
       { 0, 0, 0, 0, 0, 0, 0 },
       };
-  static float feedrate = 1500.0, next_feedrate, saved_feedrate, z_offset;
+  static float z_offset;
   static float bed_level_x, bed_level_y, bed_level_z;
   static float bed_level_c = 20; //used for inital bed probe safe distance (to avoid crashing into bed)
   static float bed_level_ox, bed_level_oy, bed_level_oz;
   static int loopcount;
-#else // No DELTA
-  static float feedrate = 1500.0, next_feedrate, saved_feedrate;
 #endif // No DELTA
 
+static float feedrate = 1500.0, next_feedrate, saved_feedrate;
 static long gcode_N, gcode_LastN, Stopped_gcode_LastN = 0;
+
 static bool relative_mode = false;  //Determines Absolute or Relative Coordinates
 
 static char cmdbuffer[BUFSIZE][MAX_CMD_SIZE];
@@ -1080,43 +1072,36 @@ XYZ_CONSTS_FROM_CONFIG(float, home_retract_mm, HOME_RETRACT_MM);
 XYZ_CONSTS_FROM_CONFIG(signed char, home_dir,  HOME_DIR);
 
 #ifdef DUAL_X_CARRIAGE
-  #if EXTRUDERS == 1 || defined(COREXY) \
-      || !defined(X2_ENABLE_PIN) || !defined(X2_STEP_PIN) || !defined(X2_DIR_PIN) \
-      || !defined(X2_HOME_POS) || !defined(X2_MIN_POS) || !defined(X2_MAX_POS) \
-      || !defined(X_MAX_PIN) || X_MAX_PIN < 0
-    #error "Missing or invalid definitions for DUAL_X_CARRIAGE mode."
-  #endif
-  #if X_HOME_DIR != -1 || X2_HOME_DIR != 1
-    #error "Please use canonical x-carriage assignment" // the x-carriages are defined by their homing directions
-  #endif
 
-#define DXC_FULL_CONTROL_MODE 0
-#define DXC_AUTO_PARK_MODE    1
-#define DXC_DUPLICATION_MODE  2
-static int dual_x_carriage_mode = DEFAULT_DUAL_X_CARRIAGE_MODE;
+  #define DXC_FULL_CONTROL_MODE 0
+  #define DXC_AUTO_PARK_MODE    1
+  #define DXC_DUPLICATION_MODE  2
 
-static float x_home_pos(int extruder) {
-  if (extruder == 0)
-    return base_home_pos(X_AXIS) + home_offset[X_AXIS];
-  else
-    // In dual carriage mode the extruder offset provides an override of the
-    // second X-carriage offset when homed - otherwise X2_HOME_POS is used.
-    // This allow soft recalibration of the second extruder offset position without firmware reflash
-    // (through the M218 command).
-    return (hotend_offset[X_AXIS][1] > 0) ? hotend_offset[X_AXIS][1] : X2_HOME_POS;
-}
+  static int dual_x_carriage_mode = DEFAULT_DUAL_X_CARRIAGE_MODE;
 
-static int x_home_dir(int extruder) {
-  return (extruder == 0) ? X_HOME_DIR : X2_HOME_DIR;
-}
+  static float x_home_pos(int extruder) {
+    if (extruder == 0)
+      return base_home_pos(X_AXIS) + add_homing[X_AXIS];
+    else
+      // In dual carriage mode the extruder offset provides an override of the
+      // second X-carriage offset when homed - otherwise X2_HOME_POS is used.
+      // This allow soft recalibration of the second extruder offset position without firmware reflash
+      // (through the M218 command).
+      return (extruder_offset[X_AXIS][1] > 0) ? extruder_offset[X_AXIS][1] : X2_HOME_POS;
+  }
 
-static float inactive_extruder_x_pos = X2_MAX_POS; // used in mode 0 & 1
-static bool active_extruder_parked = false; // used in mode 1 & 2
-static float raised_parked_position[NUM_AXIS]; // used in mode 1
-static unsigned long delayed_move_time = 0; // used in mode 1
-static float duplicate_extruder_x_offset = DEFAULT_DUPLICATION_X_OFFSET; // used in mode 2
-static float duplicate_extruder_temp_offset = 0; // used in mode 2
-bool extruder_duplication_enabled = false; // used in mode 2
+  static int x_home_dir(int extruder) {
+    return (extruder == 0) ? X_HOME_DIR : X2_HOME_DIR;
+  }
+
+  static float inactive_extruder_x_pos = X2_MAX_POS; // used in mode 0 & 1
+  static bool active_extruder_parked = false; // used in mode 1 & 2
+  static float raised_parked_position[NUM_AXIS]; // used in mode 1
+  static unsigned long delayed_move_time = 0; // used in mode 1
+  static float duplicate_extruder_x_offset = DEFAULT_DUPLICATION_X_OFFSET; // used in mode 2
+  static float duplicate_extruder_temp_offset = 0; // used in mode 2
+  bool extruder_duplication_enabled = false; // used in mode 2
+
 #endif //DUAL_X_CARRIAGE
 
 #if defined(CARTESIAN) || defined(COREXY) || defined(SCARA)
@@ -1134,8 +1119,8 @@ bool extruder_duplication_enabled = false; // used in mode 2
         else if (dual_x_carriage_mode == DXC_DUPLICATION_MODE && active_extruder == 0)
         {
           current_position[X_AXIS] = base_home_pos(X_AXIS) + home_offset[X_AXIS];
-          min_pos[X_AXIS]          = base_min_pos(X_AXIS) + home_offset[X_AXIS];
-          max_pos[X_AXIS]          = min(base_max_pos(X_AXIS) + home_offset[X_AXIS],
+          min_pos[X_AXIS] =          base_min_pos(X_AXIS) + home_offset[X_AXIS];
+          max_pos[X_AXIS] =          min(base_max_pos(X_AXIS) + home_offset[X_AXIS],
                                      max(hotend_offset[X_AXIS][1], X2_MAX_POS) - duplicate_extruder_x_offset);
           return;
         }
@@ -1201,7 +1186,7 @@ bool extruder_duplication_enabled = false; // used in mode 2
     plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], feedrate/60, active_extruder, active_driver);
     st_synchronize();
 
-    feedrate = XY_TRAVEL_SPEED;
+    feedrate = xy_travel_speed;
 
     current_position[X_AXIS] = x;
     current_position[Y_AXIS] = y;
@@ -1235,8 +1220,7 @@ bool extruder_duplication_enabled = false; // used in mode 2
         plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
       }
     #else // not AUTO_BED_LEVELING_GRID
-      static void set_bed_level_equation_3pts(float z_at_pt_1, float z_at_pt_2, float z_at_pt_3) {
-        plan_bed_level_matrix.set_to_identity();
+              plan_bed_level_matrix.set_to_identity();
 
         vector_3 pt1 = vector_3(ABL_PROBE_PT_1_X, ABL_PROBE_PT_1_Y, z_at_pt_1);
         vector_3 pt2 = vector_3(ABL_PROBE_PT_2_X, ABL_PROBE_PT_2_Y, z_at_pt_2);
@@ -2560,7 +2544,7 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
           destination[X_AXIS] = round(Z_SAFE_HOMING_X_POINT - X_PROBE_OFFSET_FROM_EXTRUDER);
           destination[Y_AXIS] = round(Z_SAFE_HOMING_Y_POINT - Y_PROBE_OFFSET_FROM_EXTRUDER);
           destination[Z_AXIS] = -Z_RAISE_BEFORE_HOMING * home_dir(Z_AXIS);    // Set destination away from bed
-          feedrate = XY_TRAVEL_SPEED / 60;
+          feedrate = xy_travel_speed / 60;
           current_position[Z_AXIS] = 0;
 
           plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
@@ -2568,17 +2552,18 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
           st_synchronize();
           current_position[X_AXIS] = destination[X_AXIS];
           current_position[Y_AXIS] = destination[Y_AXIS];
-
           HOMEAXIS(Z);
         }
         // Let's see if X and Y are homed and probe is inside bed area.
         if (code_seen(axis_codes[Z_AXIS])) {
           if (axis_known_position[X_AXIS] && axis_known_position[Y_AXIS]) {
-            float cpx = current_position[X_AXIS] + X_PROBE_OFFSET_FROM_EXTRUDER,
-                  cpy = current_position[Y_AXIS] + Y_PROBE_OFFSET_FROM_EXTRUDER;
-            if (cpx >= X_MIN_POS && cpx <= X_MAX_POS && cpy >= Y_MIN_POS && cpy <= Y_MAX_POS) {
+            float cpx = current_position[X_AXIS], cpy = current_position[Y_AXIS];
+            if (   cpx >= X_MIN_POS - X_PROBE_OFFSET_FROM_EXTRUDER
+                && cpx <= X_MAX_POS - X_PROBE_OFFSET_FROM_EXTRUDER
+                && cpy >= Y_MIN_POS - Y_PROBE_OFFSET_FROM_EXTRUDER
+                && cpy <= Y_MAX_POS - Y_PROBE_OFFSET_FROM_EXTRUDER) {
               current_position[Z_AXIS] = 0;
-              plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+               plan_set_position(cpx, cpy, current_position[Z_AXIS], current_position[E_AXIS]);
               destination[Z_AXIS] = -Z_RAISE_BEFORE_HOMING * home_dir(Z_AXIS);    // Set destination away from bed
               feedrate = max_feedrate[Z_AXIS];
               plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate, active_extruder, active_driver);
@@ -2601,7 +2586,7 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
         if(home_all_axis || (code_seen(axis_codes[Z_AXIS]))) {
           destination[X_AXIS] = round(Z_SAFE_HOMING_X_POINT);
           destination[Y_AXIS] = round(Z_SAFE_HOMING_Y_POINT);
-          feedrate = XY_TRAVEL_SPEED / 60;
+          feedrate = xy_travel_speed / 60;
           destination[Z_AXIS] = current_position[Z_AXIS] = 0;
           plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
           plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], feedrate, active_extruder, active_driver);
@@ -2640,44 +2625,6 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
 }
 
 #ifdef ENABLE_AUTO_BED_LEVELING
-
-  // Define the possible boundaries for probing based on set limits
-  #define MIN_PROBE_X (max(X_MIN_POS, X_MIN_POS + X_PROBE_OFFSET_FROM_EXTRUDER))
-  #define MAX_PROBE_X (min(X_MAX_POS, X_MAX_POS + X_PROBE_OFFSET_FROM_EXTRUDER))
-  #define MIN_PROBE_Y (max(Y_MIN_POS, Y_MIN_POS + Y_PROBE_OFFSET_FROM_EXTRUDER))
-  #define MAX_PROBE_Y (min(Y_MAX_POS, Y_MAX_POS + Y_PROBE_OFFSET_FROM_EXTRUDER))
-
-  #ifdef AUTO_BED_LEVELING_GRID
-
-    // Make sure probing points are reachable
-
-    #if LEFT_PROBE_BED_POSITION < MIN_PROBE_X
-      #error "The given LEFT_PROBE_BED_POSITION can't be reached by the probe."
-    #elif RIGHT_PROBE_BED_POSITION > MAX_PROBE_X
-      #error "The given RIGHT_PROBE_BED_POSITION can't be reached by the probe."
-    #elif FRONT_PROBE_BED_POSITION < MIN_PROBE_Y
-      #error "The given FRONT_PROBE_BED_POSITION can't be reached by the probe."
-    #elif BACK_PROBE_BED_POSITION > MAX_PROBE_Y
-      #error "The given BACK_PROBE_BED_POSITION can't be reached by the probe."
-    #endif
-
-  #else // !AUTO_BED_LEVELING_GRID
-
-    #if ABL_PROBE_PT_1_X < MIN_PROBE_X || ABL_PROBE_PT_1_X > MAX_PROBE_X
-      #error "The given ABL_PROBE_PT_1_X can't be reached by the probe."
-    #elif ABL_PROBE_PT_2_X < MIN_PROBE_X || ABL_PROBE_PT_2_X > MAX_PROBE_X
-      #error "The given ABL_PROBE_PT_2_X can't be reached by the probe."
-    #elif ABL_PROBE_PT_3_X < MIN_PROBE_X || ABL_PROBE_PT_3_X > MAX_PROBE_X
-      #error "The given ABL_PROBE_PT_3_X can't be reached by the probe."
-    #elif ABL_PROBE_PT_1_Y < MIN_PROBE_Y || ABL_PROBE_PT_1_Y > MAX_PROBE_Y
-      #error "The given ABL_PROBE_PT_1_Y can't be reached by the probe."
-    #elif ABL_PROBE_PT_2_Y < MIN_PROBE_Y || ABL_PROBE_PT_2_Y > MAX_PROBE_Y
-      #error "The given ABL_PROBE_PT_2_Y can't be reached by the probe."
-    #elif ABL_PROBE_PT_3_Y < MIN_PROBE_Y || ABL_PROBE_PT_3_Y > MAX_PROBE_Y
-      #error "The given ABL_PROBE_PT_3_Y can't be reached by the probe."
-    #endif
-
-  #endif // !AUTO_BED_LEVELING_GRID
 
   /**
    * G29: Detailed Z-Probe, probes the bed at 3 or more points.
@@ -2825,8 +2772,7 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
       int probePointCounter = 0;
       bool zig = true;
 
-      for (int yCount=0; yCount < auto_bed_leveling_grid_points; yCount++)
-      {
+      for (int yCount=0; yCount < auto_bed_leveling_grid_points; yCount++) {
         double yProbe = front_probe_bed_position + yGridSpacing * yCount;
         int xStart, xStop, xInc;
 
@@ -2835,22 +2781,19 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
           xStart = 0;
           xStop = auto_bed_leveling_grid_points;
           xInc = 1;
-          zig = false;
         }
         else
         {
           xStart = auto_bed_leveling_grid_points - 1;
           xStop = -1;
           xInc = -1;
-          zig = true;
         }
 
 
         // If topo_flag is set then don't zig-zag. Just scan in one direction.
         // This gets the probe points in more readable order.
-        if (do_topography_map) zig = !zig;
-        for (int xCount=xStart; xCount != xStop; xCount += xInc)
-        {
+        if (!do_topography_map) zig = !zig;
+        for (int xCount = xStart; xCount != xStop; xCount += xInc) {
           double xProbe = left_probe_bed_position + xGridSpacing * xCount;
 
           // raise extruder
@@ -2915,7 +2858,7 @@ inline void gcode_G28(boolean home_x=false, boolean home_y=false) {
         SERIAL_PROTOCOLPGM("+-----------+\n");
 
         for (int yy = auto_bed_leveling_grid_points - 1; yy >= 0; yy--) {
-          for (int xx = auto_bed_leveling_grid_points - 1; xx >= 0; xx--) {
+          for (int xx = 0; xx < auto_bed_leveling_grid_points; xx++) {
             int ind = yy * auto_bed_leveling_grid_points + xx;
             float diff = eqnBVector[ind] - mean;
             if (diff >= 0.0)

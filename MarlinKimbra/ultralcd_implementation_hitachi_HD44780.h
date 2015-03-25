@@ -200,7 +200,7 @@
 
 #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
   static uint16_t progressBarTick = 0;
-  #if PROGRESS_BAR_MSG_EXPIRE > 0
+  #if PROGRESS_MSG_EXPIRE > 0
     static uint16_t messageTick = 0;
   #endif
   #define LCD_STR_PROGRESS  "\x03\x04\x05"
@@ -382,16 +382,16 @@ static void lcd_set_custom_characters(
 
 static void lcd_implementation_init (
   #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
-    bool progress_bar_set = true
+    bool progress_bar_set=true
   #endif
-){
+) {
 
   #if defined(LCD_I2C_TYPE_PCF8575)
     lcd.begin(LCD_WIDTH, LCD_HEIGHT);
-  #ifdef LCD_I2C_PIN_BL
-    lcd.setBacklightPin(LCD_I2C_PIN_BL,POSITIVE);
-    lcd.setBacklight(HIGH);
-  #endif
+    #ifdef LCD_I2C_PIN_BL
+      lcd.setBacklightPin(LCD_I2C_PIN_BL,POSITIVE);
+      lcd.setBacklight(HIGH);
+    #endif
 
   #elif defined(LCD_I2C_TYPE_MCP23017)
     lcd.setMCPType(LTI_TYPE_MCP23017);
@@ -408,9 +408,9 @@ static void lcd_implementation_init (
   #endif
 
   lcd_set_custom_characters(
-      #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
-          progress_bar_set
-      #endif
+    #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
+      progress_bar_set
+    #endif
   );
 
   lcd.clear();
@@ -421,7 +421,8 @@ static void lcd_implementation_clear() {
 }
 
 /* Arduino < 1.0.0 is missing a function to print PROGMEM strings, so we need to implement our own */
-static void lcd_printPGM(const char* str) {
+static void lcd_printPGM(const char* str)
+{
   char c;
   while((c = pgm_read_byte(str++)) != '\0')
   {
@@ -458,7 +459,8 @@ Possible status screens:
        |Status line.........|
 */
 
-static void lcd_implementation_status_screen() {
+static void lcd_implementation_status_screen()
+{
   int tHotend=int(degHotend(0) + 0.5);
   int tTarget=int(degTargetHotend(0) + 0.5);
 
@@ -629,7 +631,7 @@ static void lcd_implementation_status_screen() {
       #endif
       {
         lcd_printPGM(PSTR("P:"));
-        lcd.print(itostr3(power_consumption_meas));
+        lcd.print(ftostr31(power_consumption_meas));
         lcd_printPGM(PSTR("W C:"));
         lcd.print(ltostr7(power_consumption_hour));
         lcd_printPGM(PSTR("Wh"));
@@ -644,7 +646,8 @@ static void lcd_implementation_status_screen() {
         lcd.print('%');
         return;
       }
-    #else
+    #endif
+  #else
     lcd.print(lcd_status_message);
   #endif
 }
