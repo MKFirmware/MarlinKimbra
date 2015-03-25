@@ -14,7 +14,7 @@
 #ifndef DOGM_LCD_IMPLEMENTATION_H
 #define DOGM_LCD_IMPLEMENTATION_H
 
-#define MARLIN_VERSION " 4.0.4"
+#define MARLIN_VERSION " 4.0.6"
 
 /**
 * Implementation of the LCD display routines for a DOGM128 graphic display. These are common LCD 128x64 pixel graphic displays.
