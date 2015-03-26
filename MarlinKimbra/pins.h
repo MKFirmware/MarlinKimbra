@@ -979,9 +979,9 @@
           #define SHIFT_CLK   44 // shift register
           #define SHIFT_LD    42 // shift register
         #elif defined(PANEL_ONE)
-          #define BTN_EN1 59 // AUX2 PIN 3
-          #define BTN_EN2 63 // AUX2 PIN 4
-          #define BTN_ENC 49 // AUX3 PIN 7
+          #define BTN_EN1     59 // AUX2 PIN 3
+          #define BTN_EN2     63 // AUX2 PIN 4
+          #define BTN_ENC     49 // AUX3 PIN 7
         #else
           #define BTN_EN1     37
           #define BTN_EN2     35
@@ -4450,7 +4450,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 ************************************* FEATURE *******************************************
 ****************************************************************************************/
 
-#ifdef SINGLENOZZLE
+#if HOTENDS == 1
   #undef HEATER_1_PIN
   #undef HEATER_2_PIN
   #undef HEATER_3_PIN
@@ -4463,7 +4463,21 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
   #define TEMP_1_PIN    -1
   #define TEMP_2_PIN    -1
   #define TEMP_3_PIN    -1
-#endif //SINGLENOZZLE
+#elif HOTENDS == 2
+  #undef HEATER_2_PIN
+  #undef HEATER_3_PIN
+  #define HEATER_2_PIN  -1
+  #define HEATER_3_PIN  -1
+  #undef TEMP_2_PIN
+  #undef TEMP_3_PIN
+  #define TEMP_2_PIN    -1
+  #define TEMP_3_PIN    -1
+#elif HOTENDS == 3
+  #undef HEATER_3_PIN
+  #define HEATER_3_PIN  -1
+  #undef TEMP_3_PIN
+  #define TEMP_3_PIN    -1
+#endif
 
 #ifdef MKR4
   #if (EXTRUDERS == 2) && (DRIVER_EXTRUDERS==1)     // Use this for one driver and two extruder
