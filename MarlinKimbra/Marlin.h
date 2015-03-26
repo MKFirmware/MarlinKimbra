@@ -176,7 +176,7 @@ void manage_inactivity(bool ignore_stepper_queue=false);
 #define disable_e() {disable_e0(); disable_e1(); disable_e2(); disable_e3();}
 
 #ifdef COREXY
-  enum AxisEnum {X_AXIS=0, Y_AXIS=1, Z_AXIS=2, E_AXIS=3, X_HEAD=4, Y_HEAD=5};
+  enum AxisEnum {X_AXIS=0, Y_AXIS=1, A_AXIS=0, B_AXIS=1, Z_AXIS=2, E_AXIS=3, X_HEAD=4, Y_HEAD=5};
   //X_HEAD and Y_HEAD is used for systems that don't have a 1:1 relationship between X_AXIS and X Head movement, like CoreXY bots.
 #else
   enum AxisEnum {X_AXIS=0, Y_AXIS=1, Z_AXIS=2, E_AXIS=3};
@@ -224,7 +224,7 @@ void clamp_to_software_endstops(float target[3]);
 void refresh_cmd_timeout(void);
 
 #ifdef FAST_PWM_FAN
-void setPwmFrequency(uint8_t pin, int val);
+  void setPwmFrequency(uint8_t pin, int val);
 #endif
 
 #ifndef CRITICAL_SECTION_START
@@ -330,9 +330,8 @@ extern uint8_t active_driver;
 
 // Debug with repetier
 extern uint8_t debugLevel;
-extern inline bool debugDryrun()
-{
-  return ((debugLevel & 8)!=0);
+extern inline bool debugDryrun() {
+  return ((debugLevel & 8) != 0);
 }
 
 #ifdef FIRMWARE_TEST

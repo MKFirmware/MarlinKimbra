@@ -2,7 +2,6 @@
  * Conditionals.h
  * Defines that depend on configuration but are not editable.
  */
- 
 #ifndef CONDITIONALS_H
 
 #ifndef CONFIGURATION_LCD // Get the LCD defines which are needed first
@@ -412,17 +411,6 @@
   #if HAS_FAN
     #define WRITE_FAN(v) WRITE(FAN_PIN, v)
   #endif
-
-  /**
-   * Sampling period of the temperature routine
-   * This override comes originally from temperature.cpp
-   * The Configuration.h option is basically ignored.
-   */
-  #ifdef PID_dT
-    #undef PID_dT
-  #endif
-  #define PID_dT ((OVERSAMPLENR * 14.0)/(F_CPU / 64.0 / 256.0))
-
 
 #endif //CONFIGURATION_LCD
 #endif //CONDITIONALS_H

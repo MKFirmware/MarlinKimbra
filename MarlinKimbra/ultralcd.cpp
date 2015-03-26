@@ -52,10 +52,10 @@ char lcd_status_message[LCD_WIDTH+1] = WELCOME_MSG;
 
 #ifdef DOGLCD
   #include "dogm_lcd_implementation.h"
-  #define LCD u8g
+  #define LCD_Printpos(x, y) u8g.setPrintPos(x, y)
 #else
   #include "ultralcd_implementation_hitachi_HD44780.h"
-  #define LCD lcd
+  #define LCD_Printpos(x, y)  lcd.setCursor(x, y)
 #endif
 
 /* Different menus */
@@ -310,17 +310,6 @@ static void lcd_status_screen()
     lcd_status_update_delay = 10;   /* redraw the main screen every second. This is easier then trying keep track of all things that change on the screen */
   }
 
-  #if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY) || (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
-    #if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY) && (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
-      if (millis() > message_millis + 15000)
-    #else
-      if (millis() > message_millis + 10000)
-    #endif
-      {
-        message_millis = millis();
-      }
-  #endif
-
 #ifdef ULTIPANEL
 
     bool current_click = LCD_CLICKED;
@@ -343,12 +332,22 @@ static void lcd_status_screen()
 
     if (current_click)
     {
-        lcd_goto_menu(lcd_main_menu);
-        lcd_implementation_init( // to maybe revive the LCD if static electricity killed it.
-          #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT) && !defined(DOGLCD)
-            currentMenu == lcd_status_screen
-          #endif
-        );
+      lcd_goto_menu(lcd_main_menu);
+      lcd_implementation_init( // to maybe revive the LCD if static electricity killed it.
+        #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT) && !defined(DOGLCD)
+          currentMenu == lcd_status_screen
+        #endif
+      );
+      #if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY) || (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
+        #if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY) && (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
+          if (millis() > message_millis + 15000)
+        #else
+          if (millis() > message_millis + 10000)
+        #endif
+          {
+            message_millis = millis();
+          }
+      #endif
     }
 
 #ifdef ULTIPANEL_FEEDMULTIPLY
@@ -698,7 +697,7 @@ void lcd_level_bed()
     switch(pageShowInfo) {
       case 0:
         {
-          LCD.setCursor(0, 1);
+          LCD_Printpos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_INTRO));
           currentMenu = lcd_level_bed;
           ChangeScreen=false;
@@ -706,7 +705,7 @@ void lcd_level_bed()
       break;
       case 1:
         {
-          LCD.setCursor(0, 1);
+          LCD_Printpos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_1));
           currentMenu = lcd_level_bed;
           ChangeScreen=false;
@@ -714,7 +713,7 @@ void lcd_level_bed()
       break;
       case 2:
         {
-          LCD.setCursor(0, 1);
+          LCD_Printpos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_2));
               currentMenu = lcd_level_bed;
            ChangeScreen=false;
@@ -722,7 +721,7 @@ void lcd_level_bed()
       break;
       case 3:
         {  
-          LCD.setCursor(0, 1);
+          LCD_Printpos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_3));
           currentMenu = lcd_level_bed;
           ChangeScreen=false;
@@ -730,7 +729,7 @@ void lcd_level_bed()
       break;        
       case 4:
         {
-          LCD.setCursor(0, 1);
+          LCD_Printpos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_4));
           currentMenu = lcd_level_bed;
           ChangeScreen=false; 
@@ -738,7 +737,7 @@ void lcd_level_bed()
       break;
       case 5:
         {
-          LCD.setCursor(0, 1);
+          LCD_Printpos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_5));
           currentMenu = lcd_level_bed;
           ChangeScreen=false;
@@ -746,7 +745,7 @@ void lcd_level_bed()
       break;
       case 6:
         {
-          LCD.setCursor(2, 2);
+          LCD_Printpos(2, 2);
           lcd_printPGM(PSTR(MSG_LP_6));
           ChangeScreen=false;
           delay(1200);
