@@ -20,7 +20,7 @@
 // User-specified version info of this build to display in [Pronterface, etc] terminal window during
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
 // build by the user have been successfully uploaded into firmware.
-#define STRING_VERSION " 4.0.4"
+#define STRING_VERSION " 4.0.7"
 #define STRING_URL "reprap.org"
 #define STRING_VERSION_CONFIG_H __DATE__ " " __TIME__     // build date and time
 #define STRING_CONFIG_H_AUTHOR "(none, default config)"   // Who made the changes.
@@ -44,11 +44,7 @@
 //#define MACHINE_UUID "00000000-0000-0000-0000-000000000000"
 
 // If you want test the firmware uncomment below. Use Serial arduino monitor...
-//#define FIRMWARE_TEST
-#ifdef FIRMWARE_TEST
-  #undef BAUDRATE
-  #define BAUDRATE 115200  // Baudrate setting to 115200 because serial monitor arduino function at max 115200 baudrate.
-#endif
+//#define FIRMWARE_TEST // ONLY BAUDRATE 115200
 
 /***********************************************************************\
  **************************** Define type printer **********************
@@ -75,11 +71,6 @@
 // This is used for single nozzle and multiple extrusion configuration
 // Uncomment below to enable (One Hotend)
 //#define SINGLENOZZLE
-#ifdef SINGLENOZZLE
-  #define HOTENDS 1
-#else
-  #define HOTENDS EXTRUDERS
-#endif
 
 /***********************************************************************
  *********************** Multiextruder MKR4  ***************************
@@ -121,10 +112,6 @@
   #define DRIVER_EXTRUDERS 2           // This defines the number of Driver extruders
 #endif
 //**********************************************************************
-
-#if !defined(MKR4) && !defined(NPR2)
-  #define DRIVER_EXTRUDERS EXTRUDERS // This defines the number of Driver extruder
-#endif
 
 
 // The following define selects which power supply you have. Please choose the one that matches your setup
@@ -185,10 +172,6 @@
 // If the temperatures difference between these sensors is to high the print will be aborted.
 //#define TEMP_SENSOR_1_AS_REDUNDANT
 #define MAX_REDUNDANT_TEMP_SENSOR_DIFF 10 // (degC)
-
-#ifdef SINGLENOZZLE
-  #undef TEMP_SENSOR_1_AS_REDUNDANT
-#endif
 
 // Actual temperature must be close to target for this long before M109 returns success
 #define TEMP_RESIDENCY_TIME 10  // (seconds)
@@ -395,110 +378,17 @@ your extruder heater takes 2 minutes to hit the target on heating.
 // REMEMBER TO INSTALL LiquidCrystal_I2C.h in your ARDUINO library folder: https://github.com/kiyoshigawa/LiquidCrystal_I2C
 //#define RA_CONTROL_PANEL
 
-//automatic expansion
-#if defined (MAKRPANEL)
-  #define DOGLCD
-  #define SDSUPPORT
-  #define ULTIPANEL
-  #define NEWPANEL
-  #define DEFAULT_LCD_CONTRAST 17
-#endif //defined (MAKRPANEL)
+/**
+ * I2C Panels
+ */
 
-#if defined(miniVIKI) || defined(VIKI2)
-  #define ULTRA_LCD  //general LCD support, also 16x2
-  #define DOGLCD  // Support for SPI LCD 128x64 (Controller ST7565R graphic Display Family)
-  #define ULTIMAKERCONTROLLER //as available from the Ultimaker online store.
-
-  #ifdef miniVIKI
-    #define DEFAULT_LCD_CONTRAST 95
-  #else
-    #define DEFAULT_LCD_CONTRAST 40
-  #endif
-
-  #define ENCODER_PULSES_PER_STEP 4
-  #define ENCODER_STEPS_PER_MENU_ITEM 1
-#endif //defined(miniVIKI) || defined(VIKI2)
-
-#if defined (PANEL_ONE)
-  #define SDSUPPORT
-  #define ULTIMAKERCONTROLLER
-#endif //defined (PANEL_ONE)
-
-#if defined (REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER)
-  #define DOGLCD
-  #define U8GLIB_ST7920
-  #define REPRAP_DISCOUNT_SMART_CONTROLLER
-#endif //defined (REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER)
-
-#if defined(ULTIMAKERCONTROLLER) || defined(REPRAP_DISCOUNT_SMART_CONTROLLER) || defined(G3D_PANEL)
-  #define ULTIPANEL
-  #define NEWPANEL
-#endif //defined(ULTIMAKERCONTROLLER) || defined(REPRAP_DISCOUNT_SMART_CONTROLLER) || defined(G3D_PANEL)
-
-#if defined(REPRAPWORLD_KEYPAD)
-  #define NEWPANEL
-  #define ULTIPANEL
-#endif //defined(REPRAPWORLD_KEYPAD)
-
-#if defined(RA_CONTROL_PANEL)
-  #define ULTIPANEL
-  #define NEWPANEL
-  #define LCD_I2C_TYPE_PCA8574
-  #define LCD_I2C_ADDRESS 0x27   // I2C Address of the port expander
-#endif //defined(RA_CONTROL_PANEL)
-
-//I2C PANELS
 //#define LCD_I2C_SAINSMART_YWROBOT
-#ifdef LCD_I2C_SAINSMART_YWROBOT
-  // This uses the LiquidCrystal_I2C library ( https://bitbucket.org/fmalpartida/new-liquidcrystal/wiki/Home )
-  // Make sure it is placed in the Arduino libraries directory.
-  #define LCD_I2C_TYPE_PCF8575
-  #define LCD_I2C_ADDRESS 0x27   // I2C Address of the port expander
-  #define NEWPANEL
-  #define ULTIPANEL
-#endif //LCD_I2C_SAINSMART_YWROBOT
 
 // PANELOLU2 LCD with status LEDs, separate encoder and click inputs
 //#define LCD_I2C_PANELOLU2
-#ifdef LCD_I2C_PANELOLU2
-  // This uses the LiquidTWI2 library v1.2.3 or later ( https://github.com/lincomatic/LiquidTWI2 )
-  // Make sure the LiquidTWI2 directory is placed in the Arduino or Sketchbook libraries subdirectory.
-  // (v1.2.3 no longer requires you to define PANELOLU in the LiquidTWI2.h library header file)
-  // Note: The PANELOLU2 encoder click input can either be directly connected to a pin
-  //       (if BTN_ENC defined to != -1) or read through I2C (when BTN_ENC == -1).
-  #define LCD_I2C_TYPE_MCP23017
-  #define LCD_I2C_ADDRESS 0x20 // I2C Address of the port expander
-  #define LCD_USE_I2C_BUZZER //comment out to disable buzzer on LCD
-  #define NEWPANEL
-  #define ULTIPANEL
-
-  #ifndef ENCODER_PULSES_PER_STEP
-	#define ENCODER_PULSES_PER_STEP 4
-  #endif
-
-  #ifndef ENCODER_STEPS_PER_MENU_ITEM
-	#define ENCODER_STEPS_PER_MENU_ITEM 1
-  #endif
-
-  #ifdef LCD_USE_I2C_BUZZER
-	#define LCD_FEEDBACK_FREQUENCY_HZ 1000
-	#define LCD_FEEDBACK_FREQUENCY_DURATION_MS 100
-  #endif
-#endif //LCD_I2C_PANELOLU2
 
 // Panucatt VIKI LCD with status LEDs, integrated click & L/R/U/P buttons, separate encoder inputs
 //#define LCD_I2C_VIKI
-#ifdef LCD_I2C_VIKI
-  // This uses the LiquidTWI2 library v1.2.3 or later ( https://github.com/lincomatic/LiquidTWI2 )
-  // Make sure the LiquidTWI2 directory is placed in the Arduino or Sketchbook libraries subdirectory.
-  // Note: The pause/stop/resume LCD button pin should be connected to the Arduino
-  //       BTN_ENC pin (or set BTN_ENC to -1 if not used)
-  #define LCD_I2C_TYPE_MCP23017
-  #define LCD_I2C_ADDRESS 0x20 // I2C Address of the port expander
-  #define LCD_USE_I2C_BUZZER //comment out to disable buzzer on LCD (requires LiquidTWI2 v1.2.3 or later)
-  #define NEWPANEL
-  #define ULTIPANEL
-#endif //LCD_I2C_VIKI
 
 // Shift register panels
 // ---------------------
@@ -506,42 +396,6 @@ your extruder heater takes 2 minutes to hit the target on heating.
 // https://bitbucket.org/fmalpartida/new-liquidcrystal/wiki/schematics#!shiftregister-connection 
 
 //#define SAV_3DLCD
-#ifdef SAV_3DLCD
-  #define SR_LCD_2W_NL    // Non latching 2 wire shiftregister
-  #define NEWPANEL
-  #define ULTIPANEL
-#endif //SAV_3DLCD
-
-
-#ifdef ULTIPANEL
-  //#define NEWPANEL  //enable this if you have a click-encoder panel
-  #define SDSUPPORT
-  #define ULTRA_LCD
-  #ifdef DOGLCD // Change number of lines to match the DOG graphic display
-    #define LCD_WIDTH 22
-    #define LCD_HEIGHT 5
-  #else //NO DOGLCD
-    #define LCD_WIDTH 20
-    #define LCD_HEIGHT 4
-  #endif //DOGLCD
-#else //no ULTIPANEL
-  #ifdef ULTRA_LCD
-    #ifdef DOGLCD // Change number of lines to match the 128x64 graphics display
-      #define LCD_WIDTH 22
-      #define LCD_HEIGHT 5
-    #else //NO DOGLCD
-      #define LCD_WIDTH 16
-      #define LCD_HEIGHT 2
-    #endif //DOGLCD
-  #endif //ULTRA_LCD
-#endif //ULTIPANEL
-
-// default LCD contrast for dogm-like LCD displays
-#ifdef DOGLCD
-  #ifndef DEFAULT_LCD_CONTRAST
-    #define DEFAULT_LCD_CONTRAST 32
-  #endif
-#endif //DOGLCD
 
 // option for invert rotary switch
 //#define INVERT_ROTARY_SWITCH
@@ -584,7 +438,7 @@ your extruder heater takes 2 minutes to hit the target on heating.
 //========================= Bowden Filament management ======================
 //#define EASY_LOAD
 #ifdef EASY_LOAD
-  #define BOWDEN_LENGTH 560       // mm
+  #define BOWDEN_LENGTH 250       // mm
   #define LCD_PURGE_LENGTH 3      // mm
   #define LCD_RETRACT_LENGTH 3    // mm
   #define LCD_PURGE_FEEDRATE 3    // mm/s
@@ -667,10 +521,12 @@ your extruder heater takes 2 minutes to hit the target on heating.
 // Uncomment below to enable
 //#define POWER_CONSUMPTION
 
-#define POWER_VOLTAGE      12.00    //(V)   The power supply OUT voltage
-#define POWER_ZERO          2.5     //(V)   The /\V coming out from the sensor when no current flow.
+#define POWER_VOLTAGE      12.00    //(V) The power supply OUT voltage
+#define POWER_ZERO          2.54459 //(V) The /\V coming out from the sensor when no current flow.
 #define POWER_SENSITIVITY   0.066   //(V/A) How much increase V for 1A of increase
-#define POWER_EFFICIENCY    100.0   //(%) The power efficency of the power supply
+#define POWER_OFFSET        0.015   //(A) Help to get 0A when no load is connected.
+#define POWER_ERROR         3.0     //(%) Ammortize measure error.
+#define POWER_EFFICIENCY  100.0     //(%) The power efficency of the power supply
 
 //When using an LCD, uncomment the line below to display the Power consumption sensor data on the last line instead of status.  Status will appear for 5 sec.
 //#define POWER_CONSUMPTION_LCD_DISPLAY

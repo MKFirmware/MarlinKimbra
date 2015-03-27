@@ -40,6 +40,7 @@ void manage_heater(); //it is critical that this is called periodically.
 
 #if (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0)
   // For converting raw Power Consumption to watt
+  float analog2current();
   float analog2power();
 #endif
 
@@ -63,7 +64,12 @@ extern float current_temperature_bed;
 #endif
 
 #ifdef PIDTEMP
+<<<<<<< HEAD
   extern float Kp[HOTENDS],Ki[HOTENDS],Kd[HOTENDS];
+=======
+  extern float Kp[HOTENDS], Ki[HOTENDS], Kd[HOTENDS];
+  #define PID_PARAM(param,e) param[e] // use macro to point to array value
+>>>>>>> origin/master
   float scalePID_i(float i);
   float scalePID_d(float d);
   float unscalePID_i(float i);
@@ -93,7 +99,7 @@ FORCE_INLINE float degBed() { return current_temperature_bed; }
 #ifdef SHOW_TEMP_ADC_VALUES
   FORCE_INLINE float rawHotendTemp(uint8_t hotend) { return current_temperature_raw[HOTEND_ARG]; }
   FORCE_INLINE float rawBedTemp() { return current_temperature_bed_raw; }
-#endif //SHOW_TEMP_ADC_VALUES
+#endif
 
 FORCE_INLINE float degTargetHotend(uint8_t hotend) { return target_temperature[HOTEND_ARG]; }
 
@@ -144,7 +150,11 @@ FORCE_INLINE bool isCoolingBed() { return target_temperature_bed < current_tempe
   #define setTargetHotend3(_celsius) do{}while(0)
 #endif
 #if HOTENDS > 4
+<<<<<<< HEAD
   #error Invalid number of hotend
+=======
+  #error Invalid number of hotends
+>>>>>>> origin/master
 #endif
 
 int getHeaterPower(int heater);

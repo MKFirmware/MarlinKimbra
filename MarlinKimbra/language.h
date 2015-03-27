@@ -115,6 +115,7 @@
 #define MSG_Y_MAX                           "y_max: "
 #define MSG_Z_MIN                           "z_min: "
 #define MSG_Z_MAX                           "z_max: "
+#define MSG_Z2_MAX                          "z2_max: "
 #define MSG_E_MIN                           "e_min: "
 #define MSG_PAUSE_PIN                       "pause pin: "
 #define MSG_M119_REPORT                     "Reporting endstop status"
@@ -226,8 +227,6 @@
     #define STR_h3 "\263"
     #define STR_Deg "\337"
     #define STR_THERMOMETER "\002"
-  #elif defined(ULTRA_LCD)
-    #error You must enable either DISPLAY_CHARSET_HD44780_JAPAN or DISPLAY_CHARSET_HD44780_WESTERN for your LCD controller.
   #endif
 #endif
 /*

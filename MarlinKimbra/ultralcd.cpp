@@ -51,13 +51,12 @@ uint8_t lcd_status_message_level;
 char lcd_status_message[LCD_WIDTH+1] = WELCOME_MSG;
 
 #ifdef DOGLCD
-#include "dogm_lcd_implementation.h"
+  #include "dogm_lcd_implementation.h"
+  #define LCD_Printpos(x, y) u8g.setPrintPos(x, y)
 #else
-#include "ultralcd_implementation_hitachi_HD44780.h"
+  #include "ultralcd_implementation_hitachi_HD44780.h"
+  #define LCD_Printpos(x, y)  lcd.setCursor(x, y)
 #endif
-
-void copy_and_scalePID_i();
-void copy_and_scalePID_d();
 
 /* Different menus */
 static void lcd_status_screen();
@@ -215,7 +214,11 @@ static void menu_action_setting_edit_callback_long5(const char* pstr, unsigned l
   #define MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(type, label, args...) MENU_ITEM(setting_edit_callback_ ## type, label, PSTR(label), ## args)
 #endif //!ENCODER_RATE_MULTIPLIER
 #define END_MENU() \
+<<<<<<< HEAD
     if (encoderLine >= _menuItemNr) encoderPosition = _menuItemNr * ENCODER_STEPS_PER_MENU_ITEM - 1; encoderLine = encoderPosition / ENCODER_STEPS_PER_MENU_ITEM;\
+=======
+    if (encoderLine >= _menuItemNr) { encoderPosition = _menuItemNr * ENCODER_STEPS_PER_MENU_ITEM - 1; encoderLine = encoderPosition / ENCODER_STEPS_PER_MENU_ITEM; }\
+>>>>>>> origin/master
     if (encoderLine >= currentMenuViewOffset + LCD_HEIGHT) { currentMenuViewOffset = encoderLine - LCD_HEIGHT + 1; lcdDrawUpdate = 1; _lineNr = currentMenuViewOffset - 1; _drawLineNr = -1; } \
     } } while(0)
 
@@ -275,17 +278,17 @@ static void lcd_status_screen()
 	encoderRateMultiplierEnabled = false;
   #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT) && !defined(DOGLCD)
     uint16_t mil = millis();
-    #ifndef PROGRESS_BAR_MSG_ONCE
+    #ifndef PROGRESS_MSG_ONCE
       if (mil > progressBarTick + PROGRESS_BAR_MSG_TIME + PROGRESS_BAR_BAR_TIME) {
         progressBarTick = mil;
       }
     #endif
-    #if PROGRESS_BAR_MSG_EXPIRE > 0
+    #if PROGRESS_MSG_EXPIRE > 0
       // keep the message alive if paused, count down otherwise
       if (messageTick > 0) {
         if (card.isFileOpen()) {
           if (IS_SD_PRINTING) {
-            if ((mil-messageTick) >= PROGRESS_BAR_MSG_EXPIRE) {
+            if ((mil-messageTick) >= PROGRESS_MSG_EXPIRE) {
               lcd_status_message[0] = '\0';
               messageTick = 0;
             }
@@ -311,12 +314,6 @@ static void lcd_status_screen()
     lcd_status_update_delay = 10;   /* redraw the main screen every second. This is easier then trying keep track of all things that change on the screen */
   }
 
-  #if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY) || (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
-    if (millis() > message_millis + 15000) message_millis = millis();
-  #else
-    if (millis() > message_millis + 10000) message_millis = millis();
-	#endif
-
 #ifdef ULTIPANEL
 
     bool current_click = LCD_CLICKED;
@@ -339,12 +336,22 @@ static void lcd_status_screen()
 
     if (current_click)
     {
-        lcd_goto_menu(lcd_main_menu);
-        lcd_implementation_init( // to maybe revive the LCD if static electricity killed it.
-          #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT) && !defined(DOGLCD)
-            currentMenu == lcd_status_screen
-          #endif
-        );
+      lcd_goto_menu(lcd_main_menu);
+      lcd_implementation_init( // to maybe revive the LCD if static electricity killed it.
+        #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT) && !defined(DOGLCD)
+          currentMenu == lcd_status_screen
+        #endif
+      );
+      #if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY) || (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
+        #if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY) && (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
+          if (millis() > message_millis + 15000)
+        #else
+          if (millis() > message_millis + 10000)
+        #endif
+          {
+            message_millis = millis();
+          }
+      #endif
     }
 
 #ifdef ULTIPANEL_FEEDMULTIPLY
@@ -690,85 +697,72 @@ void config_lcd_level_bed()
 void lcd_level_bed()
 {
   if(ChangeScreen) {
-    lcd.clear();
+    lcd_implementation_clear;
     switch(pageShowInfo) {
-      
       case 0:
-        {      
-          lcd.setCursor(0, 1);
+        {
+          LCD_Printpos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_INTRO));
-           currentMenu = lcd_level_bed;
-           ChangeScreen=false;
+          currentMenu = lcd_level_bed;
+          ChangeScreen=false;
         }
-        break;
-
+      break;
       case 1:
-        {      
-          lcd.setCursor(0, 1);
+        {
+          LCD_Printpos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_1));
-              currentMenu = lcd_level_bed;
-           ChangeScreen=false;         
+          currentMenu = lcd_level_bed;
+          ChangeScreen=false;
         }
-              
-        break;
+      break;
       case 2:
-        {      
-          lcd.setCursor(0, 1);
+        {
+          LCD_Printpos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_2));
               currentMenu = lcd_level_bed;
-           ChangeScreen=false;       
+           ChangeScreen=false;
         }
-              
-        break;        
+      break;
       case 3:
-        {      
-          lcd.setCursor(0, 1);
+        {  
+          LCD_Printpos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_3));
-              currentMenu = lcd_level_bed;
-           ChangeScreen=false;         
-        }
-              
-        break;        
-     case 4:
-        {     
-          lcd.setCursor(0, 1);
-          lcd_printPGM(PSTR(MSG_LP_4));
-              currentMenu = lcd_level_bed;
-           ChangeScreen=false;         
-        }
-              
-        break;
-
-     case 5:
-        {     
-          lcd.setCursor(0, 1);
-          lcd_printPGM(PSTR(MSG_LP_5));
-              currentMenu = lcd_level_bed;
-           ChangeScreen=false;         
-        }
-              
-        break;
-    
-     case 6:
-        {
-          lcd.setCursor(2, 2);          
-          lcd_printPGM(PSTR(MSG_LP_6));         
-          
+          currentMenu = lcd_level_bed;
           ChangeScreen=false;
-          delay(1200);    
-          
+        }
+      break;        
+      case 4:
+        {
+          LCD_Printpos(0, 1);
+          lcd_printPGM(PSTR(MSG_LP_4));
+          currentMenu = lcd_level_bed;
+          ChangeScreen=false; 
+        }
+      break;
+      case 5:
+        {
+          LCD_Printpos(0, 1);
+          lcd_printPGM(PSTR(MSG_LP_5));
+          currentMenu = lcd_level_bed;
+          ChangeScreen=false;
+        }
+      break;
+      case 6:
+        {
+          LCD_Printpos(2, 2);
+          lcd_printPGM(PSTR(MSG_LP_6));
+          ChangeScreen=false;
+          delay(1200);
           encoderPosition = 0;
-          lcd.clear(); 
+          lcd_implementation_clear();
           currentMenu = lcd_status_screen;
           lcd_status_screen();
           pageShowInfo=0;
-     
         }
-        break; 
+      break;
     }
-   }
+  }
 }
-
 
 static void lcd_prepare_menu() {
   START_MENU();
@@ -969,6 +963,35 @@ static void lcd_config_menu() {
   END_MENU();
 }
 
+#ifdef PIDTEMP
+
+  // Helpers for editing PID Ki & Kd values
+  // grab the PID value out of the temp variable; scale it; then update the PID driver
+  void copy_and_scalePID_i(int e) {
+    PID_PARAM(Ki, e) = scalePID_i(raw_Ki);
+    updatePID();
+  }
+  void copy_and_scalePID_d(int e) {
+    PID_PARAM(Kd, e) = scalePID_d(raw_Kd);
+    updatePID();
+  }
+  void copy_and_scalePID_i_E1() { copy_and_scalePID_i(0); }
+  void copy_and_scalePID_d_E1() { copy_and_scalePID_d(0); }
+  #if HOTENDS > 1
+    void copy_and_scalePID_i_E2() { copy_and_scalePID_i(1); }
+    void copy_and_scalePID_d_E2() { copy_and_scalePID_d(1); }
+    #if HOTENDS > 2
+      void copy_and_scalePID_i_E3() { copy_and_scalePID_i(2); }
+      void copy_and_scalePID_d_E3() { copy_and_scalePID_d(2); }
+      #if HOTENDS > 3
+        void copy_and_scalePID_i_E4() { copy_and_scalePID_i(3); }
+        void copy_and_scalePID_d_E4() { copy_and_scalePID_d(3); }
+      #endif //HOTENDS > 3
+    #endif //HOTENDS > 2
+  #endif //HOTENDS > 1
+
+#endif //PIDTEMP
+
 static void lcd_control_temperature_menu() {
   START_MENU();
   MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
@@ -1002,6 +1025,7 @@ static void lcd_control_temperature_menu() {
   #endif
   #ifdef PIDTEMP
     // set up temp variables - undo the default scaling
+<<<<<<< HEAD
     raw_Ki = unscalePID_i(Ki[0]);
     raw_Kd = unscalePID_d(Kd[0]);
     MENU_ITEM_EDIT(float52, MSG_PID_P, &Kp[0], 1, 9990);
@@ -1035,6 +1059,41 @@ static void lcd_control_temperature_menu() {
       MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_I " E4", &raw_Ki, 0.01, 9990, copy_and_scalePID_i);
       MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_D " E4", &raw_Kd, 1, 9990, copy_and_scalePID_d);
     #endif //HOTENDS > 2
+=======
+    raw_Ki = unscalePID_i(PID_PARAM(Ki,0));
+    raw_Kd = unscalePID_d(PID_PARAM(Kd,0));
+    MENU_ITEM_EDIT(float52, MSG_PID_P, &PID_PARAM(Kp,0), 1, 9990);
+    // i is typically a small value so allows values below 1
+    MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_I, &raw_Ki, 0.01, 9990, copy_and_scalePID_i_E1);
+    MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_D, &raw_Kd, 1, 9990, copy_and_scalePID_d_E1);
+    #if HOTENDS > 1
+      // set up temp variables - undo the default scaling
+      raw_Ki = unscalePID_i(PID_PARAM(Ki,1));
+      raw_Kd = unscalePID_d(PID_PARAM(Kd,1));
+      MENU_ITEM_EDIT(float52, MSG_PID_P MSG_E2, &PID_PARAM(Kp,1), 1, 9990);
+      // i is typically a small value so allows values below 1
+      MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_I MSG_E2, &raw_Ki, 0.01, 9990, copy_and_scalePID_i_E2);
+      MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_D MSG_E2, &raw_Kd, 1, 9990, copy_and_scalePID_d_E2);
+      #if HOTENDS > 2
+        // set up temp variables - undo the default scaling
+        raw_Ki = unscalePID_i(PID_PARAM(Ki,2));
+        raw_Kd = unscalePID_d(PID_PARAM(Kd,2));
+        MENU_ITEM_EDIT(float52, MSG_PID_P MSG_E3, &PID_PARAM(Kp,2), 1, 9990);
+        // i is typically a small value so allows values below 1
+        MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_I MSG_E3, &raw_Ki, 0.01, 9990, copy_and_scalePID_i_E3);
+        MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_D MSG_E3, &raw_Kd, 1, 9990, copy_and_scalePID_d_E3);
+        #if HOTENDS > 3
+          // set up temp variables - undo the default scaling
+          raw_Ki = unscalePID_i(PID_PARAM(Ki,3));
+          raw_Kd = unscalePID_d(PID_PARAM(Kd,3));
+          MENU_ITEM_EDIT(float52, MSG_PID_P MSG_E4, &PID_PARAM(Kp,3), 1, 9990);
+          // i is typically a small value so allows values below 1
+          MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_I MSG_E4, &raw_Ki, 0.01, 9990, copy_and_scalePID_i_E4);
+          MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_D MSG_E4, &raw_Kd, 1, 9990, copy_and_scalePID_d_E4);
+        #endif //HOTENDS > 3
+      #endif //HOTENDS > 2
+    #endif //HOTENDS > 1
+>>>>>>> origin/master
   #endif //PIDTEMP
   MENU_ITEM(submenu, MSG_PREHEAT_PLA_SETTINGS, lcd_control_temperature_preheat_pla_settings_menu);
   MENU_ITEM(submenu, MSG_PREHEAT_ABS_SETTINGS, lcd_control_temperature_preheat_abs_settings_menu);
@@ -1094,9 +1153,9 @@ static void lcd_control_motion_menu() {
   START_MENU();
   MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
   #ifdef ENABLE_AUTO_BED_LEVELING
-    MENU_ITEM_EDIT(float32, MSG_ZPROBE_ZOFFSET, &zprobe_zoffset, 0.5, 50);
+    MENU_ITEM_EDIT(float32, MSG_ZPROBE_ZOFFSET, &zprobe_zoffset, 0.0, 50);
   #endif
-  MENU_ITEM_EDIT(float5, MSG_ACC, &acceleration, 500, 99000);
+  MENU_ITEM_EDIT(float5, MSG_ACC, &acceleration, 10, 99000);
   MENU_ITEM_EDIT(float3, MSG_VXY_JERK, &max_xy_jerk, 1, 990);
   MENU_ITEM_EDIT(float52, MSG_VZ_JERK, &max_z_jerk, 0.1, 990);
   MENU_ITEM_EDIT(float3, MSG_VE_JERK, &max_e_jerk, 1, 990);
@@ -1108,7 +1167,7 @@ static void lcd_control_motion_menu() {
   MENU_ITEM_EDIT(float3, MSG_VTRAV_MIN, &mintravelfeedrate, 0, 999);
   MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_X, &max_acceleration_units_per_sq_second[X_AXIS], 100, 99000, reset_acceleration_rates);
   MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_Y, &max_acceleration_units_per_sq_second[Y_AXIS], 100, 99000, reset_acceleration_rates);
-  MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_Z, &max_acceleration_units_per_sq_second[Z_AXIS], 100, 99000, reset_acceleration_rates);
+  MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_Z, &max_acceleration_units_per_sq_second[Z_AXIS], 10, 99000, reset_acceleration_rates);
   MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_E, &max_acceleration_units_per_sq_second[E_AXIS], 100, 99000, reset_acceleration_rates);
   MENU_ITEM_EDIT(float5, MSG_A_RETRACT, &retract_acceleration, 100, 99000);
   MENU_ITEM_EDIT(float5, MSG_A_TRAVEL, &travel_acceleration, 100, 99000);
@@ -1391,10 +1450,6 @@ void lcd_init() {
      WRITE(SHIFT_OUT,HIGH);
      WRITE(SHIFT_LD,HIGH);
      WRITE(SHIFT_EN,LOW);
-  #else
-     #ifdef ULTIPANEL
-     #error ULTIPANEL requires an encoder
-     #endif
   #endif // SR_LCD_2W_NL
 #endif//!NEWPANEL
 
@@ -1569,7 +1624,7 @@ void lcd_finishstatus() {
   }
   lcd_status_message[LCD_WIDTH] = '\0';
   #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT) && !defined(DOGLCD)
-    #if PROGRESS_BAR_MSG_EXPIRE > 0
+    #if PROGRESS_MSG_EXPIRE > 0
       messageTick =
     #endif
     progressBarTick = millis();
@@ -2004,26 +2059,6 @@ char *ftostr52(const float &x)
   conv[6]=(xx)%10+'0';
   conv[7]=0;
   return conv;
-}
-
-// Callback for after editing PID i value
-// grab the PID i value out of the temp variable; scale it; then update the PID driver
-void copy_and_scalePID_i()
-{
-  #ifdef PIDTEMP
-    Ki[active_extruder] = scalePID_i(raw_Ki);
-    updatePID();
-  #endif
-}
-
-// Callback for after editing PID d value
-// grab the PID d value out of the temp variable; scale it; then update the PID driver
-void copy_and_scalePID_d()
-{
-  #ifdef PIDTEMP
-    Kd[active_extruder] = scalePID_d(raw_Kd);
-    updatePID();
-  #endif
 }
 
 #endif //ULTRA_LCD
