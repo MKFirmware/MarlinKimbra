@@ -43,7 +43,7 @@
 *   Laserbeam support
 *   Firmware test
 *   Support for a filament diameter sensor, which adjusts extrusion volume
-*   Support for a hall effect sensor for calucalte Wh. Example sensor ACS712 20A range Current Sensor Module.
+*   Support for a hall effect sensor for calucalte Wh. Example sensor ACS712 20A range Current Sensor Module. http://i.ebayimg.com/images/i/310506962976-0-1/s-l1000.jpg
 
 The default baudrate is 250000. This baudrate has less jitter and hence errors than the usual 115200 baud, but is less supported by drivers and host-environments.
 
