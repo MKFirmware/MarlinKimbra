@@ -214,11 +214,7 @@ static void menu_action_setting_edit_callback_long5(const char* pstr, unsigned l
   #define MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(type, label, args...) MENU_ITEM(setting_edit_callback_ ## type, label, PSTR(label), ## args)
 #endif //!ENCODER_RATE_MULTIPLIER
 #define END_MENU() \
-<<<<<<< HEAD
-    if (encoderLine >= _menuItemNr) encoderPosition = _menuItemNr * ENCODER_STEPS_PER_MENU_ITEM - 1; encoderLine = encoderPosition / ENCODER_STEPS_PER_MENU_ITEM;\
-=======
     if (encoderLine >= _menuItemNr) { encoderPosition = _menuItemNr * ENCODER_STEPS_PER_MENU_ITEM - 1; encoderLine = encoderPosition / ENCODER_STEPS_PER_MENU_ITEM; }\
->>>>>>> origin/master
     if (encoderLine >= currentMenuViewOffset + LCD_HEIGHT) { currentMenuViewOffset = encoderLine - LCD_HEIGHT + 1; lcdDrawUpdate = 1; _lineNr = currentMenuViewOffset - 1; _drawLineNr = -1; } \
     } } while(0)
 
@@ -1025,41 +1021,6 @@ static void lcd_control_temperature_menu() {
   #endif
   #ifdef PIDTEMP
     // set up temp variables - undo the default scaling
-<<<<<<< HEAD
-    raw_Ki = unscalePID_i(Ki[0]);
-    raw_Kd = unscalePID_d(Kd[0]);
-    MENU_ITEM_EDIT(float52, MSG_PID_P, &Kp[0], 1, 9990);
-    // i is typically a small value so allows values below 1
-    MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_I, &raw_Ki, 0.01, 9990, copy_and_scalePID_i);
-    MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_D, &raw_Kd, 1, 9990, copy_and_scalePID_d);
-    #if HOTENDS > 1
-      // set up temp variables - undo the default scaling
-      raw_Ki = unscalePID_i(Ki[1]);
-      raw_Kd = unscalePID_d(Kd[1]);
-      MENU_ITEM_EDIT(float52, MSG_PID_P " E2", &Kp[1], 1, 9990);
-      // i is typically a small value so allows values below 1
-      MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_I " E2", &raw_Ki, 0.01, 9990, copy_and_scalePID_i);
-      MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_D " E2", &raw_Kd, 1, 9990, copy_and_scalePID_d);
-    #endif //HOTENDS > 1
-    #if HOTENDS > 2
-      // set up temp variables - undo the default scaling
-      raw_Ki = unscalePID_i(Ki[2]);
-      raw_Kd = unscalePID_d(Kd[2]);
-      MENU_ITEM_EDIT(float52, MSG_PID_P " E3", &Kp[2], 1, 9990);
-      // i is typically a small value so allows values below 1
-      MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_I " E3", &raw_Ki, 0.01, 9990, copy_and_scalePID_i);
-      MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_D " E3", &raw_Kd, 1, 9990, copy_and_scalePID_d);
-    #endif //HOTENDS > 2
-    #if HOTENDS > 3
-      // set up temp variables - undo the default scaling
-      raw_Ki = unscalePID_i(Ki[3]);
-      raw_Kd = unscalePID_d(Kd[3]);
-      MENU_ITEM_EDIT(float52, MSG_PID_P " E4", &Kp[3], 1, 9990);
-      // i is typically a small value so allows values below 1
-      MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_I " E4", &raw_Ki, 0.01, 9990, copy_and_scalePID_i);
-      MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_D " E4", &raw_Kd, 1, 9990, copy_and_scalePID_d);
-    #endif //HOTENDS > 2
-=======
     raw_Ki = unscalePID_i(PID_PARAM(Ki,0));
     raw_Kd = unscalePID_d(PID_PARAM(Kd,0));
     MENU_ITEM_EDIT(float52, MSG_PID_P, &PID_PARAM(Kp,0), 1, 9990);
@@ -1093,7 +1054,6 @@ static void lcd_control_temperature_menu() {
         #endif //HOTENDS > 3
       #endif //HOTENDS > 2
     #endif //HOTENDS > 1
->>>>>>> origin/master
   #endif //PIDTEMP
   MENU_ITEM(submenu, MSG_PREHEAT_PLA_SETTINGS, lcd_control_temperature_preheat_pla_settings_menu);
   MENU_ITEM(submenu, MSG_PREHEAT_ABS_SETTINGS, lcd_control_temperature_preheat_abs_settings_menu);

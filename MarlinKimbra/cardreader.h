@@ -1,5 +1,5 @@
-#ifndef __CARDREADER_H
-#define __CARDREADER_H
+#ifndef CARDREADER_H
+#define CARDREADER_H
 
 #ifdef SDSUPPORT
 

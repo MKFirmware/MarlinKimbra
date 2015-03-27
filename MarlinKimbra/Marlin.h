@@ -22,6 +22,12 @@
 #include "Configuration.h"
 #include "pins.h"
 
+#if (ARDUINO >= 100)
+  #include "Arduino.h"
+#else
+  #include "WProgram.h"
+#endif
+
 #define BIT(b) (1<<(b))
 #define TEST(n,b) (((n)&BIT(b))!=0)
 
@@ -205,8 +211,8 @@ extern float delta_tower2_x,delta_tower2_y;
 extern float delta_tower3_x,delta_tower3_y;
 #endif
 #ifdef SCARA
-void calculate_delta(float cartesian[3]);
-void calculate_SCARA_forward_Transform(float f_scara[3]);
+  void calculate_delta(float cartesian[3]);
+  void calculate_SCARA_forward_Transform(float f_scara[3]);
 #endif
 void prepare_move();
 void kill();
@@ -283,10 +289,10 @@ extern int fanSpeed;
 #endif
 
 #ifdef FAN_SOFT_PWM
-extern unsigned char fanSpeedSoftPwm;
+  extern unsigned char fanSpeedSoftPwm;
 #endif
 
-#if defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && (FILWIDTH_PIN >= 0)
+#if HAS_FILAMENT_SENSOR
   extern float filament_width_nominal;    //holds the theoretical filament diameter ie., 3.00 or 1.75
   extern bool filament_sensor;            //indicates that filament sensor readings should control extrusion
   extern float filament_width_meas;       //holds the filament diameter as accurately measured
@@ -296,7 +302,7 @@ extern unsigned char fanSpeedSoftPwm;
   extern int meas_delay_cm;               //delay distance
 #endif
 
-#if (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0)
+#if HAS_POWER_CONSUMPTION_SENSOR
   extern float power_consumption_meas;          //holds the power consumption as accurately measured
   extern unsigned long power_consumption_hour;  //holds the power consumption per hour as accurately measured
 #endif

@@ -30,7 +30,7 @@
 void tp_init();  //initialize the heating
 void manage_heater(); //it is critical that this is called periodically.
 
-#if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0)
+#if HAS_FILAMENT_SENSOR
   // For converting raw Filament Width to milimeters 
   float analog2widthFil(); 
 
@@ -38,7 +38,7 @@ void manage_heater(); //it is critical that this is called periodically.
   int widthFil_to_size_ratio();
 #endif
 
-#if (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0)
+#if HAS_POWER_CONSUMPTION_SENSOR
   // For converting raw Power Consumption to watt
   float analog2current();
   float analog2power();
@@ -64,12 +64,8 @@ extern float current_temperature_bed;
 #endif
 
 #ifdef PIDTEMP
-<<<<<<< HEAD
-  extern float Kp[HOTENDS],Ki[HOTENDS],Kd[HOTENDS];
-=======
   extern float Kp[HOTENDS], Ki[HOTENDS], Kd[HOTENDS];
   #define PID_PARAM(param,e) param[e] // use macro to point to array value
->>>>>>> origin/master
   float scalePID_i(float i);
   float scalePID_d(float d);
   float unscalePID_i(float i);
@@ -150,11 +146,7 @@ FORCE_INLINE bool isCoolingBed() { return target_temperature_bed < current_tempe
   #define setTargetHotend3(_celsius) do{}while(0)
 #endif
 #if HOTENDS > 4
-<<<<<<< HEAD
-  #error Invalid number of hotend
-=======
   #error Invalid number of hotends
->>>>>>> origin/master
 #endif
 
 int getHeaterPower(int heater);

@@ -524,7 +524,7 @@ float junction_deviation = 0.1;
           #ifdef EASY_LOAD
             if (!allow_lengthy_extrude_once) {
           #endif
-          position[E_AXIS] = target[E_AXIS]; //behave as if the move really took place, but ignore E part
+          position[E_AXIS] = target[E_AXIS]; // Behave as if the move really took place, but ignore E part
           SERIAL_ECHO_START;
           SERIAL_ECHOLNPGM(MSG_ERR_LONG_EXTRUDE_STOP);
           #ifdef EASY_LOAD

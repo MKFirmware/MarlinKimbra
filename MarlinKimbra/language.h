@@ -7,7 +7,7 @@
 //   ==> ALSO TRY ALL AVAILABLE "LANGUAGE_CHOICE" OPTIONS
 
 // Languages
-// 1  English
+// 1  English  // Language base
 // 2  Polish
 // 3  French
 // 4  German
@@ -109,6 +109,7 @@
 #define MSG_UNKNOWN_COMMAND                 "Unknown command: \""
 #define MSG_ACTIVE_EXTRUDER                 "Active Extruder: "
 #define MSG_INVALID_EXTRUDER                "Invalid extruder"
+#define MSG_INVALID_SOLENOID                "Invalid solenoid"
 #define MSG_X_MIN                           "x_min: "
 #define MSG_X_MAX                           "x_max: "
 #define MSG_Y_MIN                           "y_min: "
@@ -248,9 +249,9 @@
 #define TESTSTRING360 "\360\361\362\363\364\365\366\367\370\371\372\373\374\375\376\377"
 */
 
-#if   LANGUAGE_CHOICE == 1 // English
-  #include "language_en.h"
-#elif LANGUAGE_CHOICE == 2 // Polish
+#include "language_en.h" // English
+
+#if LANGUAGE_CHOICE == 2 // Polish
   #include "language_pl.h"
 #elif LANGUAGE_CHOICE == 3 // French
   #include "language_fr.h"
