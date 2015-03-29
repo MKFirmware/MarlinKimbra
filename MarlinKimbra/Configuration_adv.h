@@ -96,6 +96,7 @@
 #define EXTRUDER_AUTO_FAN_TEMPERATURE 50
 #define EXTRUDER_AUTO_FAN_SPEED 255  // == full speed
 
+#define LCD_MAX_TEMP_OFFSET -15
 
 //===========================================================================
 //=============================Mechanical Settings===========================
