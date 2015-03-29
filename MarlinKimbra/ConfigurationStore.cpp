@@ -397,7 +397,10 @@ void Config_ResetDefault()
     #endif //EXTRUDERS > 2
   #endif //EXTRUDERS > 1
   calculate_volumetric_multipliers();
-
+  
+  #ifdef IDLE_OOZING_PREVENT
+    idleoozing_enabled = true;
+  #endif
   SERIAL_ECHO_START;
   SERIAL_ECHOLNPGM("Hardcoded Default Settings Loaded");
 }
