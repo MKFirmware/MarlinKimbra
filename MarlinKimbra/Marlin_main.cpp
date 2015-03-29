@@ -339,6 +339,7 @@ uint8_t debugLevel = 0;
 #endif
 
 #ifdef IDLE_OOZING_PREVENT
+  bool idleoozing_enabled = true;
   bool IDLE_OOZING_retracted[EXTRUDERS] = { false
     #if EXTRUDERS > 1
       , false
@@ -6516,7 +6517,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) //default argument s
   #endif
 
   #ifdef IDLE_OOZING_PREVENT
-    if (degHotend(active_extruder) > IDLE_OOZING_MINTEMP && !debugDryrun() && !axis_is_moving)
+    if (degHotend(active_extruder) > IDLE_OOZING_MINTEMP && !debugDryrun() && !axis_is_moving && idleoozing_enabled)
 	{
       #ifdef FILAMENTCHANGEENABLE
         if (!filament_changing)
