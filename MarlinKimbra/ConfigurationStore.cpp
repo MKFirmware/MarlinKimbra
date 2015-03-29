@@ -128,6 +128,10 @@ void Config_StoreSettings() {
 
   // Save filament sizes
   for (int e = 0; e < EXTRUDERS; e++) EEPROM_WRITE_VAR(i, filament_size[e]);
+  
+  #ifdef IDLE_OOZING_PREVENT
+    EEPROM_WRITE_VAR(i, idleoozing_enabled);
+  #endif
 
   int storageSize = i;
 
@@ -247,6 +251,11 @@ void Config_RetrieveSettings()
       #endif //EXTRUDERS > 2
     #endif //EXTRUDERS > 1
     calculate_volumetric_multipliers();
+	
+	#ifdef IDLE_OOZING_PREVENT
+      EEPROM_READ_VAR(i, idleoozing_enabled);
+    #endif
+	
     // Call updatePID (similar to when we have processed M301)
     updatePID();
     SERIAL_ECHO_START;
