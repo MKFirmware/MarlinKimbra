@@ -59,6 +59,7 @@
 #define MSG_MIN                             STR_THERMOMETER " Min"
 #define MSG_MAX                             STR_THERMOMETER " Max"
 #define MSG_FACTOR                          STR_THERMOMETER " Faktor"
+#define MSG_IDLEOOZING                      "Anti oozing"
 #define MSG_AUTOTEMP                        "AutoTemp"
 #define MSG_ON                              "Ein"
 #define MSG_OFF                             "Aus"
