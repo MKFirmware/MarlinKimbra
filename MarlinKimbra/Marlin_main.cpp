@@ -304,6 +304,7 @@ uint8_t debugLevel = 0;
 #endif
 
 #ifdef IDLE_OOZING_PREVENT
+  bool idleoozing_enabled = true;
   bool IDLE_OOZING_retracted[EXTRUDERS] = ARRAY_BY_EXTRUDERS(false, false, false, false);
 #endif
 
