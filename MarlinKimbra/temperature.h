@@ -46,13 +46,12 @@ void manage_heater(); //it is critical that this is called periodically.
 
 // low level conversion routines
 // do not use these routines and variables outside of temperature.cpp
-extern int target_temperature[HOTENDS];  
-extern float current_temperature[HOTENDS];
+extern int target_temperature[4];  
+extern float current_temperature[4];
 #ifdef SHOW_TEMP_ADC_VALUES
-  extern int current_temperature_raw[HOTENDS];
+  extern int current_temperature_raw[4];
   extern int current_temperature_bed_raw;
 #endif
-
 extern int target_temperature_bed;
 extern float current_temperature_bed;
 #ifdef TEMP_SENSOR_1_AS_REDUNDANT
@@ -70,8 +69,8 @@ extern float current_temperature_bed;
   float scalePID_d(float d);
   float unscalePID_i(float i);
   float unscalePID_d(float d);
-#endif
 
+#endif
 #ifdef PIDTEMPBED
   extern float bedKp,bedKi,bedKd;
 #endif
@@ -154,16 +153,10 @@ void disable_heater();
 void setWatch();
 void updatePID();
 
-#if defined (THERMAL_RUNAWAY_PROTECTION_PERIOD) && THERMAL_RUNAWAY_PROTECTION_PERIOD > 0
-void thermal_runaway_protection(int *state, unsigned long *timer, float temperature, float target_temperature, int heater_id, int period_seconds, int hysteresis_degc);
-static int thermal_runaway_state_machine[4]; // = {0,0,0,0};
-static unsigned long thermal_runaway_timer[4]; // = {0,0,0,0};
-static bool thermal_runaway = false;
-#if TEMP_SENSOR_BED != 0
-  static int thermal_runaway_bed_state_machine;
-  static unsigned long thermal_runaway_bed_timer;
-#endif
-#endif
+void PID_autotune(float temp, int extruder, int ncycles);
+
+void setExtruderAutoFanState(int pin, bool state);
+void checkExtruderAutoFans();
 
 FORCE_INLINE void autotempShutdown() {
   #ifdef AUTOTEMP
@@ -175,9 +168,5 @@ FORCE_INLINE void autotempShutdown() {
   #endif
 }
 
-void PID_autotune(float temp, int hotend, int ncycles);
-
-void setExtruderAutoFanState(int pin, bool state);
-void checkExtruderAutoFans();
 
 #endif

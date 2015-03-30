@@ -20,7 +20,7 @@
 // User-specified version info of this build to display in [Pronterface, etc] terminal window during
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
 // build by the user have been successfully uploaded into firmware.
-#define STRING_VERSION " 4.0.7"
+#define STRING_VERSION " 4.0.8"
 #define STRING_URL "reprap.org"
 #define STRING_VERSION_CONFIG_H __DATE__ " " __TIME__     // build date and time
 #define STRING_CONFIG_H_AUTHOR "(none, default config)"   // Who made the changes.
@@ -161,7 +161,7 @@
 // 1010 is Pt1000 with 1k pullup (non standard)
 // 147 is Pt100 with 4k7 pullup
 // 110 is Pt100 with 1k pullup (non standard)
-// 998 and 999 are Dummy Tables. They will ALWAYS read 25�C or the temperature defined below. 
+// 998 and 999 are Dummy Tables. They will ALWAYS read 25°C or the temperature defined below. 
 //     Use it for Testing or Development purposes. NEVER for production machine.
 //     #define DUMMY_THERMISTOR_998_VALUE 25
 //     #define DUMMY_THERMISTOR_999_VALUE 100
@@ -329,10 +329,14 @@ your extruder heater takes 2 minutes to hit the target on heating.
 //============================ User Interfaces ==============================
 //===========================================================================
 
-//============================== LCD and SD support =========================
-// Character based displays can have different extended charsets.
-#define DISPLAY_CHARSET_HD44780_JAPAN     // "ääööüüß23°"
-//#define DISPLAY_CHARSET_HD44780_WESTERN // "ÄäÖöÜüß²³°" if you see a '~' instead of a 'arrow_right' at the right of submenuitems - this is the right one.
+//==============================LCD and SD support=============================
+
+// Chose ONE of the next three charsets. This has to match your hardware. In case of a full graphic display this information is not important.
+// To find out what type you have - compile with (test) - upload - click to get the menu. You'll see two typical lines from the upper half of the charset.
+// See also documentation/LCDLanguageFont.md
+  #define DISPLAY_CHARSET_HD44780_JAPAN        // this is the most common hardware
+  //#define DISPLAY_CHARSET_HD44780_WESTERN
+  //#define DISPLAY_CHARSET_HD44780_CYRILLIC
 
 //#define ULTRA_LCD  //general LCD support, also 16x2
 //#define DOGLCD  // Support for SPI LCD 128x64 (Controller ST7565R graphic Display Family)
@@ -345,6 +349,7 @@ your extruder heater takes 2 minutes to hit the target on heating.
 //#define ULTIPANEL  //the UltiPanel as on Thingiverse
 //#define LCD_FEEDBACK_FREQUENCY_HZ 1000	// this is the tone frequency the buzzer plays when on UI feedback. ie Screen Click
 //#define LCD_FEEDBACK_FREQUENCY_DURATION_MS 100 // the duration the buzzer plays the UI feedback sound. ie Screen Click
+                                                 // 0 to disable buzzer feedback  
 
 // PanelOne from T3P3 (via RAMPS 1.4 AUX2/AUX3)
 // http://reprap.org/wiki/PanelOne
@@ -405,6 +410,12 @@ your extruder heater takes 2 minutes to hit the target on heating.
 
 // option for invert rotary switch
 //#define INVERT_ROTARY_SWITCH
+
+// Uncomment screen orientation ONLY FOR GRAPHICS DISPLAY
+#define LCD_SCREEN_ROT_0
+// #define LCD_SCREEN_ROT_90
+// #define LCD_SCREEN_ROT_180
+// #define LCD_SCREEN_ROT_270
 
 //============================== Languages UI =========================
 // 1  English

@@ -41,7 +41,7 @@ void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size) {
 // wrong data being written to the variables.
 // ALSO:  always make sure the variables in the Store and retrieve sections are in the same order.
 
-#define EEPROM_VERSION "V16"
+#define EEPROM_VERSION "V17"
 
 #ifdef EEPROM_SETTINGS
 void Config_StoreSettings() {
@@ -128,6 +128,10 @@ void Config_StoreSettings() {
 
   // Save filament sizes
   for (int e = 0; e < EXTRUDERS; e++) EEPROM_WRITE_VAR(i, filament_size[e]);
+  
+  #ifdef IDLE_OOZING_PREVENT
+    EEPROM_WRITE_VAR(i, idleoozing_enabled);
+  #endif
 
   int storageSize = i;
 
@@ -247,13 +251,17 @@ void Config_RetrieveSettings()
       #endif //EXTRUDERS > 2
     #endif //EXTRUDERS > 1
     calculate_volumetric_multipliers();
+
+    #ifdef IDLE_OOZING_PREVENT
+      EEPROM_READ_VAR(i, idleoozing_enabled);
+    #endif
+
     // Call updatePID (similar to when we have processed M301)
     updatePID();
     SERIAL_ECHO_START;
     SERIAL_ECHOLNPGM("Stored settings retrieved");
   }
-  else
-  {
+  else {
     Config_ResetDefault();
   }
 
@@ -295,8 +303,8 @@ void Config_ResetDefault()
   for (int i = 0; i < EXTRUDERS; i++) {
     max_retraction_feedrate[i] = tmp3[i];
     #if HOTENDS > 1
-      hotend_offset[X_AXIS][i] = tmp8[i];
-      hotend_offset[Y_AXIS][i] = tmp9[i];
+      hotend_offset[i][X_AXIS] = tmp8[i];
+      hotend_offset[i][Y_AXIS] = tmp9[i];
     #endif
     #ifdef SCARA
       if (i < sizeof(axis_scaling) / sizeof(*axis_scaling))
@@ -388,6 +396,10 @@ void Config_ResetDefault()
     #endif //EXTRUDERS > 2
   #endif //EXTRUDERS > 1
   calculate_volumetric_multipliers();
+
+  #ifdef IDLE_OOZING_PREVENT
+    idleoozing_enabled = true;
+  #endif
 
   SERIAL_ECHO_START;
   SERIAL_ECHOLNPGM("Hardcoded Default Settings Loaded");
