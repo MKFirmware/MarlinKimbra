@@ -142,7 +142,6 @@ U8GLIB_DOGM128 u8g(DOGLCD_CS, DOGLCD_A0);  // HW-SPI Com: CS, A0
 #include "utf_mapper.h"
 
 int lcd_contrast;
-static unsigned char blink = 0; // Variable for visualization of fan rotation in GLCD
 static char currentfont = 0;
 
 static void lcd_setFont(char font_nr) {
@@ -200,11 +199,11 @@ static void lcd_implementation_init()
 	// digitalWrite(17, HIGH);
   
 #ifdef LCD_SCREEN_ROT_90
-	u8g.setRot90();   // Rotate screen by 90°
+	u8g.setRot90();   // Rotate screen by 90Â°
 #elif defined(LCD_SCREEN_ROT_180)
-	u8g.setRot180();	// Rotate screen by 180°
+	u8g.setRot180();	// Rotate screen by 180Â°
 #elif defined(LCD_SCREEN_ROT_270)
-	u8g.setRot270();	// Rotate screen by 270°
+	u8g.setRot270();	// Rotate screen by 270Â°
 #endif
 	
   // Show splashscreen
