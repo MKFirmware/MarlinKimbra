@@ -9,6 +9,7 @@
     * [Auto Bed Leveling](/Documentation/BedLeveling.md)
     * [Filament Sensor](/Documentation/FilamentSensor.md)
     * [Ramps Servo Power](/Documentation/RampsServoPower.md)
+    * [LCD Language - Font - System](Documentation/LCDLanguageFont.md)
 
 
 ## Configurator Tool Online
