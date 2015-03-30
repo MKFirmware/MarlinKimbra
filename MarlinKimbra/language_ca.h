@@ -59,6 +59,7 @@
 #define MSG_MIN                             " \002 Min"
 #define MSG_MAX                             " \002 Max"
 #define MSG_FACTOR                          " \002 Fact"
+#define MSG_IDLEOOZING                      "Anti oozing"
 #define MSG_AUTOTEMP                        "Autotemp"
 #define MSG_ON                              "On "
 #define MSG_OFF                             "Off"
