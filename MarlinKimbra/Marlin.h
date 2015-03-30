@@ -309,6 +309,10 @@ extern int fanSpeed;
   extern unsigned long power_consumption_hour;  //holds the power consumption per hour as accurately measured
 #endif
 
+#ifdef IDLE_OOZING_PREVENT
+  extern bool idleoozing_enabled;
+#endif
+
 #ifdef FWRETRACT
   extern bool autoretract_enabled;
   extern bool retracted[EXTRUDERS];
