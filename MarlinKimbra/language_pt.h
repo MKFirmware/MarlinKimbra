@@ -2,16 +2,21 @@
  * Portuguese
  *
  * LCD Menu Messages
- * Please note these are limited to 17 characters!
+ * See also documentation/LCDLanguageFont.md
  *
  */
 #ifndef LANGUAGE_PT_H
 #define LANGUAGE_PT_H
 
+#define MAPPER_NON
+// Define SIMULATE_ROMFONT to see what is seen on the character based display defined in Configuration.h
+//#define SIMULATE_ROMFONT
+#define DISPLAY_CHARSET_ISO10646_1
+
 #define WELCOME_MSG                         MACHINE_NAME " pronto."
 #define MSG_SD_INSERTED                     "Cartao inserido"
 #define MSG_SD_REMOVED                      "Cartao removido"
-#define MSG_MAIN                            " Menu principal \003"
+#define MSG_MAIN                            " Menu principal"
 #define MSG_AUTOSTART                       "Autostart"
 #define MSG_DISABLE_STEPPERS                " Desligar motores"
 #define MSG_AUTO_HOME                       "Ir para home"

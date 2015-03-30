@@ -2,16 +2,21 @@
  * Russian
  *
  * LCD Menu Messages
- * Please note these are limited to 17 characters!
+ * See also documentation/LCDLanguageFont.md
  *
  */
 #ifndef LANGUAGE_RU_H
 #define LANGUAGE_RU_H
 
-#define WELCOME_MSG                         MACHINE_NAME "Готов."
+#define MAPPER_D0D1                // For Cyrillic
+// Define SIMULATE_ROMFONT to see what is seen on the character based display defined in Configuration.h
+//#define SIMULATE_ROMFONT
+#define DISPLAY_CHARSET_ISO10646_5
+
+#define WELCOME_MSG                         MACHINE_NAME " Готов."
 #define MSG_SD_INSERTED                     "Карта вставлена"
 #define MSG_SD_REMOVED                      "Карта извлечена"
-#define MSG_MAIN                            "Меню \003"
+#define MSG_MAIN                            "Меню"
 #define MSG_AUTOSTART                       "Автостарт"
 #define MSG_DISABLE_STEPPERS                "Выкл. двигатели"
 #define MSG_AUTO_HOME                       "Парковка"

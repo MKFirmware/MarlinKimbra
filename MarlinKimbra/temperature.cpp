@@ -53,10 +53,10 @@
 //============================= public variables ============================
 //===========================================================================
 
-int target_temperature[HOTENDS] = { 0 };
+int target_temperature[4] = { 0 };
 int target_temperature_bed = 0;
-int current_temperature_raw[HOTENDS] = { 0 };
-float current_temperature[HOTENDS] = { 0.0 };
+int current_temperature_raw[4] = { 0 };
+float current_temperature[4] = { 0.0 };
 int current_temperature_bed_raw = 0;
 float current_temperature_bed = 0.0;
 #ifdef TEMP_SENSOR_1_AS_REDUNDANT
@@ -83,7 +83,16 @@ unsigned char soft_pwm_bed;
 #if HAS_FILAMENT_SENSOR
   int current_raw_filwidth = 0;  //Holds measured filament diameter - one extruder only
 #endif  
-
+#if defined (THERMAL_RUNAWAY_PROTECTION_PERIOD) && THERMAL_RUNAWAY_PROTECTION_PERIOD > 0
+  void thermal_runaway_protection(int *state, unsigned long *timer, float temperature, float target_temperature, int heater_id, int period_seconds, int hysteresis_degc);
+  static int thermal_runaway_state_machine[4]; // = {0,0,0,0};
+  static unsigned long thermal_runaway_timer[4]; // = {0,0,0,0};
+  static bool thermal_runaway = false;
+  #if TEMP_SENSOR_BED != 0
+    static int thermal_runaway_bed_state_machine;
+    static unsigned long thermal_runaway_bed_timer;
+  #endif
+#endif
 #if HAS_POWER_CONSUMPTION_SENSOR
   int current_raw_powconsumption = 0;  //Holds measured power consumption
   static unsigned long raw_powconsumption_value = 0;
@@ -140,7 +149,6 @@ static int maxttemp_raw[HOTENDS] = ARRAY_BY_HOTENDS( HEATER_0_RAW_HI_TEMP , HEAT
 static int minttemp[HOTENDS] = { 0 };
 static int maxttemp[HOTENDS] = ARRAY_BY_HOTENDS( 16383, 16383, 16383, 16383 );
 //static int bed_minttemp_raw = HEATER_BED_RAW_LO_TEMP; /* No bed mintemp error implemented?!? */
-
 #ifdef BED_MAXTEMP
   static int bed_maxttemp_raw = HEATER_BED_RAW_HI_TEMP;
 #endif
@@ -582,7 +590,9 @@ void manage_heater() {
     if (ct < max(HEATER_0_MINTEMP, 0.01)) min_temp_error(0);
   #endif //HEATER_0_USES_MAX6675
 
-  unsigned long ms = millis();
+  #if defined(WATCH_TEMP_PERIOD) || !defined(PIDTEMPBED) || HAS_AUTO_FAN
+    unsigned long ms = millis();
+  #endif
 
   // Loop through all hotends
   for (int e = 0; e < HOTENDS; e++) {
@@ -1119,8 +1129,8 @@ void disable_heater() {
 }
 
 #ifdef HEATER_0_USES_MAX6675
-  #define MAX6675_HEAT_INTERVAL 250
-  long max6675_previous_millis = MAX6675_HEAT_INTERVAL;
+  #define MAX6675_HEAT_INTERVAL 250u
+  unsigned long max6675_previous_millis = MAX6675_HEAT_INTERVAL;
   int max6675_temp = 2000;
 
   static int read_max6675() {
@@ -1204,9 +1214,10 @@ static void set_current_temp_raw() {
   #endif
   #if HAS_TEMP_1
     #ifdef TEMP_SENSOR_1_AS_REDUNDANT
-      redundant_temperature_raw =
+      redundant_temperature_raw = raw_temp_value[1];
+    #else
+      current_temperature_raw[1] = raw_temp_value[1];
     #endif
-    current_temperature_raw[1] = raw_temp_value[1];
     #if HAS_TEMP_2
       current_temperature_raw[2] = raw_temp_value[2];
       #if HAS_TEMP_3

@@ -353,6 +353,19 @@
   #endif
 
   /**
+   * ARRAY_BY_EXTRUDERS based on EXTRUDERS
+   */
+  #if EXTRUDERS > 3
+    #define ARRAY_BY_EXTRUDERS(v1, v2, v3, v4) { v1, v2, v3, v4 }
+  #elif EXTRUDERS > 2
+    #define ARRAY_BY_EXTRUDERS(v1, v2, v3, v4) { v1, v2, v3 }
+  #elif EXTRUDERS > 1
+    #define ARRAY_BY_EXTRUDERS(v1, v2, v3, v4) { v1, v2 }
+  #else
+    #define ARRAY_BY_EXTRUDERS(v1, v2, v3, v4) { v1 }
+  #endif
+
+  /**
    * ARRAY_BY_HOTENDS based on HOTENDS
    */
   #if HOTENDS > 3
@@ -365,6 +378,7 @@
     #define ARRAY_BY_HOTENDS(v1, v2, v3, v4) { v1 }
   #endif
 
+
   /**
    * Shorthand for pin tests, for temperature.cpp
    */
@@ -372,7 +386,7 @@
   #define HAS_TEMP_1 (defined(TEMP_1_PIN) && (TEMP_1_PIN >= 0) && TEMP_SENSOR_1)
   #define HAS_TEMP_2 (defined(TEMP_2_PIN) && (TEMP_2_PIN >= 0) && TEMP_SENSOR_2)
   #define HAS_TEMP_3 (defined(TEMP_3_PIN) && (TEMP_3_PIN >= 0) && TEMP_SENSOR_3)
-  #define HAS_TEMP_BED ((defined(TEMP_BED_PIN) && TEMP_BED_PIN >= 0) && TEMP_SENSOR_BED)
+  #define HAS_TEMP_BED (defined(TEMP_BED_PIN) && (TEMP_BED_PIN >= 0) && TEMP_SENSOR_BED)
   #define HAS_FILAMENT_SENSOR (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0)
   #define HAS_POWER_CONSUMPTION_SENSOR (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0)
   #define HAS_HEATER_0 (defined(HEATER_0_PIN) && HEATER_0_PIN >= 0)
@@ -384,7 +398,7 @@
   #define HAS_AUTO_FAN_1 (defined(EXTRUDER_1_AUTO_FAN_PIN) && EXTRUDER_1_AUTO_FAN_PIN >= 0)
   #define HAS_AUTO_FAN_2 (defined(EXTRUDER_2_AUTO_FAN_PIN) && EXTRUDER_2_AUTO_FAN_PIN >= 0)
   #define HAS_AUTO_FAN_3 (defined(EXTRUDER_3_AUTO_FAN_PIN) && EXTRUDER_3_AUTO_FAN_PIN >= 0)
-  #define HAS_AUTO_FAN HAS_AUTO_FAN_0 || HAS_AUTO_FAN_1 || HAS_AUTO_FAN_2 || HAS_AUTO_FAN_3
+  #define HAS_AUTO_FAN (HAS_AUTO_FAN_0 || HAS_AUTO_FAN_1 || HAS_AUTO_FAN_2 || HAS_AUTO_FAN_3)
   #define HAS_FAN (defined(FAN_PIN) && FAN_PIN >= 0)
 
   /**

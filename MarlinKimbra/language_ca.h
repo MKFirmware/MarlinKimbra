@@ -2,11 +2,17 @@
  * Catalan
  *
  * LCD Menu Messages
- * Please note these are limited to 17 characters!
+ * See also documentation/LCDLanguageFont.md
  *
  */
 #ifndef LANGUAGE_CA_H
 #define LANGUAGE_CA_H
+
+//#define MAPPER_NON 
+#define MAPPER_C2C3  // because of "ó"
+// Define SIMULATE_ROMFONT to see what is seen on the character based display defined in Configuration.h
+//#define SIMULATE_ROMFONT
+#define DISPLAY_CHARSET_ISO10646_1
 
 #define WELCOME_MSG                         MACHINE_NAME " preparada."
 #define MSG_SD_INSERTED                     "SD detectada."
@@ -59,6 +65,7 @@
 #define MSG_MIN                             " \002 Min"
 #define MSG_MAX                             " \002 Max"
 #define MSG_FACTOR                          " \002 Fact"
+#define MSG_IDLEOOZING                      "Anti oozing"
 #define MSG_AUTOTEMP                        "Autotemp"
 #define MSG_ON                              "On "
 #define MSG_OFF                             "Off"

@@ -2,17 +2,22 @@
  * Aragonese
  *
  * LCD Menu Messages
- * Please note these are limited to 17 characters!
+ * See also documentation/LCDLanguageFont.md
  *
  */
 #ifndef LANGUAGE_AN_H
 #define LANGUAGE_AN_H
 
+#define MAPPER_NON
+// Define SIMULATE_ROMFONT to see what is seen on the character based display defined in Configuration.h
+//#define SIMULATE_ROMFONT
+#define DISPLAY_CHARSET_ISO10646_1
+
 #define WELCOME_MSG                         MACHINE_NAME " parada."
 #define MSG_SD_INSERTED                     "Tarcheta colocada"
 #define MSG_SD_REMOVED                      "Tarcheta retirada"
 #define MSG_MAIN                            "Menu prencipal"
-#define MSG_AUTOSTART                       "Autostart"
+#define MSG_AUTOSTART                       " Autostart"
 #define MSG_DISABLE_STEPPERS                "Amortar motors"
 #define MSG_AUTO_HOME                       "Levar a l'orichen"
 #define MSG_BED_SETTING                     "Bed Setting"
@@ -59,6 +64,7 @@
 #define MSG_MIN                             " " STR_THERMOMETER " Min"
 #define MSG_MAX                             " " STR_THERMOMETER " Max"
 #define MSG_FACTOR                          " " STR_THERMOMETER " Fact"
+#define MSG_IDLEOOZING                      "Anti oozing"
 #define MSG_AUTOTEMP                        "Autotemp"
 #define MSG_ON                              "On"
 #define MSG_OFF                             "Off"

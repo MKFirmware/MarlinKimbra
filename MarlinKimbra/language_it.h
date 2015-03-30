@@ -2,11 +2,16 @@
  * Italian
  *
  * LCD Menu Messages
- * Please note these are limited to 17 characters!
+ * See also documentation/LCDLanguageFont.md
  *
  */
 #ifndef LANGUAGE_IT_H
 #define LANGUAGE_IT_H
+
+#define MAPPER_NON
+// Define SIMULATE_ROMFONT to see what is seen on the character based display defined in Configuration.h
+//#define SIMULATE_ROMFONT
+#define DISPLAY_CHARSET_ISO10646_1
 
 #define WELCOME_MSG                         MACHINE_NAME " pronta."
 #define MSG_SD_INSERTED                     "SD Card inserita"
@@ -56,9 +61,10 @@
 #define MSG_FAN_SPEED                       "Ventola"
 #define MSG_FLOW                            "Flusso"
 #define MSG_CONTROL                         "Controllo"
-#define MSG_MIN                             " " STR_THERMOMETER " Min"
-#define MSG_MAX                             " " STR_THERMOMETER " Max"
-#define MSG_FACTOR                          " " STR_THERMOMETER " Fact"
+#define MSG_MIN                             LCD_STR_THERMOMETER " Min"
+#define MSG_MAX                             LCD_STR_THERMOMETER " Max"
+#define MSG_FACTOR                          LCD_STR_THERMOMETER " Fact"
+#define MSG_IDLEOOZING                      "Anti oozing"
 #define MSG_AUTOTEMP                        "Autotemp"
 #define MSG_ON                              "On "
 #define MSG_OFF                             "Off"
@@ -92,7 +98,7 @@
 #define MSG_TEMPERATURE                     "Temperatura"
 #define MSG_MOTION                          "Movimento"
 #define MSG_VOLUMETRIC                      "Filamento"
-#define MSG_VOLUMETRIC_ENABLED              "E in mm" STR_h3
+#define MSG_VOLUMETRIC_ENABLED              "E in mm³"
 #define MSG_FILAMENT_SIZE_EXTRUDER          "Diam. filo"
 #define MSG_CONTRAST                        "Contrasto LCD"
 #define MSG_STORE_EPROM                     "Salva in EEPROM"
