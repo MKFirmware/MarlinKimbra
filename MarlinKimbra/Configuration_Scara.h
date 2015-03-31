@@ -43,17 +43,7 @@
   // #define ENDSTOPPULLUP_ZMIN
 #endif
 
-#ifdef ENDSTOPPULLUPS
-  #define ENDSTOPPULLUP_XMAX
-  #define ENDSTOPPULLUP_YMAX
-  #define ENDSTOPPULLUP_ZMAX
-  #define ENDSTOPPULLUP_XMIN
-  #define ENDSTOPPULLUP_YMIN
-  #define ENDSTOPPULLUP_ZMIN
-  #define ENDSTOPPULLUP_EMIN
-#endif
-
-// The pullups are needed if you directly connect a mechanical end switch between the signal and ground pins.
+// Mechanical endstop with COM to ground and NC to Signal uses "false" here (most common setup).
 const bool X_MIN_ENDSTOP_INVERTING = true;      // set to true to invert the logic of the endstop.
 const bool Y_MIN_ENDSTOP_INVERTING = true;      // set to true to invert the logic of the endstop.
 const bool Z_MIN_ENDSTOP_INVERTING = true;      // set to true to invert the logic of the endstop.
@@ -86,7 +76,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;      // set to true to invert the log
 #define DISABLE_E false      // For all extruder
 #define DISABLE_INACTIVE_EXTRUDER false //disable only inactive extruder and keep active extruder enabled
 
-// If you motor turns to wrong direction, you can invert it here:
+// Invert the stepper direction. Change (or reverse the motor connector) if an axis goes the wrong way.
 #define INVERT_X_DIR false
 #define INVERT_Y_DIR false
 #define INVERT_Z_DIR true
@@ -95,7 +85,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;      // set to true to invert the log
 #define INVERT_E2_DIR false
 #define INVERT_E3_DIR false
 
-// Travel limits after homing
+// Travel limits after homing (units are in mm)
 #define X_MAX_POS 200
 #define X_MIN_POS 0
 #define Y_MAX_POS 200
@@ -103,10 +93,6 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;      // set to true to invert the log
 #define Z_MAX_POS 225
 #define Z_MIN_POS MANUAL_Z_HOME_POS
 #define E_MIN_POS 0
-
-#define X_MAX_LENGTH (X_MAX_POS - X_MIN_POS)
-#define Y_MAX_LENGTH (Y_MAX_POS - Y_MIN_POS)
-#define Z_MAX_LENGTH (Z_MAX_POS - Z_MIN_POS)
 
 //=====================================================================================
 //============================= Bed Manual or Auto Leveling ===========================
@@ -118,7 +104,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;      // set to true to invert the log
 #define FRONT_PROBE_BED_POSITION 20
 #define BACK_PROBE_BED_POSITION 180
 
-#define XY_TRAVEL_SPEED 8000     // X and Y axis travel speed between probes, in mm/min
+#define XY_TRAVEL_SPEED 10000     // X and Y axis travel speed between probes, in mm/min
 
 //If you have enabled the Auto Bed Levelling and are using the same Z Probe for Z Homing,
 //it is highly recommended you let this Z_SAFE_HOMING enabled!!!
@@ -171,15 +157,16 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;      // set to true to invert the log
 
   // Offsets to the probe relative to the extruder tip (Hotend - Probe)
   // X and Y offsets must be integers
-  #define X_PROBE_OFFSET_FROM_EXTRUDER 0      // -left  +right
-  #define Y_PROBE_OFFSET_FROM_EXTRUDER 0      // -front +behind
+  #define X_PROBE_OFFSET_FROM_EXTRUDER 0      // Probe on: -left  +right
+  #define Y_PROBE_OFFSET_FROM_EXTRUDER 0      // Probe on: -front +behind
   #define Z_PROBE_OFFSET_FROM_EXTRUDER -1     // -below (always!)
 
-  #define Z_RAISE_BEFORE_HOMING 10      // (in mm) Raise Z before homing (G28) for Probe Clearance.
-                                        // Be sure you have this distance over your Z_MAX_POS in case
+  #define Z_RAISE_BEFORE_HOMING       10      // (in mm) Raise Z before homing (G28) for Probe Clearance.
+                                              // Be sure you have this distance over your Z_MAX_POS in case
 
-  #define Z_RAISE_BEFORE_PROBING 10     //How much the extruder will be raised before travelling to the first probing point.
-  #define Z_RAISE_BETWEEN_PROBINGS 5    //How much the extruder will be raised when travelling from between next probing points
+  #define Z_RAISE_BEFORE_PROBING      10      //How much the extruder will be raised before travelling to the first probing point.
+  #define Z_RAISE_BETWEEN_PROBINGS     5      //How much the extruder will be raised when travelling from between next probing points
+  #define Z_RAISE_AFTER_PROBING        5      //How much the extruder will be raised after the last probing point.
 
   //#define Z_PROBE_SLED                // turn on if you have a z-probe mounted on a sled like those designed by Charles Bell
   //#define SLED_DOCKING_OFFSET 5       // the extra distance the X axis must travel to pick up the sled. 0 should be fine but you can push it further if you'd like.
@@ -194,14 +181,16 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;      // set to true to invert the log
 
 
 // The position of the homing switches
-//#define MANUAL_HOME_POSITIONS  // If defined, MANUAL_*_HOME_POS below will be used
+#define MANUAL_HOME_POSITIONS  // If defined, MANUAL_*_HOME_POS below will be used
 //#define BED_CENTER_AT_0_0  // If defined, the center of the bed is at (X=0, Y=0)
 
 //Manual homing switch locations:
 // For SCARA: Offset between HomingPosition and Bed X=0 / Y=0
+#ifdef MANUAL_HOME_POSITIONS
 #define MANUAL_X_HOME_POS -22
 #define MANUAL_Y_HOME_POS -52
 #define MANUAL_Z_HOME_POS 0.1  // Distance between nozzle and print surface after homing.
+#endif
 
 // MOVEMENT SETTINGS
 #define NUM_AXIS 4 // The axis order in all axis related arrays is X, Y, Z, E
@@ -236,6 +225,6 @@ const bool Z_MAX_ENDSTOP_INVERTING = true;      // set to true to invert the log
 //#define CUSTOM_M_CODES
 #ifdef CUSTOM_M_CODES
   #define CUSTOM_M_CODE_SET_Z_PROBE_OFFSET 851
-  #define Z_PROBE_OFFSET_RANGE_MIN -15
-  #define Z_PROBE_OFFSET_RANGE_MAX -5
+  #define Z_PROBE_OFFSET_RANGE_MIN -20
+  #define Z_PROBE_OFFSET_RANGE_MAX 20
 #endif

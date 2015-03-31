@@ -257,7 +257,7 @@ extern float home_offset[3];
   #else
     #define NUM_HOTEND_OFFSETS 3 // supports offsets in XYZ plane
   #endif
-  extern float hotend_offset[HOTENDS][NUM_HOTEND_OFFSETS];
+  extern float hotend_offset[NUM_HOTEND_OFFSETS][HOTENDS];
 #endif // HOTENDS > 1
 
 #ifdef NPR2

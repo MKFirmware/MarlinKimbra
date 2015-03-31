@@ -146,6 +146,9 @@
 #define MSG_ERR_MINTEMP                     "Err: MINTEMP"
 #define MSG_ERR_MAXTEMP_BED                 "Err: MAXTEMP BED"
 
+#define MSG_END_HOUR                        "ore"
+#define MSG_END_MINUTE                      "minuti"
+
 #ifdef DELTA
   #define MSG_DELTA_CALIBRATE               "Calibraz. Delta"
   #define MSG_DELTA_CALIBRATE_X             "Calibra X"

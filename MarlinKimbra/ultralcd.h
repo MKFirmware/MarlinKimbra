@@ -8,16 +8,20 @@
   int lcd_strlen_P(const char *s);
   void lcd_update();
   void lcd_init();
-  void lcd_setstatus(const char* message);
-  void lcd_setstatuspgm(const char* message);
+  void lcd_setstatus(const char* message, const bool persist=false);
+  void lcd_setstatuspgm(const char* message, const uint8_t level=0);
   void lcd_setalertstatuspgm(const char* message);
   void lcd_reset_alert_level();
   bool lcd_detected(void);
 
-#if defined(DOGLCD) && LCD_CONTRAST >= 0
-  extern int lcd_contrast;
-  void lcd_setcontrast(uint8_t value);
-#endif
+  #if defined(LCD_PROGRESS_BAR) && PROGRESS_MSG_EXPIRE > 0
+    void dontExpireStatus();
+  #endif
+
+  #if defined(DOGLCD) && LCD_CONTRAST >= 0
+    extern int lcd_contrast;
+    void lcd_setcontrast(uint8_t value);
+  #endif
 
   void set_pageShowInfo(int value);
   void set_ChangeScreen(boolean state);
@@ -54,7 +58,7 @@
 
   extern bool cancel_heatup;
   
-  #if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY) || (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
+  #if (HAS_FILAMENT_SENSOR && defined(FILAMENT_LCD_DISPLAY)) || (HAS_POWER_CONSUMPTION_SENSOR && defined(POWER_CONSUMPTION_LCD_DISPLAY))
     extern unsigned long message_millis;
   #endif
 

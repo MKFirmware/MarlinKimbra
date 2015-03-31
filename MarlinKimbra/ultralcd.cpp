@@ -33,7 +33,7 @@ int gumPreheatFanSpeed;
 const long baudrates[] = {9600,14400,19200,28800,38400,56000,115200,250000};
 int baudrate_position = -1;
 
-#if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY) || (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
+#if (HAS_FILAMENT_SENSOR && defined(FILAMENT_LCD_DISPLAY)) || (HAS_POWER_CONSUMPTION_SENSOR && defined(POWER_CONSUMPTION_LCD_DISPLAY))
   unsigned long message_millis = 0;
 #endif
 
@@ -58,7 +58,9 @@ static void lcd_status_screen();
 
 #ifdef ULTIPANEL
 
-  extern bool powersupply;
+  #if HAS_POWER_SWITCH
+    extern bool powersupply;
+  #endif
   static float manual_feedrate[] = MANUAL_FEEDRATE;
   static void lcd_main_menu();
   static void lcd_tune_menu();
@@ -143,7 +145,6 @@ static void lcd_status_screen();
     if (encoderLine < currentMenuViewOffset) currentMenuViewOffset = encoderLine; \
     uint8_t _lineNr = currentMenuViewOffset, _menuItemNr; \
     bool wasClicked = LCD_CLICKED, itemSelected; \
-    if (wasClicked) lcd_quick_feedback(); \
     for (uint8_t _drawLineNr = 0; _drawLineNr < LCD_HEIGHT; _drawLineNr++, _lineNr++) { \
       _menuItemNr = 0;
 
@@ -174,6 +175,7 @@ static void lcd_status_screen();
       if (lcdDrawUpdate) \
         lcd_implementation_drawmenu_ ## type(itemSelected, _drawLineNr, PSTR(label), ## args); \
       if (wasClicked && itemSelected) { \
+        lcd_quick_feedback(); \
         menu_action_ ## type(args); \
         return; \
       } \
@@ -261,7 +263,7 @@ static void lcd_goto_menu(menuFunc_t menu, const uint32_t encoder=0, const bool 
     if (feedback) lcd_quick_feedback();
 
     // For LCD_PROGRESS_BAR re-initialize the custom characters
-    #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT) && !defined(DOGLCD)
+    #ifdef LCD_PROGRESS_BAR
       lcd_set_custom_characters(menu == lcd_status_screen);
     #endif
   }
@@ -271,29 +273,32 @@ static void lcd_goto_menu(menuFunc_t menu, const uint32_t encoder=0, const bool 
 static void lcd_status_screen()
 {
 	encoderRateMultiplierEnabled = false;
-  #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT) && !defined(DOGLCD)
-    uint16_t mil = millis();
+
+  #ifdef LCD_PROGRESS_BAR
+    unsigned long ms = millis();
     #ifndef PROGRESS_MSG_ONCE
-      if (mil > progressBarTick + PROGRESS_BAR_MSG_TIME + PROGRESS_BAR_BAR_TIME) {
-        progressBarTick = mil;
+      if (ms > progressBarTick + PROGRESS_BAR_MSG_TIME + PROGRESS_BAR_BAR_TIME) {
+        progressBarTick = ms;
       }
     #endif
     #if PROGRESS_MSG_EXPIRE > 0
-      // keep the message alive if paused, count down otherwise
-      if (messageTick > 0) {
+      // Handle message expire
+      if (expireStatusMillis > 0) {
         if (card.isFileOpen()) {
+          // Expire the message when printing is active
           if (IS_SD_PRINTING) {
-            if ((mil-messageTick) >= PROGRESS_MSG_EXPIRE) {
+            // Expire the message when printing is active
+            if (ms >= expireStatusMillis) {
               lcd_status_message[0] = '\0';
-              messageTick = 0;
+              expireStatusMillis = 0;
             }
           }
           else {
-            messageTick += LCD_UPDATE_INTERVAL;
+            expireStatusMillis += LCD_UPDATE_INTERVAL;
           }
         }
         else {
-          messageTick = 0;
+          expireStatusMillis = 0;
         }
       }
     #endif
@@ -333,12 +338,12 @@ static void lcd_status_screen()
     {
       lcd_goto_menu(lcd_main_menu);
       lcd_implementation_init( // to maybe revive the LCD if static electricity killed it.
-        #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT) && !defined(DOGLCD)
+        #ifdef LCD_PROGRESS_BAR
           currentMenu == lcd_status_screen
         #endif
       );
-      #if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY) || (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
-        #if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY) && (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
+      #if (HAS_FILAMENT_SENSOR && defined(FILAMENT_LCD_DISPLAY)) || (HAS_POWER_CONSUMPTION_SENSOR && defined(POWER_CONSUMPTION_LCD_DISPLAY))
+        #if (HAS_FILAMENT_SENSOR && defined(FILAMENT_LCD_DISPLAY)) && (HAS_POWER_CONSUMPTION_SENSOR && defined(POWER_CONSUMPTION_LCD_DISPLAY))
           if (millis() > message_millis + 15000)
         #else
           if (millis() > message_millis + 10000)
@@ -396,7 +401,7 @@ static void lcd_sdcard_stop() {
   card.closefile();
   autotempShutdown();
   cancel_heatup = true;
-  lcd_setstatus(MSG_PRINT_ABORTED);
+  lcd_setstatus(MSG_PRINT_ABORTED, true);
 }
 
 /* Menu implementation */
@@ -560,6 +565,8 @@ void lcd_preheat_pla0() { _lcd_preheat(0, plaPreheatHotendTemp, plaPreheatHPBTem
 void lcd_preheat_abs0() { _lcd_preheat(0, absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed); }
 void lcd_preheat_gum0() { _lcd_preheat(0, gumPreheatHotendTemp, gumPreheatHPBTemp, gumPreheatFanSpeed); }
 
+#if TEMP_SENSOR_1 != 0 || TEMP_SENSOR_2 != 0 || TEMP_SENSOR_3 != 0 || TEMP_SENSOR_BED != 0 //more than one extruder present
+
 #if TEMP_SENSOR_1 != 0 //2nd extruder preheat
   void lcd_preheat_pla1() { _lcd_preheat(1, plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed); }
   void lcd_preheat_abs1() { _lcd_preheat(1, absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed); }
@@ -578,7 +585,6 @@ void lcd_preheat_gum0() { _lcd_preheat(0, gumPreheatHotendTemp, gumPreheatHPBTem
   void lcd_preheat_gum3() { _lcd_preheat(3, gumPreheatHotendTemp, gumPreheatHPBTemp, gumPreheatFanSpeed); }
 #endif //4 extruder preheat
 
-#if TEMP_SENSOR_1 != 0 || TEMP_SENSOR_2 != 0 || TEMP_SENSOR_3 != 0 //more than one extruder present
   void lcd_preheat_pla0123() {
     setTargetHotend0(plaPreheatHotendTemp);
     setTargetHotend1(plaPreheatHotendTemp);
@@ -799,14 +805,13 @@ static void lcd_prepare_menu() {
     MENU_ITEM(function, MSG_PURGE_XMM, lcd_purge);
     MENU_ITEM(function, MSG_RETRACT_XMM, lcd_retract);
   #endif // EASY_LOAD 
-  #if defined(POWER_SUPPLY) && POWER_SUPPLY > 0 && defined(PS_ON_PIN) && PS_ON_PIN > -1
-    if (powersupply) {
+  #if HAS_POWER_SWITCH
+    if (powersupply)
       MENU_ITEM(gcode, MSG_SWITCH_PS_OFF, PSTR("M81"));
-    }
-    else {
+    else
       MENU_ITEM(gcode, MSG_SWITCH_PS_ON, PSTR("M80"));
-    }
   #endif
+
   MENU_ITEM(submenu, MSG_MOVE_AXIS, lcd_move_menu);
   END_MENU();
 }
@@ -1362,10 +1367,10 @@ static void lcd_quick_feedback() {
   #elif defined(BEEPER) && BEEPER > -1
     SET_OUTPUT(BEEPER);
     #ifndef LCD_FEEDBACK_FREQUENCY_HZ
-      #define LCD_FEEDBACK_FREQUENCY_HZ 500
+      #define LCD_FEEDBACK_FREQUENCY_HZ 5000
     #endif
     #ifndef LCD_FEEDBACK_FREQUENCY_DURATION_MS
-      #define LCD_FEEDBACK_FREQUENCY_DURATION_MS 50
+      #define LCD_FEEDBACK_FREQUENCY_DURATION_MS 2
     #endif
     const unsigned int delay = 1000000 / LCD_FEEDBACK_FREQUENCY_HZ / 2;
     int i = LCD_FEEDBACK_FREQUENCY_DURATION_MS * LCD_FEEDBACK_FREQUENCY_HZ / 1000;
@@ -1489,7 +1494,7 @@ void lcd_update() {
       lcdDrawUpdate = 2;
       lcd_oldcardstatus = IS_SD_INSERTED;
       lcd_implementation_init( // to maybe revive the LCD if static electricity killed it.
-        #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT) && !defined(DOGLCD)
+        #ifdef LCD_PROGRESS_BAR
           currentMenu == lcd_status_screen
         #endif
       );
@@ -1552,7 +1557,7 @@ void lcd_update() {
               }
 
               lastEncoderMovementMillis = ms;
-            }
+            } // encoderRateMultiplierEnabled
           #endif //ENCODER_RATE_MULTIPLIER
 
           lcdDrawUpdate = 1;
@@ -1602,7 +1607,7 @@ void lcd_ignore_click(bool b) {
   wait_for_unclick = false;
 }
 
-void lcd_finishstatus() {
+void lcd_finishstatus(bool persist=false) {
   int len = lcd_strlen(lcd_status_message);
   if (len > 0) {
     while (len < LCD_WIDTH) {
@@ -1610,30 +1615,39 @@ void lcd_finishstatus() {
     }
   }
   lcd_status_message[LCD_WIDTH] = '\0';
-  #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT) && !defined(DOGLCD)
-    #if PROGRESS_MSG_EXPIRE > 0
-      messageTick =
-    #endif
+  #ifdef LCD_PROGRESS_BAR
     progressBarTick = millis();
+    #if PROGRESS_MSG_EXPIRE > 0
+      expireStatusMillis = persist ? 0 : progressBarTick + PROGRESS_MSG_EXPIRE;
+    #endif
   #endif
   lcdDrawUpdate = 2;
+
+  #ifdef FILAMENT_LCD_DISPLAY
+    message_millis = millis();  //get status message to show up for a while
+  #endif
 }
 
-void lcd_setstatus(const char* message) {
+#if defined(LCD_PROGRESS_BAR) && PROGRESS_MSG_EXPIRE > 0
+  void dontExpireStatus() { expireStatusMillis = 0; }
+#endif
+
+void lcd_setstatus(const char* message, bool persist) {
   if (lcd_status_message_level > 0) return;
   strncpy(lcd_status_message, message, LCD_WIDTH);
-  lcd_finishstatus();
+  lcd_finishstatus(persist);
 }
 
-void lcd_setstatuspgm(const char* message) {
-  if (lcd_status_message_level > 0) return;
-  strncpy_P(lcd_status_message, message, LCD_WIDTH);
-  lcd_finishstatus();
+void lcd_setstatuspgm(const char* message, uint8_t level) {
+  if (level >= lcd_status_message_level) {
+    strncpy_P(lcd_status_message, message, LCD_WIDTH);
+    lcd_status_message_level = level;
+    lcd_finishstatus(level > 0);
+  }
 }
 
 void lcd_setalertstatuspgm(const char* message) {
-  lcd_setstatuspgm(message);
-  lcd_status_message_level = 1;
+  lcd_setstatuspgm(message, 1);
   #ifdef ULTIPANEL
     lcd_return_to_status();
   #endif
@@ -1750,70 +1764,62 @@ bool lcd_clicked() { return LCD_CLICKED; }
 
 #endif //ULTIPANEL
 
-/********************************/
-/** Float conversion utilities **/
-/********************************/
-//  convert float to string with +123.4 format
+/*********************************/
+/** Number to string conversion **/
+/*********************************/
+
 char conv[8];
-char *ftostr3(const float &x)
-{
+
+// Convert float to string with +123.4 format
+char *ftostr3(const float &x) {
   return itostr3((int)x);
 }
 
-char *itostr2(const uint8_t &x)
-{
+// Convert int to string with 12 format
+char *itostr2(const uint8_t &x) {
   //sprintf(conv,"%5.1f",x);
-  int xx=x;
-  conv[0]=(xx/10)%10+'0';
-  conv[1]=(xx)%10+'0';
-  conv[2]=0;
+  int xx = x;
+  conv[0] = (xx / 10) % 10 + '0';
+  conv[1] = xx % 10 + '0';
+  conv[2] = 0;
+  return conv;
+}
+
+// Convert float to string with +123.4 format
+char *ftostr31(const float &x) {
+  int xx = abs(x * 10);
+  conv[0] = (x >= 0) ? '+' : '-';
+  conv[1] = (xx / 1000) % 10 + '0';
+  conv[2] = (xx / 100) % 10 + '0';
+  conv[3] = (xx / 10) % 10 + '0';
+  conv[4] = '.';
+  conv[5] = xx % 10 + '0';
+  conv[6] = 0;
   return conv;
 }
 
 // Convert float to string with 123.4 format, dropping sign
-char *ftostr31(const float &x)
-{
-  int xx=x*10;
-  conv[0]=(xx>=0)?'+':'-';
-  xx=abs(xx);
-  conv[1]=(xx/1000)%10+'0';
-  conv[2]=(xx/100)%10+'0';
-  conv[3]=(xx/10)%10+'0';
-  conv[4]='.';
-  conv[5]=(xx)%10+'0';
-  conv[6]=0;
+char *ftostr31ns(const float &x) {
+  int xx = abs(x * 10);
+  conv[0] = (xx / 1000) % 10 + '0';
+  conv[1] = (xx / 100) % 10 + '0';
+  conv[2] = (xx / 10) % 10 + '0';
+  conv[3] = '.';
+  conv[4] = xx % 10 + '0';
+  conv[5] = 0;
   return conv;
 }
 
 // Convert float to string with 123.4 format
-char *ftostr31ns(const float &x)
-{
-  int xx=x*10;
-  //conv[0]=(xx>=0)?'+':'-';
-  xx=abs(xx);
-  conv[0]=(xx/1000)%10+'0';
-  conv[1]=(xx/100)%10+'0';
-  conv[2]=(xx/10)%10+'0';
-  conv[3]='.';
-  conv[4]=(xx)%10+'0';
-  conv[5]=0;
-  return conv;
-}
-
-char *ftostr32(const float &x)
-{
-  long xx=x*100;
-  if (xx >= 0)
-    conv[0]=(xx/10000)%10+'0';
-  else
-    conv[0]='-';
-  xx=abs(xx);
-  conv[1]=(xx/1000)%10+'0';
-  conv[2]=(xx/100)%10+'0';
-  conv[3]='.';
-  conv[4]=(xx/10)%10+'0';
-  conv[5]=(xx)%10+'0';
-  conv[6]=0;
+char *ftostr32(const float &x) {
+  long xx = abs(x * 100);
+  conv[0] = x >= 0 ? (xx / 10000) % 10 + '0' : '-';
+  conv[1] = (xx / 1000) % 10 + '0';
+  conv[2] = (xx / 100) % 10 + '0';
+  conv[3] = '.';
+  conv[4] = (xx / 10) % 10 + '0';
+  conv[5] = xx % 10 + '0';
+  conv[6] = 0;
   return conv;
 }
 
@@ -1834,7 +1840,7 @@ char *ftostr43(const float &x)
 	return conv;
 }
 
-//Float to string with 1.23 format
+// Convert float to string with 1.23 format
 char *ftostr12ns(const float &x)
 {
   long xx=x*100;
@@ -1848,7 +1854,7 @@ char *ftostr12ns(const float &x)
   return conv;
 }
 
-//  convert float to space-padded string with -_23.4_ format
+// Convert float to space-padded string with -_23.4_ format
 char *ftostr32sp(const float &x) {
   long xx = abs(x * 100);
   uint8_t dig;
@@ -1894,58 +1900,51 @@ char *ftostr32sp(const float &x) {
   return conv;
 }
 
-char *itostr31(const int &xx)
-{
-  conv[0]=(xx>=0)?'+':'-';
-  conv[1]=(xx/1000)%10+'0';
-  conv[2]=(xx/100)%10+'0';
-  conv[3]=(xx/10)%10+'0';
-  conv[4]='.';
-  conv[5]=(xx)%10+'0';
-  conv[6]=0;
+// Convert int to lj string with +123.0 format
+char *itostr31(const int &x) {
+  conv[0] = x >= 0 ? '+' : '-';
+  int xx = abs(x);
+  conv[1] = (xx / 100) % 10 + '0';
+  conv[2] = (xx / 10) % 10 + '0';
+  conv[3] = xx % 10 + '0';
+  conv[4] = '.';
+  conv[5] = '0';
+  conv[6] = 0;
   return conv;
 }
 
 // Convert int to rj string with 123 or -12 format
-char *itostr3(const int &x)
-{
+char *itostr3(const int &x) {
   int xx = x;
   if (xx < 0) {
-     conv[0]='-';
+     conv[0] = '-';
      xx = -xx;
-  } else if (xx >= 100)
-    conv[0]=(xx/100)%10+'0';
+  }
   else
-    conv[0]=' ';
-  if (xx >= 10)
-    conv[1]=(xx/10)%10+'0';
-  else
-    conv[1]=' ';
-  conv[2]=(xx)%10+'0';
-  conv[3]=0;
+    conv[0] = xx >= 100 ? (xx / 100) % 10 + '0' : ' ';
+
+  conv[1] = xx >= 10 ? (xx / 10) % 10 + '0' : ' ';
+  conv[2] = xx % 10 + '0';
+  conv[3] = 0;
   return conv;
 }
 
 // Convert int to lj string with 123 format
-char *itostr3left(const int &xx)
-{
-  if (xx >= 100)
-  {
-    conv[0]=(xx/100)%10+'0';
-    conv[1]=(xx/10)%10+'0';
-    conv[2]=(xx)%10+'0';
-    conv[3]=0;
+char *itostr3left(const int &xx) {
+  if (xx >= 100) {
+    conv[0] = (xx / 100) % 10 + '0';
+    conv[1] = (xx / 10) % 10 + '0';
+    conv[2] = xx % 10 + '0';
+    conv[3] = 0;
   }
-  else if (xx >= 10)
-  {
-    conv[0]=(xx/10)%10+'0';
-    conv[1]=(xx)%10+'0';
-    conv[2]=0;
+  else if (xx >= 10) {
+    conv[0] = (xx / 10) % 10 + '0';
+    conv[1] = xx % 10 + '0';
+    conv[2] = 0;
   }
-  else
-  {
-    conv[0]=(xx)%10+'0';
-    conv[1]=0;
+  else {
+    conv[0] = xx % 10 + '0';
+    conv[1] = 0;
   }
   return conv;
 }
@@ -1960,8 +1959,7 @@ char *itostr4(const int &xx) {
   return conv;
 }
 
-char *ltostr7(const long &xx)
-{
+char *ltostr7(const long &xx) {
   if (xx >= 1000000)
     conv[0]=(xx/1000000)%10+'0';
   else
@@ -1992,8 +1990,7 @@ char *ltostr7(const long &xx)
 }
 
 // convert float to string with +123 format
-char *ftostr30(const float &x)
-{
+char *ftostr30(const float &x) {
   int xx=x;
   conv[0]=(xx>=0)?'+':'-';
   xx=abs(xx);
@@ -2017,35 +2014,32 @@ char *ftostr5(const float &x) {
 }
 
 // Convert float to string with +1234.5 format
-char *ftostr51(const float &x)
-{
-  long xx=x*10;
-  conv[0]=(xx>=0)?'+':'-';
-  xx=abs(xx);
-  conv[1]=(xx/10000)%10+'0';
-  conv[2]=(xx/1000)%10+'0';
-  conv[3]=(xx/100)%10+'0';
-  conv[4]=(xx/10)%10+'0';
-  conv[5]='.';
-  conv[6]=(xx)%10+'0';
-  conv[7]=0;
+char *ftostr51(const float &x) {
+  long xx = abs(x * 10);
+  conv[0] = (x >= 0) ? '+' : '-';
+  conv[1] = (xx / 10000) % 10 + '0';
+  conv[2] = (xx / 1000) % 10 + '0';
+  conv[3] = (xx / 100) % 10 + '0';
+  conv[4] = (xx / 10) % 10 + '0';
+  conv[5] = '.';
+  conv[6] = xx % 10 + '0';
+  conv[7] = 0;
   return conv;
 }
 
 // Convert float to string with +123.45 format
-char *ftostr52(const float &x)
-{
-  long xx=x*100;
-  conv[0]=(xx>=0)?'+':'-';
-  xx=abs(xx);
-  conv[1]=(xx/10000)%10+'0';
-  conv[2]=(xx/1000)%10+'0';
-  conv[3]=(xx/100)%10+'0';
-  conv[4]='.';
-  conv[5]=(xx/10)%10+'0';
-  conv[6]=(xx)%10+'0';
-  conv[7]=0;
+char *ftostr52(const float &x) {
+  conv[0] = (x >= 0) ? '+' : '-';
+  long xx = abs(x * 100);
+  conv[1] = (xx / 10000) % 10 + '0';
+  conv[2] = (xx / 1000) % 10 + '0';
+  conv[3] = (xx / 100) % 10 + '0';
+  conv[4] = '.';
+  conv[5] = (xx / 10) % 10 + '0';
+  conv[6] = xx % 10 + '0';
+  conv[7] = 0;
   return conv;
 }
+
 
 #endif //ULTRA_LCD

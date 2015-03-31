@@ -159,6 +159,31 @@
 
   #define CONDITIONALS_H
 
+  #ifndef AT90USB
+    #define HardwareSerial_h // trick to disable the standard HWserial
+  #endif
+
+  #if (ARDUINO >= 100)
+    #include "Arduino.h"
+  #else
+    #include "WProgram.h"
+  #endif
+
+  #include "pins.h"
+
+  /**
+   * ENDSTOPPULLUPS
+   */
+  #ifdef ENDSTOPPULLUPS
+    #define ENDSTOPPULLUP_XMAX
+    #define ENDSTOPPULLUP_YMAX
+    #define ENDSTOPPULLUP_ZMAX
+    #define ENDSTOPPULLUP_XMIN
+    #define ENDSTOPPULLUP_YMIN
+    #define ENDSTOPPULLUP_ZMIN
+    #define ENDSTOPPULLUP_EMIN
+  #endif
+
   /**
    * Firmware Test
    */
@@ -183,18 +208,6 @@
   #if !defined(MKR4) && !defined(NPR2)
     #define DRIVER_EXTRUDERS EXTRUDERS // This defines the number of Driver extruder
   #endif
-
-  #ifndef AT90USB
-    #define HardwareSerial_h // trick to disable the standard HWserial
-  #endif
-
-  #if (ARDUINO >= 100)
-    #include "Arduino.h"
-  #else
-    #include "WProgram.h"
-  #endif
-
-  #include "pins.h"
 
   /**
    * Axis lengths
@@ -286,16 +299,14 @@
   #ifndef POWER_SUPPLY
     #define POWER_SUPPLY 0
   #endif
-  // 0 = Normal - 1 = ATX
-  #if (POWER_SUPPLY <= 1)
+  #if (POWER_SUPPLY == 1)     // 1 = ATX
     #define PS_ON_AWAKE  LOW
     #define PS_ON_ASLEEP HIGH
-  #endif
-  // 2 = X-Box 360 203W
-  #if (POWER_SUPPLY == 2)
+  #elif (POWER_SUPPLY == 2)   // 2 = X-Box 360 203W
     #define PS_ON_AWAKE  HIGH
     #define PS_ON_ASLEEP LOW
   #endif
+  #define HAS_POWER_SWITCH (POWER_SUPPLY > 0 && defined(PS_ON_PIN) && PS_ON_PIN >= 0)
 
   /**
    * Temp Sensor defines

@@ -47,7 +47,7 @@
 *  M42  - Change pin status via gcode Use M42 Px Sy to set pin x to value y, when omitting Px the onboard led will be used.
 *  M49  - Z probe repetability test
 *  M80  - Turn on Power Supply
-*  M81  - Turn off Power Supply
+*  M81  - Turn off Power, including Power Supply, if possible
 *  M82  - Set E codes absolute (default)
 *  M83  - Set E codes relative while in Absolute Coordinates (G90) mode
 *  M84  - Disable steppers until next move, or use S[seconds] to specify an inactivity timeout, after which the steppers will be disabled.  S0 to disable the timeout.

@@ -274,7 +274,7 @@ void Config_RetrieveSettings()
 void Config_ResetDefault()
 {
   //Setting default baudrate for serial
-  baudrate=BAUDRATE;
+  baudrate = BAUDRATE;
 
   float tmp1[] = DEFAULT_AXIS_STEPS_PER_UNIT;
   float tmp2[] = DEFAULT_MAX_FEEDRATE;
@@ -286,9 +286,9 @@ void Config_ResetDefault()
     float tmp7[] = DEFAULT_Kd;
   #endif // PIDTEMP
 
-  #if defined(EXTRUDER_OFFSET_X) && defined(EXTRUDER_OFFSET_Y)
-    float tmp8[] = EXTRUDER_OFFSET_X;
-    float tmp9[] = EXTRUDER_OFFSET_Y;
+  #if defined(HOTEND_OFFSET_X) && defined(HOTEND_OFFSET_Y)
+    float tmp8[] = HOTEND_OFFSET_X;
+    float tmp9[] = HOTEND_OFFSET_Y;
   #else
     float tmp8[] = {0,0,0,0};
     float tmp9[] = {0,0,0,0};
@@ -303,8 +303,8 @@ void Config_ResetDefault()
   for (int i = 0; i < EXTRUDERS; i++) {
     max_retraction_feedrate[i] = tmp3[i];
     #if HOTENDS > 1
-      hotend_offset[i][X_AXIS] = tmp8[i];
-      hotend_offset[i][Y_AXIS] = tmp9[i];
+      hotend_offset[X_AXIS][i] = tmp8[i];
+      hotend_offset[Y_AXIS][i] = tmp9[i];
     #endif
     #ifdef SCARA
       if (i < sizeof(axis_scaling) / sizeof(*axis_scaling))

@@ -193,10 +193,10 @@
 
 #include "utf_mapper.h"
 
-#if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
+#ifdef LCD_PROGRESS_BAR
   static uint16_t progressBarTick = 0;
   #if PROGRESS_MSG_EXPIRE > 0
-    static uint16_t messageTick = 0;
+    static uint16_t expireStatusMillis = 0;
   #endif
   #define LCD_STR_PROGRESS  "\x03\x04\x05"
 #endif
@@ -214,7 +214,7 @@
 #define LCD_STR_ARROW_RIGHT ">"  /* from the default character set */
 
 static void lcd_set_custom_characters(
-  #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
+  #ifdef LCD_PROGRESS_BAR
     bool progress_bar_set=true
   #endif
 ) {
@@ -316,7 +316,7 @@ static void lcd_set_custom_characters(
         B00000
     }; //thanks Sonny Mounicou
 
-  #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
+  #ifdef LCD_PROGRESS_BAR
     static bool char_mode = false;
     byte progress[3][8] = { {
       B00000,
@@ -376,9 +376,9 @@ static void lcd_set_custom_characters(
   #endif
 }
 
-static void lcd_implementation_init (
-  #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
-    bool progress_bar_set = true
+static void lcd_implementation_init(
+  #ifdef LCD_PROGRESS_BAR
+    bool progress_bar_set=true
   #endif
 ) {
 
@@ -404,7 +404,7 @@ static void lcd_implementation_init (
   #endif
 
   lcd_set_custom_characters(
-    #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
+    #ifdef LCD_PROGRESS_BAR
       progress_bar_set
     #endif
   );
@@ -594,8 +594,7 @@ static void lcd_implementation_status_screen()
       lcd.print(':');
       lcd.print(itostr2(time%60));
     }
-    else
-    {
+    else {
       lcd_printPGM(PSTR("--:--"));
     }
   #endif
@@ -603,7 +602,8 @@ static void lcd_implementation_status_screen()
   // Status message line at the bottom
   lcd.setCursor(0, LCD_HEIGHT - 1);
 
-  #if defined(LCD_PROGRESS_BAR) && defined(SDSUPPORT)
+  #ifdef LCD_PROGRESS_BAR
+
     if (card.isFileOpen()) {
       uint16_t mil = millis(), diff = mil - progressBarTick;
       if (diff >= PROGRESS_BAR_MSG_TIME || !lcd_status_message[0]) {
@@ -627,12 +627,12 @@ static void lcd_implementation_status_screen()
   #endif //LCD_PROGRESS_BAR
 
   //Display both Status message line and Filament display on the last line
-  #if (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY) || (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
+  #if (HAS_FILAMENT_SENSOR && defined(FILAMENT_LCD_DISPLAY)) || (HAS_POWER_CONSUMPTION_SENSOR && defined(POWER_CONSUMPTION_LCD_DISPLAY))
     if (millis() < message_millis + 5000) {  //Display both Status message line and Filament display on the last line
       lcd_print(lcd_status_message);
     }
-    #if defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && (POWER_CONSUMPTION_PIN >= 0) && defined(POWER_CONSUMPTION_LCD_DISPLAY)
-      #if defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && (FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY)
+    #if HAS_POWER_CONSUMPTION_SENSOR && defined(POWER_CONSUMPTION_LCD_DISPLAY)
+      #if HAS_FILAMENT_SENSOR && defined(FILAMENT_LCD_DISPLAY)
         else if (millis() < message_millis + 10000)
       #else
         else
@@ -645,7 +645,7 @@ static void lcd_implementation_status_screen()
         lcd_printPGM(PSTR("Wh"));
       }
     #endif
-    #if defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && (FILWIDTH_PIN >= 0) && defined(FILAMENT_LCD_DISPLAY)
+    #if HAS_FILAMENT_SENSOR && defined(FILAMENT_LCD_DISPLAY)
       else {
         lcd_printPGM(PSTR("D:"));
         lcd.print(ftostr12ns(filament_width_meas));
