@@ -142,7 +142,6 @@ U8GLIB_DOGM128 u8g(DOGLCD_CS, DOGLCD_A0);  // HW-SPI Com: CS, A0
 #include "utf_mapper.h"
 
 int lcd_contrast;
-static unsigned char blink = 0; // Variable for visualization of fan rotation in GLCD
 static char currentfont = 0;
 
 static void lcd_setFont(char font_nr) {
