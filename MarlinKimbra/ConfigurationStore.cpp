@@ -41,7 +41,7 @@ void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size) {
 // wrong data being written to the variables.
 // ALSO:  always make sure the variables in the Store and retrieve sections are in the same order.
 
-#define EEPROM_VERSION "V17"
+#define EEPROM_VERSION "V18"
 
 #ifdef EEPROM_SETTINGS
 void Config_StoreSettings() {
@@ -131,6 +131,10 @@ void Config_StoreSettings() {
   
   #ifdef IDLE_OOZING_PREVENT
     EEPROM_WRITE_VAR(i, idleoozing_enabled);
+  #endif
+  
+  #if defined(POWER_CONSUMPTION) && defined(STORE_CONSUMPTION)
+    EEPROM_WRITE_VAR(i, power_consumption_hour);
   #endif
 
   int storageSize = i;
@@ -254,6 +258,10 @@ void Config_RetrieveSettings()
 
     #ifdef IDLE_OOZING_PREVENT
       EEPROM_READ_VAR(i, idleoozing_enabled);
+    #endif
+	
+	#if defined(POWER_CONSUMPTION) && defined(STORE_CONSUMPTION)
+      EEPROM_READ_VAR(i, power_consumption_hour);
     #endif
 
     // Call updatePID (similar to when we have processed M301)
@@ -399,6 +407,10 @@ void Config_ResetDefault()
 
   #ifdef IDLE_OOZING_PREVENT
     idleoozing_enabled = true;
+  #endif
+  
+  #if defined(POWER_CONSUMPTION) && defined(STORE_CONSUMPTION)
+    power_consumption_hour = 0;
   #endif
 
   SERIAL_ECHO_START;
