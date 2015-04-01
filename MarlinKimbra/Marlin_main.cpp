@@ -3748,7 +3748,7 @@ inline void gcode_M42() {
       }
     }
 
-    #if defined(FAN_PIN) && FAN_PIN > -1
+    #if HAS_FAN
       if (pin_number == FAN_PIN) fanSpeed = pin_status;
     #endif
 
@@ -5770,7 +5770,7 @@ void process_commands() {
       case 105: // M105 Read current temperature
         gcode_M105(); break;
 
-      #if defined(FAN_PIN) && FAN_PIN > -1
+      #if HAS_FAN
         case 106: //M106 Fan On
           gcode_M106(); break;
         case 107: //M107 Fan Off
@@ -6258,7 +6258,7 @@ void prepare_arc_move(char isclockwise)
 }
 
 #if defined(CONTROLLERFAN_PIN) && CONTROLLERFAN_PIN > -1
-  #if defined(FAN_PIN)
+  #if HAS_FAN
     #if CONTROLLERFAN_PIN == FAN_PIN
       #error "You cannot set CONTROLLERFAN_PIN equal to FAN_PIN"
     #endif // CONTROLLERFAN_PIN == FAN_PIN
