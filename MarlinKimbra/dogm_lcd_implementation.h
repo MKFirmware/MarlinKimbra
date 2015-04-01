@@ -280,10 +280,23 @@ static void lcd_implementation_status_screen() {
 
     u8g.setPrintPos(80,48);
     if (starttime != 0) {
-      uint16_t time = (millis() - starttime) / 60000;
-      lcd_print(itostr2(time/60));
-      lcd_print(':');
-      lcd_print(itostr2(time%60));
+      #if HAS_LCD_POWER_SENSOR
+        if (millis() < print_millis + 1000) {
+          uint16_t time = (millis() - starttime) / 60000;
+          lcd_print(itostr2(time/60));
+          lcd_print(':');
+          lcd_print(itostr2(time%60));
+        }
+        else {
+          lcd_print(itostr4(power_consumption_hour-startpower));
+          lcd_print('Wh');
+        }
+      #else
+        uint16_t time = (millis() - starttime) / 60000;
+        lcd_print(itostr2(time/60));
+        lcd_print(':');
+        lcd_print(itostr2(time%60));
+      #endif
     }
     else {
       lcd_printPGM(PSTR("--:--"));
@@ -358,12 +371,13 @@ static void lcd_implementation_status_screen() {
   #else
   u8g.setPrintPos(0,63);
   #endif
-  #if HAS_FILAMENT_SENSOR || HAS_POWER_CONSUMPTION_SENSOR
+  
+  #if HAS_LCD_FILAMENT_SENSOR || HAS_LCD_POWER_SENSOR
     if (millis() < message_millis + 5000) {  //Display both Status message line and Filament display on the last line
       lcd_print(lcd_status_message);
     }
-    #if HAS_POWER_CONSUMPTION_SENSOR && defined(POWER_CONSUMPTION_LCD_DISPLAY)
-      #if HAS_FILAMENT_SENSOR && defined(FILAMENT_LCD_DISPLAY)
+    #if HAS_LCD_POWER_SENSOR
+      #if HAS_LCD_FILAMENT_SENSOR
         else if (millis() < message_millis + 10000)
       #else
         else
@@ -376,7 +390,7 @@ static void lcd_implementation_status_screen() {
         lcd_printPGM(PSTR("Wh"));
       }
     #endif
-    #if HAS_FILAMENT_SENSOR && defined(FILAMENT_LCD_DISPLAY)
+    #if HAS_LCD_FILAMENT_SENSOR
       else {
         lcd_printPGM(PSTR("D:"));
         lcd_print(ftostr12ns(filament_width_meas));
