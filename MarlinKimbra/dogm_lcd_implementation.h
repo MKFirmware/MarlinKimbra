@@ -199,11 +199,11 @@ static void lcd_implementation_init()
 	// digitalWrite(17, HIGH);
   
 #ifdef LCD_SCREEN_ROT_90
-	u8g.setRot90();   // Rotate screen by 90°
+	u8g.setRot90();   // Rotate screen by 90Â°
 #elif defined(LCD_SCREEN_ROT_180)
-	u8g.setRot180();	// Rotate screen by 180°
+	u8g.setRot180();	// Rotate screen by 180Â°
 #elif defined(LCD_SCREEN_ROT_270)
-	u8g.setRot270();	// Rotate screen by 270°
+	u8g.setRot270();	// Rotate screen by 270Â°
 #endif
 	
   // Show splashscreen
@@ -299,7 +299,7 @@ static void lcd_implementation_status_screen() {
   // Fan
   lcd_setFont(FONT_STATUSMENU);
   u8g.setPrintPos(104,27);
-  #if defined(FAN_PIN) && FAN_PIN > -1
+  #if HAS_FAN
     int per = ((fanSpeed + 1) * 100) / 256;
     if (per) {
 
