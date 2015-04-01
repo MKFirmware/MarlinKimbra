@@ -193,6 +193,7 @@ static void lcd_status_screen();
         if (lcdDrawUpdate) \
           lcd_implementation_drawmenu_ ## type(itemSelected, _drawLineNr, PSTR(label), ## args); \
         if (wasClicked && itemSelected) { \
+          lcd_quick_feedback(); \
           encoderRateMultiplierEnabled = true; \
           lastEncoderMovementMillis = 0; \
           menu_action_ ## type(args); \
@@ -567,23 +568,21 @@ void lcd_preheat_gum0() { _lcd_preheat(0, gumPreheatHotendTemp, gumPreheatHPBTem
 
 #if TEMP_SENSOR_1 != 0 || TEMP_SENSOR_2 != 0 || TEMP_SENSOR_3 != 0 || TEMP_SENSOR_BED != 0 //more than one extruder present
 
-#if TEMP_SENSOR_1 != 0 //2nd extruder preheat
-  void lcd_preheat_pla1() { _lcd_preheat(1, plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed); }
-  void lcd_preheat_abs1() { _lcd_preheat(1, absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed); }
-  void lcd_preheat_gum1() { _lcd_preheat(1, gumPreheatHotendTemp, gumPreheatHPBTemp, gumPreheatFanSpeed); }
-#endif //2nd extruder preheat
-
-#if TEMP_SENSOR_2 != 0 //3 extruder preheat
-  void lcd_preheat_pla2() { _lcd_preheat(2, plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed); }
-  void lcd_preheat_abs2() { _lcd_preheat(2, absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed); }
-  void lcd_preheat_gum2() { _lcd_preheat(2, gumPreheatHotendTemp, gumPreheatHPBTemp, gumPreheatFanSpeed); }
-#endif //3 extruder preheat
-
-#if TEMP_SENSOR_3 != 0 //4 extruder preheat
-  void lcd_preheat_pla3() { _lcd_preheat(3, plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed); }
-  void lcd_preheat_abs3() { _lcd_preheat(3, absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed); }
-  void lcd_preheat_gum3() { _lcd_preheat(3, gumPreheatHotendTemp, gumPreheatHPBTemp, gumPreheatFanSpeed); }
-#endif //4 extruder preheat
+  #if TEMP_SENSOR_1 != 0
+    void lcd_preheat_pla1() { _lcd_preheat(1, plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed); }
+    void lcd_preheat_abs1() { _lcd_preheat(1, absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed); }
+    void lcd_preheat_gum1() { _lcd_preheat(1, gumPreheatHotendTemp, gumPreheatHPBTemp, gumPreheatFanSpeed); }
+  #endif
+  #if TEMP_SENSOR_2 != 0
+    void lcd_preheat_pla2() { _lcd_preheat(2, plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed); }
+    void lcd_preheat_abs2() { _lcd_preheat(2, absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed); }
+    void lcd_preheat_gum2() { _lcd_preheat(2, gumPreheatHotendTemp, gumPreheatHPBTemp, gumPreheatFanSpeed); }
+  #endif
+  #if TEMP_SENSOR_3 != 0
+    void lcd_preheat_pla3() { _lcd_preheat(3, plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed); }
+    void lcd_preheat_abs3() { _lcd_preheat(3, absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed); }
+    void lcd_preheat_gum3() { _lcd_preheat(3, gumPreheatHotendTemp, gumPreheatHPBTemp, gumPreheatFanSpeed); }
+  #endif
 
   void lcd_preheat_pla0123() {
     setTargetHotend0(plaPreheatHotendTemp);
@@ -603,77 +602,74 @@ void lcd_preheat_gum0() { _lcd_preheat(0, gumPreheatHotendTemp, gumPreheatHPBTem
     setTargetHotend2(gumPreheatHotendTemp);
     _lcd_preheat(3, gumPreheatHotendTemp, gumPreheatHPBTemp, gumPreheatFanSpeed);
   }
+
+  #if TEMP_SENSOR_0 != 0
+
+    void lcd_preheat_pla_bedonly() { _lcd_preheat(0, 0, plaPreheatHPBTemp, plaPreheatFanSpeed); }
+    void lcd_preheat_abs_bedonly() { _lcd_preheat(0, 0, absPreheatHPBTemp, absPreheatFanSpeed); }
+    void lcd_preheat_gum_bedonly() { _lcd_preheat(0, 0, gumPreheatHPBTemp, gumPreheatFanSpeed); }
+
+    static void lcd_preheat_pla_menu() {
+      START_MENU();
+      MENU_ITEM(back, MSG_PREPARE, lcd_prepare_menu);
+      MENU_ITEM(function, MSG_PREHEAT_PLA " 1", lcd_preheat_pla0);
+      #if TEMP_SENSOR_1 != 0 //2 extruder preheat
+        MENU_ITEM(function, MSG_PREHEAT_PLA " 2", lcd_preheat_pla1);
+      #endif //2 extruder preheat
+      #if TEMP_SENSOR_2 != 0 //3 extruder preheat
+        MENU_ITEM(function, MSG_PREHEAT_PLA " 3", lcd_preheat_pla2);
+      #endif //3 extruder preheat
+      #if TEMP_SENSOR_3 != 0 //4 extruder preheat
+        MENU_ITEM(function, MSG_PREHEAT_PLA " 4", lcd_preheat_pla3);
+      #endif //4 extruder preheat
+      MENU_ITEM(function, MSG_PREHEAT_PLA_ALL, lcd_preheat_pla0123);
+      #if TEMP_SENSOR_BED != 0
+        MENU_ITEM(function, MSG_PREHEAT_PLA_BEDONLY, lcd_preheat_pla_bedonly);
+      #endif
+      END_MENU();
+    }
+
+    static void lcd_preheat_abs_menu() {
+      START_MENU();
+      MENU_ITEM(back, MSG_PREPARE, lcd_prepare_menu);
+      MENU_ITEM(function, MSG_PREHEAT_ABS " 1", lcd_preheat_abs0);
+      #if TEMP_SENSOR_1 != 0 //2 extruder preheat
+        MENU_ITEM(function, MSG_PREHEAT_ABS " 2", lcd_preheat_abs1);
+      #endif //2 extruder preheat
+      #if TEMP_SENSOR_2 != 0 //3 extruder preheat
+        MENU_ITEM(function, MSG_PREHEAT_ABS " 3", lcd_preheat_abs2);
+      #endif //3 extruder preheat
+      #if TEMP_SENSOR_3 != 0 //4 extruder preheat
+        MENU_ITEM(function, MSG_PREHEAT_ABS " 4", lcd_preheat_abs3);
+      #endif //4 extruder preheat
+      MENU_ITEM(function, MSG_PREHEAT_ABS_ALL, lcd_preheat_abs0123);
+      #if TEMP_SENSOR_BED != 0
+        MENU_ITEM(function, MSG_PREHEAT_ABS_BEDONLY, lcd_preheat_abs_bedonly);
+      #endif
+      END_MENU();
+    }
+
+    static void lcd_preheat_gum_menu() {
+      START_MENU();
+      MENU_ITEM(back, MSG_PREPARE, lcd_prepare_menu);
+      MENU_ITEM(function, MSG_PREHEAT_GUM " 1", lcd_preheat_gum0);
+      #if TEMP_SENSOR_1 != 0 //2 extruder preheat
+        MENU_ITEM(function, MSG_PREHEAT_GUM " 2", lcd_preheat_gum1);
+      #endif //2 extruder preheat
+      #if TEMP_SENSOR_2 != 0 //3 extruder preheat
+        MENU_ITEM(function, MSG_PREHEAT_GUM " 3", lcd_preheat_gum2);
+      #endif //3 extruder preheat
+      #if TEMP_SENSOR_3 != 0 //4 extruder preheat
+        MENU_ITEM(function, MSG_PREHEAT_GUM " 4", lcd_preheat_gum3);
+      #endif //all extruder preheat
+      MENU_ITEM(function, MSG_PREHEAT_GUM_ALL, lcd_preheat_gum0123);
+      #if TEMP_SENSOR_BED != 0
+        MENU_ITEM(function, MSG_PREHEAT_GUM_BEDONLY, lcd_preheat_gum_bedonly);
+      #endif
+      END_MENU();
+    }
+  #endif //TEMP_SENSOR_0 != 0
 #endif //more than one extruder present
-
-void lcd_preheat_pla_bedonly() { _lcd_preheat(0, 0, plaPreheatHPBTemp, plaPreheatFanSpeed); }
-void lcd_preheat_abs_bedonly() { _lcd_preheat(0, 0, absPreheatHPBTemp, absPreheatFanSpeed); }
-void lcd_preheat_gum_bedonly() { _lcd_preheat(0, 0, gumPreheatHPBTemp, gumPreheatFanSpeed); }
-
-static void lcd_preheat_pla_menu() {
-  START_MENU();
-  MENU_ITEM(back, MSG_PREPARE, lcd_prepare_menu);
-  MENU_ITEM(function, MSG_PREHEAT_PLA " 1", lcd_preheat_pla0);
-  #if TEMP_SENSOR_1 != 0 //2 extruder preheat
-    MENU_ITEM(function, MSG_PREHEAT_PLA " 2", lcd_preheat_pla1);
-  #endif //2 extruder preheat
-  #if TEMP_SENSOR_2 != 0 //3 extruder preheat
-    MENU_ITEM(function, MSG_PREHEAT_PLA " 3", lcd_preheat_pla2);
-  #endif //3 extruder preheat
-  #if TEMP_SENSOR_3 != 0 //4 extruder preheat
-    MENU_ITEM(function, MSG_PREHEAT_PLA " 4", lcd_preheat_pla3);
-  #endif //4 extruder preheat
-  #if TEMP_SENSOR_1 != 0 || TEMP_SENSOR_2 != 0 || TEMP_SENSOR_3 != 0 //all extruder preheat
-    MENU_ITEM(function, MSG_PREHEAT_PLA_ALL, lcd_preheat_pla0123);
-  #endif //all extruder preheat
-  #if TEMP_SENSOR_BED != 0
-    MENU_ITEM(function, MSG_PREHEAT_PLA_BEDONLY, lcd_preheat_pla_bedonly);
-  #endif
-  END_MENU();
-}
-
-static void lcd_preheat_abs_menu() {
-  START_MENU();
-  MENU_ITEM(back, MSG_PREPARE, lcd_prepare_menu);
-  MENU_ITEM(function, MSG_PREHEAT_ABS " 1", lcd_preheat_abs0);
-  #if TEMP_SENSOR_1 != 0 //2 extruder preheat
-    MENU_ITEM(function, MSG_PREHEAT_ABS " 2", lcd_preheat_abs1);
-  #endif //2 extruder preheat
-  #if TEMP_SENSOR_2 != 0 //3 extruder preheat
-    MENU_ITEM(function, MSG_PREHEAT_ABS " 3", lcd_preheat_abs2);
-  #endif //3 extruder preheat
-  #if TEMP_SENSOR_3 != 0 //4 extruder preheat
-    MENU_ITEM(function, MSG_PREHEAT_ABS " 4", lcd_preheat_abs3);
-  #endif //4 extruder preheat
-  #if TEMP_SENSOR_1 != 0 || TEMP_SENSOR_2 != 0 || TEMP_SENSOR_3 != 0 //all extruder preheat
-    MENU_ITEM(function, MSG_PREHEAT_ABS_ALL, lcd_preheat_abs0123);
-  #endif //all extruder preheat
-  #if TEMP_SENSOR_BED != 0
-    MENU_ITEM(function, MSG_PREHEAT_ABS_BEDONLY, lcd_preheat_abs_bedonly);
-  #endif
-  END_MENU();
-}
-
-static void lcd_preheat_gum_menu() {
-  START_MENU();
-  MENU_ITEM(back, MSG_PREPARE, lcd_prepare_menu);
-  MENU_ITEM(function, MSG_PREHEAT_GUM " 1", lcd_preheat_gum0);
-  #if TEMP_SENSOR_1 != 0 //2 extruder preheat
-    MENU_ITEM(function, MSG_PREHEAT_GUM " 2", lcd_preheat_gum1);
-  #endif //2 extruder preheat
-  #if TEMP_SENSOR_2 != 0 //3 extruder preheat
-    MENU_ITEM(function, MSG_PREHEAT_GUM " 3", lcd_preheat_gum2);
-  #endif //3 extruder preheat
-  #if TEMP_SENSOR_3 != 0 //4 extruder preheat
-    MENU_ITEM(function, MSG_PREHEAT_GUM " 4", lcd_preheat_gum3);
-  #endif //all extruder preheat
-  #if TEMP_SENSOR_1 != 0 || TEMP_SENSOR_2 != 0 || TEMP_SENSOR_3 != 0 //all extruder preheat
-    MENU_ITEM(function, MSG_PREHEAT_GUM_ALL, lcd_preheat_gum0123);
-  #endif //all extruder preheat
-  #if TEMP_SENSOR_BED != 0
-    MENU_ITEM(function, MSG_PREHEAT_GUM_BEDONLY, lcd_preheat_gum_bedonly);
-  #endif
-  END_MENU();
-}
 
 void lcd_cooldown() {
   setTargetHotend0(0);
