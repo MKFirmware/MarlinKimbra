@@ -33,8 +33,12 @@ int gumPreheatFanSpeed;
 const long baudrates[] = {9600,14400,19200,28800,38400,56000,115200,250000};
 int baudrate_position = -1;
 
-#if (HAS_FILAMENT_SENSOR && defined(FILAMENT_LCD_DISPLAY)) || (HAS_POWER_CONSUMPTION_SENSOR && defined(POWER_CONSUMPTION_LCD_DISPLAY))
+#if HAS_LCD_FILAMENT_SENSOR || HAS_LCD_POWER_SENSOR
   unsigned long message_millis = 0;
+#endif
+
+#if HAS_LCD_POWER_SENSOR
+  unsigned long print_millis = 0;
 #endif
 
 /* !Configuration settings */
@@ -314,6 +318,21 @@ static void lcd_status_screen()
     lcd_implementation_status_screen();
     lcd_status_update_delay = 10;   /* redraw the main screen every second. This is easier then trying keep track of all things that change on the screen */
   }
+  
+  #if HAS_LCD_POWER_SENSOR
+    if (millis() > print_millis + 2000) print_millis = millis();
+  #endif
+  
+  #if HAS_LCD_FILAMENT_SENSOR || HAS_LCD_POWER_SENSOR
+    #if HAS_LCD_FILAMENT_SENSOR && HAS_LCD_POWER_SENSOR
+      if (millis() > message_millis + 15000)
+    #else
+     if (millis() > message_millis + 10000)
+    #endif
+    {
+      message_millis = millis();
+    }
+  #endif
 
 #ifdef ULTIPANEL
 
@@ -343,16 +362,6 @@ static void lcd_status_screen()
           currentMenu == lcd_status_screen
         #endif
       );
-      #if (HAS_FILAMENT_SENSOR && defined(FILAMENT_LCD_DISPLAY)) || (HAS_POWER_CONSUMPTION_SENSOR && defined(POWER_CONSUMPTION_LCD_DISPLAY))
-        #if (HAS_FILAMENT_SENSOR && defined(FILAMENT_LCD_DISPLAY)) && (HAS_POWER_CONSUMPTION_SENSOR && defined(POWER_CONSUMPTION_LCD_DISPLAY))
-          if (millis() > message_millis + 15000)
-        #else
-          if (millis() > message_millis + 10000)
-        #endif
-          {
-            message_millis = millis();
-          }
-      #endif
     }
 
 #ifdef ULTIPANEL_FEEDMULTIPLY
@@ -1618,10 +1627,6 @@ void lcd_finishstatus(bool persist=false) {
     #endif
   #endif
   lcdDrawUpdate = 2;
-
-  #ifdef FILAMENT_LCD_DISPLAY
-    message_millis = millis();  //get status message to show up for a while
-  #endif
 }
 
 #if defined(LCD_PROGRESS_BAR) && PROGRESS_MSG_EXPIRE > 0
