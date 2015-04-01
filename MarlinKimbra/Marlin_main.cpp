@@ -340,8 +340,10 @@ uint8_t debugLevel = 0;
 #endif
 
 #if HAS_POWER_CONSUMPTION_SENSOR
-  float power_consumption_meas = 0;
-  unsigned long power_consumption_hour = 0.0;
+  float power_consumption_meas = 0.0;
+  unsigned long power_consumption_hour = 0;
+  unsigned long startpower = 0;
+  unsigned long stoppower = 0;
 #endif
 
 #ifdef LASERBEAM
@@ -927,13 +929,18 @@ void get_command()
     {
       if(card.eof()){
         SERIAL_PROTOCOLLNPGM(MSG_FILE_PRINTED);
-        stoptime=millis();
+        stoptime = millis();
+	stoppower = power_consumption_hour-startpower;
         char time[30];
-        unsigned long t=(stoptime-starttime)/1000;
+        unsigned long t = (stoptime-starttime) / 1000;
         int hours, minutes;
         minutes=(t/60)%60;
         hours=t/60/60;
-        sprintf_P(time, PSTR("%i "MSG_END_HOUR" %i "MSG_END_MINUTE),hours, minutes);
+	#if HAS_POWER_CONSUMPTION_SENSOR
+          sprintf_P(time, PSTR("%i "MSG_END_HOUR" %i "MSG_END_MINUTE" %i Wh"), hours, minutes, stoppower);
+	#else
+          sprintf_P(time, PSTR("%i "MSG_END_HOUR" %i "MSG_END_MINUTE), hours, minutes);
+	#endif
         SERIAL_ECHO_START;
         SERIAL_ECHOLN(time);
         lcd_setstatus(time, true);
@@ -3625,6 +3632,7 @@ inline void gcode_G92() {
   inline void gcode_M24() {
     card.startFileprint();
     starttime = millis();
+	startpower = power_consumption_hour;
   }
 
   // M25: Pause SD Print
@@ -3715,8 +3723,10 @@ inline void gcode_M31() {
         card.setIndex(code_value_long());
 
       card.startFileprint();
-      if (!call_procedure)
+      if (!call_procedure) {
         starttime = millis(); //procedure calls count as normal print time.
+		startpower = power_consumption_hour;
+	  }
     }
   }
 
