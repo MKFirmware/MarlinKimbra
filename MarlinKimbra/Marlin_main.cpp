@@ -617,7 +617,7 @@ void setup_powerhold()
     OUT_WRITE(SUICIDE_PIN, HIGH);
   #endif
   #if HAS_POWER_SWITCH
-    #if defined(PS_DEFAULT_OFF)
+    #ifdef PS_DEFAULT_OFF
       OUT_WRITE(PS_ON_PIN, PS_ON_ASLEEP);
     #else
       OUT_WRITE(PS_ON_PIN, PS_ON_AWAKE);
