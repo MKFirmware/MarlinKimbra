@@ -132,7 +132,7 @@ void Config_StoreSettings() {
   #ifdef IDLE_OOZING_PREVENT
     EEPROM_WRITE_VAR(i, idleoozing_enabled);
   #endif
-  
+
   #if defined(POWER_CONSUMPTION) && defined(STORE_CONSUMPTION)
     EEPROM_WRITE_VAR(i, power_consumption_hour);
   #endif
@@ -259,8 +259,8 @@ void Config_RetrieveSettings()
     #ifdef IDLE_OOZING_PREVENT
       EEPROM_READ_VAR(i, idleoozing_enabled);
     #endif
-	
-	#if defined(POWER_CONSUMPTION) && defined(STORE_CONSUMPTION)
+
+    #if defined(POWER_CONSUMPTION) && defined(STORE_CONSUMPTION)
       EEPROM_READ_VAR(i, power_consumption_hour);
     #endif
 
@@ -408,7 +408,7 @@ void Config_ResetDefault()
   #ifdef IDLE_OOZING_PREVENT
     idleoozing_enabled = true;
   #endif
-  
+
   #if defined(POWER_CONSUMPTION) && defined(STORE_CONSUMPTION)
     power_consumption_hour = 0;
   #endif
@@ -649,5 +649,12 @@ void Config_PrintSettings()
       SERIAL_ECHOLNPGM("Filament settings: Disabled");
     }
   #endif //FWRETRACT
+
+  #if defined(POWER_CONSUMPTION) && defined(STORE_CONSUMPTION)
+    SERIAL_ECHO_START;
+    SERIAL_ECHOLNPGM("Power consumation:");
+    SERIAL_ECHO_START;
+    SERIAL_ECHOPAIR("  W/h:", power_consumption_hour);
+  #endif
 }
 #endif //!DISABLE_M503

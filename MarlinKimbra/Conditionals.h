@@ -4,6 +4,10 @@
  */
 #ifndef CONDITIONALS_H
 
+#ifndef M_PI
+  #define M_PI 3.1415926536
+#endif
+
 #ifndef CONFIGURATION_LCD // Get the LCD defines which are needed first
 
   #define CONFIGURATION_LCD
@@ -286,7 +290,7 @@
    * Advance calculated values
    */
   #ifdef ADVANCE
-    #define EXTRUSION_AREA (0.25 * D_FILAMENT * D_FILAMENT * 3.14159)
+    #define EXTRUSION_AREA (0.25 * D_FILAMENT * D_FILAMENT * M_PI)
     #define STEPS_PER_CUBIC_MM_E (axis_steps_per_unit[E_AXIS] / EXTRUSION_AREA)
   #endif
 
@@ -398,8 +402,6 @@
   #define HAS_TEMP_2 (defined(TEMP_2_PIN) && (TEMP_2_PIN >= 0) && TEMP_SENSOR_2)
   #define HAS_TEMP_3 (defined(TEMP_3_PIN) && (TEMP_3_PIN >= 0) && TEMP_SENSOR_3)
   #define HAS_TEMP_BED (defined(TEMP_BED_PIN) && (TEMP_BED_PIN >= 0) && TEMP_SENSOR_BED)
-  #define HAS_FILAMENT_SENSOR (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0)
-  #define HAS_POWER_CONSUMPTION_SENSOR (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0)
   #define HAS_HEATER_0 (defined(HEATER_0_PIN) && HEATER_0_PIN >= 0)
   #define HAS_HEATER_1 (defined(HEATER_1_PIN) && HEATER_1_PIN >= 0)
   #define HAS_HEATER_2 (defined(HEATER_2_PIN) && HEATER_2_PIN >= 0)
@@ -438,10 +440,12 @@
   #endif
   
   /**
-   * Shorthand for sensor test for ultralcd.cpp, dogm_lcd_implementation.h, ultralcd_implementation_hitachi_HD44780.h
+   * Shorthand for filament sensor and power sensor for ultralcd.cpp, dogm_lcd_implementation.h, ultralcd_implementation_hitachi_HD44780.h
    */
-   #define HAS_LCD_FILAMENT_SENSOR (HAS_FILAMENT_SENSOR && defined(FILAMENT_LCD_DISPLAY))
-   #define HAS_LCD_POWER_SENSOR (HAS_POWER_CONSUMPTION_SENSOR && defined(POWER_CONSUMPTION_LCD_DISPLAY))
+  #define HAS_FILAMENT_SENSOR (defined(FILAMENT_SENSOR) && defined(FILWIDTH_PIN) && FILWIDTH_PIN >= 0)
+  #define HAS_POWER_CONSUMPTION_SENSOR (defined(POWER_CONSUMPTION) && defined(POWER_CONSUMPTION_PIN) && POWER_CONSUMPTION_PIN >= 0)
+  #define HAS_LCD_FILAMENT_SENSOR (HAS_FILAMENT_SENSOR && defined(FILAMENT_LCD_DISPLAY))
+  #define HAS_LCD_POWER_SENSOR (HAS_POWER_CONSUMPTION_SENSOR && defined(POWER_CONSUMPTION_LCD_DISPLAY))
 
 #endif //CONFIGURATION_LCD
 #endif //CONDITIONALS_H

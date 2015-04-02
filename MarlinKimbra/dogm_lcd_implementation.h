@@ -199,11 +199,11 @@ static void lcd_implementation_init()
 	// digitalWrite(17, HIGH);
   
 #ifdef LCD_SCREEN_ROT_90
-	u8g.setRot90();   // Rotate screen by 90Â°
+	u8g.setRot90();   // Rotate screen by 90°
 #elif defined(LCD_SCREEN_ROT_180)
-	u8g.setRot180();	// Rotate screen by 180Â°
+	u8g.setRot180();	// Rotate screen by 180°
 #elif defined(LCD_SCREEN_ROT_270)
-	u8g.setRot270();	// Rotate screen by 270Â°
+	u8g.setRot270();	// Rotate screen by 270°
 #endif
 	
   // Show splashscreen
@@ -371,7 +371,7 @@ static void lcd_implementation_status_screen() {
   #else
   u8g.setPrintPos(0,63);
   #endif
-  
+
   #if HAS_LCD_FILAMENT_SENSOR || HAS_LCD_POWER_SENSOR
     if (millis() < message_millis + 5000) {  //Display both Status message line and Filament display on the last line
       lcd_print(lcd_status_message);
