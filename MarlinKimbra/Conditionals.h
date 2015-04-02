@@ -436,6 +436,12 @@
   #if HAS_FAN
     #define WRITE_FAN(v) WRITE(FAN_PIN, v)
   #endif
+  
+  /**
+   * Shorthand for sensor test for ultralcd.cpp, dogm_lcd_implementation.h, ultralcd_implementation_hitachi_HD44780.h
+   */
+   #define HAS_LCD_FILAMENT_SENSOR (HAS_FILAMENT_SENSOR && defined(FILAMENT_LCD_DISPLAY))
+   #define HAS_LCD_POWER_SENSOR (HAS_POWER_CONSUMPTION_SENSOR && defined(POWER_CONSUMPTION_LCD_DISPLAY))
 
 #endif //CONFIGURATION_LCD
 #endif //CONDITIONALS_H

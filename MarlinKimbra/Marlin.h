@@ -307,6 +307,8 @@ extern int fanSpeed;
 #if HAS_POWER_CONSUMPTION_SENSOR
   extern float power_consumption_meas;          //holds the power consumption as accurately measured
   extern unsigned long power_consumption_hour;  //holds the power consumption per hour as accurately measured
+  extern unsigned long startpower;
+  extern unsigned long stoppower;
 #endif
 
 #ifdef IDLE_OOZING_PREVENT
