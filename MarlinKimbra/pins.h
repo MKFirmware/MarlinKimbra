@@ -4477,7 +4477,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #endif //MKR4
 
 #ifdef NPR2
-  #define E_MIN_PIN           19
+  #define E_MIN_PIN             -1
 #endif //NPR2
 
 #ifdef LASERBEAM
@@ -4485,8 +4485,8 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
   #define LASER_TTL_PIN	44
 #endif
 
-#ifdef FILAMENT_END_SWITCH
-  #define PAUSE_PIN           19
+#ifdef FILAMENT_RUNOUT_SENSOR
+  #define FILRUNOUT_PIN         -1
 #endif
 
 #ifdef POWER_CONSUMPTION
