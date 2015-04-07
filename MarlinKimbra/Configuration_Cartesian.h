@@ -151,7 +151,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;     // set to true to invert the log
   //The value is the delay to turn the servo off after powered on - depends on the servo speed; 300ms is good value, but you can try lower it.
   //You MUST HAVE the SERVO ENDSTOPS defined to use here a value higher than zero otherwise your code will not compile.
 
-  //#define PROBE_SERVO_DEACTIVATION_DELAY 300
+  #define PROBE_SERVO_DEACTIVATION_DELAY 300
 
 #endif // ENABLE_AUTO_BED_LEVELING
 
