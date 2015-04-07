@@ -49,9 +49,9 @@
 /***********************************************************************\
  **************************** Define type printer **********************
  ***********************************************************************/
-//#define CARTESIAN
+#define CARTESIAN
 //#define COREXY
-#define DELTA
+//#define DELTA
 //#define SCARA
 
 #if defined(CARTESIAN)
