@@ -1319,7 +1319,7 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
       ProbeStay             = 0,
       ProbeDeploy           = BIT(0),
       ProbeStow             = BIT(1),
-      ProbeDeployAndStow    = (ProbeDeployAndStow | ProbeStow)
+      ProbeDeployAndStow    = (ProbeDeploy | ProbeStow)
     };
 
     // Probe bed height at position (x,y), returns the measured z value
