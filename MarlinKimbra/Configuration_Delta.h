@@ -130,7 +130,7 @@ const bool Z_PROBE_ENDSTOP_INVERTING = false;   // set to true to invert the log
 
 
 // MOVEMENT SETTINGS
-#define HOMING_FEEDRATE {100*60,100*60,100*60,0}      // set the homing speeds (mm/min)
+#define HOMING_FEEDRATE {100*60, 100*60, 100*60, 0}      // set the homing speeds (mm/min)
 
 // default settings
 // delta speeds must be the same on xyz

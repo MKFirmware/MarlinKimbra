@@ -200,7 +200,6 @@ M999 - Restart after being stopped by error
   CardReader card;
 #endif
 
-unsigned long baudrate;
 float homing_feedrate[] = HOMING_FEEDRATE;
 int homing_bump_divisor[] = HOMING_BUMP_DIVISOR;
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
@@ -478,7 +477,7 @@ void serial_echopair_P(const char *s_P, double v)
 void serial_echopair_P(const char *s_P, unsigned long v)
     { serialprintPGM(s_P); SERIAL_ECHO(v); }
 
-#if !defined (__SAM3X8E__)
+#ifndef __SAM3X8E__
 #ifdef SDSUPPORT
   #include "SdFatUtil.h"
   int freeMemory() { return SdFatUtil::FreeRam(); }
@@ -665,12 +664,8 @@ void setup()
   #endif
   setup_killpin();
   setup_filrunoutpin();
-
-  // loads data from EEPROM if available else uses defaults (and resets step acceleration rate)
-  Config_RetrieveSettings();
-
   setup_powerhold();
-  MYSERIAL.begin(baudrate);
+  MYSERIAL.begin(BAUDRATE);
   SERIAL_PROTOCOLLNPGM("start");
   SERIAL_ECHO_START;
 
@@ -707,6 +702,9 @@ void setup()
     fromsd[i] = false;
   }
   #endif //!SDSUPPORT
+
+  // loads data from EEPROM if available else uses defaults (and resets step acceleration rate)
+  Config_RetrieveSettings();
 
   tp_init();    // Initialize temperature loop
   plan_init();  // Initialize planner;
@@ -2052,7 +2050,7 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
     }
 
     feedrate = oldFeedrate;
-    retracted[active_extruder] = retract;
+    retracted[active_extruder] = retracting;
 
   } // retract()
 #endif //FWRETRACT
@@ -4229,7 +4227,7 @@ inline void gcode_M104() {
  */
 inline void gcode_M105() {
   if (setTargetedHotend(105)) return;
-  if (debugDryrun()) return;
+
   #if HAS_TEMP_0 || HAS_TEMP_BED
     SERIAL_PROTOCOLPGM("ok");
     #if HAS_TEMP_0
@@ -6846,7 +6844,7 @@ void kill()
   disable_all_steppers();
 
   #if HAS_POWER_SWITCH
-    pinMode(PS_ON_PIN, INPUT);
+    SET_INPUT(PS_ON_PIN);
   #endif
 
   SERIAL_ERROR_START;

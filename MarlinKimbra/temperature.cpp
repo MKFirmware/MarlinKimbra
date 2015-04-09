@@ -735,7 +735,7 @@ static float analog2temp(int raw, uint8_t e) {
     return celsius;
   }
 
-  #if defined (__SAM3X8E__)
+  #ifdef __SAM3X8E__
     return ((raw * ((3.3 * 100) / 1024) / OVERSAMPLENR) * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET;
   #else
     return ((raw * ((5.0 * 100.0) / 1024.0) / OVERSAMPLENR) * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET;
@@ -766,7 +766,7 @@ static float analog2tempBed(int raw) {
 
     return celsius;
   #elif defined BED_USES_AD595
-    #if defined (__SAM3X8E__)
+    #ifdef __SAM3X8E__
       return ((raw * ((3.3 * 100) / 1024) / OVERSAMPLENR) * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET;
     #else
       return ((raw * ((5.0 * 100.0) / 1024.0) / OVERSAMPLENR) * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET;
@@ -782,7 +782,7 @@ static void updateTemperaturesFromRawValues() {
   #ifdef HEATER_0_USES_MAX6675
     current_temperature_raw[0] = read_max6675();
   #endif
-  for (int e = 0; e < HOTENDS; e++) {
+  for (uint8_t e = 0; e < HOTENDS; e++) {
     current_temperature[e] = analog2temp(current_temperature_raw[e], e);
   }
   current_temperature_bed = analog2tempBed(current_temperature_bed_raw);
@@ -906,7 +906,7 @@ void tp_init()
 
   #endif //HEATER_0_USES_MAX6675
 
-#if defined (__SAM3X8E__)
+#ifdef __SAM3X8E__
   // Use timer0 for temperature measurement
   // Interleave temperature interrupt with millies interrupt
   HAL_temp_timer_start(TEMP_TIMER_NUM);
@@ -1241,7 +1241,7 @@ static void set_current_temp_raw() {
   current_temperature_bed_raw = raw_temp_bed_value;
 
   #if HAS_POWER_CONSUMPTION_SENSOR
-    #if defined (__SAM3X8E__)
+    #ifdef __SAM3X8E__
       float power_zero_raw = (POWER_ZERO * 1023 * OVERSAMPLENR) / 3.3;
     #else
       float power_zero_raw = (POWER_ZERO * 1023 * OVERSAMPLENR) / 5.0;
@@ -1591,7 +1591,7 @@ ISR(TIMER0_COMPB_vect) {
       raw_powconsumption_value = 0;
     #endif
 
-    #ifndef HEATER_0_USES_MAX6675
+    #if HAS_TEMP_0 && !defined(HEATER_0_USES_MAX6675)
       #if HEATER_0_RAW_LO_TEMP > HEATER_0_RAW_HI_TEMP
         #define GE0 <=
       #else

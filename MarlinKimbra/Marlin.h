@@ -12,7 +12,7 @@
 #include <string.h>
 #include <inttypes.h>
 
-#if defined (__SAM3X8E__)
+#ifdef __SAM3X8E__
   #include "HAL.h"
 #else
   #include <util/delay.h>
@@ -44,7 +44,7 @@
   #include "HardwareSerial.h"
 #endif
 
-#if !defined (__SAM3X8E__)
+#ifndef __SAM3X8E__
   #include "MarlinSerial.h"
 #endif
 
@@ -64,7 +64,7 @@
     #define MYSERIAL Serial
   #endif // BTENABLED
 #else
-  #if defined (__SAM3X8E__)
+  #ifdef __SAM3X8E__
     #define MYSERIAL Serial
   #else
     #define MYSERIAL MSerial
@@ -259,7 +259,6 @@ inline void refresh_cmd_timeout() { previous_millis_cmd = millis(); }
   #define CRITICAL_SECTION_END    SREG = _sreg;
 #endif
 
-extern unsigned long baudrate;
 extern float homing_feedrate[];
 extern bool axis_relative_modes[];
 extern int feedmultiply;

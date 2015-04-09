@@ -37,8 +37,8 @@
 
 // save 3120 bytes of PROGMEM by commenting out #define USE_BIG_EDIT_FONT
 // we don't have a big font for Cyrillic, Kana
-#if defined( MAPPER_C2C3 ) || defined( MAPPER_NON )
-//  #define USE_BIG_EDIT_FONT
+#if defined(MAPPER_C2C3) || defined(MAPPER_NON)
+  //#define USE_BIG_EDIT_FONT
 #endif
 
 // If you have spare 2300Byte of progmem and want to use a 
@@ -108,40 +108,25 @@
 
 #define START_ROW              0
 
-/* Custom characters defined in font font_6x10_marlin_symbols */
-// \x00 intentionally skipped to avoid problems in strings
-#define LCD_STR_REFRESH     "\x01"
-#define LCD_STR_FOLDER      "\x02"
-#define LCD_STR_ARROW_RIGHT "\x03"
-#define LCD_STR_UPLEVEL     "\x04"
-#define LCD_STR_CLOCK       "\x05"
-#define LCD_STR_FEEDRATE    "\x06"
-#define LCD_STR_BEDTEMP     "\x07"
-#define LCD_STR_THERMOMETER "\x08"
-#define LCD_STR_DEGREE      "\x09"
-
-#define LCD_STR_SPECIAL_MAX '\x09'
-// Maximum here is 0x1f because 0x20 is ' ' (space) and the normal charsets begin.
-// Better stay below 0x10 because DISPLAY_CHARSET_HD44780_WESTERN begins here.
-
 // LCD selection
 #ifdef U8GLIB_ST7920
-//U8GLIB_ST7920_128X64_RRD u8g(0,0,0);
-U8GLIB_ST7920_128X64_RRD u8g(0);
+  //U8GLIB_ST7920_128X64_RRD u8g(0,0,0);
+  U8GLIB_ST7920_128X64_RRD u8g(0);
 #elif defined(MAKRPANEL)
-// The MaKrPanel display, ST7565 controller as well
-U8GLIB_NHD_C12864 u8g(DOGLCD_CS, DOGLCD_A0);
+  // The MaKrPanel display, ST7565 controller as well
+  U8GLIB_NHD_C12864 u8g(DOGLCD_CS, DOGLCD_A0);
 #elif defined(VIKI2) || defined(miniVIKI)
-// Mini Viki and Viki 2.0 LCD, ST7565 controller as well
-U8GLIB_NHD_C12864 u8g(DOGLCD_CS, DOGLCD_A0);
+  // Mini Viki and Viki 2.0 LCD, ST7565 controller as well
+  U8GLIB_NHD_C12864 u8g(DOGLCD_CS, DOGLCD_A0);
 #else
-// for regular DOGM128 display with HW-SPI
-U8GLIB_DOGM128 u8g(DOGLCD_CS, DOGLCD_A0);  // HW-SPI Com: CS, A0
+  // for regular DOGM128 display with HW-SPI
+  U8GLIB_DOGM128 u8g(DOGLCD_CS, DOGLCD_A0);  // HW-SPI Com: CS, A0
 #endif
 
 #include "utf_mapper.h"
 
 int lcd_contrast;
+static unsigned char blink = 0; // Variable for visualization of fan rotation in GLCD
 static char currentfont = 0;
 
 static void lcd_setFont(char font_nr) {
@@ -185,8 +170,10 @@ char lcd_printPGM(const char* str) {
   return n;
 }
 
-static void lcd_implementation_init()
-{
+static bool show_splashscreen = true;
+
+static void lcd_implementation_init() {
+
   #ifdef LCD_PIN_BL // Enable LCD backlight
     pinMode(LCD_PIN_BL, OUTPUT);
 	  digitalWrite(LCD_PIN_BL, HIGH);
@@ -195,16 +182,16 @@ static void lcd_implementation_init()
   u8g.setContrast(lcd_contrast);	
 	// FIXME: remove this workaround
   // Uncomment this if you have the first generation (V1.10) of STBs board
-	// pinMode(17, OUTPUT);	// Enable LCD backlight
-	// digitalWrite(17, HIGH);
-  
-#ifdef LCD_SCREEN_ROT_90
-	u8g.setRot90();   // Rotate screen by 90°
-#elif defined(LCD_SCREEN_ROT_180)
-	u8g.setRot180();	// Rotate screen by 180°
-#elif defined(LCD_SCREEN_ROT_270)
-	u8g.setRot270();	// Rotate screen by 270°
-#endif
+  // pinMode(17, OUTPUT);	// Enable LCD backlight
+  // digitalWrite(17, HIGH);
+
+  #ifdef LCD_SCREEN_ROT_90
+    u8g.setRot90();   // Rotate screen by 90°
+  #elif defined(LCD_SCREEN_ROT_180)
+    u8g.setRot180();	// Rotate screen by 180°
+  #elif defined(LCD_SCREEN_ROT_270)
+    u8g.setRot270();	// Rotate screen by 270°
+  #endif
 	
   // Show splashscreen
   int offx = (u8g.getWidth() - START_BMPWIDTH) / 2;
@@ -217,17 +204,20 @@ static void lcd_implementation_init()
   int txt1X = (u8g.getWidth() - (sizeof(STRING_SPLASH_LINE1) - 1)*DOG_CHAR_WIDTH) / 2;
 
 	u8g.firstPage();
-	do {
-    u8g.drawBitmapP(offx, offy, START_BMPBYTEWIDTH, START_BMPHEIGHT, start_bmp);
-    lcd_setFont(FONT_MENU);
-    #ifndef STRING_SPLASH_LINE2
-      u8g.drawStr(txt1X, u8g.getHeight() - DOG_CHAR_HEIGHT, STRING_SPLASH_LINE1);
-    #else
-      int txt2X = (u8g.getWidth() - (sizeof(STRING_SPLASH_LINE2) - 1)*DOG_CHAR_WIDTH) / 2;
-      u8g.drawStr(txt1X, u8g.getHeight() - DOG_CHAR_HEIGHT*3/2, STRING_SPLASH_LINE1);
-      u8g.drawStr(txt2X, u8g.getHeight() - DOG_CHAR_HEIGHT*1/2, STRING_SPLASH_LINE2);
-    #endif
-	} while (u8g.nextPage());
+  do {
+    if (show_splashscreen) {
+      u8g.drawBitmapP(offx, offy, START_BMPBYTEWIDTH, START_BMPHEIGHT, start_bmp);
+      lcd_setFont(FONT_MENU);
+      #ifndef STRING_SPLASH_LINE2
+        u8g.drawStr(txt1X, u8g.getHeight() - DOG_CHAR_HEIGHT, STRING_SPLASH_LINE1);
+      #else
+        int txt2X = (u8g.getWidth() - (sizeof(STRING_SPLASH_LINE2) - 1)*DOG_CHAR_WIDTH) / 2;
+        u8g.drawStr(txt1X, u8g.getHeight() - DOG_CHAR_HEIGHT*3/2, STRING_SPLASH_LINE1);
+        u8g.drawStr(txt2X, u8g.getHeight() - DOG_CHAR_HEIGHT*1/2, STRING_SPLASH_LINE2);
+      #endif
+    }
+  } while (u8g.nextPage());
+  show_splashscreen = false;
 }
 
 static void lcd_implementation_clear() { } // Automatically cleared by Picture Loop
@@ -302,20 +292,19 @@ static void lcd_implementation_status_screen() {
       lcd_printPGM(PSTR("--:--"));
     }
   #endif
- 
+
   // Extruders
   for (int i=0; i<EXTRUDERS; i++) _draw_heater_status(6 + i * 25, i);
 
   // Heatbed
   if (EXTRUDERS < 4) _draw_heater_status(81, -1);
- 
+
   // Fan
   lcd_setFont(FONT_STATUSMENU);
   u8g.setPrintPos(104,27);
   #if HAS_FAN
     int per = ((fanSpeed + 1) * 100) / 256;
     if (per) {
-
       lcd_print(itostr3(per));
       lcd_print('%');
     }
@@ -367,9 +356,9 @@ static void lcd_implementation_status_screen() {
   // Status line
   lcd_setFont(FONT_STATUSMENU);
   #ifdef USE_SMALL_INFOFONT
-  u8g.setPrintPos(0,62);
+    u8g.setPrintPos(0,62);
   #else
-  u8g.setPrintPos(0,63);
+    u8g.setPrintPos(0,63);
   #endif
 
   #if HAS_LCD_FILAMENT_SENSOR || HAS_LCD_POWER_SENSOR
@@ -392,10 +381,10 @@ static void lcd_implementation_status_screen() {
     #endif
     #if HAS_LCD_FILAMENT_SENSOR
       else {
-        lcd_printPGM(PSTR("D:"));
+        lcd_printPGM(PSTR("dia:"));
         lcd_print(ftostr12ns(filament_width_meas));
-        lcd_printPGM(PSTR("mm F:"));
-        lcd_print(itostr3(volumetric_multiplier[active_extruder] * 100));
+        lcd_printPGM(PSTR(" factor:"));
+        lcd_print(itostr3(volumetric_multiplier[FILAMENT_SENSOR_EXTRUDER_NUM]));
         lcd_print('%');
       }
     #endif
