@@ -378,34 +378,37 @@ static void lcd_implementation_init(
   #endif
 ) {
 
-  #if defined(LCD_I2C_TYPE_PCF8575)
+#if defined(LCD_I2C_TYPE_PCF8575)
     lcd.begin(LCD_WIDTH, LCD_HEIGHT);
-    #ifdef LCD_I2C_PIN_BL
-      lcd.setBacklightPin(LCD_I2C_PIN_BL,POSITIVE);
-      lcd.setBacklight(HIGH);
-    #endif
-
-  #elif defined(LCD_I2C_TYPE_MCP23017)
+  #ifdef LCD_I2C_PIN_BL
+    lcd.setBacklightPin(LCD_I2C_PIN_BL,POSITIVE);
+    lcd.setBacklight(HIGH);
+  #endif
+  
+#elif defined(LCD_I2C_TYPE_MCP23017)
     lcd.setMCPType(LTI_TYPE_MCP23017);
     lcd.begin(LCD_WIDTH, LCD_HEIGHT);
     lcd.setBacklight(0); //set all the LEDs off to begin with
-  #elif defined(LCD_I2C_TYPE_MCP23008)
+    
+#elif defined(LCD_I2C_TYPE_MCP23008)
     lcd.setMCPType(LTI_TYPE_MCP23008);
     lcd.begin(LCD_WIDTH, LCD_HEIGHT);
-  #elif defined(LCD_I2C_TYPE_PCA8574)
-    lcd.init();
-    lcd.backlight();
-  #else
+
+#elif defined(LCD_I2C_TYPE_PCA8574)
+      lcd.init();
+      lcd.backlight();
+    
+#else
     lcd.begin(LCD_WIDTH, LCD_HEIGHT);
-  #endif
+#endif
 
-  lcd_set_custom_characters(
-    #ifdef LCD_PROGRESS_BAR
-      progress_bar_set
-    #endif
-  );
+    lcd_set_custom_characters(
+      #ifdef LCD_PROGRESS_BAR
+        progress_bar_set
+      #endif
+    );
 
-  lcd.clear();
+    lcd.clear();
 }
 
 static void lcd_implementation_clear() {
@@ -672,10 +675,10 @@ static void lcd_implementation_status_screen() {
     #endif
     #if HAS_LCD_FILAMENT_SENSOR
       else {
-        lcd_printPGM(PSTR("D:"));
+        lcd_printPGM(PSTR("Dia "));
         lcd.print(ftostr12ns(filament_width_meas));
-        lcd_printPGM(PSTR("mm F:"));
-        lcd.print(itostr3(100.0 * volumetric_multiplier[FILAMENT_SENSOR_EXTRUDER_NUM]));
+        lcd_printPGM(PSTR(" V"));
+        lcd.print(itostr3(100.0*volumetric_multiplier[FILAMENT_SENSOR_EXTRUDER_NUM]));
         lcd.print('%');
         return;
       }

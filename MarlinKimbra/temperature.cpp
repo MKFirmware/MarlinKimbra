@@ -438,7 +438,7 @@ void checkExtruderAutoFans()
 // Temperature Error Handlers
 //
 inline void _temp_error(int e, const char *msg1, const char *msg2) {
-  if (!IsStopped()) {
+  if (IsRunning()) {
     SERIAL_ERROR_START;
     if (e >= 0) SERIAL_ERRORLN((int)e);
     serialprintPGM(msg1);
@@ -1255,7 +1255,7 @@ static void set_current_temp_raw() {
 // Timer 0 is shared with millies
 //
 ISR(TIMER0_COMPB_vect) {
-  //these variables are only accessible from the ISR, but static, so they don't lose their value
+  //these variables are only accesible from the ISR, but static, so they don't lose their value
   static unsigned char temp_count = 0;
   static TempState temp_state = StartupDelay;
   static unsigned char pwm_count = BIT(SOFT_PWM_SCALE);

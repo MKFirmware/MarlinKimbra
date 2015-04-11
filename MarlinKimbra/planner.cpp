@@ -110,9 +110,6 @@ volatile unsigned char block_buffer_tail; // Index of the block to process now
 //===========================================================================
 //=============================private variables ============================
 //===========================================================================
-#ifdef PREVENT_DANGEROUS_EXTRUDE
-  float extrude_min_temp = EXTRUDE_MINTEMP;
-#endif
 #ifdef XY_FREQUENCY_LIMIT
   // Used for the frequency limit
   #define MAX_FREQ_TIME (1000000.0/XY_FREQUENCY_LIMIT)
@@ -513,27 +510,24 @@ float junction_deviation = 0.1;
   #ifdef PREVENT_DANGEROUS_EXTRUDE
     if (de) {
       #ifdef NPR2
-        if (active_extruder!=1) {
-          if(degHotend(active_extruder) < extrude_min_temp && !debugDryrun()) {
+        if (active_extruder != 1)
+      #endif // NPR2
+        {
+          if (degHotend(active_extruder) < extrude_min_temp && !debugDryrun()) {
             position[E_AXIS] = target[E_AXIS]; //behave as if the move really took place, but ignore E part
+            de = 0; // no difference
             SERIAL_ECHO_START;
             SERIAL_ECHOLNPGM(MSG_ERR_COLD_EXTRUDE_STOP);
           }
         }
-      #else // NO NPR2
-        if(degHotend(active_extruder) < extrude_min_temp && !debugDryrun()) {
-          position[E_AXIS] = target[E_AXIS]; //behave as if the move really took place, but ignore E part
-          SERIAL_ECHO_START;
-          SERIAL_ECHOLNPGM(MSG_ERR_COLD_EXTRUDE_STOP);
-        }
-      #endif // NPR2
 
       #ifdef PREVENT_LENGTHY_EXTRUDE
-        if(labs(de) > axis_steps_per_unit[E_AXIS + active_extruder] * EXTRUDE_MAXLENGTH) {
+        if (labs(de) > axis_steps_per_unit[E_AXIS + active_extruder] * EXTRUDE_MAXLENGTH) {
           #ifdef EASY_LOAD
             if (!allow_lengthy_extrude_once) {
           #endif
           position[E_AXIS] = target[E_AXIS]; // Behave as if the move really took place, but ignore E part
+          de = 0; // no difference
           SERIAL_ECHO_START;
           SERIAL_ECHOLNPGM(MSG_ERR_LONG_EXTRUDE_STOP);
           #ifdef EASY_LOAD
@@ -1051,10 +1045,6 @@ void plan_set_e_position(const float &e) {
   position[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + active_extruder]);  
   st_set_e_position(position[E_AXIS]);
 }
-
-#ifdef PREVENT_DANGEROUS_EXTRUDE
-  void set_extrude_min_temp(float temp) { extrude_min_temp = temp; }
-#endif
 
 // Calculate the steps/s^2 acceleration rates, based on the mm/s^s
 void reset_acceleration_rates() {

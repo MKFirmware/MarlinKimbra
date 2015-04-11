@@ -14,14 +14,15 @@
 
 #ifdef __SAM3X8E__
   #include "HAL.h"
+  #include "Fastio_sam.h"
 #else
   #include <util/delay.h>
   #include <avr/eeprom.h>
+  #include "fastio.h"
 #endif
 
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
-#include "fastio.h"
 #include "Configuration.h"
 
 #if (ARDUINO >= 100)
@@ -239,7 +240,9 @@ void Stop();
   void filrunout();
 #endif
 
-bool IsStopped();
+extern bool Running;
+inline bool IsRunning() { return  Running; }
+inline bool IsStopped() { return !Running; }
 
 bool enquecommand(const char *cmd); //put a single ASCII command at the end of the current buffer or return false when it is full
 void enquecommands_P(const char *cmd); //put one or many ASCII commands at the end of the current buffer, read from flash
@@ -291,7 +294,7 @@ extern float home_offset[3];
   extern float delta_radius;
   extern float delta_diagonal_rod;
 #elif defined(Z_DUAL_ENDSTOPS)
-extern float z_endstop_adj;
+  extern float z_endstop_adj;
 #endif
 
 #ifdef SCARA
@@ -303,6 +306,11 @@ extern float max_pos[3];
 extern bool axis_known_position[3];
 extern float lastpos[4];
 extern float zprobe_zoffset;
+
+#ifdef PREVENT_DANGEROUS_EXTRUDE
+  extern float extrude_min_temp;
+#endif
+
 extern int fanSpeed;
 
 #ifdef BARICUDA
@@ -319,7 +327,7 @@ extern int fanSpeed;
   extern bool filament_sensor;            //indicates that filament sensor readings should control extrusion
   extern float filament_width_meas;       //holds the filament diameter as accurately measured
   extern signed char measurement_delay[]; //ring buffer to delay measurement
-  extern int delay_index1, delay_index2;  //index into ring buffer
+  extern int delay_index1, delay_index2;  //ring buffer index. used by planner, temperature, and main code
   extern float delay_dist;                //delay distance counter
   extern int meas_delay_cm;               //delay distance
 #endif
