@@ -319,6 +319,12 @@
   #endif
 
   /**
+   * Servo Leveling
+   */
+  #define SERVO_LEVELING (NUM_SERVOS > 0 && defined(ENABLE_AUTO_BED_LEVELING))
+  #define SERVO_LEVELING_DELAY (SERVO_LEVELING && PROBE_SERVO_DEACTIVATION_DELAY > 0)
+
+  /**
    * MAX_STEP_FREQUENCY differs for TOSHIBA
    */
   #ifdef CONFIG_STEPPERS_TOSHIBA

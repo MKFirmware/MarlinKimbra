@@ -28,8 +28,6 @@
   #endif
 #endif // ENABLE_AUTO_BED_LEVELING
 
-#define SERVO_LEVELING (defined(ENABLE_AUTO_BED_LEVELING) && PROBE_SERVO_DEACTIVATION_DELAY > 0)
-
 
 #include "ultralcd.h"
 #include "planner.h"
@@ -233,7 +231,6 @@ const char errormagic[] PROGMEM = "Error:";
 const char echomagic[] PROGMEM = "echo:";
 const char axis_codes[NUM_AXIS] = {'X', 'Y', 'Z', 'E'};
 
-static bool home_all_axis = true;
 static float offset[3] = { 0 };
 static bool relative_mode = false;  //Determines Absolute or Relative Coordinates
 static int bufindr = 0;
@@ -363,6 +360,9 @@ bool target_direction;
   static float bed_level_c = 20; //used for inital bed probe safe distance (to avoid crashing into bed)
   static float bed_level_ox, bed_level_oy, bed_level_oz;
   static int loopcount;
+  static bool home_all_axis = true;
+#else
+  static bool home_all_axis = true;
 #endif // DELTA
 
 #ifdef SCARA
@@ -656,7 +656,7 @@ void servo_init()
         servos[servo_endstops[i]].write(servo_endstop_angles[i * 2 + 1]);
   #endif //NUM_SERVOS
 
-  #if SERVO_LEVELING
+  #if SERVO_LEVELING_DELAY
     delay(PROBE_SERVO_DEACTIVATION_DELAY);
     servos[servo_endstops[Z_AXIS]].detach();
   #endif
@@ -1287,7 +1287,7 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
             servos[servo_endstops[Z_AXIS]].attach(0);
           #endif
           servos[servo_endstops[Z_AXIS]].write(servo_endstop_angles[Z_AXIS * 2]);
-          #if SERVO_LEVELING
+          #if SERVO_LEVELING_DELAY
             delay(PROBE_SERVO_DEACTIVATION_DELAY);
             servos[servo_endstops[Z_AXIS]].detach();
           #endif
@@ -5123,7 +5123,7 @@ inline void gcode_M303() {
  */
 inline void gcode_M400() { st_synchronize(); }
 
-#if defined(ENABLE_AUTO_BED_LEVELING) && defined(SERVO_ENDSTOPS) && (NUM_SERVOS > 0) && not defined(Z_PROBE_SLED)
+#if SERVO_LEVELING
 
   /**
    * M401: Engage Z Servo endstop if available
@@ -6172,7 +6172,7 @@ void process_commands() {
       case 400: // M400 finish all moves
         gcode_M400(); break;
 
-      #if defined(ENABLE_AUTO_BED_LEVELING) && (defined(SERVO_ENDSTOPS) || defined(Z_PROBE_ALLEN_KEY)) && not defined(Z_PROBE_SLED)
+      #if SERVO_LEVELING
         case 401:
           gcode_M401(); break;
         case 402:
