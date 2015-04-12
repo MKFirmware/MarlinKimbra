@@ -235,7 +235,7 @@ void FirmwareTest()
     SERIAL_ECHOLN(" ");
   }
 
-  #if defined(PS_ON_PIN) && PS_ON_PIN > -1
+  #if HAS_POWER_SWITCH
     SET_OUTPUT(PS_ON_PIN);
     WRITE(PS_ON_PIN, PS_ON_AWAKE);
   #endif
