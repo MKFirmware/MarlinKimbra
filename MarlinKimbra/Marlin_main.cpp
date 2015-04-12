@@ -1199,6 +1199,9 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
         current_position[Y_AXIS] = corrected_position.y;
         current_position[Z_AXIS] = corrected_position.z;
 
+        // put the bed at 0 so we don't go below it.
+        current_position[Z_AXIS] = zprobe_zoffset; // in the lsq we reach here after raising the extruder due to the loop structure
+
         sync_plan_position();
       }
     #else // not AUTO_BED_LEVELING_GRID
@@ -1340,12 +1343,15 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
       run_z_probe();
       float measured_z = current_position[Z_AXIS];
 
+	  /*     NON FUNZIONA CONTROLLARE
       #if Z_RAISE_BETWEEN_PROBINGS > 0
         if (retract_action == ProbeStay) {
           do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS] + Z_RAISE_BETWEEN_PROBINGS);
           st_synchronize();
         }
       #endif
+		*/
+
 
       #ifndef Z_PROBE_SLED
         if (retract_action & ProbeStow) stow_z_probe();
