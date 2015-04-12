@@ -6068,7 +6068,7 @@ void process_commands() {
           gcode_M150(); break;
       #endif //BLINKM
 
-      #if defined(TEMP_BED_PIN) && TEMP_BED_PIN > -1
+      #if HAS_TEMP_BED
         case 190: // M190 - Wait for bed heater to reach target.
           gcode_M190(); break;
       #endif //TEMP_BED_PIN
