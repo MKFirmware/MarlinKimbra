@@ -1227,6 +1227,8 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
         current_position[Y_AXIS] = corrected_position.y;
         current_position[Z_AXIS] = corrected_position.z;
 
+        // put the bed at 0 so we don't go below it.
+        current_position[Z_AXIS] = zprobe_zoffset;
         sync_plan_position();
       }
 
