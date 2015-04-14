@@ -867,6 +867,7 @@
   #define Z_ENABLE_PIN      62
   #define Z_MIN_PIN         18
   #define Z_MAX_PIN         19
+  #define Z_PROBE_PIN       18
 
   #define Z2_STEP_PIN       36
   #define Z2_DIR_PIN        34
@@ -1072,6 +1073,7 @@
   #define Z_ENABLE_PIN      62
   #define Z_MIN_PIN         18
   #define Z_MAX_PIN         19
+  #define Z_PROBE_PIN       18
 
   #define Z2_STEP_PIN       36
   #define Z2_DIR_PIN        34
@@ -1271,6 +1273,7 @@
   #define Z_ENABLE_PIN      62
   #define Z_MIN_PIN         18
   #define Z_MAX_PIN         19
+  #define Z_PROBE_PIN       18
 
   #define Z2_STEP_PIN       36
   #define Z2_DIR_PIN        34
@@ -1460,9 +1463,9 @@
   #define Y_MIN_PIN          14
   #define Y_MAX_PIN          15
 
-  #define Y2_STEP_PIN             36
-  #define Y2_DIR_PIN              34
-  #define Y2_ENABLE_PIN           30
+  #define Y2_STEP_PIN        36
+  #define Y2_DIR_PIN         34
+  #define Y2_ENABLE_PIN      30
 
   //Z axis pins
   #define Z_STEP_PIN         46
@@ -1470,10 +1473,11 @@
   #define Z_ENABLE_PIN       62
   #define Z_MIN_PIN          18
   #define Z_MAX_PIN          19
+  #define Z_PROBE_PIN        18
 
-  #define Z2_STEP_PIN             36
-  #define Z2_DIR_PIN              34
-  #define Z2_ENABLE_PIN           30
+  #define Z2_STEP_PIN        36
+  #define Z2_DIR_PIN         34
+  #define Z2_ENABLE_PIN      30
 
   //E axis pins
   #define E0_STEP_PIN        26
@@ -1484,12 +1488,12 @@
   #define E1_DIR_PIN         34
   #define E1_ENABLE_PIN      30
 
-  #define SDPOWER                 -1
-  #define SDSS                    53
-  #define LED_PIN                 13
+  #define SDPOWER            -1
+  #define SDSS               53
+  #define LED_PIN            13
 
   #define FAN_PIN             8
-  #define PS_ON_PIN               12
+  #define PS_ON_PIN          12
 
   #define HEATER_0_PIN       10   // HOTEND 1
   #define HEATER_1_PIN        9   // HOTEND 2
@@ -4435,13 +4439,11 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
   #define Y_MAX_PIN          -1
 #endif //Y_HOME_DIR > 0
 
-#ifndef DELTA
-  #if Z_HOME_DIR > 0      //Home Z to MAX
-    #define Z_MIN_PIN        -1
-  #elif Z_HOME_DIR < 0    //Home Z to MIN
-    #define Z_MAX_PIN        -1
-  #endif //Z_HOME_DIR > 0
-#endif //!DELTA
+#if Z_HOME_DIR > 0      //Home Z to MAX
+  #define Z_MIN_PIN        -1
+#elif Z_HOME_DIR < 0    //Home Z to MIN
+  #define Z_MAX_PIN        -1
+#endif //Z_HOME_DIR > 0
 
 #if defined(DISABLE_Z_PROBE_ENDSTOP) || !defined(Z_PROBE_ENDSTOP) // Allow code to compile regardless of Z_PROBE_ENDSTOP setting.
   #define Z_PROBE_PIN        -1
