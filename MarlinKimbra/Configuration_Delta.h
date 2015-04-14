@@ -76,7 +76,7 @@ const bool Z_PROBE_ENDSTOP_INVERTING = false;   // set to true to invert the log
 // This only affects a Z Probe Endstop if you have separate Z min endstop as well and have
 // activated Z_PROBE_ENDSTOP below. If you are using the Z Min endstop on your Z Probe,
 // this has no effect.
-//#define DISABLE_Z_PROBE_ENDSTOP
+//#define Z_PROBE_ENDSTOP
 
 // ENDSTOP SETTINGS:
 // Sets direction of endstop when homing; 1=MAX, -1=MIN
