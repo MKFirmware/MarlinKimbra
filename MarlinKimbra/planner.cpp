@@ -63,7 +63,7 @@
 //===========================================================================
 
 unsigned long minsegmenttime;
-float max_feedrate[3 + EXTRUDERS]; // set the max speeds
+float max_feedrate[3 + EXTRUDERS]; // Max speeds in mm per minute
 float max_retraction_feedrate[EXTRUDERS]; // set the max speeds for retraction
 float axis_steps_per_unit[3 + EXTRUDERS];
 unsigned long max_acceleration_units_per_sq_second[3 + EXTRUDERS]; // Use M201 to override by software
@@ -500,7 +500,7 @@ float junction_deviation = 0.1;
   target[X_AXIS] = lround(x * axis_steps_per_unit[X_AXIS]);
   target[Y_AXIS] = lround(y * axis_steps_per_unit[Y_AXIS]);
   target[Z_AXIS] = lround(z * axis_steps_per_unit[Z_AXIS]);     
-  target[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + active_extruder]);
+  target[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + extruder]);
 
   float dx = target[X_AXIS] - position[X_AXIS],
         dy = target[Y_AXIS] - position[Y_AXIS],
@@ -510,10 +510,10 @@ float junction_deviation = 0.1;
   #ifdef PREVENT_DANGEROUS_EXTRUDE
     if (de) {
       #ifdef NPR2
-        if (active_extruder != 1)
+        if (extruder != 1)
       #endif // NPR2
         {
-          if (degHotend(active_extruder) < extrude_min_temp && !debugDryrun()) {
+          if (degHotend(extruder) < extrude_min_temp && !debugDryrun()) {
             position[E_AXIS] = target[E_AXIS]; //behave as if the move really took place, but ignore E part
             de = 0; // no difference
             SERIAL_ECHO_START;
@@ -522,7 +522,7 @@ float junction_deviation = 0.1;
         }
 
       #ifdef PREVENT_LENGTHY_EXTRUDE
-        if (labs(de) > axis_steps_per_unit[E_AXIS + active_extruder] * EXTRUDE_MAXLENGTH) {
+        if (labs(de) > axis_steps_per_unit[E_AXIS + extruder] * EXTRUDE_MAXLENGTH) {
           #ifdef EASY_LOAD
             if (!allow_lengthy_extrude_once) {
           #endif
@@ -559,8 +559,8 @@ float junction_deviation = 0.1;
 
   block->steps[Z_AXIS] = labs(dz);
   block->steps[E_AXIS] = labs(de);
-  block->steps[E_AXIS] *= volumetric_multiplier[active_extruder];
-  block->steps[E_AXIS] *= extruder_multiply[active_extruder];
+  block->steps[E_AXIS] *= volumetric_multiplier[extruder];
+  block->steps[E_AXIS] *= extruder_multiply[extruder];
   block->steps[E_AXIS] /= 100;
   block->step_event_count = max(block->steps[X_AXIS], max(block->steps[Y_AXIS], max(block->steps[Z_AXIS], block->steps[E_AXIS])));
 
@@ -715,7 +715,7 @@ float junction_deviation = 0.1;
     delta_mm[Y_AXIS] = dy / axis_steps_per_unit[Y_AXIS];
   #endif
   delta_mm[Z_AXIS] = dz / axis_steps_per_unit[Z_AXIS];
-  delta_mm[E_AXIS] = (de / axis_steps_per_unit[E_AXIS + active_extruder]) * volumetric_multiplier[active_extruder] * extruder_multiply[active_extruder] / 100.0;
+  delta_mm[E_AXIS] = (de / axis_steps_per_unit[E_AXIS + extruder]) * volumetric_multiplier[extruder] * extruder_multiply[extruder] / 100.0;
 
   if (block->steps[X_AXIS] <= dropsegments && block->steps[Y_AXIS] <= dropsegments && block->steps[Z_AXIS] <= dropsegments) {
     block->millimeters = fabs(delta_mm[E_AXIS]);
@@ -799,13 +799,13 @@ float junction_deviation = 0.1;
   current_speed[E_AXIS] = delta_mm[E_AXIS] * inverse_second;
   if (target[E_AXIS] < position[E_AXIS])
   {
-    if(fabs(current_speed[E_AXIS]) > max_retraction_feedrate[active_extruder])
-      speed_factor = min(speed_factor, max_retraction_feedrate[active_extruder]/ fabs(current_speed[E_AXIS]));
+    if(fabs(current_speed[E_AXIS]) > max_retraction_feedrate[extruder])
+      speed_factor = min(speed_factor, max_retraction_feedrate[extruder]/ fabs(current_speed[E_AXIS]));
   }
   else
   {
-    if(fabs(current_speed[E_AXIS]) > max_feedrate[E_AXIS + active_extruder])
-      speed_factor = min(speed_factor, max_feedrate[E_AXIS + active_extruder] / fabs(current_speed[E_AXIS]));
+    if(fabs(current_speed[E_AXIS]) > max_feedrate[E_AXIS + extruder])
+      speed_factor = min(speed_factor, max_feedrate[E_AXIS + extruder] / fabs(current_speed[E_AXIS]));
   }
 
   // Max segement time in us.
