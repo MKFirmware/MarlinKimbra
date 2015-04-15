@@ -103,19 +103,13 @@ static volatile bool endstop_z_probe_hit = false; // Leaving this in even if Z_P
 #if HAS_Y_MAX
   static bool old_y_max_endstop = false;
 #endif
-#if HAS_Z_MIN
-  static bool old_z_min_endstop = false;
-#endif
-#if HAS_Z_MAX
-  static bool old_z_max_endstop = false;
-#endif
+
+static bool old_z_min_endstop = false;
+static bool old_z_max_endstop = false;
+
 #ifdef Z_DUAL_ENDSTOPS
-  #if HAS_Z2_MIN
-    static bool old_z2_min_endstop = false;
-  #endif
-  #if HAS_Z2_MAX
-    static bool old_z2_max_endstop = false;
-  #endif
+  static bool old_z2_min_endstop = false;
+  static bool old_z2_max_endstop = false;
 #endif
 
 #ifdef Z_PROBE_ENDSTOP // No need to check for valid pin, SanityCheck.h already does this.
@@ -270,7 +264,7 @@ void endstops_hit_on_purpose() {
 }
 
 void checkHitEndstops() {
-  if( endstop_x_hit || endstop_y_hit || endstop_z_hit || endstop_z_probe_hit || endstop_e_hit) {
+  if (endstop_x_hit || endstop_y_hit || endstop_z_hit || endstop_z_probe_hit || endstop_e_hit) {
     SERIAL_ECHO_START;
     SERIAL_ECHOPGM(MSG_ENDSTOPS_HIT);
     if(endstop_x_hit) {
@@ -624,7 +618,7 @@ ISR(TIMER1_COMPA_vect) {
         #ifdef Z_PROBE_ENDSTOP
           UPDATE_ENDSTOP(z, Z, probe, PROBE);
           z_probe_endstop = (READ(Z_PROBE_PIN) != Z_PROBE_ENDSTOP_INVERTING);
-          if(z_probe_endstop && old_z_probe_endstop)
+          if (z_probe_endstop && old_z_probe_endstop)
           {
         	  endstops_trigsteps[Z_AXIS] = count_position[Z_AXIS];
         	  endstop_z_probe_hit = true;
@@ -679,18 +673,6 @@ ISR(TIMER1_COMPA_vect) {
           #endif // !Z_DUAL_ENDSTOPS
 
         #endif // Z_MAX_PIN
-        
-        #ifdef Z_PROBE_ENDSTOP
-          UPDATE_ENDSTOP(z, Z, probe, PROBE);
-          z_probe_endstop=(READ(Z_PROBE_PIN) != Z_PROBE_ENDSTOP_INVERTING);
-          if(z_probe_endstop && old_z_probe_endstop)
-          {
-        	  endstops_trigsteps[Z_AXIS] = count_position[Z_AXIS];
-        	  endstop_z_probe_hit = true;
-//        	  if (z_probe_endstop && old_z_probe_endstop) SERIAL_ECHOLN("z_probe_endstop = true");
-          }
-          old_z_probe_endstop = z_probe_endstop;
-        #endif
 
       } // check_endstops
 
@@ -1165,10 +1147,7 @@ void st_init() {
       TCCR0A &= ~BIT(WGM01);
       TCCR0A &= ~BIT(WGM00);
     #endif
-    e_steps[0] = 0;
-    e_steps[1] = 0;
-    e_steps[2] = 0;
-    e_steps[3] = 0;
+    e_steps[0] = e_steps[1] = e_steps[2] = e_steps[3] = 0;
     TIMSK0 |= BIT(OCIE0A);
   #endif //ADVANCE
 
