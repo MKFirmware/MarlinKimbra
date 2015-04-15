@@ -64,19 +64,17 @@
 #endif
 
 // Mechanical endstop with COM to ground and NC to Signal uses "false" here (most common setup).
-const bool X_MIN_ENDSTOP_INVERTING = false;     // set to true to invert the logic of the endstop.
-const bool Y_MIN_ENDSTOP_INVERTING = false;     // set to true to invert the logic of the endstop.
-const bool Z_MIN_ENDSTOP_INVERTING = false;     // set to true to invert the logic of the endstop.
-const bool E_MIN_ENDSTOP_INVERTING = false;     // set to true to invert the logic of the endstop.
-const bool X_MAX_ENDSTOP_INVERTING = false;     // set to true to invert the logic of the endstop.
-const bool Y_MAX_ENDSTOP_INVERTING = false;     // set to true to invert the logic of the endstop.
-const bool Z_MAX_ENDSTOP_INVERTING = false;     // set to true to invert the logic of the endstop.
-const bool Z_PROBE_ENDSTOP_INVERTING = false;   // set to true to invert the logic of the endstop.
+#define X_MIN_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
+#define Y_MIN_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
+#define Z_MIN_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
+#define E_MIN_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
+#define X_MAX_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
+#define Y_MAX_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
+#define Z_MAX_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
+#define Z_PROBE_ENDSTOP_LOGIC false   // set to true to invert the logic of the endstop.
 // If you want to enable the Z Probe pin, but disable its use, uncomment the line below.
-// This only affects a Z Probe Endstop if you have separate Z min endstop as well and have
-// activated Z_PROBE_ENDSTOP below. If you are using the Z Min endstop on your Z Probe,
-// this has no effect.
-//#define Z_PROBE_ENDSTOP
+// Z_PROBE_ENDSTOP must are active if you want Autocalibration
+#define Z_PROBE_ENDSTOP
 
 // ENDSTOP SETTINGS:
 // Sets direction of endstop when homing; 1=MAX, -1=MIN

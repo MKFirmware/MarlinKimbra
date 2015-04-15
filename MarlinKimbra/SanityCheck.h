@@ -232,26 +232,15 @@
   #endif
 
   /**
-   * Delta has limited bed leveling options
+   * Delta & Z_PROBE_ENDSTOP
    */
-  #ifdef DELTA
-
-    #ifdef ENABLE_AUTO_BED_LEVELING
-
-      #ifndef AUTO_BED_LEVELING_GRID
-        #error Only AUTO_BED_LEVELING_GRID is supported with DELTA.
-      #endif
-
-      #ifdef Z_PROBE_SLED
-        #error You cannot use Z_PROBE_SLED with DELTA.
-      #endif
-
-      #ifdef Z_PROBE_REPEATABILITY_TEST
-        #error Z_PROBE_REPEATABILITY_TEST is not supported with DELTA yet.
-      #endif
-
+  #if defined(DELTA) && defined(Z_PROBE_ENDSTOP)
+    #ifndef Z_PROBE_PIN
+      #error You must have a Z_PROBE_PIN defined in your pins_XXXX.h file if you enable Z_PROBE_ENDSTOP
     #endif
-
+    #if Z_PROBE_PIN == -1
+      #error You must set Z_PROBE_PIN to a valid pin if you enable Z_PROBE_ENDSTOP
+    #endif
   #endif
 
   /**

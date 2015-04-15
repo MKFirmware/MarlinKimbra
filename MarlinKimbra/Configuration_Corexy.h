@@ -16,17 +16,19 @@
   // #define ENDSTOPPULLUP_XMIN
   // #define ENDSTOPPULLUP_YMIN
   // #define ENDSTOPPULLUP_ZMIN
+  // #define ENDSTOPPULLUP_ZPROBE
   // #define ENDSTOPPULLUP_EMIN
 #endif
 
 // Mechanical endstop with COM to ground and NC to Signal uses "false" here (most common setup).
-const bool X_MIN_ENDSTOP_INVERTING = false;     // set to true to invert the logic of the endstop.
-const bool Y_MIN_ENDSTOP_INVERTING = false;     // set to true to invert the logic of the endstop.
-const bool Z_MIN_ENDSTOP_INVERTING = false;     // set to true to invert the logic of the endstop.
-const bool E_MIN_ENDSTOP_INVERTING = false;     // set to true to invert the logic of the endstop.
-const bool X_MAX_ENDSTOP_INVERTING = false;     // set to true to invert the logic of the endstop.
-const bool Y_MAX_ENDSTOP_INVERTING = false;     // set to true to invert the logic of the endstop.
-const bool Z_MAX_ENDSTOP_INVERTING = false;     // set to true to invert the logic of the endstop.
+#define X_MIN_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
+#define Y_MIN_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
+#define Z_MIN_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
+#define E_MIN_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
+#define X_MAX_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
+#define Y_MAX_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
+#define Z_MAX_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
+#define Z_PROBE_ENDSTOP_LOGIC false   // set to true to invert the logic of the endstop.
 
 // ENDSTOP SETTINGS:
 // Sets direction of endstop when homing; 1=MAX, -1=MIN
@@ -132,7 +134,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;     // set to true to invert the log
   #endif // AUTO_BED_LEVELING_GRID
 
   // Offsets to the probe relative to the extruder tip (Hotend - Probe)
-  // X and Y offsets must be integers
+  // X and Y offsets MUST be INTEGERS
   #define X_PROBE_OFFSET_FROM_EXTRUDER 0      // Probe on: -left  +right
   #define Y_PROBE_OFFSET_FROM_EXTRUDER 0      // Probe on: -front +behind
   #define Z_PROBE_OFFSET_FROM_EXTRUDER -1     // -below (always!)
@@ -151,8 +153,18 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;     // set to true to invert the log
   //The value is the delay to turn the servo off after powered on - depends on the servo speed; 300ms is good value, but you can try lower it.
   //You MUST HAVE the SERVO ENDSTOPS defined to use here a value higher than zero otherwise your code will not compile.
 
-  //#define PROBE_SERVO_DEACTIVATION_DELAY 300
+  #define PROBE_SERVO_DEACTIVATION_DELAY 300
 
+  // Support for a dedicated Z PROBE endstop separate from the Z MIN endstop.
+  // If you would like to use both a Z PROBE and a Z MIN endstop together or just a Z PROBE with a custom pin, uncomment #define Z_PROBE_ENDSTOP and read the instructions below.
+  // If you want to still use the Z min endstop for homing, disable Z_SAFE_HOMING above. Eg; to park the head outside the bed area when homing with G28.
+  // WARNING: The Z MIN endstop will need to set properly as it would without a Z PROBE to prevent head crashes and premature stopping during a print.
+  // To use a separte Z PROBE endstop, you must have a Z_PROBE_PIN defined in the pins.h file for your control board.
+  // If you are using a servo based Z PROBE, you will need to enable NUM_SERVOS, SERVO_ENDSTOPS and SERVO_ENDSTOPS_ANGLES in the R/C Servo below.
+  // WARNING: Setting the wrong pin may have unexpected and potentially disastrous outcomes. Use with caution and do your homework.
+
+  //#define Z_PROBE_ENDSTOP
+  
 #endif // ENABLE_AUTO_BED_LEVELING
 
 
@@ -168,8 +180,7 @@ const bool Z_MAX_ENDSTOP_INVERTING = false;     // set to true to invert the log
 #endif
 
 // MOVEMENT SETTINGS
-#define NUM_AXIS 4 // The axis order in all axis related arrays is X, Y, Z, E
-#define HOMING_FEEDRATE {100*60,100*60,2*60,0}      // set the homing speeds (mm/min)
+#define HOMING_FEEDRATE {100*60, 100*60, 2*60, 0}      // set the homing speeds (mm/min)
 
 // default settings
 #define DEFAULT_AXIS_STEPS_PER_UNIT     {80,80,3200,625,625,625,625}       // X, Y, Z, E0, E1, E2, E3 default steps per unit
