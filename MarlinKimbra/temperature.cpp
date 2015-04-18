@@ -781,6 +781,9 @@ static float analog2tempBed(int raw) {
 /* Called to get the raw values into the the actual temperatures. The raw values are created in interrupt context,
     and this function is called from normal context as it is too slow to run in interrupts and will block the stepper routine otherwise */
 static void updateTemperaturesFromRawValues() {
+  static millis_t last_update = millis();
+  millis_t temp_last_update = millis();
+  millis_t from_last_update = temp_last_update - last_update;
   #ifdef HEATER_0_USES_MAX6675
     current_temperature_raw[0] = read_max6675();
   #endif
@@ -796,17 +799,22 @@ static void updateTemperaturesFromRawValues() {
   #endif
   #if HAS_POWER_CONSUMPTION_SENSOR
     static float watt_overflow = 0.0;
-    static millis_t last_power_update = millis();
-    millis_t temp_last_power_update = millis();
     power_consumption_meas = analog2power();
     //MYSERIAL.println(analog2current(),3);
-    watt_overflow += (power_consumption_meas * (temp_last_power_update - last_power_update)) / 3600000.0;
+    watt_overflow += (power_consumption_meas * from_last_update) / 3600000.0;
     if (watt_overflow >= 1.0) {
       power_consumption_hour++;
       watt_overflow--;
     }
-    last_power_update = temp_last_power_update;
   #endif
+  
+  static unsigned int second_overflow = 0;
+  second_overflow += from_last_update;
+  if(second_overflow >= 1000) {
+	printer_usage_seconds++;
+	second_overflow -= 1000;
+  }
+  last_update = temp_last_update;
   //Reset the watchdog after we know we have a temperature measurement.
   watchdog_reset();
 

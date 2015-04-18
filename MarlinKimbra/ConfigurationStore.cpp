@@ -14,10 +14,10 @@
  *
  */
 
-#define EEPROM_VERSION "V20"
+#define EEPROM_VERSION "V21"
 
 /**
- * V19 EEPROM Layout:
+ * V21 EEPROM Layout:
  *
  *  ver
  *  axis_steps_per_unit (x7)
@@ -92,7 +92,6 @@
  *
  *  idleoozing_enabled
  *
- *  power_consumption_hour
  *
  *
  */
@@ -101,6 +100,7 @@
 #include "planner.h"
 #include "temperature.h"
 #include "ultralcd.h"
+#include "cardreader.h"
 #include "ConfigurationStore.h"
 
 void _EEPROM_writeData(int &pos, uint8_t* value, uint8_t size) {
@@ -260,10 +260,6 @@ void Config_StoreSettings() {
     EEPROM_WRITE_VAR(i, idleoozing_enabled);
   #endif
 
-  #if defined(POWER_CONSUMPTION) && defined(STORE_CONSUMPTION)
-    EEPROM_WRITE_VAR(i, power_consumption_hour);
-  #endif
-
   char ver2[4] = EEPROM_VERSION;
   int j = EEPROM_OFFSET;
   EEPROM_WRITE_VAR(j, ver2); // validate data
@@ -419,10 +415,6 @@ void Config_RetrieveSettings() {
       EEPROM_READ_VAR(i, idleoozing_enabled);
     #endif
 
-    #if defined(POWER_CONSUMPTION) && defined(STORE_CONSUMPTION)
-      EEPROM_READ_VAR(i, power_consumption_hour);
-    #endif
-
     // Call updatePID (similar to when we have processed M301)
     updatePID();
 
@@ -567,12 +559,17 @@ void Config_ResetDefault() {
     idleoozing_enabled = true;
   #endif
 
-  #if defined(POWER_CONSUMPTION) && defined(STORE_CONSUMPTION)
-    power_consumption_hour = 0;
-  #endif
-
   SERIAL_ECHO_START;
   SERIAL_ECHOLNPGM("Hardcoded Default Settings Loaded");
+}
+
+void ConfigSD_ResetDefault() {
+  #ifdef POWER_CONSUMPTION
+   power_consumption_hour = 0;
+  #endif
+  printer_usage_seconds  = 0;
+  SERIAL_ECHO_START;
+  SERIAL_ECHOLNPGM("Hardcoded SD Default Settings Loaded");
 }
 
 #ifndef DISABLE_M503
@@ -868,16 +865,86 @@ void Config_PrintSettings(bool forReplay) {
       SERIAL_ECHOLNPGM("Filament settings: Disabled");
     }
   }
+}
 
-  #if defined(POWER_CONSUMPTION) && defined(STORE_CONSUMPTION)
-    SERIAL_ECHO_START;
+void ConfigSD_PrintSettings(bool forReplay) {
+  // Always have this function, even with SD_SETTINGS disabled, the current values will be shown
+  #ifdef POWER_CONSUMPTION
     if (!forReplay) {
-      SERIAL_ECHOLNPGM("Power consumation:");
+      SERIAL_ECHOLNPGM("Watt/h consumed:");
       SERIAL_ECHO_START;
     }
-    SERIAL_ECHOPAIR("  W/h:", power_consumption_hour);
+    SERIAL_ECHOPAIR(" W/h", power_consumption_hour);
     SERIAL_EOL;
   #endif
+  if (!forReplay) {
+    SERIAL_ECHOLNPGM("Power on time:");
+    SERIAL_ECHO_START;
+  }
+  SERIAL_ECHOPAIR(" s", printer_usage_seconds);
+  SERIAL_EOL;
 }
 
 #endif //!DISABLE_M503
+
+#if defined(SDSUPPORT) && defined(SD_SETTINGS)
+  void ConfigSD_StoreSettings() {
+    if(!IS_SD_INSERTED || card.isFileOpen() || card.sdprinting) return;
+    card.openFile(CFG_SD_FILE, false, true, false);
+    char buff[CFG_SD_MAX_VALUE_LEN];
+    #ifdef POWER_CONSUMPTION
+      ltoa(power_consumption_hour,buff,10);
+      card.unparseKeyLine(cfgSD_KEY[SD_CFG_PWR], buff);
+    #endif
+    ltoa(printer_usage_seconds,buff,10);
+    card.unparseKeyLine(cfgSD_KEY[SD_CFG_TME], buff);
+    
+    card.closeFile(false);
+    config_last_update = millis();
+  }
+  void ConfigSD_RetrieveSettings(bool addValue) {
+    if(!IS_SD_INSERTED || card.isFileOpen() || card.sdprinting) return;
+    char key[CFG_SD_MAX_KEY_LEN], value[CFG_SD_MAX_VALUE_LEN];
+    int k_idx;
+    int k_len, v_len;
+    
+    card.openFile(CFG_SD_FILE, true, true, false);
+    while(true) {
+      k_len = CFG_SD_MAX_KEY_LEN;
+      v_len = CFG_SD_MAX_VALUE_LEN;
+      card.parseKeyLine(key, value, k_len, v_len);
+      if(k_len == 0 || v_len == 0) break; //no valid key or value founded
+      k_idx = ConfigSD_KeyIndex(key);
+      if(k_idx == -1) continue;    //unknow key ignore it
+      switch(k_idx) {
+        #ifdef POWER_CONSUMPTION
+        case SD_CFG_PWR: {
+          if(addValue) power_consumption_hour += (unsigned long)atol(value);
+          else power_consumption_hour = (unsigned long)atol(value);
+        }
+        break;
+        #endif
+        case SD_CFG_TME: {
+          if(addValue) printer_usage_seconds += (unsigned long)atol(value);
+          else printer_usage_seconds = (unsigned long)atol(value);
+        }
+        break;
+      }
+    }
+    card.closeFile(false);
+    config_readed = true;
+    config_last_update = millis();
+  }
+  
+  int ConfigSD_KeyIndex(char *key) {    //At the moment a binary search algorithm is used for simplicity, if it will be necessary (Eg. tons of key), an hash search algorithm will be implemented.
+    int begin = 0, end = SD_CFG_END - 1, middle, cond;
+    while(begin <= end) {
+      middle = (begin + end) / 2;
+      cond = strcmp(cfgSD_KEY[middle], key);
+      if(!cond) return middle;
+      else if(cond < 0) begin = middle + 1;
+      else end = middle - 1;
+    }
+    return -1;
+  }
+#endif

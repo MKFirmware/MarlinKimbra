@@ -269,6 +269,8 @@ static uint8_t target_extruder;
 bool no_wait_for_cooling = true;
 bool target_direction;
 
+unsigned long printer_usage_seconds;
+
 #ifndef DELTA
   int xy_travel_speed = XY_TRAVEL_SPEED;
   float zprobe_zoffset = 0;
@@ -406,7 +408,11 @@ bool target_direction;
 
 #ifdef SDSUPPORT
   static bool fromsd[BUFSIZE];
-#endif //!SDSUPPORT
+  #ifdef SD_SETTINGS
+    unsigned long config_last_update = 0;
+	bool config_readed = false;
+  #endif
+#endif
 
 #ifdef FILAMENTCHANGEENABLE
 	bool filament_changing = false;
@@ -751,7 +757,19 @@ void setup() {
   setup_photpin();
   setup_laserbeampin();   // Initialize Laserbeam pin
   servo_init();
-
+  #ifdef SDSUPPORT
+    card.initsd();
+  #endif
+  
+  // loads custom configuration from SDCARD if available else uses defaults
+  #ifdef SDSTUPPORT
+    if(!IS_SD_INSERTED) ConfigSD_ResetDefault();
+    else
+  #endif
+  {
+    ConfigSD_RetrieveSettings();
+  }
+  
   lcd_init();
   _delay_ms(1000);  // wait 1sec to display the splash screen
 
@@ -808,7 +826,7 @@ void loop() {
         char *command = command_queue[cmd_queue_index_r];
         if (strstr_P(command, PSTR("M29"))) {
           // M29 closes the file
-          card.closefile();
+          card.closeFile();
           SERIAL_PROTOCOLLNPGM(MSG_FILE_SAVED);
         }
         else {
@@ -3774,7 +3792,7 @@ inline void gcode_M17() {
    */
   inline void gcode_M30() {
     if (card.cardOK) {
-      card.closefile();
+      card.closeFile();
       char* starpos = strchr(strchr_pointer + 4, '*');
       if (starpos) {
         char* npos = strchr(command_queue[cmd_queue_index_r], 'N');
@@ -6872,7 +6890,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
         if (!filament_changing)
       #endif
       {
-        if(degHotend(active_extruder) < IDLE_OOZING_MAXTEMP && degTargetHotend(active_extruder) < IDLE_OOZING_MINTEMP) {
+        if(degTargetHotend(active_extruder) < IDLE_OOZING_MINTEMP) {
           IDLE_OOZING_retract(false);
         }
         else if((millis() - axis_last_activity) >  IDLE_OOZING_SECONDS*1000) {
@@ -6880,6 +6898,18 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
         }
       }
     }
+  #endif
+  
+  #if defined(SDSUPPORT) && defined(SD_SETTINGS)
+    if(!config_readed) {
+      ConfigSD_RetrieveSettings(true);
+    }
+    else if((millis() - config_last_update) >  SD_CFG_SECONDS*1000) {
+      ConfigSD_StoreSettings();
+    }
+  #endif
+  #ifdef TEMP_STAT_LEDS
+    handle_status_leds();
   #endif
 
   #ifdef TEMP_STAT_LEDS

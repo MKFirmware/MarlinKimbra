@@ -311,6 +311,8 @@ extern bool axis_known_position[3];
 extern float lastpos[4];
 extern float zprobe_zoffset;
 
+extern unsigned long printer_usage_seconds;  //this can old about 136 year before go overflow. If you belive that you can live more than this please contact me.
+
 #ifdef PREVENT_DANGEROUS_EXTRUDE
   extern float extrude_min_temp;
 #endif
@@ -360,6 +362,11 @@ extern int fanSpeed;
 
 #ifdef LASERBEAM
   extern int laser_ttl_modulation;
+#endif
+
+#if defined(SDSUPPORT) && defined(SD_SETTINGS)
+  extern unsigned long config_last_update;
+  extern bool config_readed;
 #endif
 
 extern millis_t print_job_start_ms;
