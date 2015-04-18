@@ -23,6 +23,7 @@
 
 #include "Marlin.h"
 #include "planner.h"
+#include "stepper.h"
 
 // public functions
 void tp_init();  //initialize the heating
