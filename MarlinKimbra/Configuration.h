@@ -20,7 +20,7 @@
 // User-specified version info of this build to display in [Pronterface, etc] terminal window during
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
 // build by the user have been successfully uploaded into firmware.
-#define STRING_VERSION "4.1.0"
+#define STRING_VERSION " 4.1.1"
 #define STRING_URL "reprap.org"
 #define STRING_VERSION_CONFIG_H __DATE__ " " __TIME__     // build date and time
 #define STRING_CONFIG_H_AUTHOR "(none, default config)"   // Who made the changes.
@@ -147,7 +147,7 @@
 // 10 is 100k RS thermistor 198-961 (4.7k pullup)
 // 11 is 100k beta 3950 1% thermistor (4.7k pullup)
 // 12 is 100k 0603 SMD Vishay NTCS0603E3104FXT (4.7k pullup) (calibrated for Makibox hot bed)
-// 13 is 100k Hisens 3950  1% up to 300�C for hotend "Simple ONE " & "Hotend "All In ONE"
+// 13 is 100k Hisens 3950  1% up to 300°C for hotend "Simple ONE " & "Hotend "All In ONE"
 // 20 is the PT100 circuit found in the Ultimainboard V2.x
 // 60 is 100k Maker's Tool Works Kapton Bed Thermistor beta=3950
 //
@@ -161,7 +161,7 @@
 // 1010 is Pt1000 with 1k pullup (non standard)
 // 147 is Pt100 with 4k7 pullup
 // 110 is Pt100 with 1k pullup (non standard)
-// 998 and 999 are Dummy Tables. They will ALWAYS read 25�C or the temperature defined below. 
+// 998 and 999 are Dummy Tables. They will ALWAYS read 25°C or the temperature defined below. 
 //     Use it for Testing or Development purposes. NEVER for production machine.
 //     #define DUMMY_THERMISTOR_998_VALUE 25
 //     #define DUMMY_THERMISTOR_999_VALUE 100
@@ -228,9 +228,9 @@
   #define K1 0.95 // Smoothing factor within the PID
 
 //             HotEnd{HE0,HE1,HE2,HE3}
-  #define DEFAULT_Kp {40, 40, 40, 40}     // Kp for E0, E1, E2, E3
-  #define DEFAULT_Ki {07, 07, 07, 07}     // Ki for E0, E1, E2, E3
-  #define DEFAULT_Kd {60, 60, 60, 60}     // Kd for E0, E1, E2, E3
+  #define DEFAULT_Kp {40,40,40,40}     // Kp for E0, E1, E2, E3
+  #define DEFAULT_Ki {07,07,07,07}     // Ki for E0, E1, E2, E3
+  #define DEFAULT_Kd {60,60,60,60}     // Kd for E0, E1, E2, E3
 
 #endif // PIDTEMP
 
@@ -459,6 +459,14 @@ your extruder heater takes 2 minutes to hit the target on heating.
 // to disable EEPROM Serial responses and decrease program space by ~1700 byte: comment this out:
 // please keep turned on if you can.
 //#define DISABLE_M503
+
+//=================================== EXTRA SETTINGS ON SD ================================
+// Uncomment SD_SETTINGS to enable the firmware to write some configuration, that require frequent update, on the SD card.
+#define SD_SETTINGS
+#define SD_CFG_SECONDS 10         //seconds between update
+#define CFG_SD_FILE "config.cfg"  //name of the configuration file
+#define CFG_SD_MAX_KEY_LEN 3+1    //icrease this if you add key name longer than the actual value.
+#define CFG_SD_MAX_VALUE_LEN 12+1 //this should be enought for int, long and float if you need to retrive strings increase this carefully
 
 //========================= Bowden Filament management ======================
 //#define EASY_LOAD
