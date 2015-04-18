@@ -410,6 +410,7 @@ unsigned long printer_usage_seconds;
   static bool fromsd[BUFSIZE];
   #ifdef SD_SETTINGS
     unsigned long config_last_update = 0;
+	bool config_readed = false;
   #endif
 #endif
 
