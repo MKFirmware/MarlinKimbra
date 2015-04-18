@@ -311,12 +311,12 @@ static void lcd_status_screen() {
   
   #if HAS_LCD_FILAMENT_SENSOR || HAS_LCD_POWER_SENSOR
     #if HAS_LCD_FILAMENT_SENSOR && HAS_LCD_POWER_SENSOR
-      if (millis() > message_millis + 15000)
+      if (millis() > previous_lcd_status_ms + 15000)
     #else
-     if (millis() > message_millis + 10000)
+     if (millis() > previous_lcd_status_ms + 10000)
     #endif
     {
-      message_millis = millis();
+      previous_lcd_status_ms = millis();
     }
   #endif
 
