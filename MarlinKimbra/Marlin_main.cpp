@@ -825,7 +825,7 @@ void loop() {
         char *command = command_queue[cmd_queue_index_r];
         if (strstr_P(command, PSTR("M29"))) {
           // M29 closes the file
-          card.closefile();
+          card.closeFile();
           SERIAL_PROTOCOLLNPGM(MSG_FILE_SAVED);
         }
         else {
@@ -3791,7 +3791,7 @@ inline void gcode_M17() {
    */
   inline void gcode_M30() {
     if (card.cardOK) {
-      card.closefile();
+      card.closeFile();
       char* starpos = strchr(strchr_pointer + 4, '*');
       if (starpos) {
         char* npos = strchr(command_queue[cmd_queue_index_r], 'N');
