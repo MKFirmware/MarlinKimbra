@@ -308,7 +308,7 @@ void checkHitEndstops() {
     #if defined(ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED) && defined(SDSUPPORT)
       if (abort_on_endstop_hit) {
         card.sdprinting = false;
-        card.closefile();
+        card.closeFile();
         quickStop();
         setTargetHotend0(0);
         setTargetHotend1(0);
@@ -354,7 +354,7 @@ void checkHitEndstops() {
     #if defined(ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED) && defined(SDSUPPORT)
       if (abort_on_endstop_hit) {
         card.sdprinting = false;
-        card.closefile();
+        card.closeFile();
         quickStop();
         setTargetHotend0(0);
         setTargetHotend1(0);
