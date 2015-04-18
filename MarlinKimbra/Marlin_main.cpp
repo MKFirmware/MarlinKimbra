@@ -269,6 +269,8 @@ static uint8_t target_extruder;
 bool no_wait_for_cooling = true;
 bool target_direction;
 
+unsigned long printer_usage_seconds;
+
 #ifndef DELTA
   int xy_travel_speed = XY_TRAVEL_SPEED;
   float zprobe_zoffset = 0;
