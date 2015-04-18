@@ -18,10 +18,12 @@ public:
   //this is to delay autostart and hence the initialisaiton of the sd card to some seconds after the normal init, so the device is available quick after a reset
 
   void checkautostart(bool x);
-  void openFile(char* name,bool read,bool replace_current=true);
+  void openFile(char* name,bool read,bool replace_current=true, bool lcd_status=true);
   void openLogFile(char* name);
   void removeFile(char* name);
-  void closefile(bool store_location=false);
+  void closeFile(bool store_location=false);
+  void parseKeyLine(char *key, char *value, int &len_k, int &len_v);
+  void unparseKeyLine(const char *key, char *value);
   void release();
   void startFileprint();
   void pauseSDPrint();
@@ -62,7 +64,7 @@ private:
   uint32_t filespos[SD_PROCEDURE_DEPTH];
   char filenames[SD_PROCEDURE_DEPTH][MAXPATHNAMELENGTH];
   uint32_t filesize;
-  unsigned long autostart_atmillis;
+  millis_t next_autostart_ms;
   uint32_t sdpos;
 
   bool autostart_stilltocheck; //the sd start is delayed, because otherwise the serial cannot answer fast enought to make contact with the hostsoftware.

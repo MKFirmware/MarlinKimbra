@@ -54,7 +54,7 @@ static unsigned int cleaning_buffer_counter;
               locked_z2_motor = false;
 #endif
 
-// Counter variables for the bresenham line tracer
+// Counter variables for the Bresenham line tracer
 static long counter_x, counter_y, counter_z, counter_e;
 volatile static unsigned long step_events_completed; // The number of step events executed in the current block
 
@@ -66,7 +66,7 @@ volatile static unsigned long step_events_completed; // The number of step event
 
 static long acceleration_time, deceleration_time;
 //static unsigned long accelerate_until, decelerate_after, acceleration_rate, initial_rate, final_rate, nominal_rate;
-static unsigned short acc_step_rate; // needed for deccelaration start point
+static unsigned short acc_step_rate; // needed for deceleration start point
 static char step_loops;
 static unsigned short OCR1A_nominal;
 static unsigned short step_loops_nominal;
@@ -210,8 +210,14 @@ volatile signed char count_direction[NUM_AXIS] = { 1, 1, 1, 1 };
 // intRes = longIn1 * longIn2 >> 24
 // uses:
 // r26 to store 0
-// r27 to store the byte 1 of the 48bit result
-#define MultiU24X24toH16(intRes, longIn1, longIn2) \
+// r27 to store bits 16-23 of the 48bit result. The top bit is used to round the two byte result.
+// note that the lower two bytes and the upper byte of the 48bit result are not calculated.
+// this can cause the result to be out by one as the lower bytes may cause carries into the upper ones.
+// B0 A0 are bits 24-39 and are the returned value
+// C1 B1 A1 is longIn1
+// D2 C2 B2 A2 is longIn2
+//
+#define MultiU24X32toH16(intRes, longIn1, longIn2) \
   asm volatile ( \
     "clr r26 \n\t" \
     "mul %A1, %B2 \n\t" \
@@ -242,6 +248,11 @@ volatile signed char count_direction[NUM_AXIS] = { 1, 1, 1, 1 };
     "lsr r27 \n\t" \
     "adc %A0, r26 \n\t" \
     "adc %B0, r26 \n\t" \
+    "mul %D2, %A1 \n\t" \
+    "add %A0, r0 \n\t" \
+    "adc %B0, r1 \n\t" \
+    "mul %D2, %B1 \n\t" \
+    "add %B0, r0 \n\t" \
     "clr r1 \n\t" \
     : \
     "=&r" (intRes) \
@@ -297,7 +308,7 @@ void checkHitEndstops() {
     #if defined(ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED) && defined(SDSUPPORT)
       if (abort_on_endstop_hit) {
         card.sdprinting = false;
-        card.closefile();
+        card.closeFile();
         quickStop();
         setTargetHotend0(0);
         setTargetHotend1(0);
@@ -343,7 +354,7 @@ void checkHitEndstops() {
     #if defined(ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED) && defined(SDSUPPORT)
       if (abort_on_endstop_hit) {
         card.sdprinting = false;
-        card.closefile();
+        card.closeFile();
         quickStop();
         setTargetHotend0(0);
         setTargetHotend1(0);
@@ -372,7 +383,7 @@ void enable_endstops(bool check) { check_endstops = check; }
 //  The trapezoid is the shape the speed curve over time. It starts at block->initial_rate, accelerates
 //  first block->accelerate_until step_events_completed, then keeps going at constant speed until
 //  step_events_completed reaches block->decelerate_after after which it decelerates until the trapezoid generator is reset.
-//  The slope of acceleration is calculated with the lib ramp algorithm.
+//  The slope of acceleration is calculated using v = u + at where t is the accumulated timer values of the steps so far.
 
 void st_wake_up() {
   //  TCNT1 = 0;
@@ -453,7 +464,7 @@ ISR(TIMER1_COMPA_vect) {
     current_block = NULL;
     plan_discard_current_block();
     #ifdef SD_FINISHED_RELEASECOMMAND
-      if ((cleaning_buffer_counter == 1) && (SD_FINISHED_STEPPERRELEASE)) enquecommands_P(PSTR(SD_FINISHED_RELEASECOMMAND));
+      if ((cleaning_buffer_counter == 1) && (SD_FINISHED_STEPPERRELEASE)) enqueuecommands_P(PSTR(SD_FINISHED_RELEASECOMMAND));
     #endif
     cleaning_buffer_counter--;
     OCR1A = 200;
@@ -528,7 +539,7 @@ ISR(TIMER1_COMPA_vect) {
         if ((current_block->steps[A_AXIS] != current_block->steps[B_AXIS]) || (TEST(out_bits, A_AXIS) == TEST(out_bits, B_AXIS))) {
           if (TEST(out_bits, X_HEAD))
       #else
-          if (TEST(out_bits, X_AXIS))   // stepping along -X axis (regular cartesians bot)
+          if (TEST(out_bits, X_AXIS))   // stepping along -X axis (regular Cartesian bot)
       #endif
           { // -direction
             #ifdef DUAL_X_CARRIAGE
@@ -772,9 +783,9 @@ ISR(TIMER1_COMPA_vect) {
     // Calculate new timer value
     unsigned short timer;
     unsigned short step_rate;
-    if (step_events_completed <= (unsigned long int)current_block->accelerate_until) {
+    if (step_events_completed <= (unsigned long)current_block->accelerate_until) {
 
-      MultiU24X24toH16(acc_step_rate, acceleration_time, current_block->acceleration_rate);
+      MultiU24X32toH16(acc_step_rate, acceleration_time, current_block->acceleration_rate);
       acc_step_rate += current_block->initial_rate;
 
       // upper limit
@@ -796,8 +807,8 @@ ISR(TIMER1_COMPA_vect) {
 
       #endif
     }
-    else if (step_events_completed > (unsigned long int)current_block->decelerate_after) {
-      MultiU24X24toH16(step_rate, deceleration_time, current_block->acceleration_rate);
+    else if (step_events_completed > (unsigned long)current_block->decelerate_after) {
+      MultiU24X32toH16(step_rate, deceleration_time, current_block->acceleration_rate);
 
       if (step_rate > acc_step_rate) { // Check step_rate stays positive
         step_rate = current_block->final_rate;
@@ -1236,7 +1247,7 @@ void quickStop() {
         uint8_t old_pin = AXIS ##_DIR_READ; \
         AXIS ##_APPLY_DIR(INVERT_## AXIS ##_DIR^direction^INVERT, true); \
         AXIS ##_APPLY_STEP(!INVERT_## AXIS ##_STEP_PIN, true); \
-        _delay_us(1U); \
+        delayMicroseconds(2); \
         AXIS ##_APPLY_STEP(INVERT_## AXIS ##_STEP_PIN, true); \
         AXIS ##_APPLY_DIR(old_pin, true); \
       }
@@ -1275,7 +1286,7 @@ void quickStop() {
           X_STEP_WRITE(!INVERT_X_STEP_PIN);
           Y_STEP_WRITE(!INVERT_Y_STEP_PIN);
           Z_STEP_WRITE(!INVERT_Z_STEP_PIN);
-          _delay_us(1U);
+          delayMicroseconds(2);
           X_STEP_WRITE(INVERT_X_STEP_PIN); 
           Y_STEP_WRITE(INVERT_Y_STEP_PIN); 
           Z_STEP_WRITE(INVERT_Z_STEP_PIN);

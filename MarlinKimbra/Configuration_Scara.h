@@ -198,9 +198,9 @@
 //Manual homing switch locations:
 // For SCARA: Offset between HomingPosition and Bed X=0 / Y=0
 #ifdef MANUAL_HOME_POSITIONS
-#define MANUAL_X_HOME_POS -22
-#define MANUAL_Y_HOME_POS -52
-#define MANUAL_Z_HOME_POS 0.1  // Distance between nozzle and print surface after homing.
+  #define MANUAL_X_HOME_POS -22
+  #define MANUAL_Y_HOME_POS -52
+  #define MANUAL_Z_HOME_POS 0.1  // Distance between nozzle and print surface after homing.
 #endif
 
 // MOVEMENT SETTINGS

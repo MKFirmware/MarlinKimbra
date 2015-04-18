@@ -186,11 +186,11 @@ static void lcd_implementation_init() {
   // digitalWrite(17, HIGH);
 
   #ifdef LCD_SCREEN_ROT_90
-    u8g.setRot90();   // Rotate screen by 90°
+    u8g.setRot90();   // Rotate screen by 90Â°
   #elif defined(LCD_SCREEN_ROT_180)
-    u8g.setRot180();	// Rotate screen by 180°
+    u8g.setRot180();	// Rotate screen by 180Â°
   #elif defined(LCD_SCREEN_ROT_270)
-    u8g.setRot270();	// Rotate screen by 270°
+    u8g.setRot270();	// Rotate screen by 270Â°
   #endif
 	
   // Show splashscreen
@@ -269,23 +269,23 @@ static void lcd_implementation_status_screen() {
     }
 
     u8g.setPrintPos(80,48);
-    if (starttime != 0) {
+    if (print_job_start_ms != 0) {
       #if HAS_LCD_POWER_SENSOR
         if (millis() < print_millis + 1000) {
-          uint16_t time = (millis() - starttime) / 60000;
-          lcd_print(itostr2(time/60));
+          uint16_t time = (millis() - print_job_start_ms) / 60000;
+          lcd_print(itostr2(time / 60));
           lcd_print(':');
-          lcd_print(itostr2(time%60));
+          lcd_print(itostr2(time % 60));
         }
         else {
           lcd_print(itostr4(power_consumption_hour-startpower));
           lcd_print('Wh');
         }
       #else
-        uint16_t time = (millis() - starttime) / 60000;
-        lcd_print(itostr2(time/60));
+        uint16_t time = (millis() - print_job_start_ms) / 60000;
+        lcd_print(itostr2(time / 60));
         lcd_print(':');
-        lcd_print(itostr2(time%60));
+        lcd_print(itostr2(time % 60));
       #endif
     }
     else {
@@ -350,7 +350,7 @@ static void lcd_implementation_status_screen() {
   lcd_print(LCD_STR_FEEDRATE[0]);
   lcd_setFont(FONT_STATUSMENU);
   u8g.setPrintPos(12,49);
-  lcd_print(itostr3(feedmultiply));
+  lcd_print(itostr3(feedrate_multiplier));
   lcd_print('%');
 
   // Status line
@@ -362,12 +362,12 @@ static void lcd_implementation_status_screen() {
   #endif
 
   #if HAS_LCD_FILAMENT_SENSOR || HAS_LCD_POWER_SENSOR
-    if (millis() < message_millis + 5000) {  //Display both Status message line and Filament display on the last line
+    if (millis() < previous_lcd_status_ms + 5000) {  //Display both Status message line and Filament display on the last line
       lcd_print(lcd_status_message);
     }
     #if HAS_LCD_POWER_SENSOR
       #if HAS_LCD_FILAMENT_SENSOR
-        else if (millis() < message_millis + 10000)
+        else if (millis() < previous_lcd_status_ms + 10000)
       #else
         else
       #endif

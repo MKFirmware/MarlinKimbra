@@ -23,6 +23,7 @@
 
 #include "Marlin.h"
 #include "planner.h"
+#include "stepper.h"
 
 // public functions
 void tp_init();  //initialize the heating
@@ -133,7 +134,7 @@ HOTEND_ROUTINES(0);
 #endif
 
 int getHeaterPower(int heater);
-void disable_heater();
+void disable_all_heaters();
 void setWatch();
 void updatePID();
 
