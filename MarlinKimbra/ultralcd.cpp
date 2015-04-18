@@ -389,7 +389,7 @@ static void lcd_sdcard_resume() { card.startFileprint(); }
 static void lcd_sdcard_stop() {
   quickStop();
   card.sdprinting = false;
-  card.closefile();
+  card.closeFile();
   autotempShutdown();
   cancel_heatup = true;
   lcd_setstatus(MSG_PRINT_ABORTED, true);
