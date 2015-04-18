@@ -189,36 +189,35 @@ void CardReader::getAbsFilename(char *t) {
     t[0] = 0;
 }
 
-void CardReader::openFile(char* name, bool read, bool replace_current/*=true*/) {
+void CardReader::openFile(char* name, bool read, bool replace_current/*=true*/, bool lcd_status/*=true*/) {
   if (!cardOK) return;
   if (file.isOpen()) { //replacing current file by new file, or subfile call
     if (!replace_current) {
-     if (file_subcall_ctr > SD_PROCEDURE_DEPTH - 1) {
-       SERIAL_ERROR_START;
-       SERIAL_ERRORPGM("trying to call sub-gcode files with too many levels. MAX level is:");
-       SERIAL_ERRORLN(SD_PROCEDURE_DEPTH);
-       kill();
-       return;
-     }
+      if (file_subcall_ctr > SD_PROCEDURE_DEPTH - 1) {
+        SERIAL_ERROR_START;
+        SERIAL_ERRORPGM("trying to call sub-gcode files with too many levels. MAX level is:");
+        SERIAL_ERRORLN(SD_PROCEDURE_DEPTH);
+        kill();
+        return;
+      }
+      SERIAL_ECHO_START;
+      SERIAL_ECHOPGM("SUBROUTINE CALL target:\"");
+      SERIAL_ECHO(name);
+      SERIAL_ECHOPGM("\" parent:\"");
 
-     SERIAL_ECHO_START;
-     SERIAL_ECHOPGM("SUBROUTINE CALL target:\"");
-     SERIAL_ECHO(name);
-     SERIAL_ECHOPGM("\" parent:\"");
+      //store current filename and position
+      getAbsFilename(filenames[file_subcall_ctr]);
 
-     //store current filename and position
-     getAbsFilename(filenames[file_subcall_ctr]);
-
-     SERIAL_ECHO(filenames[file_subcall_ctr]);
-     SERIAL_ECHOPGM("\" pos");
-     SERIAL_ECHOLN(sdpos);
-     filespos[file_subcall_ctr] = sdpos;
-     file_subcall_ctr++;
+      SERIAL_ECHO(filenames[file_subcall_ctr]);
+      SERIAL_ECHOPGM("\" pos");
+      SERIAL_ECHOLN(sdpos);
+      filespos[file_subcall_ctr] = sdpos;
+      file_subcall_ctr++;
     }
     else {
-     SERIAL_ECHO_START;
-     SERIAL_ECHOPGM("Now doing file: ");
-     SERIAL_ECHOLN(name);
+      SERIAL_ECHO_START;
+      SERIAL_ECHOPGM("Now doing file: ");
+      SERIAL_ECHOLN(name);
     }
     file.close();
   }
@@ -282,7 +281,7 @@ void CardReader::openFile(char* name, bool read, bool replace_current/*=true*/) 
 
       SERIAL_PROTOCOLLNPGM(MSG_SD_FILE_SELECTED);
       getfilename(0, fname);
-      lcd_setstatus(longFilename[0] ? longFilename : fname);
+      if(lcd_status) lcd_setstatus(longFilename[0] ? longFilename : fname);
     }
     else {
       SERIAL_PROTOCOLPGM(MSG_SD_OPEN_FILE_FAIL);
@@ -291,16 +290,16 @@ void CardReader::openFile(char* name, bool read, bool replace_current/*=true*/) 
     }
   }
   else { //write
-    if (!file.open(curDir, fname, O_CREAT | O_APPEND | O_WRITE | O_TRUNC)) {
-      SERIAL_PROTOCOLPGM(MSG_SD_OPEN_FILE_FAIL);
-      SERIAL_PROTOCOL(fname);
-      SERIAL_PROTOCOLCHAR('.');
-    }
-    else {
+    if (file.open(curDir, fname, O_CREAT | O_APPEND | O_WRITE | O_TRUNC)) {
       saving = true;
       SERIAL_PROTOCOLPGM(MSG_SD_WRITE_TO_FILE);
       SERIAL_PROTOCOLLN(name);
-      lcd_setstatus(fname);
+      if(lcd_status) lcd_setstatus(fname);
+    }
+    else {
+      SERIAL_PROTOCOLPGM(MSG_SD_OPEN_FILE_FAIL);
+      SERIAL_PROTOCOL(fname);
+      SERIAL_PROTOCOLCHAR('.');
     }
   }
 }
@@ -432,7 +431,7 @@ void CardReader::checkautostart(bool force) {
     autostart_index++;
 }
 
-void CardReader::closefile(bool store_location) {
+void CardReader::closeFile(bool store_location) {
   file.sync();
   file.close();
   saving = logging = false;
@@ -440,6 +439,94 @@ void CardReader::closefile(bool store_location) {
   if (store_location) {
     //future: store printer state, filename and position for continuing a stopped print
     // so one can unplug the printer and continue printing the next day.
+  }
+}
+
+void CardReader::parseKeyLine(char *key, char *value, int &len_k, int &len_v) {
+  if (!cardOK || !isFileOpen()) return;
+  int ln_buf = 0;
+  char ln_char;
+  bool ln_space = false, ln_ignore = false, key_found = false;
+  while(!eof()) {		//READ KEY
+    ln_char = (char)get();
+    if(ln_char == '\n') {
+      ln_buf = 0;
+      ln_ignore = false;  //We've reached a new line try to find a key again
+      continue;
+    }
+    if(ln_ignore) continue;
+    if(ln_char == ' ') {
+      ln_space = true;
+      continue;
+    }
+    if(ln_char == '=') {
+      key[ln_buf] = '\0';
+      len_k = ln_buf;
+      key_found = true;
+      break; //key finded and buffered
+    }
+    if(ln_char == ';' || ln_buf+1 >= len_k || ln_space && ln_buf > 0) { //comments on key is not allowd. Also key len can't be longer than len_k or contain spaces. Stop buffering and try the next line
+      ln_ignore = true;
+      continue;
+    }
+    ln_space = false;
+    key[ln_buf] = ln_char;
+    ln_buf++;
+  }
+  if(!key_found) { //definitly there isn't no more key that can be readed in the file
+    key[0] = '\0';
+    value[0] = '\0';
+    len_k = 0;
+    len_v = 0;
+    return;
+  }
+  ln_buf = 0;
+  ln_ignore = false;
+  while(!eof()) {		//READ VALUE
+    ln_char = (char)get();
+	  if(ln_char == '\n') {
+      value[ln_buf] = '\0';
+      len_v = ln_buf;
+      break;	//new line reached, we can stop
+    }
+    if(ln_ignore|| ln_char == ' ' && ln_buf == 0) continue; //ignore also initial spaces of the value
+    if(ln_char == ';' || ln_buf+1 >= len_v) { //comments reached or value len longer than len_v. Stop buffering and go to the next line.
+      ln_ignore = true;
+      continue;
+    }
+    value[ln_buf] = ln_char;
+    ln_buf++;
+  }
+}
+
+void CardReader::unparseKeyLine(const char *key, char *value) {
+  if (!cardOK || !isFileOpen()) return;
+  file.writeError = false;
+  file.write(key);
+  if (file.writeError) {
+    SERIAL_ERROR_START;
+    SERIAL_ERRORLNPGM(MSG_SD_ERR_WRITE_TO_FILE);
+    return;
+  }
+  file.writeError = false;
+  file.write("=");
+  if (file.writeError) {
+    SERIAL_ERROR_START;
+    SERIAL_ERRORLNPGM(MSG_SD_ERR_WRITE_TO_FILE);
+    return;
+  }
+  file.writeError = false;
+  file.write(value);
+  if (file.writeError) {
+    SERIAL_ERROR_START;
+    SERIAL_ERRORLNPGM(MSG_SD_ERR_WRITE_TO_FILE);
+    return;
+  }
+  file.writeError = false;
+  file.write("\n");
+  if (file.writeError) {
+    SERIAL_ERROR_START;
+    SERIAL_ERRORLNPGM(MSG_SD_ERR_WRITE_TO_FILE);
   }
 }
 
