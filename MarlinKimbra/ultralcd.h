@@ -57,10 +57,11 @@
   extern bool cancel_heatup;
   
   #if (HAS_FILAMENT_SENSOR && defined(FILAMENT_LCD_DISPLAY)) || (HAS_POWER_CONSUMPTION_SENSOR && defined(POWER_CONSUMPTION_LCD_DISPLAY))
-    extern unsigned long message_millis;
+    extern millis_t previous_lcd_status_ms;
   #endif
 
   void lcd_buzz(long duration,uint16_t freq);
+  void lcd_quick_feedback(); // Audible feedback for a button click - could also be visual
   bool lcd_clicked();
 
   void lcd_ignore_click(bool b=true);

@@ -31,11 +31,11 @@ int gumPreheatHPBTemp;
 int gumPreheatFanSpeed;
 
 #if HAS_LCD_FILAMENT_SENSOR || HAS_LCD_POWER_SENSOR
-  unsigned long message_millis = 0;
+  millis_t previous_lcd_status_ms = 0;
 #endif
 
 #if HAS_LCD_POWER_SENSOR
-  unsigned long print_millis = 0;
+  millis_t print_millis = 0;
 #endif
 
 /* !Configuration settings */
@@ -85,8 +85,6 @@ static void lcd_status_screen();
   #ifdef DELTA
     static void lcd_delta_calibrate_menu();
   #endif // DELTA
-
-  static void lcd_quick_feedback();//Cause an LCD refresh, and give the user visual or audible feedback that something has happened
 
   /* Different types of actions that can be used in menu items. */
   static void menu_action_back(menuFunc_t data);
@@ -163,10 +161,10 @@ static void lcd_status_screen();
    *     lcd_implementation_drawmenu_function(sel, row, PSTR(MSG_PAUSE_PRINT), lcd_sdcard_pause)
    *     menu_action_function(lcd_sdcard_pause)
    *
-   *   MENU_ITEM_EDIT(int3, MSG_SPEED, &feedmultiply, 10, 999)
-   *   MENU_ITEM(setting_edit_int3, MSG_SPEED, PSTR(MSG_SPEED), &feedmultiply, 10, 999)
-   *     lcd_implementation_drawmenu_setting_edit_int3(sel, row, PSTR(MSG_SPEED), PSTR(MSG_SPEED), &feedmultiply, 10, 999)
-   *     menu_action_setting_edit_int3(PSTR(MSG_SPEED), &feedmultiply, 10, 999)
+   *   MENU_ITEM_EDIT(int3, MSG_SPEED, &feedrate_multiplier, 10, 999)
+   *   MENU_ITEM(setting_edit_int3, MSG_SPEED, PSTR(MSG_SPEED), &feedrate_multiplier, 10, 999)
+   *     lcd_implementation_drawmenu_setting_edit_int3(sel, row, PSTR(MSG_SPEED), PSTR(MSG_SPEED), &feedrate_multiplier, 10, 999)
+   *     menu_action_setting_edit_int3(PSTR(MSG_SPEED), &feedrate_multiplier, 10, 999)
    *
    */
   #define MENU_ITEM(type, label, args...) do { \
@@ -229,7 +227,7 @@ static void lcd_status_screen();
     volatile uint8_t slow_buttons; // Bits of the pressed buttons.
   #endif
   uint8_t currentMenuViewOffset;              /* scroll offset in the current menu */
-  uint32_t blocking_enc;
+  millis_t next_button_update_ms;
   uint8_t lastEncoderBits;
   uint32_t encoderPosition;
   #if (SDCARDDETECT > 0)
@@ -239,7 +237,7 @@ static void lcd_status_screen();
 #endif // ULTIPANEL
 
 menuFunc_t currentMenu = lcd_status_screen; /* function pointer to the currently active menu */
-uint32_t lcd_next_update_millis;
+millis_t next_lcd_update_ms;
 uint8_t lcd_status_update_delay;
 bool ignore_click = false;
 bool wait_for_unclick;
@@ -257,10 +255,10 @@ menuFunc_t callbackFunc;
 // place-holders for Ki and Kd edits
 float raw_Ki, raw_Kd;
 
-static void lcd_goto_menu(menuFunc_t menu, const uint32_t encoder=0, const bool feedback=true) {
+static void lcd_goto_menu(menuFunc_t menu, const bool feedback=false, const uint32_t encoder=0) {
   if (currentMenu != menu) {
     currentMenu = menu;
-    #if defined(NEWPANEL)
+    #ifdef NEWPANEL
       encoderPosition = encoder;
       if (feedback) lcd_quick_feedback();
     #endif
@@ -276,7 +274,7 @@ static void lcd_status_screen() {
 	encoderRateMultiplierEnabled = false;
 
   #ifdef LCD_PROGRESS_BAR
-    unsigned long ms = millis();
+    millis_t ms = millis();
     #ifndef PROGRESS_MSG_ONCE
       if (ms > progressBarTick + PROGRESS_BAR_MSG_TIME + PROGRESS_BAR_BAR_TIME) {
         progressBarTick = ms;
@@ -327,70 +325,62 @@ static void lcd_status_screen() {
     bool current_click = LCD_CLICKED;
 
     if (ignore_click) {
-        if (wait_for_unclick) {
-          if (!current_click) {
-              ignore_click = wait_for_unclick = false;
-          }
-          else {
-              current_click = false;
-          }
-        }
-        else if (current_click) {
-            lcd_quick_feedback();
-            wait_for_unclick = true;
-            current_click = false;
-        }
+      if (wait_for_unclick) {
+        if (!current_click)
+          ignore_click = wait_for_unclick = false;
+        else
+          current_click = false;
+      }
+      else if (current_click) {
+        lcd_quick_feedback();
+        wait_for_unclick = true;
+        current_click = false;
+      }
     }
 
-    if (current_click)
-    {
-      lcd_goto_menu(lcd_main_menu);
+    if (current_click) {
+      lcd_goto_menu(lcd_main_menu, true);
       lcd_implementation_init( // to maybe revive the LCD if static electricity killed it.
         #ifdef LCD_PROGRESS_BAR
           currentMenu == lcd_status_screen
         #endif
       );
       #ifdef FILAMENT_LCD_DISPLAY
-        message_millis = millis();  // get status message to show up for a while
+        previous_lcd_status_ms = millis();  // get status message to show up for a while
       #endif
     }
 
-#ifdef ULTIPANEL_FEEDMULTIPLY
-    // Dead zone at 100% feedrate
-    if ((feedmultiply < 100 && (feedmultiply + int(encoderPosition)) > 100) ||
-            (feedmultiply > 100 && (feedmultiply + int(encoderPosition)) < 100))
-    {
+    #ifdef ULTIPANEL_FEEDMULTIPLY
+      // Dead zone at 100% feedrate
+      if ((feedrate_multiplier < 100 && (feedrate_multiplier + int(encoderPosition)) > 100) ||
+              (feedrate_multiplier > 100 && (feedrate_multiplier + int(encoderPosition)) < 100)) {
         encoderPosition = 0;
-        feedmultiply = 100;
-    }
+        feedrate_multiplier = 100;
+      }
+      if (feedrate_multiplier == 100) {
+        if (int(encoderPosition) > ENCODER_FEEDRATE_DEADZONE) {
+          feedrate_multiplier += int(encoderPosition) - ENCODER_FEEDRATE_DEADZONE;
+          encoderPosition = 0;
+        }
+        else if (int(encoderPosition) < -ENCODER_FEEDRATE_DEADZONE) {
+          feedrate_multiplier += int(encoderPosition) + ENCODER_FEEDRATE_DEADZONE;
+          encoderPosition = 0;
+        }
+      }
+      else {
+        feedrate_multiplier += int(encoderPosition);
+        encoderPosition = 0;
+      }
+    #endif // ULTIPANEL_FEEDMULTIPLY
 
-    if (feedmultiply == 100 && int(encoderPosition) > ENCODER_FEEDRATE_DEADZONE)
-    {
-        feedmultiply += int(encoderPosition) - ENCODER_FEEDRATE_DEADZONE;
-        encoderPosition = 0;
-    }
-    else if (feedmultiply == 100 && int(encoderPosition) < -ENCODER_FEEDRATE_DEADZONE)
-    {
-        feedmultiply += int(encoderPosition) + ENCODER_FEEDRATE_DEADZONE;
-        encoderPosition = 0;
-    }
-    else if (feedmultiply != 100)
-    {
-        feedmultiply += int(encoderPosition);
-        encoderPosition = 0;
-    }
-#endif //ULTIPANEL_FEEDMULTIPLY
+    feedrate_multiplier = constrain(feedrate_multiplier, 10, 999);
 
-    if (feedmultiply < 10)
-        feedmultiply = 10;
-    else if (feedmultiply > 999)
-        feedmultiply = 999;
-#endif //ULTIPANEL
+  #endif //ULTIPANEL
 }
 
 #ifdef ULTIPANEL
 
-static void lcd_return_to_status() { lcd_goto_menu(lcd_status_screen, 0, false); }
+static void lcd_return_to_status() { lcd_goto_menu(lcd_status_screen); }
 
 static void lcd_sdcard_pause() { card.pauseSDPrint(); }
 
@@ -465,7 +455,7 @@ void lcd_set_home_offsets() {
   plan_set_position(0.0, 0.0, 0.0, current_position[E_AXIS]);
 
   // Audio feedback
-  enquecommands_P(PSTR("M300 S659 P200\nM300 S698 P200"));
+  enqueuecommands_P(PSTR("M300 S659 P200\nM300 S698 P200"));
   lcd_return_to_status();
 }
 
@@ -490,7 +480,7 @@ void lcd_set_home_offsets() {
 static void lcd_tune_menu() {
   START_MENU();
   MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
-  MENU_ITEM_EDIT(int3, MSG_SPEED, &feedmultiply, 10, 999);
+  MENU_ITEM_EDIT(int3, MSG_SPEED, &feedrate_multiplier, 10, 999);
   #if TEMP_SENSOR_0 != 0
     MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE, &target_temperature[0], 0, HEATER_0_MAXTEMP + LCD_MAX_TEMP_OFFSET);
   #endif
@@ -687,7 +677,7 @@ void config_lcd_level_bed()
 
 	SERIAL_ECHOLN("Leveling...");	
 	currentMenu = lcd_level_bed;
-	enquecommands_P(PSTR("G28 M"));
+	enqueuecommands_P(PSTR("G28 M"));
 	pageShowInfo = 0;
 }
 
@@ -1301,15 +1291,15 @@ menu_edit_type(unsigned long, long5, ftostr5, 0.01)
     lcd_move_y();
   }
   static void reprapworld_keypad_move_home() {
-    enquecommands_P((PSTR("G28"))); // move all axis home
+    enqueuecommands_P((PSTR("G28"))); // move all axis home
   }
 #endif //REPRAPWORLD_KEYPAD
 
 /** End of menus **/
 
-static void lcd_quick_feedback() {
+void lcd_quick_feedback() {
   lcdDrawUpdate = 2;
-  blocking_enc = millis() + 500;
+  next_button_update_ms = millis() + 500;
     
   #ifdef LCD_USE_I2C_BUZZER
     #ifndef LCD_FEEDBACK_FREQUENCY_HZ
@@ -1327,15 +1317,15 @@ static void lcd_quick_feedback() {
     #ifndef LCD_FEEDBACK_FREQUENCY_DURATION_MS
       #define LCD_FEEDBACK_FREQUENCY_DURATION_MS 2
     #endif
-    const unsigned int delay = 1000000 / LCD_FEEDBACK_FREQUENCY_HZ / 2;
-    int i = LCD_FEEDBACK_FREQUENCY_DURATION_MS * LCD_FEEDBACK_FREQUENCY_HZ / 1000;
+    const uint16_t delay = 1000000 / LCD_FEEDBACK_FREQUENCY_HZ / 2;
+    uint16_t i = LCD_FEEDBACK_FREQUENCY_DURATION_MS * LCD_FEEDBACK_FREQUENCY_HZ / 1000;
     while (i--) {
       WRITE(BEEPER,HIGH);
       delayMicroseconds(delay);
       WRITE(BEEPER,LOW);
       delayMicroseconds(delay);
     }
-    const int j = max(10000 - LCD_FEEDBACK_FREQUENCY_DURATION_MS * 1000, 0);
+    const uint16_t j = max(10000 - LCD_FEEDBACK_FREQUENCY_DURATION_MS * 1000, 0);
     if (j) delayMicroseconds(j);
   #endif
 }
@@ -1343,15 +1333,15 @@ static void lcd_quick_feedback() {
 /** Menu action functions **/
 static void menu_action_back(menuFunc_t data) { lcd_goto_menu(data); }
 static void menu_action_submenu(menuFunc_t data) { lcd_goto_menu(data); }
-static void menu_action_gcode(const char* pgcode) { enquecommands_P(pgcode); }
+static void menu_action_gcode(const char* pgcode) { enqueuecommands_P(pgcode); }
 static void menu_action_function(menuFunc_t data) { (*data)(); }
 static void menu_action_sdfile(const char* filename, char* longFilename) {
   char cmd[30];
   char* c;
   sprintf_P(cmd, PSTR("M23 %s"), filename);
   for(c = &cmd[4]; *c; c++) *c = tolower(*c);
-  enquecommand(cmd);
-  enquecommands_P(PSTR("M24"));
+  enqueuecommand(cmd);
+  enqueuecommands_P(PSTR("M24"));
   lcd_return_to_status();
 }
 static void menu_action_sddirectory(const char* filename, char* longFilename) {
@@ -1439,7 +1429,7 @@ int lcd_strlen_P(const char *s) {
 
 void lcd_update() {
   #ifdef ULTIPANEL
-    static unsigned long timeoutToStatus = 0;
+    static millis_t return_to_status_ms = 0;
   #endif
 
   #ifdef LCD_HAS_SLOW_BUTTONS
@@ -1468,9 +1458,9 @@ void lcd_update() {
       }
     }
   #endif//CARDINSERTED
-
-  uint32_t ms = millis();
-  if (ms > lcd_next_update_millis) {
+  
+  millis_t ms = millis();
+  if (ms > next_lcd_update_ms) {
 
     #ifdef ULTIPANEL
 
@@ -1522,7 +1512,7 @@ void lcd_update() {
           encoderPosition += (encoderDiff * encoderMultiplier) / ENCODER_PULSES_PER_STEP;
           encoderDiff = 0;
         }
-        timeoutToStatus = ms + LCD_TIMEOUT_TO_STATUS;
+        return_to_status_ms = ms + LCD_TIMEOUT_TO_STATUS;
         lcdDrawUpdate = 1;
       }
     #endif //ULTIPANEL
@@ -1558,7 +1548,7 @@ void lcd_update() {
     #endif
 
     #ifdef ULTIPANEL
-      if (currentMenu != lcd_status_screen && millis() > timeoutToStatus) {
+      if (currentMenu != lcd_status_screen && millis() > return_to_status_ms) {
         lcd_return_to_status();
         lcdDrawUpdate = 2;
       }
@@ -1566,7 +1556,7 @@ void lcd_update() {
 
     if (lcdDrawUpdate == 2) lcd_implementation_clear();
     if (lcdDrawUpdate) lcdDrawUpdate--;
-    lcd_next_update_millis = millis() + LCD_UPDATE_INTERVAL;
+    next_lcd_update_ms = millis() + LCD_UPDATE_INTERVAL;
   }
 }
 
@@ -1585,7 +1575,7 @@ void lcd_finishstatus(bool persist=false) {
   lcdDrawUpdate = 2;
 
   #ifdef FILAMENT_LCD_DISPLAY
-    message_millis = millis();  //get status message to show up for a while
+    previous_lcd_status_ms = millis();  //get status message to show up for a while
   #endif
 }
 
@@ -1659,7 +1649,7 @@ void lcd_buttons_update() {
       if (READ(BTN_EN2) == 0)  newbutton |= EN_B;
     #endif
     #if BTN_ENC > 0
-      if (millis() > blocking_enc && READ(BTN_ENC) == 0) newbutton |= EN_C;
+      if (millis() > next_button_update_ms && READ(BTN_ENC) == 0) newbutton |= EN_C;
     #endif
     buttons = newbutton;
     #ifdef LCD_HAS_SLOW_BUTTONS
