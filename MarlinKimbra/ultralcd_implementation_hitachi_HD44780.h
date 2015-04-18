@@ -661,7 +661,7 @@ static void lcd_implementation_status_screen() {
     }
     #if HAS_LCD_POWER_SENSOR
       #if HAS_LCD_FILAMENT_SENSOR
-        else if (millis() < message_millis + 10000)
+        else if (millis() < previous_lcd_status_ms + 10000)
       #else
         else
       #endif
