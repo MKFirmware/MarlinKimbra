@@ -10,6 +10,8 @@
     * [Filament Sensor](/Documentation/FilamentSensor.md)
     * [Ramps Servo Power](/Documentation/RampsServoPower.md)
     * [LCD Language - Font - System](Documentation/LCDLanguageFont.md)
+  * Version
+    * [Change Log]](/Documentation/changelog.md)
 
 
 ## Configurator Tool Online
@@ -34,12 +36,12 @@ Adding Debug Dryrun used by repetier.
 ## Credits
 
 The current MarlinKimbra dev team consists of:
-
  - MagoKimbra (https://github.com/MagoKimbra)
-  
 
 More features have been added by:
-  - 
+ - simone97 (https://github.com/simone97)
+ -
+
 
 ## License
 
