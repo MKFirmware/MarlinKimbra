@@ -36,7 +36,7 @@ Adding Debug Dryrun used by repetier.
 ## Credits
 
 The current MarlinKimbra dev team consists of:
- - MagoKimbra (https://github.com/MagoKimbra)
+ - MagoKimbra - Alberto Cotronei (https://github.com/MagoKimbra)
 
 More features have been added by:
  - simone97 (https://github.com/simone97)
