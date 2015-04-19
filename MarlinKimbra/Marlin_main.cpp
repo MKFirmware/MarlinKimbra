@@ -406,7 +406,7 @@ bool target_direction;
 
 #ifdef SDSUPPORT
   static bool fromsd[BUFSIZE];
-#endif //!SDSUPPORT
+#endif
 
 #ifdef FILAMENTCHANGEENABLE
 	bool filament_changing = false;
@@ -1338,12 +1338,12 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
         // Engage Z Servo endstop if enabled
         if (servo_endstops[Z_AXIS] >= 0) {
           #if SERVO_LEVELING
-            servos[servo_endstops[Z_AXIS]].attach(0);
+            servo[servo_endstops[Z_AXIS]].attach(0);
           #endif
-          servos[servo_endstops[Z_AXIS]].write(servo_endstop_angles[Z_AXIS * 2]);
+          servo[servo_endstops[Z_AXIS]].write(servo_endstop_angles[Z_AXIS * 2]);
           #if SERVO_LEVELING_DELAY
             delay(PROBE_SERVO_DEACTIVATION_DELAY);
-            servos[servo_endstops[Z_AXIS]].detach();
+            servo[servo_endstops[Z_AXIS]].detach();
           #endif
         }
       #endif //NUM_SERVOS > 0
@@ -1361,14 +1361,14 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
           */
 
           #if SERVO_LEVELING
-            servos[servo_endstops[Z_AXIS]].attach(0);
+            servo[servo_endstops[Z_AXIS]].attach(0);
           #endif
 
-          servos[servo_endstops[Z_AXIS]].write(servo_endstop_angles[Z_AXIS * 2 + 1]);
+          servo[servo_endstops[Z_AXIS]].write(servo_endstop_angles[Z_AXIS * 2 + 1]);
 
           #if SERVO_LEVELING
             delay(PROBE_SERVO_DEACTIVATION_DELAY);
-            servos[servo_endstops[Z_AXIS]].detach();
+            servo[servo_endstops[Z_AXIS]].detach();
           #endif
         }
       #endif //NUM_SERVOS > 0
@@ -1447,7 +1447,7 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
         #endif
           {
             if (servo_endstops[axis] > -1)
-              servos[servo_endstops[axis]].write(servo_endstop_angles[axis * 2]);
+              servo[servo_endstops[axis]].write(servo_endstop_angles[axis * 2]);
           }
       #endif // SERVO_ENDSTOPS && !Z_PROBE_SLED
 
@@ -1514,7 +1514,7 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
       // Retract Servo endstop if enabled
       #if NUM_SERVOS > 0
         if (servo_endstops[axis] > -1)
-          servos[servo_endstops[axis]].write(servo_endstop_angles[axis * 2 + 1]);
+          servo[servo_endstops[axis]].write(servo_endstop_angles[axis * 2 + 1]);
       #endif
 
       #if SERVO_LEVELING && !defined(Z_PROBE_SLED)
@@ -6872,7 +6872,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
         if (!filament_changing)
       #endif
       {
-        if(degHotend(active_extruder) < IDLE_OOZING_MAXTEMP && degTargetHotend(active_extruder) < IDLE_OOZING_MINTEMP) {
+        if (degHotend(active_extruder) < IDLE_OOZING_MAXTEMP && degTargetHotend(active_extruder) < IDLE_OOZING_MINTEMP) {
           IDLE_OOZING_retract(false);
         }
         else if((millis() - axis_last_activity) >  IDLE_OOZING_SECONDS*1000) {
