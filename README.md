@@ -11,7 +11,7 @@
     * [Ramps Servo Power](/Documentation/RampsServoPower.md)
     * [LCD Language - Font - System](Documentation/LCDLanguageFont.md)
   * Version
-    * [Change Log]](/Documentation/changelog.md)
+    * [Change Log](/Documentation/changelog.md)
 
 
 ## Configurator Tool Online
