@@ -1277,7 +1277,7 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
         current_position[Z_AXIS] = corrected_position.z;
 
         // put the bed at 0 so we don't go below it.
-        current_position[Z_AXIS] = zprobe_zoffset;
+        current_position[Z_AXIS] += zprobe_zoffset;
         sync_plan_position();
       }
 
@@ -1528,8 +1528,8 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
 #ifdef DELTA
   static void axis_is_at_home(int axis) {
     current_position[axis] = base_home_pos[axis] + home_offset[axis];
-    min_pos[axis] =          base_min_pos(axis) + home_offset[axis];
-    max_pos[axis] =          base_max_pos[axis] + home_offset[axis];
+    min_pos[axis] = base_min_pos(axis) + home_offset[axis];
+    max_pos[axis] = base_max_pos[axis] + home_offset[axis];
   }
 
   static void homeaxis(AxisEnum axis) {
@@ -1541,36 +1541,31 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
       int axis_home_dir = home_dir(axis);
       current_position[axis] = 0;
       sync_plan_position();
+
+      // Move towards the endstop until an endstop is triggered
       destination[axis] = 1.5 * max_length[axis] * axis_home_dir;
       feedrate = homing_feedrate[axis];
       line_to_destination();
       st_synchronize();
 
-      enable_endstops(false);  // Ignore Z probe while moving away from the top microswitch.
+      // Set the axis position as setup for the move
       current_position[axis] = 0;
       sync_plan_position();
+
+      // Move away from the endstop by the axis HOME_BUMP_MM
       destination[axis] = -home_bump_mm(axis) * axis_home_dir;
       line_to_destination();
       st_synchronize();
-      enable_endstops(true);  // Stop ignoring Z probe while moving up to the top microswitch again.
 
       // Slow down the feedrate for the next move
       set_homing_bump_feedrate(axis);
 
-      // Move slowly towards the endstop until triggered
-      destination[axis] = 2 * home_bump_mm(axis) * axis_home_dir;
-      line_to_destination();
-      st_synchronize();
-
       // retrace by the amount specified in endstop_adj
-      if (endstop_adj[axis] * axis_home_dir < 0)
-      {
-        enable_endstops(false);  // Ignore Z probe while moving away from the top microswitch.
+      if (endstop_adj[axis] * axis_home_dir < 0) {
         sync_plan_position();
         destination[axis] = endstop_adj[axis];
         line_to_destination();
         st_synchronize();
-        enable_endstops(true);  // Stop ignoring Z probe while moving up to the top microswitch again.
       }
 
       // Set the axis position to its home position (plus home offsets)
@@ -1892,8 +1887,7 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
   }
 
   void save_carriage_positions(int position_num) {
-    for(int8_t i=0; i < NUM_AXIS; i++)
-    {
+    for(int8_t i=0; i < NUM_AXIS; i++) {
       saved_positions[position_num][i] = saved_position[i];    
     }
   }
@@ -1938,6 +1932,7 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
     feedrate = saved_feedrate;
     feedrate_multiplier = saved_feedrate_multiplier;
     refresh_cmd_timeout();
+    endstops_hit_on_purpose(); // clear endstop hit flags
   }
 
   void prepare_move_raw() {
@@ -2031,7 +2026,7 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
     }
 
     // First Check for control endstop
-    SERIAL_ECHOLN("First check for control endstop");
+    SERIAL_ECHOLN("First check for adjust Z-Height");
     home_delta_axis();
     deploy_z_probe(); 
     //Probe all points
@@ -6412,6 +6407,7 @@ void clamp_to_software_endstops(float target[3]) {
 
   inline float prevent_dangerous_extrude(float &curr_e, float &dest_e) {
     float de = dest_e - curr_e;
+    if (debugDryrun()) return de;
     if (de) {
       if (degHotend(active_extruder) < extrude_min_temp) {
         curr_e = dest_e; // Behave as if the move really took place, but ignore E part
