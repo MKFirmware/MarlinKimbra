@@ -102,7 +102,7 @@
 #define MSG_TEMPERATURE                     "Temperature"
 #define MSG_MOTION                          "Motion"
 #define MSG_VOLUMETRIC                      "Filament"
-#define MSG_VOLUMETRIC_ENABLED              E in mm3"
+#define MSG_VOLUMETRIC_ENABLED              "E in mm3"
 #define MSG_FILAMENT_SIZE_EXTRUDER          "Fil. Dia."
 #define MSG_CONTRAST                        "LCD contrast"
 #define MSG_STORE_EPROM                     "Store memory"
@@ -142,7 +142,8 @@
 #define MSG_BABYSTEP_Y                      "Babystep Y"
 #define MSG_BABYSTEP_Z                      "Babystep Z"
 #define MSG_ENDSTOP_ABORT                   "Endstop abort"
-
+#define MSG_END_HOUR                        "hours"
+#define MSG_END_MINUTE                      "minutes"
 #define MSG_HEATING_FAILED_LCD              "Heating failed"
 #define MSG_ERR_REDUNDANT_TEMP              "Err: REDUNDANT TEMP ERROR"
 #define MSG_THERMAL_RUNAWAY                 "THERMAL RUNAWAY"
@@ -150,8 +151,6 @@
 #define MSG_ERR_MINTEMP                     "Err: MINTEMP"
 #define MSG_ERR_MAXTEMP_BED                 "Err: MAXTEMP BED"
 
-#define MSG_END_HOUR                        "hours"
-#define MSG_END_MINUTE                      "minutes"
 
 #ifdef DELTA
   #define MSG_DELTA_CALIBRATE               "Delta Calibration"
@@ -183,7 +182,6 @@
   #define MSG_FWTEST_03                     "Start check ENDSTOP"
   #define MSG_FWTEST_04                     "Start check MOTOR"
   #define MSG_FWTEST_ATTENTION              "ATTENTION! Check that the three axes are more than 5 mm from the endstop!"
-  #define MSG_FWTEST_END                    "Finish Test. Disable FIRMWARE_TEST and recompile."
   #define MSG_FWTEST_END                    "Finish Test. Disable FIRMWARE_TEST and recompile."
 #endif // FIRMWARE_TEST
 
