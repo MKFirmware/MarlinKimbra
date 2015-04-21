@@ -518,8 +518,8 @@ float junction_deviation = 0.1;
           if (degHotend(extruder) < extrude_min_temp && !debugDryrun()) {
             position[E_AXIS] = target[E_AXIS]; //behave as if the move really took place, but ignore E part
             de = 0; // no difference
-            SERIAL_ECHO_START;
-            SERIAL_ECHOLNPGM(MSG_ERR_COLD_EXTRUDE_STOP);
+            ECHO_S(OK);
+            ECHO_EM(MSG_ERR_COLD_EXTRUDE_STOP);
           }
         }
 
@@ -530,8 +530,8 @@ float junction_deviation = 0.1;
           #endif
           position[E_AXIS] = target[E_AXIS]; // Behave as if the move really took place, but ignore E part
           de = 0; // no difference
-          SERIAL_ECHO_START;
-          SERIAL_ECHOLNPGM(MSG_ERR_LONG_EXTRUDE_STOP);
+          ECHO_S(OK);
+          ECHO_EM(MSG_ERR_LONG_EXTRUDE_STOP);
           #ifdef EASY_LOAD
             }
             allow_lengthy_extrude_once = false;
@@ -993,11 +993,11 @@ float junction_deviation = 0.1;
       block->advance_rate = acc_dist ? advance / (float)acc_dist : 0;
     }
     /*
-      SERIAL_ECHO_START;
-     SERIAL_ECHOPGM("advance :");
-     SERIAL_ECHO(block->advance/256.0);
-     SERIAL_ECHOPGM("advance rate :");
-     SERIAL_ECHOLN(block->advance_rate/256.0);
+      ECHO_S(OK);
+     ECHO_M("advance :");
+     ECHO_V(block->advance/256.0);
+     ECHO_M("advance rate :");
+     ECHO_EV(block->advance_rate/256.0);
      */
   #endif // ADVANCE
 
