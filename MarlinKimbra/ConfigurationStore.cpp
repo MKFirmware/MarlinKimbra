@@ -17,7 +17,7 @@
 #define EEPROM_VERSION "V20"
 
 /**
- * V19 EEPROM Layout:
+ * V20 EEPROM Layout:
  *
  *  ver
  *  axis_steps_per_unit (x7)
