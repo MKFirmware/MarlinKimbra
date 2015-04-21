@@ -5374,8 +5374,8 @@ inline void gcode_M503() {
       manage_heater();
       manage_inactivity(true);
       lcd_update();
-      if (timer.check() && cnt <= 5) beep = true;
-      if (cnt >= 5 && !sleep) {
+      if (timer.check() && cnt <= FILAMENTCHANGE_PRINTEROFF) beep = true;
+      if (cnt >= FILAMENTCHANGE_PRINTEROFF && !sleep) {
         disable_all_heaters();
         disable_x();
         disable_y();
