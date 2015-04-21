@@ -204,11 +204,11 @@ void PID_autotune(float temp, int hotend, int ncycles)
        || hotend < 0
     #endif
   ) {
-    SERIAL_ECHOLN(MSG_PID_BAD_EXTRUDER_NUM);
+    ECHO_LM(ER, MSG_PID_BAD_EXTRUDER_NUM);
     return;
   }
 
-  SERIAL_ECHOLN(MSG_PID_AUTOTUNE_START);
+  ECHO_LM(OK, MSG_PID_AUTOTUNE_START);
 
   disable_all_heaters(); // switch off all heaters.
 
@@ -260,38 +260,43 @@ void PID_autotune(float temp, int hotend, int ncycles)
             bias = constrain(bias, 20, max_pow - 20);
             d = (bias > max_pow / 2) ? max_pow - 1 - bias : bias;
 
-            SERIAL_PROTOCOLPGM(MSG_BIAS); SERIAL_PROTOCOL(bias);
-            SERIAL_PROTOCOLPGM(MSG_D);    SERIAL_PROTOCOL(d);
-            SERIAL_PROTOCOLPGM(MSG_T_MIN);  SERIAL_PROTOCOL(min);
-            SERIAL_PROTOCOLPGM(MSG_T_MAX);  SERIAL_PROTOCOLLN(max);
+            ECHO_SMV(OK, MSG_BIAS, bias);
+            ECHO_MV(MSG_D, d);
+            ECHO_MV(MSG_T_MIN, min);
+            ECHO_MV(MSG_T_MAX, max);
             if (cycles > 2) {
               Ku = (4.0 * d) / (3.14159265 * (max - min) / 2.0);
               Tu = ((float)(t_low + t_high) / 1000.0);
-              SERIAL_PROTOCOLPGM(MSG_KU); SERIAL_PROTOCOL(Ku);
-              SERIAL_PROTOCOLPGM(MSG_TU); SERIAL_PROTOCOLLN(Tu);
+              ECHO_MV(MSG_KU, Ku);
+              ECHO_MV(MSG_TU, Tu);
               Kp_temp = 0.6 * Ku;
               Ki_temp = 2 * Kp_temp / Tu;
               Kd_temp = Kp_temp * Tu / 8;
-              SERIAL_PROTOCOLLNPGM(MSG_CLASSIC_PID);
-              SERIAL_PROTOCOLPGM(MSG_KP); SERIAL_PROTOCOLLN(Kp_temp);
-              SERIAL_PROTOCOLPGM(MSG_KI); SERIAL_PROTOCOLLN(Ki_temp);
-              SERIAL_PROTOCOLPGM(MSG_KD); SERIAL_PROTOCOLLN(Kd_temp);
+              
+              ECHO_M(MSG_CLASSIC_PID);
+              ECHO_MV(MSG_KP, Kp_temp);
+              ECHO_MV(MSG_KI, Ki_temp);
+              ECHO_EMV(MSG_KD, Kd_temp);
+              
               /*
               Kp = 0.33*Ku;
               Ki = Kp_temp / Tu;
               Kd = Kp_temp * Tu / 3;
-              SERIAL_PROTOCOLLNPGM(" Some overshoot ");
-              SERIAL_PROTOCOLPGM(" Kp: "); SERIAL_PROTOCOLLN(Kp_temp);
-              SERIAL_PROTOCOLPGM(" Ki: "); SERIAL_PROTOCOLLN(Ki_temp);
-              SERIAL_PROTOCOLPGM(" Kd: "); SERIAL_PROTOCOLLN(Kd_temp);
+              ECHO_SMV(DB," Some overshoot ");
+              ECHO_MV(" Kp: ", Kp_temp);
+              ECHO_MV(" Ki: ", Ki_temp);
+              ECHO_MV(" Kd: ", Kd_temp);
               Kp = 0.2 * Ku;
               Ki = 2 * Kp_temp / Tu;
               Kd = Kp_temp * Tu / 3;
-              SERIAL_PROTOCOLLNPGM(" No overshoot ");
-              SERIAL_PROTOCOLPGM(" Kp: "); SERIAL_PROTOCOLLN(Kp_temp);
-              SERIAL_PROTOCOLPGM(" Ki: "); SERIAL_PROTOCOLLN(Ki_temp);
-              SERIAL_PROTOCOLPGM(" Kd: "); SERIAL_PROTOCOLLN(Kd_temp);
+              ECHO_M(" No overshoot ");
+              ECHO_MV(" Kp: ", Kp_temp);
+              ECHO_MV(" Ki: ", Ki_temp);
+              ECHO_EMV(" Kd: ", Kd_temp);
               */
+            }
+            else {
+              ECHO_E;
             }
           }
           if (hotend < 0)
@@ -304,7 +309,7 @@ void PID_autotune(float temp, int hotend, int ncycles)
       }
     }
     if (input > temp + 20) {
-      SERIAL_PROTOCOLLNPGM(MSG_PID_TEMP_TOO_HIGH);
+      ECHO_LM(ER, MSG_PID_TEMP_TOO_HIGH);
       return;
     }
     // Every 2 seconds...
@@ -312,26 +317,24 @@ void PID_autotune(float temp, int hotend, int ncycles)
       int p;
       if (hotend < 0) {
         p = soft_pwm_bed;
-        SERIAL_PROTOCOLPGM(MSG_OK_B);
+        ECHO_SMV(OK, MSG_B, input);
+        ECHO_EMV(MSG_AT, p);
       }
       else {
         p = soft_pwm[hotend];
-        SERIAL_PROTOCOLPGM(MSG_OK_T);
+        ECHO_SMV(OK, MSG_T, input);
+        ECHO_EMV(MSG_AT, p);
       }
-
-      SERIAL_PROTOCOL(input);
-      SERIAL_PROTOCOLPGM(MSG_AT);
-      SERIAL_PROTOCOLLN(p);
 
       temp_ms = ms;
     } // every 2 seconds
     // Over 2 minutes?
     if (((ms - t1) + (ms - t2)) > (10L*60L*1000L*2L)) {
-      SERIAL_PROTOCOLLNPGM(MSG_PID_TIMEOUT);
+      ECHO_LM(ER, MSG_PID_TIMEOUT);
       return;
     }
     if (cycles > ncycles) {
-      SERIAL_PROTOCOLLNPGM(MSG_PID_AUTOTUNE_FINISHED);
+      ECHO_LM(OK, MSG_PID_AUTOTUNE_FINISHED);
       #ifdef PIDTEMP
         PID_PARAM(Kp, hotend) = Kp_temp;
         PID_PARAM(Ki, hotend) = scalePID_i(Ki_temp);
@@ -440,10 +443,11 @@ void checkExtruderAutoFans()
 //
 inline void _temp_error(int e, const char *msg1, const char *msg2) {
   if (IsRunning()) {
-    SERIAL_ERROR_START;
-    if (e >= 0) SERIAL_ERRORLN((int)e);
-    serialprintPGM(msg1);
-    MYSERIAL.write('\n');
+    ECHO_S(ER);
+    if (e >= 0) ECHO_EV(e);
+    else ECHO_EV(MSG_TEMP_BED);
+    PS_PGM(msg1);
+    ECHO_E;
     #ifdef ULTRA_LCD
       lcd_setalertstatuspgm(msg2);
     #endif
@@ -508,19 +512,12 @@ float get_pid_output(int e) {
     #endif //PID_OPENLOOP
 
     #ifdef PID_DEBUG
-      SERIAL_ECHO_START;
-      SERIAL_ECHO(MSG_PID_DEBUG);
-      SERIAL_ECHO(e);
-      SERIAL_ECHO(MSG_PID_DEBUG_INPUT);
-      SERIAL_ECHO(current_temperature[e]);
-      SERIAL_ECHO(MSG_PID_DEBUG_OUTPUT);
-      SERIAL_ECHO(pid_output);
-      SERIAL_ECHO(MSG_PID_DEBUG_PTERM);
-      SERIAL_ECHO(pTerm[e]);
-      SERIAL_ECHO(MSG_PID_DEBUG_ITERM);
-      SERIAL_ECHO(iTerm[e]);
-      SERIAL_ECHO(MSG_PID_DEBUG_DTERM);
-      SERIAL_ECHOLN(dTerm[e]);
+      ECHO_SMV(DB, " PID_DEBUG ", e);
+      ECHO_MV(": Input ", current_temperature[e]);
+      ECHO_MV(" Output ", pid_output);
+      ECHO_MV(" pTerm ", pTerm[e]);
+      ECHO_MV(" iTerm ", iTerm[e]);
+      ECHO_EMV(" dTerm ", dTerm[e]);
     #endif //PID_DEBUG
 
   #else /* PID off */
@@ -557,18 +554,12 @@ float get_pid_output(int e) {
     #endif // PID_OPENLOOP
 
     #ifdef PID_BED_DEBUG
-      SERIAL_ECHO_START;
-      SERIAL_ECHO(" PID_BED_DEBUG ");
-      SERIAL_ECHO(": Input ");
-      SERIAL_ECHO(current_temperature_bed);
-      SERIAL_ECHO(" Output ");
-      SERIAL_ECHO(pid_output);
-      SERIAL_ECHO(" pTerm ");
-      SERIAL_ECHO(pTerm_bed);
-      SERIAL_ECHO(" iTerm ");
-      SERIAL_ECHO(iTerm_bed);
-      SERIAL_ECHO(" dTerm ");
-      SERIAL_ECHOLN(dTerm_bed);
+      ECHO_SM(DB ," PID_BED_DEBUG ");
+      ECHO_MV(": Input ", current_temperature_bed);
+      ECHO_MV(" Output ", pid_output);
+      ECHO_MV(" pTerm ", pTerm_bed);
+      ECHO_MV(" iTerm ", iTerm_bed);
+      ECHO_EMV(" dTerm ", dTerm_bed);
     #endif //PID_BED_DEBUG
 
     return pid_output;
@@ -615,9 +606,8 @@ void manage_heater() {
       if (watchmillis[e] && ms > watchmillis[e] + WATCH_TEMP_PERIOD) {
         if (degHotend(e) < watch_start_temp[e] + WATCH_TEMP_INCREASE) {
           setTargetHotend(0, e);
+          ECHO_LM(ER, MSG_HEATING_FAILED);
           LCD_MESSAGEPGM(MSG_HEATING_FAILED_LCD);
-          SERIAL_ECHO_START;
-          SERIAL_ECHOLNPGM(MSG_HEATING_FAILED);
         }
         else {
           watchmillis[e] = 0;
@@ -707,9 +697,7 @@ static float analog2temp(int raw, uint8_t e) {
     if (e >= EXTRUDERS)
   #endif
     {
-      SERIAL_ERROR_START;
-      SERIAL_ERROR((int)e);
-      SERIAL_ERRORLNPGM(MSG_INVALID_EXTRUDER_NUM);
+      ECHO_LVM(ER, e, MSG_INVALID_EXTRUDER_NUM);
       kill();
       return 0.0;
     }
@@ -781,6 +769,9 @@ static float analog2tempBed(int raw) {
 /* Called to get the raw values into the the actual temperatures. The raw values are created in interrupt context,
     and this function is called from normal context as it is too slow to run in interrupts and will block the stepper routine otherwise */
 static void updateTemperaturesFromRawValues() {
+  static millis_t last_update = millis();
+  millis_t temp_last_update = millis();
+  millis_t from_last_update = temp_last_update - last_update;
   #ifdef HEATER_0_USES_MAX6675
     current_temperature_raw[0] = read_max6675();
   #endif
@@ -796,17 +787,22 @@ static void updateTemperaturesFromRawValues() {
   #endif
   #if HAS_POWER_CONSUMPTION_SENSOR
     static float watt_overflow = 0.0;
-    static millis_t last_power_update = millis();
-    millis_t temp_last_power_update = millis();
     power_consumption_meas = analog2power();
     //MYSERIAL.println(analog2current(),3);
-    watt_overflow += (power_consumption_meas * (temp_last_power_update - last_power_update)) / 3600000.0;
+    watt_overflow += (power_consumption_meas * from_last_update) / 3600000.0;
     if (watt_overflow >= 1.0) {
       power_consumption_hour++;
       watt_overflow--;
     }
-    last_power_update = temp_last_power_update;
   #endif
+  
+  static unsigned int second_overflow = 0;
+  second_overflow += from_last_update;
+  if(second_overflow >= 1000) {
+	printer_usage_seconds++;
+	second_overflow -= 1000;
+  }
+  last_update = temp_last_update;
   //Reset the watchdog after we know we have a temperature measurement.
   watchdog_reset();
 
@@ -1050,20 +1046,14 @@ void setWatch() {
     static float tr_target_temperature[EXTRUDERS+1] = { 0.0 };
 
     /*
-        SERIAL_ECHO_START;
-        SERIAL_ECHOPGM("Thermal Thermal Runaway Running. Heater ID: ");
-        if (heater_id < 0) SERIAL_ECHOPGM("bed"); else SERIAL_ECHOPGM(heater_id);
-        SERIAL_ECHOPGM(" ;  State:");
-        SERIAL_ECHOPGM(*state);
-        SERIAL_ECHOPGM(" ;  Timer:");
-        SERIAL_ECHOPGM(*timer);
-        SERIAL_ECHOPGM(" ;  Temperature:");
-        SERIAL_ECHOPGM(temperature);
-        SERIAL_ECHOPGM(" ;  Target Temp:");
-        SERIAL_ECHOPGM(target_temperature);
-        SERIAL_EOL;
+        ECHO_SM(DB, "Thermal Thermal Runaway Running. Heater ID: ");
+        if (heater_id < 0) ECHO_M("bed"); else ECHO_V(heater_id);
+        ECHO_MV(" ;  State:", *state);
+        ECHO_MV(" ;  Timer:", *timer);
+        ECHO_MV(" ;  Temperature:", temperature);
+        ECHO_EMV(" ;  Target Temp:", target_temperature);
     */
-
+    
     int heater_index = heater_id >= 0 ? heater_id : EXTRUDERS;
 
     // If the target temperature changes, restart
@@ -1096,9 +1086,8 @@ void setWatch() {
           *state = TRRunaway;
         break;
       case TRRunaway:
-        SERIAL_ERROR_START;
-        SERIAL_ERRORLNPGM(MSG_THERMAL_RUNAWAY_STOP);
-        if (heater_id < 0) SERIAL_ERRORLNPGM("bed"); else SERIAL_ERRORLN(heater_id);
+        ECHO_S(ER, MSG_THERMAL_RUNAWAY_STOP);
+        if (heater_id < 0) ECHO_EM(MSG_THERMAL_RUNAWAY_BED); else ECHO_EV(heater_id);
         LCD_ALERTMESSAGEPGM(MSG_THERMAL_RUNAWAY);
         disable_all_heaters();
         disable_all_steppers();
@@ -1578,10 +1567,9 @@ ISR(TIMER0_COMPB_vect) {
       temp_state = PrepareTemp_0;
       break;
 
-    // default:
-    //   SERIAL_ERROR_START;
-    //   SERIAL_ERRORLNPGM("Temp measurement error!");
-    //   break;
+    default:
+      ECHO_LM(ER, MSG_TEMP_READ_ERROR);
+      break;
   } // switch(temp_state)
 
   if (temp_count >= OVERSAMPLENR) { // 14 * 16 * 1/(16000000/64/256)
