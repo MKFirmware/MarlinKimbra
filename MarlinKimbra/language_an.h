@@ -151,6 +151,11 @@
   #define MSG_DELTA_CALIBRATE_CENTER        "Calibrate Center"
 #endif // DELTA
 
+#ifdef SCARA
+  #define MSG_XSCALE                        "X Scale"
+  #define MSG_YSCALE                        "Y Scale"
+#endif
+
 #define MSG_LASER                           "Laser Preset"
 #define MSG_CONFIG                          "Configuration"
 #define MSG_E_BOWDEN_LENGTH                 "Extrude " STRINGIFY(BOWDEN_LENGTH) "mm"

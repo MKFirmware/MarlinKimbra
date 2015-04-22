@@ -39,8 +39,7 @@ The current MarlinKimbra dev team consists of:
  - MagoKimbra - Alberto Cotronei (https://github.com/MagoKimbra)
 
 More features have been added by:
- - simone97 (https://github.com/simone97)
- -
+ - simone97 - Simone Primarosa (https://github.com/simone97)
 
 
 ## License
