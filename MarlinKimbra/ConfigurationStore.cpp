@@ -864,7 +864,6 @@ void ConfigSD_PrintSettings(bool forReplay) {
     }
     card.closeFile(false);
     config_readed = true;
-    config_last_update = millis();
   }
   
   int ConfigSD_KeyIndex(char *key) {    //At the moment a binary search algorithm is used for simplicity, if it will be necessary (Eg. tons of key), an hash search algorithm will be implemented.
