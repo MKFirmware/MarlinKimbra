@@ -811,6 +811,13 @@ void ConfigSD_PrintSettings(bool forReplay) {
 
 #endif //!DISABLE_M503
 
+/**
+ * Configuration on SD card
+ *
+ * Author: Simone Primarosa
+ *
+ */
+
 #if defined(SDSUPPORT) && defined(SD_SETTINGS)
   void ConfigSD_StoreSettings() {
     if(!IS_SD_INSERTED || card.isFileOpen() || card.sdprinting) return;
