@@ -135,15 +135,15 @@ void CardReader::initsd() {
   workDir = root;
   curDir = &root;
   
-  if (!workDir.openRoot(&volume)) {
+  /*if (!workDir.openRoot(&volume)) {
     ECHO_EM(MSG_SD_WORKDIR_FAIL);
-  }
+  }*/
 }
 
 void CardReader::setroot() {
-  if (!workDir.openRoot(&volume)) {
+  /*if (!workDir.openRoot(&volume)) {
     ECHO_EM(MSG_SD_WORKDIR_FAIL);
-  }
+  }*/
   workDir = root;
   curDir = &workDir;
 }
@@ -389,7 +389,11 @@ void CardReader::closeFile(bool store_location) {
  */
 
 void CardReader::parseKeyLine(char *key, char *value, int &len_k, int &len_v) {
-  if (!cardOK || !isFileOpen()) return;
+  if (!cardOK || !isFileOpen()) {
+    key[0] = value[0] = '\0';
+    len_k = len_v = 0;
+    return;
+  }
   int ln_buf = 0;
   char ln_char;
   bool ln_space = false, ln_ignore = false, key_found = false;
@@ -420,10 +424,8 @@ void CardReader::parseKeyLine(char *key, char *value, int &len_k, int &len_v) {
     ln_buf++;
   }
   if(!key_found) { //definitly there isn't no more key that can be readed in the file
-    key[0] = '\0';
-    value[0] = '\0';
-    len_k = 0;
-    len_v = 0;
+    key[0] = value[0] = '\0';
+    len_k = len_v = 0;
     return;
   }
   ln_buf = 0;
