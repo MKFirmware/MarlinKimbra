@@ -152,8 +152,8 @@
 #endif // DELTA
 
 #ifdef SCARA
-  #define MSG_XSCALE "X Scale"
-  #define MSG_YSCALE "Y Scale"
+  #define MSG_XSCALE                        "X Scale"
+  #define MSG_YSCALE                        "Y Scale"
 #endif
 
 #define MSG_LASER                           "Laser Preset"
