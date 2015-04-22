@@ -176,7 +176,7 @@
 #define MSG_ENDSTOP_Y                        " Y:"
 #define MSG_ENDSTOP_Z                        " Z:"
 #define MSG_ENDSTOP_E                        " E:"
-#define MSG_ENDSTOP_ZP                        " ZP:"
+#define MSG_ENDSTOP_ZP                       " ZP:"
 
 #define MSG_ERR_EEPROM_WRITE                "Error writing to EEPROM!"
 
