@@ -6610,7 +6610,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
         if(degTargetHotend(active_extruder) < IDLE_OOZING_MINTEMP) {
           IDLE_OOZING_retract(false);
         }
-        else if((millis() - axis_last_activity) >  IDLE_OOZING_SECONDS*1000) {
+        else if((millis() - axis_last_activity) >  IDLE_OOZING_SECONDS*1000UL) {
           IDLE_OOZING_retract(true);
         }
       }
@@ -6623,11 +6623,12 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
         ConfigSD_RetrieveSettings(true);
         ConfigSD_StoreSettings();
       }
-      else if((millis() - config_last_update) >  SD_CFG_SECONDS*1000) {
+      else if((millis() - config_last_update) >  SD_CFG_SECONDS*1000UL) {
         ConfigSD_StoreSettings();
       }
     }
   #endif
+  
   #ifdef TEMP_STAT_LEDS
     handle_status_leds();
   #endif
