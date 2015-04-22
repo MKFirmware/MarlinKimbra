@@ -1804,7 +1804,7 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
     ECHO_EMV(" C:",tower_adj[2]);
 
     ECHO_SV(DB, bed_level_x, 4);
-    ECHO_V("\t\t", bed_level_y, 4);
+    ECHO_MV("\t\t", bed_level_y, 4);
     ECHO_MV("\t\tI:",tower_adj[3]);
     ECHO_MV(" J:",tower_adj[4]);
     ECHO_EMV(" K:",tower_adj[5]);
@@ -1812,7 +1812,7 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
     ECHO_SMV(DB, "\t", bed_level_oz, 4);
     ECHO_EMV("\t\t\tDelta Radius: ", delta_radius, 4);
 
-    ECHO_LM(DB, "X-Tower\t\tY-Tower\t\tDiag Rod: ", delta_diagonal_rod, 4);
+    ECHO_LMV(DB, "X-Tower\t\tY-Tower\t\tDiag Rod: ", delta_diagonal_rod, 4);
   }
 
   void save_carriage_positions(int position_num) {
@@ -1938,8 +1938,8 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
     float h_endstop = -100, l_endstop = 100;
     float probe_error, ftemp;
 
-    ECHO_SMV(OK,MSG_DELTA_AUTO_CALIBRATION1, ac_prec, 3);
-    ECHO_EMV(MSG_DELTA_AUTO_CALIBRATION2, iterations);
+    ECHO_SMV(OK,"Starting Auto Calibration..Calibration precision: +/- ", ac_prec, 3);
+    ECHO_EMV("mm Total Iteration: ", iterations);
     
     LCD_MESSAGEPGM("Auto Calibration...");
 
@@ -1947,7 +1947,7 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
       delta_diagonal_rod = code_value();
       adj_dr_allowed = false;
       ECHO_SMV(DB, "Using diagional rod length: ", delta_diagonal_rod);
-      ECHO_EM(DB, "mm (will not be adjusted)");
+      ECHO_EM("mm (will not be adjusted)");
     }
 
     // First Check for control endstop
@@ -3344,11 +3344,11 @@ inline void gcode_G28(boolean home_x = false, boolean home_y = false) {
 
       deploy_z_probe();
       probe_value = probe_bed(x, y);
-      ECHO_SMV(BD, "Bed Z-Height at X:", x);
+      ECHO_SMV(DB, "Bed Z-Height at X:", x);
       ECHO_MV(" Y:", y);
       ECHO_EMV(" = ", probe_value, 4);
 
-      ECHO_SMV(BD, "Carriage Positions: [", saved_position[X_AXIS]);
+      ECHO_SMV(DB, "Carriage Positions: [", saved_position[X_AXIS]);
       ECHO_MV(", ", saved_position[Y_AXIS]);
       ECHO_MV(", ", saved_position[Z_AXIS]);
       ECHO_EM("]");
@@ -5039,7 +5039,7 @@ inline void gcode_M400() { st_synchronize(); }
    * M407: Get measured filament diameter on serial output
    */
   inline void gcode_M407() {
-    ECHO_LM(OK, "Filament dia (measured mm):", filament_width_meas);   
+    ECHO_LMV(OK, "Filament dia (measured mm):", filament_width_meas);   
   }
 
 #endif // FILAMENT_SENSOR
@@ -6205,9 +6205,7 @@ void prepare_move() {
       //ECHO_MV("delta[Y_AXIS]=", delta[Y_AXIS]);
       //ECHO_EMV("delta[Z_AXIS]=", delta[Z_AXIS]);
 
-      plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS],
-        destination[E_AXIS], feedrate*feedrate_multiplier/60/100.0,
-        active_extruder);
+      plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], destination[E_AXIS], feedrate*feedrate_multiplier/60/100.0, active_extruder, active_driver);
     }
 
   #endif // SCARA
