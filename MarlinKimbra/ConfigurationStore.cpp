@@ -834,7 +834,7 @@ void ConfigSD_PrintSettings(bool forReplay) {
     config_last_update = millis();
   }
   void ConfigSD_RetrieveSettings(bool addValue) {
-    if(!IS_SD_INSERTED || card.isFileOpen() || card.sdprinting) return;
+    if(!IS_SD_INSERTED || card.isFileOpen() || card.sdprinting || !card.cardOK) return;
     char key[CFG_SD_MAX_KEY_LEN], value[CFG_SD_MAX_VALUE_LEN];
     int k_idx;
     int k_len, v_len;
