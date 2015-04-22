@@ -697,6 +697,13 @@ void setup() {
 
   // loads data from EEPROM if available else uses defaults (and resets step acceleration rate)
   Config_RetrieveSettings();
+  
+  // loads custom configuration from SDCARD if available else uses defaults
+  #if defined(SDSUPPORT) && defined(SD_SETTINGS)
+    ConfigSD_ResetDefault(); //this reset variable to default value as we can't load in the setup for different reason. Will load the value in the loop()
+  #else
+    ConfigSD_RetrieveSettings();
+  #endif
 
   tp_init();    // Initialize temperature loop
   plan_init();  // Initialize planner;
@@ -705,18 +712,6 @@ void setup() {
   setup_photpin();
   setup_laserbeampin();   // Initialize Laserbeam pin
   servo_init();
-  #ifdef SDSUPPORT
-    card.initsd();
-  #endif
-  
-  // loads custom configuration from SDCARD if available else uses defaults
-  #ifdef SDSTUPPORT
-    if(!IS_SD_INSERTED) ConfigSD_ResetDefault();
-    else
-  #endif
-  {
-    ConfigSD_RetrieveSettings();
-  }
   
   lcd_init();
   _delay_ms(1000);  // wait 1sec to display the splash screen
@@ -6625,11 +6620,14 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
   #endif
   
   #if defined(SDSUPPORT) && defined(SD_SETTINGS)
-    if(!config_readed) {
-      ConfigSD_RetrieveSettings(true);
-    }
-    else if((millis() - config_last_update) >  SD_CFG_SECONDS*1000) {
-      ConfigSD_StoreSettings();
+    if(IS_SD_INSERTED && !IS_SD_PRINTING) {
+      if(!config_readed) {
+        ConfigSD_RetrieveSettings(true);
+        ConfigSD_StoreSettings();
+      }
+      else if((millis() - config_last_update) >  SD_CFG_SECONDS*1000) {
+        ConfigSD_StoreSettings();
+      }
     }
   #endif
   #ifdef TEMP_STAT_LEDS
