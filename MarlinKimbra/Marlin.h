@@ -294,7 +294,7 @@ extern int fanSpeed;
 #endif
 
 #if defined(SDSUPPORT) && defined(SD_SETTINGS)
-  extern unsigned long config_last_update;
+  extern millis_t config_last_update;
   extern bool config_readed;
 #endif
 
