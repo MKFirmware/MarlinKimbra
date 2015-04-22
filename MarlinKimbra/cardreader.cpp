@@ -381,6 +381,13 @@ void CardReader::closeFile(bool store_location) {
   }
 }
 
+/**
+ * File parser for KEY->VALUE format from files
+ *
+ * Author: Simone Primarosa
+ *
+ */
+
 void CardReader::parseKeyLine(char *key, char *value, int &len_k, int &len_v) {
   if (!cardOK || !isFileOpen()) return;
   int ln_buf = 0;
