@@ -42,7 +42,7 @@
 #define Z_PROBE_DEPLOY_END_LOCATION {0, 0, 30, 0}     // X, Y, Z, E end location for z-probe deployment sequence
 #define Z_PROBE_RETRACT_START_LOCATION {0, 0, 30, 0}  // X, Y, Z, E start location for z-probe retract sequence
 #define Z_PROBE_RETRACT_END_LOCATION {0, 0, 30, 0}    // X, Y, Z, E end location for z-probe retract sequence
-#define Z_RAISE_BETWEEN_PROBINGS 1                    // How much the extruder will be raised when travelling from between next probing points
+#define Z_RAISE_BETWEEN_PROBINGS 2                    // How much the extruder will be raised when travelling from between next probing points
 #define AUTOLEVEL_GRID 24                             // Distance between autolevel Z probing points, should be less than print surface radius/3.
 
 //===========================================================================
