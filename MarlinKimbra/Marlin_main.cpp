@@ -3942,7 +3942,7 @@ inline void gcode_M42() {
       sigma = sqrt(sum / (n + 1));
 
       if (verbose_level > 1) {
-        ECHO_SV(n+1);
+        ECHO_V(n+1);
         ECHO_MV(" of ", n_samples);
         ECHO_MV("   z: ", current_position[Z_AXIS], 6);
         if (verbose_level > 2) {
@@ -3971,10 +3971,10 @@ inline void gcode_M42() {
     // enable_endstops(true);
 
     if (verbose_level > 0) {
-      ECHO_LMV("Mean: ",mean, 6);
+      ECHO_EMV("Mean: ",mean, 6);
     }
 
-    ECHO_LMV("Standard Deviation: ", sigma, 6);
+    ECHO_EMV("Standard Deviation: ", sigma, 6);
   }
 
 #endif // ENABLE_AUTO_BED_LEVELING && Z_PROBE_REPEATABILITY_TEST
@@ -5638,8 +5638,8 @@ inline void gcode_T() {
               }
             #endif // E0E1_CHOICE_PIN E0E2_CHOICE_PIN E1E3_CHOICE_PIN
             active_extruder = target_extruder;
-            ECHO_LM(DB, MSG_ACTIVE_DRIVER, active_driver);
-            ECHO_LM(DB, MSG_ACTIVE_EXTRUDER, active_extruder);
+            ECHO_LMV(DB, MSG_ACTIVE_DRIVER, active_driver);
+            ECHO_LMV(DB, MSG_ACTIVE_EXTRUDER, active_extruder);
           #elif defined(NPR2)
             st_synchronize(); // Finish all movement
             if (old_color == 99)
