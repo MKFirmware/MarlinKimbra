@@ -117,7 +117,7 @@ matrix_3x3 matrix_3x3::transpose(matrix_3x3 original) {
 }
 
 void matrix_3x3::debug(const char title[]) {
-  ECHO_SV(DB, title);
+  ECHO_LV(DB, title);
   int count = 0;
   for(int i=0; i<3; i++) {
     for(int j=0; j<3; j++) {
@@ -126,7 +126,7 @@ void matrix_3x3::debug(const char title[]) {
       ECHO_C(' ');
       count++;
     }
-    ECHO_E;
+    ECHO_LM(DB, " ");
   }
 }
 

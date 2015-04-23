@@ -3202,6 +3202,7 @@ inline void gcode_G28(boolean home_x = false, boolean home_y = false) {
         ECHO_LM(DB, "|...Front...|");
         ECHO_LM(DB, "+-----------+");
 
+        ECHO_LM(DB, " ");
         for (int yy = auto_bed_leveling_grid_points - 1; yy >= 0; yy--) {
           for (int xx = 0; xx < auto_bed_leveling_grid_points; xx++) {
             int ind = yy * auto_bed_leveling_grid_points + xx;
@@ -3210,7 +3211,7 @@ inline void gcode_G28(boolean home_x = false, boolean home_y = false) {
             else ECHO_M(" ");
             ECHO_V(diff, 5);
           } // xx
-          ECHO_E;
+          ECHO_LM(DB, " ");
         } // yy
         ECHO_E;
 
@@ -3238,7 +3239,7 @@ inline void gcode_G28(boolean home_x = false, boolean home_y = false) {
     #endif // !AUTO_BED_LEVELING_GRID
 
     if (verbose_level > 0)
-      plan_bed_level_matrix.debug(" \n\nBed Level Correction Matrix:");
+      plan_bed_level_matrix.debug("Bed Level Correction Matrix:");
 
     if (!dryrun) {
       // Correct the Z height difference from z-probe position and hotend tip position.
@@ -3270,8 +3271,8 @@ inline void gcode_G28(boolean home_x = false, boolean home_y = false) {
 
       run_z_probe();
       ECHO_SM(DB, "Bed");
-      ECHO_M(" X: ", current_position[X_AXIS] + 0.0001);
-      ECHO_M(" Y: ", current_position[Y_AXIS] + 0.0001);
+      ECHO_MV(" X: ", current_position[X_AXIS] + 0.0001);
+      ECHO_MV(" Y: ", current_position[Y_AXIS] + 0.0001);
       ECHO_EMV(" Z: ", current_position[Z_AXIS] + 0.0001);
 
       clean_up_after_endstop_move();
