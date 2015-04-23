@@ -2645,12 +2645,12 @@ inline void gcode_G28(boolean home_x = false, boolean home_y = false) {
 
   feedrate = 0.0;
 
-  bool  homeX = code_seen(axis_codes[X_AXIS]),
-        homeY = code_seen(axis_codes[Y_AXIS]),
+  bool  homeX = code_seen(axis_codes[X_AXIS]) || home_x,
+        homeY = code_seen(axis_codes[Y_AXIS]) || home_y,
         homeZ = code_seen(axis_codes[Z_AXIS]),
         homeE = code_seen(axis_codes[E_AXIS]);
         
-  home_all_axis = !(homeX || homeY || homeZ || homeE || home_x || home_y) || (homeX && homeY && homeZ);
+  home_all_axis = !(homeX || homeY || homeZ || homeE) || (homeX && homeY && homeZ);
 
   #ifdef NPR2
     if((home_all_axis) || (code_seen(axis_codes[E_AXIS]))) {
@@ -5097,10 +5097,11 @@ inline void gcode_M503() {
     for (int i=0; i < NUM_AXIS; i++)
       target[i] = lastpos[i] = current_position[i];
 
-    #define BASICPLAN plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], fr60, active_extruder, active_driver);
     #ifdef DELTA
+      #define BASICPLAN plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], target[E_AXIS], fr60, active_extruder, active_driver);
       #define RUNPLAN calculate_delta(target); BASICPLAN
     #else
+      #define BASICPLAN plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], fr60, active_extruder, active_driver);
       #define RUNPLAN BASICPLAN
     #endif
 
