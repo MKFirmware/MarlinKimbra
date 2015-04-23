@@ -46,9 +46,11 @@
 //The M105 command return, besides traditional information, the ADC value read from temperature sensors.
 //#define SHOW_TEMP_ADC_VALUES
 
-//  extruder idle oozing prevention
-//if the extruder motor is idle for more than SECONDS, and the temperature over MINTEMP, some filament is retracted. The filament retracted is re-added before the next extrusion
-//or when the target temperature is less than EXTRUDE_MINTEMP and the actual temperature is greater than IDLE_OOZING_MINTEMP and less than IDLE_OOZING_FEEDRATE
+//extruder idle oozing prevention
+//if the extruder motor is idle for more than SECONDS, and the temperature over MINTEMP,
+//some filament is retracted. The filament retracted is re-added before the next extrusion
+//or when the target temperature is less than EXTRUDE_MINTEMP and the actual temperature
+//is greater than IDLE_OOZING_MINTEMP and less than IDLE_OOZING_FEEDRATE
 //#define IDLE_OOZING_PREVENT
 #define IDLE_OOZING_MINTEMP           EXTRUDE_MINTEMP + 5
 #define IDLE_OOZING_MAXTEMP           IDLE_OOZING_MINTEMP + 5

@@ -45,78 +45,7 @@ typedef unsigned long millis_t;
   #define analogInputToDigitalPin(p) ((p) + 0xA0)
 #endif
 
-#ifdef AT90USB
-  #include "HardwareSerial.h"
-#endif
-
-#ifndef __SAM3X8E__
-  #include "MarlinSerial.h"
-#endif
-
-#ifndef cbi
-  #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
-#endif
-#ifndef sbi
-  #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
-#endif
-
-#include "WString.h"
-
-#ifdef AT90USB
-  #ifdef BTENABLED
-    #define MYSERIAL bt
-  #else
-    #define MYSERIAL Serial
-  #endif // BTENABLED
-#else
-  #ifdef __SAM3X8E__
-    #define MYSERIAL Serial
-  #else
-    #define MYSERIAL MSerial
-  #endif
-#endif
-
-#define SERIAL_CHAR(x) MYSERIAL.write(x)
-#define SERIAL_EOL SERIAL_CHAR('\n')
-
-#define SERIAL_PROTOCOLCHAR(x) SERIAL_CHAR(x)
-#define SERIAL_PROTOCOL(x) MYSERIAL.print(x)
-#define SERIAL_PROTOCOL_F(x,y) MYSERIAL.print(x,y)
-#define SERIAL_PROTOCOLPGM(x) serialprintPGM(PSTR(x))
-#define SERIAL_PROTOCOLLN(x) do{ MYSERIAL.print(x),MYSERIAL.write('\n'); }while(0)
-#define SERIAL_PROTOCOLLNPGM(x) do{ serialprintPGM(PSTR(x)),MYSERIAL.write('\n'); }while(0)
-
-
-extern const char errormagic[] PROGMEM;
-extern const char echomagic[] PROGMEM;
-
-#define SERIAL_ERROR_START serialprintPGM(errormagic)
-#define SERIAL_ERROR(x) SERIAL_PROTOCOL(x)
-#define SERIAL_ERRORPGM(x) SERIAL_PROTOCOLPGM(x)
-#define SERIAL_ERRORLN(x) SERIAL_PROTOCOLLN(x)
-#define SERIAL_ERRORLNPGM(x) SERIAL_PROTOCOLLNPGM(x)
-
-#define SERIAL_ECHO_START serialprintPGM(echomagic)
-#define SERIAL_ECHO(x) SERIAL_PROTOCOL(x)
-#define SERIAL_ECHOPGM(x) SERIAL_PROTOCOLPGM(x)
-#define SERIAL_ECHOLN(x) SERIAL_PROTOCOLLN(x)
-#define SERIAL_ECHOLNPGM(x) SERIAL_PROTOCOLLNPGM(x)
-
-#define SERIAL_ECHOPAIR(name,value) do{ serial_echopair_P(PSTR(name),(value)); }while(0)
-
-void serial_echopair_P(const char *s_P, float v);
-void serial_echopair_P(const char *s_P, double v);
-void serial_echopair_P(const char *s_P, unsigned long v);
-
-
-// Things to write to serial from Program memory. Saves 400 to 2k of RAM.
-FORCE_INLINE void serialprintPGM(const char *str) {
-  char ch;
-  while ((ch = pgm_read_byte(str))) {
-    MYSERIAL.write(ch);
-    str++;
-  }
-}
+#include "Comunication.h"
 
 void get_command();
 void process_commands();
@@ -311,6 +240,8 @@ extern bool axis_known_position[3];
 extern float lastpos[4];
 extern float zprobe_zoffset;
 
+extern unsigned long printer_usage_seconds;  //this can old about 136 year before go overflow. If you belive that you can live more than this please contact me.
+
 #ifdef PREVENT_DANGEROUS_EXTRUDE
   extern float extrude_min_temp;
 #endif
@@ -360,6 +291,11 @@ extern int fanSpeed;
 
 #ifdef LASERBEAM
   extern int laser_ttl_modulation;
+#endif
+
+#if defined(SDSUPPORT) && defined(SD_SETTINGS)
+  extern millis_t config_last_update;
+  extern bool config_readed;
 #endif
 
 extern millis_t print_job_start_ms;

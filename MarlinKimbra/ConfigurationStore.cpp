@@ -14,10 +14,10 @@
  *
  */
 
-#define EEPROM_VERSION "V20"
+#define EEPROM_VERSION "V21"
 
 /**
- * V20 EEPROM Layout:
+ * V21 EEPROM Layout:
  *
  *  ver
  *  axis_steps_per_unit (x7)
@@ -92,7 +92,6 @@
  *
  *  idleoozing_enabled
  *
- *  power_consumption_hour
  *
  *
  */
@@ -101,6 +100,7 @@
 #include "planner.h"
 #include "temperature.h"
 #include "ultralcd.h"
+#include "cardreader.h"
 #include "ConfigurationStore.h"
 
 void _EEPROM_writeData(int &pos, uint8_t* value, uint8_t size) {
@@ -109,8 +109,7 @@ void _EEPROM_writeData(int &pos, uint8_t* value, uint8_t size) {
     eeprom_write_byte((unsigned char*)pos, *value);
     c = eeprom_read_byte((unsigned char*)pos);
     if (c != *value) {
-      SERIAL_ECHO_START;
-      SERIAL_ECHOLNPGM(MSG_ERR_EEPROM_WRITE);
+      ECHO_LM(ER, MSG_ERR_EEPROM_WRITE);
     }
     pos++;
     value++;
@@ -260,18 +259,13 @@ void Config_StoreSettings() {
     EEPROM_WRITE_VAR(i, idleoozing_enabled);
   #endif
 
-  #if defined(POWER_CONSUMPTION) && defined(STORE_CONSUMPTION)
-    EEPROM_WRITE_VAR(i, power_consumption_hour);
-  #endif
-
   char ver2[4] = EEPROM_VERSION;
   int j = EEPROM_OFFSET;
   EEPROM_WRITE_VAR(j, ver2); // validate data
 
   // Report storage size
-  SERIAL_ECHO_START;
-  SERIAL_ECHOPAIR("Settings Stored (", (unsigned long)i);
-  SERIAL_ECHOLNPGM(" bytes)");
+  ECHO_SMV(DB, "Settings Stored (", i);
+  ECHO_EM(" bytes)");
 }
 
 void Config_RetrieveSettings() {
@@ -280,7 +274,6 @@ void Config_RetrieveSettings() {
   char stored_ver[4];
   char ver[4] = EEPROM_VERSION;
   EEPROM_READ_VAR(i, stored_ver); //read stored version
-  //  SERIAL_ECHOLN("Version: [" << ver << "] Stored version: [" << stored_ver << "]");
 
   if (strncmp(ver, stored_ver, 3) != 0) {
     Config_ResetDefault();
@@ -419,18 +412,13 @@ void Config_RetrieveSettings() {
       EEPROM_READ_VAR(i, idleoozing_enabled);
     #endif
 
-    #if defined(POWER_CONSUMPTION) && defined(STORE_CONSUMPTION)
-      EEPROM_READ_VAR(i, power_consumption_hour);
-    #endif
-
     // Call updatePID (similar to when we have processed M301)
     updatePID();
 
     // Report settings retrieved and length
-    SERIAL_ECHO_START;
-    SERIAL_ECHO(ver);
-    SERIAL_ECHOPAIR(" stored settings retrieved (", (unsigned long)i);
-    SERIAL_ECHOLNPGM(" bytes)");
+    ECHO_SV(DB, ver);
+    ECHO_MV(" stored settings retrieved (", i);
+    ECHO_EM(" bytes)");
   }
 
   #ifdef EEPROM_CHITCHAT
@@ -567,12 +555,15 @@ void Config_ResetDefault() {
     idleoozing_enabled = true;
   #endif
 
-  #if defined(POWER_CONSUMPTION) && defined(STORE_CONSUMPTION)
-    power_consumption_hour = 0;
-  #endif
+  ECHO_LM(DB, "Hardcoded Default Settings Loaded");
+}
 
-  SERIAL_ECHO_START;
-  SERIAL_ECHOLNPGM("Hardcoded Default Settings Loaded");
+void ConfigSD_ResetDefault() {
+  #ifdef POWER_CONSUMPTION
+   power_consumption_hour = 0;
+  #endif
+  printer_usage_seconds = 0;
+  ECHO_LM(DB, "Hardcoded SD Default Settings Loaded");
 }
 
 #ifndef DISABLE_M503
@@ -581,303 +572,317 @@ void Config_PrintSettings(bool forReplay) {
   // Always have this function, even with EEPROM_SETTINGS disabled, the current values will be shown
 
   if (!forReplay) {
-    SERIAL_ECHOLNPGM("Steps per unit:");
-    SERIAL_ECHO_START;
+    ECHO_LM(DB, "Steps per unit:");
   }
-  SERIAL_ECHOPAIR("  M92 X", axis_steps_per_unit[X_AXIS]);
-  SERIAL_ECHOPAIR(" Y", axis_steps_per_unit[Y_AXIS]);
-  SERIAL_ECHOPAIR(" Z", axis_steps_per_unit[Z_AXIS]);
-  SERIAL_ECHOPAIR(" E0 S", axis_steps_per_unit[E_AXIS + 0]);
+  ECHO_SMV(DB, "  M92 X", axis_steps_per_unit[X_AXIS]);
+  ECHO_MV(" Y", axis_steps_per_unit[Y_AXIS]);
+  ECHO_MV(" Z", axis_steps_per_unit[Z_AXIS]);
+  ECHO_MV(" E0 S", axis_steps_per_unit[E_AXIS + 0]);
   #if EXTRUDERS > 1
-    SERIAL_ECHOPAIR(" E1 S", axis_steps_per_unit[E_AXIS + 1]);
+    ECHO_MV(" E1 S", axis_steps_per_unit[E_AXIS + 1]);
     #if EXTRUDERS > 2
-      SERIAL_ECHOPAIR(" E2 S", axis_steps_per_unit[E_AXIS + 2]);
+      ECHO_MV(" E2 S", axis_steps_per_unit[E_AXIS + 2]);
       #if EXTRUDERS > 3
-        SERIAL_ECHOPAIR(" E3 S", axis_steps_per_unit[E_AXIS + 3]);
+        ECHO_MV(" E3 S", axis_steps_per_unit[E_AXIS + 3]);
       #endif //EXTRUDERS > 3
     #endif //EXTRUDERS > 2
   #endif //EXTRUDERS > 1
-  SERIAL_EOL;
-
-  SERIAL_ECHO_START;
+  ECHO_E;
 
   #ifdef SCARA
     if (!forReplay) {
-      SERIAL_ECHOLNPGM("Scaling factors:");
-      SERIAL_ECHO_START;
+      ECHO_LM(DB, "Scaling factors:");
     }
-    SERIAL_ECHOPAIR("  M365 X", axis_scaling[X_AXIS]);
-    SERIAL_ECHOPAIR(" Y", axis_scaling[Y_AXIS]);
-    SERIAL_ECHOPAIR(" Z", axis_scaling[Z_AXIS]);
-    SERIAL_EOL;
-    SERIAL_ECHO_START;
+    ECHO_SMV(DB, "  M365 X", axis_scaling[X_AXIS]);
+    ECHO_MV(" Y", axis_scaling[Y_AXIS]);
+    ECHO_EMV(" Z", axis_scaling[Z_AXIS]);
   #endif // SCARA
 
   if (!forReplay) {
-    SERIAL_ECHOLNPGM("Maximum feedrates (mm/s):");
-    SERIAL_ECHO_START;
+    ECHO_LM(DB, "Maximum feedrates (mm/s):");
   }
-  SERIAL_ECHOPAIR("  M203 X", max_feedrate[X_AXIS]);
-  SERIAL_ECHOPAIR(" Y", max_feedrate[Y_AXIS] ); 
-  SERIAL_ECHOPAIR(" Z", max_feedrate[Z_AXIS] ); 
-  SERIAL_ECHOPAIR(" E0 S", max_feedrate[E_AXIS + 0]);
+  ECHO_SMV(DB, "  M203 X", max_feedrate[X_AXIS]);
+  ECHO_MV(" Y", max_feedrate[Y_AXIS] ); 
+  ECHO_MV(" Z", max_feedrate[Z_AXIS] ); 
+  ECHO_MV(" E0 S", max_feedrate[E_AXIS + 0]);
   #if EXTRUDERS > 1
-    SERIAL_ECHOPAIR(" E1 S", max_feedrate[E_AXIS + 1]);
+    ECHO_MV(" E1 S", max_feedrate[E_AXIS + 1]);
     #if EXTRUDERS > 2
-      SERIAL_ECHOPAIR(" E2 S", max_feedrate[E_AXIS + 2]);
+      ECHO_MV(" E2 S", max_feedrate[E_AXIS + 2]);
       #if EXTRUDERS > 3
-        SERIAL_ECHOPAIR(" E3 S", max_feedrate[E_AXIS + 3]);
+        ECHO_MV(" E3 S", max_feedrate[E_AXIS + 3]);
       #endif //EXTRUDERS > 3
     #endif //EXTRUDERS > 2
   #endif //EXTRUDERS > 1
-  SERIAL_EOL;
+  ECHO_E;
 
-  SERIAL_ECHO_START;
   if (!forReplay) {
-    SERIAL_ECHOLNPGM("Retraction Steps per unit:");
-    SERIAL_ECHO_START;
+    ECHO_LM(DB, "Retraction Steps per unit:");
   }
-  SERIAL_ECHOPAIR("  E0 ",max_retraction_feedrate[0]);
+  ECHO_SMV(DB, "  E0 ",max_retraction_feedrate[0]);
   #if EXTRUDERS > 1
-    SERIAL_ECHOPAIR(" E1 ", max_retraction_feedrate[1]);
+    ECHO_MV(" E1 ", max_retraction_feedrate[1]);
     #if EXTRUDERS > 2
-      SERIAL_ECHOPAIR(" E2 ", max_retraction_feedrate[2]);
+      ECHO_MV(" E2 ", max_retraction_feedrate[2]);
       #if EXTRUDERS > 3
-        SERIAL_ECHOPAIR(" E3 ", max_retraction_feedrate[3]);
+        ECHO_MV(" E3 ", max_retraction_feedrate[3]);
       #endif //EXTRUDERS > 3
     #endif //EXTRUDERS > 2
   #endif //EXTRUDERS > 1
-  SERIAL_EOL;
+  ECHO_E;
 
-  SERIAL_ECHO_START;
   if (!forReplay) {
-    SERIAL_ECHOLNPGM("Maximum Acceleration (mm/s2):");
-    SERIAL_ECHO_START;
+    ECHO_LM(DB, "Maximum Acceleration (mm/s2):");
   }
-  SERIAL_ECHOPAIR("  M201 X", max_acceleration_units_per_sq_second[X_AXIS] );
-  SERIAL_ECHOPAIR(" Y", max_acceleration_units_per_sq_second[Y_AXIS] );
-  SERIAL_ECHOPAIR(" Z", max_acceleration_units_per_sq_second[Z_AXIS] );
-  SERIAL_ECHOPAIR(" E0 S", max_acceleration_units_per_sq_second[E_AXIS]);
+  ECHO_SMV(DB, "  M201 X", max_acceleration_units_per_sq_second[X_AXIS] );
+  ECHO_MV(" Y", max_acceleration_units_per_sq_second[Y_AXIS] );
+  ECHO_MV(" Z", max_acceleration_units_per_sq_second[Z_AXIS] );
+  ECHO_MV(" E0 S", max_acceleration_units_per_sq_second[E_AXIS]);
   #if EXTRUDERS > 1
-    SERIAL_ECHOPAIR(" E1 S", max_acceleration_units_per_sq_second[E_AXIS+1]);
+    ECHO_MV(" E1 S", max_acceleration_units_per_sq_second[E_AXIS+1]);
     #if EXTRUDERS > 2
-      SERIAL_ECHOPAIR(" E2 S", max_acceleration_units_per_sq_second[E_AXIS+2]);
+      ECHO_MV(" E2 S", max_acceleration_units_per_sq_second[E_AXIS+2]);
       #if EXTRUDERS > 3
-        SERIAL_ECHOPAIR(" E3 S", max_acceleration_units_per_sq_second[E_AXIS+3]);
+        ECHO_MV(" E3 S", max_acceleration_units_per_sq_second[E_AXIS+3]);
       #endif //EXTRUDERS > 3
     #endif //EXTRUDERS > 2
   #endif //EXTRUDERS > 1
-
-  SERIAL_EOL;
-  SERIAL_ECHO_START;
+  ECHO_E;
+  
   if (!forReplay) {
-    SERIAL_ECHOLNPGM("Accelerations: P=printing, R=retract and T=travel");
-    SERIAL_ECHO_START;
+    ECHO_LM(DB, "Accelerations: P=printing, R=retract and T=travel");
   }
-  SERIAL_ECHOPAIR("  M204 P", acceleration );
-  SERIAL_ECHOPAIR(" R", retract_acceleration);
-  SERIAL_ECHOPAIR(" T", travel_acceleration);
-  SERIAL_EOL;
+  ECHO_SMV(DB,"  M204 P", acceleration );
+  ECHO_MV(" R", retract_acceleration);
+  ECHO_EMV(" T", travel_acceleration);
 
-  SERIAL_ECHO_START;
   if (!forReplay) {
-    SERIAL_ECHOLNPGM("Advanced variables: S=Min feedrate (mm/s), T=Min travel feedrate (mm/s), B=minimum segment time (ms), X=maximum XY jerk (mm/s),  Z=maximum Z jerk (mm/s),  E=maximum E jerk (mm/s)");
-    SERIAL_ECHO_START;
+    ECHO_LM(DB, "Advanced variables: S=Min feedrate (mm/s), T=Min travel feedrate (mm/s), B=minimum segment time (ms), X=maximum XY jerk (mm/s),  Z=maximum Z jerk (mm/s),  E=maximum E jerk (mm/s)");
   }
-  SERIAL_ECHOPAIR("  M205 S", minimumfeedrate );
-  SERIAL_ECHOPAIR(" T", mintravelfeedrate );
-  SERIAL_ECHOPAIR(" B", minsegmenttime );
-  SERIAL_ECHOPAIR(" X", max_xy_jerk );
-  SERIAL_ECHOPAIR(" Z", max_z_jerk);
-  SERIAL_ECHOPAIR(" E", max_e_jerk);
-  SERIAL_EOL;
+  ECHO_SMV(DB, "  M205 S", minimumfeedrate );
+  ECHO_MV(" T", mintravelfeedrate );
+  ECHO_MV(" B", minsegmenttime );
+  ECHO_MV(" X", max_xy_jerk );
+  ECHO_MV(" Z", max_z_jerk);
+  ECHO_EMV(" E", max_e_jerk);
 
-  SERIAL_ECHO_START;
   if (!forReplay) {
-    SERIAL_ECHOLNPGM("Home offset (mm):");
-    SERIAL_ECHO_START;
+    ECHO_LM(DB, "Home offset (mm):");
   }
-  SERIAL_ECHOPAIR("  M206 X", home_offset[X_AXIS] );
-  SERIAL_ECHOPAIR(" Y", home_offset[Y_AXIS] );
-  SERIAL_ECHOPAIR(" Z", home_offset[Z_AXIS] );
-  SERIAL_EOL;
+  ECHO_SMV(DB, "  M206 X", home_offset[X_AXIS] );
+  ECHO_MV(" Y", home_offset[Y_AXIS] );
+  ECHO_EMV(" Z", home_offset[Z_AXIS] );
 
-  SERIAL_ECHO_START;
   #if HOTENDS > 1
     if (!forReplay) {
-      SERIAL_ECHOLNPGM("Hotend offset (mm):");
-      SERIAL_ECHO_START;
+      ECHO_LM(DB, "Hotend offset (mm):");
     }
     for (int e = 0; e < HOTENDS; e++) {
-      SERIAL_ECHO_START;
-      SERIAL_ECHOPAIR("  M218 T", (long unsigned int)e);
-      SERIAL_ECHOPAIR(" X", hotend_offset[X_AXIS][e]);
-      SERIAL_ECHOPAIR(" Y" ,hotend_offset[Y_AXIS][e]);
-      SERIAL_EOL;
+      ECHO_SMV(DB, "  M218 T", e);
+      ECHO_MV(" X", hotend_offset[X_AXIS][e]);
+      ECHO_EMV(" Y" ,hotend_offset[Y_AXIS][e]);
     }
   #endif //HOTENDS > 1
   
   #ifdef DELTA
-    SERIAL_ECHO_START;
     if (!forReplay) {
-      SERIAL_ECHOLNPGM("Endstop adjustement (mm):");
-      SERIAL_ECHO_START;
+      ECHO_LM(DB, "Endstop adjustement (mm):");
     }
-    SERIAL_ECHOPAIR("  M666 X", endstop_adj[X_AXIS] );
-    SERIAL_ECHOPAIR(" Y", endstop_adj[Y_AXIS] );
-    SERIAL_ECHOPAIR(" Z", endstop_adj[Z_AXIS] );
-    SERIAL_EOL;
-    SERIAL_ECHO_START;
-    SERIAL_ECHOLNPGM("Delta Geometry adjustment:");
-    SERIAL_ECHO_START;
-    SERIAL_ECHOPAIR("  M666 A", tower_adj[0]);
-    SERIAL_ECHOPAIR(" B", tower_adj[1]);
-    SERIAL_ECHOPAIR(" C", tower_adj[2]);
-    SERIAL_ECHOPAIR(" E", tower_adj[3]);
-    SERIAL_ECHOPAIR(" F", tower_adj[4]);
-    SERIAL_ECHOPAIR(" G", tower_adj[5]);
-    SERIAL_ECHOPAIR(" R", delta_radius);
-    SERIAL_ECHOPAIR(" D", delta_diagonal_rod);
-    SERIAL_ECHOPAIR(" H", max_pos[2]);
-    SERIAL_ECHOPAIR(" P", z_probe_offset[3]);
-    SERIAL_EOL;
-    SERIAL_ECHOLN("Tower Positions");
-    SERIAL_ECHOPAIR("Tower1 X:", delta_tower1_x);
-    SERIAL_ECHOPAIR(" Y:", delta_tower1_y);
-    SERIAL_EOL;
-    SERIAL_ECHOPAIR("Tower2 X:", delta_tower2_x);
-    SERIAL_ECHOPAIR(" Y:", delta_tower2_y);
-    SERIAL_EOL;
-    SERIAL_ECHOPAIR("Tower3 X:", delta_tower3_x);
-    SERIAL_ECHOPAIR(" Y:", delta_tower3_y);
-    SERIAL_EOL;
+    ECHO_SMV(DB, "  M666 X", endstop_adj[X_AXIS] );
+    ECHO_MV(" Y", endstop_adj[Y_AXIS] );
+    ECHO_EMV(" Z", endstop_adj[Z_AXIS] );
+
+    if (!forReplay) {
+      ECHO_LM(DB, "Delta Geometry adjustment:");
+    }
+    ECHO_SMV(DB, "  M666 A", tower_adj[0]);
+    ECHO_MV(" B", tower_adj[1]);
+    ECHO_MV(" C", tower_adj[2]);
+    ECHO_MV(" E", tower_adj[3]);
+    ECHO_MV(" F", tower_adj[4]);
+    ECHO_MV(" G", tower_adj[5]);
+    ECHO_MV(" R", delta_radius);
+    ECHO_MV(" D", delta_diagonal_rod);
+    ECHO_MV(" H", max_pos[2]);
+    ECHO_EMV(" P", z_probe_offset[3]);
+
+    if (!forReplay) {
+      ECHO_LM(DB, "Tower Positions:");
+    }
+    ECHO_SMV(DB, "  Tower1 X:", delta_tower1_x);
+    ECHO_MV(" Y:", delta_tower1_y);
+    ECHO_MV(" Tower2 X:", delta_tower2_x);
+    ECHO_MV(" Y:", delta_tower2_y);
+    ECHO_MV(" Tower3 X:", delta_tower3_x);
+    ECHO_EMV(" Y:", delta_tower3_y);
+    
   #elif defined(Z_DUAL_ENDSTOPS)
-    SERIAL_ECHO_START;
     if (!forReplay) {
-      SERIAL_ECHOLNPGM("Z2 Endstop adjustement (mm):");
-      SERIAL_ECHO_START;
+      ECHO_LM(DB, "Z2 Endstop adjustement (mm):");
     }
-    SERIAL_ECHOPAIR("  M666 Z", z_endstop_adj );
-    SERIAL_EOL;  
+    ECHO_LMV(DB, "  M666 Z", z_endstop_adj );
   #elif defined(ENABLE_AUTO_BED_LEVELING)
-    SERIAL_ECHO_START;
     if (!forReplay) {
-      SERIAL_ECHOLNPGM("Z Probe offset (mm)");
-      SERIAL_ECHO_START;
+      ECHO_LM(DB, "Z Probe offset (mm)");
     }
-    SERIAL_ECHOPAIR("  M666 P", zprobe_zoffset);
-    SERIAL_EOL;
+    ECHO_LMV(DB, "  M666 P", zprobe_zoffset);
   #endif // DELTA
 
   #if defined(PIDTEMP) || defined(PIDTEMPBED)
-    SERIAL_ECHO_START;
     if (!forReplay) {
-      SERIAL_ECHOLNPGM("PID settings:");
-      SERIAL_ECHO_START;
+      ECHO_LM(DB, "PID settings:");
     }
-    #if defined(PIDTEMP) && defined(PIDTEMPBED)
-      SERIAL_EOL;
-    #endif
     #ifdef PIDTEMP
       for (int e = 0; e < HOTENDS; e++) {
-        SERIAL_ECHO_START;
-        SERIAL_ECHOPAIR("  M301 E", (long unsigned int)e);
-        SERIAL_ECHOPAIR(" P", PID_PARAM(Kp, e));
-        SERIAL_ECHOPAIR(" I", unscalePID_i(PID_PARAM(Ki, e)));
-        SERIAL_ECHOPAIR(" D", unscalePID_d(PID_PARAM(Kd, e)));
-        SERIAL_EOL;
+        ECHO_SMV(DB, "  M301 E", e);
+        ECHO_MV(" P", PID_PARAM(Kp, e));
+        ECHO_MV(" I", unscalePID_i(PID_PARAM(Ki, e)));
+        ECHO_EMV(" D", unscalePID_d(PID_PARAM(Kd, e)));
     }
     #endif
     #ifdef PIDTEMPBED
-      SERIAL_ECHOPAIR("  M304 P", bedKp); // for compatibility with hosts, only echos values for E0
-      SERIAL_ECHOPAIR(" I", unscalePID_i(bedKi));
-      SERIAL_ECHOPAIR(" D", unscalePID_d(bedKd));
-      SERIAL_EOL;
+      ECHO_SMV("  M304 P", bedKp); // for compatibility with hosts, only echos values for E0
+      ECHO_MV(" I", unscalePID_i(bedKi));
+      ECHO_EMV(" D", unscalePID_d(bedKd));
     #endif
   #endif
 
   #ifdef FWRETRACT
-
-    SERIAL_ECHO_START;
     if (!forReplay) {
-      SERIAL_ECHOLNPGM("Retract: S=Length (mm) F:Speed (mm/m) Z: ZLift (mm)");
-      SERIAL_ECHO_START;
+      ECHO_LM(DB,"Retract: S=Length (mm) F:Speed (mm/m) Z: ZLift (mm)");
     }
-    SERIAL_ECHOPAIR("  M207 S", retract_length);
-    SERIAL_ECHOPAIR(" F", retract_feedrate*60);
-    SERIAL_ECHOPAIR(" Z", retract_zlift);
-    SERIAL_EOL;
-    SERIAL_ECHO_START;
+    ECHO_SMV(DB, "  M207 S", retract_length);
+    ECHO_MV(" F", retract_feedrate*60);
+    ECHO_EMV(" Z", retract_zlift);
+    
     if (!forReplay) {
-      SERIAL_ECHOLNPGM("Recover: S=Extra length (mm) F:Speed (mm/m)");
-      SERIAL_ECHO_START;
+      ECHO_LM(DB, "Recover: S=Extra length (mm) F:Speed (mm/m)");
     }
-    SERIAL_ECHOPAIR("  M208 S", retract_recover_length);
-    SERIAL_ECHOPAIR(" F", retract_recover_feedrate*60);
-    SERIAL_EOL;
-    SERIAL_ECHO_START;
+    ECHO_SMV(DB, "  M208 S", retract_recover_length);
+    ECHO_MV(" F", retract_recover_feedrate*60);
+    
     if (!forReplay) {
-      SERIAL_ECHOLNPGM("Auto-Retract: S=0 to disable, 1 to interpret extrude-only moves as retracts or recoveries");
-      SERIAL_ECHO_START;
+      ECHO_LM(DB,"Auto-Retract: S=0 to disable, 1 to interpret extrude-only moves as retracts or recoveries");
     }
-    SERIAL_ECHOPAIR("  M209 S", (unsigned long)(autoretract_enabled ? 1 : 0));
-    SERIAL_EOL;
+    ECHO_LMV(DB,"  M209 S", autoretract_enabled);
 
     #if EXTRUDERS > 1
       if (!forReplay) {
-        SERIAL_ECHO_START;
-        SERIAL_ECHOLNPGM("Multi-extruder settings:");
-        SERIAL_ECHO_START;
-        SERIAL_ECHOPAIR("   Swap retract length (mm):    ", retract_length_swap);
-        SERIAL_EOL;
-        SERIAL_ECHO_START;
-        SERIAL_ECHOPAIR("   Swap rec. addl. length (mm): ", retract_recover_length_swap);
-        SERIAL_EOL;
+        ECHO_LM(DB,"Multi-extruder settings:");
+        ECHO_LMV(DB, "   Swap retract length (mm):    ", retract_length_swap);
+        ECHO_LMV(DB, "   Swap rec. addl. length (mm): ", retract_recover_length_swap);
       }
     #endif // EXTRUDERS > 1
 
   #endif // FWRETRACT
 
-  SERIAL_ECHO_START;
   if (volumetric_enabled) {
     if (!forReplay) {
-      SERIAL_ECHOLNPGM("Filament settings:");
-      SERIAL_ECHO_START;
+      ECHO_LM(DB, "Filament settings:");
     }
-    SERIAL_ECHOPAIR("  M200 D", filament_size[0]);
-    SERIAL_EOL;
+    ECHO_LMV(DB, "  M200 D", filament_size[0]);
 
     #if EXTRUDERS > 1
-      SERIAL_ECHO_START;
-      SERIAL_ECHOPAIR("  M200 T1 D", filament_size[1]);
-      SERIAL_EOL;
+      ECHO_LMV(DB, "  M200 T1 D", filament_size[1]);
       #if EXTRUDERS > 2
-        SERIAL_ECHO_START;
-        SERIAL_ECHOPAIR("  M200 T2 D", filament_size[2]);
-        SERIAL_EOL;
+        ECHO_LMV(DB, "  M200 T2 D", filament_size[2]);
         #if EXTRUDERS > 3
-          SERIAL_ECHO_START;
-          SERIAL_ECHOPAIR("  M200 T3 D", filament_size[3]);
-          SERIAL_EOL;
+          ECHO_LMV(DB, "  M200 T3 D", filament_size[3]);
         #endif
       #endif
     #endif
 
   } else {
     if (!forReplay) {
-      SERIAL_ECHOLNPGM("Filament settings: Disabled");
+      ECHO_LM(DB, "Filament settings: Disabled");
     }
   }
+  ConfigSD_PrintSettings(forReplay);
+}
 
-  #if defined(POWER_CONSUMPTION) && defined(STORE_CONSUMPTION)
-    SERIAL_ECHO_START;
+void ConfigSD_PrintSettings(bool forReplay) {
+  // Always have this function, even with SD_SETTINGS disabled, the current values will be shown
+  #ifdef POWER_CONSUMPTION
     if (!forReplay) {
-      SERIAL_ECHOLNPGM("Power consumation:");
-      SERIAL_ECHO_START;
+      ECHO_LM(DB, "Watt/h consumed:");
     }
-    SERIAL_ECHOPAIR("  W/h:", power_consumption_hour);
-    SERIAL_EOL;
+    ECHO_LVM(DB, power_consumption_hour," W/h");
   #endif
+  if (!forReplay) {
+    ECHO_LM(DB, "Power on time:");
+  }
+  char time[30];
+  int hours = printer_usage_seconds / 60 / 60, minutes = (printer_usage_seconds / 60) % 60;
+  sprintf_P(time, PSTR("%i " MSG_END_HOUR " %i " MSG_END_MINUTE), hours, minutes);
+  ECHO_LV(DB, time);
 }
 
 #endif //!DISABLE_M503
+
+/**
+ * Configuration on SD card
+ *
+ * Author: Simone Primarosa
+ *
+ */
+
+#if defined(SDSUPPORT) && defined(SD_SETTINGS)
+  void ConfigSD_StoreSettings() {
+    if(!IS_SD_INSERTED || card.isFileOpen() || card.sdprinting) return;
+    card.openFile(CFG_SD_FILE, false, true, false);
+    char buff[CFG_SD_MAX_VALUE_LEN];
+    #ifdef POWER_CONSUMPTION
+      ltoa(power_consumption_hour,buff,10);
+      card.unparseKeyLine(cfgSD_KEY[SD_CFG_PWR], buff);
+    #endif
+    ltoa(printer_usage_seconds,buff,10);
+    card.unparseKeyLine(cfgSD_KEY[SD_CFG_TME], buff);
+    
+    card.closeFile(false);
+    config_last_update = millis();
+  }
+  void ConfigSD_RetrieveSettings(bool addValue) {
+    if(!IS_SD_INSERTED || card.isFileOpen() || card.sdprinting || !card.cardOK) return;
+    char key[CFG_SD_MAX_KEY_LEN], value[CFG_SD_MAX_VALUE_LEN];
+    int k_idx;
+    int k_len, v_len;
+    
+    card.openFile(CFG_SD_FILE, true, true, false);
+    while(true) {
+      k_len = CFG_SD_MAX_KEY_LEN;
+      v_len = CFG_SD_MAX_VALUE_LEN;
+      card.parseKeyLine(key, value, k_len, v_len);
+      if(k_len == 0 || v_len == 0) break; //no valid key or value founded
+      k_idx = ConfigSD_KeyIndex(key);
+      if(k_idx == -1) continue;    //unknow key ignore it
+      switch(k_idx) {
+        #ifdef POWER_CONSUMPTION
+        case SD_CFG_PWR: {
+          if(addValue) power_consumption_hour += (unsigned long)atol(value);
+          else power_consumption_hour = (unsigned long)atol(value);
+        }
+        break;
+        #endif
+        case SD_CFG_TME: {
+          if(addValue) printer_usage_seconds += (unsigned long)atol(value);
+          else printer_usage_seconds = (unsigned long)atol(value);
+        }
+        break;
+      }
+    }
+    card.closeFile(false);
+    config_readed = true;
+  }
+  
+  int ConfigSD_KeyIndex(char *key) {    //At the moment a binary search algorithm is used for simplicity, if it will be necessary (Eg. tons of key), an hash search algorithm will be implemented.
+    int begin = 0, end = SD_CFG_END - 1, middle, cond;
+    while(begin <= end) {
+      middle = (begin + end) / 2;
+      cond = strcmp(cfgSD_KEY[middle], key);
+      if(!cond) return middle;
+      else if(cond < 0) begin = middle + 1;
+      else end = middle - 1;
+    }
+    return -1;
+  }
+#endif

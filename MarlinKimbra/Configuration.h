@@ -9,18 +9,18 @@
 // Mechanisms-settings can be found in configuration_xxxxxx.h
 // Advanced settings can be found in Configuration_adv.h
 
+
+#include "boards.h"
 // Choose your board type.
 // Either an numeric ID or name defined in boards.h is valid.
 // See: https://github.com/MagoKimbra/MarlinKimbra/blob/master/Documentation/Hardware.md
-#include "boards.h"
-#ifndef MOTHERBOARD
-  #define MOTHERBOARD BOARD_RAMPS_13_EFB
-#endif
+
+#define MOTHERBOARD BOARD_RAMPS_13_EFB
 
 // User-specified version info of this build to display in [Pronterface, etc] terminal window during
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
 // build by the user have been successfully uploaded into firmware.
-#define STRING_VERSION "4.1.0"
+#define STRING_VERSION "4.1.2"
 #define STRING_URL "reprap.org"
 #define STRING_VERSION_CONFIG_H __DATE__ " " __TIME__     // build date and time
 #define STRING_CONFIG_H_AUTHOR "(none, default config)"   // Who made the changes.
@@ -53,7 +53,11 @@
 //#define COREXY
 //#define DELTA
 //#define SCARA
+/***********************************************************************\
 
+/***********************************************************************\
+ ********************** Do not touch this section **********************
+ ***********************************************************************/
 #if defined(CARTESIAN)
   #include "Configuration_Cartesian.h"
 #elif defined(COREXY)
@@ -68,6 +72,9 @@
 // This defines the number of extruder real or virtual
 #define EXTRUDERS 1
 
+// This defines the number of Driver extruder you have and use
+#define DRIVER_EXTRUDERS 1
+
 // This is used for single nozzle and multiple extrusion configuration
 // Uncomment below to enable (One Hotend)
 //#define SINGLENOZZLE
@@ -77,40 +84,29 @@
  ***********************************************************************
  *                                                                     *
  * Setting for more extruder width relay system                        *
- *                                                                     *
- * Firmware by MagoKimbra magokimbra@hotmail.com                       *
- *                                                                     *
  * See pins.h for pin command relay                                    *
  *                                                                     *
  ***********************************************************************/
 //#define MKR4
-#ifdef MKR4
-  #define DRIVER_EXTRUDERS 2   // This defines the number of Driver extruder
-#endif // END MKR4
-
 //**********************************************************************
+
 
 /***********************************************************************
  *********************** Multiextruder NPr2  ***************************
  ***********************************************************************
  *                                                                     *
  * Setting fot color meccanism NPr2 by NicolaP (www.3dmakerlab.it)     *
- *                                                                     *
- * Firmware by MagoKimbra magokimbra@hotmail.com                       *
- *                                                                     *
  * Find angle setting by g-Code "M997 Cxxx"                            *
  *                                                                     *
  ***********************************************************************/
 //#define NPR2
-#ifdef NPR2
-  #define COLOR_STEP {120,25,-65,-155} // CARTER ANGLE
-  #define COLOR_SLOWRATE 170           // MICROSECOND delay for carter motor routine (Carter Motor Feedrate: upper value-slow feedrate)  
-  #define COLOR_HOMERATE 4             // FEEDRATE for carter home
-  #define MOTOR_ANGLE 1.8              // Nema angle for single step 
-  #define DRIVER_MICROSTEP 4           // Microstep moltiplicator driver (set jumper MS1-2-3) off-on-off 1/4 microstepping.
-  #define CARTER_MOLTIPLICATOR 14.22   // CARTER MOLTIPLICATOR (gear ratio 13/31-10/31)
-  #define DRIVER_EXTRUDERS 2           // This defines the number of Driver extruders
-#endif
+
+#define COLOR_STEP {120,25,-65,-155} // CARTER ANGLE
+#define COLOR_SLOWRATE 170           // MICROSECOND delay for carter motor routine (Carter Motor Feedrate: upper value-slow feedrate)  
+#define COLOR_HOMERATE 4             // FEEDRATE for carter home
+#define MOTOR_ANGLE 1.8              // Nema angle for single step 
+#define DRIVER_MICROSTEP 4           // Microstep moltiplicator driver (set jumper MS1-2-3) off-on-off 1/4 microstepping.
+#define CARTER_MOLTIPLICATOR 14.22   // CARTER MOLTIPLICATOR (gear ratio 13/31-10/31)
 //**********************************************************************
 
 
@@ -122,6 +118,7 @@
 
 // Define this to have the electronics keep the power supply off on startup. If you don't know what this is leave it.
 //#define PS_DEFAULT_OFF
+
 
 //===========================================================================
 //============================= Thermal Settings ============================
@@ -147,7 +144,7 @@
 // 10 is 100k RS thermistor 198-961 (4.7k pullup)
 // 11 is 100k beta 3950 1% thermistor (4.7k pullup)
 // 12 is 100k 0603 SMD Vishay NTCS0603E3104FXT (4.7k pullup) (calibrated for Makibox hot bed)
-// 13 is 100k Hisens 3950  1% up to 300�C for hotend "Simple ONE " & "Hotend "All In ONE"
+// 13 is 100k Hisens 3950  1% up to 300°C for hotend "Simple ONE " & "Hotend "All In ONE"
 // 20 is the PT100 circuit found in the Ultimainboard V2.x
 // 60 is 100k Maker's Tool Works Kapton Bed Thermistor beta=3950
 //
@@ -161,7 +158,7 @@
 // 1010 is Pt1000 with 1k pullup (non standard)
 // 147 is Pt100 with 4k7 pullup
 // 110 is Pt100 with 1k pullup (non standard)
-// 998 and 999 are Dummy Tables. They will ALWAYS read 25�C or the temperature defined below. 
+// 998 and 999 are Dummy Tables. They will ALWAYS read 25°C or the temperature defined below. 
 //     Use it for Testing or Development purposes. NEVER for production machine.
 //     #define DUMMY_THERMISTOR_998_VALUE 25
 //     #define DUMMY_THERMISTOR_999_VALUE 100
@@ -207,32 +204,31 @@
 // If you want the M105 heater power reported in watts, define the BED_WATTS, and (shared for all hotend) HOTEND_WATTS
 //#define HOTEND_WATTS (12.0*12.0/6.7)  //  P=I^2/R
 //#define BED_WATTS (12.0*12.0/1.1)     // P=I^2/R
+
 //===========================================================================
 //============================= PID Settings ================================
 //===========================================================================
 // PID Tuning Guide here: http://reprap.org/wiki/PID_Tuning
-
 // Comment the following line to disable PID and enable bang-bang.
 #define PIDTEMP
-#define BANG_MAX 255      // limits current to nozzle while in bang-bang mode; 255=full current
-#define PID_MAX BANG_MAX  // limits current to nozzle while PID is active (see PID_FUNCTIONAL_RANGE below); 255=full current
 
-#ifdef PIDTEMP
-  //#define PID_DEBUG        // Sends debug data to the serial port.
-  //#define PID_OPENLOOP 1   // Puts PID in open loop. M104/M140 sets the output power from 0 to PID_MAX
-  //#define SLOW_PWM_HEATERS // PWM with very low frequency (roughly 0.125Hz=8s) and minimum state time of approximately 1s useful for heaters driven by a relay
-  // If the temperature difference between the target temperature and the actual temperature
-  // is more then PID_FUNCTIONAL_RANGE then the PID will be shut off and the heater will be set to min/max.
-  #define PID_FUNCTIONAL_RANGE 10 // degC
-  #define PID_INTEGRAL_DRIVE_MAX PID_MAX // Limit for the integral term
-  #define K1 0.95 // Smoothing factor within the PID
+#define BANG_MAX 255       // limits current to nozzle while in bang-bang mode; 255=full current
+#define PID_MAX BANG_MAX   // limits current to nozzle while PID is active (see PID_FUNCTIONAL_RANGE below); 255=full current
+//#define PID_DEBUG        // Sends debug data to the serial port.
+//#define PID_OPENLOOP 1   // Puts PID in open loop. M104/M140 sets the output power from 0 to PID_MAX
+//#define SLOW_PWM_HEATERS // PWM with very low frequency (roughly 0.125Hz=8s) and minimum state time of approximately 1s useful for heaters driven by a relay
+// If the temperature difference between the target temperature and the actual temperature
+// is more then PID_FUNCTIONAL_RANGE then the PID will be shut off and the heater will be set to min/max.
+#define PID_FUNCTIONAL_RANGE 10 // degC
+#define PID_INTEGRAL_DRIVE_MAX PID_MAX // Limit for the integral term
+#define K1 0.95 // Smoothing factor within the PID
 
 //             HotEnd{HE0,HE1,HE2,HE3}
-  #define DEFAULT_Kp {40, 40, 40, 40}     // Kp for E0, E1, E2, E3
-  #define DEFAULT_Ki {07, 07, 07, 07}     // Ki for E0, E1, E2, E3
-  #define DEFAULT_Kd {60, 60, 60, 60}     // Kd for E0, E1, E2, E3
+#define DEFAULT_Kp {40, 40, 40, 40}     // Kp for E0, E1, E2, E3
+#define DEFAULT_Ki {07, 07, 07, 07}     // Ki for E0, E1, E2, E3
+#define DEFAULT_Kd {60, 60, 60, 60}     // Kd for E0, E1, E2, E3
+//===========================================================================
 
-#endif // PIDTEMP
 
 //===========================================================================
 //============================= PID > Bed Temperature Control ===============
@@ -257,13 +253,11 @@
 #define MAX_BED_POWER 255 // limits duty cycle to bed; 255=full current
 
 //#define PID_BED_DEBUG // Sends debug data to the serial port.
-
-#ifdef PIDTEMPBED
 //120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
 //from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
-    #define  DEFAULT_bedKp 10.00
-    #define  DEFAULT_bedKi .023
-    #define  DEFAULT_bedKd 305.4
+#define  DEFAULT_bedKp 10.00
+#define  DEFAULT_bedKi .023
+#define  DEFAULT_bedKd 305.4
 
 //120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
 //from pidautotune
@@ -272,7 +266,7 @@
 //    #define  DEFAULT_bedKd 1675.16
 
 // FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
-#endif // PIDTEMPBED
+//===========================================================================
 
 
 //this prevents dangerous Extruder moves, i.e. if the temperature is under the limit
@@ -283,6 +277,7 @@
 
 #define EXTRUDE_MINTEMP 170 // degC
 #define EXTRUDE_MAXLENGTH (X_MAX_LENGTH+Y_MAX_LENGTH) //prevent extrusion of very large distances.
+
 
 //===========================================================================
 //============================= Thermal Runaway Protection ==================
@@ -389,10 +384,7 @@ your extruder heater takes 2 minutes to hit the target on heating.
 // REMEMBER TO INSTALL LiquidCrystal_I2C.h in your ARDUINO library folder: https://github.com/kiyoshigawa/LiquidCrystal_I2C
 //#define RA_CONTROL_PANEL
 
-/**
- * I2C Panels
- */
-
+// I2C Panels
 //#define LCD_I2C_SAINSMART_YWROBOT
 
 // PANELOLU2 LCD with status LEDs, separate encoder and click inputs
@@ -421,9 +413,8 @@ your extruder heater takes 2 minutes to hit the target on heating.
  0 = Voltage level 3.3V
  1 = Voltage level 5V
  */
-#if MB(ALLIGATOR)
-  #define UI_VOLTAGE_LEVEL 0 // Set 5 o 3.3 V
-#endif
+#define UI_VOLTAGE_LEVEL 0 // Set 5 o 3.3 V
+
 
 //============================== Languages UI =========================
 // 1  English
@@ -459,21 +450,35 @@ your extruder heater takes 2 minutes to hit the target on heating.
 // to disable EEPROM Serial responses and decrease program space by ~1700 byte: comment this out:
 // please keep turned on if you can.
 //#define DISABLE_M503
+//===========================================================================
 
-//========================= Bowden Filament management ======================
+
+//====================== EXTRA SETTINGS ON SD ===============================
+// Uncomment SD_SETTINGS to enable the firmware to write some configuration,
+// that require frequent update, on the SD card.
+//#define SD_SETTINGS
+
+#define SD_CFG_SECONDS        60          //seconds between update
+#define CFG_SD_FILE           "info.cfg"  //name of the configuration file
+#define CFG_SD_MAX_KEY_LEN    3+1         //icrease this if you add key name longer than the actual value.
+#define CFG_SD_MAX_VALUE_LEN  12+1        //this should be enought for int, long and float if you need to retrive strings increase this carefully
+//===========================================================================
+
+
+//==================== Bowden Filament management ===========================
 //#define EASY_LOAD
-#ifdef EASY_LOAD
-  #define BOWDEN_LENGTH 250       // mm
-  #define LCD_PURGE_LENGTH 3      // mm
-  #define LCD_RETRACT_LENGTH 3    // mm
-  #define LCD_PURGE_FEEDRATE 3    // mm/s
-  #define LCD_RETRACT_FEEDRATE 10 // mm/s
-  #define LCD_LOAD_FEEDRATE 8     // mm/s
-  #define LCD_UNLOAD_FEEDRATE 8   // mm/s
-#endif //EASY_LOAD
+
+#define BOWDEN_LENGTH 250       // mm
+#define LCD_PURGE_LENGTH 3      // mm
+#define LCD_RETRACT_LENGTH 3    // mm
+#define LCD_PURGE_FEEDRATE 3    // mm/s
+#define LCD_RETRACT_FEEDRATE 10 // mm/s
+#define LCD_LOAD_FEEDRATE 8     // mm/s
+#define LCD_UNLOAD_FEEDRATE 8   // mm/s
+//===========================================================================
 
 
-//============================== Preheat Constants ==========================
+//====================== Preheat Constants ==================================
 #define PLA_PREHEAT_HOTEND_TEMP 190
 #define PLA_PREHEAT_HPB_TEMP 60
 #define PLA_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
@@ -485,6 +490,7 @@ your extruder heater takes 2 minutes to hit the target on heating.
 #define GUM_PREHEAT_HOTEND_TEMP 230
 #define GUM_PREHEAT_HPB_TEMP 60
 #define GUM_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
+//===========================================================================
 
 
 //============================= R/C Servo support ===========================
@@ -500,6 +506,7 @@ your extruder heater takes 2 minutes to hit the target on heating.
 //
 #define SERVO_ENDSTOPS {-1,-1,0}            // Servo index for X, Y, Z. Disable with -1
 #define SERVO_ENDSTOP_ANGLES {0,0,0,0,90,0} // X,Y,Z Axis Extend and Retract angles
+//===========================================================================
 
 
 /**********************************************************************\
@@ -529,6 +536,7 @@ your extruder heater takes 2 minutes to hit the target on heating.
 
 //When using an LCD, uncomment the line below to display the Filament sensor data on the last line instead of status.  Status will appear for 5 sec.
 //#define FILAMENT_LCD_DISPLAY
+//===========================================================================
 
 
 /**********************************************************************\
@@ -555,6 +563,8 @@ your extruder heater takes 2 minutes to hit the target on heating.
 
 //When using an LCD, uncomment the line below to display the Power consumption sensor data on the last line instead of status.  Status will appear for 5 sec.
 //#define POWER_CONSUMPTION_LCD_DISPLAY
+//===========================================================================
+
 
 //=================================== Misc =================================
 
@@ -593,6 +603,7 @@ your extruder heater takes 2 minutes to hit the target on heating.
 // Enable this option for Toshiba steppers
 //#define CONFIG_STEPPERS_TOSHIBA
 
+
 //===========================================================================
 //============================= Filament Runout Sensor ======================
 //===========================================================================
@@ -607,8 +618,8 @@ your extruder heater takes 2 minutes to hit the target on heating.
 //===========================================================================
 //============================= Laser Beam Support ==========================
 //===========================================================================
-// define laser beam support
 //#define LASERBEAM
+//===========================================================================
 
 
 #include "Configuration_adv.h"

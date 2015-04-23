@@ -518,8 +518,8 @@ float junction_deviation = 0.1;
           if (degHotend(extruder) < extrude_min_temp && !debugDryrun()) {
             position[E_AXIS] = target[E_AXIS]; //behave as if the move really took place, but ignore E part
             de = 0; // no difference
-            SERIAL_ECHO_START;
-            SERIAL_ECHOLNPGM(MSG_ERR_COLD_EXTRUDE_STOP);
+            ECHO_S(OK);
+            ECHO_EM(MSG_ERR_COLD_EXTRUDE_STOP);
           }
         }
 
@@ -530,8 +530,8 @@ float junction_deviation = 0.1;
           #endif
           position[E_AXIS] = target[E_AXIS]; // Behave as if the move really took place, but ignore E part
           de = 0; // no difference
-          SERIAL_ECHO_START;
-          SERIAL_ECHOLNPGM(MSG_ERR_LONG_EXTRUDE_STOP);
+          ECHO_S(OK);
+          ECHO_EM(MSG_ERR_LONG_EXTRUDE_STOP);
           #ifdef EASY_LOAD
             }
             allow_lengthy_extrude_once = false;
@@ -887,7 +887,7 @@ float junction_deviation = 0.1;
   block->acceleration = acc_st / steps_per_mm;
 
   #ifdef __SAM3X8E__
-    block->acceleration_rate = (long)(acc_st * ( 16777216.0 / HAL_TIMER_RATE));
+    block->acceleration_rate = (long)(acc_st * ( 4294967296.0 / (float)HAL_TIMER_RATE));
   #else
     block->acceleration_rate = (long)(acc_st * 16777216.0 / (F_CPU / 8.0));
   #endif
@@ -993,12 +993,12 @@ float junction_deviation = 0.1;
       block->advance_rate = acc_dist ? advance / (float)acc_dist : 0;
     }
     /*
-      SERIAL_ECHO_START;
-     SERIAL_ECHOPGM("advance :");
-     SERIAL_ECHO(block->advance/256.0);
-     SERIAL_ECHOPGM("advance rate :");
-     SERIAL_ECHOLN(block->advance_rate/256.0);
-     */
+    ECHO_S(OK);
+    ECHO_M("advance :");
+    ECHO_V(block->advance/256.0);
+    ECHO_M("advance rate :");
+    ECHO_EV(block->advance_rate/256.0);
+    */
   #endif // ADVANCE
 
   calculate_trapezoid_for_block(block, block->entry_speed / block->nominal_speed, safe_speed / block->nominal_speed);
