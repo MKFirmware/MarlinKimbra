@@ -119,16 +119,16 @@ matrix_3x3 matrix_3x3::transpose(matrix_3x3 original) {
 void matrix_3x3::debug(const char title[]) {
   ECHO_LV(DB, title);
   int count = 0;
-  for(int i=0; i<3; i++) {
-    for(int j=0; j<3; j++) {
+  for(int i = 0; i < 3; i++) {
+    ECHO_S(DB);
+    for(int j = 0; j < 3; j++) {
       if (matrix[count] >= 0.0) ECHO_C('+');
       ECHO_V(matrix[count], 6);
       ECHO_C(' ');
       count++;
     }
-    ECHO_LM(DB, " ");
+    ECHO_E;
   }
 }
 
 #endif // ENABLE_AUTO_BED_LEVELING
-
