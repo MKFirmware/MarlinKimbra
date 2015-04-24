@@ -1,3 +1,9 @@
+### Version 4.1.2
+* Serial message function standardized for a better code style
+* Auto-Create configuration file if not exist
+* FIX for sdcard crash problem during configuration file reading
+* FIX for some undefined SCARA defines
+
 ### Version 4.1.1
 * Add Power (Watt) Sensor
 * Add Anti OOZING
