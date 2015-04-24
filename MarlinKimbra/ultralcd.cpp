@@ -303,7 +303,7 @@ static void lcd_status_screen() {
     #endif
   #endif //LCD_PROGRESS_BAR
 
-    lcd_implementation_status_screen();
+  lcd_implementation_status_screen();
 
   #if HAS_LCD_POWER_SENSOR
     if (millis() > print_millis + 2000) print_millis = millis();
@@ -816,26 +816,26 @@ static void lcd_prepare_menu() {
   }
 #endif // DELTA
 
-inline void line_to_current() {
+inline void line_to_current(AxisEnum axis) {
   #ifdef DELTA
     calculate_delta(current_position);
-    plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS], manual_feedrate[X_AXIS]/60, active_extruder, active_driver);
+    plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS], manual_feedrate[axis]/60, active_extruder, active_driver);
   #else
-    plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], manual_feedrate[X_AXIS]/60, active_extruder, active_driver);
+    plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], manual_feedrate[axis]/60, active_extruder, active_driver);
   #endif
 }
 
 float move_menu_scale;
 static void lcd_move_menu_axis();
 
-static void _lcd_move(const char *name, int axis, int min, int max) {
+static void _lcd_move(const char *name, AxisEnum axis, int min, int max) {
   if (encoderPosition != 0) {
     refresh_cmd_timeout();
     current_position[axis] += float((int)encoderPosition) * move_menu_scale;
     if (min_software_endstops && current_position[axis] < min) current_position[axis] = min;
     if (max_software_endstops && current_position[axis] > max) current_position[axis] = max;
     encoderPosition = 0;
-    line_to_current();
+    line_to_current(axis);
     lcdDrawUpdate = 1;
   }
   if (lcdDrawUpdate) lcd_implementation_drawedit(name, ftostr31(current_position[axis]));
@@ -848,7 +848,7 @@ static void lcd_move_e() {
   if (encoderPosition != 0) {
     current_position[E_AXIS] += float((int)encoderPosition) * move_menu_scale;
     encoderPosition = 0;
-    line_to_current();
+    line_to_current(E_AXIS);
     lcdDrawUpdate = 1;
   }
   if (lcdDrawUpdate) lcd_implementation_drawedit(PSTR("Extruder"), ftostr31(current_position[E_AXIS]));
@@ -1310,23 +1310,18 @@ void lcd_quick_feedback() {
     #endif    
     lcd_buzz(LCD_FEEDBACK_FREQUENCY_DURATION_MS, LCD_FEEDBACK_FREQUENCY_HZ);
   #elif defined(BEEPER) && BEEPER > -1
-    SET_OUTPUT(BEEPER);
     #ifndef LCD_FEEDBACK_FREQUENCY_HZ
       #define LCD_FEEDBACK_FREQUENCY_HZ 5000
     #endif
     #ifndef LCD_FEEDBACK_FREQUENCY_DURATION_MS
       #define LCD_FEEDBACK_FREQUENCY_DURATION_MS 2
     #endif
-    const uint16_t delay = 1000000 / LCD_FEEDBACK_FREQUENCY_HZ / 2;
-    uint16_t i = LCD_FEEDBACK_FREQUENCY_DURATION_MS * LCD_FEEDBACK_FREQUENCY_HZ / 1000;
-    while (i--) {
-      WRITE(BEEPER,HIGH);
-      delayMicroseconds(delay);
-      WRITE(BEEPER,LOW);
-      delayMicroseconds(delay);
-    }
-    const uint16_t j = max(10000 - LCD_FEEDBACK_FREQUENCY_DURATION_MS * 1000, 0);
-    if (j) delayMicroseconds(j);
+    lcd_buzz(LCD_FEEDBACK_FREQUENCY_DURATION_MS, LCD_FEEDBACK_FREQUENCY_HZ);
+  #else
+    #ifndef LCD_FEEDBACK_FREQUENCY_DURATION_MS
+      #define LCD_FEEDBACK_FREQUENCY_DURATION_MS 2
+    #endif
+    delay(LCD_FEEDBACK_FREQUENCY_DURATION_MS);
   #endif
 }
 
@@ -1713,9 +1708,19 @@ bool lcd_detected(void) {
 }
 
 void lcd_buzz(long duration, uint16_t freq) {
-  #ifdef LCD_USE_I2C_BUZZER
-    lcd.buzz(duration,freq);
-  #endif
+  if (freq > 0) {
+    #if BEEPER > 0
+      SET_OUTPUT(BEEPER);
+      tone(BEEPER, freq, duration);
+    #elif defined(LCD_USE_I2C_BUZZER)
+      lcd.buzz(duration,freq);
+    #else
+      delay(duration);
+    #endif
+  }
+  else {
+    delay(duration);
+  }
 }
 
 bool lcd_clicked() { return LCD_CLICKED; }
