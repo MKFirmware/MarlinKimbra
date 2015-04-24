@@ -877,7 +877,7 @@ float junction_deviation = 0.1;
                 xsteps = axis_steps_per_sqr_second[X_AXIS],
                 ysteps = axis_steps_per_sqr_second[Y_AXIS],
                 zsteps = axis_steps_per_sqr_second[Z_AXIS],
-                esteps = axis_steps_per_sqr_second[E_AXIS];
+                esteps = axis_steps_per_sqr_second[E_AXIS + active_extruder];
   if ((float)acc_st * bsx / block->step_event_count > xsteps) acc_st = xsteps;
   if ((float)acc_st * bsy / block->step_event_count > ysteps) acc_st = ysteps;
   if ((float)acc_st * bsz / block->step_event_count > zsteps) acc_st = zsteps;
@@ -887,7 +887,7 @@ float junction_deviation = 0.1;
   block->acceleration = acc_st / steps_per_mm;
 
   #ifdef __SAM3X8E__
-    block->acceleration_rate = (long)(acc_st * ( 4294967296.0 / (float)HAL_TIMER_RATE));
+    block->acceleration_rate = (long)(acc_st * ( 4294967296.0 / HAL_TIMER_RATE));
   #else
     block->acceleration_rate = (long)(acc_st * 16777216.0 / (F_CPU / 8.0));
   #endif
