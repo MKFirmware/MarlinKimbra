@@ -1086,7 +1086,7 @@ void setWatch() {
           *state = TRRunaway;
         break;
       case TRRunaway:
-        ECHO_S(ER, MSG_THERMAL_RUNAWAY_STOP);
+        ECHO_SM(ER, MSG_THERMAL_RUNAWAY_STOP);
         if (heater_id < 0) ECHO_EM(MSG_THERMAL_RUNAWAY_BED); else ECHO_EV(heater_id);
         LCD_ALERTMESSAGEPGM(MSG_THERMAL_RUNAWAY);
         disable_all_heaters();

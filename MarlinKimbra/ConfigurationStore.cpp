@@ -741,7 +741,7 @@ void Config_PrintSettings(bool forReplay) {
     }
     #endif
     #ifdef PIDTEMPBED
-      ECHO_SMV("  M304 P", bedKp); // for compatibility with hosts, only echos values for E0
+      ECHO_SMV(DB, "  M304 P", bedKp); // for compatibility with hosts, only echos values for E0
       ECHO_MV(" I", unscalePID_i(bedKi));
       ECHO_EMV(" D", unscalePID_d(bedKd));
     #endif
