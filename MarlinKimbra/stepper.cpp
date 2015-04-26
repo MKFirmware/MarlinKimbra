@@ -46,7 +46,7 @@ block_t *current_block;  // A pointer to the block currently being traced
 
 // Variables used by The Stepper Driver Interrupt
 static unsigned char out_bits;        // The next stepping-bits to be output
-static unsigned int cleaning_buffer_counter;  
+static unsigned int cleaning_buffer_counter;
 
 #ifdef Z_DUAL_ENDSTOPS
   static bool performing_homing = false, 
@@ -291,8 +291,8 @@ void checkHitEndstops() {
     }
     #ifdef Z_PROBE_ENDSTOP
     if (endstop_z_probe_hit) {
-    	ECHO_MV(" Z_PROBE:", (float)endstops_trigsteps[Z_AXIS] / axis_steps_per_unit[Z_AXIS]);
-    	LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_ZPS);
+      ECHO_MV(" Z_PROBE:", (float)endstops_trigsteps[Z_AXIS] / axis_steps_per_unit[Z_AXIS]);
+      LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_ZPS);
     }
     #endif
     if(endstop_e_hit) {
@@ -340,8 +340,8 @@ void checkHitEndstops() {
     }
     #ifdef Z_PROBE_ENDSTOP
     if (endstop_z_probe_hit) {
-    	ECHO_MV(MSG_ENDSTOP_ZPS, (float)endstops_trigsteps[Z_AXIS] / axis_steps_per_unit[Z_AXIS]);
-    	LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_ZPS);
+      ECHO_MV(MSG_ENDSTOP_ZPS, (float)endstops_trigsteps[Z_AXIS] / axis_steps_per_unit[Z_AXIS]);
+      LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_ZPS);
     }
     #endif
     ECHO_E;
@@ -532,7 +532,7 @@ ISR(TIMER1_COMPA_vect) {
             #ifdef DUAL_X_CARRIAGE
               // with 2 x-carriages, endstops are only checked in the homing direction for the active extruder
               if ((current_block->active_extruder == 0 && X_HOME_DIR == -1) || (current_block->active_extruder != 0 && X2_HOME_DIR == -1))
-            #endif          
+            #endif
               {
                 #if HAS_X_MIN
                   UPDATE_ENDSTOP(x, X, min, MIN);
@@ -618,12 +618,14 @@ ISR(TIMER1_COMPA_vect) {
           z_probe_endstop = (READ(Z_PROBE_PIN) != Z_PROBE_ENDSTOP_INVERTING);
           if (z_probe_endstop && old_z_probe_endstop)
           {
-        	  endstops_trigsteps[Z_AXIS] = count_position[Z_AXIS];
-        	  endstop_z_probe_hit = true;
+            endstops_trigsteps[Z_AXIS] = count_position[Z_AXIS];
+            endstop_z_probe_hit = true;
+
+//            if (z_probe_endstop && old_z_probe_endstop) ECHO_EV("z_probe_endstop = true");
           }
           old_z_probe_endstop = z_probe_endstop;
         #endif
-        
+
       } // check_endstops
 
     }
@@ -652,6 +654,9 @@ ISR(TIMER1_COMPA_vect) {
             if ((z_max_both || z2_max_both) && current_block->steps[Z_AXIS] > 0) {
               endstops_trigsteps[Z_AXIS] = count_position[Z_AXIS];
               endstop_z_hit = true;
+
+             // if (z_max_both) ECHO_EV("z_max_endstop = true");
+             // if (z2_max_both) ECHO_EV("z2_max_endstop = true");
 
               if (!performing_homing || (performing_homing && z_max_both && z2_max_both)) //if not performing home or if both endstops were trigged during homing...
                 step_events_completed = current_block->step_event_count;
@@ -790,6 +795,7 @@ ISR(TIMER1_COMPA_vect) {
       #endif
     }
     else if (step_events_completed > (unsigned long)current_block->decelerate_after) {
+
       MultiU24X32toH16(step_rate, deceleration_time, current_block->acceleration_rate);
 
       if (step_rate > acc_step_rate) { // Check step_rate stays positive
@@ -916,7 +922,7 @@ void st_init() {
   #ifdef HAVE_L6470DRIVER
     L6470_init();
   #endif
-  
+
   // Initialize Dir Pins
   #if HAS_X_DIR
     X_DIR_INIT;
@@ -962,11 +968,11 @@ void st_init() {
   #if HAS_Y_ENABLE
     Y_ENABLE_INIT;
     if (!Y_ENABLE_ON) Y_ENABLE_WRITE(HIGH);
-	
-	#if defined(Y_DUAL_STEPPER_DRIVERS) && HAS_Y2_ENABLE
-	  Y2_ENABLE_INIT;
-	  if (!Y_ENABLE_ON) Y2_ENABLE_WRITE(HIGH);
-	#endif
+
+  #if defined(Y_DUAL_STEPPER_DRIVERS) && HAS_Y2_ENABLE
+    Y2_ENABLE_INIT;
+    if (!Y_ENABLE_ON) Y2_ENABLE_WRITE(HIGH);
+  #endif
   #endif
   #if HAS_Z_ENABLE
     Z_ENABLE_INIT;
@@ -1064,8 +1070,8 @@ void st_init() {
     #ifdef ENDSTOPPULLUP_ZMAX
       WRITE(Z2_MAX_PIN,HIGH);
     #endif
-  #endif  
-  
+  #endif
+
 #if (defined(Z_PROBE_PIN) && Z_PROBE_PIN >= 0) && defined(Z_PROBE_ENDSTOP) // Check for Z_PROBE_ENDSTOP so we don't pull a pin high unless it's to be used.
   SET_INPUT(Z_PROBE_PIN);
   #ifdef ENDSTOPPULLUP_ZPROBE
@@ -1243,7 +1249,7 @@ void quickStop() {
       case Y_AXIS:
         BABYSTEP_AXIS(y, Y, false);
         break;
-     
+
       case Z_AXIS: {
 
         #ifndef DELTA
@@ -1280,7 +1286,7 @@ void quickStop() {
         #endif
 
       } break;
-     
+
       default: break;
     }
   }
@@ -1353,7 +1359,7 @@ void microstep_init() {
 
   #if HAS_MICROSTEPS
     pinMode(X_MS1_PIN,OUTPUT);
-    pinMode(X_MS2_PIN,OUTPUT);  
+    pinMode(X_MS2_PIN,OUTPUT);
     pinMode(Y_MS1_PIN,OUTPUT);
     pinMode(Y_MS2_PIN,OUTPUT);
     pinMode(Z_MS1_PIN,OUTPUT);

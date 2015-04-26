@@ -797,7 +797,7 @@ void Config_PrintSettings(bool forReplay) {
       ECHO_LM(DB, "Filament settings: Disabled");
     }
   }
-  ConfigSD_PrintSettings(forReplay);
+  if (printer_usage_seconds > 0) ConfigSD_PrintSettings(forReplay);
 }
 
 void ConfigSD_PrintSettings(bool forReplay) {
@@ -872,6 +872,7 @@ void ConfigSD_PrintSettings(bool forReplay) {
     }
     card.closeFile(false);
     config_readed = true;
+    ConfigSD_PrintSettings(true);
   }
   
   int ConfigSD_KeyIndex(char *key) {    //At the moment a binary search algorithm is used for simplicity, if it will be necessary (Eg. tons of key), an hash search algorithm will be implemented.

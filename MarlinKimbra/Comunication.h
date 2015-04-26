@@ -42,7 +42,7 @@
 #define START       "start"                //start for host
 #define OK          "ok "                  //ok answer for host
 #define ER          "Error:"               //error for host
-#define DB          "echo: "                //message for user
+#define DB          "echo: "               //message for user
 #define RS          "Resend:"              //resend for host
 #define PAUSE       "//action:pause"       //command for host that support action
 #define RESUME      "//action:resume"      //command for host that support action
