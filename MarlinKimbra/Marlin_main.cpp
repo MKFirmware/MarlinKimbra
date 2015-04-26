@@ -4757,7 +4757,7 @@ inline void gcode_M226() {
       }
       else {
         ECHO_SM(ER, "Servo ");
-        ECHO_EMV(servo_index, " out of range");
+        ECHO_EVM(servo_index, " out of range");
       }
     }
     else if (servo_index >= 0) {
