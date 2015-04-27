@@ -4525,7 +4525,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #endif
 
 #ifdef POWER_CONSUMPTION
-  #define POWER_CONSUMPTION_PIN 4   // ANALOG NUMBERING
+  #define POWER_CONSUMPTION_PIN 5   // ANALOG NUMBERING
 #endif
 /****************************************************************************************/
 

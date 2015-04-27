@@ -348,16 +348,23 @@
   #define SERVO_LEVELING_DELAY (SERVO_LEVELING && PROBE_SERVO_DEACTIVATION_DELAY > 0)
 
   /**
-   * MAX_STEP_FREQUENCY differs for TOSHIBA
+   * MAX_STEP_FREQUENCY differs for TOSHIBA OR ARDUINO DUE OR ARDUINO MEGA
    */
-  #ifdef CONFIG_STEPPERS_TOSHIBA
-    #define MAX_STEP_FREQUENCY 10000 // Max step frequency for Toshiba Stepper Controllers
-    #define DOUBLE_STEP_FREQUENCY 10000
-  #elif defined (__SAM3X8E__)
-      #define MAX_STEP_FREQUENCY 320000
-      #define DOUBLE_STEP_FREQUENCY 90000  //96kHz is close to maximum for an Arduino Due
+  #ifdef __SAM3X8E__
+    #ifdef CONFIG_STEPPERS_TOSHIBA
+      #define MAX_STEP_FREQUENCY 120000 // Max step frequency for Toshiba Stepper Controllers
+      #define DOUBLE_STEP_FREQUENCY MAX_STEP_FREQUENCY
+    #else
+      #define MAX_STEP_FREQUENCY 320000    // Max step frequency for the Due is approx. 330kHz
+      #define DOUBLE_STEP_FREQUENCY 100000  //96kHz is close to maximum for an Arduino Due
+    #endif
   #else
-    #define MAX_STEP_FREQUENCY 40000 // Max step frequency for Arduino mega
+    #ifdef CONFIG_STEPPERS_TOSHIBA
+      #define MAX_STEP_FREQUENCY 10000 // Max step frequency for Toshiba Stepper Controllers
+      #define DOUBLE_STEP_FREQUENCY MAX_STEP_FREQUENCY
+    #else
+      #define MAX_STEP_FREQUENCY 40000 // Max step frequency for Arduino mega
+    #endif
   #endif
 
   // MS1 MS2 Stepper Driver Microstepping mode table
@@ -506,7 +513,7 @@
   #define HAS_SERVO_3 (PIN_EXISTS(SERVO3))
   #define HAS_FILAMENT_SENSOR (defined(FILAMENT_SENSOR) && PIN_EXISTS(FILWIDTH))
   #define HAS_POWER_CONSUMPTION_SENSOR (defined(POWER_CONSUMPTION) && PIN_EXISTS(POWER_CONSUMPTION))
-  #define HAS_FILRUNOUT (PIN_EXISTS(FILRUNOUT))
+  #define HAS_FILRUNOUT (defined(FILAMENT_RUNOUT_SENSOR) && PIN_EXISTS(FILRUNOUT))
   #define HAS_HOME (PIN_EXISTS(HOME))
   #define HAS_KILL (PIN_EXISTS(KILL))
   #define HAS_SUICIDE (PIN_EXISTS(SUICIDE))

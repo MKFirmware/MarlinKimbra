@@ -18,10 +18,17 @@ public:
   //this is to delay autostart and hence the initialisaiton of the sd card to some seconds after the normal init, so the device is available quick after a reset
 
   void checkautostart(bool x);
+<<<<<<< HEAD
   void openFile(char* name,bool read,bool replace_current=true, bool lcd_status=true);
   void openLogFile(char* name);
   void removeFile(char* name);
   void closeFile(bool store_location=false);
+=======
+  void openFile(char* name, bool read, bool replace_current = true, bool lcd_status = true);
+  void openLogFile(char* name);
+  void removeFile(char* name);
+  void closeFile(bool store_location = false);
+>>>>>>> origin/master
   void parseKeyLine(char *key, char *value, int &len_k, int &len_v);
   void unparseKeyLine(const char *key, char *value);
   void release();
@@ -30,7 +37,7 @@ public:
   void getStatus();
   void printingHasFinished();
 
-  void getfilename(uint16_t nr, const char* const match=NULL);
+  void getfilename(uint16_t nr, const char* const match = NULL);
   uint16_t getnrfilenames();
 
   void getAbsFilename(char *t);

@@ -81,7 +81,7 @@
 
 // Serial Console Messages (do not translate those!)
 
-#define MSG_Enqueueing                      "enqueueing \""
+#define MSG_ENQUEUEING                      "enqueueing \""
 #define MSG_POWERUP                         "PowerUp"
 #define MSG_EXTERNAL_RESET                  " External Reset"
 #define MSG_BROWNOUT_RESET                  " Brown out Reset"
@@ -116,9 +116,10 @@
 #define MSG_COUNT_X                         " Count X: "
 #define MSG_ERR_KILLED                      "Printer halted. kill() called!"
 #define MSG_ERR_STOPPED                     "Printer stopped due to errors. Fix the error and use M999 to restart. (Temperature is reset. Set it after restarting)"
-#define MSG_RESEND                          "Resend: "
 #define MSG_UNKNOWN_COMMAND                 "Unknown command: \""
+#define MSG_ACTIVE_DRIVER                   "Active Driver: "
 #define MSG_ACTIVE_EXTRUDER                 "Active Extruder: "
+#define MSG_ACTIVE_COLOR                    "Active Color: "
 #define MSG_INVALID_EXTRUDER                "Invalid extruder"
 #define MSG_INVALID_SOLENOID                "Invalid solenoid"
 #define MSG_X_MIN                           "x_min: "
@@ -152,6 +153,10 @@
 #define MSG_SD_NOT_PRINTING                 "Not SD printing"
 #define MSG_SD_ERR_WRITE_TO_FILE            "error writing to file"
 #define MSG_SD_CANT_ENTER_SUBDIR            "Cannot enter subdir: "
+#define MSG_SD_FILE_DELETED                 "File deleted:"
+#define MSG_SD_SLASH                        "/"
+#define MSG_SD_FILE_DELETION_ERR            "Deletion failed, File: "
+#define MSG_SD_MAX_DEPTH                    "trying to call sub-gcode files with too many levels. MAX level is:"
 
 #define MSG_STEPPER_TOO_HIGH                "Steprate too high: "
 #define MSG_ENDSTOPS_HIT                    "endstops hit: "
@@ -161,6 +166,17 @@
 #define MSG_BABYSTEPPING_Y                  "Babystepping Y"
 #define MSG_BABYSTEPPING_Z                  "Babystepping Z"
 #define MSG_SERIAL_ERROR_MENU_STRUCTURE     "Error in menu structure"
+#define MSG_MICROSTEP_MS1_MS2                "MS1,MS2 Pins"
+#define MSG_MICROSTEP_X                      "X:"
+#define MSG_MICROSTEP_Y                      "Y:"
+#define MSG_MICROSTEP_Z                      "Z:"
+#define MSG_MICROSTEP_E0                     "E0:"
+#define MSG_MICROSTEP_E1                     "E1:"
+#define MSG_ENDSTOP_X                        " X:"
+#define MSG_ENDSTOP_Y                        " Y:"
+#define MSG_ENDSTOP_Z                        " Z:"
+#define MSG_ENDSTOP_E                        " E:"
+#define MSG_ENDSTOP_ZP                       " ZP:"
 
 #define MSG_ERR_EEPROM_WRITE                "Error writing to EEPROM!"
 
@@ -181,25 +197,42 @@
 #define MSG_KP                              " Kp: "
 #define MSG_KI                              " Ki: "
 #define MSG_KD                              " Kd: "
-#define MSG_OK_B                            "ok B:"
-#define MSG_OK_T                            "ok T:"
+#define MSG_B                               " B:"
+#define MSG_T                               " T:"
 #define MSG_AT                              " @:"
 #define MSG_PID_AUTOTUNE_FINISHED           MSG_PID_AUTOTUNE " finished! Put the last Kp, Ki and Kd constants from above into Configuration.h or send command M500 for save in EEPROM the new value!"
-#define MSG_PID_DEBUG                       " PID_DEBUG "
-#define MSG_PID_DEBUG_INPUT                 ": Input "
-#define MSG_PID_DEBUG_OUTPUT                " Output "
-#define MSG_PID_DEBUG_PTERM                 " pTerm "
-#define MSG_PID_DEBUG_ITERM                 " iTerm "
-#define MSG_PID_DEBUG_DTERM                 " dTerm "
+
 #define MSG_HEATING_FAILED                  "Heating failed"
+#define MSG_THERMAL_RUNAWAY_STOP            "Thermal Runaway, system stopped! Heater_ID: "
+#define MSG_THERMAL_RUNAWAY_BED             "bed"
+#define MSG_TEMP_READ_ERROR                 "Temp measurement error!"
+#define MSG_TEMP_BED                        "bed"
 #define MSG_EXTRUDER_SWITCHED_OFF           "Extruder switched off. Temperature difference between temp sensors is too high !"
 
 #define MSG_INVALID_EXTRUDER_NUM            " - Invalid extruder number !"
-#define MSG_THERMAL_RUNAWAY_STOP            "Thermal Runaway, system stopped! Heater_ID: "
 #define MSG_SWITCHED_OFF_MAX                " switched off. MAXTEMP triggered !!"
 #define MSG_MINTEMP_EXTRUDER_OFF            ": Extruder switched off. MINTEMP triggered !"
 #define MSG_MAXTEMP_EXTRUDER_OFF            ": Extruder" MSG_SWITCHED_OFF_MAX
 #define MSG_MAXTEMP_BED_OFF                 "Heated bed" MSG_SWITCHED_OFF_MAX
+
+#define MSG_ENDSTOP_XS                        "X"
+#define MSG_ENDSTOP_YS                        "Y"
+#define MSG_ENDSTOP_ZS                        "Z"
+#define MSG_ENDSTOP_ZPS                       "ZP"
+#define MSG_ENDSTOP_ES                        "E"
+
+
+//watchdog.cpp
+#define MSG_WATCHDOG_RESET                  "Something is wrong, please turn off the printer."
+
+//other
+#define MSG_COMPILED                        "Compiled: "
+#define MSG_ERR_HOMING_DIV                  "The Homing Bump Feedrate Divisor cannot be less than 1"
+#define MSG_BED_LEVELLING_BED               "Bed"
+#define MSG_BED_LEVELLING_X                 " X: "
+#define MSG_BED_LEVELLING_Y                 " Y: "
+#define MSG_BED_LEVELLING_Z                 " Z: "
+#define MSG_DRYRUN_ENABLED                  "DEBUG DRYRUN ENABLED"
 
 // LCD Menu Messages
 

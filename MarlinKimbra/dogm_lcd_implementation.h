@@ -192,7 +192,7 @@ static void lcd_implementation_init() {
   #elif defined(LCD_SCREEN_ROT_270)
     u8g.setRot270();	// Rotate screen by 270°
   #endif
-	
+
   // Show splashscreen
   int offx = (u8g.getWidth() - START_BMPWIDTH) / 2;
   #ifdef START_BMPHIGH

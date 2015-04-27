@@ -36,13 +36,14 @@
 
 // Z-Probe variables
 // Start and end location values are used to deploy/retract the probe (will move from start to end and back again)
-#define PROBING_FEEDRATE 500                     // Speed for individual probe Use: G30 A F600
-#define Z_PROBE_OFFSET {0,0,-1,0}                // X, Y, Z, E distance between hotend nozzle and deployed bed leveling probe.
-#define Z_PROBE_DEPLOY_START_LOCATION {0,0,30,0} // X, Y, Z, E start location for z-probe deployment sequence
-#define Z_PROBE_DEPLOY_END_LOCATION {0,0,30,0}   // X, Y, Z, E end location for z-probe deployment sequence
-#define Z_PROBE_RETRACT_START_LOCATION {0,0,30,0}// X, Y, Z, E start location for z-probe retract sequence
-#define Z_PROBE_RETRACT_END_LOCATION {0,0,30,0}  // X, Y, Z, E end location for z-probe retract sequence
-#define AUTOLEVEL_GRID 20                        // Distance between autolevel Z probing points, should be less than print surface radius/3.
+#define PROBING_FEEDRATE 500                          // Speed for individual probe Use: G30 A F600
+#define Z_PROBE_OFFSET {0, 0, -1, 0}                  // X, Y, Z, E distance between hotend nozzle and deployed bed leveling probe.
+#define Z_PROBE_DEPLOY_START_LOCATION {0, 0, 30, 0}   // X, Y, Z, E start location for z-probe deployment sequence
+#define Z_PROBE_DEPLOY_END_LOCATION {0, 0, 30, 0}     // X, Y, Z, E end location for z-probe deployment sequence
+#define Z_PROBE_RETRACT_START_LOCATION {0, 0, 30, 0}  // X, Y, Z, E start location for z-probe retract sequence
+#define Z_PROBE_RETRACT_END_LOCATION {0, 0, 30, 0}    // X, Y, Z, E end location for z-probe retract sequence
+#define Z_RAISE_BETWEEN_PROBINGS 2                    // How much the extruder will be raised when travelling from between next probing points
+#define AUTOLEVEL_GRID 24                             // Distance between autolevel Z probing points, should be less than print surface radius/3.
 
 //===========================================================================
 //=============================Mechanical Settings===========================

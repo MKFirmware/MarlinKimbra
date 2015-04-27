@@ -276,34 +276,34 @@ static void lcd_status_screen() {
   #ifdef LCD_PROGRESS_BAR
     millis_t ms = millis();
     #ifndef PROGRESS_MSG_ONCE
-      if (ms > progressBarTick + PROGRESS_BAR_MSG_TIME + PROGRESS_BAR_BAR_TIME) {
-        progressBarTick = ms;
+      if (ms > progress_bar_ms + PROGRESS_BAR_MSG_TIME + PROGRESS_BAR_BAR_TIME) {
+        progress_bar_ms = ms;
       }
     #endif
     #if PROGRESS_MSG_EXPIRE > 0
       // Handle message expire
-      if (expireStatusMillis > 0) {
+      if (expire_status_ms > 0) {
         if (card.isFileOpen()) {
           // Expire the message when printing is active
           if (IS_SD_PRINTING) {
             // Expire the message when printing is active
-            if (ms >= expireStatusMillis) {
+            if (ms >= expire_status_ms) {
               lcd_status_message[0] = '\0';
-              expireStatusMillis = 0;
+              expire_status_ms = 0;
             }
           }
           else {
-            expireStatusMillis += LCD_UPDATE_INTERVAL;
+            expire_status_ms += LCD_UPDATE_INTERVAL;
           }
         }
         else {
-          expireStatusMillis = 0;
+          expire_status_ms = 0;
         }
       }
     #endif
   #endif //LCD_PROGRESS_BAR
 
-    lcd_implementation_status_screen();
+  lcd_implementation_status_screen();
 
   #if HAS_LCD_POWER_SENSOR
     if (millis() > print_millis + 2000) print_millis = millis();
@@ -675,7 +675,7 @@ void config_lcd_level_bed()
 {
 	setTargetHotend(0,0);
 
-	SERIAL_ECHOLN("Leveling...");	
+	ECHO_EM("Leveling...");	
 	currentMenu = lcd_level_bed;
 	enqueuecommands_P(PSTR("G28 M"));
 	pageShowInfo = 0;
@@ -816,26 +816,26 @@ static void lcd_prepare_menu() {
   }
 #endif // DELTA
 
-inline void line_to_current() {
+inline void line_to_current(AxisEnum axis) {
   #ifdef DELTA
     calculate_delta(current_position);
-    plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS], manual_feedrate[X_AXIS]/60, active_extruder, active_driver);
+    plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS], manual_feedrate[axis]/60, active_extruder, active_driver);
   #else
-    plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], manual_feedrate[X_AXIS]/60, active_extruder, active_driver);
+    plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], manual_feedrate[axis]/60, active_extruder, active_driver);
   #endif
 }
 
 float move_menu_scale;
 static void lcd_move_menu_axis();
 
-static void _lcd_move(const char *name, int axis, int min, int max) {
+static void _lcd_move(const char *name, AxisEnum axis, int min, int max) {
   if (encoderPosition != 0) {
     refresh_cmd_timeout();
     current_position[axis] += float((int)encoderPosition) * move_menu_scale;
     if (min_software_endstops && current_position[axis] < min) current_position[axis] = min;
     if (max_software_endstops && current_position[axis] > max) current_position[axis] = max;
     encoderPosition = 0;
-    line_to_current();
+    line_to_current(axis);
     lcdDrawUpdate = 1;
   }
   if (lcdDrawUpdate) lcd_implementation_drawedit(name, ftostr31(current_position[axis]));
@@ -848,7 +848,7 @@ static void lcd_move_e() {
   if (encoderPosition != 0) {
     current_position[E_AXIS] += float((int)encoderPosition) * move_menu_scale;
     encoderPosition = 0;
-    line_to_current();
+    line_to_current(E_AXIS);
     lcdDrawUpdate = 1;
   }
   if (lcdDrawUpdate) lcd_implementation_drawedit(PSTR("Extruder"), ftostr31(current_position[E_AXIS]));
@@ -1104,8 +1104,8 @@ static void lcd_control_motion_menu() {
     MENU_ITEM_EDIT(bool, MSG_ENDSTOP_ABORT, &abort_on_endstop_hit);
   #endif
   #ifdef SCARA
-    MENU_ITEM_EDIT(float74, MSG_XSCALE, &axis_scaling[X_AXIS],0.5,2);
-    MENU_ITEM_EDIT(float74, MSG_YSCALE, &axis_scaling[Y_AXIS],0.5,2);
+    MENU_ITEM_EDIT(float52, MSG_XSCALE, &axis_scaling[X_AXIS],0.5,2);
+    MENU_ITEM_EDIT(float52, MSG_YSCALE, &axis_scaling[Y_AXIS],0.5,2);
   #endif
   END_MENU();
 }
@@ -1310,23 +1310,18 @@ void lcd_quick_feedback() {
     #endif    
     lcd_buzz(LCD_FEEDBACK_FREQUENCY_DURATION_MS, LCD_FEEDBACK_FREQUENCY_HZ);
   #elif defined(BEEPER) && BEEPER > -1
-    SET_OUTPUT(BEEPER);
     #ifndef LCD_FEEDBACK_FREQUENCY_HZ
       #define LCD_FEEDBACK_FREQUENCY_HZ 5000
     #endif
     #ifndef LCD_FEEDBACK_FREQUENCY_DURATION_MS
       #define LCD_FEEDBACK_FREQUENCY_DURATION_MS 2
     #endif
-    const uint16_t delay = 1000000 / LCD_FEEDBACK_FREQUENCY_HZ / 2;
-    uint16_t i = LCD_FEEDBACK_FREQUENCY_DURATION_MS * LCD_FEEDBACK_FREQUENCY_HZ / 1000;
-    while (i--) {
-      WRITE(BEEPER,HIGH);
-      delayMicroseconds(delay);
-      WRITE(BEEPER,LOW);
-      delayMicroseconds(delay);
-    }
-    const uint16_t j = max(10000 - LCD_FEEDBACK_FREQUENCY_DURATION_MS * 1000, 0);
-    if (j) delayMicroseconds(j);
+    lcd_buzz(LCD_FEEDBACK_FREQUENCY_DURATION_MS, LCD_FEEDBACK_FREQUENCY_HZ);
+  #else
+    #ifndef LCD_FEEDBACK_FREQUENCY_DURATION_MS
+      #define LCD_FEEDBACK_FREQUENCY_DURATION_MS 2
+    #endif
+    delay(LCD_FEEDBACK_FREQUENCY_DURATION_MS);
   #endif
 }
 
@@ -1493,16 +1488,11 @@ void lcd_update() {
                 else if (encoderStepRate >= ENCODER_10X_STEPS_PER_SEC) encoderMultiplier = 10;
 
                 #ifdef ENCODER_RATE_MULTIPLIER_DEBUG
-                  SERIAL_ECHO_START;
-                  SERIAL_ECHO("Enc Step Rate: ");
-                  SERIAL_ECHO(encoderStepRate);
-                  SERIAL_ECHO("  Multiplier: ");
-                  SERIAL_ECHO(encoderMultiplier);
-                  SERIAL_ECHO("  ENCODER_10X_STEPS_PER_SEC: ");
-                  SERIAL_ECHO(ENCODER_10X_STEPS_PER_SEC);
-                  SERIAL_ECHO("  ENCODER_100X_STEPS_PER_SEC: ");
-                  SERIAL_ECHOLN(ENCODER_100X_STEPS_PER_SEC);
-                #endif //ENCODER_RATE_MULTIPLIER_DEBUG
+                  ECHO_SMV(DB, "Enc Step Rate: ", encoderStepRate);
+                  ECHO_MV("  Multiplier: ", encoderMultiplier);
+                  ECHO_MV("  ENCODER_10X_STEPS_PER_SEC: ", ENCODER_10X_STEPS_PER_SEC);
+                  ECHO_EMV("  ENCODER_100X_STEPS_PER_SEC: ", ENCODER_100X_STEPS_PER_SEC);
+                #endif
               }
 
               lastEncoderMovementMillis = ms;
@@ -1567,9 +1557,9 @@ void lcd_ignore_click(bool b) {
 
 void lcd_finishstatus(bool persist=false) {
   #ifdef LCD_PROGRESS_BAR
-    progressBarTick = millis();
+    progress_bar_ms = millis();
     #if PROGRESS_MSG_EXPIRE > 0
-      expireStatusMillis = persist ? 0 : progressBarTick + PROGRESS_MSG_EXPIRE;
+      expire_status_ms = persist ? 0 : progress_bar_ms + PROGRESS_MSG_EXPIRE;
     #endif
   #endif
   lcdDrawUpdate = 2;
@@ -1580,7 +1570,7 @@ void lcd_finishstatus(bool persist=false) {
 }
 
 #if defined(LCD_PROGRESS_BAR) && PROGRESS_MSG_EXPIRE > 0
-  void dontExpireStatus() { expireStatusMillis = 0; }
+  void dontExpireStatus() { expire_status_ms = 0; }
 #endif
 
 void set_utf_strlen(char *s, uint8_t n) {
@@ -1592,6 +1582,8 @@ void set_utf_strlen(char *s, uint8_t n) {
   while (j++ < n) s[i++] = ' ';
   s[i] = 0;
 }
+
+bool lcd_hasstatus() { return (lcd_status_message[0] != '\0'); }
 
 void lcd_setstatus(const char* message, bool persist) {
   if (lcd_status_message_level > 0) return;
@@ -1718,9 +1710,20 @@ bool lcd_detected(void) {
 }
 
 void lcd_buzz(long duration, uint16_t freq) {
-  #ifdef LCD_USE_I2C_BUZZER
-    lcd.buzz(duration,freq);
-  #endif
+  if (freq > 0) {
+    #if BEEPER > 0
+      SET_OUTPUT(BEEPER);
+      tone(BEEPER, freq, duration);
+      delay(duration);
+    #elif defined(LCD_USE_I2C_BUZZER)
+      lcd.buzz(duration, freq);
+    #else
+      delay(duration);
+    #endif
+  }
+  else {
+    delay(duration);
+  }
 }
 
 bool lcd_clicked() { return LCD_CLICKED; }

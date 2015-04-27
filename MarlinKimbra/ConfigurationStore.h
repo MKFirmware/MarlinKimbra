@@ -29,7 +29,11 @@ void ConfigSD_ResetDefault();
     #endif
     "TME",
   };
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> origin/master
   enum cfgSD_ENUM {	//This need to be in the same order as cfgSD_KEY
     #ifdef POWER_CONSUMPTION
       SD_CFG_PWR,
@@ -37,7 +41,11 @@ void ConfigSD_ResetDefault();
     SD_CFG_TME,
     SD_CFG_END //Leave this always as the last
   };
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> origin/master
   void ConfigSD_StoreSettings();
   void ConfigSD_RetrieveSettings(bool addValue = false);
   int ConfigSD_KeyIndex(char *key);

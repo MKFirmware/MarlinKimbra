@@ -8,10 +8,14 @@
 #ifndef LANGUAGE_IT_H
 #define LANGUAGE_IT_H
 
-#define MAPPER_NON
-// Define SIMULATE_ROMFONT to see what is seen on the character based display defined in Configuration.h
-//#define SIMULATE_ROMFONT
-#define DISPLAY_CHARSET_ISO10646_1
+#if !( defined(MAPPER_NON)|| defined(MAPPER_C2C3)|| defined(MAPPER_D0D1)|| defined(MAPPER_D0D1_MOD)|| defined(MAPPER_E382E383) )
+  #define MAPPER_NON         // For direct asci codes
+#endif
+
+//#define SIMULATE_ROMFONT //Comment in to see what is seen on the character based displays
+#if !( defined(SIMULATE_ROMFONT)|| defined(DISPLAY_CHARSET_ISO10646_1)|| defined(DISPLAY_CHARSET_ISO10646_5)|| defined(DISPLAY_CHARSET_ISO10646_KANA) )
+  #define DISPLAY_CHARSET_ISO10646_1 // use the better font on full graphic displays.
+#endif
 
 #define WELCOME_MSG                         MACHINE_NAME " pronta."
 #define MSG_SD_INSERTED                     "SD Card inserita"
@@ -138,7 +142,8 @@
 #define MSG_BABYSTEP_Y                      "Babystep Y"
 #define MSG_BABYSTEP_Z                      "Babystep Z"
 #define MSG_ENDSTOP_ABORT                   "Finecorsa abort"
-
+#define MSG_END_HOUR                        "ore"
+#define MSG_END_MINUTE                      "minuti"
 #define MSG_HEATING_FAILED_LCD              "Heating failed"
 #define MSG_ERR_REDUNDANT_TEMP              "Err: REDUNDANT TEMP ERROR"
 #define MSG_THERMAL_RUNAWAY                 "THERMAL RUNAWAY"
@@ -146,8 +151,6 @@
 #define MSG_ERR_MINTEMP                     "Err: MINTEMP"
 #define MSG_ERR_MAXTEMP_BED                 "Err: MAXTEMP BED"
 
-#define MSG_END_HOUR                        "ore"
-#define MSG_END_MINUTE                      "minuti"
 
 #ifdef DELTA
   #define MSG_DELTA_CALIBRATE               "Calibraz. Delta"
@@ -156,6 +159,11 @@
   #define MSG_DELTA_CALIBRATE_Z             "Calibra Z"
   #define MSG_DELTA_CALIBRATE_CENTER        "Calibra Centro"
 #endif // DELTA
+
+#ifdef SCARA
+  #define MSG_XSCALE                        "X Scale"
+  #define MSG_YSCALE                        "Y Scale"
+#endif
 
 #define MSG_LASER                           "Laser Preset"
 #define MSG_CONFIG                          "Configurazione"

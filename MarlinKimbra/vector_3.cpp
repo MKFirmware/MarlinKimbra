@@ -60,14 +60,10 @@ void vector_3::apply_rotation(matrix_3x3 matrix) {
 }
 
 void vector_3::debug(const char title[]) {
-	SERIAL_PROTOCOL(title);
-	SERIAL_PROTOCOLPGM(" x: ");
-	SERIAL_PROTOCOL_F(x, 6);
-	SERIAL_PROTOCOLPGM(" y: ");
-	SERIAL_PROTOCOL_F(y, 6);
-	SERIAL_PROTOCOLPGM(" z: ");
-	SERIAL_PROTOCOL_F(z, 6);
-	SERIAL_EOL;
+  ECHO_SV(DB, title);
+  ECHO_MV(" x: ", x, 6);
+  ECHO_MV(" y: ", y, 6);
+  ECHO_EMV(" z: ", z, 6);
 }
 
 void apply_rotation_xyz(matrix_3x3 matrix, float &x, float& y, float& z) {
@@ -121,18 +117,18 @@ matrix_3x3 matrix_3x3::transpose(matrix_3x3 original) {
 }
 
 void matrix_3x3::debug(const char title[]) {
-  SERIAL_PROTOCOLLN(title);
+  ECHO_LV(DB, title);
   int count = 0;
-  for(int i=0; i<3; i++) {
-    for(int j=0; j<3; j++) {
-      if (matrix[count] >= 0.0) SERIAL_PROTOCOLCHAR('+');
-      SERIAL_PROTOCOL_F(matrix[count], 6);
-      SERIAL_PROTOCOLCHAR(' ');
+  for(int i = 0; i < 3; i++) {
+    ECHO_S(DB);
+    for(int j = 0; j < 3; j++) {
+      if (matrix[count] >= 0.0) ECHO_C('+');
+      ECHO_V(matrix[count], 6);
+      ECHO_C(' ');
       count++;
     }
-    SERIAL_EOL;
+    ECHO_E;
   }
 }
 
 #endif // ENABLE_AUTO_BED_LEVELING
-
