@@ -25,7 +25,7 @@
 #include "stepper_indirection.h"
 
 #if MB(ALLIGATOR)
-  #include "ExternalDac.h"
+  #include "external_dac.h"
 #endif
 
 #if DRIVER_EXTRUDERS > 3

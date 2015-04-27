@@ -240,7 +240,9 @@ extern bool axis_known_position[3];
 extern float lastpos[4];
 extern float zprobe_zoffset;
 
+// Lifetime stats
 extern unsigned long printer_usage_seconds;  //this can old about 136 year before go overflow. If you belive that you can live more than this please contact me.
+extern millis_t config_last_update;
 
 #ifdef PREVENT_DANGEROUS_EXTRUDE
   extern float extrude_min_temp;
@@ -293,15 +295,6 @@ extern int fanSpeed;
   extern int laser_ttl_modulation;
 #endif
 
-#if defined(SDSUPPORT) && defined(SD_SETTINGS)
-<<<<<<< HEAD
-  extern unsigned long config_last_update;
-=======
-  extern millis_t config_last_update;
->>>>>>> origin/master
-  extern bool config_readed;
-#endif
-
 extern millis_t print_job_start_ms;
 extern millis_t print_job_stop_ms;
 
@@ -314,7 +307,16 @@ extern uint8_t active_driver;
   extern void digipot_i2c_init();
 #endif
 
-// Debug with repetier
+/**
+ * Debug with repetier
+ */
+enum DebugFlags {
+  DEBUG_ECHO          = BIT(0),
+  DEBUG_INFO          = BIT(1),
+  DEBUG_ERRORS        = BIT(2),
+  DEBUG_DRYRUN        = BIT(3),
+  DEBUG_COMMUNICATION = BIT(4)
+};
 extern uint8_t debugLevel;
 extern inline bool debugDryrun() {
   return ((debugLevel & 8) != 0);

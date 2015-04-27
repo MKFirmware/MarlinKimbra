@@ -11,7 +11,7 @@
 #ifndef CONFIGURATION_ADV_H
 #define CONFIGURATION_ADV_H
 
-#include "Conditionals.h"
+#include "conditionals.h"
 
 //===========================================================================
 //=============================Thermal Settings  ============================
@@ -46,22 +46,17 @@
 //The M105 command return, besides traditional information, the ADC value read from temperature sensors.
 //#define SHOW_TEMP_ADC_VALUES
 
-<<<<<<< HEAD
-//  extruder idle oozing prevention
-//if the extruder motor is idle for more than SECONDS, and the temperature over MINTEMP, some filament is retracted. The filament retracted is re-added before the next extrusion
-//or when the target temperature is less than EXTRUDE_MINTEMP.
-=======
 //extruder idle oozing prevention
 //if the extruder motor is idle for more than SECONDS, and the temperature over MINTEMP,
 //some filament is retracted. The filament retracted is re-added before the next extrusion
 //or when the target temperature is less than EXTRUDE_MINTEMP and the actual temperature
 //is greater than IDLE_OOZING_MINTEMP and less than IDLE_OOZING_FEEDRATE
->>>>>>> origin/master
 //#define IDLE_OOZING_PREVENT
-#define IDLE_OOZING_MINTEMP           EXTRUDE_MINTEMP + 25
+#define IDLE_OOZING_MINTEMP           EXTRUDE_MINTEMP + 5
+#define IDLE_OOZING_MAXTEMP           IDLE_OOZING_MINTEMP + 5
 #define IDLE_OOZING_FEEDRATE          45    //default feedrate for retracting (mm/s)
 #define IDLE_OOZING_SECONDS           10
-#define IDLE_OOZING_LENGTH            10    //default retract length (positive mm)
+#define IDLE_OOZING_LENGTH            15    //default retract length (positive mm)
 #define IDLE_OOZING_RECOVER_LENGTH     0    //default additional recover length (mm, added to retract length when recovering)
 #define IDLE_OOZING_RECOVER_FEEDRATE  50    //default feedrate for recovering from retraction (mm/s)
 
@@ -526,7 +521,7 @@ const unsigned int dropsegments=5; //everything with less than this number of st
   
 #endif
 
-#include "Conditionals.h"
-#include "SanityCheck.h"
+#include "conditionals.h"
+#include "sanitycheck.h"
 
 #endif //CONFIGURATION_ADV_H

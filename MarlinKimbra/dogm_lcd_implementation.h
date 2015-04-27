@@ -273,9 +273,9 @@ static void lcd_implementation_status_screen() {
       #if HAS_LCD_POWER_SENSOR
         if (millis() < print_millis + 1000) {
           uint16_t time = (millis() - print_job_start_ms) / 60000;
-          lcd_print(itostr2(time / 60));
+          lcd_print(itostr2(time/60));
           lcd_print(':');
-          lcd_print(itostr2(time % 60));
+          lcd_print(itostr2(time%60));
         }
         else {
           lcd_print(itostr4(power_consumption_hour-startpower));
@@ -283,9 +283,9 @@ static void lcd_implementation_status_screen() {
         }
       #else
         uint16_t time = (millis() - print_job_start_ms) / 60000;
-        lcd_print(itostr2(time / 60));
+        lcd_print(itostr2(time/60));
         lcd_print(':');
-        lcd_print(itostr2(time % 60));
+        lcd_print(itostr2(time%60));
       #endif
     }
     else {

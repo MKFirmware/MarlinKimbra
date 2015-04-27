@@ -1040,7 +1040,7 @@ float junction_deviation = 0.1;
     float nx = position[X_AXIS] = lround(x * axis_steps_per_unit[X_AXIS]);
     float ny = position[Y_AXIS] = lround(y * axis_steps_per_unit[Y_AXIS]);
     float nz = position[Z_AXIS] = lround(z * axis_steps_per_unit[Z_AXIS]);
-    float ne = position[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + extruder]);
+    float ne = position[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + active_extruder]);
     st_set_position(nx, ny, nz, ne);
     previous_nominal_speed = 0.0; // Resets planner junction speeds. Assumes start from rest.
 
@@ -1048,7 +1048,7 @@ float junction_deviation = 0.1;
   }
 
 void plan_set_e_position(const float &e) {
-  position[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + extruder]);  
+  position[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + active_extruder]);  
   st_set_e_position(position[E_AXIS]);
 }
 

@@ -795,21 +795,12 @@ static void updateTemperaturesFromRawValues() {
       watt_overflow--;
     }
   #endif
-<<<<<<< HEAD
-  
-  static unsigned int second_overflow = 0;
-  second_overflow += from_last_update;
-  if(second_overflow >= 1000) {
-	printer_usage_seconds++;
-	second_overflow -= 1000;
-=======
 
   static unsigned int second_overflow = 0;
   second_overflow += from_last_update;
   if(second_overflow >= 1000) {
     printer_usage_seconds++;
     second_overflow -= 1000;
->>>>>>> origin/master
   }
   last_update = temp_last_update;
   //Reset the watchdog after we know we have a temperature measurement.

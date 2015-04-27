@@ -21,9 +21,14 @@
 #define BOARD_RAMBO             301  // Rambo
 
 #define BOARD_DUEMILANOVE_328P  4    // Duemilanove w/ ATMega328P pin assignments
+#define BOARD_RADDS             402  // RADDS
+#define BOARD_RAMPS_FDV1        403  // RAMPS-FD V1
+#define BOARD_RAMPS_FDV2        404  // RAMPS-FD V2
+#define BOARD_RAMPS4DUE         433  // RAMPS4DUE with AndrewBCN's RAMPS mods (http://forums.reprap.org/read.php?219,479626,page=1)
 
 #define BOARD_GEN6              5    // Gen6
 #define BOARD_GEN6_DELUXE       51   // Gen6 deluxe
+#define BOARD_ALLIGATOR         502  // ALLIGATOR R2 ARM 32
 
 #define BOARD_SANGUINOLOLU_11   6    // Sanguinololu < 1.2
 #define BOARD_SANGUINOLOLU_12   62   // Sanguinololu 1.2 and above
