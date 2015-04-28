@@ -2345,87 +2345,27 @@
 //32Mb
 #define SPI_FLASH_CS          23 //PA14
 
-#ifdef ULTRA_LCD
-  #ifdef NEWPANEL
-    #ifdef PANEL_ONE
-      #define LCD_PINS_RS 40
-      #define LCD_PINS_ENABLE 42
-      #define LCD_PINS_D4 65
-      #define LCD_PINS_D5 66
-      #define LCD_PINS_D6 44
-      #define LCD_PINS_D7 64
-    #else
-      #define LCD_PINS_RS 16
-      #define LCD_PINS_ENABLE 17
-      #define LCD_PINS_D4 23
-      #define LCD_PINS_D5 25
-      #define LCD_PINS_D6 27
-      #define LCD_PINS_D7 29
-    #endif //PANEL_ONE
+/** Display **/
 
-    #ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
-      #define BEEPER        37
+// GLCD on expansion port
+#ifdef REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
 
-      #define BTN_EN1       31
-      #define BTN_EN2       33
-      #define BTN_ENC       35
+  #define LCD_PINS_RS         18
+  #define LCD_PINS_ENABLE     15
+  #define LCD_PINS_D4         19
+  #define BEEPER              64
 
-      #define SDCARDDETECT  49
-    #elif defined(LCD_I2C_PANELOLU2)
-      #define BTN_EN1       47  //reverse if the encoder turns the wrong way.
-      #define BTN_EN2       43
-      #define BTN_ENC       32
-      #define LCD_SDSS      53
-      #define SDCARDDETECT  -1
-      #define KILL_PIN      41
-    #elif defined(LCD_I2C_VIKI)
-      #define BTN_EN1       22  //reverse if the encoder turns the wrong way.
-      #define BTN_EN2        7
-      #define BTN_ENC       -1
-      #define LCD_SDSS      53
-      #define SDCARDDETECT  49
-    #else
-      //arduino pin which triggers an piezzo beeper
-      #define BEEPER        33  // Beeper on AUX-4
+  #define BTN_EN1             14
+  #define BTN_EN2             16
+  #define BTN_ENC             17
+  
+  #if UI_VOLTAGE_LEVEL != 1
+    #undef UI_VOLTAGE_LEVEL
+    #define UI_VOLTAGE_LEVEL 1
+  #endif
+     
+#endif //REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
 
-      //buttons are directly attached using AUX-2
-      #ifdef REPRAPWORLD_KEYPAD
-        #define BTN_EN1     64 // encoder
-        #define BTN_EN2     59 // encoder
-        #define BTN_ENC     63 // enter button
-        #define SHIFT_OUT   40 // shift register
-        #define SHIFT_CLK   44 // shift register
-        #define SHIFT_LD    42 // shift register
-      #elif defined(PANEL_ONE)
-        #define BTN_EN1     59 // AUX2 PIN 3
-        #define BTN_EN2     63 // AUX2 PIN 4
-        #define BTN_ENC     49 // AUX3 PIN 7
-      #else
-        #define BTN_EN1     37
-        #define BTN_EN2     35
-        #define BTN_ENC     31  //the click
-      #endif
-    #endif
-
-  #else //old style panel with shift register
-    //arduino pin witch triggers an piezzo beeper
-    #define BEEPER              33   //No Beeper added
-
-    //buttons are attached to a shift register
-    // Not wired this yet
-    //#define SHIFT_CLK         38
-    //#define SHIFT_LD          42
-    //#define SHIFT_OUT         40
-    //#define SHIFT_EN          17
-
-    #define LCD_PINS_RS         16
-    #define LCD_PINS_ENABLE     17
-    #define LCD_PINS_D4         23
-    #define LCD_PINS_D5         25
-    #define LCD_PINS_D6         27
-    #define LCD_PINS_D7         29
-  #endif //NEWPANEL
-#endif //ULTRA_LCD
 
 #endif //ALLIGATOR
 /****************************************************************************************/

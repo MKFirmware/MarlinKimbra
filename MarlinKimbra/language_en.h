@@ -52,6 +52,7 @@
 #define MSG_EXTRUDE                         "Extrude"
 #define MSG_RETRACT                         "Retract"
 #define MSG_MOVE_AXIS                       "Move axis"
+#define MSG_LEVEL_BED                       "Level bed"
 #define MSG_MOVE_X                          "Move X"
 #define MSG_MOVE_Y                          "Move Y"
 #define MSG_MOVE_Z                          "Move Z"
