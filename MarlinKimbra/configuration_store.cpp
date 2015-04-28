@@ -20,77 +20,77 @@
  * V21 EEPROM Layout:
  *
  *  ver
- *  axis_steps_per_unit (x7)
- *  max_feedrate (x7)
- *  retraction_feedrate (x4)
- *  max_acceleration_units_per_sq_second (x7)
- *  acceleration
- *  retract_acceleration
- *  travel_acceleration
- *  minimumfeedrate
- *  mintravelfeedrate
- *  minsegmenttime
- *  max_xy_jerk
- *  max_z_jerk
- *  max_e_jerk
- *  home_offset (x3)
- *  zprobe_zoffset
+ *  M92   XYZ E0 E1 E2 E3 axis_steps_per_unit (x7)
+ *  M203  XYZ E0 E1 E2 E3 max_feedrate (x7)
+ *  M???      E0 E1 E2 E3 retraction_feedrate (x4)
+ *  M201  XYZ E0 E1 E2 E3 max_acceleration_units_per_sq_second (x7)
+ *  M204  P               acceleration
+ *  M204  R               retract_acceleration
+ *  M204  T               travel_acceleration
+ *  M205  S               minimumfeedrate
+ *  M205  T               mintravelfeedrate
+ *  M205  B               minsegmenttime
+ *  M205  X               max_xy_jerk
+ *  M205  Z               max_z_jerk
+ *  M205  E               max_e_jerk
+ *  M206  XYZ             home_offset (x3)
+ *  M666  P               zprobe_zoffset
  *
  * HOTEND OFFSET:
- *  hotend_offset (x4)
+ *  M218 T  XY            hotend_offset (x4) (T0..3)
  *
  * DELTA:
- *  endstop_adj (x3)
- *  delta_radius
- *  delta_diagonal_rod
- *  max_pos
- *  tower_adj (x3)
- *  z_probe_offset
+ *  M666  XYZ             endstop_adj (x3)
+ *  M666  ABCDEFG         tower_adj (x6) 
+ *  M666  R               delta_radius
+ *  M666  D               delta_diagonal_rod
+ *  M666  H               Z max_pos
+ *  M666  P               z_probe_offset
  *
  * Z_DUAL_ENDSTOPS
- *  z_endstop_adj
+ *  M666  Z               z_endstop_adj
  *
  * ULTIPANEL:
- *  plaPreheatHotendTemp
- *  plaPreheatHPBTemp
- *  plaPreheatFanSpeed
- *  absPreheatHotendTemp
- *  absPreheatHPBTemp
- *  absPreheatFanSpeed
- *  gumPreheatHotendTemp
- *  gumPreheatHPBTemp
- *  gumPreheatFanSpeed
+ *  M145  S0  H           plaPreheatHotendTemp
+ *  M145  S0  B           plaPreheatHPBTemp
+ *  M145  S0  F           plaPreheatFanSpeed
+ *  M145  S1  H           absPreheatHotendTemp
+ *  M145  S1  B           absPreheatHPBTemp
+ *  M145  S1  F           absPreheatFanSpeed
+ *  M145  S2  H           gumPreheatHotendTemp
+ *  M145  S2  B           gumPreheatHPBTemp
+ *  M145  S2  F           gumPreheatFanSpeed
  *
  * PIDTEMP:
- *  Kp[0], Ki[0], Kd[0]
- *  Kp[1], Ki[1], Kd[1]
- *  Kp[2], Ki[2], Kd[2]
- *  Kp[3], Ki[3], Kd[3]
+ *  M301  E0  PID         Kp[0], Ki[0], Kd[0]
+ *  M301  E1  PID         Kp[1], Ki[1], Kd[1]
+ *  M301  E2  PID         Kp[2], Ki[2], Kd[2]
+ *  M301  E3  PID         Kp[3], Ki[3], Kd[3]
  *
  * PIDTEMPBED:
- *  bedKp, bedKi, bedKd
+ *  M304      PID         bedKp, bedKi, bedKd
  *
  * DOGLCD:
- *  lcd_contrast
+ *  M250  C               lcd_contrast
  *
  * SCARA:
- *  axis_scaling (x3)
+ *  M365  XYZ             axis_scaling (x3)
  *
  * FWRETRACT:
- *  autoretract_enabled
- *  retract_length
- *  retract_length_swap
- *  retract_feedrate
- *  retract_zlift
- *  retract_recover_length
- *  retract_recover_length_swap
- *  retract_recover_feedrate
+ *  M209  S               autoretract_enabled
+ *  M207  S               retract_length
+ *  M207  W               retract_length_swap
+ *  M207  F               retract_feedrate
+ *  M207  Z               retract_zlift
+ *  M208  S               retract_recover_length
+ *  M208  W               retract_recover_length_swap
+ *  M208  F               retract_recover_feedrate
  *
- *  volumetric_enabled
+ *  M200  D               volumetric_enabled (D>0 makes this enabled)
  *
- *  filament_size (x4)
+ *  M200  T D             filament_size (x4) (T0..3)
  *
- *  idleoozing_enabled
+ *  M???  S               idleoozing_enabled
  *
  *
  *
@@ -127,8 +127,6 @@ void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size) {
 #define EEPROM_WRITE_VAR(pos, value) _EEPROM_writeData(pos, (uint8_t*)&value, sizeof(value))
 #define EEPROM_READ_VAR(pos, value) _EEPROM_readData(pos, (uint8_t*)&value, sizeof(value))
 
-//======================================================================================
-
 #define DUMMY_PID_VALUE 3000.0f
 
 #define EEPROM_OFFSET 100
@@ -137,6 +135,9 @@ void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size) {
 
 #ifdef EEPROM_SETTINGS
 
+/**
+ * Store Configuration Settings - M500
+ */
 void Config_StoreSettings() {
   float dummy = 0.0f;
   char ver[4] = "000";
@@ -272,12 +273,16 @@ void Config_StoreSettings() {
   ECHO_EM(" bytes)");
 }
 
+/**
+ * Retrieve Configuration Settings - M501
+ */
 void Config_RetrieveSettings() {
 
   int i = EEPROM_OFFSET;
   char stored_ver[4];
   char ver[4] = EEPROM_VERSION;
   EEPROM_READ_VAR(i, stored_ver); //read stored version
+  //  ECHO_EM("Version: [" << ver << "] Stored version: [" << stored_ver << "]");
 
   if (strncmp(ver, stored_ver, 3) != 0) {
     Config_ResetDefault();
@@ -432,12 +437,15 @@ void Config_RetrieveSettings() {
 
 #endif // EEPROM_SETTINGS
 
+/**
+ * Reset Configuration Settings - M502
+ */
 void Config_ResetDefault() {
 
   float tmp1[] = DEFAULT_AXIS_STEPS_PER_UNIT;
   float tmp2[] = DEFAULT_MAX_FEEDRATE;
   float tmp3[] = DEFAULT_RETRACTION_MAX_FEEDRATE;
-  long tmp4[]  = DEFAULT_MAX_ACCELERATION;
+  long  tmp4[]  = DEFAULT_MAX_ACCELERATION;
   #ifdef PIDTEMP
     float tmp5[] = DEFAULT_Kp;
     float tmp6[] = DEFAULT_Ki;
@@ -564,6 +572,9 @@ void Config_ResetDefault() {
 
 #ifndef DISABLE_M503
 
+/**
+ * Print Configuration Settings - M502
+ */
 void Config_PrintSettings(bool forReplay) {
   // Always have this function, even with EEPROM_SETTINGS disabled, the current values will be shown
 
@@ -723,6 +734,24 @@ void Config_PrintSettings(bool forReplay) {
     }
     ECHO_LMV(DB, "  M666 P", zprobe_zoffset);
   #endif // DELTA
+
+  #ifdef ULTIPANEL
+    if (!forReplay) {
+      ECHO_LM(DB, "Material heatup parameters:");
+    }
+    ECHO_SMV(DB, "  M145 M0 H", plaPreheatHotendTemp);
+    ECHO_MV(" B", plaPreheatHPBTemp);
+    ECHO_MV(" F", plaPreheatFanSpeed);
+    ECHO_EM(" (Material PLA)");
+    ECHO_SMV(DB, "  M145 M1 H", absPreheatHotendTemp);
+    ECHO_MV(" B", absPreheatHPBTemp);
+    ECHO_MV(" F", absPreheatFanSpeed);
+    ECHO_EM(" (Material ABS)");
+    ECHO_SMV(DB, "  M145 M2 H", gumPreheatHotendTemp);
+    ECHO_MV(" B", gumPreheatHPBTemp);
+    ECHO_MV(" F", gumPreheatFanSpeed);
+    ECHO_EM(" (Material GUM)");
+  #endif // ULTIPANEL
 
   #if defined(PIDTEMP) || defined(PIDTEMPBED)
     if (!forReplay) {

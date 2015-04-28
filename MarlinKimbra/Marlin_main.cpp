@@ -138,7 +138,7 @@
  *        IF AUTOTEMP is enabled, S<mintemp> B<maxtemp> F<factor>. Exit autotemp by any M109 without F
  * M111 - Set debug flags with S<mask>. See flag bits defined in Marlin.h.
  * M112 - Emergency stop
- * M114 - Output current position to serial port
+ * M114 - Output current position to serial port, (V)erbose for user
  * M115 - Capabilities string
  * M117 - display message
  * M119 - Output Endstop status to serial port
@@ -149,6 +149,7 @@
  * M128 - EtoP Open (BariCUDA EtoP = electricity to air pressure transducer by jmil)
  * M129 - EtoP Closed (BariCUDA EtoP = electricity to air pressure transducer by jmil)
  * M140 - Set bed target temp
+ * M145 - Set the heatup state H<hotend> B<bed> F<fan speed> for S<material> (0=PLA, 1=ABS)
  * M150 - Set BlinkM Color Output R: Red<0-255> U(!): Green<0-255> B: Blue<0-255> over i2c, G for green does not work.
  * M190 - Sxxx Wait for bed current temp to reach target temp. Waits only when heating
  *        Rxxx Wait for bed current temp to reach target temp. Waits when heating and cooling
@@ -334,7 +335,7 @@ millis_t config_last_update = 0;
 #endif
 
 #ifdef DELTA
-  float endstop_adj[3] = { 0, 0, 0 };
+  float delta[3] = { 0.0 };
   float tower_adj[6] = { 0, 0, 0, 0, 0, 0 };
   float delta_radius; // = DEFAULT_delta_radius;
   float delta_diagonal_rod; // = DEFAULT_DELTA_DIAGONAL_ROD;
@@ -357,7 +358,6 @@ millis_t config_last_update = 0;
       { 0, 0, 0 },
       { 0, 0, 0 },
       };
-  float delta[3] = { 0.0, 0.0, 0.0 };
   float delta_tmp[3] = { 0.0, 0.0, 0.0 };
   float probing_feedrate = PROBING_FEEDRATE;
   float default_z_probe_offset[] = Z_PROBE_OFFSET;
@@ -368,6 +368,7 @@ millis_t config_last_update = 0;
   float z_probe_retract_end_location[] = Z_PROBE_RETRACT_END_LOCATION;
   #define SIN_60 0.8660254037844386
   #define COS_60 0.5
+  float endstop_adj[3] = { 0 };
   static float bed_level[7][7] = {
       { 0, 0, 0, 0, 0, 0, 0 },
       { 0, 0, 0, 0, 0, 0, 0 },
@@ -696,7 +697,7 @@ void setup() {
     for (int8_t i = 0; i < BUFSIZE; i++) fromsd[i] = false;
   #endif
 
-    // load lifetime stats and power consumation from EEPROM
+  // load lifetime stats and power consumation from EEPROM
   load_lifetime_stats();
 
   // loads data from EEPROM if available else uses defaults (and resets step acceleration rate)
@@ -1048,6 +1049,81 @@ XYZ_CONSTS_FROM_CONFIG(signed char, home_dir,  HOME_DIR);
 
 #endif //DUAL_X_CARRIAGE
 
+static void axis_is_at_home(int axis) {
+
+  #ifdef DUAL_X_CARRIAGE
+    if (axis == X_AXIS) {
+      if (active_extruder != 0) {
+        current_position[X_AXIS] = x_home_pos(active_extruder);
+                 min_pos[X_AXIS] = X2_MIN_POS;
+                 max_pos[X_AXIS] = max(hotend_offset[X_AXIS][1], X2_MAX_POS);
+        return;
+      }
+      else if (dual_x_carriage_mode == DXC_DUPLICATION_MODE) {
+        float xoff = home_offset[X_AXIS];
+        current_position[X_AXIS] = base_home_pos(X_AXIS) + xoff;
+                 min_pos[X_AXIS] = base_min_pos(X_AXIS) + xoff;
+                 max_pos[X_AXIS] = min(base_max_pos(X_AXIS) + xoff, max(hotend_offset[X_AXIS][1], X2_MAX_POS) - duplicate_extruder_x_offset);
+        return;
+      }
+    }
+  #endif
+
+  #ifdef SCARA
+
+    if (axis == X_AXIS || axis == Y_AXIS) {
+
+      float homeposition[3];
+      for (int i = 0; i < 3; i++) homeposition[i] = base_home_pos(i);
+
+      // ECHO_SMV(DB, "homeposition[x]= ", homeposition[0]);
+      // ECHO_EMV("homeposition[y]= ", homeposition[1]);
+      // Works out real Homeposition angles using inverse kinematics, 
+      // and calculates homing offset using forward kinematics
+      calculate_delta(homeposition);
+
+      // ECHO_SMV(DB,"base Theta= ", delta[X_AXIS]);
+      // ECHO_EMV(" base Psi+Theta=", delta[Y_AXIS]);
+
+      for (int i = 0; i < 2; i++) delta[i] -= home_offset[i];
+
+      // ECHO_SMV(DB,"addhome X=", home_offset[X_AXIS]);
+      // ECHO_MV(" addhome Y=", home_offset[Y_AXIS]);
+      // ECHO_MV(" addhome Theta=", delta[X_AXIS]);
+      // ECHO_EMV(" addhome Psi+Theta=", delta[Y_AXIS]);
+
+      calculate_SCARA_forward_Transform(delta);
+
+      // ECHO_SMV(DB,"Delta X=", delta[X_AXIS]);
+      // ECHO_EMV(" Delta Y=", delta[Y_AXIS]);
+      
+      current_position[axis] = delta[axis];
+
+      // SCARA home positions are based on configuration since the actual limits are determined by the 
+      // inverse kinematic transform.
+      min_pos[axis] = base_min_pos(axis); // + (delta[axis] - base_home_pos(axis));
+      max_pos[axis] = base_max_pos(axis); // + (delta[axis] - base_home_pos(axis));
+    }
+    else {
+      current_position[axis] = base_home_pos(axis) + home_offset[axis];
+      min_pos[axis] = base_min_pos(axis) + home_offset[axis];
+      max_pos[axis] = base_max_pos(axis) + home_offset[axis];
+    }
+  #elif defined(DELTA)
+    current_position[axis] = base_home_pos[axis] + home_offset[axis];
+    min_pos[axis] = base_min_pos(axis) + home_offset[axis];
+    max_pos[axis] = base_max_pos[axis] + home_offset[axis];
+  #else
+    current_position[axis] = base_home_pos(axis) + home_offset[axis];
+    min_pos[axis] = base_min_pos(axis) + home_offset[axis];
+    max_pos[axis] = base_max_pos(axis) + home_offset[axis];
+  #endif
+  
+  #if defined(ENABLE_AUTO_BED_LEVELING) && Z_HOME_DIR < 0
+    if (axis == Z_AXIS) current_position[Z_AXIS] += zprobe_zoffset;
+  #endif
+}
+
 /**
  * Some planner shorthand inline functions
  */
@@ -1095,69 +1171,6 @@ inline void set_current_to_destination() { memcpy(current_position, destination,
 inline void set_destination_to_current() { memcpy(destination, current_position, sizeof(destination)); }
 
 #if defined(CARTESIAN) || defined(COREXY) || defined(SCARA)
-  static void axis_is_at_home(int axis) {
-
-    #ifdef DUAL_X_CARRIAGE
-      if (axis == X_AXIS) {
-        if (active_extruder != 0) {
-          current_position[X_AXIS] = x_home_pos(active_extruder);
-                   min_pos[X_AXIS] = X2_MIN_POS;
-                   max_pos[X_AXIS] = max(hotend_offset[X_AXIS][1], X2_MAX_POS);
-          return;
-        }
-        else if (dual_x_carriage_mode == DXC_DUPLICATION_MODE) {
-          float xoff = home_offset[X_AXIS];
-          current_position[X_AXIS] = base_home_pos(X_AXIS) + xoff;
-                   min_pos[X_AXIS] = base_min_pos(X_AXIS) + xoff;
-                   max_pos[X_AXIS] = min(base_max_pos(X_AXIS) + xoff, max(hotend_offset[X_AXIS][1], X2_MAX_POS) - duplicate_extruder_x_offset);
-          return;
-        }
-      }
-    #endif
-
-    #ifdef SCARA
-
-      if (axis == X_AXIS || axis == Y_AXIS) {
-
-        float homeposition[3];
-        for (int i = 0; i < 3; i++) homeposition[i] = base_home_pos(i);
-
-        // ECHO_SMV(DB, "homeposition[x]= ", homeposition[0]);
-        // ECHO_EMV("homeposition[y]= ", homeposition[1]);
-        // Works out real Homeposition angles using inverse kinematics, 
-        // and calculates homing offset using forward kinematics
-        calculate_delta(homeposition);
-
-        // ECHO_SMV(DB,"base Theta= ", delta[X_AXIS]);
-        // ECHO_EMV(" base Psi+Theta=", delta[Y_AXIS]);
-
-        for (int i = 0; i < 2; i++) delta[i] -= home_offset[i];
-
-        // ECHO_SMV(DB,"addhome X=", home_offset[X_AXIS]);
-        // ECHO_MV(" addhome Y=", home_offset[Y_AXIS]);
-        // ECHO_MV(" addhome Theta=", delta[X_AXIS]);
-        // ECHO_EMV(" addhome Psi+Theta=", delta[Y_AXIS]);
-
-        calculate_SCARA_forward_Transform(delta);
-
-        // ECHO_SMV(DB,"Delta X=", delta[X_AXIS]);
-        // ECHO_EMV(" Delta Y=", delta[Y_AXIS]);
-        
-        current_position[axis] = delta[axis];
-
-        // SCARA home positions are based on configuration since the actual limits are determined by the 
-        // inverse kinematic transform.
-        min_pos[axis] = base_min_pos(axis); // + (delta[axis] - base_home_pos(axis));
-        max_pos[axis] = base_max_pos(axis); // + (delta[axis] - base_home_pos(axis));
-      }
-      else
-    #endif
-    {
-      current_position[axis] = base_home_pos(axis) + home_offset[axis];
-      min_pos[axis] = base_min_pos(axis) + home_offset[axis];
-      max_pos[axis] = base_max_pos(axis) + home_offset[axis];
-    }
-  }
 
   static void do_blocking_move_to(float x, float y, float z) {
     float oldFeedRate = feedrate;
@@ -1467,11 +1480,6 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
 #endif // Cartesian || CoreXY || Scara
 
 #ifdef DELTA
-  static void axis_is_at_home(int axis) {
-    current_position[axis] = base_home_pos[axis] + home_offset[axis];
-    min_pos[axis] = base_min_pos(axis) + home_offset[axis];
-    max_pos[axis] = base_max_pos[axis] + home_offset[axis];
-  }
 
   static void homeaxis(AxisEnum axis) {
     #define HOMEAXIS_DO(LETTER) \
@@ -2511,10 +2519,10 @@ inline void wait_bed() {
   refresh_cmd_timeout();
 }
 
+
 /******************************************************************************
 ***************************** G-Code Functions ********************************
 *******************************************************************************/
-
 
 /**
  * G0, G1: Coordinated movement of X Y Z E axes
@@ -2542,6 +2550,7 @@ inline void gcode_G0_G1() {
         }
       }
     #endif //FWRETRACT
+
     prepare_move();
     //ClearToSend();
   }
@@ -2740,6 +2749,11 @@ inline void gcode_G28(boolean home_x = false, boolean home_y = false) {
 
     #endif // QUICK_HOME
 
+    #ifdef HOME_Y_BEFORE_X
+      // Home Y
+      if (home_all_axis || homeY) HOMEAXIS(Y);
+    #endif
+
     // Home X
     if (home_all_axis || homeX) {
       #ifdef DUAL_X_CARRIAGE
@@ -2759,20 +2773,10 @@ inline void gcode_G28(boolean home_x = false, boolean home_y = false) {
       #endif
     }
 
-    // Home Y
-    if (home_all_axis || homeY) HOMEAXIS(Y);
-
-    // Set the X position, if included
-    if (code_seen(axis_codes[X_AXIS]) && code_has_value()) {
-      if (code_value_long() != 0) // filter 0
-        current_position[X_AXIS] = code_value();
-    }
-
-    // Set the Y position, if included
-    if (code_seen(axis_codes[Y_AXIS]) && code_has_value()) {
-      if (code_value_long() != 0) // filter 0
-        current_position[Y_AXIS] = code_value();
-    }
+    #ifndef HOME_Y_BEFORE_X
+      // Home Y
+      if (home_all_axis || homeY) HOMEAXIS(Y);
+    #endif
 
     // Home Z last if homing towards the bed
     #if Z_HOME_DIR < 0
@@ -2968,16 +2972,6 @@ inline void gcode_G28(boolean home_x = false, boolean home_y = false) {
         }
       #endif //Z_SAFE_HOMING
     #endif //Z_HOME_DIR < 0
-
-    // Set the Z position, if included
-    if (code_seen(axis_codes[Z_AXIS]) && code_has_value()) {
-      if (code_value_long() != 0) // filter 0
-        current_position[Z_AXIS] = code_value();
-    }
-
-    #if defined(ENABLE_AUTO_BED_LEVELING) && Z_HOME_DIR < 0
-      if (home_all_axis || homeZ) current_position[Z_AXIS] += zprobe_zoffset;  // Add Z_Probe offset (the distance is negative)
-    #endif
 
     sync_plan_position();
 
@@ -3922,13 +3916,13 @@ inline void gcode_M42() {
           if (radius < 0.0) radius = -radius;
 
           X_current = X_probe_location + cos(theta) * radius;
-          X_current = constrain(X_current, X_MIN_POS, X_MAX_POS);
+          X_current = constrain(X_current, X_MIN_POS + 10, X_MAX_POS - 10);
           Y_current = Y_probe_location + sin(theta) * radius;
-          Y_current = constrain(Y_current, Y_MIN_POS, Y_MAX_POS);
+          Y_current = constrain(Y_current, Y_MIN_POS + 10, Y_MAX_POS - 10);
 
           if (verbose_level > 3) {
             ECHO_SMV(DB, "x: ", X_current);
-            ECHO_EMV("y: ", Y_current);
+            ECHO_EMV(" y: ", Y_current);
           }
 
           do_blocking_move_to(X_current, Y_current, Z_current); // this also updates current_position
@@ -3969,9 +3963,10 @@ inline void gcode_M42() {
       sigma = sqrt(sum / (n + 1));
 
       if (verbose_level > 1) {
-        ECHO_V(n+1);
+        ECHO_SV(DB, n + 1);
         ECHO_MV(" of ", n_samples);
-        ECHO_MV("   z: ", current_position[Z_AXIS], 6);
+        ECHO_EM(" samples");
+        ECHO_SMV(DB, "z: ", current_position[Z_AXIS], 6);
         if (verbose_level > 2) {
           ECHO_MV(" mean: ", mean,6);
           ECHO_MV("   sigma: ", sigma,6);
@@ -4104,25 +4099,24 @@ inline void gcode_M85() {
 }
 
 /**
- * M92: Set axis_steps_per_unit - same syntax as G92
+ * M92: Set axis_steps_per_unit
  */
 inline void gcode_M92() {
-  for(int8_t i = 0; i < NUM_AXIS; i++) {
-    if (code_seen(axis_codes[i])) {
-      if (i == E_AXIS) {
-        float value = code_value();
-        if (value < 20.0) {
-          float factor = axis_steps_per_unit[i] / value; // increase e constants if M92 E14 is given for netfab.
-          max_e_jerk *= factor;
-          max_feedrate[i] *= factor;
-          axis_steps_per_sqr_second[i] *= factor;
-        }
-        axis_steps_per_unit[i] = value;
-      }
-      else {
-        axis_steps_per_unit[i] = code_value();
-      }
+  for(int8_t i = 0; i <= Z_AXIS; i++) {
+    if (code_seen(axis_codes[i])) axis_steps_per_unit[i] = code_value();
+  }
+
+  if (code_seen('E')) {
+    int tmp_extruder = 0;
+    tmp_extruder = code_value();
+    float value = code_seen('S') ? code_value() : axis_steps_per_unit[E_AXIS + tmp_extruder];
+    if (value < 20.0) {
+      float factor = axis_steps_per_unit[E_AXIS + tmp_extruder] / value; // increase e constants if M92 E14 is given for netfab.
+      max_e_jerk *= factor;
+      max_feedrate[E_AXIS + tmp_extruder] *= factor;
+      axis_steps_per_sqr_second[E_AXIS + tmp_extruder] *= factor;
     }
+    axis_steps_per_unit[E_AXIS + tmp_extruder] = value;
   }
 }
 
@@ -4270,7 +4264,8 @@ inline void gcode_M112() {
  * M114: Output current position to serial port
  */
 inline void gcode_M114() {
-  ECHO_SMV(DB, "X:", current_position[X_AXIS]);
+  //MESSAGE for Host
+  ECHO_SMV(OK, "X:", current_position[X_AXIS]);
   ECHO_MV(" Y:", current_position[Y_AXIS]);
   ECHO_MV(" Z:", current_position[Z_AXIS]);
   ECHO_MV(" E:", current_position[E_AXIS]);
@@ -4280,15 +4275,40 @@ inline void gcode_M114() {
   ECHO_EMV(" Z:", float(st_get_position(Z_AXIS))/axis_steps_per_unit[Z_AXIS]);
 
   #ifdef SCARA
-    ECHO_SMV(DB, "SCARA Theta:", delta[X_AXIS]);
+    //MESSAGE for Host
+    ECHO_SMV(OK, "SCARA Theta:", delta[X_AXIS]);
     ECHO_EMV("   Psi+Theta:", delta[Y_AXIS]);
-    
+
     ECHO_SMV(DB, "SCARA Cal - Theta:", delta[X_AXIS]+home_offset[X_AXIS]);
     ECHO_EMV("   Psi+Theta (90):", delta[Y_AXIS]-delta[X_AXIS]-90+home_offset[Y_AXIS]);
-    
+
     ECHO_SMV(DB, "SCARA step Cal - Theta:", delta[X_AXIS]/90*axis_steps_per_unit[X_AXIS]);
     ECHO_EMV("   Psi+Theta:", (delta[Y_AXIS]-delta[X_AXIS])/90*axis_steps_per_unit[Y_AXIS]);
   #endif
+
+  if (code_seen('V')) {
+    //MESSAGE for user
+    ECHO_SMV(DB, "X:", current_position[X_AXIS]);
+    ECHO_MV(" Y:", current_position[Y_AXIS]);
+    ECHO_MV(" Z:", current_position[Z_AXIS]);
+    ECHO_MV(" E:", current_position[E_AXIS]);
+
+    ECHO_MV(MSG_COUNT_X, float(st_get_position(X_AXIS))/axis_steps_per_unit[X_AXIS]);
+    ECHO_MV(" Y:", float(st_get_position(Y_AXIS))/axis_steps_per_unit[Y_AXIS]);
+    ECHO_EMV(" Z:", float(st_get_position(Z_AXIS))/axis_steps_per_unit[Z_AXIS]);
+    
+    #ifdef SCARA
+      //MESSAGE for User
+      ECHO_SMV(OK, "SCARA Theta:", delta[X_AXIS]);
+      ECHO_EMV("   Psi+Theta:", delta[Y_AXIS]);
+
+      ECHO_SMV(DB, "SCARA Cal - Theta:", delta[X_AXIS]+home_offset[X_AXIS]);
+      ECHO_EMV("   Psi+Theta (90):", delta[Y_AXIS]-delta[X_AXIS]-90+home_offset[Y_AXIS]);
+
+      ECHO_SMV(DB, "SCARA step Cal - Theta:", delta[X_AXIS]/90*axis_steps_per_unit[X_AXIS]);
+      ECHO_EMV("   Psi+Theta:", (delta[Y_AXIS]-delta[X_AXIS])/90*axis_steps_per_unit[Y_AXIS]);
+    #endif
+  }
 }
 
 /**
@@ -4389,6 +4409,77 @@ inline void gcode_M140() {
   if (code_seen('S')) setTargetBed(code_value());
 }
 
+#ifdef ULTIPANEL
+
+  /**
+   * M145: Set the heatup state for a material in the LCD menu
+   *   S<material> (0=PLA, 1=ABS, 2=GUM)
+   *   H<hotend temp>
+   *   B<bed temp>
+   *   F<fan speed>
+   */
+  inline void gcode_M145() {
+    uint8_t material = code_seen('S') ? code_value_short() : 0;
+    if (material < 0 || material > 2) {
+      ECHO_SM(DB, MSG_ERR_MATERIAL_INDEX);
+    }
+    else {
+      int v;
+      switch (material) {
+        case 0:
+          if (code_seen('H')) {
+            v = code_value_short();
+            plaPreheatHotendTemp = constrain(v, EXTRUDE_MINTEMP, HEATER_0_MAXTEMP - 15);
+          }
+          if (code_seen('F')) {
+            v = code_value_short();
+            plaPreheatFanSpeed = constrain(v, 0, 255);
+          }
+          #if TEMP_SENSOR_BED != 0
+            if (code_seen('B')) {
+              v = code_value_short();
+              plaPreheatHPBTemp = constrain(v, BED_MINTEMP, BED_MAXTEMP - 15);
+            }
+          #endif
+          break;
+        case 1:
+          if (code_seen('H')) {
+            v = code_value_short();
+            absPreheatHotendTemp = constrain(v, EXTRUDE_MINTEMP, HEATER_0_MAXTEMP - 15);
+          }
+          if (code_seen('F')) {
+            v = code_value_short();
+            absPreheatFanSpeed = constrain(v, 0, 255);
+          }
+          #if TEMP_SENSOR_BED != 0
+            if (code_seen('B')) {
+              v = code_value_short();
+              absPreheatHPBTemp = constrain(v, BED_MINTEMP, BED_MAXTEMP - 15);
+            }
+          #endif
+          break;
+        case 2:
+          if (code_seen('H')) {
+            v = code_value_short();
+            gumPreheatHotendTemp = constrain(v, EXTRUDE_MINTEMP, HEATER_0_MAXTEMP - 15);
+          }
+          if (code_seen('F')) {
+            v = code_value_short();
+            gumPreheatFanSpeed = constrain(v, 0, 255);
+          }
+          #if TEMP_SENSOR_BED != 0
+            if (code_seen('B')) {
+              v = code_value_short();
+              gumPreheatHPBTemp = constrain(v, BED_MINTEMP, BED_MAXTEMP - 15);
+            }
+          #endif
+          break;
+      }
+    }
+  }
+
+#endif
+
 #ifdef BLINKM
   /**
    * M150: Set Status LED Color - Use R-U-B for R-G-B
@@ -4480,10 +4571,15 @@ inline void gcode_M201() {
  * M203: Set maximum feedrate that your machine can sustain (M203 X200 Y200 Z300 E10000) in mm/sec
  */
 inline void gcode_M203() {
-  for (int8_t i=0; i < NUM_AXIS; i++) {
-    if (code_seen(axis_codes[i])) {
-      max_feedrate[i] = code_value();
-    }
+  for(int8_t i = 0; i <= Z_AXIS; i++) {
+    if (code_seen(axis_codes[i])) max_feedrate[i] = code_value();
+  }
+
+  if (code_seen('E')) {
+    int tmp_extruder = 0;
+    tmp_extruder = code_value();
+    float value = code_seen('S') ? code_value() : max_feedrate[E_AXIS + tmp_extruder];
+    max_feedrate[E_AXIS + tmp_extruder] = value;
   }
 }
 
@@ -5745,11 +5841,11 @@ void process_commands() {
       #endif //FWRETRACT
 
       case 28: //G28: Home all axes, one at a time
-        gcode_G28(); break;
+        gcode_G28(); gcode_M114(); break;
 
       #ifdef ENABLE_AUTO_BED_LEVELING
         case 29: // G29 Detailed Z-Probe, probes the bed at 3 or more points.
-          gcode_G29(); break;
+          gcode_G29(); gcode_M114(); break;
         #ifndef Z_PROBE_SLED
           case 30: // G30 Single Z Probe
             gcode_G30(); break;

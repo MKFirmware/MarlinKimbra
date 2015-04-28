@@ -1,5 +1,6 @@
 // Define this to set a custom name for your generic Mendel,
-#define CUSTOM_MENDEL_NAME "Scara"
+// Displayed in the LCD "Ready" message
+#define CUSTOM_MACHINE_NAME "Scara"
 
 // SCARA-mode for Marlin has been developed by QHARLEY in ZA in 2012/2013. Implemented
 // and slightly reworked by JCERNY in 06/2014 with the goal to bring it into Master-Branch

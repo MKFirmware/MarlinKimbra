@@ -2231,8 +2231,8 @@
 
 /****************************************************************************************
 * 502
-* Arduino Due pin assignment
 * Alligator R2
+* http://www.3dartists.org/
 ****************************************************************************************/
 #if MB(ALLIGATOR)
 #define KNOWN_BOARD 1
@@ -2245,106 +2245,187 @@
 #define SPI_CHAN_DAC 1
 
 // X AXIS
-#define ORIG_X_STEP_PIN      96  // PB24
-#define ORIG_X_DIR_PIN        2  // PB25
-#define ORIG_X_ENABLE_PIN    24  // PA15, motor RESET pin
-#define X_MIN_PIN       33  // PC1
-#define X_MAX_PIN       34  // PC2
-#define X_MS1_PIN       99  // PC10
+#define ORIG_X_STEP_PIN       96  // PB24
+#define ORIG_X_DIR_PIN         2  // PB25
+#define ORIG_X_ENABLE_PIN     24  // PA15, motor RESET pin
+#define X_MIN_PIN             33  // PC1
+#define X_MAX_PIN             34  // PC2
+#define X_MS1_PIN             99  // PC10
 
 // Y AXIS
-#define ORIG_Y_STEP_PIN      94  // PB22
-#define ORIG_Y_DIR_PIN       95  // PB23
-#define ORIG_Y_ENABLE_PIN    24  // PA15, motor RESET pin
-#define Y_MIN_PIN       35  // PC3
-#define Y_MAX_PIN       37  // PC5
-#define Y_MS1_PIN       10  // PC29
+#define ORIG_Y_STEP_PIN       94  // PB22
+#define ORIG_Y_DIR_PIN        95  // PB23
+#define ORIG_Y_ENABLE_PIN     24  // PA15, motor RESET pin
+#define Y_MIN_PIN             35  // PC3
+#define Y_MAX_PIN             37  // PC5
+#define Y_MS1_PIN             10  // PC29
 
 // Z AXIS
-#define ORIG_Z_STEP_PIN      98  // PC27
-#define ORIG_Z_DIR_PIN        3  // PC28
-#define ORIG_Z_ENABLE_PIN    24  // PA15, motor RESET pin
-#define Z_MIN_PIN       38  // PC6
-#define Z_MAX_PIN       39  // PC7
-#define Z_MS1_PIN       44  // PC19
-#define Z_PROBE_PIN     38  // PC6
+#define ORIG_Z_STEP_PIN       98  // PC27
+#define ORIG_Z_DIR_PIN         3  // PC28
+#define ORIG_Z_ENABLE_PIN     24  // PA15, motor RESET pin
+#define Z_MIN_PIN             38  // PC6
+#define Z_MAX_PIN             39  // PC7
+#define Z_MS1_PIN             44  // PC19
+#define Z_PROBE_PIN           38  // PC6
 
 // E AXIS
-#define ORIG_E0_STEP_PIN      5  // PC25
-#define ORIG_E0_DIR_PIN       4  // PC26
-#define ORIG_E0_ENABLE_PIN   24  // PA15, motor RESET pin
-#define E0_MS1_PIN      45  // PC18
+#define ORIG_E0_STEP_PIN       5  // PC25
+#define ORIG_E0_DIR_PIN        4  // PC26
+#define ORIG_E0_ENABLE_PIN    24  // PA15, motor RESET pin
+#define E0_MS1_PIN            45  // PC18
 
 /*
-#define ORIG_E1_STEP_PIN     28  // PD3 on piggy
-#define ORIG_E1_DIR_PIN      27  // PD2 on piggy
-#define ORIG_E1_ENABLE_PIN   -1
-#define E1_MS1_PIN      -1
+#define ORIG_E1_STEP_PIN      28  // PD3 on piggy
+#define ORIG_E1_DIR_PIN       27  // PD2 on piggy
+#define ORIG_E1_ENABLE_PIN    -1
+#define E1_MS1_PIN            -1
 
-#define ORIG_E2_STEP_PIN     11 // PD7 on piggy
-#define ORIG_E2_DIR_PIN      29 // PD6 on piggy
-#define ORIG_E2_ENABLE_PIN   -1
-#define E2_MS_PIN       -1
+#define ORIG_E2_STEP_PIN      11 // PD7 on piggy
+#define ORIG_E2_DIR_PIN       29 // PD6 on piggy
+#define ORIG_E2_ENABLE_PIN    -1
+#define E2_MS_PIN             -1
 
-#define ORIG_E3_STEP_PIN     30 // PD9 on piggy
-#define ORIG_E3_DIR_PIN      12 // PD8 on piggy
-#define ORIG_E3_ENABLE_PIN   -1
-#define E3_MS_PIN       -1
+#define ORIG_E3_STEP_PIN      30 // PD9 on piggy
+#define ORIG_E3_DIR_PIN       12 // PD8 on piggy
+#define ORIG_E3_ENABLE_PIN    -1
+#define E3_MS_PIN             -1
 */
 
-#define MOTOR_FAULT_PIN 22 // PB26 , motor X-Y-Z-E0 motor FAULT
+#define MOTOR_FAULT_PIN       22 // PB26 , motor X-Y-Z-E0 motor FAULT
 
-#define SDPOWER 	      -1
-#define SDSS            77 // PA28
-#define SDCARDDETECT    87 // PA29
-#define SDCARDDETECTINVERTED false
-#define LED_PIN 	      -1
+#define SDPOWER 	            -1
+#define SDSS                  77 // PA28
+#define SDCARDDETECT          87 // PA29
+#define SDCARDDETECTINVERTED  false
+#define LED_PIN 	            -1
 
-#define ORIG_FAN_PIN         92 // PA5
-#define FAN2_PIN        31 // PA7
+#define ORIG_FAN_PIN          92 // PA5
+#define FAN2_PIN              31 // PA7
 
-#define PS_ON_PIN       -1
-#define KILL_PIN        -1
-#define SUICIDE_PIN     -1 //PIN that has to be turned on right after start, to keep power flowing.
-#define HEAT_OFF_INT_PIN 50 // PC13 on raspberry expansion
+#define PS_ON_PIN             -1
+#define KILL_PIN              -1
+#define SUICIDE_PIN           -1 //PIN that has to be turned on right after start, to keep power flowing.
+#define HEAT_OFF_INT_PIN      50 // PC13 on raspberry expansion
 
 
 // Note that on the Due pin A0 on the board is channel 2 on the ARM chip
-#define HEATER_BED_PIN  69 // PA0
-#define HEATER_0_PIN    68 // PA1
+#define HEATER_BED_PIN        69 // PA0
+#define HEATER_0_PIN          68 // PA1
 /*
-#define HEATER_1_PIN     8  // PC22 on piggy
-#define HEATER_2_PIN     9  // PC21 on piggy
-#define HEATER_3_PIN    97 // PC20 on piggy
+#define HEATER_1_PIN           8 // PC22 on piggy
+#define HEATER_2_PIN           9 // PC21 on piggy
+#define HEATER_3_PIN          97 // PC20 on piggy
 */
 
-#define TEMP_BED_PIN     0 // PA16
-#define TEMP_0_PIN       1  // PA24, analog pin
+#define TEMP_BED_PIN           0 // PA16
+#define TEMP_0_PIN             1 // PA24, analog pin
 /*
-#define TEMP_1_PIN       5  // PA23 analog pin on piggy
-#define TEMP_2_PIN       4  // PA22, analog pin on piggy
-#define TEMP_3_PIN       3  // PA6, analog on piggy
+#define TEMP_1_PIN             5 // PA23 analog pin on piggy
+#define TEMP_2_PIN             4 // PA22, analog pin on piggy
+#define TEMP_3_PIN             3 // PA6, analog on piggy
 */
 
-#define LED_RED_PIN     40 // PC8
-#define LED_GREEN_PIN   41 // PC9
-#define CASE_LIGHTS_PIN 36 // PC4
+#define LED_RED_PIN           40 // PC8
+#define LED_GREEN_PIN         41 // PC9
+#define CASE_LIGHTS_PIN       36 // PC4
 
 #define EXP_VOLTAGE_LEVEL_PIN 65
 
-#define DAC_SYNC        53 // PB14
+#define DAC_SYNC              53 // PB14
 
 //64K SPI EEPROM
-#define SPI_CHAN_EEPROM1 2
-#define SPI_EEPROM1_CS  25 // PD0
+#define SPI_CHAN_EEPROM1       2
+#define SPI_EEPROM1_CS        25 // PD0
 
 //2K SPI EEPROM
-#define SPI_EEPROM2_CS  26 // PD1
+#define SPI_EEPROM2_CS        26 // PD1
 
 //** FLASH SPI**/
 //32Mb
-#define SPI_FLASH_CS    23 //PA14
+#define SPI_FLASH_CS          23 //PA14
 
+#ifdef ULTRA_LCD
+  #ifdef NEWPANEL
+    #ifdef PANEL_ONE
+      #define LCD_PINS_RS 40
+      #define LCD_PINS_ENABLE 42
+      #define LCD_PINS_D4 65
+      #define LCD_PINS_D5 66
+      #define LCD_PINS_D6 44
+      #define LCD_PINS_D7 64
+    #else
+      #define LCD_PINS_RS 16
+      #define LCD_PINS_ENABLE 17
+      #define LCD_PINS_D4 23
+      #define LCD_PINS_D5 25
+      #define LCD_PINS_D6 27
+      #define LCD_PINS_D7 29
+    #endif //PANEL_ONE
+
+    #ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
+      #define BEEPER        37
+
+      #define BTN_EN1       31
+      #define BTN_EN2       33
+      #define BTN_ENC       35
+
+      #define SDCARDDETECT  49
+    #elif defined(LCD_I2C_PANELOLU2)
+      #define BTN_EN1       47  //reverse if the encoder turns the wrong way.
+      #define BTN_EN2       43
+      #define BTN_ENC       32
+      #define LCD_SDSS      53
+      #define SDCARDDETECT  -1
+      #define KILL_PIN      41
+    #elif defined(LCD_I2C_VIKI)
+      #define BTN_EN1       22  //reverse if the encoder turns the wrong way.
+      #define BTN_EN2        7
+      #define BTN_ENC       -1
+      #define LCD_SDSS      53
+      #define SDCARDDETECT  49
+    #else
+      //arduino pin which triggers an piezzo beeper
+      #define BEEPER        33  // Beeper on AUX-4
+
+      //buttons are directly attached using AUX-2
+      #ifdef REPRAPWORLD_KEYPAD
+        #define BTN_EN1     64 // encoder
+        #define BTN_EN2     59 // encoder
+        #define BTN_ENC     63 // enter button
+        #define SHIFT_OUT   40 // shift register
+        #define SHIFT_CLK   44 // shift register
+        #define SHIFT_LD    42 // shift register
+      #elif defined(PANEL_ONE)
+        #define BTN_EN1     59 // AUX2 PIN 3
+        #define BTN_EN2     63 // AUX2 PIN 4
+        #define BTN_ENC     49 // AUX3 PIN 7
+      #else
+        #define BTN_EN1     37
+        #define BTN_EN2     35
+        #define BTN_ENC     31  //the click
+      #endif
+    #endif
+
+  #else //old style panel with shift register
+    //arduino pin witch triggers an piezzo beeper
+    #define BEEPER              33   //No Beeper added
+
+    //buttons are attached to a shift register
+    // Not wired this yet
+    //#define SHIFT_CLK         38
+    //#define SHIFT_LD          42
+    //#define SHIFT_OUT         40
+    //#define SHIFT_EN          17
+
+    #define LCD_PINS_RS         16
+    #define LCD_PINS_ENABLE     17
+    #define LCD_PINS_D4         23
+    #define LCD_PINS_D5         25
+    #define LCD_PINS_D6         27
+    #define LCD_PINS_D7         29
+  #endif //NEWPANEL
+#endif //ULTRA_LCD
 
 #endif //ALLIGATOR
 /****************************************************************************************/

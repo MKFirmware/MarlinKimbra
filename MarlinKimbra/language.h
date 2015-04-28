@@ -30,17 +30,14 @@
 #endif
 
 #define PROTOCOL_VERSION "1.0"
-#define FIRMWARE_URL "https://github.com/MagoKimbra/MarlinKimbra"
 
 #if MB(ULTIMAKER)|| MB(ULTIMAKER_OLD)|| MB(ULTIMAIN_2)
-  #undef FIRMWARE_URL
   #define MACHINE_NAME "Ultimaker"
   #define FIRMWARE_URL "http://firmware.ultimaker.com"
 #elif MB(RUMBA)
   #define MACHINE_NAME "Rumba"
 #elif MB(3DRAG)
   #define MACHINE_NAME "3Drag"
-  #undef FIRMWARE_URL
   #define FIRMWARE_URL "http://3dprint.elettronicain.it/"
 #elif MB(K8200)
   #define MACHINE_NAME "K8200"
@@ -48,15 +45,23 @@
   #define MACHINE_NAME "Makibox"
 #elif MB(SAV_MKI)
   #define MACHINE_NAME "SAV MkI"
-  #undef FIRMWARE_URL
   #define FIRMWARE_URL "https://github.com/fmalpartida/Marlin/tree/SAV-MkI-config"
 #else // Default firmware set to Mendel
   #define MACHINE_NAME "Mendel"
 #endif
 
 #ifdef CUSTOM_MENDEL_NAME
+  #error CUSTOM_MENDEL_NAME deprecated - use CUSTOM_MACHINE_NAME
+  #define CUSTOM_MACHINE_NAME CUSTOM_MENDEL_NAME
+#endif
+
+#ifdef CUSTOM_MACHINE_NAME
   #undef MACHINE_NAME
-  #define MACHINE_NAME CUSTOM_MENDEL_NAME
+  #define MACHINE_NAME CUSTOM_MACHINE_NAME
+#endif
+
+#ifndef FIRMWARE_URL
+  #define FIRMWARE_URL "https://github.com/MagoKimbra/MarlinKimbra"
 #endif
 
 #ifndef BUILD_VERSION
@@ -131,6 +136,7 @@
 #define MSG_Z_MAX                           "z_max: "
 #define MSG_Z2_MAX                          "z2_max: "
 #define MSG_Z_PROBE                         "z_probe: "
+#define MSG_ERR_MATERIAL_INDEX              "M145 S<index> out of range (0-2)"
 #define MSG_E_MIN                           "e_min: "
 #define MSG_FILAMENT_RUNOUT_PIN             "filament_runout_pin: "
 #define MSG_M119_REPORT                     "Reporting endstop status"

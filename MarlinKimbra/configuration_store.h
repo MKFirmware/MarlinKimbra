@@ -9,10 +9,8 @@ void save_lifetime_stats();
 
 #ifndef DISABLE_M503
   void Config_PrintSettings(bool forReplay=false);
-  void ConfigSD_PrintSettings(bool forReplay=false);
 #else
   FORCE_INLINE void Config_PrintSettings(bool forReplay=false) {}
-  FORCE_INLINE void ConfigSD_PrintSettings(bool forReplay=false) {}
 #endif
 
 #ifdef EEPROM_SETTINGS

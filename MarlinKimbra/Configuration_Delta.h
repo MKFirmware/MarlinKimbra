@@ -1,5 +1,6 @@
 // Define this to set a custom name for your generic Delta
-#define CUSTOM_MENDEL_NAME "Delta"
+// Displayed in the LCD "Ready" message
+#define CUSTOM_MACHINE_NAME "Delta"
 
 //===========================================================================
 //============================== Delta Settings =============================
