@@ -45,7 +45,7 @@ typedef unsigned long millis_t;
   #define analogInputToDigitalPin(p) ((p) + 0xA0)
 #endif
 
-#include "Comunication.h"
+#include "comunication.h"
 
 void get_command();
 void process_commands();
