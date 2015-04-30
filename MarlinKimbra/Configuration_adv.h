@@ -196,6 +196,9 @@
 #define HOMING_BUMP_DIVISOR {5, 5, 2}  // Re-Bump Speed Divisor (Divides the Homing Feedrate)
 //#define QUICK_HOME  //if this is defined, if both x and y are to be homed, a diagonal move will be performed initially.
 
+// When G28 is called, this option will make Y home before X
+// #define HOME_Y_BEFORE_X
+
 #define AXIS_RELATIVE_MODES {false, false, false, false}
 
 //By default pololu step drivers require an active high signal. However, some high power drivers require an active low signal as step.

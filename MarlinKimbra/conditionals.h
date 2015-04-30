@@ -204,6 +204,11 @@
     #endif
   #endif
 
+  /**
+   * LCD BUZZ
+   */
+  #define HAS_LCD_BUZZ (defined(ULTRALCD) || (defined(BEEPER) && BEEPER >= 0) || defined(LCD_USE_I2C_BUZZER))
+
 #else // CONFIGURATION_LCD
 
   #define CONDITIONALS_H

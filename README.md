@@ -32,6 +32,7 @@ Adding commands to facilitate purging of hotend.
 Step per unit varied for each extruder as well as the feedrate.
 The addition of a different feedrate for retraction. 
 Adding Debug Dryrun used by repetier.
+Add total Power on time write in EEPROM
 
 ## Credits
 

@@ -187,6 +187,7 @@
  * M406 - Turn off Filament Sensor extrusion control
  * M407 - Display measured filament diameter
  * M410 - Quickstop. Abort all the planned moves
+ * M428 - Set the home_offset logically based on the current_position
  * M500 - Store parameters in EEPROM
  * M501 - Read parameters from EEPROM (if you need reset them after you changed them temporarily).
  * M502 - Revert to the default "factory settings". You still need to store them in EEPROM afterwards if you want to.
@@ -2406,37 +2407,6 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
     }
   }
 #endif //Z_PROBE_SLED
-
-inline void lcd_beep(int number_beep = 3) {
-  #ifdef LCD_USE_I2C_BUZZER
-    #if !defined(LCD_FEEDBACK_FREQUENCY_HZ) || !defined(LCD_FEEDBACK_FREQUENCY_DURATION_MS)
-      for(int8_t i = 0; i < 3; i++) {
-        lcd_buzz(1000/6,100);
-      }
-    #else
-      for(int8_t i = 0; i < number_beep; i++) {
-        lcd_buzz(LCD_FEEDBACK_FREQUENCY_DURATION_MS,LCD_FEEDBACK_FREQUENCY_HZ);
-      }
-    #endif
-  #elif defined(BEEPER) && BEEPER > -1
-    SET_OUTPUT(BEEPER);
-    #if !defined(LCD_FEEDBACK_FREQUENCY_HZ) || !defined(LCD_FEEDBACK_FREQUENCY_DURATION_MS)
-      for(int8_t i = 0; i < number_beep; i++) {
-        WRITE(BEEPER,HIGH);
-        delay(100);
-        WRITE(BEEPER,LOW);
-        delay(100);
-      }
-    #else
-      for(int8_t i=0;i<number_beep;i++) {
-        WRITE(BEEPER,HIGH);
-        delay(1000000 / LCD_FEEDBACK_FREQUENCY_HZ / 2);
-        WRITE(BEEPER,LOW);
-        delay(1000000 / LCD_FEEDBACK_FREQUENCY_HZ / 2);
-      }
-    #endif
-  #endif
-}
 
 inline void wait_heater() {
   setWatch();
@@ -4862,19 +4832,19 @@ inline void gcode_M226() {
   }
 #endif // NUM_SERVOS > 0
 
-#if BEEPER > 0 || defined(ULTRALCD) || defined(LCD_USE_I2C_BUZZER)
+#if HAS_LCD_BUZZ
 
   /**
    * M300: Play beep sound S<frequency Hz> P<duration ms>
    */
   inline void gcode_M300() {
-    uint16_t beepS = code_seen('S') ? code_value_short() : 110;
+    uint16_t beepS = code_seen('S') ? code_value_short() : 100;
     uint32_t beepP = code_seen('P') ? code_value_long() : 1000;
     if (beepP > 5000) beepP = 5000; // limit to 5 seconds
     lcd_buzz(beepP, beepS);
   }
 
-#endif // BEEPER>0 || ULTRALCD || LCD_USE_I2C_BUZZER
+#endif // HAS_LCD_BUZZ
 
 
 #ifdef PIDTEMP
@@ -5171,6 +5141,58 @@ inline void gcode_M400() { st_synchronize(); }
 inline void gcode_M410() { quickStop(); }
 
 /**
+ * M428: Set home_offset based on the distance between the
+ *       current_position and the nearest "reference point."
+ *       If an axis is past center its endstop position
+ *       is the reference-point. Otherwise it uses 0. This allows
+ *       the Z offset to be set near the bed when using a max endstop.
+ *
+ *       M428 can't be used more than 2cm away from 0 or an endstop.
+ *
+ *       Use M206 to set these values directly.
+ */
+inline void gcode_M428() {
+  bool err = false;
+  float new_offs[3], new_pos[3];
+  memcpy(new_pos, current_position, sizeof(new_pos));
+  memcpy(new_offs, home_offset, sizeof(new_offs));
+  for (int8_t i = X_AXIS; i <= Z_AXIS; i++) {
+    if (axis_known_position[i]) {
+      #ifdef DELTA
+        float base = (new_pos[i] > (min_pos[i] + max_pos[i]) / 2) ? base_home_pos[i] : 0,
+      #else
+        float base = (new_pos[i] > (min_pos[i] + max_pos[i]) / 2) ? base_home_pos(i) : 0,
+      #endif
+            diff = new_pos[i] - base;
+      if (diff > -20 && diff < 20) {
+        new_offs[i] -= diff;
+        new_pos[i] = base;
+      }
+      else {
+        ECHO_LM(ER, MSG_ERR_M428_TOO_FAR);
+        LCD_ALERTMESSAGEPGM("Err: Too far!");
+        #if HAS_LCD_BUZZ
+          enqueuecommands_P(PSTR("M300 S40 P200"));
+        #endif
+        err = true;
+        break;
+      }
+    }
+  }
+
+  if (!err) {
+    memcpy(current_position, new_pos, sizeof(new_pos));
+    memcpy(home_offset, new_offs, sizeof(new_offs));
+    sync_plan_position();
+    ECHO_LM(DB, "Offset applied.");
+    LCD_ALERTMESSAGEPGM("Offset applied.");
+    #if HAS_LCD_BUZZ
+      enqueuecommands_P(PSTR("M300 S659 P200\nM300 S698 P200"));
+    #endif
+  }
+}
+
+/**
  * M500: Store settings in EEPROM
  */
 inline void gcode_M500() {
@@ -5299,7 +5321,9 @@ inline void gcode_M503() {
       }
       if (beep) {
         last_set = millis();
-        lcd_beep(3);
+        for(int8_t i = 0; i < 3; i++) {
+          lcd_buzz(100, 1000);
+        }
         beep = false;
         cnt += 1;
       }
@@ -6076,10 +6100,10 @@ void process_commands() {
           gcode_M280(); break;
       #endif // NUM_SERVOS > 0
 
-      #if BEEPER > 0 || defined(ULTRALCD) || defined(LCD_USE_I2C_BUZZER)
+      #if HAS_LCD_BUZZ
         case 300: // M300 - Play beep tone
           gcode_M300(); break;
-      #endif // LARGE_FLASH && (BEEPER>0 || ULTRALCD || LCD_USE_I2C_BUZZER)
+      #endif // HAS_LCD_BUZZ
 
       #ifdef PIDTEMP
         case 301: // M301
@@ -6146,6 +6170,9 @@ void process_commands() {
 
       case 410: // M410 quickstop - Abort all the planned moves.
         gcode_M410(); break;
+
+      case 428: // M428 Apply current_position to home_offset
+        gcode_M428(); break;
 
       case 500: // M500 Store settings in EEPROM
         gcode_M500(); break;
