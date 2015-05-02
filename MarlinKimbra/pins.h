@@ -21,6 +21,7 @@
 *401 BOARD_RADDS       - Radds Arduino DUE
 *403 BOARD_RAMPS_FD_V1 - Ramps FD version 1 Arduino DUE
 *404 BOARD_RAMPS_FD_V2 - Ramps FD version 2 Arduino DUE
+*433 BOARD_RAMPS4DUE   - Ramps for Arduino DUE
 *
 *  5 BOARD_GEN6 - Gen6
 * 51 BOARD_GEN6_DELUXE - Gen6 deluxe
@@ -1963,7 +1964,7 @@
 * Arduino Due pin assignment
 * Ramps - FD v1 & v2
 ****************************************************************************************/
-#if MB(RAMPS_FDV1) || MB(RAMPS_FDV2)
+#if MB(RAMPS_FD_V1) || MB(RAMPS_FD_V2)
 #define KNOWN_BOARD 1
 
 #ifndef __SAM3X8E__
@@ -1971,14 +1972,14 @@
 #endif
 
 
-#if MB(RAMPS_FDV1)
+#if MB(RAMPS_FD_V1)
   #define INVERTED_HEATER_PINS
-  #define RAMPS_FDV1
+  #define RAMPS_FD_V1
   #define INVERTED_HEATER_PINS
   // No EEPROM
   // Use 4k7 thermistor tables
 #else
-  #define RAMPS_FDV2
+  #define RAMPS_FD_V2
   // EEPROM supported
   // Use 1k thermistor tables
 #endif
@@ -1986,20 +1987,20 @@
 #define ORIG_X_STEP_PIN         63
 #define ORIG_X_DIR_PIN          62
 #define ORIG_X_ENABLE_PIN       48
-#define X_MIN_PIN          22
-#define X_MAX_PIN           2
+#define X_MIN_PIN               22
+#define X_MAX_PIN                2
 
 #define ORIG_Y_STEP_PIN         65
 #define ORIG_Y_DIR_PIN          64
 #define ORIG_Y_ENABLE_PIN       46
-#define Y_MIN_PIN          24
-#define Y_MAX_PIN          15
+#define Y_MIN_PIN               24
+#define Y_MAX_PIN               15
 
 #define ORIG_Z_STEP_PIN         67
 #define ORIG_Z_DIR_PIN          66
 #define ORIG_Z_ENABLE_PIN       44
-#define Z_MIN_PIN          26
-#define Z_MAX_PIN          -1
+#define Z_MIN_PIN               26
+#define Z_MAX_PIN               -1
 
 #define ORIG_E0_STEP_PIN        36
 #define ORIG_E0_DIR_PIN         28
@@ -2013,72 +2014,72 @@
 #define ORIG_E2_DIR_PIN         47
 #define ORIG_E2_ENABLE_PIN      45
 
-#define SDPOWER            -1
-#define SDSS               4
-#define LED_PIN            13
+#define SDPOWER                 -1
+#define SDSS                     4
+#define LED_PIN                 13
 
-#define BEEPER             -1
+#define BEEPER                  -1
 
 #define ORIG_FAN_PIN            -1
 
 #define CONTROLLERORIG_FAN_PIN  -1 //Pin used for the fan to cool controller
 
-#define PS_ON_PIN          -1
+#define PS_ON_PIN               -1
 
-#define KILL_PIN           -1
+#define KILL_PIN                -1
 
 
-#define HEATER_BED_PIN     8    // BED
+#define HEATER_BED_PIN           8    // BED
 
-#define HEATER_0_PIN       9
-#define HEATER_1_PIN       10
-#define HEATER_2_PIN       11
+#define HEATER_0_PIN             9
+#define HEATER_1_PIN            10
+#define HEATER_2_PIN            11
 
-#define TEMP_BED_PIN       0   // ANALOG NUMBERING
+#define TEMP_BED_PIN             0   // ANALOG NUMBERING
 
-#define TEMP_0_PIN         1   // ANALOG NUMBERING
-#define TEMP_1_PIN         -1  // 2    // ANALOG NUMBERING
-#define TEMP_2_PIN         -1  // 3     // ANALOG NUMBERING
+#define TEMP_0_PIN               1   // ANALOG NUMBERING
+#define TEMP_1_PIN              -1   // 2    // ANALOG NUMBERING
+#define TEMP_2_PIN              -1   // 3     // ANALOG NUMBERING
 
-#define TEMP_3_PIN         -1   // ANALOG NUMBERING
-#define TEMP_4_PIN         -1   // ANALOG NUMBERING
+#define TEMP_3_PIN              -1   // ANALOG NUMBERING
+#define TEMP_4_PIN              -1   // ANALOG NUMBERING
 
 
 
 #ifdef NUM_SERVOS
-  #define SERVO0_PIN        11
+  #define SERVO0_PIN            11
 
   #if NUM_SERVOS > 1
-    #define SERVO1_PIN      6
+    #define SERVO1_PIN           6
   #endif
 
   #if NUM_SERVOS > 2
-    #define SERVO2_PIN      5
+    #define SERVO2_PIN           5
   #endif
 
   #if NUM_SERVOS > 3
-    #define SERVO3_PIN      4
+    #define SERVO3_PIN           4
   #endif
 #endif
 
 #ifdef ULTRA_LCD
   #ifdef NEWPANEL
     // ramps-fd lcd adaptor
-    #define LCD_PINS_RS 16
-    #define LCD_PINS_ENABLE 17
-    #define LCD_PINS_D4 23
-    #define LCD_PINS_D5 25
-    #define LCD_PINS_D6 27
-    #define LCD_PINS_D7 29
+    #define LCD_PINS_RS         16
+    #define LCD_PINS_ENABLE     17
+    #define LCD_PINS_D4         23
+    #define LCD_PINS_D5         25
+    #define LCD_PINS_D6         27
+    #define LCD_PINS_D7         29
 
     #ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
-      #define BEEPER 37
+      #define BEEPER            37
 
-      #define BTN_EN1 33
-      #define BTN_EN2 31
-      #define BTN_ENC 35
+      #define BTN_EN1           33
+      #define BTN_EN2           31
+      #define BTN_ENC           35
 
-      #define SDCARDDETECT 49
+      #define SDCARDDETECT      49
     #endif
   #endif
 #endif //ULTRA_LCD
@@ -2087,12 +2088,12 @@
 
 #ifndef SDSUPPORT
 // these pins are defined in the SD library if building with SD support
-  #define MAX_SCK_PIN          52
-  #define MAX_MISO_PIN         50
-  #define MAX_MOSI_PIN         51
-  #define MAX6675_SS       53
+  #define MAX_SCK_PIN           52
+  #define MAX_MISO_PIN          50
+  #define MAX_MOSI_PIN          51
+  #define MAX6675_SS            53
 #else
-  #define MAX6675_SS       49
+  #define MAX6675_SS            49
 #endif
 
 #endif //RAMPS-FD
