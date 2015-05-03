@@ -713,7 +713,7 @@ void setup() {
   servo_init();
 
   lcd_init();
-  _delay_ms(1000);  // wait 1sec to display the splash screen
+  _delay_ms(SPLASH_SCREEN_DURATION);  // wait to display the splash screen
 
   #if HAS_CONTROLLERFAN
     SET_OUTPUT(CONTROLLERFAN_PIN); //Set pin used for driver cooling fan

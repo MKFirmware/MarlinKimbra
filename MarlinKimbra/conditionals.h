@@ -208,6 +208,14 @@
    * LCD BUZZ
    */
   #define HAS_LCD_BUZZ (defined(ULTRALCD) || (defined(BEEPER) && BEEPER >= 0) || defined(LCD_USE_I2C_BUZZER))
+  
+  /**
+   * SPLASH_SCREEN_DURATION for no DOGLCD display
+   */
+  #ifndef DOGLCD
+    #undef SPLASH_SCREEN_DURATION
+    #define SPLASH_SCREEN_DURATION 500
+  #endif
 
 #else // CONFIGURATION_LCD
 

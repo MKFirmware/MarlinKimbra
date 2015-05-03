@@ -408,6 +408,9 @@ your extruder heater takes 2 minutes to hit the target on heating.
 // #define LCD_SCREEN_ROT_180
 // #define LCD_SCREEN_ROT_270
 
+// SPLASH SCREEN duration in millisecond
+#define SPLASH_SCREEN_DURATION 2000 // Millisecond
+
 /** Display Voltage Logic Selector on Alligator Board
  0 = Voltage level 3.3V
  1 = Voltage level 5V
