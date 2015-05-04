@@ -219,7 +219,7 @@
 
 bool Running = true;
 
-uint8_t debugLevel = DEBUG_INFO|DEBUG_COMMUNICATION;
+uint8_t debugLevel = DEBUG_INFO|DEBUG_DRYRUN;
 
 static float feedrate = 1500.0, next_feedrate, saved_feedrate;
 float current_position[NUM_AXIS] = { 0.0 };
@@ -542,7 +542,7 @@ bool enqueuecommand(const char *cmd) {
   // This is dangerous if a mixing of serial and this happens
   char *command = command_queue[cmd_queue_index_w];
   strcpy(command, cmd);
-  ECHO_LMV(OK, MSG_ENQUEUEING,command);
+  ECHO_LMV(DB, MSG_ENQUEUEING, command);
   cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
   commands_in_queue++;
   return true;
@@ -675,14 +675,14 @@ void setup() {
 
   // Check startup - does nothing if bootloader sets MCUSR to 0
   byte mcu = MCUSR;
-  if (mcu & 1) ECHO_LM(OK,MSG_POWERUP);
-  if (mcu & 2) ECHO_LM(OK,MSG_EXTERNAL_RESET);
-  if (mcu & 4) ECHO_LM(OK,MSG_BROWNOUT_RESET);
-  if (mcu & 8) ECHO_LM(OK,MSG_WATCHDOG_RESET);
-  if (mcu & 32) ECHO_LM(OK,MSG_SOFTWARE_RESET);
+  if (mcu & 1) ECHO_EM(MSG_POWERUP);
+  if (mcu & 2) ECHO_EM(MSG_EXTERNAL_RESET);
+  if (mcu & 4) ECHO_EM(MSG_BROWNOUT_RESET);
+  if (mcu & 8) ECHO_EM(MSG_WATCHDOG_RESET);
+  if (mcu & 32) ECHO_EM(MSG_SOFTWARE_RESET);
   MCUSR = 0;
 
-  ECHO_LM(OK, MSG_MARLIN " " STRING_VERSION);
+  ECHO_EM(MSG_MARLIN " " STRING_VERSION);
 
   #ifdef STRING_VERSION_CONFIG_H
     #ifdef STRING_CONFIG_H_AUTHOR
@@ -690,9 +690,8 @@ void setup() {
     #endif // STRING_CONFIG_H_AUTHOR
   #endif // STRING_VERSION_CONFIG_H
 
-  ECHO_SMV(OK, MSG_FREE_MEMORY, freeMemory());
-  ECHO_M(MSG_PLANNER_BUFFER_BYTES);
-  ECHO_EV((int)sizeof(block_t)*BLOCK_BUFFER_SIZE);
+  ECHO_SMV(DB, MSG_FREE_MEMORY, freeMemory());
+  ECHO_EMV(MSG_PLANNER_BUFFER_BYTES, (int)sizeof(block_t)*BLOCK_BUFFER_SIZE);
 
   #ifdef SDSUPPORT
     for (int8_t i = 0; i < BUFSIZE; i++) fromsd[i] = false;
@@ -833,8 +832,7 @@ void get_command() {
         strchr_pointer = strchr(command, 'N');
         gcode_N = (strtol(strchr_pointer + 1, NULL, 10));
         if (gcode_N != gcode_LastN + 1 && strstr_P(command, PSTR("M110")) == NULL) {
-          ECHO_SMV(ER, MSG_ERR_LINE_NO1, gcode_LastN + 1);
-          ECHO_EMV(MSG_ERR_LINE_NO2, gcode_N);
+          ECHO_LMV(ER, MSG_ERR_LINE_NO, gcode_LastN);
           FlushSerialRequestResend();
           serial_count = 0;
           return;
@@ -880,7 +878,7 @@ void get_command() {
           case 2:
           case 3:
             if (IsStopped()) {
-              ECHO_LM(ER,MSG_ERR_STOPPED);
+              ECHO_LM(ER, MSG_ERR_STOPPED);
               LCD_MESSAGEPGM(MSG_STOPPED);
             }
             break;
@@ -936,7 +934,7 @@ void get_command() {
           millis_t t = (print_job_stop_ms - print_job_start_ms) / 1000;
           int hours = t / 60 / 60, minutes = (t / 60) % 60;
           sprintf_P(time, PSTR("%i " MSG_END_HOUR " %i " MSG_END_MINUTE), hours, minutes);
-          ECHO_LV(DB,time);
+          ECHO_LV(DB, time);
           lcd_setstatus(time, true);
           card.printingHasFinished();
           card.checkautostart(true);
@@ -1961,7 +1959,7 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
     float h_endstop = -100, l_endstop = 100;
     float probe_error, ftemp;
 
-    ECHO_SMV(DB,"Starting Auto Calibration... Calibration precision: +/- ", ac_prec, 3);
+    ECHO_SMV(DB, "Starting Auto Calibration... Calibration precision: +/- ", ac_prec, 3);
     ECHO_EMV("mm Total Iteration: ", iterations);
     
     LCD_MESSAGEPGM("Auto Calibration...");
@@ -2019,7 +2017,7 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
       else {
         if ((bed_level_x < -ac_prec) or (bed_level_x > ac_prec) or (bed_level_y < -ac_prec) or (bed_level_y > ac_prec) or (bed_level_z < -ac_prec) or (bed_level_z > ac_prec)) {
           //Endstop req adjustment
-          ECHO_LM(DB,"Adjusting Endstop..");
+          ECHO_LM(DB, "Adjusting Endstop..");
           endstop_adj[0] += bed_level_x / 1.05;
           endstop_adj[1] += bed_level_y / 1.05;
           endstop_adj[2] += bed_level_z / 1.05; 
@@ -2036,12 +2034,12 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
             }
             max_pos[Z_AXIS] -= h_endstop + 2;
             set_delta_constants();
-            ECHO_SMV(DB,"Adjusting Z-Height to: ", max_pos[Z_AXIS]);
+            ECHO_SMV(DB, "Adjusting Z-Height to: ", max_pos[Z_AXIS]);
             ECHO_EM(" mm..");                
           }
         }
         else {
-          ECHO_LM(DB,"Endstop: OK");
+          ECHO_LM(DB, "Endstop: OK");
           adj_r_target = (bed_level_x + bed_level_y + bed_level_z) / 3;
           adj_dr_target = (bed_level_ox + bed_level_oy + bed_level_oz) / 3;
 
@@ -2054,7 +2052,7 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
           else adj_tower_done = true;
           if ((adj_r_done == false) or (adj_dr_done == false) or (adj_tower_done == false)) {
             //delta geometry adjustment required
-            ECHO_LM(DB,"Adjusting Delta Geometry..");
+            ECHO_LM(DB, "Adjusting Delta Geometry..");
             //set initial direction and magnitude for delta radius & diagonal rod adjustment
             if (adj_r == 0) {
               if (adj_r_target > bed_level_c) adj_r = 1; 
@@ -2073,7 +2071,7 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
             do {   
               //Apply adjustments 
               if (adj_r_done == false) {
-                ECHO_SMV(DB,"Adjusting Delta Radius (", delta_radius);
+                ECHO_SMV(DB, "Adjusting Delta Radius (", delta_radius);
                 ECHO_MV(" -> ", delta_radius + adj_r);
                 ECHO_EM(")");
                 delta_radius += adj_r;
@@ -2081,7 +2079,7 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
 
               if (adj_dr_allowed == false) adj_dr_done = true;
               if (adj_dr_done == false) {
-                ECHO_SMV(DB,"Adjusting Diagonal Rod Length (", delta_diagonal_rod);
+                ECHO_SMV(DB, "Adjusting Diagonal Rod Length (", delta_diagonal_rod);
                 ECHO_MV(" -> ", delta_diagonal_rod + adj_dr);
                 ECHO_EM(")");
                 delta_diagonal_rod += adj_dr;
@@ -2447,7 +2445,7 @@ inline void wait_heater() {
 
     { // while loop
       if (millis() > temp_ms + 1000UL) { //Print temp & remaining time every 1s while waiting
-        ECHO_SMV(OK, "T:", degHotend(target_extruder),1);
+        ECHO_MV("T:", degHotend(target_extruder),1);
         ECHO_MV(" E:", target_extruder);
         #ifdef TEMP_RESIDENCY_TIME
           ECHO_M(" W:");
@@ -2494,7 +2492,7 @@ inline void wait_bed() {
     if (ms > temp_ms + 1000UL) { //Print Temp Reading every 1 second while heating up.
       temp_ms = ms;
       float tt = degHotend(active_extruder);
-      ECHO_SMV(OK, "T:", tt);
+      ECHO_MV("T:", tt);
       ECHO_MV(" E:", active_extruder);
       ECHO_EMV(" B:", degBed(), 1);
     }
@@ -3674,7 +3672,7 @@ inline void gcode_M31() {
   int min = t / 60, sec = t % 60;
   char time[30];
   sprintf_P(time, PSTR("%i min, %i sec"), min, sec);
-  ECHO_LV(OK, time);
+  ECHO_LV(DB, time);
   lcd_setstatus(time);
   autotempShutdown();
 }
@@ -6270,6 +6268,10 @@ void ClearToSend() {
   #endif
   ECHO_S(OK);
   ECHO_E;
+  #ifdef ADVANCED_OK
+    ECHO_MV(" N", gcode_LastN);
+    ECHO_EMV(" S", commands_in_queue);
+  #endif
 }
 
 void get_coordinates() {
