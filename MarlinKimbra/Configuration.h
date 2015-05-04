@@ -601,9 +601,9 @@ your extruder heater takes 2 minutes to hit the target on heating.
                                  // It is assumed that when logic high = filament available
                                  //                    when logic  low = filament run out
 #ifdef FILAMENT_RUNOUT_SENSOR
-  const bool FIL_RUNOUT_INVERTING = true; // Should be uncommented and true or false should assigned
-  #define ENDSTOPPULLUP_FIL_RUNOUT        // Uncomment to use internal pullup for filament runout pins if the sensor is defined.
-  #define FILAMENT_RUNOUT_SCRIPT "M600"   // Script execute when filament run out
+  const bool FILRUNOUT_PIN_INVERTING = true;  // Should be uncommented and true or false should assigned
+  #define ENDSTOPPULLUP_FIL_RUNOUT            // Uncomment to use internal pullup for filament runout pins if the sensor is defined.
+  #define FILAMENT_RUNOUT_SCRIPT "M600"       // Script execute when filament run out
 #endif
 
 //===========================================================================
