@@ -142,7 +142,7 @@
 #define MSG_HOTEND_OFFSET                   "Hotend offsets:"
 #define MSG_EMPTY_PLANE                     "Autolevel can only be execute on an actual plane, make sure width and height are not 0!"
 #define MSG_ERR_MATERIAL_INDEX              "M145 S<index> out of range (0-2)"
-#define MSG_FILAMENT_RUNOUT_PIN             "filament_runout_pin: "
+#define MSG_FILRUNOUT_PIN                   "filament_runout_pin: "
 #define MSG_ERR_M428_TOO_FAR                "Too far from reference point"
 
 #define MSG_SD_CANT_OPEN_SUBDIR             "Cannot open subdir"
