@@ -6652,7 +6652,7 @@ void disable_all_steppers() {
 void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
 
   #if HAS_FILRUNOUT
-    if ((printing || IS_SD_PRINTING ) && (READ(FILRUNOUT_PIN) ^ FIL_RUNOUT_INVERTING))
+    if ((printing || IS_SD_PRINTING ) && (READ(FILRUNOUT_PIN) ^ FILRUNOUT_PIN_INVERTING))
       filrunout();
   #endif
 
