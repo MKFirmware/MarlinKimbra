@@ -727,7 +727,7 @@ ISR(TIMER1_COMPA_vect) {
       #define _APPLY_STEP(AXIS) AXIS ##_APPLY_STEP
       #define _INVERT_STEP_PIN(AXIS) INVERT_## AXIS ##_STEP_PIN
 
-      #ifdef CONFIG_STEPPERS_TOSHIBA
+      #if defined(CONFIG_STEPPERS_TOSHIBA) || MB(ALLIGATOR)
         /**
          * The Toshiba stepper controller require much longer pulses.
          * So we 'stage' decompose the pulses between high and low
@@ -744,6 +744,8 @@ ISR(TIMER1_COMPA_vect) {
           STEP_ADD(e,E);
         #endif
 
+        _delay_us(1U); // Add delay us
+
         #define STEP_IF_COUNTER(axis, AXIS) \
           if (_COUNTER(axis) > 0) { \
             _COUNTER(axis) -= current_block->step_event_count; \
@@ -758,7 +760,7 @@ ISR(TIMER1_COMPA_vect) {
           STEP_IF_COUNTER(e, E);
         #endif
 
-      #else // !CONFIG_STEPPERS_TOSHIBA
+      #else // !CONFIG_STEPPERS_TOSHIBA || MB(ALLIGATOR)
 
         #define APPLY_MOVEMENT(axis, AXIS) \
           _COUNTER(axis) += current_block->steps[_AXIS(AXIS)]; \
@@ -777,6 +779,7 @@ ISR(TIMER1_COMPA_vect) {
         #endif
 
       #endif // CONFIG_STEPPERS_TOSHIBA
+
       step_events_completed++;
       if (step_events_completed >= current_block->step_event_count) break;
     }
@@ -1032,63 +1035,63 @@ void st_init() {
   #if HAS_X_MIN
     SET_INPUT(X_MIN_PIN);
     #ifdef ENDSTOPPULLUP_XMIN
-      WRITE(X_MIN_PIN,HIGH);
+      WRITE(X_MIN_PIN, HIGH);
     #endif
   #endif
 
   #if HAS_Y_MIN
     SET_INPUT(Y_MIN_PIN);
     #ifdef ENDSTOPPULLUP_YMIN
-      WRITE(Y_MIN_PIN,HIGH);
+      WRITE(Y_MIN_PIN, HIGH);
     #endif
   #endif
 
   #if HAS_Z_MIN
     SET_INPUT(Z_MIN_PIN);
     #ifdef ENDSTOPPULLUP_ZMIN
-      WRITE(Z_MIN_PIN,HIGH);
+      WRITE(Z_MIN_PIN, HIGH);
     #endif
   #endif
 
   #if HAS_E_MIN
     SET_INPUT(E_MIN_PIN);
     #ifdef ENDSTOPPULLUP_EMIN
-      WRITE(E_MIN_PIN,HIGH);
+      WRITE(E_MIN_PIN, HIGH);
     #endif
   #endif
 
   #if HAS_X_MAX
     SET_INPUT(X_MAX_PIN);
     #ifdef ENDSTOPPULLUP_XMAX
-      WRITE(X_MAX_PIN,HIGH);
+      WRITE(X_MAX_PIN, HIGH);
     #endif
   #endif
 
   #if HAS_Y_MAX
     SET_INPUT(Y_MAX_PIN);
     #ifdef ENDSTOPPULLUP_YMAX
-      WRITE(Y_MAX_PIN,HIGH);
+      WRITE(Y_MAX_PIN, HIGH);
     #endif
   #endif
 
   #if HAS_Z_MAX
     SET_INPUT(Z_MAX_PIN);
     #ifdef ENDSTOPPULLUP_ZMAX
-      WRITE(Z_MAX_PIN,HIGH);
+      WRITE(Z_MAX_PIN, HIGH);
     #endif
   #endif
 
   #if HAS_Z2_MAX
     SET_INPUT(Z2_MAX_PIN);
     #ifdef ENDSTOPPULLUP_ZMAX
-      WRITE(Z2_MAX_PIN,HIGH);
+      WRITE(Z2_MAX_PIN, HIGH);
     #endif
   #endif
 
 #if (defined(Z_PROBE_PIN) && Z_PROBE_PIN >= 0) && defined(Z_PROBE_ENDSTOP) // Check for Z_PROBE_ENDSTOP so we don't pull a pin high unless it's to be used.
   SET_INPUT(Z_PROBE_PIN);
   #ifdef ENDSTOPPULLUP_ZPROBE
-    WRITE(Z_PROBE_PIN,HIGH);
+    WRITE(Z_PROBE_PIN, HIGH);
   #endif
 #endif
 

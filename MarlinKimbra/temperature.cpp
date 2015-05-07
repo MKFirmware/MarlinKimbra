@@ -336,9 +336,11 @@ void PID_autotune(float temp, int hotend, int ncycles)
     if (cycles > ncycles) {
       ECHO_LM(OK, MSG_PID_AUTOTUNE_FINISHED);
       #ifdef PIDTEMP
-        PID_PARAM(Kp, hotend) = Kp_temp;
-        PID_PARAM(Ki, hotend) = scalePID_i(Ki_temp);
-        PID_PARAM(Kd, hotend) = scalePID_d(Kd_temp);
+        if (hotend >= 0) {
+          PID_PARAM(Kp, hotend) = Kp_temp;
+          PID_PARAM(Ki, hotend) = scalePID_i(Ki_temp);
+          PID_PARAM(Kd, hotend) = scalePID_d(Kd_temp);
+        }
       #endif
       return;
     }

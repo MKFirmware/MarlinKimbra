@@ -406,7 +406,7 @@ millis_t config_last_update = 0;
   int meas_delay_cm = MEASUREMENT_DELAY_CM;                     //distance delay setting
 #endif
 
-#ifdef FILAMENT_RUNOUT_SENSOR
+#if HAS_FILRUNOUT
   static bool filrunoutEnqueued = false;
   bool printing = false;
 #endif
@@ -3532,13 +3532,13 @@ inline void gcode_G92() {
   }
 #endif //LASERBEAM
 
-#ifdef FILAMENT_END_SWITCH
+#if HAS_FILRUNOUT
   /**
    * M11: Start printing
    */
   inline void gcode_M11() {
     printing = true;
-    paused = false;
+    filrunoutEnqueued = false;
     ECHO_LM(DB, "Start Printing, pause pin active.");
     ECHO_S(RESUME);
     ECHO_E;
@@ -6702,7 +6702,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
     if (!READ(HOME_PIN)) {
       if (!homeDebounceCount) {
         enqueuecommands_P(PSTR("G28"));
-        LCD_ALERTMESSAGEPGM(MSG_AUTO_HOME);
+        LCD_MESSAGEPGM(MSG_AUTO_HOME);
       }
       if (homeDebounceCount < HOME_DEBOUNCE_DELAY)
         homeDebounceCount++;
