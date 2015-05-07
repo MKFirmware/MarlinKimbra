@@ -24,7 +24,7 @@
 static void ST7920_SWSPI_SND_8BIT(uint8_t val)
 {
   uint8_t i;
-  for( i=0; i<8; i++ )
+  for( i = 0; i < 8; i++ )
   {
     WRITE(ST7920_CLK_PIN,0);
     #if F_CPU == 20000000
@@ -53,9 +53,9 @@ uint8_t u8g_dev_rrd_st7920_128x64_fn(u8g_t *u8g, u8g_dev_t *dev, uint8_t msg, vo
   {
     case U8G_DEV_MSG_INIT:
       {
-        OUT_WRITE(ST7920_CS_PIN,LOW);
-        OUT_WRITE(ST7920_DAT_PIN,LOW);
-        OUT_WRITE(ST7920_CLK_PIN,HIGH);
+        OUT_WRITE(ST7920_CS_PIN, LOW);
+        OUT_WRITE(ST7920_DAT_PIN, LOW);
+        OUT_WRITE(ST7920_CLK_PIN, HIGH);
 
         ST7920_CS();
         u8g_Delay(120);                 //initial delay for boot up

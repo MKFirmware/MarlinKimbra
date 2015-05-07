@@ -14,7 +14,6 @@
 
 #ifdef __SAM3X8E__
   #include "HAL.h"
-  #include "Fastio_sam.h"
 #else
   #include <util/delay.h>
   #include <avr/eeprom.h>
