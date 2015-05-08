@@ -539,7 +539,7 @@ ISR(TIMER1_COMPA_vect) {
           { // -direction
             #ifdef DUAL_X_CARRIAGE
               // with 2 x-carriages, endstops are only checked in the homing direction for the active extruder
-              if ((current_block->active_extruder == 0 && X_HOME_DIR == -1) || (current_block->active_extruder != 0 && X2_HOME_DIR == -1))
+              if ((current_block->active_driver == 0 && X_HOME_DIR == -1) || (current_block->active_driver != 0 && X2_HOME_DIR == -1))
             #endif
               {
                 #if HAS_X_MIN
@@ -723,62 +723,33 @@ ISR(TIMER1_COMPA_vect) {
       #endif //ADVANCE
 
       #define _COUNTER(axis) counter_## axis
-      #define _WRITE_STEP(AXIS, HIGHLOW) AXIS ##_STEP_WRITE(HIGHLOW)
       #define _APPLY_STEP(AXIS) AXIS ##_APPLY_STEP
       #define _INVERT_STEP_PIN(AXIS) INVERT_## AXIS ##_STEP_PIN
 
-      #if defined(CONFIG_STEPPERS_TOSHIBA) || MB(ALLIGATOR)
-        /**
-         * The Toshiba stepper controller require much longer pulses.
-         * So we 'stage' decompose the pulses between high and low
-         * instead of doing each in turn. The extra tests add enough
-         * lag to allow it work with without needing NOPs
-         */
-        #define STEP_ADD(axis, AXIS) \
-         _COUNTER(axis) += current_block->steps[_AXIS(AXIS)]; \
-         if (_COUNTER(axis) > 0) { _WRITE_STEP(AXIS, HIGH); }
-        STEP_ADD(x,X);
-        STEP_ADD(y,Y);
-        STEP_ADD(z,Z);
-        #ifndef ADVANCE
-          STEP_ADD(e,E);
-        #endif
+      #define STEP_START(axis, AXIS) \
+        _COUNTER(axis) += current_block->steps[_AXIS(AXIS)]; \
+        if (_COUNTER(axis) > 0) { \
+          _APPLY_STEP(AXIS)(!_INVERT_STEP_PIN(AXIS),0); \
+          _COUNTER(axis) -= current_block->step_event_count; \
+          count_position[_AXIS(AXIS)] += count_direction[_AXIS(AXIS)]; }
 
-        _delay_us(1U); // Add delay us
+      STEP_START(x,X);
+      STEP_START(y,Y);
+      STEP_START(z,Z);
+      #ifndef ADVANCE
+        STEP_START(e,E);
+      #endif
 
-        #define STEP_IF_COUNTER(axis, AXIS) \
-          if (_COUNTER(axis) > 0) { \
-            _COUNTER(axis) -= current_block->step_event_count; \
-            count_position[_AXIS(AXIS)] += count_direction[_AXIS(AXIS)]; \
-            _WRITE_STEP(AXIS, LOW); \
-          }
+      delayMicroseconds(1);
 
-        STEP_IF_COUNTER(x, X);
-        STEP_IF_COUNTER(y, Y);
-        STEP_IF_COUNTER(z, Z);
-        #ifndef ADVANCE
-          STEP_IF_COUNTER(e, E);
-        #endif
+      #define STEP_END(axis, AXIS) _APPLY_STEP(AXIS)(_INVERT_STEP_PIN(AXIS),0)
 
-      #else // !CONFIG_STEPPERS_TOSHIBA || MB(ALLIGATOR)
-
-        #define APPLY_MOVEMENT(axis, AXIS) \
-          _COUNTER(axis) += current_block->steps[_AXIS(AXIS)]; \
-          if (_COUNTER(axis) > 0) { \
-            _APPLY_STEP(AXIS)(!_INVERT_STEP_PIN(AXIS),0); \
-            _COUNTER(axis) -= current_block->step_event_count; \
-            count_position[_AXIS(AXIS)] += count_direction[_AXIS(AXIS)]; \
-            _APPLY_STEP(AXIS)(_INVERT_STEP_PIN(AXIS),0); \
-          }
-
-        APPLY_MOVEMENT(x, X);
-        APPLY_MOVEMENT(y, Y);
-        APPLY_MOVEMENT(z, Z);
-        #ifndef ADVANCE
-          APPLY_MOVEMENT(e, E);
-        #endif
-
-      #endif // CONFIG_STEPPERS_TOSHIBA
+      STEP_END(x, X);
+      STEP_END(y, Y);
+      STEP_END(z, Z);
+      #ifndef ADVANCE
+        STEP_END(e, E);
+      #endif
 
       step_events_completed++;
       if (step_events_completed >= current_block->step_event_count) break;
@@ -1096,6 +1067,7 @@ void st_init() {
 #endif
 
   #define _STEP_INIT(AXIS) AXIS ##_STEP_INIT
+  #define _WRITE_STEP(AXIS, HIGHLOW) AXIS ##_STEP_WRITE(HIGHLOW)
   #define _DISABLE(axis) disable_## axis()
 
   #define AXIS_INIT(axis, AXIS, PIN) \

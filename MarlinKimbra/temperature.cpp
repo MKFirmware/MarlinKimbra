@@ -208,7 +208,15 @@ void PID_autotune(float temp, int hotend, int ncycles)
     return;
   }
 
-  ECHO_LM(OK, MSG_PID_AUTOTUNE_START);
+  ECHO_LM(DB, MSG_PID_AUTOTUNE_START);
+  if (hotend < 0) {
+    ECHO_SM(DB, "BED");
+  }
+  else {
+      ECHO_SMV(DB, "Hotend: ", hotend);
+  }
+  ECHO_MV(" Temp: ", temp);
+  ECHO_EMV(" Cycles: ", ncycles);
 
   disable_all_heaters(); // switch off all heaters.
 
@@ -260,7 +268,7 @@ void PID_autotune(float temp, int hotend, int ncycles)
             bias = constrain(bias, 20, max_pow - 20);
             d = (bias > max_pow / 2) ? max_pow - 1 - bias : bias;
 
-            ECHO_SMV(OK, MSG_BIAS, bias);
+            ECHO_MV(MSG_BIAS, bias);
             ECHO_MV(MSG_D, d);
             ECHO_MV(MSG_T_MIN, min);
             ECHO_MV(MSG_T_MAX, max);
@@ -268,32 +276,15 @@ void PID_autotune(float temp, int hotend, int ncycles)
               Ku = (4.0 * d) / (3.14159265 * (max - min) / 2.0);
               Tu = ((float)(t_low + t_high) / 1000.0);
               ECHO_MV(MSG_KU, Ku);
-              ECHO_MV(MSG_TU, Tu);
+              ECHO_EMV(MSG_TU, Tu);
               Kp_temp = 0.6 * Ku;
               Ki_temp = 2 * Kp_temp / Tu;
               Kd_temp = Kp_temp * Tu / 8;
               
-              ECHO_M(MSG_CLASSIC_PID);
+              ECHO_EM(MSG_CLASSIC_PID);
               ECHO_MV(MSG_KP, Kp_temp);
               ECHO_MV(MSG_KI, Ki_temp);
               ECHO_EMV(MSG_KD, Kd_temp);
-              
-              /*
-              Kp = 0.33*Ku;
-              Ki = Kp_temp / Tu;
-              Kd = Kp_temp * Tu / 3;
-              ECHO_SMV(DB," Some overshoot ");
-              ECHO_MV(" Kp: ", Kp_temp);
-              ECHO_MV(" Ki: ", Ki_temp);
-              ECHO_MV(" Kd: ", Kd_temp);
-              Kp = 0.2 * Ku;
-              Ki = 2 * Kp_temp / Tu;
-              Kd = Kp_temp * Tu / 3;
-              ECHO_M(" No overshoot ");
-              ECHO_MV(" Kp: ", Kp_temp);
-              ECHO_MV(" Ki: ", Ki_temp);
-              ECHO_EMV(" Kd: ", Kd_temp);
-              */
             }
             else {
               ECHO_E;
@@ -312,6 +303,7 @@ void PID_autotune(float temp, int hotend, int ncycles)
       ECHO_LM(ER, MSG_PID_TEMP_TOO_HIGH);
       return;
     }
+
     // Every 2 seconds...
     if (ms > temp_ms + 2000) {
       int p;
@@ -328,20 +320,29 @@ void PID_autotune(float temp, int hotend, int ncycles)
 
       temp_ms = ms;
     } // every 2 seconds
+
     // Over 2 minutes?
     if (((ms - t1) + (ms - t2)) > (10L*60L*1000L*2L)) {
       ECHO_LM(ER, MSG_PID_TIMEOUT);
       return;
     }
     if (cycles > ncycles) {
-      ECHO_LM(OK, MSG_PID_AUTOTUNE_FINISHED);
-      #ifdef PIDTEMP
-        if (hotend >= 0) {
-          PID_PARAM(Kp, hotend) = Kp_temp;
-          PID_PARAM(Ki, hotend) = scalePID_i(Ki_temp);
-          PID_PARAM(Kd, hotend) = scalePID_d(Kd_temp);
-        }
-      #endif
+      ECHO_LM(DB, MSG_PID_AUTOTUNE_FINISHED);
+      if (hotend >= 0) {
+        PID_PARAM(Kp, hotend) = Kp_temp;
+        PID_PARAM(Ki, hotend) = scalePID_i(Ki_temp);
+        PID_PARAM(Kd, hotend) = scalePID_d(Kd_temp);
+        updatePID();
+
+        ECHO_SMV(DB, MSG_KP, PID_PARAM(Kp, hotend));
+        ECHO_MV(MSG_KI, unscalePID_i(PID_PARAM(Ki, hotend)));
+        ECHO_EMV(MSG_KD, unscalePID_d(PID_PARAM(Kd, hotend)));
+      }
+      else {
+        ECHO_LMV(DB, "#define DEFAULT_bedKp ", Kp_temp);
+        ECHO_LMV(DB, "#define DEFAULT_bedKi ", unscalePID_i(Ki_temp));
+        ECHO_LMV(DB, "#define DEFAULT_bedKd ", unscalePID_d(Kd_temp));
+      }
       return;
     }
     lcd_update();

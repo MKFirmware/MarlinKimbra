@@ -261,7 +261,7 @@
 //#define ENCODER_RATE_MULTIPLIER_DEBUG // If defined, output the encoder steps per second value
 
 //#define CHDK 4        //Pin for triggering CHDK to take a picture see how to use it here http://captain-slow.dk/2014/03/09/3d-printing-timelapses/
-#define CHDK_DELAY 50 //How long in ms the pin should stay HIGH before going LOW again
+#define CHDK_DELAY 50   //How long in ms the pin should stay HIGH before going LOW again
 
 #ifdef SDSUPPORT
 

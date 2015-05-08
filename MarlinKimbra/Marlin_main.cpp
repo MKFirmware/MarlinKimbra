@@ -4134,11 +4134,11 @@ inline void gcode_M105() {
   #if HAS_TEMP_0 || HAS_TEMP_BED || defined(HEATER_0_USES_MAX6675)
     ECHO_S(OK);
     #if HAS_TEMP_0
-      ECHO_MV(" T:", degHotend(target_extruder), 1);
+      ECHO_MV(MSG_T, degHotend(target_extruder), 1);
       ECHO_MV(" /", degTargetHotend(target_extruder), 1);
     #endif
     #if HAS_TEMP_BED
-      ECHO_MV(" B:", degBed(), 1);
+      ECHO_MV(MSG_B, degBed(), 1);
       ECHO_MV(" /", degTargetBed(), 1);
     #endif
     for (int8_t e = 0; e < EXTRUDERS; ++e) {
@@ -6266,8 +6266,7 @@ void ClearToSend() {
   #ifdef SDSUPPORT
     if (fromsd[cmd_queue_index_r]) return;
   #endif
-  ECHO_S(OK);
-  ECHO_E;
+  ECHO_L(OK);
   #ifdef ADVANCED_OK
     ECHO_MV(" N", gcode_LastN);
     ECHO_EMV(" S", commands_in_queue);
