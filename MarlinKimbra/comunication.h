@@ -67,18 +67,19 @@ FORCE_INLINE void PS_PGM(const char *str) {
 #define ECHO_V SERIAL_PRINT
 #define ECHO_C SERIAL_WRITE
 #define ECHO_S(srt) ECHO_PGM(srt)
-#define ECHO_E ECHO_ENDL
 
 #define ECHO_SM(srt, msg) ECHO_S(srt),ECHO_M(msg)
 #define ECHO_SV(srt, val, args...) ECHO_S(srt),ECHO_V(val, ##args)
 #define ECHO_SMV(srt, msg, val, args...) ECHO_S(srt),ECHO_MV(msg, val, ##args)
 #define ECHO_SVM(srt, val, msg, args...) ECHO_S(srt),ECHO_VM(val, msg, ##args)
 
+#define ECHO_E ECHO_ENDL
 #define ECHO_EM(msg) ECHO_M(msg),ECHO_E
 #define ECHO_EV(val, args...) ECHO_V(val, ##args),ECHO_E
 #define ECHO_EMV(msg, val, args...) ECHO_MV(msg, val, ##args),ECHO_E
 #define ECHO_EVM(val, msg, args...) ECHO_VM(val, msg, ##args),ECHO_E
 
+#define ECHO_L(srt) ECHO_S(srt),ECHO_E
 #define ECHO_LM(srt, msg) ECHO_S(srt),ECHO_M(msg),ECHO_E
 #define ECHO_LV(srt, val) ECHO_S(srt),ECHO_V(val),ECHO_E
 #define ECHO_LMV(srt, msg, val, args...) ECHO_S(srt),ECHO_MV(msg, val, ##args),ECHO_E
