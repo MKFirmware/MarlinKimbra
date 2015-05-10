@@ -317,9 +317,6 @@ enum DebugFlags {
   DEBUG_COMMUNICATION = BIT(4)
 };
 extern uint8_t debugLevel;
-extern inline bool debugDryrun() {
-  return ((debugLevel & 8) != 0);
-}
 
 #ifdef FIRMWARE_TEST
   void FirmwareTest();

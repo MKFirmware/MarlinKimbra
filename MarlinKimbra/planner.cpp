@@ -515,7 +515,7 @@ float junction_deviation = 0.1;
         if (extruder != 1)
       #endif // NPR2
         {
-          if (degHotend(extruder) < extrude_min_temp && !debugDryrun()) {
+          if (degHotend(extruder) < extrude_min_temp && !(debugLevel & DEBUG_DRYRUN)) {
             position[E_AXIS] = target[E_AXIS]; //behave as if the move really took place, but ignore E part
             de = 0; // no difference
             ECHO_S(OK);

@@ -222,12 +222,11 @@
 #define MSG_MAXTEMP_EXTRUDER_OFF            ": Extruder" MSG_SWITCHED_OFF_MAX
 #define MSG_MAXTEMP_BED_OFF                 "Heated bed" MSG_SWITCHED_OFF_MAX
 
-#define MSG_ENDSTOP_XS                        "X"
-#define MSG_ENDSTOP_YS                        "Y"
-#define MSG_ENDSTOP_ZS                        "Z"
-#define MSG_ENDSTOP_ZPS                       "ZP"
-#define MSG_ENDSTOP_ES                        "E"
-
+#define MSG_ENDSTOP_XS                      "X"
+#define MSG_ENDSTOP_YS                      "Y"
+#define MSG_ENDSTOP_ZS                      "Z"
+#define MSG_ENDSTOP_ZPS                     "ZP"
+#define MSG_ENDSTOP_ES                      "E"
 
 //watchdog.cpp
 #define MSG_WATCHDOG_RESET                  "Something is wrong, please turn off the printer."
@@ -239,7 +238,6 @@
 #define MSG_BED_LEVELLING_X                 " X: "
 #define MSG_BED_LEVELLING_Y                 " Y: "
 #define MSG_BED_LEVELLING_Z                 " Z: "
-#define MSG_DRYRUN_ENABLED                  "DEBUG DRYRUN ENABLED"
 
 // LCD Menu Messages
 
