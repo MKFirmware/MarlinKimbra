@@ -219,7 +219,7 @@
 
 bool Running = true;
 
-uint8_t debugLevel = DEBUG_INFO|DEBUG_DRYRUN;
+uint8_t debugLevel = DEBUG_INFO|DEBUG_COMMUNICATION;
 
 static float feedrate = 1500.0, next_feedrate, saved_feedrate;
 float current_position[NUM_AXIS] = { 0.0 };
@@ -4110,7 +4110,7 @@ inline void gcode_M92() {
  */
 inline void gcode_M104() {
   if (setTargetedHotend(104)) return;
-  if (debugDryrun()) return;
+  if (debugLevel & DEBUG_DRYRUN) return;
   #if HOTENDS == 1
     if (target_extruder != active_extruder) return;
   #endif
@@ -4197,7 +4197,7 @@ inline void gcode_M105() {
  */
 inline void gcode_M109() {
   if (setTargetedHotend(109)) return;
-  if (debugDryrun()) return;
+  if (debugLevel & DEBUG_DRYRUN) return;
   #if HOTENDS == 1
     if (target_extruder != active_extruder) return;
   #endif
@@ -4229,8 +4229,11 @@ inline void gcode_M109() {
  */
 inline void gcode_M111() {
   debugLevel = code_seen('S') ? code_value_short() : DEBUG_INFO|DEBUG_COMMUNICATION;
-  if (debugDryrun()) {
-    ECHO_LM(DB, MSG_DRYRUN_ENABLED);
+  if (debugLevel & DEBUG_ECHO) ECHO_LM(DB, MSG_DEBUG_ECHO);
+  //if (debugLevel & DEBUG_INFO) ECHO_LM(DB, MSG_DEBUG_INFO);
+  //if (debugLevel & DEBUG_ERRORS) ECHO_LM(DB, MSG_DEBUG_ERRORS);
+  if (debugLevel & DEBUG_DRYRUN) {
+    ECHO_LM(DB, MSG_DEBUG_DRYRUN);
     setTargetBed(0);
     for (int8_t cur_hotend = 0; cur_hotend < HOTENDS; ++cur_hotend) {
       setTargetHotend(0, cur_hotend);
@@ -4390,7 +4393,7 @@ inline void gcode_M121() { enable_endstops(true); }
  * M140: Set bed temperature
  */
 inline void gcode_M140() {
-  if (debugDryrun()) return;
+  if (debugLevel & DEBUG_DRYRUN) return;
   if (code_seen('S')) setTargetBed(code_value());
 }
 
@@ -4485,7 +4488,7 @@ inline void gcode_M140() {
    *       Rxxx Wait for bed current temp to reach target temp. Waits when heating and cooling
    */
   inline void gcode_M190() {
-    if (debugDryrun()) return;
+    if (debugLevel & DEBUG_DRYRUN) return;
     LCD_MESSAGEPGM(MSG_BED_HEATING);
     no_wait_for_cooling = code_seen('S');
     if (no_wait_for_cooling || code_seen('R'))
@@ -6330,7 +6333,7 @@ void clamp_to_software_endstops(float target[3]) {
 
   inline float prevent_dangerous_extrude(float &curr_e, float &dest_e) {
     float de = dest_e - curr_e;
-    if (debugDryrun()) return de;
+    if (debugLevel & DEBUG_DRYRUN) return de;
     if (de) {
       if (degHotend(active_extruder) < extrude_min_temp) {
         curr_e = dest_e; // Behave as if the move really took place, but ignore E part
@@ -6785,7 +6788,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
   #endif
 
   #ifdef IDLE_OOZING_PREVENT
-    if (degHotend(active_extruder) > IDLE_OOZING_MINTEMP && !debugDryrun() && !axis_is_moving && idleoozing_enabled) {
+    if (degHotend(active_extruder) > IDLE_OOZING_MINTEMP && !(debugLevel & DEBUG_DRYRUN) && !axis_is_moving && idleoozing_enabled) {
       #ifdef FILAMENTCHANGEENABLE
         if (!filament_changing)
       #endif
