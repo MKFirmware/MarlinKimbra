@@ -40,8 +40,9 @@
 #endif
 
 #define START       "start"                //start for host
-#define OK          "ok "                  //ok answer for host
+#define OK          "ok"                   //ok answer for host
 #define ER          "Error:"               //error for host
+#define WT          "wait"                 //wait for host
 #define DB          "<MK4>: "              //message for user
 #define RS          "Resend:"              //resend for host
 #define PAUSE       "//action:pause"       //command for host that support action

@@ -480,17 +480,12 @@ static void lcd_main_menu() {
   }
 #endif
 
+/**
+ * Set the home offset based on the current_position
+ */
 void lcd_set_home_offsets() {
-  for (int8_t i=0; i < NUM_AXIS; i++) {
-    if (i != E_AXIS) {
-      home_offset[i] -= current_position[i];
-      current_position[i] = 0.0;
-    }
-  }
-  plan_set_position(0.0, 0.0, 0.0, current_position[E_AXIS]);
-
-  // Audio feedback
-  enqueuecommands_P(PSTR("M300 S659 P200\nM300 S698 P200"));
+  // M428 Command
+  enqueuecommands_P(PSTR("M428"));
   lcd_return_to_status();
 }
 
@@ -591,7 +586,9 @@ void _lcd_preheat(int endnum, const float temph, const float tempb, const int fa
   setTargetBed(tempb);
   fanSpeed = fan;
   lcd_return_to_status();
-  setWatch(); // heater sanity check timer
+  #ifdef WATCH_TEMP_PERIOD
+    if (endnum >= 0) start_watching_heater(endnum);
+  #endif
 }
 void lcd_preheat_pla0() { _lcd_preheat(0, plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed); }
 void lcd_preheat_abs0() { _lcd_preheat(0, absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed); }

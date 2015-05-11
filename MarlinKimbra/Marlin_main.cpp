@@ -777,7 +777,7 @@ void loop() {
           if (card.logging)
             process_commands(); // The card is saving because it's logging
           else
-            ECHO_EM(MSG_OK);
+            ECHO_L(OK);
         }
       }
       else
@@ -808,7 +808,17 @@ void loop() {
 void get_command() {
 
   if (drain_queued_commands_P()) return; // priority is given to non-serial commands
-  
+
+  #ifdef NO_TIMEOUTS
+    static millis_t last_command_time = 0;
+    millis_t ms = millis();
+
+    if (!MYSERIAL.available() && commands_in_queue == 0 && ms - last_command_time > NO_TIMEOUTS) {
+      ECHO_L(WT);
+      last_command_time = ms;
+    }
+  #endif
+
   while (MYSERIAL.available() > 0 && commands_in_queue < BUFSIZE) {
 
     serial_char = MYSERIAL.read();
@@ -2424,7 +2434,10 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
 #endif //Z_PROBE_SLED
 
 inline void wait_heater() {
-  setWatch();
+
+  #ifdef WATCH_TEMP_PERIOD
+    start_watching_heater(target_extruder);
+  #endif
 
   millis_t temp_ms = millis();
 
@@ -4121,7 +4134,10 @@ inline void gcode_M104() {
       if (dual_x_carriage_mode == DXC_DUPLICATION_MODE && target_extruder == 0)
         setTargetHotend1(temp == 0.0 ? 0.0 : temp + duplicate_extruder_temp_offset);
     #endif
-    setWatch();
+
+    #ifdef WATCH_TEMP_PERIOD
+      start_watching_heater(target_extruder);
+    #endif
   }
 }
 
@@ -4253,7 +4269,7 @@ inline void gcode_M112() {
  */
 inline void gcode_M114() {
   //MESSAGE for Host
-  ECHO_SMV(OK, "X:", current_position[X_AXIS]);
+  ECHO_SMV(OK, " X:", current_position[X_AXIS]);
   ECHO_MV(" Y:", current_position[Y_AXIS]);
   ECHO_MV(" Z:", current_position[Z_AXIS]);
   ECHO_MV(" E:", current_position[E_AXIS]);
@@ -4264,7 +4280,7 @@ inline void gcode_M114() {
 
   #ifdef SCARA
     //MESSAGE for Host
-    ECHO_SMV(OK, "SCARA Theta:", delta[X_AXIS]);
+    ECHO_SMV(OK, " SCARA Theta:", delta[X_AXIS]);
     ECHO_EMV("   Psi+Theta:", delta[Y_AXIS]);
 
     ECHO_SMV(DB, "SCARA Cal - Theta:", delta[X_AXIS]+home_offset[X_AXIS]);
@@ -4287,7 +4303,7 @@ inline void gcode_M114() {
     
     #ifdef SCARA
       //MESSAGE for User
-      ECHO_SMV(OK, "SCARA Theta:", delta[X_AXIS]);
+      ECHO_SMV(OK, " SCARA Theta:", delta[X_AXIS]);
       ECHO_EMV("   Psi+Theta:", delta[Y_AXIS]);
 
       ECHO_SMV(DB, "SCARA Cal - Theta:", delta[X_AXIS]+home_offset[X_AXIS]);
@@ -4820,21 +4836,22 @@ inline void gcode_M226() {
 
 #if NUM_SERVOS > 0
   /**
-   * M280: Set servo position absolute. P: servo index, S: angle or microseconds
+   * M280: Get or set servo position. P<index> S<angle>
    */
   inline void gcode_M280() {
-    int servo_index = code_seen('P') ? code_value() : -1;
+    int servo_index = code_seen('P') ? code_value_short() : -1;
     int servo_position = 0;
     if (code_seen('S')) {
-      servo_position = code_value();
-      if ((servo_index >= 0) && (servo_index < NUM_SERVOS)) {
+      servo_position = code_value_short();
+      if (servo_index >= 0 && servo_index < NUM_SERVOS) {
+        Servo *srv = &servo[servo_index];
         #if SERVO_LEVELING
-          servo[servo_index].attach(0);
+          srv->attach(0);
         #endif
-        servo[servo_index].write(servo_position);
+        srv->write(servo_position);
         #if SERVO_LEVELING
           delay(PROBE_SERVO_DEACTIVATION_DELAY);
-          servo[servo_index].detach();
+          srv->detach();
         #endif
       }
       else {
@@ -4843,8 +4860,7 @@ inline void gcode_M226() {
       }
     }
     else if (servo_index >= 0) {
-      ECHO_S(DB);
-      ECHO_MV("Servo ", servo_index);
+      ECHO_SMV(OK, " Servo ", servo_index);
       ECHO_EMV(": ", servo[servo_index].read());
     }
   }
@@ -5597,7 +5613,7 @@ inline void gcode_M999() {
       value = code_value();
       if (Z_PROBE_OFFSET_RANGE_MIN <= value && value <= Z_PROBE_OFFSET_RANGE_MAX) {
         zprobe_zoffset = -value; // compare w/ line 278 of ConfigurationStore.cpp
-        ECHO_LM(DB, MSG_ZPROBE_ZOFFSET " " MSG_OK);
+        ECHO_LM(DB, MSG_ZPROBE_ZOFFSET " ok");
       }
       else {
         ECHO_S(DB, MSG_ZPROBE_ZOFFSET);
@@ -5935,7 +5951,7 @@ void process_commands() {
           gcode_M5(); break;
       #endif //LASERBEAM
 
-      #ifdef FILAMENT_END_SWITCH
+      #if HAS_FILRUNOUT
         case 11: //M11 - Start printing
           gcode_M11(); break;
       #endif
@@ -6269,11 +6285,13 @@ void ClearToSend() {
   #ifdef SDSUPPORT
     if (fromsd[cmd_queue_index_r]) return;
   #endif
-  ECHO_L(OK);
+  ECHO_S(OK);
   #ifdef ADVANCED_OK
     ECHO_MV(" N", gcode_LastN);
-    ECHO_EMV(" S", commands_in_queue);
+    ECHO_MV(" P", int(BLOCK_BUFFER_SIZE - movesplanned() - 1));
+    ECHO_MV(" B", BUFSIZE - commands_in_queue);
   #endif
+  ECHO_E;
 }
 
 void get_coordinates() {
