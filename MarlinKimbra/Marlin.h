@@ -172,6 +172,18 @@ void Stop();
   void filrunout();
 #endif
 
+/**
+ * Debug flags - with repetier
+ */
+enum DebugFlags {
+  DEBUG_ECHO          = BIT(0),
+  DEBUG_INFO          = BIT(1),
+  DEBUG_ERRORS        = BIT(2),
+  DEBUG_DRYRUN        = BIT(3),
+  DEBUG_COMMUNICATION = BIT(4)
+};
+extern uint8_t debugLevel;
+
 extern bool Running;
 inline bool IsRunning() { return  Running; }
 inline bool IsStopped() { return !Running; }
@@ -305,18 +317,6 @@ extern uint8_t active_driver;
   extern void digipot_i2c_set_current( int channel, float current );
   extern void digipot_i2c_init();
 #endif
-
-/**
- * Debug with repetier
- */
-enum DebugFlags {
-  DEBUG_ECHO          = BIT(0),
-  DEBUG_INFO          = BIT(1),
-  DEBUG_ERRORS        = BIT(2),
-  DEBUG_DRYRUN        = BIT(3),
-  DEBUG_COMMUNICATION = BIT(4)
-};
-extern uint8_t debugLevel;
 
 #ifdef FIRMWARE_TEST
   void FirmwareTest();

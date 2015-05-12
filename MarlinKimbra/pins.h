@@ -908,13 +908,6 @@
   #define HEATER_BED_PIN     8   // BED
   #define TEMP_BED_PIN      14   // ANALOG NUMBERING
 
-  #ifdef FILAMENT_SENSOR
-    // FMM added for Filament Extruder
-    //define analog pin for the filament width sensor input
-    //Use the RAMPS 1.4 Analog input 5 on the AUX2 connector
-    #define FILWIDTH_PIN     5   // ANALOG NUMBERING
-  #endif
-
   #if defined(REPRAP_DISCOUNT_SMART_CONTROLLER) || defined(G3D_PANEL)
     #define KILL_PIN        41
   #else
@@ -1114,13 +1107,6 @@
   #define HEATER_BED_PIN     8   // BED
   #define TEMP_BED_PIN      14   // ANALOG NUMBERING
 
-  #ifdef FILAMENT_SENSOR
-    // FMM added for Filament Extruder
-    //define analog pin for the filament width sensor input
-    //Use the RAMPS 1.4 Analog input 5 on the AUX2 connector
-    #define FILWIDTH_PIN     5   // ANALOG NUMBERING
-  #endif
-
   #if NUM_SERVOS > 0
     #define SERVO0_PIN      11
     #if NUM_SERVOS > 1
@@ -1314,13 +1300,6 @@
   #define HEATER_BED_PIN     -1   // BED
   #define TEMP_BED_PIN       14   // ANALOG NUMBERING
 
-  #ifdef FILAMENT_SENSOR
-    // FMM added for Filament Extruder
-    //define analog pin for the filament width sensor input
-    //Use the RAMPS 1.4 Analog input 5 on the AUX2 connector
-    #define FILWIDTH_PIN           5   // ANALOG NUMBERING
-  #endif
-
   #if NUM_SERVOS > 0
     #define SERVO0_PIN      11
     #if NUM_SERVOS > 1
@@ -1513,13 +1492,6 @@
 
   #define HEATER_BED_PIN      8   // BED
   #define TEMP_BED_PIN       14   // ANALOG NUMBERING
-
-  #ifdef FILAMENT_SENSOR
-    // FMM added for Filament Extruder
-    //define analog pin for the filament width sensor input
-    //Use the RAMPS 1.4 Analog input 5 on the AUX2 connector
-    #define FILWIDTH_PIN           5   // ANALOG NUMBERING
-  #endif
 
   #if NUM_SERVOS > 0
     #define SERVO0_PIN      11
@@ -1769,11 +1741,6 @@
     #define BLEN_A 0
   #endif
 #endif //ULTRA_LCD
-
-#ifdef FILAMENT_SENSOR
-  //Filip added pin for Filament sensor analog input 
-  #define FILWIDTH_PIN        3
-#endif //FILAMENT_SENSOR
 
 #endif // RAMBO
 /****************************************************************************************/
@@ -3989,9 +3956,6 @@
   #define Z_STOP_PIN         36
   #define TEMP_0_PIN          1  // Extruder / Analog pin numbering
   #define TEMP_BED_PIN        0  // Bed / Analog pin numbering
-  #ifdef FILAMENT_SENSOR
-   #define FILWIDTH_PIN        2
-  #endif //FILAMENT_SENSOR
 #endif
 
 #define TEMP_1_PIN         -1
@@ -5054,8 +5018,15 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
   #define FILRUNOUT_PIN       -1
 #endif
 
+#ifdef FILAMENT_SENSOR
+  // FMM added for Filament Extruder
+  //define analog pin for the filament width sensor input
+  //Use the RAMPS 1.4 Analog input 5 on the AUX2 connector
+  #define FILWIDTH_PIN        -1   // ANALOG NUMBERING
+#endif
+
 #ifdef POWER_CONSUMPTION
-  #define POWER_CONSUMPTION_PIN 5   // ANALOG NUMBERING
+  #define POWER_CONSUMPTION_PIN -1   // ANALOG NUMBERING
 #endif
 /****************************************************************************************/
 

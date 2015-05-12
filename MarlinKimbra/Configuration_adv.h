@@ -22,13 +22,17 @@
 #endif
 #define BED_CHECK_INTERVAL 5000 //ms between checks in bang-bang control
 
-//// Heating sanity check:
-// This waits for the watch period in milliseconds whenever an M104 or M109 increases the target temperature
-// If the temperature has not increased at the end of that period, the target temperature is set to zero.
-// It can be reset with another M104/M109. This check is also only triggered if the target temperature and the current temperature
-//  differ by at least 2x WATCH_TEMP_INCREASE
-//#define WATCH_TEMP_PERIOD 40000 //40 seconds
-//#define WATCH_TEMP_INCREASE 10  //Heat up at least 10 degree in 20 seconds
+/**
+ * Heating Sanity Check
+ *
+ * Whenever an M104 or M109 increases the target temperature this will wait for WATCH_TEMP_PERIOD milliseconds,
+ * and if the temperature hasn't increased by WATCH_TEMP_INCREASE degrees, the machine is halted, requiring a
+ * hard reset. This test restarts with any M104/M109, but only if the current temperature is below the target
+ * by at least 2 * WATCH_TEMP_INCREASE degrees celsius.
+ */
+//#define WATCH_TEMP_PERIOD 16000 // 16 seconds
+//#define WATCH_TEMP_INCREASE 4  // Heat up at least 4 degrees in 16 seconds
+
 
 //automatic temperature: The hot end target temperature is calculated by all the buffered lines of gcode.
 //The maximum buffered steps/sec of the extruder motor are called "se".
@@ -280,7 +284,7 @@
   //#define MENU_ADDAUTOSTART
 
   // Show a progress bar on HD44780 LCDs for SD printing
-  //#define LCD_PROGRESS_BAR
+  #define LCD_PROGRESS_BAR
 
   #ifdef LCD_PROGRESS_BAR
     // Amount of time (ms) to show the bar
@@ -322,8 +326,8 @@
 //
 // advance (steps) = STEPS_PER_CUBIC_MM_E * EXTRUDER_ADVANCE_K * cubic mm per second ^ 2
 //
-// Hooke's law says:		force = k * distance
-// Bernoulli's principle says:	v ^ 2 / 2 + g . h + pressure / density = constant
+// Hooke's law says:    force = k * distance
+// Bernoulli's principle says:  v ^ 2 / 2 + g . h + pressure / density = constant
 // so: v ^ 2 is proportional to number of steps we advance the extruder
 //#define ADVANCE
 
@@ -343,7 +347,7 @@ const unsigned int dropsegments=5; //everything with less than this number of st
 //#define HEATERS_PARALLEL
 
 //===========================================================================
-//=============================Buffers           ============================
+//================================= Buffers =================================
 //===========================================================================
 
 // The number of linear motions that can be in the plan at any give time.
@@ -359,6 +363,13 @@ const unsigned int dropsegments=5; //everything with less than this number of st
 #define MAX_CMD_SIZE 96
 #define BUFSIZE 4
 
+// Bad Serial-connections can miss a received command by sending an 'ok'
+// Therefore some clients go after 30 seconds in a timeout. Some other clients start sending commands while receiving a 'wait'.
+// This wait is only send when the buffer is empty. The timeout-length is in milliseconds. 1000 is a good value.
+#define NO_TIMEOUTS 1000
+
+// Some clients will have this feature soon. This could make the NO_TIMEOUTS unnecessary.
+#define ADVANCED_OK
 
 // Firmware based and LCD controlled retract
 // M207 and M208 can be used to define parameters for the retraction.
