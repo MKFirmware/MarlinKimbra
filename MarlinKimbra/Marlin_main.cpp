@@ -376,7 +376,7 @@ bool target_direction;
       };
   static float z_offset;
   static float bed_level_x, bed_level_y, bed_level_z;
-  static float bed_level_c = 20; //used for inital bed probe safe distance (to avoid crashing into bed)
+  static float bed_level_c = 20; // used for inital bed probe safe distance (to avoid crashing into bed)
   static float bed_level_ox, bed_level_oy, bed_level_oz;
   static int loopcount;
   static bool home_all_axis = true;
@@ -1635,9 +1635,9 @@ static void setup_for_endstop_move() {
   float z_probe() {
 
     enable_endstops(true);
-    //feedrate = homing_feedrate[X_AXIS];
-    //prepare_move_raw();
-    //st_synchronize();
+    feedrate = homing_feedrate[X_AXIS];
+    prepare_move_raw();
+    st_synchronize();
 
     float start_z = current_position[Z_AXIS];
     long start_steps = st_get_position(Z_AXIS);
@@ -1672,13 +1672,10 @@ static void setup_for_endstop_move() {
     float probe_bed_z, probe_z, probe_h, probe_l;
     int probe_count;
       
-    for (int y = 3; y >= -3; y--)
-    {
+    for (int y = 3; y >= -3; y--) {
       int dir = y % 2 ? -1 : 1;
-      for (int x = -3*dir; x != 4*dir; x += dir)
-      {
-        if (x*x + y*y < 11)
-        {
+      for (int x = -3*dir; x != 4*dir; x += dir) {
+        if (x*x + y*y < 11) {
           destination[X_AXIS] = AUTOLEVEL_GRID * x - z_probe_offset[X_AXIS];
           if (destination[X_AXIS]<X_MIN_POS) destination[X_AXIS]=X_MIN_POS;
           if (destination[X_AXIS]>X_MAX_POS) destination[X_AXIS]=X_MAX_POS;
@@ -1689,8 +1686,7 @@ static void setup_for_endstop_move() {
           probe_z = -100;
           probe_h = -100;
           probe_l = 100;
-          do
-          {
+          do {
             probe_bed_z = probe_z;
             probe_z = z_probe() + z_offset;
             if (probe_z > probe_h) probe_h = probe_z;
@@ -1700,26 +1696,22 @@ static void setup_for_endstop_move() {
 
           bed_level[x+3][3-y] = probe_bed_z;
         }
-        else
-        {
+        else {
           bed_level[x+3][3-y] = 0.0;
         }
       }
       // For unprobed positions just copy nearest neighbor.
-      if (abs(y) >= 3)
-      {
+      if (abs(y) >= 3) {
         bed_level[1][3-y] = bed_level[2][3-y];
         bed_level[5][3-y] = bed_level[4][3-y];
       }
-      if (abs(y) >=2)
-      {
+      if (abs(y) >=2) {
         bed_level[0][3-y] = bed_level[1][3-y];
         bed_level[6][3-y] = bed_level[5][3-y];
       }
       // Print calibration results for manual frame adjustment.
       ECHO_S(DB);
-      for (int x = -3; x <= 3; x++)
-      {
+      for (int x = -3; x <= 3; x++) {
         ECHO_VM(bed_level[x+3][3-y], " ", 3);
       }
       ECHO_E;
@@ -1737,7 +1729,7 @@ static void setup_for_endstop_move() {
     destination[Y_AXIS] = y - z_probe_offset[Y_AXIS];
     if (destination[Y_AXIS] < Y_MIN_POS) destination[Y_AXIS] = Y_MIN_POS;
     if (destination[Y_AXIS] > Y_MAX_POS) destination[Y_AXIS] = Y_MAX_POS;
-    destination[Z_AXIS] = bed_level_c - z_probe_offset[Z_AXIS] + 3;
+    destination[Z_AXIS] = bed_level_c - z_probe_offset[Z_AXIS] + AUTOCAL_PROBELIFT;
     prepare_move();
     st_synchronize();
 
@@ -1763,15 +1755,13 @@ static void setup_for_endstop_move() {
     float probe_l[7];
     float range_h = 0, range_l = 0;
 
-    for(int x = 0; x < 7; x++)
-    {
+    for(int x = 0; x < 7; x++) {
       probe_h[x] = -100;
       probe_l[x] = 100;
     }
-    
+
     // probe test loop  
-    for(int x = 0; x < 3; x++)
-    {
+    for(int x = 0; x < 3; x++) {
       bed_probe_all();
 
       if (bed_level_c > probe_h[0]) probe_h[0] = bed_level_c;
@@ -1789,8 +1779,7 @@ static void setup_for_endstop_move() {
       if (bed_level_ox > probe_h[6]) probe_h[6] = bed_level_ox;
       if (bed_level_ox < probe_l[6]) probe_l[6] = bed_level_ox;
     }
-    for(int x = 0; x < 7; x++)
-    {
+    for(int x = 0; x < 7; x++) {
       if (probe_h[x] - probe_l[x] > range_h) range_h = probe_h[x] - probe_l[x];
       if (probe_h[x] - probe_l[x] < range_l) range_l = probe_h[x] - probe_l[x];
     }
@@ -1801,7 +1790,6 @@ static void setup_for_endstop_move() {
     //Probe all bed positions & store carriage positions
     bed_level_c = probe_bed(0.0, 0.0);
     save_carriage_positions(0);
-    //Probe all bed positions & store carriage positions
     bed_level_z = probe_bed(0.0, bed_radius);
     save_carriage_positions(1);
     bed_level_oy = probe_bed(-SIN_60 * bed_radius, COS_60 * bed_radius);
@@ -1876,7 +1864,7 @@ static void setup_for_endstop_move() {
     sync_plan_position();
 
     // Move all carriages up together until the first endstop is hit.
-    for (int i = X_AXIS; i <= Z_AXIS; i++) destination[i] = 3 * max_length[Z_AXIS];
+    for (int i = X_AXIS; i <= Z_AXIS; i++) destination[i] = 3 * Z_MAX_LENGTH;
     feedrate = 1.732 * homing_feedrate[X_AXIS];
     line_to_destination();
     st_synchronize();
@@ -1991,7 +1979,7 @@ static void setup_for_endstop_move() {
     // First Check for control endstop
     ECHO_LM(DB, "First check for adjust Z-Height");
     home_delta_axis();
-    deploy_z_probe(); 
+    deploy_z_probe();
     //Probe all points
     bed_probe_all();
     //Show calibration report      

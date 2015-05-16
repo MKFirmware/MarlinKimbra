@@ -29,6 +29,9 @@
 //Uncomment to enable autocalibration debug messages
 #define DEBUG_MESSAGES
 
+//Amount to lift head after probing a point
+#define AUTOCAL_PROBELIFT 3 // mm
+
 // Precision for G30 delta autocalibration function
 #define AUTOCALIBRATION_PRECISION 0.1      // mm
 
@@ -80,9 +83,9 @@
 
 // ENDSTOP SETTINGS:
 // Sets direction of endstop when homing; 1=MAX, -1=MIN
-#define X_HOME_DIR 1 //DELTA MUST HAVE MAX ENDSTOP
-#define Y_HOME_DIR 1 //DELTA MUST HAVE MAX ENDSTOP
-#define Z_HOME_DIR 1 //DELTA MUST HAVE MAX ENDSTOP
+#define X_HOME_DIR 1 // DELTA MUST HAVE MAX ENDSTOP
+#define Y_HOME_DIR 1 // DELTA MUST HAVE MAX ENDSTOP
+#define Z_HOME_DIR 1 // DELTA MUST HAVE MAX ENDSTOP
 
 #define min_software_endstops true  // If true, axis won't move to coordinates less than HOME_POS.
 #define max_software_endstops true  // If true, axis won't move to coordinates greater than the defined lengths below.
