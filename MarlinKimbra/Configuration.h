@@ -20,7 +20,7 @@
 // User-specified version info of this build to display in [Pronterface, etc] terminal window during
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
 // build by the user have been successfully uploaded into firmware.
-#define STRING_VERSION "4.1.2"
+#define STRING_VERSION "4.1.3"
 #define STRING_URL "reprap.org"
 #define STRING_VERSION_CONFIG_H __DATE__ " " __TIME__     // build date and time
 #define STRING_CONFIG_H_AUTHOR "(none, default config)"   // Who made the changes.
@@ -33,7 +33,7 @@
 #define SERIAL_PORT 0
 
 // This determines the communication speed of the printer
-// 115200 - 250000
+// 2400,9600,19200,38400,57600,115200,250000
 #define BAUDRATE 115200
 
 // This enables the serial port associated to the Bluetooth interface on AT90USB devices
@@ -158,7 +158,7 @@
 // 1010 is Pt1000 with 1k pullup (non standard)
 // 147 is Pt100 with 4k7 pullup
 // 110 is Pt100 with 1k pullup (non standard)
-// 998 and 999 are Dummy Tables. They will ALWAYS read 25°C or the temperature defined below. 
+// 998 and 999 are Dummy Tables. They will ALWAYS read 25°C or the temperature defined below.
 //     Use it for Testing or Development purposes. NEVER for production machine.
 //     #define DUMMY_THERMISTOR_998_VALUE 25
 //     #define DUMMY_THERMISTOR_999_VALUE 100
@@ -278,7 +278,6 @@
 #define EXTRUDE_MINTEMP 170 // degC
 #define EXTRUDE_MAXLENGTH (X_MAX_LENGTH+Y_MAX_LENGTH) //prevent extrusion of very large distances.
 
-
 //===========================================================================
 //======================== Thermal Runaway Protection =======================
 //===========================================================================
@@ -294,30 +293,16 @@
  * The solution: Once the temperature reaches the target, start observing.
  * If the temperature stays too far below the target (hysteresis) for too long,
  * the firmware will halt as a safety precaution.
- *
- * Note that because the countdown starts only AFTER the temperature reaches
- * the target, this will not catch a thermistor that is already disconnected
- * when the print starts!
- *
- * To enable for all extruder heaters, uncomment the two defines below:
  */
 
-// Parameters for all extruder heaters
-#define THERMAL_RUNAWAY_PROTECTION_PERIOD 40    // in seconds
-#define THERMAL_RUNAWAY_PROTECTION_HYSTERESIS 4 // in degree Celsius
-
-// To enable for the bed heater, uncomment the two defines below:
-
-// Parameters for the bed heater
-#define THERMAL_RUNAWAY_PROTECTION_BED_PERIOD 20    // in seconds
-#define THERMAL_RUNAWAY_PROTECTION_BED_HYSTERESIS 2 // in degree Celsius
-
+//#define THERMAL_PROTECTION_HOTENDS // Enable thermal protection for all extruders
+//#define THERMAL_PROTECTION_BED     // Enable thermal protection for the heated bed
 
 //===========================================================================
 //============================ User Interfaces ==============================
 //===========================================================================
 
-//==============================LCD and SD support=============================
+//============================ LCD and SD support ===========================
 
 // Choose ONE of these 3 charsets. This has to match your hardware. Ignored for full graphic display.
 // To find out what type you have - compile with (test) - upload - click to get the menu. You'll see two typical lines from the upper half of the charset.
@@ -402,13 +387,13 @@
 // #define LCD_SCREEN_ROT_270
 
 // SPLASH SCREEN duration in millisecond
-#define SPLASH_SCREEN_DURATION 2000 // Millisecond
+#define SPLASH_SCREEN_DURATION 5000 // Millisecond
 
 /** Display Voltage Logic Selector on Alligator Board
  0 = Voltage level 3.3V
  1 = Voltage level 5V
  */
-#define UI_VOLTAGE_LEVEL 0 // Set 5 o 3.3 V
+#define UI_VOLTAGE_LEVEL 1 // Set 5 o 3.3 V
 
 
 //============================== Languages UI =========================
@@ -441,7 +426,7 @@
 // M502 - reverts to the default "factory settings".  You still need to store them in EEPROM afterwards if you want to.
 //define this to enable EEPROM support
 //#define EEPROM_SETTINGS
-//#define EEPROM_CHITCHAT
+#define EEPROM_CHITCHAT
 // to disable EEPROM Serial responses and decrease program space by ~1700 byte: comment this out:
 // please keep turned on if you can.
 //#define DISABLE_M503
@@ -496,9 +481,9 @@
  * Support for a filament diameter sensor
  * Also allows adjustment of diameter at print time (vs  at slicing)
  * Single extruder only at this point (extruder 0)
- * 
+ *
  * Motherboards
- * 34 - RAMPS1.4 - uses Analog input 5 on the AUX2 connector 
+ * 34 - RAMPS1.4 - uses Analog input 5 on the AUX2 connector
  * 81 - Printrboard - Uses Analog input 2 on the Exp1 connector (version B,C,D,E)
  * 301 - Rambo  - uses Analog input 3
  * Note may require analog pins to be defined for different motherboards

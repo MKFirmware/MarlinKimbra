@@ -36,6 +36,7 @@
 
 #if defined(PIDTEMPBED) || defined(PIDTEMP)
   #define PID_dT ((OVERSAMPLENR * 14.0)/(F_CPU / 64.0 / 256.0))
+  #define RECI_PID_dT ( 1 / PID_dT )
 #endif
 
 //===========================================================================
@@ -73,16 +74,14 @@ unsigned char soft_pwm_bed;
   int current_raw_filwidth = 0;  //Holds measured filament diameter - one extruder only
 #endif  
 
-#define HAS_HEATER_THERMAL_PROTECTION (defined(THERMAL_RUNAWAY_PROTECTION_PERIOD) && THERMAL_RUNAWAY_PROTECTION_PERIOD > 0)
-#define HAS_BED_THERMAL_PROTECTION (defined(THERMAL_RUNAWAY_PROTECTION_BED_PERIOD) && THERMAL_RUNAWAY_PROTECTION_BED_PERIOD > 0 && TEMP_SENSOR_BED != 0)
-#if HAS_HEATER_THERMAL_PROTECTION || HAS_BED_THERMAL_PROTECTION
+#if defined(THERMAL_PROTECTION_HOTENDS) || defined(THERMAL_PROTECTION_BED)
   enum TRState { TRReset, TRInactive, TRFirstHeating, TRStable, TRRunaway };
   void thermal_runaway_protection(TRState *state, millis_t *timer, float temperature, float target_temperature, int heater_id, int period_seconds, int hysteresis_degc);
-  #if HAS_HEATER_THERMAL_PROTECTION
+  #ifdef THERMAL_PROTECTION_HOTENDS
     static TRState thermal_runaway_state_machine[4] = { TRReset, TRReset, TRReset, TRReset };
     static millis_t thermal_runaway_timer[4]; // = {0,0,0,0};
   #endif
-  #if HAS_BED_THERMAL_PROTECTION
+  #ifdef THERMAL_PROTECTION_BED
     static TRState thermal_runaway_bed_state_machine = TRReset;
     static millis_t thermal_runaway_bed_timer;
   #endif
@@ -95,6 +94,7 @@ unsigned char soft_pwm_bed;
 //===========================================================================
 //============================ private variables ============================
 //===========================================================================
+
 static volatile bool temp_meas_ready = false;
 
 #ifdef PIDTEMP
@@ -160,7 +160,7 @@ static float analog2temp(int raw, uint8_t e);
 static float analog2tempBed(int raw);
 static void updateTemperaturesFromRawValues();
 
-#ifdef WATCH_TEMP_PERIOD
+#ifdef THERMAL_PROTECTION_HOTENDS
   int watch_target_temp[HOTENDS] = { 0 };
   millis_t watch_heater_next_ms[HOTENDS] = { 0 };
 #endif
@@ -245,8 +245,8 @@ void PID_autotune(float temp, int hotend, int ncycles)
         }
       #endif
 
-      if (heating == true && input > temp) {
-        if (ms - t2 > 5000) {
+      if (heating && input > temp) {
+        if (ms > t2 + 5000) {
           heating = false;
           if (hotend < 0)
             soft_pwm_bed = (bias - d) >> 1;
@@ -257,8 +257,9 @@ void PID_autotune(float temp, int hotend, int ncycles)
           max = temp;
         }
       }
-      if (heating == false && input < temp) {
-        if (ms - t1 > 5000) {
+
+      if (!heating && input < temp) {
+        if (ms > t1 + 5000) {
           heating = true;
           t2 = ms;
           t_low = t2 - t1;
@@ -588,15 +589,15 @@ void manage_heater() {
     if (ct < max(HEATER_0_MINTEMP, 0.01)) min_temp_error(0);
   #endif
 
-  #if defined(WATCH_TEMP_PERIOD) || !defined(PIDTEMPBED) || HAS_AUTO_FAN
+  #if defined(THERMAL_PROTECTION_HOTENDS) || !defined(PIDTEMPBED) || HAS_AUTO_FAN
     millis_t ms = millis();
   #endif
 
   // Loop through all hotends
   for (int e = 0; e < HOTENDS; e++) {
 
-    #if HAS_HEATER_THERMAL_PROTECTION
-      thermal_runaway_protection(&thermal_runaway_state_machine[e], &thermal_runaway_timer[e], current_temperature[e], target_temperature[e], e, THERMAL_RUNAWAY_PROTECTION_PERIOD, THERMAL_RUNAWAY_PROTECTION_HYSTERESIS);
+    #ifdef THERMAL_PROTECTION_HOTENDS
+      thermal_runaway_protection(&thermal_runaway_state_machine[e], &thermal_runaway_timer[e], current_temperature[e], target_temperature[e], e, THERMAL_PROTECTION_PERIOD, THERMAL_PROTECTION_HYSTERESIS);
     #endif
 
     float pid_output = get_pid_output(e);
@@ -605,21 +606,23 @@ void manage_heater() {
     soft_pwm[e] = current_temperature[e] > minttemp[e] && current_temperature[e] < maxttemp[e] ? (int)pid_output >> 1 : 0;
 
     // Check if the temperature is failing to increase
-    #ifdef WATCH_TEMP_PERIOD
+    #ifdef THERMAL_PROTECTION_HOTENDS
+
       // Is it time to check this extruder's heater?
       if (watch_heater_next_ms[e] && ms > watch_heater_next_ms[e]) {
         // Has it failed to increase enough?
         if (degHotend(e) < watch_target_temp[e]) {
           // Stop!
           disable_all_heaters();
-          _temp_error(e, MSG_HEATING_FAILED, MSG_HEATING_FAILED_LCD);
+          _temp_error(e, PSTR(MSG_HEATING_FAILED), PSTR(MSG_HEATING_FAILED_LCD));
         }
         else {
-          // Only check once per M104/M109
-          watch_heater_next_ms[e] = 0;
+          // Start again if the target is still far off
+          start_watching_heater(e);
         }
       }
-    #endif // WATCH_TEMP_PERIOD
+
+    #endif // THERMAL_PROTECTION_HOTENDS
 
     #ifdef TEMP_SENSOR_1_AS_REDUNDANT
       if (fabs(current_temperature[0] - redundant_temperature) > MAX_REDUNDANT_TEMP_SENSOR_DIFF) {
@@ -659,8 +662,8 @@ void manage_heater() {
 
   #if TEMP_SENSOR_BED != 0
   
-    #if HAS_BED_THERMAL_PROTECTION
-      thermal_runaway_protection(&thermal_runaway_bed_state_machine, &thermal_runaway_bed_timer, current_temperature_bed, target_temperature_bed, -1, THERMAL_RUNAWAY_PROTECTION_BED_PERIOD, THERMAL_RUNAWAY_PROTECTION_BED_HYSTERESIS);
+    #ifdef THERMAL_PROTECTION_BED
+      thermal_runaway_protection(&thermal_runaway_bed_state_machine, &thermal_runaway_bed_timer, current_temperature_bed, target_temperature_bed, -1, THERMAL_PROTECTION_BED_PERIOD, THERMAL_PROTECTION_BED_HYSTERESIS);
     #endif
 
     #ifdef PIDTEMPBED
@@ -777,7 +780,6 @@ static float analog2tempBed(int raw) {
 static void updateTemperaturesFromRawValues() {
   static millis_t last_update = millis();
   millis_t temp_last_update = millis();
-  millis_t from_last_update = temp_last_update - last_update;
   #ifdef HEATER_0_USES_MAX6675
     current_temperature_raw[0] = read_max6675();
   #endif
@@ -792,6 +794,7 @@ static void updateTemperaturesFromRawValues() {
     filament_width_meas = analog2widthFil();
   #endif
   #if HAS_POWER_CONSUMPTION_SENSOR
+    millis_t from_last_update = temp_last_update - last_update;
     static float watt_overflow = 0.0;
     power_consumption_meas = analog2power();
     //MYSERIAL.println(analog2current(),3);
@@ -802,13 +805,6 @@ static void updateTemperaturesFromRawValues() {
     }
   #endif
 
-  static unsigned int second_overflow = 0;
-  second_overflow += from_last_update;
-  if(second_overflow >= 1000) {
-    printer_usage_seconds++;
-    second_overflow -= 1000;
-  }
-  last_update = temp_last_update;
   //Reset the watchdog after we know we have a temperature measurement.
   watchdog_reset();
 
@@ -1033,15 +1029,15 @@ void tp_init() {
   #endif //BED_MAXTEMP
 }
 
-#ifdef WATCH_TEMP_PERIOD
+#ifdef THERMAL_PROTECTION_HOTENDS
   /**
    * Start Heating Sanity Check for hotends that are below
    * their target temperature by a configurable margin.
    * This is called when the temperature is set. (M104, M109)
    */
   void start_watching_heater(int e) {
-    millis_t ms = millis() + WATCH_TEMP_PERIOD;
-    if (degHotend(e) < degTargetHotend(e) - (WATCH_TEMP_INCREASE * 2)) {
+    millis_t ms = millis() + WATCH_TEMP_PERIOD * 1000;
+    if (degHotend(e) < degTargetHotend(e) - (WATCH_TEMP_INCREASE + TEMP_HYSTERESIS + 1)) {
       watch_target_temp[e] = degHotend(e) + WATCH_TEMP_INCREASE;
       watch_heater_next_ms[e] = ms;
     }
@@ -1050,7 +1046,7 @@ void tp_init() {
   }
 #endif
 
-#if HAS_HEATER_THERMAL_PROTECTION || HAS_BED_THERMAL_PROTECTION
+#if defined(THERMAL_PROTECTION_HOTENDS) || defined(THERMAL_PROTECTION_BED)
 
   void thermal_runaway_protection(TRState *state, millis_t *timer, float temperature, float target_temperature, int heater_id, int period_seconds, int hysteresis_degc) {
 
@@ -1109,7 +1105,7 @@ void tp_init() {
     }
   }
 
-#endif // HAS_HEATER_THERMAL_PROTECTION || HAS_BED_THERMAL_PROTECTION
+#endif // THERMAL_PROTECTION_HOTENDS || THERMAL_PROTECTION_BED
 
 void disable_all_heaters() {
   for (int i = 0; i < HOTENDS; i++) setTargetHotend(0, i);

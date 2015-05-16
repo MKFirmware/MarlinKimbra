@@ -114,6 +114,10 @@ FORCE_INLINE uint8_t movesplanned() { return BLOCK_MOD(block_buffer_head - block
 
 void plan_set_e_position(const float &e);
 
+//===========================================================================
+//============================= public variables ============================
+//===========================================================================
+
 extern millis_t minsegmenttime;
 extern float max_feedrate[3 + EXTRUDERS]; // set the max speeds
 extern float max_retraction_feedrate[EXTRUDERS]; // set the max speeds for retraction

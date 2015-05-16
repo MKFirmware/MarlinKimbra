@@ -66,20 +66,16 @@ volatile static unsigned long step_events_completed; // The number of step event
 
 static long acceleration_time, deceleration_time;
 //static unsigned long accelerate_until, decelerate_after, acceleration_rate, initial_rate, final_rate, nominal_rate;
-static unsigned short acc_step_rate; // needed for deceleration start point
+static unsigned short acc_step_rate; // needed for deccelaration start point
 static char step_loops;
 static unsigned short OCR1A_nominal;
 static unsigned short step_loops_nominal;
 
 volatile long endstops_trigsteps[3] = { 0 };
 volatile long endstops_stepsTotal, endstops_stepsDone;
-static volatile bool endstop_x_hit = false;
-static volatile bool endstop_y_hit = false;
-static volatile bool endstop_z_hit = false;
-static volatile bool endstop_z_probe_hit = false;
+static volatile char endstop_hit_bits = 0; // use X_MIN, Y_MIN, Z_MIN and Z_PROBE as BIT value
 
 #ifdef NPR2
-  static volatile bool endstop_e_hit = false;
   static bool old_e_min_endstop = false;
 #endif
 
@@ -268,82 +264,37 @@ volatile signed char count_direction[NUM_AXIS] = { 1, 1, 1, 1 };
 #define ENABLE_STEPPER_DRIVER_INTERRUPT()  TIMSK1 |= BIT(OCIE1A)
 #define DISABLE_STEPPER_DRIVER_INTERRUPT() TIMSK1 &= ~BIT(OCIE1A)
 
-#ifdef NPR2
-
 void endstops_hit_on_purpose() {
-  endstop_x_hit = endstop_y_hit = endstop_z_hit = endstop_z_probe_hit = endstop_e_hit = false;
+  endstop_hit_bits = 0;
 }
 
 void checkHitEndstops() {
-  if (endstop_x_hit || endstop_y_hit || endstop_z_hit || endstop_z_probe_hit || endstop_e_hit) {
-    ECHO_SM(OK, MSG_ENDSTOPS_HIT);
-    if(endstop_x_hit) {
+  if (endstop_hit_bits) {
+    ECHO_SM(DB, MSG_ENDSTOPS_HIT);
+    if (endstop_hit_bits & BIT(X_MIN)) {
       ECHO_MV(MSG_ENDSTOP_X, (float)endstops_trigsteps[X_AXIS] / axis_steps_per_unit[X_AXIS]);
       LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_XS);
     }
-    if(endstop_y_hit) {
+    if (endstop_hit_bits & BIT(Y_MIN)) {
       ECHO_MV(MSG_ENDSTOP_Y, (float)endstops_trigsteps[Y_AXIS] / axis_steps_per_unit[Y_AXIS]);
       LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_YS);
     }
-    if(endstop_z_hit) {
+    if (endstop_hit_bits & BIT(Z_MIN)) {
       ECHO_MV(MSG_ENDSTOP_Z, (float)endstops_trigsteps[Z_AXIS] / axis_steps_per_unit[Z_AXIS]);
       LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_ZS);
     }
     #ifdef Z_PROBE_ENDSTOP
-    if (endstop_z_probe_hit) {
-      ECHO_MV(" Z_PROBE:", (float)endstops_trigsteps[Z_AXIS] / axis_steps_per_unit[Z_AXIS]);
-      LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_ZPS);
-    }
-    #endif
-    if(endstop_e_hit) {
-      ECHO_MV(MSG_ENDSTOP_E, (float)endstops_trigsteps[E_AXIS] / axis_steps_per_unit[E_AXIS]);
-      LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_ES);
-    }
-    ECHO_E;
-
-    endstops_hit_on_purpose();
-
-    #if defined(ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED) && defined(SDSUPPORT)
-      if (abort_on_endstop_hit) {
-        card.sdprinting = false;
-        card.closeFile();
-        quickStop();
-        setTargetHotend0(0);
-        setTargetHotend1(0);
-        setTargetHotend2(0);
-        setTargetHotend3(0);
-        setTargetBed(0);
-      }
-    #endif
-  }
-}
-
-#else // NOT NPR2
-void endstops_hit_on_purpose() {
-  endstop_x_hit = endstop_y_hit = endstop_z_hit = endstop_z_probe_hit = false;
-}
-
-void checkHitEndstops() {
-  if (endstop_x_hit || endstop_y_hit || endstop_z_hit || endstop_z_probe_hit) {
-    ECHO_SM(OK, MSG_ENDSTOPS_HIT);
-    if (endstop_x_hit) {
-      ECHO_MV(MSG_ENDSTOP_X, (float)endstops_trigsteps[X_AXIS] / axis_steps_per_unit[X_AXIS]);
-      LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_XS);
-    }
-    if (endstop_y_hit) {
-      ECHO_MV(MSG_ENDSTOP_Y, (float)endstops_trigsteps[Y_AXIS] / axis_steps_per_unit[Y_AXIS]);
-      LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_YS);
-    }
-    if (endstop_z_hit) {
-      ECHO_MV(MSG_ENDSTOP_Z, (float)endstops_trigsteps[Z_AXIS] / axis_steps_per_unit[Z_AXIS]);
-      LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_ZS);
-    }
-    #ifdef Z_PROBE_ENDSTOP
-    if (endstop_z_probe_hit) {
+    if (endstop_hit_bits & BIT(Z_PROBE)) {
       ECHO_MV(MSG_ENDSTOP_ZPS, (float)endstops_trigsteps[Z_AXIS] / axis_steps_per_unit[Z_AXIS]);
       LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_ZPS);
     }
     #endif
+    #ifdef NPR2
+    if (endstop_hit_bits & BIT(E_MIN)) {
+      ECHO_MV(MSG_ENDSTOP_E, (float)endstops_trigsteps[E_AXIS] / axis_steps_per_unit[E_AXIS]);
+      LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_ES);
+    }
+    #endif
     ECHO_E;
 
     endstops_hit_on_purpose();
@@ -362,7 +313,6 @@ void checkHitEndstops() {
     #endif
   }
 }
-#endif // NOT NPR2
 
 void enable_endstops(bool check) { check_endstops = check; }
 
@@ -422,9 +372,57 @@ FORCE_INLINE unsigned short calc_timer(unsigned short step_rate) {
   return timer;
 }
 
+// set the stepper direction of each axis
+void set_stepper_direction() {
+  
+  // Set the direction bits (X_AXIS=A_AXIS and Y_AXIS=B_AXIS for COREXY)
+  if (TEST(out_bits, X_AXIS)) {
+    X_APPLY_DIR(INVERT_X_DIR,0);
+    count_direction[X_AXIS] = -1;
+  }
+  else {
+    X_APPLY_DIR(!INVERT_X_DIR,0);
+    count_direction[X_AXIS] = 1;
+  }
+
+  if (TEST(out_bits, Y_AXIS)) {
+    Y_APPLY_DIR(INVERT_Y_DIR,0);
+    count_direction[Y_AXIS] = -1;
+  }
+  else {
+    Y_APPLY_DIR(!INVERT_Y_DIR,0);
+    count_direction[Y_AXIS] = 1;
+  }
+  
+  if (TEST(out_bits, Z_AXIS)) {
+    Z_APPLY_DIR(INVERT_Z_DIR,0);
+    count_direction[Z_AXIS] = -1;
+  }
+  else {
+    Z_APPLY_DIR(!INVERT_Z_DIR,0);
+    count_direction[Z_AXIS] = 1;
+  }
+  
+  #ifndef ADVANCE
+    if (TEST(out_bits, E_AXIS)) {
+      REV_E_DIR();
+      count_direction[E_AXIS] = -1;
+    }
+    else {
+      NORM_E_DIR();
+      count_direction[E_AXIS] = 1;
+    }
+  #endif
+}
+
 // Initializes the trapezoid generator from the current block. Called whenever a new
 // block begins.
 FORCE_INLINE void trapezoid_generator_reset() {
+
+  // Set directions TO DO This should be done once during init of trapezoid. Endstops -> interrupt
+  out_bits = current_block->direction_bits;
+  set_stepper_direction();
+  
   #ifdef ADVANCE
     advance = current_block->initial_advance;
     final_advance = current_block->final_advance;
@@ -446,8 +444,7 @@ FORCE_INLINE void trapezoid_generator_reset() {
 // It pops blocks from the block_buffer and executes them by pulsing the stepper pins appropriately.
 ISR(TIMER1_COMPA_vect) {
 
-  if(cleaning_buffer_counter)
-  {
+  if(cleaning_buffer_counter) {
     current_block = NULL;
     plan_discard_current_block();
     #ifdef SD_FINISHED_RELEASECOMMAND
@@ -487,47 +484,27 @@ ISR(TIMER1_COMPA_vect) {
   }
 
   if (current_block != NULL) {
-    // Set directions TO DO This should be done once during init of trapezoid. Endstops -> interrupt
-    out_bits = current_block->direction_bits;
 
-    // Set the direction bits (X_AXIS=A_AXIS and Y_AXIS=B_AXIS for COREXY)
-    if (TEST(out_bits, X_AXIS)) {
-      X_APPLY_DIR(INVERT_X_DIR,0);
-      count_direction[X_AXIS] = -1;
-    }
-    else {
-      X_APPLY_DIR(!INVERT_X_DIR,0);
-      count_direction[X_AXIS] = 1;
-    }
-
-    if (TEST(out_bits, Y_AXIS)) {
-      Y_APPLY_DIR(INVERT_Y_DIR,0);
-      count_direction[Y_AXIS] = -1;
-    }
-    else {
-      Y_APPLY_DIR(!INVERT_Y_DIR,0);
-      count_direction[Y_AXIS] = 1;
-    }
-
-    #define _ENDSTOP(axis, minmax) axis ##_## minmax ##_endstop
-    #define _ENDSTOP_PIN(AXIS, MINMAX) AXIS ##_## MINMAX ##_PIN
-    #define _ENDSTOP_INVERTING(AXIS, MINMAX) AXIS ##_## MINMAX ##_ENDSTOP_INVERTING
-    #define _OLD_ENDSTOP(axis, minmax) old_## axis ##_## minmax ##_endstop
-    #define _AXIS(AXIS) AXIS ##_AXIS
-    #define _ENDSTOP_HIT(axis) endstop_## axis ##_hit
-
-    #define UPDATE_ENDSTOP(axis,AXIS,minmax,MINMAX) \
-      bool _ENDSTOP(axis, minmax) = (READ(_ENDSTOP_PIN(AXIS, MINMAX)) != _ENDSTOP_INVERTING(AXIS, MINMAX)); \
-      if (_ENDSTOP(axis, minmax) && _OLD_ENDSTOP(axis, minmax) && (current_block->steps[_AXIS(AXIS)] > 0)) { \
-        endstops_trigsteps[_AXIS(AXIS)] = count_position[_AXIS(AXIS)]; \
-        _ENDSTOP_HIT(axis) = true; \
-        step_events_completed = current_block->step_event_count; \
-      } \
-      _OLD_ENDSTOP(axis, minmax) = _ENDSTOP(axis, minmax);
-
-
-    // Check X and Y endstops
+    // Check endstops
     if (check_endstops) {
+      
+      #define _ENDSTOP(axis, minmax) axis ##_## minmax ##_endstop
+      #define _ENDSTOP_PIN(AXIS, MINMAX) AXIS ##_## MINMAX ##_PIN
+      #define _ENDSTOP_INVERTING(AXIS, MINMAX) AXIS ##_## MINMAX ##_ENDSTOP_INVERTING
+      #define _OLD_ENDSTOP(axis, minmax) old_## axis ##_## minmax ##_endstop
+      #define _AXIS(AXIS) AXIS ##_AXIS
+      #define _HIT_BIT(AXIS) AXIS ##_MIN
+      #define _ENDSTOP_HIT(AXIS) endstop_hit_bits |= BIT(_HIT_BIT(AXIS))
+
+      #define UPDATE_ENDSTOP(axis,AXIS,minmax,MINMAX) \
+        bool _ENDSTOP(axis, minmax) = (READ(_ENDSTOP_PIN(AXIS, MINMAX)) != _ENDSTOP_INVERTING(AXIS, MINMAX)); \
+        if (_ENDSTOP(axis, minmax) && _OLD_ENDSTOP(axis, minmax) && (current_block->steps[_AXIS(AXIS)] > 0)) { \
+          endstops_trigsteps[_AXIS(AXIS)] = count_position[_AXIS(AXIS)]; \
+          _ENDSTOP_HIT(AXIS); \
+          step_events_completed = current_block->step_event_count; \
+        } \
+        _OLD_ENDSTOP(axis, minmax) = _ENDSTOP(axis, minmax);
+      
       #ifdef COREXY
         // Head direction in -X axis for CoreXY bots.
         // If DeltaX == -DeltaY, the movement is only in Y axis
@@ -580,15 +557,8 @@ ISR(TIMER1_COMPA_vect) {
       #ifdef COREXY
         }
       #endif
-    }
 
-    if (TEST(out_bits, Z_AXIS)) {   // -direction
-
-      Z_APPLY_DIR(INVERT_Z_DIR,0);
-      count_direction[Z_AXIS] = -1;
-
-      if (check_endstops) {
-
+      if (TEST(out_bits, Z_AXIS)) {  // -direction
         #if HAS_Z_MIN
 
           #ifdef Z_DUAL_ENDSTOPS
@@ -606,7 +576,7 @@ ISR(TIMER1_COMPA_vect) {
                 z2_min_both = z2_min_endstop && old_z2_min_endstop;
             if ((z_min_both || z2_min_both) && current_block->steps[Z_AXIS] > 0) {
               endstops_trigsteps[Z_AXIS] = count_position[Z_AXIS];
-              endstop_z_hit = true;
+              endstop_hit_bits |= BIT(Z_MIN);
               if (!performing_homing || (performing_homing && z_min_both && z2_min_both)) //if not performing home or if both endstops were trigged during homing...
                 step_events_completed = current_block->step_event_count;
             }
@@ -624,25 +594,14 @@ ISR(TIMER1_COMPA_vect) {
         #ifdef Z_PROBE_ENDSTOP
           UPDATE_ENDSTOP(z, Z, probe, PROBE);
           z_probe_endstop = (READ(Z_PROBE_PIN) != Z_PROBE_ENDSTOP_INVERTING);
-          if (z_probe_endstop && old_z_probe_endstop)
-          {
+          if (z_probe_endstop && old_z_probe_endstop) {
             endstops_trigsteps[Z_AXIS] = count_position[Z_AXIS];
-            endstop_z_probe_hit = true;
-
-//            if (z_probe_endstop && old_z_probe_endstop) ECHO_EV("z_probe_endstop = true");
+            endstop_hit_bits |= BIT(Z_PROBE);
           }
           old_z_probe_endstop = z_probe_endstop;
         #endif
-
-      } // check_endstops
-
-    }
-    else { // +direction
-
-      Z_APPLY_DIR(!INVERT_Z_DIR,0);
-      count_direction[Z_AXIS] = 1;
-
-      if (check_endstops) {
+      }
+      else { // +direction
 
         #if HAS_Z_MAX
 
@@ -661,7 +620,7 @@ ISR(TIMER1_COMPA_vect) {
                 z2_max_both = z2_max_endstop && old_z2_max_endstop;
             if ((z_max_both || z2_max_both) && current_block->steps[Z_AXIS] > 0) {
               endstops_trigsteps[Z_AXIS] = count_position[Z_AXIS];
-              endstop_z_hit = true;
+              endstop_hit_bits |= BIT(Z_MIN);
 
              // if (z_max_both) ECHO_EV("z_max_endstop = true");
              // if (z2_max_both) ECHO_EV("z2_max_endstop = true");
@@ -679,34 +638,8 @@ ISR(TIMER1_COMPA_vect) {
           #endif // !Z_DUAL_ENDSTOPS
 
         #endif // Z_MAX_PIN
-
-      } // check_endstops
-
-    } // +direction
-
-    #ifndef ADVANCE
-      if (TEST(out_bits, E_AXIS)) {  // -direction
-        REV_E_DIR();
-        count_direction[E_AXIS] = -1;
-	      #ifdef NPR2
-          if (check_endstops) {
-            #if defined(E_MIN_PIN) && E_MIN_PIN > -1
-              bool e_min_endstop=(READ(E_MIN_PIN) != E_MIN_ENDSTOP_INVERTING);
-              if (e_min_endstop && old_e_min_endstop && (current_block->steps[E_AXIS] > 0)) {
-                endstops_trigsteps[E_AXIS] = count_position[E_AXIS];
-                endstop_e_hit = true;
-                step_events_completed = current_block->step_event_count;
-              }
-              old_e_min_endstop = e_min_endstop;
-            #endif
-          }
-        #endif
       }
-      else { // +direction
-        NORM_E_DIR();
-        count_direction[E_AXIS] = 1;
-      }
-    #endif //!ADVANCE
+    }
 
     // Take multiple steps per interrupt (For high speed moves)
     for (int8_t i = 0; i < step_loops; i++) {
@@ -726,29 +659,30 @@ ISR(TIMER1_COMPA_vect) {
       #define _APPLY_STEP(AXIS) AXIS ##_APPLY_STEP
       #define _INVERT_STEP_PIN(AXIS) INVERT_## AXIS ##_STEP_PIN
 
-      #define STEP_ADD(axis, AXIS) \
+      #define STEP_START(axis, AXIS) \
         _COUNTER(axis) += current_block->steps[_AXIS(AXIS)]; \
         if (_COUNTER(axis) > 0) { _APPLY_STEP(AXIS)(!_INVERT_STEP_PIN(AXIS),0); }
-
-      STEP_ADD(x,X);
-      STEP_ADD(y,Y);
-      STEP_ADD(z,Z);
+          
+      STEP_START(x,X);
+      STEP_START(y,Y);
+      STEP_START(z,Z);
       #ifndef ADVANCE
-        STEP_ADD(e,E);
+        STEP_START(e,E);
       #endif
 
-      #define STEP_IF_COUNTER(axis, AXIS) \
+
+      #define STEP_END(axis, AXIS) \
         if (_COUNTER(axis) > 0) { \
           _COUNTER(axis) -= current_block->step_event_count; \
           count_position[_AXIS(AXIS)] += count_direction[_AXIS(AXIS)]; \
           _APPLY_STEP(AXIS)(_INVERT_STEP_PIN(AXIS),0); \
         }
 
-      STEP_IF_COUNTER(x, X);
-      STEP_IF_COUNTER(y, Y);
-      STEP_IF_COUNTER(z, Z);
+      STEP_END(x, X);
+      STEP_END(y, Y);
+      STEP_END(z, Z);
       #ifndef ADVANCE
-        STEP_IF_COUNTER(e, E);
+        STEP_END(e, E);
       #endif
 
       step_events_completed++;
@@ -1177,14 +1111,10 @@ long st_get_position(uint8_t axis) {
   return count_pos;
 }
 
-#ifdef ENABLE_AUTO_BED_LEVELING
-
-  float st_get_position_mm(uint8_t axis) {
-    float steper_position_in_steps = st_get_position(axis);
-    return steper_position_in_steps / axis_steps_per_unit[axis];
-  }
-
-#endif  // ENABLE_AUTO_BED_LEVELING
+float st_get_position_mm(uint8_t axis) {
+  float steper_position_in_steps = st_get_position(axis);
+  return steper_position_in_steps / axis_steps_per_unit[axis];
+}
 
 void finishAndDisableSteppers() {
   st_synchronize();

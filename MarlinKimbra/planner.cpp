@@ -478,7 +478,7 @@ float junction_deviation = 0.1;
   void plan_buffer_line(float x, float y, float z, const float &e, float feed_rate, const uint8_t &extruder, const uint8_t &driver)
 #else
   void plan_buffer_line(const float &x, const float &y, const float &z, const float &e, float feed_rate, const uint8_t &extruder, const uint8_t &driver)
-#endif  //ENABLE_AUTO_BED_LEVELING
+#endif  // ENABLE_AUTO_BED_LEVELING
 {
   // Calculate the buffer head after we push this byte
   int next_buffer_head = next_block_index(block_buffer_head);
@@ -518,8 +518,7 @@ float junction_deviation = 0.1;
           if (degHotend(extruder) < extrude_min_temp && !(debugLevel & DEBUG_DRYRUN)) {
             position[E_AXIS] = target[E_AXIS]; //behave as if the move really took place, but ignore E part
             de = 0; // no difference
-            ECHO_S(OK);
-            ECHO_EM(MSG_ERR_COLD_EXTRUDE_STOP);
+            ECHO_LM(ER, MSG_ERR_COLD_EXTRUDE_STOP);
           }
         }
 
@@ -530,8 +529,7 @@ float junction_deviation = 0.1;
           #endif
           position[E_AXIS] = target[E_AXIS]; // Behave as if the move really took place, but ignore E part
           de = 0; // no difference
-          ECHO_S(OK);
-          ECHO_EM(MSG_ERR_LONG_EXTRUDE_STOP);
+          ECHO_LM(ER, MSG_ERR_LONG_EXTRUDE_STOP);
           #ifdef EASY_LOAD
             }
             allow_lengthy_extrude_once = false;

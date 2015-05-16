@@ -82,6 +82,8 @@
 #define E1_MS2_PIN    -1
 #define DIGIPOTSS_PIN -1
 #define LCD_CONTRAST  -1
+#define Z2_MIN_PIN    -1
+#define Z2_MAX_PIN    -1
 
 
 /******************************************************************************

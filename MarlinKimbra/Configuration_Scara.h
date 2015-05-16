@@ -7,7 +7,7 @@
 // QHARLEYS Autobedlevelling has not been ported, because Marlin has now Bed-levelling
 // You might need Z-Min endstop on SCARA-Printer to use this feature. Actually untested!
 // Uncomment to use Morgan scara mode
-#define scara_segments_per_second 200 //careful, two much will decrease performance...
+#define SCARA_SEGMENTS_PER_SECOND 200 // If movement is choppy try lowering this value
 // Length of inner support arm
 #define Linkage_1 150 //mm      Preprocessor cannot handle decimal point...
 // Length of outer support arm     Measure arm lengths precisely and enter 

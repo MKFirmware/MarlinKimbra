@@ -256,19 +256,23 @@
     #define X_MIN_ENDSTOP_INVERTING   !X_MIN_ENDSTOP_LOGIC
     #define Y_MIN_ENDSTOP_INVERTING   !Y_MIN_ENDSTOP_LOGIC
     #define Z_MIN_ENDSTOP_INVERTING   !Z_MIN_ENDSTOP_LOGIC
+    #define Z2_MIN_ENDSTOP_INVERTING  !Z2_MIN_ENDSTOP_LOGIC
     #define E_MIN_ENDSTOP_INVERTING   !E_MIN_ENDSTOP_LOGIC
     #define X_MAX_ENDSTOP_INVERTING   !X_MAX_ENDSTOP_LOGIC
     #define Y_MAX_ENDSTOP_INVERTING   !Y_MAX_ENDSTOP_LOGIC
     #define Z_MAX_ENDSTOP_INVERTING   !Z_MAX_ENDSTOP_LOGIC
+    #define Z2_MAX_ENDSTOP_INVERTING  !Z2_MAX_ENDSTOP_LOGIC
     #define Z_PROBE_ENDSTOP_INVERTING !Z_PROBE_ENDSTOP_LOGIC
   #else
     #define X_MIN_ENDSTOP_INVERTING   X_MIN_ENDSTOP_LOGIC
     #define Y_MIN_ENDSTOP_INVERTING   Y_MIN_ENDSTOP_LOGIC
     #define Z_MIN_ENDSTOP_INVERTING   Z_MIN_ENDSTOP_LOGIC
+    #define Z2_MIN_ENDSTOP_INVERTING  Z2_MIN_ENDSTOP_LOGIC
     #define E_MIN_ENDSTOP_INVERTING   E_MIN_ENDSTOP_LOGIC
     #define X_MAX_ENDSTOP_INVERTING   X_MAX_ENDSTOP_LOGIC
     #define Y_MAX_ENDSTOP_INVERTING   Y_MAX_ENDSTOP_LOGIC
     #define Z_MAX_ENDSTOP_INVERTING   Z_MAX_ENDSTOP_LOGIC
+    #define Z2_MAX_ENDSTOP_INVERTING  Z2_MAX_ENDSTOP_LOGIC
     #define Z_PROBE_ENDSTOP_INVERTING Z_PROBE_ENDSTOP_LOGIC
   #endif
 
@@ -354,6 +358,13 @@
     #define MAX_PROBE_Y (min(Y_MAX_POS, Y_MAX_POS + Y_PROBE_OFFSET_FROM_EXTRUDER))
   #endif
 
+   /**
+    * Sled Options
+    */ 
+  #ifdef Z_PROBE_SLED
+    #define Z_SAFE_HOMING
+  #endif
+  
   /**
    * Servo Leveling
    */
@@ -368,8 +379,8 @@
       #define MAX_STEP_FREQUENCY 120000 // Max step frequency for Toshiba Stepper Controllers
       #define DOUBLE_STEP_FREQUENCY MAX_STEP_FREQUENCY
     #else
-      #define MAX_STEP_FREQUENCY 320000    // Max step frequency for the Due is approx. 330kHz
-      #define DOUBLE_STEP_FREQUENCY 100000  //96kHz is close to maximum for an Arduino Due
+      #define MAX_STEP_FREQUENCY 500000    // Max step frequency for the Due is approx. 330kHz
+      #define DOUBLE_STEP_FREQUENCY 120000  //96kHz is close to maximum for an Arduino Due
     #endif
   #else
     #ifdef CONFIG_STEPPERS_TOSHIBA

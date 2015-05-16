@@ -693,36 +693,32 @@ void Config_PrintSettings(bool forReplay) {
   
   #ifdef DELTA
     if (!forReplay) {
-      ECHO_LM(DB, "Endstop adjustement (mm):");
-    }
-    ECHO_SMV(DB, "  M666 X", endstop_adj[X_AXIS] );
-    ECHO_MV(" Y", endstop_adj[Y_AXIS] );
-    ECHO_EMV(" Z", endstop_adj[Z_AXIS] );
-
-    if (!forReplay) {
       ECHO_LM(DB, "Delta Geometry adjustment:");
     }
-    ECHO_SMV(DB, "  M666 A", tower_adj[0]);
-    ECHO_MV(" B", tower_adj[1]);
-    ECHO_MV(" C", tower_adj[2]);
-    ECHO_MV(" E", tower_adj[3]);
-    ECHO_MV(" F", tower_adj[4]);
-    ECHO_MV(" G", tower_adj[5]);
+    ECHO_SMV(DB, "  M666 A", tower_adj[0], 3);
+    ECHO_MV(" B", tower_adj[1], 3);
+    ECHO_MV(" C", tower_adj[2], 3);
+    ECHO_MV(" I", tower_adj[3], 3);
+    ECHO_MV(" J", tower_adj[4], 3);
+    ECHO_MV(" K", tower_adj[5], 3);
     ECHO_MV(" R", delta_radius);
     ECHO_MV(" D", delta_diagonal_rod);
-    ECHO_MV(" H", max_pos[2]);
-    ECHO_EMV(" P", z_probe_offset[3]);
+    ECHO_EMV(" H", max_pos[2]);
 
     if (!forReplay) {
-      ECHO_LM(DB, "Tower Positions:");
+      ECHO_LM(DB, "Endstop Offsets:");
     }
-    ECHO_SMV(DB, "  Tower1 X:", delta_tower1_x);
-    ECHO_MV(" Y:", delta_tower1_y);
-    ECHO_MV(" Tower2 X:", delta_tower2_x);
-    ECHO_MV(" Y:", delta_tower2_y);
-    ECHO_MV(" Tower3 X:", delta_tower3_x);
-    ECHO_EMV(" Y:", delta_tower3_y);
-    
+    ECHO_SMV(DB, "  M666 X", endstop_adj[X_AXIS]);
+    ECHO_MV(" Y", endstop_adj[Y_AXIS]);
+    ECHO_EMV(" Z", endstop_adj[Z_AXIS]);
+
+    if (!forReplay) {
+      ECHO_LM(DB, "Z-Probe Offset:");
+    }
+    ECHO_SMV(DB, "  M666 P X", z_probe_offset[0]);
+    ECHO_MV(" Y", z_probe_offset[1]);
+    ECHO_EMV(" Z", z_probe_offset[2]);
+
   #elif defined(Z_DUAL_ENDSTOPS)
     if (!forReplay) {
       ECHO_LM(DB, "Z2 Endstop adjustement (mm):");
@@ -830,57 +826,7 @@ void Config_PrintSettings(bool forReplay) {
     }
     ECHO_LVM(DB, power_consumption_hour," W/h");
   #endif
-  if (!forReplay) {
-    ECHO_LM(DB, "Power on time:");
-  }
-  char time[30];
-  int hours = printer_usage_seconds / 60 / 60, minutes = (printer_usage_seconds / 60) % 60;
-  sprintf_P(time, PSTR("%i " MSG_END_HOUR " %i " MSG_END_MINUTE), hours, minutes);
-  ECHO_LV(DB, time);
 
 }
 
 #endif //!DISABLE_M503
-
-
-/**
- * Lifetime on EEPROM
- *
- */
-void load_lifetime_stats() {
-  int i = LIFETIME_EEPROM_OFFSET;
-  char stored_magic[4];
-  char magic[4] = LIFETIME_MAGIC;
-  EEPROM_READ_VAR(i, stored_magic); // read magic
-
-  if (strncmp(magic, stored_magic, 3) != 0) {
-    #ifdef POWER_CONSUMPTION
-      power_consumption_hour = 0;
-    #endif
-    printer_usage_seconds = 0;
-  }
-  else {
-    EEPROM_READ_VAR(i, printer_usage_seconds);
-    #ifdef POWER_CONSUMPTION
-      EEPROM_READ_VAR(i, power_consumption_hour);
-    #endif
-  }
-}
-
-void save_lifetime_stats() {
-  int i = LIFETIME_EEPROM_OFFSET;
-  char magic[4] = "000";
-  EEPROM_WRITE_VAR(i, magic); // invalidate data first
-
-  EEPROM_WRITE_VAR(i, printer_usage_seconds);
-
-  #ifdef POWER_CONSUMPTION
-    EEPROM_WRITE_VAR(i, power_consumption_hour);
-  #endif
-
-  char magic2[4] = LIFETIME_MAGIC;
-  int j = LIFETIME_EEPROM_OFFSET;
-  EEPROM_WRITE_VAR(j, magic2); // validate data
-
-  config_last_update = millis();
-}
