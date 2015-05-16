@@ -3472,10 +3472,12 @@ inline void gcode_G28(boolean home_x = false, boolean home_y = false) {
       }
       return;
     }
+
     saved_feedrate = feedrate;
     saved_feedrate_multiplier = feedrate_multiplier;
     feedrate_multiplier = 100;
 
+    home_delta_axis();
     deploy_z_probe();
     calibrate_print_surface(z_probe_offset[Z_AXIS] + (code_seen(axis_codes[Z_AXIS]) ? code_value() : 0.0));
     retract_z_probe();
@@ -3546,12 +3548,12 @@ inline void gcode_G28(boolean home_x = false, boolean home_y = false) {
     }
 
     home_delta_axis();
-    deploy_z_probe(); 
+    deploy_z_probe();
 
     //Probe all points
     bed_probe_all();
 
-    //Show calibration report      
+    //Show calibration report
     calibration_report();
 
     retract_z_probe();
