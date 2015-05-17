@@ -4,8 +4,6 @@
 #include "Configuration.h"
 
 void Config_ResetDefault();
-void load_lifetime_stats();
-void save_lifetime_stats();
 
 #ifndef DISABLE_M503
   void Config_PrintSettings(bool forReplay=false);

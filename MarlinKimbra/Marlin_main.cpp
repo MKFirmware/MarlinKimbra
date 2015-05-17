@@ -336,7 +336,7 @@ bool target_direction;
   float delta_diagonal_rod; // = DEFAULT_DELTA_DIAGONAL_ROD;
   float delta_diagonal_rod_2;
   float delta_segments_per_second = DELTA_SEGMENTS_PER_SECOND;
-  float ac_prec = AUTOCALIBRATION_PRECISION / 2;
+  float ac_prec = AUTOCALIBRATION_PRECISION;
   float bed_radius = PRINTER_RADIUS;
   float delta_tower1_x, delta_tower1_y;
   float delta_tower2_x, delta_tower2_y;
@@ -457,6 +457,8 @@ bool target_direction;
 //===========================================================================
 //================================ Functions ================================
 //===========================================================================
+
+void process_next_command();
 
 bool setTargetedHotend(int code);
 
@@ -766,17 +768,17 @@ void loop() {
           // Write the string from the read buffer to SD
           card.write_command(command);
           if (card.logging)
-            process_commands(); // The card is saving because it's logging
+            process_next_command(); // The card is saving because it's logging
           else
             ECHO_L(OK);
         }
       }
       else
-        process_commands();
+        process_next_command();
 
     #else
 
-      process_commands();
+      process_next_command();
 
     #endif // SDSUPPORT
 
@@ -788,6 +790,15 @@ void loop() {
   manage_inactivity();
   checkHitEndstops();
   lcd_update();
+}
+
+void gcode_line_error(const char *err, bool doFlush = true) {
+  ECHO_S(ER);
+  PS_PGM(err);
+  ECHO_EV(gcode_LastN);
+  //Serial.println(gcode_N);
+  if (doFlush) FlushSerialRequestResend();
+  serial_count = 0;
 }
 
 /**
@@ -810,23 +821,31 @@ void get_command() {
     }
   #endif
 
+  //
+  // Loop while serial characters are incoming and the queue is not full
+  //
   while (MYSERIAL.available() > 0 && commands_in_queue < BUFSIZE) {
+
     #ifdef NO_TIMEOUTS
       last_command_time = ms;
     #endif
+
     serial_char = MYSERIAL.read();
 
-    if (serial_char == '\n' || serial_char == '\r' ||
-       serial_count >= (MAX_CMD_SIZE - 1)
-    ) {
+    //
+    // If the character ends the line, or the line is full...
+    //
+    if (serial_char == '\n' || serial_char == '\r' || serial_count >= MAX_CMD_SIZE - 1) {
+
       // end of line == end of comment
       comment_mode = false;
 
-      if (!serial_count) return; // shortcut for empty lines
+      if (!serial_count) return; // empty lines just exit
 
       char *command = command_queue[cmd_queue_index_w];
       command[serial_count] = 0; // terminate string
 
+      // this item in the queue is not from sd
       #ifdef SDSUPPORT
         fromsd[cmd_queue_index_w] = false;
       #endif
@@ -835,9 +854,7 @@ void get_command() {
         strchr_pointer = strchr(command, 'N');
         gcode_N = (strtol(strchr_pointer + 1, NULL, 10));
         if (gcode_N != gcode_LastN + 1 && strstr_P(command, PSTR("M110")) == NULL) {
-          ECHO_LMV(ER, MSG_ERR_LINE_NO, gcode_LastN);
-          FlushSerialRequestResend();
-          serial_count = 0;
+          gcode_line_error(PSTR(MSG_ERR_LINE_NO));
           return;
         }
 
@@ -848,27 +865,22 @@ void get_command() {
           strchr_pointer = strchr(command, '*');
 
           if (strtol(strchr_pointer + 1, NULL, 10) != checksum) {
-            ECHO_LMV(ER, MSG_ERR_CHECKSUM_MISMATCH, gcode_LastN);
-            FlushSerialRequestResend();
-            serial_count = 0;
+            gcode_line_error(PSTR(MSG_ERR_CHECKSUM_MISMATCH));
             return;
           }
-          //if no errors, continue parsing
+          // if no errors, continue parsing
         }
         else {
-          ECHO_LMV(ER, MSG_ERR_NO_CHECKSUM, gcode_LastN);
-          FlushSerialRequestResend();
-          serial_count = 0;
+          gcode_line_error(PSTR(MSG_ERR_NO_CHECKSUM));
           return;
         }
 
         gcode_LastN = gcode_N;
-        //if no errors, continue parsing
+        // if no errors, continue parsing
       }
       else {  // if we don't receive 'N' but still see '*'
         if ((strchr(command, '*') != NULL)) {
-          ECHO_LMV(ER, MSG_ERR_NO_LINENUMBER_WITH_CHECKSUM, gcode_LastN);
-          serial_count = 0;
+          gcode_line_error(PSTR(MSG_ERR_NO_LINENUMBER_WITH_CHECKSUM), false);
           return;
         }
       }
@@ -899,7 +911,7 @@ void get_command() {
       serial_count = 0; //clear buffer
     }
     else if (serial_char == '\\') {  // Handle escapes
-      if (MYSERIAL.available() > 0  && commands_in_queue < BUFSIZE) {
+      if (MYSERIAL.available() > 0 && commands_in_queue < BUFSIZE) {
         // if we have one more character, copy it over
         serial_char = MYSERIAL.read();
         command_queue[cmd_queue_index_w][serial_count++] = serial_char;
@@ -1949,8 +1961,7 @@ static void setup_for_endstop_move() {
     */
   }
 
-  inline void delta_autocalibration(int iterations){
-    //int iterations = 100; // Maximum number of iterations
+  inline void delta_autocalibration(int iterations) {
     int loopcount = 1;
     float adj_r_target, adj_dr_target;
     float adj_r_target_delta = 0, adj_dr_target_delta = 0;
@@ -1963,28 +1974,32 @@ static void setup_for_endstop_move() {
     boolean adj_dr_allowed = true;
     float h_endstop = -100, l_endstop = 100;
     float probe_error, ftemp;
-
-    ECHO_SMV(DB, "Starting Auto Calibration... Calibration precision: +/- ", ac_prec, 3);
-    ECHO_EMV("mm Total Iteration: ", iterations);
-    
-    LCD_MESSAGEPGM("Auto Calibration...");
+    float start_prec = 0.01;
+    float saved_delta_diagonal_rod = delta_diagonal_rod;
 
     if (code_seen('D')) {
       delta_diagonal_rod = code_value();
       adj_dr_allowed = false;
-      ECHO_SMV(DB, "Using diagional rod length: ", delta_diagonal_rod);
+      ECHO_SMV(DB, "Using diagonal rod length: ", delta_diagonal_rod);
       ECHO_EM("mm (will not be adjusted)");
     }
+
+    ECHO_SMV(DB, "Starting Auto Calibration... Calibration precision: +/- ", ac_prec, 3);
+    ECHO_MV("mm Start Precision: +/- ", start_prec, 3);
+    ECHO_EMV("mm Total Iteration: ", iterations);
+    LCD_MESSAGEPGM("Auto Calibration...");
 
     // First Check for control endstop
     ECHO_LM(DB, "First check for adjust Z-Height");
     home_delta_axis();
     deploy_z_probe();
+
     //Probe all points
     bed_probe_all();
-    //Show calibration report      
+
+    //Show calibration report
     calibration_report();
-    
+
     //Check that endstop are within limits
     if (bed_level_x + endstop_adj[0] > h_endstop) h_endstop = bed_level_x + endstop_adj[0];
     if (bed_level_x + endstop_adj[0] < l_endstop) l_endstop = bed_level_x + endstop_adj[0];
@@ -2011,6 +2026,8 @@ static void setup_for_endstop_move() {
 
     do {
       ECHO_LMV(DB, "Iteration: ", loopcount);
+      ECHO_SMV(DB, "Precision: +/- ", start_prec, 3);
+      ECHO_EM("mm");
 
       if ((bed_level_c > 3) or (bed_level_c < -3)) {
         //Build height is not set correctly .. 
@@ -2020,7 +2037,7 @@ static void setup_for_endstop_move() {
         ECHO_EM(" mm..");
       } 
       else {
-        if ((bed_level_x < -ac_prec) or (bed_level_x > ac_prec) or (bed_level_y < -ac_prec) or (bed_level_y > ac_prec) or (bed_level_z < -ac_prec) or (bed_level_z > ac_prec)) {
+        if ((bed_level_x < -start_prec) or (bed_level_x > start_prec) or (bed_level_y < -start_prec) or (bed_level_y > start_prec) or (bed_level_z < -start_prec) or (bed_level_z > start_prec)) {
           //Endstop req adjustment
           ECHO_LM(DB, "Adjusting Endstop..");
           endstop_adj[0] += bed_level_x / 1.05;
@@ -2049,15 +2066,16 @@ static void setup_for_endstop_move() {
           adj_dr_target = (bed_level_ox + bed_level_oy + bed_level_oz) / 3;
 
           //Determine which parameters require adjustment
-          if ((bed_level_c >= adj_r_target - ac_prec) and (bed_level_c <= adj_r_target + ac_prec)) adj_r_done = true; 
+          if ((bed_level_c >= adj_r_target - start_prec) and (bed_level_c <= adj_r_target + start_prec)) adj_r_done = true; 
           else adj_r_done = false;
-          if ((adj_dr_target >= adj_r_target - ac_prec) and (adj_dr_target <= adj_r_target + ac_prec)) adj_dr_done = true; 
+          if ((adj_dr_target >= adj_r_target - start_prec) and (adj_dr_target <= adj_r_target + start_prec)) adj_dr_done = true; 
           else adj_dr_done = false;
           if ((bed_level_x != bed_level_ox) or (bed_level_y != bed_level_oy) or (bed_level_z != bed_level_oz)) adj_tower_done = false; 
           else adj_tower_done = true;
           if ((adj_r_done == false) or (adj_dr_done == false) or (adj_tower_done == false)) {
             //delta geometry adjustment required
             ECHO_LM(DB, "Adjusting Delta Geometry..");
+
             //set initial direction and magnitude for delta radius & diagonal rod adjustment
             if (adj_r == 0) {
               if (adj_r_target > bed_level_c) adj_r = 1; 
@@ -2083,6 +2101,7 @@ static void setup_for_endstop_move() {
               }
 
               if (adj_dr_allowed == false) adj_dr_done = true;
+
               if (adj_dr_done == false) {
                 ECHO_SMV(DB, "Adjusting Diagonal Rod Length (", delta_diagonal_rod);
                 ECHO_MV(" -> ", delta_diagonal_rod + adj_dr);
@@ -2104,19 +2123,19 @@ static void setup_for_endstop_move() {
 
               //Check to see if auto calc is complete to within limits..
               if (adj_dr_allowed == true) {
-                if   ((bed_level_x >= -ac_prec) and (bed_level_x <= ac_prec)
-                  and (bed_level_y >= -ac_prec) and (bed_level_y <= ac_prec)
-                  and (bed_level_z >= -ac_prec) and (bed_level_z <= ac_prec)
-                  and (bed_level_c >= -ac_prec) and (bed_level_c <= ac_prec)
-                  and (bed_level_ox >= -ac_prec) and (bed_level_ox <= ac_prec)
-                  and (bed_level_oy >= -ac_prec) and (bed_level_oy <= ac_prec)
-                  and (bed_level_oz >= -ac_prec) and (bed_level_oz <= ac_prec)) loopcount = iterations;
+                if   ((bed_level_x >= -start_prec) and (bed_level_x <= start_prec)
+                  and (bed_level_y >= -start_prec) and (bed_level_y <= start_prec)
+                  and (bed_level_z >= -start_prec) and (bed_level_z <= start_prec)
+                  and (bed_level_c >= -start_prec) and (bed_level_c <= start_prec)
+                  and (bed_level_ox >= -start_prec) and (bed_level_ox <= start_prec)
+                  and (bed_level_oy >= -start_prec) and (bed_level_oy <= start_prec)
+                  and (bed_level_oz >= -start_prec) and (bed_level_oz <= start_prec)) loopcount = iterations;
               } 
               else {
-                if   ((bed_level_x >= -ac_prec) and (bed_level_x <= ac_prec)
-                  and (bed_level_y >= -ac_prec) and (bed_level_y <= ac_prec)
-                  and (bed_level_z >= -ac_prec) and (bed_level_z <= ac_prec)
-                  and (bed_level_c >= -ac_prec) and (bed_level_c <= ac_prec)) loopcount = iterations;
+                if   ((bed_level_x >= -start_prec) and (bed_level_x <= start_prec)
+                  and (bed_level_y >= -start_prec) and (bed_level_y <= start_prec)
+                  and (bed_level_z >= -start_prec) and (bed_level_z <= start_prec)
+                  and (bed_level_c >= -start_prec) and (bed_level_c <= start_prec)) loopcount = iterations;
               }
 
               //set delta radius and diagonal rod targets
@@ -2178,7 +2197,7 @@ static void setup_for_endstop_move() {
                   if (bed_level_z < bed_level_oz) adj_RadiusC = 0.5;
                   if (bed_level_z > bed_level_oz) adj_RadiusC = -0.5;
                   #ifdef DEBUG_MESSAGES
-                    ECHO_LMV(DB, "adj_RadiusC set to ",adj_RadiusC);
+                    ECHO_LMV(DB, "adj_RadiusC set to ", adj_RadiusC);
                   #endif
                 }
               }
@@ -2190,7 +2209,7 @@ static void setup_for_endstop_move() {
                   if (bed_level_x < bed_level_ox) adj_RadiusA = 0.5;
                   if (bed_level_x > bed_level_ox) adj_RadiusA = -0.5;  
                   #ifdef DEBUG_MESSAGES
-                    ECHO_LMV(DB, "adj_RadiusA set to ",adj_RadiusA);
+                    ECHO_LMV(DB, "adj_RadiusA set to ", adj_RadiusA);
                   #endif
                 }
               } 
@@ -2202,7 +2221,7 @@ static void setup_for_endstop_move() {
                   if (bed_level_y < bed_level_oy) adj_RadiusB = 0.5;
                   if (bed_level_y > bed_level_oy) adj_RadiusB = -0.5;                     
                   #ifdef DEBUG_MESSAGES
-                    ECHO_LMV(DB, "adj_RadiusB set to ",adj_RadiusB);
+                    ECHO_LMV(DB, "adj_RadiusB set to ", adj_RadiusB);
                   #endif
                 }
               }                   
@@ -2223,11 +2242,11 @@ static void setup_for_endstop_move() {
               if (((adj_RadiusC > 0) and (bed_level_z > bed_level_oz)) or ((adj_RadiusC < 0) and (bed_level_z < bed_level_oz))) adj_RadiusC = -(adj_RadiusC / 2);
 
               //Delta radius adjustment complete?                       
-              if ((bed_level_c >= (adj_r_target - ac_prec)) and (bed_level_c <= (adj_r_target + ac_prec))) adj_r_done = true; 
+              if ((bed_level_c >= (adj_r_target - start_prec)) and (bed_level_c <= (adj_r_target + start_prec))) adj_r_done = true; 
               else adj_r_done = false;
 
               //Diag Rod adjustment complete?
-              if ((adj_dr_target >= (adj_r_target - ac_prec)) and (adj_dr_target <= (adj_r_target + ac_prec))) adj_dr_done = true; 
+              if ((adj_dr_target >= (adj_r_target - start_prec)) and (adj_dr_target <= (adj_r_target + start_prec))) adj_dr_done = true; 
               else adj_dr_done = false;
 
               #ifdef DEBUG_MESSAGES
@@ -2238,27 +2257,30 @@ static void setup_for_endstop_move() {
                 ECHO_MV(" ox: ", bed_level_ox);
                 ECHO_MV(" oy: ", bed_level_oy);
                 ECHO_EMV(" oz: ", bed_level_oz);
-                ECHO_EMV("radius:", delta_radius, 4);
-                ECHO_EMV(" diagrod:", delta_diagonal_rod, 4);
+                ECHO_SMV(DB, "radius:", delta_radius, 4);
+                ECHO_EMV(" diagonal rod:", delta_diagonal_rod, 4);
                 ECHO_SM(DB, "Radius Adj Complete: ");
                 if (adj_r_done == true) ECHO_M("Yes"); 
                 else ECHO_M("No");
-                ECHO_M(" DiagRod Adj Complete: ");
+                ECHO_M(" Diagonal Rod Adj Complete: ");
                 if (adj_dr_done == true) ECHO_EM("Yes"); 
                 else ECHO_EM("No");
-                ECHO_SMV(DB, "RadiusA Error: ",radiusErrorA);
-                ECHO_MV(" (adjust: ",adj_RadiusA);
+                ECHO_SMV(DB, "RadiusA Error: ", radiusErrorA);
+                ECHO_MV(" (adjust: ", adj_RadiusA);
                 ECHO_EM(")");
-                ECHO_SMV(DB, "RadiusB Error: ",radiusErrorB);
-                ECHO_MV(" (adjust: ",adj_RadiusB);
+                ECHO_SMV(DB, "RadiusB Error: ", radiusErrorB);
+                ECHO_MV(" (adjust: ", adj_RadiusB);
                 ECHO_EM(")");
-                ECHO_SMV(DB, "RadiusC Error: ",radiusErrorC);
-                ECHO_MV(" (adjust: ",adj_RadiusC);
+                ECHO_SMV(DB, "RadiusC Error: ", radiusErrorC);
+                ECHO_MV(" (adjust: ", adj_RadiusC);
                 ECHO_EM(")");
-                ECHO_LMV(DB, "DeltaAlphaA: ",adj_AlphaA);
-                ECHO_LMV(DB, "DeltaAlphaB: ",adj_AlphaB);
-                ECHO_LMV(DB, "DeltaAlphaC: ",adj_AlphaC);
+                ECHO_LMV(DB, "DeltaAlphaA: ", adj_AlphaA);
+                ECHO_LMV(DB, "DeltaAlphaB: ", adj_AlphaB);
+                ECHO_LMV(DB, "DeltaAlphaC: ", adj_AlphaC);
               #endif
+
+              //if (start_prec < ac_prec) start_prec += 0.01;
+
             } while (((adj_r_done == false) or (adj_dr_done = false)) and (loopcount < iterations));
           }
           else {
@@ -2276,23 +2298,24 @@ static void setup_for_endstop_move() {
 
         //Check to see if autocalc is complete to within limits..
         if (adj_dr_allowed == true) {
-          if   ((bed_level_x >= -ac_prec) and (bed_level_x <= ac_prec)
-            and (bed_level_y >= -ac_prec) and (bed_level_y <= ac_prec)
-            and (bed_level_z >= -ac_prec) and (bed_level_z <= ac_prec)
-            and (bed_level_c >= -ac_prec) and (bed_level_c <= ac_prec)
-            and (bed_level_ox >= -ac_prec) and (bed_level_ox <= ac_prec)
-            and (bed_level_oy >= -ac_prec) and (bed_level_oy <= ac_prec)
-            and (bed_level_oz >= -ac_prec) and (bed_level_oz <= ac_prec)) loopcount = iterations;
+          if   ((bed_level_x >= -start_prec) and (bed_level_x <= start_prec)
+            and (bed_level_y >= -start_prec) and (bed_level_y <= start_prec)
+            and (bed_level_z >= -start_prec) and (bed_level_z <= start_prec)
+            and (bed_level_c >= -start_prec) and (bed_level_c <= start_prec)
+            and (bed_level_ox >= -start_prec) and (bed_level_ox <= start_prec)
+            and (bed_level_oy >= -start_prec) and (bed_level_oy <= start_prec)
+            and (bed_level_oz >= -start_prec) and (bed_level_oz <= start_prec)) loopcount = iterations;
         }
         else {
-          if   ((bed_level_x >= -ac_prec) and (bed_level_x <= ac_prec)
-            and (bed_level_y >= -ac_prec) and (bed_level_y <= ac_prec)
-            and (bed_level_z >= -ac_prec) and (bed_level_z <= ac_prec)
-            and (bed_level_c >= -ac_prec) and (bed_level_c <= ac_prec)) loopcount = iterations;
+          if   ((bed_level_x >= -start_prec) and (bed_level_x <= start_prec)
+            and (bed_level_y >= -start_prec) and (bed_level_y <= start_prec)
+            and (bed_level_z >= -start_prec) and (bed_level_z <= start_prec)
+            and (bed_level_c >= -start_prec) and (bed_level_c <= start_prec)) loopcount = iterations;
         }
       }
 
       loopcount ++;
+      if (start_prec < ac_prec) start_prec += 0.01;
 
       manage_heater();
       manage_inactivity();
@@ -2303,21 +2326,15 @@ static void setup_for_endstop_move() {
     ECHO_LM(DB, "Auto Calibration Complete");
     LCD_MESSAGEPGM("Complete");
     ECHO_LM(DB, "Issue M500 Command to save calibration settings to EPROM (if enabled)");
-    /*   
-     if ((abs(delta_diagonal_rod - saved_delta_diagonal_rod) > 1) and (adj_dr_allowed == true)) {
-       ECHO_SMV(DB, "WARNING: The length of diagonal rods specified (", saved_delta_diagonal_rod);
-       ECHO_EV(" mm) appears to be incorrect");
-       ECHO_LM(DB, "If you have measured your rods and you believe that this value is correct, this could indicate");
-       ECHO_LM(DB,"excessive twisting movement of carriages and/or loose screws/joints on carriages or end effector");
-     }
-     */
+
+    if ((abs(delta_diagonal_rod - saved_delta_diagonal_rod) > 1) and (adj_dr_allowed == true)) {
+      ECHO_SMV(DB, "WARNING: The length of diagonal rods specified (", saved_delta_diagonal_rod);
+      ECHO_EV(" mm) appears to be incorrect");
+      ECHO_LM(DB, "If you have measured your rods and you believe that this value is correct, this could indicate");
+      ECHO_LM(DB,"excessive twisting movement of carriages and/or loose screws/joints on carriages or end effector");
+    }
 
     retract_z_probe();
-
-    //Restore saved variables
-    feedrate = saved_feedrate;
-    feedrate_multiplier = saved_feedrate_multiplier;
-    return;
   }
 #endif //DELTA
 
@@ -3542,21 +3559,9 @@ inline void gcode_G28(boolean home_x = false, boolean home_y = false) {
     feedrate_multiplier = 100;
 
     if (code_seen('A')) {
-      if (code_has_value()) ac_prec = (float)(code_value() / 2);
+      if (code_has_value()) ac_prec = code_value();
       delta_autocalibration(iterations);
-      return;
     }
-
-    home_delta_axis();
-    deploy_z_probe();
-
-    //Probe all points
-    bed_probe_all();
-
-    //Show calibration report
-    calibration_report();
-
-    retract_z_probe();
 
     //reset LCD alert message
     lcd_reset_alert_level();
@@ -4484,15 +4489,16 @@ inline void gcode_M115() {
   ECHO_M(MSG_M115_REPORT);
 }
 
-/**
- * M117: Set LCD Status Message
- */
-inline void gcode_M117() {
-  char* codepos = strchr_pointer + 5;
-  char* starpos = strchr(codepos, '*');
-  if (starpos) *starpos = '\0';
-  lcd_setstatus(codepos);
-}
+#ifdef ULTIPANEL
+
+  /**
+   * M117: Set LCD Status Message
+   */
+  inline void gcode_M117() {
+    lcd_setstatus(strchr_pointer + 5);
+  }
+
+#endif
 
 /**
  * M119: Output endstop states to serial output
@@ -6049,11 +6055,11 @@ inline void gcode_T() {
   }
 }
 
-
-/*****************************************************
-*** Process Commands and dispatch them to handlers ***
-******************************************************/
-void process_commands() {
+/**
+ * Process Commands and dispatch them to handlers
+ * This is called from the main loop()
+ */
+void process_next_command() {
 
   if ((debugLevel & DEBUG_ECHO)) {
     ECHO_LV(DB, command_queue[cmd_queue_index_r]);
@@ -6203,7 +6209,7 @@ void process_commands() {
         gcode_M18_M84(); break;
       case 85: // M85
         gcode_M85(); break;
-      case 92: // M92
+      case 92: // M92 Set the steps-per-unit for one or more axes
         gcode_M92(); break;  
       case 104: // M104
         gcode_M104(); break;
@@ -6223,18 +6229,22 @@ void process_commands() {
         gcode_M111(); break;
       case 112: //  M112 Emergency Stop
         gcode_M112(); break;
-      case 114: // M114
+      case 114: // M114 Report current position
         gcode_M114(); break;
-      case 115: // M115
-        gcode_M115(); break;  
-      case 117: // M117 display message
-        gcode_M117(); break;  
-      case 119: // M119
-        gcode_M119(); break;  
-      case 120: // M120
+      case 115: // M115 Report capabilities
+        gcode_M115(); break;
+
+      #ifdef ULTIPANEL
+        case 117: // M117 display message
+          gcode_M117(); break;
+      #endif
+
+      case 119: // M119 Report endstop states
+        gcode_M119(); break;
+      case 120: // M120 Enable endstops
         gcode_M120(); break;
-      case 121: // M121
-        gcode_M121(); break;  
+      case 121: // M121 Disable endstops
+        gcode_M121(); break;
 
       #ifdef BARICUDA
         // PWM for HEATER_1_PIN

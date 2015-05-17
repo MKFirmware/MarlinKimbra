@@ -14,15 +14,14 @@
  *
  */
 
-#define EEPROM_VERSION "V21"
+#define EEPROM_VERSION "V22"
 
 /**
- * V21 EEPROM Layout:
+ * V22 EEPROM Layout:
  *
  *  ver
  *  M92   XYZ E0 E1 E2 E3 axis_steps_per_unit (x7)
  *  M203  XYZ E0 E1 E2 E3 max_feedrate (x7)
- *  M???      E0 E1 E2 E3 retraction_feedrate (x4)
  *  M201  XYZ E0 E1 E2 E3 max_acceleration_units_per_sq_second (x7)
  *  M204  P               acceleration
  *  M204  R               retract_acceleration
@@ -45,7 +44,7 @@
  *  M666  R               delta_radius
  *  M666  D               delta_diagonal_rod
  *  M666  H               Z max_pos
- *  M666  P               z_probe_offset
+ *  M666  P XYZ           XYZ probe_offset (x3)
  *
  * Z_DUAL_ENDSTOPS
  *  M666  Z               z_endstop_adj
@@ -127,17 +126,16 @@ void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size) {
 #define EEPROM_WRITE_VAR(pos, value) _EEPROM_writeData(pos, (uint8_t*)&value, sizeof(value))
 #define EEPROM_READ_VAR(pos, value) _EEPROM_readData(pos, (uint8_t*)&value, sizeof(value))
 
-#define DUMMY_PID_VALUE 3000.0f
-
-#define EEPROM_OFFSET 100
-#define LIFETIME_EEPROM_OFFSET 600
-#define LIFETIME_MAGIC "L99"
-
-#ifdef EEPROM_SETTINGS
-
 /**
  * Store Configuration Settings - M500
  */
+
+#define DUMMY_PID_VALUE 3000.0f
+
+#define EEPROM_OFFSET 100
+
+#ifdef EEPROM_SETTINGS
+
 void Config_StoreSettings() {
   float dummy = 0.0f;
   char ver[4] = "000";
@@ -145,7 +143,6 @@ void Config_StoreSettings() {
   EEPROM_WRITE_VAR(i, ver); // invalidate data first
   EEPROM_WRITE_VAR(i, axis_steps_per_unit);
   EEPROM_WRITE_VAR(i, max_feedrate);
-  EEPROM_WRITE_VAR(i, max_retraction_feedrate);
   EEPROM_WRITE_VAR(i, max_acceleration_units_per_sq_second);
   EEPROM_WRITE_VAR(i, acceleration);
   EEPROM_WRITE_VAR(i, retract_acceleration);
@@ -293,7 +290,6 @@ void Config_RetrieveSettings() {
     // version number match
     EEPROM_READ_VAR(i, axis_steps_per_unit);
     EEPROM_READ_VAR(i, max_feedrate);
-    EEPROM_READ_VAR(i, max_retraction_feedrate);
     EEPROM_READ_VAR(i, max_acceleration_units_per_sq_second);
 
     // steps per sq second need to be updated to agree with the units per sq second (as they are what is used in the planner)
@@ -441,36 +437,33 @@ void Config_RetrieveSettings() {
  * Reset Configuration Settings - M502
  */
 void Config_ResetDefault() {
-
   float tmp1[] = DEFAULT_AXIS_STEPS_PER_UNIT;
   float tmp2[] = DEFAULT_MAX_FEEDRATE;
-  float tmp3[] = DEFAULT_RETRACTION_MAX_FEEDRATE;
-  long  tmp4[]  = DEFAULT_MAX_ACCELERATION;
+  long  tmp3[] = DEFAULT_MAX_ACCELERATION;
   #ifdef PIDTEMP
-    float tmp5[] = DEFAULT_Kp;
-    float tmp6[] = DEFAULT_Ki;
-    float tmp7[] = DEFAULT_Kd;
+    float tmp4[] = DEFAULT_Kp;
+    float tmp5[] = DEFAULT_Ki;
+    float tmp6[] = DEFAULT_Kd;
   #endif // PIDTEMP
 
   #if defined(HOTEND_OFFSET_X) && defined(HOTEND_OFFSET_Y)
-    float tmp8[] = HOTEND_OFFSET_X;
-    float tmp9[] = HOTEND_OFFSET_Y;
+    float tmp7[] = HOTEND_OFFSET_X;
+    float tmp8[] = HOTEND_OFFSET_Y;
   #else
+    float tmp7[] = {0,0,0,0};
     float tmp8[] = {0,0,0,0};
-    float tmp9[] = {0,0,0,0};
   #endif
 
   for (int i = 0; i < 3 + EXTRUDERS; i++) {
     axis_steps_per_unit[i] = tmp1[i];
     max_feedrate[i] = tmp2[i];
-    max_acceleration_units_per_sq_second[i] = tmp4[i];
+    max_acceleration_units_per_sq_second[i] = tmp3[i];
   }
 
   for (int i = 0; i < EXTRUDERS; i++) {
-    max_retraction_feedrate[i] = tmp3[i];
     #if HOTENDS > 1
-      hotend_offset[X_AXIS][i] = tmp8[i];
-      hotend_offset[Y_AXIS][i] = tmp9[i];
+      hotend_offset[X_AXIS][i] = tmp7[i];
+      hotend_offset[Y_AXIS][i] = tmp8[i];
     #endif
     #ifdef SCARA
       if (i < sizeof(axis_scaling) / sizeof(*axis_scaling))
@@ -527,9 +520,9 @@ void Config_ResetDefault() {
   #ifdef PIDTEMP
     for (int e = 0; e < HOTENDS; e++) 
     {
-      Kp[e] = tmp5[e];
-      Ki[e] = scalePID_i(tmp6[e]);
-      Kd[e] = scalePID_d(tmp7[e]);
+      Kp[e] = tmp4[e];
+      Ki[e] = scalePID_i(tmp5[e]);
+      Kd[e] = scalePID_d(tmp6[e]);
     }
     // call updatePID (similar to when we have processed M301)
     updatePID();
@@ -618,21 +611,6 @@ void Config_PrintSettings(bool forReplay) {
       ECHO_MV(" E2 S", max_feedrate[E_AXIS + 2]);
       #if EXTRUDERS > 3
         ECHO_MV(" E3 S", max_feedrate[E_AXIS + 3]);
-      #endif //EXTRUDERS > 3
-    #endif //EXTRUDERS > 2
-  #endif //EXTRUDERS > 1
-  ECHO_E;
-
-  if (!forReplay) {
-    ECHO_LM(DB, "Retraction Steps per unit:");
-  }
-  ECHO_SMV(DB, "  E0 ",max_retraction_feedrate[0]);
-  #if EXTRUDERS > 1
-    ECHO_MV(" E1 ", max_retraction_feedrate[1]);
-    #if EXTRUDERS > 2
-      ECHO_MV(" E2 ", max_retraction_feedrate[2]);
-      #if EXTRUDERS > 3
-        ECHO_MV(" E3 ", max_retraction_feedrate[3]);
       #endif //EXTRUDERS > 3
     #endif //EXTRUDERS > 2
   #endif //EXTRUDERS > 1

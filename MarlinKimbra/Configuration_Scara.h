@@ -210,7 +210,6 @@
 // default settings
 #define DEFAULT_AXIS_STEPS_PER_UNIT     {103.69,103.69,200/1.25,1000,1000,1000,1000}    // X, Y, Z, E0, E1, E2, E3
 #define DEFAULT_MAX_FEEDRATE            {300,300,4,45,45,45,45}                         // X, Y, Z, E0, E1, E2, E3 (mm/sec)
-#define DEFAULT_RETRACTION_MAX_FEEDRATE {80,80,80,80}                                   // E0, E1, E2, E3 (mm/sec)
 #define DEFAULT_MAX_ACCELERATION        {5000,5000,50,5000,5000,5000,5000}              // X, Y, Z, E0, E1, E2, E3 maximum start speed for accelerated moves.
 
 #define DEFAULT_ACCELERATION           400      // X, Y, Z and E max acceleration in mm/s^2 for printing moves

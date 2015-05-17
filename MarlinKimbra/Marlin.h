@@ -51,7 +51,6 @@ typedef unsigned long millis_t;
 #include "comunication.h"
 
 void get_command();
-void process_commands();
 
 void manage_inactivity(bool ignore_stepper_queue=false);
 
@@ -138,6 +137,7 @@ void manage_inactivity(bool ignore_stepper_queue=false);
  * X_HEAD and Y_HEAD is used for systems that don't have a 1:1 relationship between X_AXIS and X Head movement, like CoreXY bots.
  */
 enum AxisEnum {X_AXIS=0, Y_AXIS=1, A_AXIS=0, B_AXIS=1, Z_AXIS=2, E_AXIS=3, X_HEAD=4, Y_HEAD=5};
+
 enum EndstopEnum {X_MIN=0, Y_MIN=1, Z_MIN=2, Z_PROBE=3, X_MAX=4, Y_MAX=5, Z_MAX=6};
 
 void enable_all_steppers();
@@ -160,9 +160,9 @@ void adjust_delta(float cartesian[3]);
 void prepare_move_raw();
 extern float delta[3];
 extern float delta_tmp[3];
-extern float delta_tower1_x,delta_tower1_y;
-extern float delta_tower2_x,delta_tower2_y;
-extern float delta_tower3_x,delta_tower3_y;
+extern float delta_tower1_x, delta_tower1_y;
+extern float delta_tower2_x, delta_tower2_y;
+extern float delta_tower3_x, delta_tower3_y;
 #endif
 #ifdef SCARA
   void calculate_delta(float cartesian[3]);
@@ -241,6 +241,7 @@ extern float home_offset[3];
   extern float tower_adj[6];
   extern float delta_radius;
   extern float delta_diagonal_rod;
+  extern float delta_segments_per_second;
 #elif defined(Z_DUAL_ENDSTOPS)
   extern float z_endstop_adj;
 #endif
