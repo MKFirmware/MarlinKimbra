@@ -1,22 +1,23 @@
-/*
-  stepper.c - stepper motor driver: executes motion plans using stepper motors
-  Part of Grbl
-
-  Copyright (c) 2009-2011 Simen Svale Skogsrud
-
-  Grbl is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-
-  Grbl is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
-*/
+/**
+ * stepper.cpp - stepper motor driver: executes motion plans using stepper motors
+ * Marlin Firmware
+ *
+ * Derived from Grbl
+ * Copyright (c) 2009-2011 Simen Svale Skogsrud
+ *
+ * Grbl is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Grbl is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 /* The timer calculations of this module informed by the 'RepRap cartesian firmware' by Zack Smith
    and Philipp Tiefenbacher. */
@@ -45,7 +46,7 @@ block_t *current_block;  // A pointer to the block currently being traced
 //static makes it impossible to be called from outside of this file by extern.!
 
 // Variables used by The Stepper Driver Interrupt
-static unsigned char out_bits;        // The next stepping-bits to be output
+static unsigned char out_bits = 0;        // The next stepping-bits to be output
 static unsigned int cleaning_buffer_counter;
 
 #ifdef Z_DUAL_ENDSTOPS
@@ -66,7 +67,7 @@ volatile static unsigned long step_events_completed; // The number of step event
 
 static long acceleration_time, deceleration_time;
 //static unsigned long accelerate_until, decelerate_after, acceleration_rate, initial_rate, final_rate, nominal_rate;
-static unsigned short acc_step_rate; // needed for deccelaration start point
+static unsigned short acc_step_rate; // needed for deceleration start point
 static char step_loops;
 static unsigned short OCR1A_nominal;
 static unsigned short step_loops_nominal;
@@ -74,10 +75,6 @@ static unsigned short step_loops_nominal;
 volatile long endstops_trigsteps[3] = { 0 };
 volatile long endstops_stepsTotal, endstops_stepsDone;
 static volatile char endstop_hit_bits = 0; // use X_MIN, Y_MIN, Z_MIN and Z_PROBE as BIT value
-
-#ifdef NPR2
-  static bool old_e_min_endstop = false;
-#endif
 
 #ifdef ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
   bool abort_on_endstop_hit = false;
@@ -110,6 +107,10 @@ static bool old_z_max_endstop = false;
 
 #ifdef Z_PROBE_ENDSTOP // No need to check for valid pin, SanityCheck.h already does this.
   static bool old_z_probe_endstop = false;
+#endif
+
+#ifdef NPR2
+  static bool old_e_min_endstop = false;
 #endif
 
 static bool check_endstops = true;
@@ -412,17 +413,18 @@ void set_stepper_direction() {
       NORM_E_DIR();
       count_direction[E_AXIS] = 1;
     }
-  #endif
+  #endif // !ADVANCE
 }
 
 // Initializes the trapezoid generator from the current block. Called whenever a new
 // block begins.
 FORCE_INLINE void trapezoid_generator_reset() {
 
-  // Set directions TO DO This should be done once during init of trapezoid. Endstops -> interrupt
-  out_bits = current_block->direction_bits;
-  set_stepper_direction();
-  
+  if (current_block->direction_bits != out_bits) {
+    out_bits = current_block->direction_bits;
+    set_stepper_direction();
+  }
+
   #ifdef ADVANCE
     advance = current_block->initial_advance;
     final_advance = current_block->final_advance;
@@ -557,8 +559,7 @@ ISR(TIMER1_COMPA_vect) {
       #ifdef COREXY
         }
       #endif
-
-      if (TEST(out_bits, Z_AXIS)) {  // -direction
+      if (TEST(out_bits, Z_AXIS)) { // z -direction
         #if HAS_Z_MIN
 
           #ifdef Z_DUAL_ENDSTOPS
@@ -601,8 +602,7 @@ ISR(TIMER1_COMPA_vect) {
           old_z_probe_endstop = z_probe_endstop;
         #endif
       }
-      else { // +direction
-
+      else { // z +direction
         #if HAS_Z_MAX
 
           #ifdef Z_DUAL_ENDSTOPS
@@ -992,12 +992,12 @@ void st_init() {
     #endif
   #endif
 
-#if (defined(Z_PROBE_PIN) && Z_PROBE_PIN >= 0) && defined(Z_PROBE_ENDSTOP) // Check for Z_PROBE_ENDSTOP so we don't pull a pin high unless it's to be used.
-  SET_INPUT(Z_PROBE_PIN);
-  #ifdef ENDSTOPPULLUP_ZPROBE
-    WRITE(Z_PROBE_PIN, HIGH);
+  #if (defined(Z_PROBE_PIN) && Z_PROBE_PIN >= 0) && defined(Z_PROBE_ENDSTOP) // Check for Z_PROBE_ENDSTOP so we don't pull a pin high unless it's to be used.
+    SET_INPUT(Z_PROBE_PIN);
+    #ifdef ENDSTOPPULLUP_ZPROBE
+      WRITE(Z_PROBE_PIN, HIGH);
+    #endif
   #endif
-#endif
 
   #define _STEP_INIT(AXIS) AXIS ##_STEP_INIT
   #define _WRITE_STEP(AXIS, HIGHLOW) AXIS ##_STEP_WRITE(HIGHLOW)
@@ -1076,6 +1076,8 @@ void st_init() {
 
   enable_endstops(true); // Start with endstops active. After homing they can be disabled
   sei();
+  
+  set_stepper_direction(); // Init directions to out_bits = 0
 }
 
 
@@ -1111,10 +1113,13 @@ long st_get_position(uint8_t axis) {
   return count_pos;
 }
 
-float st_get_position_mm(uint8_t axis) {
-  float steper_position_in_steps = st_get_position(axis);
-  return steper_position_in_steps / axis_steps_per_unit[axis];
-}
+#ifdef ENABLE_AUTO_BED_LEVELING
+
+  float st_get_position_mm(AxisEnum axis) {
+    return st_get_position(axis) / axis_steps_per_unit[axis];
+  }
+
+#endif  // ENABLE_AUTO_BED_LEVELING
 
 void finishAndDisableSteppers() {
   st_synchronize();
