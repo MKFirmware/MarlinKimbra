@@ -2427,7 +2427,7 @@ static void setup_for_endstop_move() {
 
       if (retract_zlift > 0.01) {
         current_position[Z_AXIS] -= retract_zlift;
-        #ifdef DELTA
+        #if defined(DELTA) || defined(SCARA)
           sync_plan_position_delta();
         #else
           sync_plan_position();
@@ -2439,7 +2439,7 @@ static void setup_for_endstop_move() {
 
       if (retract_zlift > 0.01) {
         current_position[Z_AXIS] += retract_zlift;
-        #ifdef DELTA
+        #if defined(DELTA) || defined(SCARA)
           sync_plan_position_delta();
         #else
           sync_plan_position();
@@ -3192,7 +3192,7 @@ inline void gcode_G28(boolean home_x = false, boolean home_y = false) {
 
     sync_plan_position();
 
-  #endif // else DELTA
+  #endif // !DELTA
 
   #ifdef SCARA
     sync_plan_position_delta();
@@ -5455,7 +5455,11 @@ inline void gcode_M428() {
   if (!err) {
     memcpy(current_position, new_pos, sizeof(new_pos));
     memcpy(home_offset, new_offs, sizeof(new_offs));
-    sync_plan_position();
+    #if defined(DELTA) || defined(SCARA)
+      sync_plan_position_delta()
+    #else
+      sync_plan_position();
+    #endif
     ECHO_LM(DB, "Offset applied.");
     LCD_ALERTMESSAGEPGM("Offset applied.");
     #if HAS_LCD_BUZZ
@@ -5637,8 +5641,7 @@ inline void gcode_M503() {
       plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver); //move xyz back
       plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], lastpos[E_AXIS], feedrate/60, active_extruder, active_driver); //final unretract
       for (int8_t i = 0; i < NUM_AXIS; i++) current_position[i] = lastpos[i];
-      calculate_delta(current_position);
-      plan_set_position(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS]);
+      sync_plan_position_delta();
     #else
       plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver); //move xy back
       plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver); //move z back
@@ -6092,11 +6095,11 @@ inline void gcode_T() {
           #endif // end MKR4 || NPR2
         #endif // end no DUAL_X_CARRIAGE
 
-        #ifdef DELTA 
+        #if defined(DELTA) || defined(SCARA)
           sync_plan_position_delta();
         #else // NO DELTA
           sync_plan_position();
-        #endif // DELTA
+        #endif // !DELTA
         // Move to the old position if 'F' was in the parameters
         if (make_move && IsRunning()) prepare_move();
       }
