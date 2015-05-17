@@ -1076,7 +1076,7 @@ void st_init() {
 
   enable_endstops(true); // Start with endstops active. After homing they can be disabled
   sei();
-  
+
   set_stepper_direction(); // Init directions to out_bits = 0
 }
 

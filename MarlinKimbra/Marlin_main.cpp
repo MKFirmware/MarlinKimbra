@@ -3667,7 +3667,11 @@ inline void gcode_G92() {
         didXYZ = true;
     }
   }
-  if (didXYZ) sync_plan_position();
+  #if defined(DELTA) || defined(SCARA)
+    if (didXYZ) sync_plan_position_delta();
+  #else
+    if (didXYZ) sync_plan_position();
+  #endif
 }
 
 #ifdef ULTIPANEL
