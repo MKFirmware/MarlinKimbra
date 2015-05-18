@@ -5456,7 +5456,7 @@ inline void gcode_M428() {
     memcpy(current_position, new_pos, sizeof(new_pos));
     memcpy(home_offset, new_offs, sizeof(new_offs));
     #if defined(DELTA) || defined(SCARA)
-      sync_plan_position_delta()
+      sync_plan_position_delta();
     #else
       sync_plan_position();
     #endif
