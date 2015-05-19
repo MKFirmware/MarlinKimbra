@@ -21,7 +21,6 @@
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
 // build by the user have been successfully uploaded into firmware.
 #define STRING_VERSION "4.1.3"
-#define STRING_URL "reprap.org"
 #define STRING_VERSION_CONFIG_H __DATE__ " " __TIME__     // build date and time
 #define STRING_CONFIG_H_AUTHOR "(none, default config)"   // Who made the changes.
 #define STRING_SPLASH_LINE1 "v" STRING_VERSION            // will be shown during bootup in line 1
@@ -222,6 +221,7 @@
 #define PID_FUNCTIONAL_RANGE 10 // degC
 #define PID_INTEGRAL_DRIVE_MAX PID_MAX // Limit for the integral term
 #define K1 0.95 // Smoothing factor within the PID
+#define MAX_OVERSHOOT_PID_AUTOTUNE 20   // Max valor for overshoot autotune
 
 //             HotEnd{HE0,HE1,HE2,HE3}
 #define DEFAULT_Kp {40, 40, 40, 40}     // Kp for E0, E1, E2, E3

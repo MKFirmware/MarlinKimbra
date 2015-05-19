@@ -3667,11 +3667,13 @@ inline void gcode_G92() {
         didXYZ = true;
     }
   }
-  #if defined(DELTA) || defined(SCARA)
-    if (didXYZ) sync_plan_position_delta();
-  #else
-    if (didXYZ) sync_plan_position();
-  #endif
+  if (didXYZ) {
+    #if defined(DELTA) || defined(SCARA)
+      sync_plan_position_delta();
+    #else
+      sync_plan_position();
+    #endif
+  }
 }
 
 #ifdef ULTIPANEL
@@ -5961,7 +5963,7 @@ inline void gcode_T() {
         #else // !DUAL_X_CARRIAGE
           // Offset hotend (only by XY)
           #if HOTENDS > 1
-            for (int i=X_AXIS; i<=Y_AXIS; i++)
+            for (int i = X_AXIS; i <= Y_AXIS; i++)
               current_position[i] += hotend_offset[i][target_extruder] - hotend_offset[i][active_extruder];
           #endif // HOTENDS > 1
 
@@ -6409,7 +6411,10 @@ void process_next_command() {
       #endif // PREVENT_DANGEROUS_EXTRUDE
 
       case 303: // M303 PID autotune
-        gcode_M303(); break;
+        gcode_M303();
+        gcode_LastN += 1;
+        FlushSerialRequestResend();
+        break;
 
       #ifdef PIDTEMPBED
         case 304: // M304

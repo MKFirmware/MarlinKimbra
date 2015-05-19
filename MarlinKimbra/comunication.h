@@ -39,15 +39,15 @@
   #endif
 #endif
 
-#define START       "start"                //start for host
-#define OK          "ok"                   //ok answer for host
-#define ER          "Error:"               //error for host
-#define WT          "wait"                 //wait for host
-#define DB          "<MK4>: "              //message for user
-#define RS          "Resend:"              //resend for host
-#define PAUSE       "//action:pause"       //command for host that support action
-#define RESUME      "//action:resume"      //command for host that support action
-#define DISCONNECT  "//action:disconnect"  //command for host that support action
+#define START       "start"               //start for host
+#define OK          "ok"                  //ok answer for host
+#define ER          "Error: "             //error for host
+#define WT          "wait"                //wait for host
+#define DB          "MK4: "               //message for user
+#define RS          "Resend: "            //resend for host
+#define PAUSE       "//action:pause"      //command for host that support action
+#define RESUME      "//action:resume"     //command for host that support action
+#define DISCONNECT  "//action:disconnect" //command for host that support action
 
 #define SERIAL_INIT(baud) MYSERIAL.begin(baud), delay(1)
 #define SERIAL_WRITE(x) MYSERIAL.write(x)

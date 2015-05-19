@@ -55,9 +55,9 @@ float current_temperature_bed = 0.0;
 #endif
 
 #ifdef PIDTEMPBED
-  float bedKp=DEFAULT_bedKp;
-  float bedKi=(DEFAULT_bedKi*PID_dT);
-  float bedKd=(DEFAULT_bedKd/PID_dT);
+  float bedKp = DEFAULT_bedKp;
+  float bedKi = (DEFAULT_bedKi*PID_dT);
+  float bedKd = (DEFAULT_bedKd/PID_dT);
 #endif //PIDTEMPBED
   
 #ifdef FAN_SOFT_PWM
@@ -181,8 +181,7 @@ static void updateTemperaturesFromRawValues();
 //================================ Functions ================================
 //===========================================================================
 
-void PID_autotune(float temp, int hotend, int ncycles)
-{
+void PID_autotune(float temp, int hotend, int ncycles) {
   float input = 0.0;
   int cycles = 0;
   bool heating = true;
@@ -300,7 +299,7 @@ void PID_autotune(float temp, int hotend, int ncycles)
         }
       }
     }
-    if (input > temp + 20) {
+    if (input > temp + MAX_OVERSHOOT_PID_AUTOTUNE) {
       ECHO_LM(ER, MSG_PID_TEMP_TOO_HIGH);
       return;
     }
@@ -315,7 +314,7 @@ void PID_autotune(float temp, int hotend, int ncycles)
       }
       else {
         p = soft_pwm[hotend];
-        ECHO_SMV(OK, MSG_T, input);
+        ECHO_SMV(OK, MSG_T, input, 1);
         ECHO_EMV(MSG_AT, p);
       }
 
