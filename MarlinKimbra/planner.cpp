@@ -1011,7 +1011,6 @@ float junction_deviation = 0.1;
 
 #ifdef ENABLE_AUTO_BED_LEVELING
   void plan_set_position(float x, float y, float z, const float &e)
-    apply_rotation_xyz(plan_bed_level_matrix, x, y, z);
 #else
   void plan_set_position(const float &x, const float &y, const float &z, const float &e)
 #endif // ENABLE_AUTO_BED_LEVELING

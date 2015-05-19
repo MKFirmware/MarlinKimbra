@@ -40,7 +40,7 @@
 
 // Z-Probe variables
 // Start and end location values are used to deploy/retract the probe (will move from start to end and back again)
-#define PROBING_FEEDRATE 500                          // Speed for individual probe Use: G30 A F600
+#define PROBING_FEEDRATE 1000                         // Speed for individual probe Use: G30 A F600
 #define Z_PROBE_OFFSET {0, 0, -1, 0}                  // X, Y, Z, E distance between hotend nozzle and deployed bed leveling probe.
 #define Z_PROBE_DEPLOY_START_LOCATION {0, 0, 30, 0}   // X, Y, Z, E start location for z-probe deployment sequence
 #define Z_PROBE_DEPLOY_END_LOCATION {0, 0, 30, 0}     // X, Y, Z, E end location for z-probe deployment sequence
