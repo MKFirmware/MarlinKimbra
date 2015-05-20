@@ -259,7 +259,6 @@ extern float zprobe_zoffset;
 
 // Lifetime stats
 extern unsigned long printer_usage_seconds;  //this can old about 136 year before go overflow. If you belive that you can live more than this please contact me.
-extern millis_t config_last_update;
 
 #ifdef PREVENT_DANGEROUS_EXTRUDE
   extern float extrude_min_temp;
@@ -310,6 +309,11 @@ extern int fanSpeed;
 
 #ifdef LASERBEAM
   extern int laser_ttl_modulation;
+#endif
+
+#if defined(SDSUPPORT) && defined(SD_SETTINGS)
+  extern millis_t config_last_update;
+  extern bool config_readed;
 #endif
 
 extern millis_t print_job_start_ms;

@@ -150,7 +150,7 @@ void CardReader::initsd() {
   }
   else {
     cardOK = true;
-    ECHO_LM(DB, MSG_SD_CARD_OK);
+    ECHO_LM(OK, MSG_SD_CARD_OK);
   }
   workDir = root;
   curDir = &root;

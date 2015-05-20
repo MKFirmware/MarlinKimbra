@@ -779,6 +779,7 @@ static float analog2tempBed(int raw) {
 static void updateTemperaturesFromRawValues() {
   static millis_t last_update = millis();
   millis_t temp_last_update = millis();
+  millis_t from_last_update = temp_last_update - last_update;
   #ifdef HEATER_0_USES_MAX6675
     current_temperature_raw[0] = read_max6675();
   #endif
@@ -793,7 +794,6 @@ static void updateTemperaturesFromRawValues() {
     filament_width_meas = analog2widthFil();
   #endif
   #if HAS_POWER_CONSUMPTION_SENSOR
-    millis_t from_last_update = temp_last_update - last_update;
     static float watt_overflow = 0.0;
     power_consumption_meas = analog2power();
     //MYSERIAL.println(analog2current(),3);
@@ -804,7 +804,16 @@ static void updateTemperaturesFromRawValues() {
     }
   #endif
 
-  //Reset the watchdog after we know we have a temperature measurement.
+  // Update printer usage
+  static unsigned int second_overflow = 0;
+  second_overflow += from_last_update;
+  if (second_overflow >= 1000) {
+    printer_usage_seconds++;
+    second_overflow -= 1000;
+  }
+  last_update = temp_last_update;
+
+  // Reset the watchdog after we know we have a temperature measurement.
   watchdog_reset();
 
   CRITICAL_SECTION_START;
@@ -818,7 +827,7 @@ static void updateTemperaturesFromRawValues() {
   // Convert raw Filament Width to millimeters
   float analog2widthFil() {
     return current_raw_filwidth / 16383.0 * 5.0;
-    //return current_raw_filwidth;
+    // return current_raw_filwidth;
   }
 
   // Convert raw Filament Width to a ratio
@@ -849,7 +858,7 @@ static void updateTemperaturesFromRawValues() {
  */
 void tp_init() {
   #if MB(RUMBA) && ((TEMP_SENSOR_0==-1)||(TEMP_SENSOR_1==-1)||(TEMP_SENSOR_2==-1)||(TEMP_SENSOR_BED==-1))
-    //disable RUMBA JTAG in case the thermocouple extension is plugged on top of JTAG connector
+    // disable RUMBA JTAG in case the thermocouple extension is plugged on top of JTAG connector
     MCUCR=BIT(JTD);
     MCUCR=BIT(JTD);
   #endif
@@ -865,7 +874,7 @@ void tp_init() {
     #ifdef PIDTEMPBED
       temp_iState_min_bed = 0.0;
       temp_iState_max_bed = PID_INTEGRAL_DRIVE_MAX / bedKi;
-    #endif //PIDTEMPBED
+    #endif // PIDTEMPBED
   }
 
   #if HAS_HEATER_0
@@ -906,7 +915,7 @@ void tp_init() {
 
     OUT_WRITE(MAX6675_SS,HIGH);
 
-  #endif //HEATER_0_USES_MAX6675
+  #endif // HEATER_0_USES_MAX6675
 
 #ifdef __SAM3X8E__
   // Use timer0 for temperature measurement
@@ -1025,7 +1034,7 @@ void tp_init() {
         bed_maxttemp_raw += OVERSAMPLENR;
       #endif
     }
-  #endif //BED_MAXTEMP
+  #endif // BED_MAXTEMP
 }
 
 #ifdef THERMAL_PROTECTION_HOTENDS
@@ -1169,8 +1178,8 @@ void disable_all_heaters() {
     WRITE(MAX6675_SS, 0);
 
     // ensure 100ns delay - a bit extra is fine
-    asm("nop");//50ns on 20Mhz, 62.5ns on 16Mhz
-    asm("nop");//50ns on 20Mhz, 62.5ns on 16Mhz
+    asm("nop");// 50ns on 20Mhz, 62.5ns on 16Mhz
+    asm("nop");// 50ns on 20Mhz, 62.5ns on 16Mhz
 
     // read MSB
     SPDR = 0;
@@ -1197,7 +1206,7 @@ void disable_all_heaters() {
     return max6675_temp;
   }
 
-#endif //HEATER_0_USES_MAX6675
+#endif // HEATER_0_USES_MAX6675
 
 /**
  * Stages in the ISR loop
@@ -1429,7 +1438,7 @@ ISR(TIMER0_COMPB_vect) {
         WRITE_FAN(soft_pwm_fan > 0 ? 1 : 0);
       }
       if (soft_pwm_fan < pwm_count) WRITE_FAN(0);
-    #endif //FAN_SOFT_PWM
+    #endif // FAN_SOFT_PWM
 
     pwm_count += BIT(SOFT_PWM_SCALE);
     pwm_count &= 0x7f;

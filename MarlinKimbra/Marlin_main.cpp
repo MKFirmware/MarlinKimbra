@@ -282,6 +282,8 @@ static uint8_t target_extruder;
 bool no_wait_for_cooling = true;
 bool target_direction;
 
+unsigned long printer_usage_seconds;
+
 #ifndef DELTA
   int xy_travel_speed = XY_TRAVEL_SPEED;
   float zprobe_zoffset = 0;
@@ -421,6 +423,10 @@ bool target_direction;
 
 #ifdef SDSUPPORT
   static bool fromsd[BUFSIZE];
+  #ifdef SD_SETTINGS
+    millis_t config_last_update = 0;
+    bool config_readed = false;
+  #endif
 #endif
 
 #ifdef FILAMENTCHANGEENABLE
@@ -499,7 +505,7 @@ bool setTargetedHotend(int code);
       return free_memory;
     }
   }
-#endif //!SDSUPPORT
+#endif // !SDSUPPORT
 #endif
 
 /**
@@ -704,6 +710,9 @@ void setup() {
   #ifdef SDSUPPORT
     for (int8_t i = 0; i < BUFSIZE; i++) fromsd[i] = false;
   #endif
+
+  // loads custom configuration from SDCARD if available else uses defaults
+  ConfigSD_RetrieveSettings();
 
   // loads data from EEPROM if available else uses defaults (and resets step acceleration rate)
   Config_RetrieveSettings();
@@ -7043,6 +7052,18 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
         else if((millis() - axis_last_activity) >  IDLE_OOZING_SECONDS*1000UL) {
           IDLE_OOZING_retract(true);
         }
+      }
+    }
+  #endif
+
+  #if defined(SDSUPPORT) && defined(SD_SETTINGS)
+    if(IS_SD_INSERTED && !IS_SD_PRINTING) {
+      if (!config_readed) {
+        ConfigSD_RetrieveSettings(true);
+        ConfigSD_StoreSettings();
+      }
+      else if((millis() - config_last_update) >  SD_CFG_SECONDS * 1000UL) {
+        ConfigSD_StoreSettings();
       }
     }
   #endif
