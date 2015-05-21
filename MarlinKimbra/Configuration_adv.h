@@ -230,6 +230,9 @@
 // Default stepper release if idle. Set to 0 to deactivate.
 #define DEFAULT_STEPPER_DEACTIVE_TIME 60
 
+// Default step delay for any driver
+//#define STEPPER_HIGH_LOW_DELAY 1  // Delay in microseconds
+
 #define DEFAULT_MINIMUMFEEDRATE       0.0     // minimum feedrate
 #define DEFAULT_MINTRAVELFEEDRATE     0.0
 
@@ -360,7 +363,7 @@
 #define MM_PER_ARC_SEGMENT 1
 #define N_ARC_CORRECTION 25
 
-const unsigned int dropsegments=5; //everything with less than this number of steps will be ignored as move and joined with the next movement
+const unsigned int dropsegments = 5; // everything with less than this number of steps will be ignored as move and joined with the next movement
 
 // Control heater 0 and heater 1 in parallel.
 //#define HEATERS_PARALLEL

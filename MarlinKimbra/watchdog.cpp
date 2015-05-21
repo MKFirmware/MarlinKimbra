@@ -39,17 +39,13 @@ void watchdog_reset()
 //=================================== ISR ===================================
 //===========================================================================
 
-//Watchdog timer interrupt, called if main program blocks >1sec and manual reset is enabled.
+// Watchdog timer interrupt, called if main program blocks >1sec and manual reset is enabled.
 #ifdef WATCHDOG_RESET_MANUAL
-ISR(WDT_vect)
-{ 
-    //TODO: This message gets overwritten by the kill() call
-    LCD_ALERTMESSAGEPGM("ERR:Please Reset");//16 characters so it fits on a 16x2 display
-    lcd_update();
-    ECHO_LM(ER, MSG_WATCHDOG_RESET);
-    kill(); //kill blocks
-    while(1); //wait for user or serial reset
+ISR(WDT_vect) { 
+  ECHO_LM(ER, MSG_WATCHDOG_RESET);
+  kill(PSTR("ERR:Please Reset")); // kill blocks //16 characters so it fits on a 16x2 display
+  while(1); // wait for user or serial reset
 }
-#endif//RESET_MANUAL
+#endif // RESET_MANUAL
 
-#endif//USE_WATCHDOG
+#endif // USE_WATCHDOG

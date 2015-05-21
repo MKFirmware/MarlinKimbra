@@ -924,7 +924,7 @@ void get_command() {
       }
 
       // If command was e-stop process now
-      if (strcmp(command, "M112") == 0) kill();
+      if (strcmp(command, "M112") == 0) kill(PSTR(MSG_KILLED));
 
       cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
       commands_in_queue += 1;
@@ -4488,9 +4488,7 @@ inline void gcode_M111() {
 /**
  * M112: Emergency Stop
  */
-inline void gcode_M112() {
-  kill();
-}
+inline void gcode_M112() { kill(PSTR(MSG_KILLED)); }
 
 /**
  * M114: Output current position to serial port
@@ -6918,7 +6916,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
 
   millis_t ms = millis();
 
-  if (max_inactive_time && ms > previous_cmd_ms + max_inactive_time) kill();
+  if (max_inactive_time && ms > previous_cmd_ms + max_inactive_time) kill(PSTR(MSG_KILLED));
 
   if (stepper_inactive_time && ms > previous_cmd_ms + stepper_inactive_time
       && !ignore_stepper_queue && !blocks_queued())
@@ -6946,7 +6944,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
     // Exceeded threshold and we can confirm that it was not accidental
     // KILL the machine
     // ----------------------------------------------------------------
-    if (killCount >= KILL_DELAY) kill();
+    if (killCount >= KILL_DELAY) kill(PSTR(MSG_KILLED));
   #endif
 
   #if HAS_HOME
@@ -7079,10 +7077,13 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
   check_axes_activity();
 }
 
-void kill() {
+void kill(const char *lcd_msg) {
+  #ifdef ULTRA_LCD
+    lcd_setalertstatuspgm(lcd_msg);
+  #endif
+
   cli(); // Stop interrupts
   disable_all_heaters();
-
   disable_all_steppers();
 
   #if HAS_POWER_SWITCH
@@ -7090,7 +7091,6 @@ void kill() {
   #endif
 
   ECHO_LM(ER, MSG_ERR_KILLED);
-  LCD_ALERTMESSAGEPGM(MSG_KILLED);
 
   // FMC small patch to update the LCD before ending
   sei();   // enable interrupts

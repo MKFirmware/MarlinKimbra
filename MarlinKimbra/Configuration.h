@@ -337,6 +337,11 @@
 //#define VIKI2
 //#define miniVIKI
 
+// This is a new controller currently under development.
+// https://github.com/eboston/Adafruit-ST7565-Full-Graphic-Controller/
+// ==> REMEMBER TO INSTALL U8glib to your ARDUINO library folder: http://code.google.com/p/u8glib/wiki/u8glib
+//#define ELB_FULL_GRAPHIC_CONTROLLER
+
 // The RepRapDiscount Smart Controller (white PCB)
 // http://reprap.org/wiki/RepRapDiscount_Smart_Controller
 //#define REPRAP_DISCOUNT_SMART_CONTROLLER
@@ -361,7 +366,10 @@
 // REMEMBER TO INSTALL LiquidCrystal_I2C.h in your ARDUINO library folder: https://github.com/kiyoshigawa/LiquidCrystal_I2C
 //#define RA_CONTROL_PANEL
 
-// I2C Panels
+/**
+ * I2C Panels
+ */
+
 //#define LCD_I2C_SAINSMART_YWROBOT
 
 // PANELOLU2 LCD with status LEDs, separate encoder and click inputs

@@ -649,6 +649,9 @@ ISR(TIMER1_COMPA_vect) {
         STEP_START(e,E);
       #endif
 
+      #ifdef STEPPER_HIGH_LOW_DELAY
+        delayMicroseconds(STEPPER_HIGH_LOW_DELAY);
+      #endif
 
       #define STEP_END(axis, AXIS) \
         if (_COUNTER(axis) > 0) { \

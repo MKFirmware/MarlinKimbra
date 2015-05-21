@@ -208,19 +208,29 @@ void CardReader::openFile(char* name, bool read, bool replace_current/*=true*/, 
     if (!replace_current) {
       if (file_subcall_ctr > SD_PROCEDURE_DEPTH - 1) {
         ECHO_LMV(ER, MSG_SD_MAX_DEPTH, SD_PROCEDURE_DEPTH);
-        kill();
+        kill(PSTR(MSG_KILLED));
         return;
       }
+
+      ECHO_SMV(DB, "SUBROUTINE CALL target:\"", name);
+      ECHO_M("\" parent:\"");
+
       //store current filename and position
       getAbsFilename(filenames[file_subcall_ctr]);
-     
+
+      ECHO_V(filenames[file_subcall_ctr]);
+      ECHO_EMV("\" pos", sdpos);
       filespos[file_subcall_ctr] = sdpos;
       file_subcall_ctr++;
     }
+    else {
+     ECHO_LMV(DB, "Now doing file: ", name);
+    }
     file.close();
   }
-  else { //opening fresh file
-    file_subcall_ctr = 0; //resetting procedure depth in case user cancels print while in procedure
+  else { // opening fresh file
+    file_subcall_ctr = 0; // resetting procedure depth in case user cancels print while in procedure
+    ECHO_LMV(DB, "Now fresh file: ", name);
   }
   sdprinting = false;
 
@@ -283,7 +293,7 @@ void CardReader::openFile(char* name, bool read, bool replace_current/*=true*/, 
       if(lcd_status) lcd_setstatus(fname);
     }
     else {
-      ECHO_LMV(ER, MSG_SD_OPEN_FILE_FAIL,fname);
+      ECHO_LMV(ER, MSG_SD_OPEN_FILE_FAIL, fname);
     }
   }
 }

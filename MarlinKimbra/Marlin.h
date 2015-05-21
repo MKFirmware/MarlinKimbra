@@ -170,7 +170,7 @@ extern float delta_tower3_x, delta_tower3_y;
   void calculate_SCARA_forward_Transform(float f_scara[3]);
 #endif
 void prepare_move();
-void kill();
+void kill(const char *);
 void Stop();
 
 #ifdef FILAMENT_RUNOUT_SENSOR
