@@ -221,6 +221,23 @@
 
   #define CONDITIONALS_H
 
+  /**
+   * SINGLENOZZLE
+   */
+  #ifdef SINGLENOZZLE
+    #define HOTENDS 1
+    #undef TEMP_SENSOR_1_AS_REDUNDANT
+  #else
+    #define HOTENDS EXTRUDERS
+  #endif
+
+  /**
+   * DRIVER_EXTRUDERS
+   */
+  #if !defined(MKR4) && !defined(NPR2)
+    #define DRIVER_EXTRUDERS EXTRUDERS // This defines the number of Driver extruder
+  #endif
+
   #ifndef __SAM3X8E__
     #ifndef AT90USB
       #define HardwareSerial_h // trick to disable the standard HWserial
@@ -278,23 +295,6 @@
   #ifdef FIRMWARE_TEST
     #undef BAUDRATE
     #define BAUDRATE 115200  // Baudrate setting to 115200 because serial monitor arduino function at max 115200 baudrate.
-  #endif
-
-  /**
-   * SINGLENOZZLE
-   */
-  #ifdef SINGLENOZZLE
-    #define HOTENDS 1
-    #undef TEMP_SENSOR_1_AS_REDUNDANT
-  #else
-    #define HOTENDS EXTRUDERS
-  #endif
-
-  /**
-   * DRIVER_EXTRUDERS
-   */
-  #if !defined(MKR4) && !defined(NPR2)
-    #define DRIVER_EXTRUDERS EXTRUDERS // This defines the number of Driver extruder
   #endif
 
   /**
