@@ -5663,20 +5663,16 @@ inline void gcode_M503() {
     plan_set_e_position(current_position[E_AXIS]);
 
     // HOME X & Y & Z(only Delta)
-    gcode_G28(true,true);
+    //gcode_G28(true,true); //Trovare un'altra soluzione
 
     #ifdef DELTA
       calculate_delta(lastpos);
-      plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver); //move xyz back
-      plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], lastpos[E_AXIS], feedrate/60, active_extruder, active_driver); //final unretract
-      for (int8_t i = 0; i < NUM_AXIS; i++) current_position[i] = lastpos[i];
-      sync_plan_position_delta();
+      plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], target[E_AXIS], fr60, active_extruder, active_driver); //move xyz back
+      plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], lastpos[E_AXIS], fr60, active_extruder, active_driver); //final unretract
     #else
-      plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], target[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver); //move xy back
-      plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], target[E_AXIS], feedrate/60, active_extruder, active_driver); //move z back
-      plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], lastpos[E_AXIS], feedrate/60, active_extruder, active_driver); //final unretract
-      for (int8_t i = 0; i < NUM_AXIS; i++) current_position[i] = lastpos[i];
-      sync_plan_position();
+      plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], target[Z_AXIS], target[E_AXIS], fr60, active_extruder, active_driver); //move xy back
+      plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], target[E_AXIS], fr60, active_extruder, active_driver); //move z back
+      plan_buffer_line(lastpos[X_AXIS], lastpos[Y_AXIS], lastpos[Z_AXIS], lastpos[E_AXIS], fr60, active_extruder, active_driver); //final unretract
     #endif
 
     #ifdef FILAMENT_RUNOUT_SENSOR
