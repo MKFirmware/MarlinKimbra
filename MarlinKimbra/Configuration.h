@@ -218,9 +218,9 @@
 //#define SLOW_PWM_HEATERS // PWM with very low frequency (roughly 0.125Hz=8s) and minimum state time of approximately 1s useful for heaters driven by a relay
 // If the temperature difference between the target temperature and the actual temperature
 // is more then PID_FUNCTIONAL_RANGE then the PID will be shut off and the heater will be set to min/max.
-#define PID_FUNCTIONAL_RANGE 10 // degC
-#define PID_INTEGRAL_DRIVE_MAX PID_MAX // Limit for the integral term
-#define K1 0.95 // Smoothing factor within the PID
+#define PID_FUNCTIONAL_RANGE 10         // degC
+#define PID_INTEGRAL_DRIVE_MAX PID_MAX  // Limit for the integral term
+#define K1 0.95                         // Smoothing factor within the PID
 #define MAX_OVERSHOOT_PID_AUTOTUNE 20   // Max valor for overshoot autotune
 
 //             HotEnd{HE0,HE1,HE2,HE3}
