@@ -3225,6 +3225,12 @@ inline void gcode_G28(boolean home_x = false, boolean home_y = false) {
 
 #ifdef ENABLE_AUTO_BED_LEVELING
 
+  void out_of_range_error(const char *edge) {
+    char msg[40];
+    sprintf_P(msg, PSTR("?Probe %s position out of range.\n"), edge);
+    ECHO_V(msg);
+  }
+
   /**
    * G29: Detailed Z-Probe, probes the bed at 3 or more points.
    *      Will fail if the printer has not been homed with G28.
@@ -3312,19 +3318,19 @@ inline void gcode_G28(boolean home_x = false, boolean home_y = false) {
 
       if (left_out || right_out || front_out || back_out) {
         if (left_out) {
-          ECHO_LM(ER, "?Probe (L)eft position out of range.\n");
+          out_of_range_error(PSTR("(L)eft"));
           left_probe_bed_position = left_out_l ? MIN_PROBE_X : right_probe_bed_position - MIN_PROBE_EDGE;
         }
         if (right_out) {
-          ECHO_LM(ER, "?Probe (R)ight position out of range.\n");
+          out_of_range_error(PSTR("(R)ight"));
           right_probe_bed_position = right_out_r ? MAX_PROBE_X : left_probe_bed_position + MIN_PROBE_EDGE;
         }
         if (front_out) {
-          ECHO_LM(ER, "?Probe (F)ront position out of range.\n");
+          out_of_range_error(PSTR("(F)ront"));
           front_probe_bed_position = front_out_f ? MIN_PROBE_Y : back_probe_bed_position - MIN_PROBE_EDGE;
         }
         if (back_out) {
-          ECHO_LM(ER, "?Probe (B)ack position out of range.\n");
+          out_of_range_error(PSTR("(B)ack"));
           back_probe_bed_position = back_out_b ? MAX_PROBE_Y : front_probe_bed_position + MIN_PROBE_EDGE;
         }
         return;
@@ -4075,7 +4081,7 @@ inline void gcode_M42() {
     if (code_seen('X') || code_seen('x')) {
       X_probe_location = code_value() - X_PROBE_OFFSET_FROM_EXTRUDER;
       if (X_probe_location < X_MIN_POS || X_probe_location > X_MAX_POS) {
-        ECHO_LM(ER, "?X position out of range.");
+        out_of_range_error(PSTR("X"));
         return;
       }
     }
@@ -4083,7 +4089,7 @@ inline void gcode_M42() {
     if (code_seen('Y') || code_seen('y')) {
       Y_probe_location = code_value() -  Y_PROBE_OFFSET_FROM_EXTRUDER;
       if (Y_probe_location < Y_MIN_POS || Y_probe_location > Y_MAX_POS) {
-        ECHO_LM(ER, "?Y position out of range.");
+        out_of_range_error(PSTR("Y"));
         return;
       }
     }

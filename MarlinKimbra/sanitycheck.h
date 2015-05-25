@@ -236,7 +236,7 @@
    */
   #if defined(DELTA) && defined(Z_PROBE_ENDSTOP)
     #ifndef Z_PROBE_PIN
-      #error You must have a Z_PROBE_PIN defined in your pins_XXXX.h file if you enable Z_PROBE_ENDSTOP
+      #error You must have a Z_PROBE_PIN defined in your pins2tool.h file if you enable Z_PROBE_ENDSTOP
     #endif
     #if Z_PROBE_PIN == -1
       #error You must set Z_PROBE_PIN to a valid pin if you enable Z_PROBE_ENDSTOP
