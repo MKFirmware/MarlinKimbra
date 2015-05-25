@@ -2002,19 +2002,19 @@
 #define ORIG_X_DIR_PIN          62
 #define ORIG_X_ENABLE_PIN       48
 #define X_MIN_PIN               22
-#define X_MAX_PIN                2
+#define X_MAX_PIN               30
 
 #define ORIG_Y_STEP_PIN         65
 #define ORIG_Y_DIR_PIN          64
 #define ORIG_Y_ENABLE_PIN       46
 #define Y_MIN_PIN               24
-#define Y_MAX_PIN               15
+#define Y_MAX_PIN               38
 
 #define ORIG_Z_STEP_PIN         67
 #define ORIG_Z_DIR_PIN          66
 #define ORIG_Z_ENABLE_PIN       44
 #define Z_MIN_PIN               26
-#define Z_MAX_PIN               -1
+#define Z_MAX_PIN               34
 
 #define ORIG_E0_STEP_PIN        36
 #define ORIG_E0_DIR_PIN         28
@@ -2049,11 +2049,11 @@
 #define HEATER_1_PIN            10
 #define HEATER_2_PIN            11
 
-#define TEMP_BED_PIN             0   // ANALOG NUMBERING
+#define TEMP_BED_PIN             7   // ANALOG NUMBERING
 
-#define TEMP_0_PIN               1   // ANALOG NUMBERING
-#define TEMP_1_PIN              -1   // 2    // ANALOG NUMBERING
-#define TEMP_2_PIN              -1   // 3     // ANALOG NUMBERING
+#define TEMP_0_PIN               6   // ANALOG NUMBERING
+#define TEMP_1_PIN               5   // 2    // ANALOG NUMBERING
+#define TEMP_2_PIN               4   // 3     // ANALOG NUMBERING
 
 #define TEMP_3_PIN              -1   // ANALOG NUMBERING
 #define TEMP_4_PIN              -1   // ANALOG NUMBERING

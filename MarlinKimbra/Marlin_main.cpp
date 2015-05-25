@@ -570,6 +570,7 @@ bool enqueuecommand(const char *cmd) {
     SET_OUTPUT(EXP_VOLTAGE_LEVEL_PIN);
     WRITE(EXP_VOLTAGE_LEVEL_PIN,UI_VOLTAGE_LEVEL);
     ExternalDac::begin(); //initialize ExternalDac
+    lcd_buzz(10,10);
   }
 #endif
 
@@ -2857,14 +2858,14 @@ inline void gcode_G4() {
  *  Z   Home to the Z endstop
  *
  */
-inline void gcode_G28(boolean home_x = false, boolean home_y = false) {
+inline void gcode_G28(boolean home_XY = false) {
 
   // Wait for planner moves to finish!
   st_synchronize();
 
   // For auto bed leveling, clear the level matrix
   #ifdef ENABLE_AUTO_BED_LEVELING
-    plan_bed_level_matrix.set_to_identity();
+    if (!home_XY) plan_bed_level_matrix.set_to_identity();
   #endif
 
   setup_for_endstop_move();
@@ -2873,10 +2874,10 @@ inline void gcode_G28(boolean home_x = false, boolean home_y = false) {
 
   feedrate = 0.0;
 
-  bool  homeX = code_seen(axis_codes[X_AXIS]) || home_x,
-        homeY = code_seen(axis_codes[Y_AXIS]) || home_y,
-        homeZ = code_seen(axis_codes[Z_AXIS]),
-        homeE = code_seen(axis_codes[E_AXIS]);
+  bool  homeX = code_seen(axis_codes[X_AXIS]) || home_XY,
+        homeY = code_seen(axis_codes[Y_AXIS]) || home_XY,
+        homeZ = code_seen(axis_codes[Z_AXIS]) && !home_XY,
+        homeE = code_seen(axis_codes[E_AXIS]) && !home_XY;
         
   home_all_axis = (!homeX && !homeY && !homeZ && !homeE) || (homeX && homeY && homeZ);
 
@@ -5547,7 +5548,7 @@ inline void gcode_M503() {
    * M600: Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
    */
   inline void gcode_M600() {
-    float target[NUM_AXIS], lastpos[NUM_AXIS], fr60 = feedrate / 60;
+    float target[NUM_AXIS], fr60 = feedrate / 60;
     filament_changing = true;
     for (int i=0; i < NUM_AXIS; i++)
       target[i] = lastpos[i] = current_position[i];
@@ -5622,10 +5623,7 @@ inline void gcode_M503() {
       if ((millis() - last_set > 60000) && cnt <= FILAMENTCHANGE_PRINTEROFF) beep = true;
       if (cnt >= FILAMENTCHANGE_PRINTEROFF && !sleep) {
         disable_all_heaters();
-        disable_x();
-        disable_y();
-        disable_z();
-        disable_e();
+        disable_all_steppers();
         sleep = true;
         lcd_reset_alert_level();
         LCD_ALERTMESSAGEPGM("Zzzz Zzzz Zzzz");
@@ -5644,8 +5642,8 @@ inline void gcode_M503() {
     lcd_reset_alert_level();
 
     if (sleep) {
-      for(int8_t e = 0; e < HOTENDS; e++)
-      {
+      enable_all_steppers(); // Enable all stepper
+      for(int8_t e = 0; e < HOTENDS; e++) {
         setTargetHotend(old_target_temperature[e], e);
         no_wait_for_cooling = true;
         wait_heater();
@@ -5668,8 +5666,12 @@ inline void gcode_M503() {
     current_position[E_AXIS] = target[E_AXIS]; //the long retract of L is compensated by manual filament feeding
     plan_set_e_position(current_position[E_AXIS]);
 
+    RUNPLAN; // should do nothing
+
+    lcd_reset_alert_level();
+
     // HOME X & Y & Z(only Delta)
-    //gcode_G28(true,true); //Trovare un'altra soluzione
+    //gcode_G28(true); Devo trovare un'altra soluzione
 
     #ifdef DELTA
       calculate_delta(lastpos);
