@@ -48,7 +48,7 @@ char lcd_status_message[3*LCD_WIDTH+1] = WELCOME_MSG; // worst case is kana with
 
 #ifdef DOGLCD
   #include "dogm_lcd_implementation.h"
-  #define LCD_Printpos(x, y) u8g.setPrintPos(x, y)
+  #define LCD_Printpos(x, y)  u8g.setPrintPos(LCD_PIXEL_WIDTH - DOG_CHAR_WIDTH * x, (y + 1) * DOG_CHAR_HEIGHT)
 #else
   #include "ultralcd_implementation_hitachi_HD44780.h"
   #define LCD_Printpos(x, y)  lcd.setCursor(x, y)
@@ -74,6 +74,8 @@ static void lcd_status_screen();
   static void lcd_control_temperature_preheat_gum_settings_menu();
   static void lcd_control_motion_menu();
   static void lcd_control_volumetric_menu();
+  static void config_lcd_level_bed();
+  static void lcd_level_bed();
   #ifdef HAS_LCD_CONTRAST
     static void lcd_set_contrast();
   #endif
@@ -279,7 +281,7 @@ float raw_Ki, raw_Kd;
 /**
  * General function to go directly to a menu
  */
-static void lcd_goto_menu(menuFunc_t menu, const bool feedback=false, const uint32_t encoder=0) {
+static void lcd_goto_menu(menuFunc_t menu, const bool feedback = false, const uint32_t encoder = 0) {
   if (currentMenu != menu) {
     currentMenu = menu;
     #ifdef NEWPANEL
@@ -709,7 +711,7 @@ void lcd_cooldown() {
   lcd_return_to_status();
 }
 
-void config_lcd_level_bed() {
+static void config_lcd_level_bed() {
 	setTargetHotend(0,0);
 
 	ECHO_EM("Leveling...");	
@@ -718,16 +720,16 @@ void config_lcd_level_bed() {
 	pageShowInfo = 0;
 }
 
-void lcd_level_bed() {
+static void lcd_level_bed() {
   if(ChangeScreen) {
-    lcd_implementation_clear;
+    lcd_implementation_clear();
     switch(pageShowInfo) {
       case 0:
         {
           LCD_Printpos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_INTRO));
           currentMenu = lcd_level_bed;
-          ChangeScreen=false;
+          ChangeScreen = false;
         }
       break;
       case 1:
@@ -735,31 +737,31 @@ void lcd_level_bed() {
           LCD_Printpos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_1));
           currentMenu = lcd_level_bed;
-          ChangeScreen=false;
+          ChangeScreen = false;
         }
       break;
       case 2:
         {
           LCD_Printpos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_2));
-              currentMenu = lcd_level_bed;
-           ChangeScreen=false;
+          currentMenu = lcd_level_bed;
+          ChangeScreen = false;
         }
       break;
       case 3:
-        {  
+        {
           LCD_Printpos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_3));
           currentMenu = lcd_level_bed;
-          ChangeScreen=false;
+          ChangeScreen = false;
         }
-      break;        
+      break;
       case 4:
         {
           LCD_Printpos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_4));
           currentMenu = lcd_level_bed;
-          ChangeScreen=false; 
+          ChangeScreen = false;
         }
       break;
       case 5:
@@ -767,20 +769,20 @@ void lcd_level_bed() {
           LCD_Printpos(0, 1);
           lcd_printPGM(PSTR(MSG_LP_5));
           currentMenu = lcd_level_bed;
-          ChangeScreen=false;
+          ChangeScreen = false;
         }
       break;
       case 6:
         {
           LCD_Printpos(2, 2);
           lcd_printPGM(PSTR(MSG_LP_6));
-          ChangeScreen=false;
+          ChangeScreen = false;
           delay(1200);
           encoderPosition = 0;
           lcd_implementation_clear();
           currentMenu = lcd_status_screen;
           lcd_status_screen();
-          pageShowInfo=0;
+          pageShowInfo = 0;
         }
       break;
     }
@@ -805,7 +807,14 @@ static void lcd_prepare_menu() {
   // Auto Home
   //
   MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
-  #ifndef DELTA
+
+  //
+  // Level Bed
+  //
+  #ifdef ENABLE_AUTO_BED_LEVELING
+    if (axis_known_position[X_AXIS] && axis_known_position[Y_AXIS])
+      MENU_ITEM(gcode, MSG_LEVEL_BED, PSTR("G29"));
+  #elif !defined(DELTA) && !defined(Z_SAFE_HOMING) && !defined(DOGLCD)
     MENU_ITEM(function, MSG_BED_SETTING, config_lcd_level_bed);
   #endif
 
@@ -824,16 +833,6 @@ static void lcd_prepare_menu() {
     else {
       WRITE(LASER_PWR_PIN, HIGH);
     }
-  #endif
-
-  //
-  // Level Bed
-  //
-  #ifdef ENABLE_AUTO_BED_LEVELING
-    if (axis_known_position[X_AXIS] && axis_known_position[Y_AXIS])
-      MENU_ITEM(gcode, MSG_LEVEL_BED, PSTR("G29"));
-  #elif !defined(DELTA)
-    MENU_ITEM(function, MSG_BED_SETTING, config_lcd_level_bed);
   #endif
 
   //

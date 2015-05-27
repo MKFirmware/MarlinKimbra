@@ -143,21 +143,24 @@
 #define MSG_BABYSTEP_Y                      "Babystep Y"
 #define MSG_BABYSTEP_Z                      "Babystep Z"
 #define MSG_ENDSTOP_ABORT                   "Endstop abort"
-#define MSG_END_DAY                         "days"
-#define MSG_END_HOUR                        "hours"
-#define MSG_END_MINUTE                      "minutes"
 #define MSG_HEATING_FAILED_LCD              "Heating failed"
 #define MSG_ERR_REDUNDANT_TEMP              "Err: REDUNDANT TEMP ERROR"
 #define MSG_THERMAL_RUNAWAY                 "THERMAL RUNAWAY"
 #define MSG_ERR_MAXTEMP                     "Err: MAXTEMP"
 #define MSG_ERR_MINTEMP                     "Err: MINTEMP"
 #define MSG_ERR_MAXTEMP_BED                 "Err: MAXTEMP BED"
+#define MSG_ERR_MINTEMP_BED                 "Err: MINTEMP BED"
+#define MSG_END_DAY                         "days"
+#define MSG_END_HOUR                        "hours"
+#define MSG_END_MINUTE                      "minutes"
 
+// Debug
 #define MSG_DEBUG_ECHO                      "DEBUG ECHO ENABLED"
 #define MSG_DEBUG_INFO                      "DEBUG INFO ENABLED"
 #define MSG_DEBUG_ERRORS                    "DEBUG ERRORS ENABLED"
 #define MSG_DEBUG_DRYRUN                    "DEBUG DRYRUN ENABLED"
 
+// Calibrate Delta
 #ifdef DELTA
   #define MSG_DELTA_CALIBRATE               "Delta Calibration"
   #define MSG_DELTA_CALIBRATE_X             "Calibrate X"
@@ -166,6 +169,7 @@
   #define MSG_DELTA_CALIBRATE_CENTER        "Calibrate Center"
 #endif // DELTA
 
+// Scara
 #ifdef SCARA
   #define MSG_XSCALE                        "X Scale"
   #define MSG_YSCALE                        "Y Scale"

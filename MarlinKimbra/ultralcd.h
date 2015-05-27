@@ -26,8 +26,6 @@
 
   void set_pageShowInfo(int value);
   void set_ChangeScreen(boolean state);
-  void config_lcd_level_bed(void);
-  void lcd_level_bed(void);
 
   #define LCD_MESSAGEPGM(x) lcd_setstatuspgm(PSTR(x))
   #define LCD_ALERTMESSAGEPGM(x) lcd_setalertstatuspgm(PSTR(x))

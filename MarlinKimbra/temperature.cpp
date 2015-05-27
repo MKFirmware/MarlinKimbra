@@ -143,7 +143,9 @@ static int minttemp_raw[HOTENDS] = ARRAY_BY_HOTENDS( HEATER_0_RAW_LO_TEMP , HEAT
 static int maxttemp_raw[HOTENDS] = ARRAY_BY_HOTENDS( HEATER_0_RAW_HI_TEMP , HEATER_1_RAW_HI_TEMP , HEATER_2_RAW_HI_TEMP, HEATER_3_RAW_HI_TEMP);
 static int minttemp[HOTENDS] = { 0 };
 static int maxttemp[HOTENDS] = ARRAY_BY_HOTENDS( 16383, 16383, 16383, 16383 );
-//static int bed_minttemp_raw = HEATER_BED_RAW_LO_TEMP; /* No bed mintemp error implemented?!? */
+#ifdef BED_MINTEMP
+static int bed_minttemp_raw = HEATER_BED_RAW_LO_TEMP;
+#endif
 #ifdef BED_MAXTEMP
   static int bed_maxttemp_raw = HEATER_BED_RAW_HI_TEMP;
 #endif
@@ -445,33 +447,32 @@ void checkExtruderAutoFans()
 // Temperature Error Handlers
 //
 inline void _temp_error(int e, const char *serial_msg, const char *lcd_msg) {
+  static bool killed = false;
   if (IsRunning()) {
     ECHO_S(ER);
-    if (e >= 0) ECHO_EV((int)e);
     PS_PGM(serial_msg);
-    ECHO_E;
+    ECHO_M(MSG_STOPPED_HEATER);
+    if (e >= 0) ECHO_EV((int)e); else ECHO_EM(MSG_HEATER_BED);
     #ifdef ULTRA_LCD
       lcd_setalertstatuspgm(lcd_msg);
     #endif
   }
   #ifndef BOGUS_TEMPERATURE_FAILSAFE_OVERRIDE
-    Stop();
+    if (!killed) {
+      Running = false;
+      killed = true;
+      kill(lcd_msg);
+    }
+    else
+      disable_all_heaters(); // paranoia
   #endif
 }
 
 void max_temp_error(uint8_t e) {
-  disable_all_heaters();
-  _temp_error(e, PSTR(MSG_MAXTEMP_EXTRUDER_OFF), PSTR(MSG_ERR_MAXTEMP));
+  _temp_error(e, PSTR(MSG_T_MAXTEMP), PSTR(MSG_ERR_MAXTEMP));
 }
 void min_temp_error(uint8_t e) {
-  disable_all_heaters();
-  _temp_error(e, PSTR(MSG_MINTEMP_EXTRUDER_OFF), PSTR(MSG_ERR_MINTEMP));
-}
-void bed_max_temp_error(void) {
-  #if HAS_HEATER_BED
-    WRITE_HEATER_BED(0);
-  #endif
-  _temp_error(-1, PSTR(MSG_MAXTEMP_BED_OFF), PSTR(MSG_ERR_MAXTEMP_BED));
+  _temp_error(e, PSTR(MSG_T_MINTEMP), PSTR(MSG_ERR_MINTEMP));
 }
 
 float get_pid_output(int e) {
@@ -514,12 +515,12 @@ float get_pid_output(int e) {
     #endif //PID_OPENLOOP
 
     #ifdef PID_DEBUG
-      ECHO_SMV(DB, " PID_DEBUG ", e);
-      ECHO_MV(": Input ", current_temperature[e]);
-      ECHO_MV(" Output ", pid_output);
-      ECHO_MV(" pTerm ", pTerm[e]);
-      ECHO_MV(" iTerm ", iTerm[e]);
-      ECHO_EMV(" dTerm ", dTerm[e]);
+      ECHO_SMV(DB, MSG_PID_DEBUG, e);
+      ECHO_MV(MSG_PID_DEBUG_INPUT, current_temperature[e]);
+      ECHO_MV(MSG_PID_DEBUG_OUTPUT, pid_output);
+      ECHO_MV(MSG_PID_DEBUG_PTERM, pTerm[e]);
+      ECHO_MV(MSG_PID_DEBUG_ITERM, iTerm[e]);
+      ECHO_EMV(MSG_PID_DEBUG_DTERM, dTerm[e]);
     #endif //PID_DEBUG
 
   #else /* PID off */
@@ -612,8 +613,7 @@ void manage_heater() {
         // Has it failed to increase enough?
         if (degHotend(e) < watch_target_temp[e]) {
           // Stop!
-          disable_all_heaters();
-          _temp_error(e, PSTR(MSG_HEATING_FAILED), PSTR(MSG_HEATING_FAILED_LCD));
+          _temp_error(e, PSTR(MSG_T_HEATING_FAILED), PSTR(MSG_HEATING_FAILED_LCD));
         }
         else {
           // Start again if the target is still far off
@@ -625,7 +625,6 @@ void manage_heater() {
 
     #ifdef TEMP_SENSOR_1_AS_REDUNDANT
       if (fabs(current_temperature[0] - redundant_temperature) > MAX_REDUNDANT_TEMP_SENSOR_DIFF) {
-        disable_all_heaters();
         _temp_error(0, PSTR(MSG_EXTRUDER_SWITCHED_OFF), PSTR(MSG_ERR_REDUNDANT_TEMP));
       }
     #endif
@@ -1101,15 +1100,7 @@ void tp_init() {
           *state = TRRunaway;
         break;
       case TRRunaway:
-        ECHO_SM(ER, MSG_THERMAL_RUNAWAY_STOP);
-        if (heater_id < 0) ECHO_EM(MSG_THERMAL_RUNAWAY_BED); else ECHO_EV(heater_id);
-        LCD_ALERTMESSAGEPGM(MSG_THERMAL_RUNAWAY);
-        disable_all_heaters();
-        disable_all_steppers();
-        for (;;) {
-          manage_heater();
-          lcd_update();
-        }
+        _temp_error(heater_id, PSTR(MSG_T_THERMAL_RUNAWAY), PSTR(MSG_THERMAL_RUNAWAY));
     }
   }
 
@@ -1651,10 +1642,8 @@ ISR(TIMER0_COMPB_vect) {
       #else
         #define GEBED >=
       #endif
-      if (current_temperature_bed_raw GEBED bed_maxttemp_raw) {
-        target_temperature_bed = 0;
-        bed_max_temp_error();
-      }
+      if (current_temperature_bed_raw GEBED bed_maxttemp_raw) _temp_error(-1, PSTR(MSG_T_MAXTEMP), PSTR(MSG_ERR_MAXTEMP_BED));
+      if (bed_minttemp_raw GEBED current_temperature_bed_raw) _temp_error(-1, PSTR(MSG_T_MINTEMP), PSTR(MSG_ERR_MINTEMP_BED));
     #endif
 
   } // temp_count >= OVERSAMPLENR

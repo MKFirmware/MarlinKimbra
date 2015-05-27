@@ -3977,7 +3977,7 @@ inline void gcode_M31() {
     inline void gcode_M33() {
       char *args = seen_pointer + 4;
       while (*args == ' ') ++args;
-      clear_asterisk(args);
+      //clear_asterisk(args);
       card.printLongPath(args);
     }
 
@@ -6351,6 +6351,7 @@ void process_next_command() {
 
       case 109: // M109 Wait for temperature
         gcode_M109(); break;
+      case 110: break; // M110: Set line number - don't show "unknown command"
       case 111: // M111 Set debug level
         gcode_M111(); break;
       case 112: //  M112 Emergency Stop

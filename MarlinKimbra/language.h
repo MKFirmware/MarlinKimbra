@@ -134,14 +134,15 @@
 #define MSG_Z2_MAX                          "z2_max: "
 #define MSG_Z_PROBE                         "z_probe: "
 #define MSG_E_MIN                           "e_min: "
+#define MSG_ERR_MATERIAL_INDEX              "M145 S<index> out of range (0-2)"
+#define MSG_ERR_M428_TOO_FAR                "Too far from reference point"
 #define MSG_M119_REPORT                     "Reporting endstop status"
 #define MSG_ENDSTOP_HIT                     "TRIGGERED"
 #define MSG_ENDSTOP_OPEN                    "NOT TRIGGERED"
 #define MSG_HOTEND_OFFSET                   "Hotend offsets:"
 #define MSG_EMPTY_PLANE                     "Autolevel can only be execute on an actual plane, make sure width and height are not 0!"
-#define MSG_ERR_MATERIAL_INDEX              "M145 S<index> out of range (0-2)"
+
 #define MSG_FILRUNOUT_PIN                   "filament_runout_pin: "
-#define MSG_ERR_M428_TOO_FAR                "Too far from reference point"
 
 #define MSG_SD_CANT_OPEN_SUBDIR             "Cannot open subdir"
 #define MSG_SD_INIT_FAIL                    "SD init fail"
@@ -206,28 +207,27 @@
 #define MSG_T                               " T:"
 #define MSG_AT                              " @:"
 #define MSG_PID_AUTOTUNE_FINISHED           MSG_PID_AUTOTUNE " finished! Put the last Kp, Ki and Kd constants from above into Configuration.h or send command M500 for save in EEPROM the new value!"
-
-#define MSG_HEATING_FAILED                  "Heating failed"
-#define MSG_THERMAL_RUNAWAY_STOP            "Thermal Runaway, system stopped! Heater_ID: "
-#define MSG_THERMAL_RUNAWAY_BED             "bed"
-#define MSG_TEMP_READ_ERROR                 "Temp measurement error!"
-#define MSG_TEMP_BED                        "bed"
-#define MSG_EXTRUDER_SWITCHED_OFF           "Extruder switched off. Temperature difference between temp sensors is too high !"
-
+#define MSG_PID_DEBUG                       " PID_DEBUG "
+#define MSG_PID_DEBUG_INPUT                 ": Input "
+#define MSG_PID_DEBUG_OUTPUT                " Output "
+#define MSG_PID_DEBUG_PTERM                 " pTerm "
+#define MSG_PID_DEBUG_ITERM                 " iTerm "
+#define MSG_PID_DEBUG_DTERM                 " dTerm "
 #define MSG_INVALID_EXTRUDER_NUM            " - Invalid extruder number !"
-#define MSG_SWITCHED_OFF_MAX                " switched off. MAXTEMP triggered !!"
-#define MSG_MINTEMP_EXTRUDER_OFF            ": Extruder switched off. MINTEMP triggered !"
-#define MSG_MAXTEMP_EXTRUDER_OFF            ": Extruder" MSG_SWITCHED_OFF_MAX
-#define MSG_MAXTEMP_BED_OFF                 "Heated bed" MSG_SWITCHED_OFF_MAX
+
+#define MSG_HEATER_BED                      "bed"
+#define MSG_STOPPED_HEATER                  ", system stopped! Heater_ID: "
+#define MSG_REDUNDANCY                      "Heater switched off. Temperature difference between temp sensors is too high !"
+#define MSG_T_HEATING_FAILED                "Heating failed"
+#define MSG_T_THERMAL_RUNAWAY               "Thermal Runaway"
+#define MSG_T_MAXTEMP                       "MAXTEMP triggered"
+#define MSG_T_MINTEMP                       "MINTEMP triggered"
 
 #define MSG_ENDSTOP_XS                      "X"
 #define MSG_ENDSTOP_YS                      "Y"
 #define MSG_ENDSTOP_ZS                      "Z"
 #define MSG_ENDSTOP_ZPS                     "ZP"
 #define MSG_ENDSTOP_ES                      "E"
-
-//watchdog.cpp
-#define MSG_WATCHDOG_RESET                  "Something is wrong, please turn off the printer."
 
 //other
 #define MSG_COMPILED                        "Compiled: "
@@ -238,7 +238,6 @@
 #define MSG_BED_LEVELLING_Z                 " Z: "
 
 // LCD Menu Messages
-
 #if !(defined( DISPLAY_CHARSET_HD44780_JAPAN ) || defined( DISPLAY_CHARSET_HD44780_WESTERN ) || defined( DISPLAY_CHARSET_HD44780_CYRILLIC ))
   #define DISPLAY_CHARSET_HD44780_JAPAN
 #endif
