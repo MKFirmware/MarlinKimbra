@@ -358,7 +358,7 @@ void updatePID() {
     }
   #endif
   #if ENABLED(PIDTEMPBED)
-    temp_iState_max_bed = PID_INTEGRAL_DRIVE_MAX / bedKi;
+    temp_iState_max_bed = PID_BED_INTEGRAL_DRIVE_MAX / bedKi;
   #endif
 }
 
@@ -872,7 +872,7 @@ void tp_init() {
     #endif //PIDTEMP
     #if ENABLED(PIDTEMPBED)
       temp_iState_min_bed = 0.0;
-      temp_iState_max_bed = PID_INTEGRAL_DRIVE_MAX / bedKi;
+      temp_iState_max_bed = PID_BED_INTEGRAL_DRIVE_MAX / bedKi;
     #endif // PIDTEMPBED
   }
 

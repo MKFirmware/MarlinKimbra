@@ -125,6 +125,7 @@
  *        syntax "M32 /path/filename#", or "M32 S<startpos bytes> !filename#"
  *        Call gcode file : "M32 P !filename#" and return to caller file after finishing (similar to #include).
  *        The '#' is necessary when calling from within sd files, as it stops buffer prereading
+ * M33  - Get the longname version of a path
  * M42  - Change pin status via gcode Use M42 Px Sy to set pin x to value y, when omitting Px the onboard led will be used.
  * M49  - Measure Z_Probe repeatability. M49 [P # of points] [X position] [Y position] [V_erboseness #] [E_ngage Probe] [L # of legs of travel]
  * M80  - Turn on Power Supply
@@ -6279,8 +6280,12 @@ void process_next_command() {
           gcode_M30(); break;
         case 32: // M32 - Select file and start SD print
           gcode_M32(); break;
-        case 33: // M33 - Long path
-          gcode_M33(); break;
+
+        #if ENABLED(LONG_FILENAME_HOST_SUPPORT)
+          case 33: // M33 - Get the long full path to a file or folder
+            gcode_M33(); break;
+        #endif // LONG_FILENAME_HOST_SUPPORT
+
         case 928: // M928 - Start SD write
           gcode_M928(); break;
 

@@ -30,7 +30,7 @@ public:
   void getStatus();
   void printingHasFinished();
 
-  #ifdef LONG_FILENAME_HOST_SUPPORT
+  #if ENABLED(LONG_FILENAME_HOST_SUPPORT)
     void printLongPath(char *path);
   #endif
 
