@@ -1,7 +1,7 @@
 #ifndef CARDREADER_H
 #define CARDREADER_H
 
-#ifdef SDSUPPORT
+#if ENABLED(SDSUPPORT)
 
 #define MAX_DIR_DEPTH 10          // Maximum folder depth
 
@@ -84,7 +84,7 @@ extern CardReader card;
 #define IS_SD_PRINTING (card.sdprinting)
 
 #if (SDCARDDETECT > -1)
-  #ifdef SDCARDDETECTINVERTED
+  #if ENABLED(SDCARDDETECTINVERTED)
     #define IS_SD_INSERTED (READ(SDCARDDETECT) != 0)
   #else
     #define IS_SD_INSERTED (READ(SDCARDDETECT) == 0)

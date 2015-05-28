@@ -104,14 +104,8 @@
 #define MSG_FILE_PRINTED                    "Done printing file"
 #define MSG_BEGIN_FILE_LIST                 "Begin file list"
 #define MSG_END_FILE_LIST                   "End file list"
-#define MSG_INVALID_EXTRUDER                "Invalid extruder"
+#define MSG_INVALID_EXTRUDER                " Invalid extruder "
 #define MSG_INVALID_SOLENOID                "Invalid solenoid"
-#define MSG_M104_INVALID_EXTRUDER           "M104 " MSG_INVALID_EXTRUDER " "
-#define MSG_M105_INVALID_EXTRUDER           "M105 " MSG_INVALID_EXTRUDER " "
-#define MSG_M109_INVALID_EXTRUDER           "M109 " MSG_INVALID_EXTRUDER " "
-#define MSG_M200_INVALID_EXTRUDER           "M200 " MSG_INVALID_EXTRUDER " "
-#define MSG_M218_INVALID_EXTRUDER           "M218 " MSG_INVALID_EXTRUDER " "
-#define MSG_M221_INVALID_EXTRUDER           "M221 " MSG_INVALID_EXTRUDER " "
 #define MSG_ERR_NO_THERMISTORS              "No thermistors - no temperature"
 #define MSG_HEATING                         "Heating..."
 #define MSG_HEATING_COMPLETE                "Heating done."
@@ -238,7 +232,7 @@
 #define MSG_BED_LEVELLING_Z                 " Z: "
 
 // LCD Menu Messages
-#if !(defined( DISPLAY_CHARSET_HD44780_JAPAN ) || defined( DISPLAY_CHARSET_HD44780_WESTERN ) || defined( DISPLAY_CHARSET_HD44780_CYRILLIC ))
+#if !(ENABLED(DISPLAY_CHARSET_HD44780_JAPAN) || ENABLED(DISPLAY_CHARSET_HD44780_WESTERN) || ENABLED(DISPLAY_CHARSET_HD44780_CYRILLIC))
   #define DISPLAY_CHARSET_HD44780_JAPAN
 #endif
 

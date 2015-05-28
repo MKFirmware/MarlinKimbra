@@ -5,7 +5,7 @@
 #include "temperature.h"
 #include "language.h"
 
-#ifdef SDSUPPORT
+#if ENABLED(SDSUPPORT)
 
 CardReader::CardReader() {
   filesize = 0;
@@ -20,6 +20,7 @@ CardReader::CardReader() {
 
   autostart_stilltocheck = true; //the SD start is delayed, because otherwise the serial cannot answer fast enough to make contact with the host software.
   autostart_index = 0;
+
   //power to SD reader
   #if SDPOWER > -1
     OUT_WRITE(SDPOWER, HIGH);
@@ -125,7 +126,7 @@ void CardReader::ls()  {
   lsDive("", root);
 }
 
-#ifdef LONG_FILENAME_HOST_SUPPORT
+#if ENABLED(LONG_FILENAME_HOST_SUPPORT)
 
   /**
    * Get a long pretty path based on a DOS 8.3 path
@@ -190,7 +191,7 @@ void CardReader::initsd() {
   cardOK = false;
   if (root.isOpen()) root.close();
 
-  #ifdef SDSLOW
+  #if ENABLED(SDSLOW)
     #define SPI_SPEED SPI_HALF_SPEED
   #else
     #define SPI_SPEED SPI_FULL_SPEED
@@ -448,7 +449,7 @@ void CardReader::checkautostart(bool force) {
     if (!cardOK) return; // fail
   }
 
-  char autoname[30];
+  char autoname[10];
   sprintf_P(autoname, PSTR("auto%i.g"), autostart_index);
   for (int8_t i = 0; i < (int8_t)strlen(autoname); i++) autoname[i] = tolower(autoname[i]);
 
@@ -460,7 +461,7 @@ void CardReader::checkautostart(bool force) {
   while (root.readDir(p, NULL) > 0) {
     for (int8_t i = 0; i < (int8_t)strlen((char*)p.name); i++) p.name[i] = tolower(p.name[i]);
     if (p.name[9] != '~' && strncmp((char*)p.name, autoname, 5) == 0) {
-      char cmd[30];
+      char cmd[4 + (FILENAME_LENGTH + 1) * MAX_DIR_DEPTH + 2];
       sprintf_P(cmd, PSTR("M23 %s"), autoname);
       enqueuecommand(cmd);
       enqueuecommands_P(PSTR("M24"));
@@ -607,22 +608,22 @@ void CardReader::chdir(const char * relpath) {
 
   if (workDir.isOpen()) parent = &workDir;
 
-  if (newfile.open(*parent, relpath, O_READ)) {
+  if (!newfile.open(*parent, relpath, O_READ)) {
+    ECHO_LMV(ER, MSG_SD_CANT_ENTER_SUBDIR, relpath);
+  }
+  else {
     if (workDirDepth < MAX_DIR_DEPTH) {
-      workDirDepth++;
+      ++workDirDepth;
       for (int d = workDirDepth; d--;) workDirParents[d + 1] = workDirParents[d];
       workDirParents[0] = *parent;
     }
     workDir = newfile;
   }
-  else {
-    ECHO_LMV(ER, MSG_SD_CANT_ENTER_SUBDIR, relpath);
-  }
 }
 
 void CardReader::updir() {
   if (workDirDepth > 0) {
-    workDirDepth--;
+    --workDirDepth;
     workDir = workDirParents[0];
     for (uint16_t d = 0; d < workDirDepth; d++)
       workDirParents[d] = workDirParents[d+1];

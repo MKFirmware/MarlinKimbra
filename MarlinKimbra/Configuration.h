@@ -1,20 +1,28 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
-// This configuration file contains basic settings. Select your:
-//  - board type
-//  - Mechanism type (cartesian-corexy-delta-scara)
-//  - temperature sensor type
-//
-// Mechanisms-settings can be found in configuration_xxxxxx.h
-// Advanced settings can be found in Configuration_adv.h
-
-
 #include "boards.h"
-// Choose your board type.
-// Either an numeric ID or name defined in boards.h is valid.
-// See: https://github.com/MagoKimbra/MarlinKimbra/blob/master/Documentation/Hardware.md
+#include "macros.h"
 
+//===========================================================================
+//============================= Getting Started =============================
+//===========================================================================
+
+/*
+ * This configuration file contains basic settings. Select your:
+ * - board type
+ * - Mechanism type (cartesian-corexy-delta-scara)
+ * - temperature sensor type
+ *
+ * Mechanisms-settings can be found in configuration_xxxxxx.h
+ * Advanced settings can be found in Configuration_adv.h
+ */
+
+/*
+ * Choose your board type.
+ * Either an numeric ID or name defined in boards.h is valid.
+ * See: https://github.com/MagoKimbra/MarlinKimbra/blob/master/Documentation/Hardware.md
+ */
 #define MOTHERBOARD BOARD_RAMPS_13_EFB
 
 // User-specified version info of this build to display in [Pronterface, etc] terminal window during
@@ -57,13 +65,13 @@
 /***********************************************************************\
  ********************** Do not touch this section **********************
  ***********************************************************************/
-#if defined(CARTESIAN)
+#if ENABLED(CARTESIAN)
   #include "Configuration_Cartesian.h"
-#elif defined(COREXY)
+#elif ENABLED(COREXY)
   #include "Configuration_Corexy.h"
-#elif defined(DELTA)
+#elif ENABLED(DELTA)
   #include "Configuration_Delta.h"
-#elif defined(SCARA)
+#elif ENABLED(SCARA)
   #include "Configuration_Scara.h"
 #endif
 /***********************************************************************/
@@ -594,7 +602,7 @@
 //#define FILAMENT_RUNOUT_SENSOR // Uncomment for defining a filament runout sensor such as a mechanical or opto endstop to check the existence of filament
                                  // It is assumed that when logic high = filament available
                                  //                    when logic  low = filament run out
-#ifdef FILAMENT_RUNOUT_SENSOR
+#if ENABLED(FILAMENT_RUNOUT_SENSOR)
   const bool FILRUNOUT_PIN_INVERTING = true;  // Should be uncommented and true or false should assigned
   #define ENDSTOPPULLUP_FIL_RUNOUT            // Uncomment to use internal pullup for filament runout pins if the sensor is defined.
   #define FILAMENT_RUNOUT_SCRIPT "M600"       // Script execute when filament run out

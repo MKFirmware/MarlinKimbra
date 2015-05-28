@@ -285,12 +285,12 @@ bool target_direction;
 
 unsigned long printer_usage_seconds;
 
-#ifndef DELTA
+#if DISABLED(DELTA)
   int xy_travel_speed = XY_TRAVEL_SPEED;
   float zprobe_zoffset = 0;
 #endif
 
-#if defined(Z_DUAL_ENDSTOPS) && !defined(DELTA)
+#if ENABLED(Z_DUAL_ENDSTOPS) && DISABLED(DELTA)
   float z_endstop_adj = 0;
 #endif
 
@@ -304,7 +304,7 @@ unsigned long printer_usage_seconds;
   float hotend_offset[NUM_HOTEND_OFFSETS][HOTENDS];
 #endif
 
-#ifdef NPR2
+#if ENABLED(NPR2)
   int old_color = 99;
 #endif
 
@@ -313,13 +313,12 @@ unsigned long printer_usage_seconds;
   int servo_endstop_angles[] = SERVO_ENDSTOP_ANGLES;
 #endif
 
-#ifdef BARICUDA
+#if ENABLED(BARICUDA)
   int ValvePressure = 0;
   int EtoPPressure = 0;
 #endif
 
-#ifdef FWRETRACT
-
+#if ENABLED(FWRETRACT)
   bool autoretract_enabled = false;
   bool retracted[EXTRUDERS] = { false };
   bool retracted_swap[EXTRUDERS] = { false };
@@ -331,10 +330,9 @@ unsigned long printer_usage_seconds;
   float retract_recover_length = RETRACT_RECOVER_LENGTH;
   float retract_recover_length_swap = RETRACT_RECOVER_LENGTH_SWAP;
   float retract_recover_feedrate = RETRACT_RECOVER_FEEDRATE;
-
 #endif // FWRETRACT
 
-#if defined(ULTIPANEL) && HAS_POWER_SWITCH
+#if ENABLED(ULTIPANEL) && HAS_POWER_SWITCH
   bool powersupply = 
     #ifdef PS_DEFAULT_OFF
       false
@@ -344,7 +342,7 @@ unsigned long printer_usage_seconds;
   ;
 #endif
 
-#ifdef DELTA
+#if ENABLED(DELTA)
   float delta[3] = { 0.0 };
   float tower_adj[6] = { 0, 0, 0, 0, 0, 0 };
   float delta_radius; // = DEFAULT_delta_radius;
@@ -377,8 +375,6 @@ unsigned long printer_usage_seconds;
   float z_probe_deploy_end_location[] = Z_PROBE_DEPLOY_END_LOCATION;
   float z_probe_retract_start_location[] = Z_PROBE_RETRACT_START_LOCATION;
   float z_probe_retract_end_location[] = Z_PROBE_RETRACT_END_LOCATION;
-  #define SIN_60 0.8660254037844386
-  #define COS_60 0.5
   float endstop_adj[3] = { 0 };
   static float bed_level[7][7] = {
       { 0, 0, 0, 0, 0, 0, 0 },
@@ -399,7 +395,7 @@ unsigned long printer_usage_seconds;
   static bool home_all_axis = true;
 #endif // DELTA
 
-#ifdef SCARA
+#if ENABLED(SCARA)
   float delta_segments_per_second = SCARA_SEGMENTS_PER_SECOND;
   static float delta[3] = { 0 };
   float axis_scaling[3] = { 1, 1, 1 };    // Build size scaling, default to 1
@@ -422,7 +418,7 @@ unsigned long printer_usage_seconds;
   bool printing = false;
 #endif
 
-#ifdef SDSUPPORT
+#if ENABLED(SDSUPPORT)
   static bool fromsd[BUFSIZE];
   #ifdef SD_SETTINGS
     millis_t config_last_update = 0;
@@ -430,16 +426,16 @@ unsigned long printer_usage_seconds;
   #endif
 #endif
 
-#ifdef FILAMENTCHANGEENABLE
+#if ENABLED(FILAMENTCHANGEENABLE)
 	bool filament_changing = false;
 #endif
 
-#if defined(IDLE_OOZING_PREVENT) || defined(EXTRUDER_RUNOUT_PREVENT)
+#if ENABLED(IDLE_OOZING_PREVENT) || ENABLED(EXTRUDER_RUNOUT_PREVENT)
   unsigned long axis_last_activity = 0;
   bool axis_is_moving = false;
 #endif
 
-#ifdef IDLE_OOZING_PREVENT
+#if  ENABLED(IDLE_OOZING_PREVENT)
   bool idleoozing_enabled = true;
   bool IDLE_OOZING_retracted[EXTRUDERS] = ARRAY_BY_EXTRUDERS(false, false, false, false);
 #endif
@@ -451,16 +447,16 @@ unsigned long printer_usage_seconds;
   unsigned long stoppower = 0;
 #endif
 
-#ifdef LASERBEAM
+#if ENABLED(LASERBEAM)
   int laser_ttl_modulation = 0;
 #endif
 
-#ifdef NPR2
-  static float color_position[] = COLOR_STEP;  //variabile per la scelta del colore
+#if ENABLED(NPR2)
+  static float color_position[] = COLOR_STEP;
   static float color_step_moltiplicator = (DRIVER_MICROSTEP / MOTOR_ANGLE) * CARTER_MOLTIPLICATOR;
 #endif // NPR2
 
-#ifdef EASY_LOAD
+#if ENABLED(EASY_LOAD)
   bool allow_lengthy_extrude_once; // for load/unload
 #endif
 
@@ -481,7 +477,7 @@ void process_next_command();
 
 bool setTargetedHotend(int code);
 
-#ifdef PREVENT_DANGEROUS_EXTRUDE
+#if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
   float extrude_min_temp = EXTRUDE_MINTEMP;
 #endif
 
@@ -709,7 +705,7 @@ void setup() {
   ECHO_SMV(DB, MSG_FREE_MEMORY, freeMemory());
   ECHO_EMV(MSG_PLANNER_BUFFER_BYTES, (int)sizeof(block_t)*BLOCK_BUFFER_SIZE);
 
-  #ifdef SDSUPPORT
+  #if ENABLED(SDSUPPORT)
     for (int8_t i = 0; i < BUFSIZE; i++) fromsd[i] = false;
   #endif
 
@@ -719,6 +715,9 @@ void setup() {
   // loads data from EEPROM if available else uses defaults (and resets step acceleration rate)
   Config_RetrieveSettings();
 
+  lcd_init();
+  _delay_ms(SPLASH_SCREEN_DURATION);  // wait to display the splash screen
+
   tp_init();    // Initialize temperature loop
   plan_init();  // Initialize planner;
   watchdog_init();
@@ -726,9 +725,6 @@ void setup() {
   setup_photpin();
   setup_laserbeampin();   // Initialize Laserbeam pin
   servo_init();
-
-  lcd_init();
-  _delay_ms(SPLASH_SCREEN_DURATION);  // wait to display the splash screen
 
   #if HAS_CONTROLLERFAN
     SET_OUTPUT(CONTROLLERFAN_PIN); //Set pin used for driver cooling fan
@@ -738,7 +734,7 @@ void setup() {
     digipot_i2c_init();
   #endif
 
-  #ifdef Z_PROBE_SLED
+  #if ENABLED(Z_PROBE_SLED)
     OUT_WRITE(SERVO0_PIN, LOW); // turn it off
   #endif // Z_PROBE_SLED
 
@@ -754,7 +750,7 @@ void setup() {
     digitalWrite(STAT_LED_BLUE, LOW); // turn it off
   #endif
 
-  #ifdef FIRMWARE_TEST
+  #if ENABLED(FIRMWARE_TEST)
     FirmwareTest();
   #endif // FIRMWARE_TEST
 }
@@ -772,13 +768,13 @@ void setup() {
 void loop() {
   if (commands_in_queue < BUFSIZE - 1) get_command();
 
-  #ifdef SDSUPPORT
+  #if ENABLED(SDSUPPORT)
     card.checkautostart(false);
   #endif
 
   if (commands_in_queue) {
 
-    #ifdef SDSUPPORT
+    #if ENABLED(SDSUPPORT)
 
       if (card.saving) {
         char *command = command_queue[cmd_queue_index_r];
@@ -808,11 +804,8 @@ void loop() {
     commands_in_queue--;
     cmd_queue_index_r = (cmd_queue_index_r + 1) % BUFSIZE;
   }
-  // Check heater every n milliseconds
-  manage_heater();
-  manage_inactivity();
   checkHitEndstops();
-  lcd_update();
+  idle();
 }
 
 void gcode_line_error(const char *err, bool doFlush = true) {
@@ -834,7 +827,7 @@ void get_command() {
 
   if (drain_queued_commands_P()) return; // priority is given to non-serial commands
 
-  #ifdef NO_TIMEOUTS
+  #if ENABLED(NO_TIMEOUTS)
     static millis_t last_command_time = 0;
     millis_t ms = millis();
 
@@ -849,7 +842,7 @@ void get_command() {
   //
   while (MYSERIAL.available() > 0 && commands_in_queue < BUFSIZE) {
 
-    #ifdef NO_TIMEOUTS
+    #if ENABLED(NO_TIMEOUTS)
       last_command_time = ms;
     #endif
 
@@ -869,7 +862,7 @@ void get_command() {
       command[serial_count] = 0; // terminate string
 
       // this item in the queue is not from sd
-      #ifdef SDSUPPORT
+      #if ENABLED(SDSUPPORT)
         fromsd[cmd_queue_index_w] = false;
       #endif
 
@@ -927,6 +920,10 @@ void get_command() {
 
       // If command was e-stop process now
       if (strcmp(command, "M112") == 0) kill(PSTR(MSG_KILLED));
+
+      #if ENABLED(FILAMENTCHANGEENABLE)
+        if (strcmp(command, "M601") == 0) filament_changing = false;
+      #endif //FILAMENTCHANGEENABL
 
       cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
       commands_in_queue += 1;
@@ -1053,7 +1050,7 @@ XYZ_CONSTS_FROM_CONFIG(float, base_min_pos,    MIN_POS);
 XYZ_CONSTS_FROM_CONFIG(float, home_bump_mm,    HOME_BUMP_MM);
 XYZ_CONSTS_FROM_CONFIG(signed char, home_dir,  HOME_DIR);
 
-#ifdef DUAL_X_CARRIAGE
+#if ENABLED(DUAL_X_CARRIAGE)
 
   #define DXC_FULL_CONTROL_MODE 0
   #define DXC_AUTO_PARK_MODE    1
@@ -1198,7 +1195,7 @@ inline void line_to_destination() {
 inline void sync_plan_position() {
   plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 }
-#if defined(DELTA) || defined(SCARA)
+#if ENABLED(DELTA) || ENABLED(SCARA)
   inline void sync_plan_position_delta() {
     calculate_delta(current_position);
     plan_set_position(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS]);
@@ -1215,7 +1212,7 @@ static void setup_for_endstop_move() {
   enable_endstops(true);
 }
 
-#if defined(CARTESIAN) || defined(COREXY) || defined(SCARA)
+#if ENABLED(CARTESIAN) || ENABLED(COREXY) || ENABLED(SCARA)
 
   static void do_blocking_move_to(float x, float y, float z) {
     float oldFeedRate = feedrate;
@@ -1538,7 +1535,7 @@ static void setup_for_endstop_move() {
   #define HOMEAXIS(LETTER) homeaxis(LETTER##_AXIS)
 #endif // Cartesian || CoreXY || Scara
 
-#ifdef DELTA
+#if ENABLED(DELTA)
 
   static void homeaxis(AxisEnum axis) {
     #define HOMEAXIS_DO(LETTER) \
@@ -2395,7 +2392,7 @@ static void setup_for_endstop_move() {
   }
 #endif //DELTA
 
-#ifdef IDLE_OOZING_PREVENT
+#if  ENABLED(IDLE_OOZING_PREVENT)
   void IDLE_OOZING_retract(bool retracting) {  
     if (retracting && !IDLE_OOZING_retracted[active_extruder]) {
   	  set_destination_to_current();
@@ -2420,7 +2417,7 @@ static void setup_for_endstop_move() {
   }
 #endif
 
-#ifdef FWRETRACT
+#if ENABLED(FWRETRACT)
   void retract(bool retracting, bool swapping = false) {
 
     if (retracting == retracted[active_extruder]) return;
@@ -2471,7 +2468,7 @@ static void setup_for_endstop_move() {
   } // retract()
 #endif //FWRETRACT
 
-#ifdef Z_PROBE_SLED
+#if ENABLED(Z_PROBE_SLED)
 
   #ifndef SLED_DOCKING_OFFSET
     #define SLED_DOCKING_OFFSET 0
@@ -2504,10 +2501,6 @@ static void setup_for_endstop_move() {
 
 inline void wait_heater() {
 
-  #ifdef THERMAL_PROTECTION_HOTENDS
-    start_watching_heater(target_extruder);
-  #endif
-
   millis_t temp_ms = millis();
 
   /* See if we are heating up or cooling down */
@@ -2527,8 +2520,8 @@ inline void wait_heater() {
 
     { // while loop
       if (millis() > temp_ms + 1000UL) { //Print temp & remaining time every 1s while waiting
-        ECHO_MV("T:", degHotend(target_extruder),1);
-        ECHO_MV(" E:", target_extruder);
+        ECHO_MV("T:", degHotend(target_extruder), 1);
+        ECHO_MV(" E:", (int)target_extruder);
         #ifdef TEMP_RESIDENCY_TIME
           ECHO_M(" W:");
           if (residency_start_ms > -1) {
@@ -2543,9 +2536,9 @@ inline void wait_heater() {
         #endif
         temp_ms = millis();
       }
-      manage_heater();
-      manage_inactivity();
-      lcd_update();
+
+      idle();
+
       #ifdef TEMP_RESIDENCY_TIME
         // start/restart the TEMP_RESIDENCY_TIME timer whenever we reach target temp for the first time
         // or when current temp falls outside the hysteresis after target temp was reached
@@ -2586,6 +2579,10 @@ inline void wait_bed() {
   refresh_cmd_timeout();
 }
 
+void error_invalid_extruder(int code, int e) {
+  ECHO_SMV(DB, "M", code);
+  ECHO_EMV(MSG_INVALID_EXTRUDER, e);
+}
 
 /******************************************************************************
 ***************************** G-Code Functions ********************************
@@ -2815,11 +2812,7 @@ inline void gcode_G4() {
 
   if (!lcd_hasstatus()) LCD_MESSAGEPGM(MSG_DWELL);
 
-  while (millis() < codenum) {
-    manage_heater();
-    manage_inactivity();
-    lcd_update();
-  }
+  while (millis() < codenum) idle();
 }
 
 #ifdef FWRETRACT
@@ -3431,9 +3424,7 @@ inline void gcode_G28(boolean home_XY = false) {
 
           probePointCounter++;
 
-          manage_heater();
-          manage_inactivity();
-          lcd_update();
+          idle();
 
         } //xProbe
       } //yProbe
@@ -3517,6 +3508,8 @@ inline void gcode_G28(boolean home_XY = false) {
     #ifdef Z_PROBE_SLED
       dock_sled(true, -SLED_DOCKING_OFFSET); // dock the probe, correcting for over-travel
     #endif
+
+    FlushSerialRequestResend();
   }
 
   #ifndef Z_PROBE_SLED
@@ -3537,8 +3530,8 @@ inline void gcode_G28(boolean home_XY = false) {
       clean_up_after_endstop_move();
       stow_z_probe(); // Retract Z Servo endstop if available
     }
-  #endif //Z_PROBE_SLED
-#endif //ENABLE_AUTO_BED_LEVELING
+  #endif // !Z_PROBE_SLED
+#endif // ENABLE_AUTO_BED_LEVELING
 
 #if defined(DELTA) && defined(Z_PROBE_ENDSTOP)
 
@@ -3571,6 +3564,7 @@ inline void gcode_G28(boolean home_XY = false) {
     feedrate_multiplier = saved_feedrate_multiplier;
     refresh_cmd_timeout();
     endstops_hit_on_purpose(); // clear endstop hit flags
+    FlushSerialRequestResend();
   }
 
   // G30: Delta AutoCalibration
@@ -3637,6 +3631,8 @@ inline void gcode_G28(boolean home_XY = false) {
     //Restore saved variables
     feedrate = saved_feedrate;
     feedrate_multiplier = saved_feedrate_multiplier;
+
+    FlushSerialRequestResend();
   }
 #endif // DELTA && Z_PROBE_ENDSTOP
 
@@ -3705,7 +3701,7 @@ inline void gcode_G92() {
    * M1: // M1 - Conditional stop - Wait for user button press on LCD
    */
   inline void gcode_M0_M1() {
-    char *src = seen_pointer + 2;
+    char *args = current_command_args;
 
     millis_t codenum = 0;
     bool hasP = false, hasS = false;
@@ -3714,14 +3710,12 @@ inline void gcode_G92() {
       hasP = codenum > 0;
     }
     if (code_seen('S')) {
-      codenum = code_value_short() * 1000UL; // seconds to wait
+      codenum = code_value() * 1000; // seconds to wait
       hasS = codenum > 0;
     }
-    char* starpos = strchr(src, '*');
-    if (starpos != NULL) *(starpos) = '\0';
-    while (*src == ' ') ++src;
-    if (!hasP && !hasS && *src != '\0')
-      lcd_setstatus(src, true);
+
+    if (!hasP && !hasS && *args != '\0')
+      lcd_setstatus(args, true);
     else {
       LCD_MESSAGEPGM(MSG_USERWAIT);
       #if defined(LCD_PROGRESS_BAR) && PROGRESS_MSG_EXPIRE > 0
@@ -3734,20 +3728,12 @@ inline void gcode_G92() {
     refresh_cmd_timeout();
     if (codenum > 0) {
       codenum += previous_cmd_ms;  // keep track of when we started waiting
-      while(millis() < codenum && !lcd_clicked()) {
-        manage_heater();
-        manage_inactivity();
-        lcd_update();
-      }
+      while(millis() < codenum && !lcd_clicked()) idle();
       lcd_ignore_click(false);
     }
     else {
       if (!lcd_detected()) return;
-      while (!lcd_clicked()) {
-        manage_heater();
-        manage_inactivity();
-        lcd_update();
-      }
+      while (!lcd_clicked()) idle();
     }
     if (IS_SD_PRINTING)
       LCD_MESSAGEPGM(MSG_RESUMING);
@@ -3960,8 +3946,7 @@ inline void gcode_M31() {
     }
   }
 
-  #ifdef LONG_FILENAME_HOST_SUPPORT
-
+  #if ENABLED(LONG_FILENAME_HOST_SUPPORT)
     /**
      * M33: Get the long full path of a file or folder
      *
@@ -3975,12 +3960,8 @@ inline void gcode_M31() {
      *   /Miscellaneous/Armchair/Armchair.gcode
      */
     inline void gcode_M33() {
-      char *args = seen_pointer + 4;
-      while (*args == ' ') ++args;
-      //clear_asterisk(args);
-      card.printLongPath(args);
+      card.printLongPath(current_command_args);
     }
-
   #endif
 
   /**
@@ -4245,13 +4226,11 @@ inline void gcode_M42() {
 
     clean_up_after_endstop_move();
 
-    // enable_endstops(true);
-
-    if (verbose_level > 0) {
-      ECHO_EMV("Mean: ",mean, 6);
-    }
+    if (verbose_level > 0) ECHO_EMV("Mean: ", mean, 6);
 
     ECHO_EMV("Standard Deviation: ", sigma, 6);
+
+    FlushSerialRequestResend();
   }
 
 #endif // ENABLE_AUTO_BED_LEVELING && Z_PROBE_REPEATABILITY_TEST
@@ -4778,7 +4757,7 @@ inline void gcode_M200() {
   if (code_seen('T')) {
     tmp_extruder = code_value_short();
     if (tmp_extruder >= EXTRUDERS) {
-      ECHO_LM(ER, MSG_M200_INVALID_EXTRUDER);
+      error_invalid_extruder(200, tmp_extruder);
       return;
     }
   }
@@ -5036,11 +5015,7 @@ inline void gcode_M226() {
             break;
         }
 
-        while(digitalRead(pin_number) != target) {
-          manage_heater();
-          manage_inactivity();
-          lcd_update();
-        }
+        while(digitalRead(pin_number) != target) idle();
 
       } // pin_number > -1
     } // pin_state -1 0 1
@@ -5550,7 +5525,7 @@ inline void gcode_M503() {
   inline void gcode_M600() {
     float target[NUM_AXIS], fr60 = feedrate / 60;
     filament_changing = true;
-    for (int i=0; i < NUM_AXIS; i++)
+    for (int i = 0; i < NUM_AXIS; i++)
       target[i] = lastpos[i] = current_position[i];
 
     #ifdef DELTA
@@ -5604,11 +5579,10 @@ inline void gcode_M503() {
     delay(100);
     boolean beep = true;
     boolean sleep = false;
-    int cnt = 0;
+    uint8_t cnt = 0;
     
     int old_target_temperature[HOTENDS] = { 0 };
-    for (int8_t e = 0; e < HOTENDS; e++)
-    {
+    for (int8_t e = 0; e < HOTENDS; e++) {
       old_target_temperature[e] = target_temperature[e];
     }
     int old_target_temperature_bed = target_temperature_bed;
@@ -5617,9 +5591,7 @@ inline void gcode_M503() {
     PRESSBUTTON:
     LCD_ALERTMESSAGEPGM(MSG_FILAMENTCHANGE);
     while (!lcd_clicked()) {
-      manage_heater();
-      manage_inactivity(true);
-      lcd_update();
+      idle(true);
       if ((millis() - last_set > 60000) && cnt <= FILAMENTCHANGE_PRINTEROFF) beep = true;
       if (cnt >= FILAMENTCHANGE_PRINTEROFF && !sleep) {
         disable_all_heaters();
@@ -5629,17 +5601,15 @@ inline void gcode_M503() {
         LCD_ALERTMESSAGEPGM("Zzzz Zzzz Zzzz");
       }
       if (beep) {
+        for(int8_t i = 0; i < 3; i++) lcd_buzz(100, 1000);
         last_set = millis();
-        for(int8_t i = 0; i < 3; i++) {
-          lcd_buzz(100, 1000);
-        }
         beep = false;
-        cnt += 1;
+        ++cnt;
       }
-    }
+    } // while(!lcd_clicked)
 
-    //reset LCD alert message
-    lcd_reset_alert_level();
+    lcd_quick_feedback();     // click sound feedback
+    lcd_reset_alert_level();  //reset LCD alert message
 
     if (sleep) {
       enable_all_steppers(); // Enable all stepper
@@ -5687,6 +5657,12 @@ inline void gcode_M503() {
       filrunoutEnqueued = false;
     #endif
   }
+
+  /**
+   * M601: Resume the print from filament change
+   */
+  inline void gcode_M601() { filament_changing = false; }
+
 #endif //FILAMENTCHANGEENABLE
 
 #ifdef DUAL_X_CARRIAGE
@@ -6283,27 +6259,29 @@ void process_next_command() {
           gcode_M20(); break;
         case 21: // M21 - init SD card
           gcode_M21(); break;
-        case 22: //M22 - release SD card
+        case 22: // M22 - release SD card
           gcode_M22(); break;
-        case 23: //M23 - Select file
+        case 23: // M23 - Select file
           gcode_M23(); break;
-        case 24: //M24 - Start SD print
+        case 24: // M24 - Start SD print
           gcode_M24(); break;
-        case 25: //M25 - Pause SD print
+        case 25: // M25 - Pause SD print
           gcode_M25(); break;
-        case 26: //M26 - Set SD index
+        case 26: // M26 - Set SD index
           gcode_M26(); break;
-        case 27: //M27 - Get SD status
+        case 27: // M27 - Get SD status
           gcode_M27(); break;
-        case 28: //M28 - Start SD write
+        case 28: // M28 - Start SD write
           gcode_M28(); break;
-        case 29: //M29 - Stop SD write
+        case 29: // M29 - Stop SD write
           gcode_M29(); break;
-        case 30: //M30 <filename> Delete File
+        case 30: // M30 <filename> Delete File
           gcode_M30(); break;
-        case 32: //M32 - Select file and start SD print
+        case 32: // M32 - Select file and start SD print
           gcode_M32(); break;
-        case 928: //M928 - Start SD write
+        case 33: // M33 - Long path
+          gcode_M33(); break;
+        case 928: // M928 - Start SD write
           gcode_M928(); break;
 
       #endif //SDSUPPORT
@@ -6550,7 +6528,7 @@ void process_next_command() {
       #endif
 
       #ifdef FILAMENTCHANGEENABLE
-        case 600: //Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
+        case 600: // M600 Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
           gcode_M600(); break;
       #endif // FILAMENTCHANGEENABLE
 
@@ -6951,6 +6929,15 @@ void disable_all_steppers() {
 }
 
 /**
+ * Standard idle routine keeps the machine alive
+ */
+void idle(bool ignore_stepper_queue/*=false*/) {
+  manage_heater();
+  manage_inactivity(ignore_stepper_queue);
+  lcd_update();
+}
+
+/**
  * Manage several activities:
  *  - Check for Filament Runout
  *  - Keep the command buffer full
@@ -7254,25 +7241,15 @@ bool setTargetedHotend(int code) {
   if (code_seen('T')) {
     target_extruder = code_value_short();
     if (target_extruder >= EXTRUDERS) {
-      ECHO_S(ER);
       switch(code) {
         case 104:
-          ECHO_M(MSG_M104_INVALID_EXTRUDER);
-          break;
         case 105:
-          ECHO_M(MSG_M105_INVALID_EXTRUDER);
-          break;
         case 109:
-          ECHO_M(MSG_M109_INVALID_EXTRUDER);
-          break;
         case 218:
-          ECHO_M(MSG_M218_INVALID_EXTRUDER);
-          break;
         case 221:
-          ECHO_M(MSG_M221_INVALID_EXTRUDER);
+          error_invalid_extruder(code, target_extruder);
           break;
       }
-      ECHO_EV(target_extruder);
       return true;
     }
   }

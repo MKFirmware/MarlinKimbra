@@ -50,13 +50,13 @@ void manage_heater(); //it is critical that this is called periodically.
 // do not use these routines and variables outside of temperature.cpp
 extern int target_temperature[4];  
 extern float current_temperature[4];
-#ifdef SHOW_TEMP_ADC_VALUES
+#if ENABLED(SHOW_TEMP_ADC_VALUES)
   extern int current_temperature_raw[4];
   extern int current_temperature_bed_raw;
 #endif
 extern int target_temperature_bed;
 extern float current_temperature_bed;
-#ifdef TEMP_SENSOR_1_AS_REDUNDANT
+#if ENABLED(TEMP_SENSOR_1_AS_REDUNDANT)
   extern float redundant_temperature;
 #endif
 
@@ -64,7 +64,7 @@ extern float current_temperature_bed;
   extern unsigned char soft_pwm_bed;
 #endif
 
-#ifdef PIDTEMP
+#if ENABLED(PIDTEMP)
   extern float Kp[HOTENDS], Ki[HOTENDS], Kd[HOTENDS];
   #define PID_PARAM(param, e) param[e] // use macro to point to array value
   float scalePID_i(float i);
@@ -72,11 +72,12 @@ extern float current_temperature_bed;
   float unscalePID_i(float i);
   float unscalePID_d(float d);
 #endif
-#ifdef PIDTEMPBED
+
+#if ENABLED(PIDTEMPBED)
   extern float bedKp,bedKi,bedKd;
 #endif
 
-#ifdef BABYSTEPPING
+#if ENABLED(BABYSTEPPING)
   extern volatile int babystepsTodo[3];
 #endif
   
@@ -92,25 +93,30 @@ extern float current_temperature_bed;
 FORCE_INLINE float degHotend(uint8_t hotend) { return current_temperature[HOTEND_ARG]; }
 FORCE_INLINE float degBed() { return current_temperature_bed; }
 
-#ifdef SHOW_TEMP_ADC_VALUES
+#if ENABLED(SHOW_TEMP_ADC_VALUES)
   FORCE_INLINE float rawHotendTemp(uint8_t hotend) { return current_temperature_raw[HOTEND_ARG]; }
   FORCE_INLINE float rawBedTemp() { return current_temperature_bed_raw; }
 #endif
 
 FORCE_INLINE float degTargetHotend(uint8_t hotend) { return target_temperature[HOTEND_ARG]; }
-
 FORCE_INLINE float degTargetBed() { return target_temperature_bed; }
 
-FORCE_INLINE void setTargetHotend(const float &celsius, uint8_t hotend) { target_temperature[HOTEND_ARG] = celsius; }
+#if ENABLED(THERMAL_PROTECTION_HOTENDS)
+  void start_watching_heater(int e=0);
+#endif
 
+FORCE_INLINE void setTargetHotend(const float &celsius, uint8_t hotend) {
+  target_temperature[HOTEND_ARG] = celsius;
+  #if ENABLED(THERMAL_PROTECTION_HOTENDS)
+    start_watching_heater(HOTEND_ARG);
+  #endif
+}
 FORCE_INLINE void setTargetBed(const float &celsius) { target_temperature_bed = celsius; }
 
 FORCE_INLINE bool isHeatingHotend(uint8_t hotend) { return target_temperature[HOTEND_ARG] > current_temperature[HOTEND_ARG]; }
-
 FORCE_INLINE bool isHeatingBed() { return target_temperature_bed > current_temperature_bed; }
 
 FORCE_INLINE bool isCoolingHotend(uint8_t hotend) { return target_temperature[HOTEND_ARG] < current_temperature[HOTEND_ARG]; }
-
 FORCE_INLINE bool isCoolingBed() { return target_temperature_bed < current_temperature_bed; }
 
 #define HOTEND_ROUTINES(NR) \
@@ -138,7 +144,6 @@ HOTEND_ROUTINES(0);
 
 int getHeaterPower(int heater);
 void disable_all_heaters();
-void setWatch();
 void updatePID();
 
 void PID_autotune(float temp, int extruder, int ncycles);
@@ -146,12 +151,8 @@ void PID_autotune(float temp, int extruder, int ncycles);
 void setExtruderAutoFanState(int pin, bool state);
 void checkExtruderAutoFans();
 
-#ifdef WATCH_TEMP_PERIOD
-  void start_watching_heater(int e=0);
-#endif
-
 FORCE_INLINE void autotempShutdown() {
-  #ifdef AUTOTEMP
+  #if ENABLED(AUTOTEMP)
     if (autotemp_enabled) {
       autotemp_enabled = false;
       if (degTargetHotend(active_extruder) > autotemp_min)
