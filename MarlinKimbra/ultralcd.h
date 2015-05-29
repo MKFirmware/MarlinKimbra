@@ -55,7 +55,7 @@
 
   extern bool cancel_heatup;
   
-  #if (HAS_FILAMENT_SENSOR && ENABLED(FILAMENT_LCD_DISPLAY)) || (HAS_POWER_CONSUMPTION_SENSOR && ENABLED(POWER_CONSUMPTION_LCD_DISPLAY))
+  #if HAS_LCD_FILAMENT_SENSOR || HAS_LCD_POWER_SENSOR
     extern millis_t previous_lcd_status_ms;
   #endif
 

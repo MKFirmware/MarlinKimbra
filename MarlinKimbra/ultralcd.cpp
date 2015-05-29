@@ -377,7 +377,7 @@ static void lcd_status_screen() {
           currentMenu == lcd_status_screen
         #endif
       );
-      #ifdef FILAMENT_LCD_DISPLAY
+      #if HAS_LCD_FILAMENT_SENSOR || HAS_LCD_POWER_SENSOR
         previous_lcd_status_ms = millis();  // get status message to show up for a while
       #endif
     }
@@ -1820,7 +1820,7 @@ void lcd_finishstatus(bool persist=false) {
   #endif
   lcdDrawUpdate = 2;
 
-  #ifdef FILAMENT_LCD_DISPLAY
+  #if HAS_LCD_FILAMENT_SENSOR || HAS_LCD_POWER_SENSOR
     previous_lcd_status_ms = millis();  //get status message to show up for a while
   #endif
 }

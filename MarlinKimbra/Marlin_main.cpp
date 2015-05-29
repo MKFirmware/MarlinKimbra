@@ -6177,7 +6177,7 @@ void process_next_command() {
         gcode_G0_G1(); break;
 
       // G2, G3
-      #ifndef SCARA
+      #if DISABLED(SCARA)
         case 2: // G2  - CW ARC
         case 3: // G3  - CCW ARC
           gcode_G2_G3(codenum == 2); break;
@@ -6187,16 +6187,16 @@ void process_next_command() {
       case 4:
         gcode_G4(); break;
 
-      #ifdef FWRETRACT
+      #if ENABLED(FWRETRACT)
         case 10: // G10: retract
         case 11: // G11: retract_recover
           gcode_G10_G11(codenum == 10); break;
-      #endif //FWRETRACT
+      #endif // FWRETRACT
 
       case 28: //G28: Home all axes, one at a time
         gcode_G28(); gcode_M114(); break;
 
-      #ifdef ENABLE_AUTO_BED_LEVELING
+      #if ENABLED(ENABLE_AUTO_BED_LEVELING)
         case 29: // G29 Detailed Z-Probe, probes the bed at 3 or more points.
           gcode_G29(); gcode_M114(); break;
         #ifndef Z_PROBE_SLED
@@ -6209,7 +6209,7 @@ void process_next_command() {
         #endif // Z_PROBE_SLED
       #endif // ENABLE_AUTO_BED_LEVELING
 
-      #if defined(DELTA) && defined(Z_PROBE_ENDSTOP)
+      #if ENABLED(DELTA) && ENABLED(Z_PROBE_ENDSTOP)
         case 29: // G29 Detailed Z-Probe, probes the bed at more points.
           gcode_G29(); break;
         case 30:  // G30 Delta AutoCalibration
@@ -6226,19 +6226,17 @@ void process_next_command() {
         relative_mode = true; break;
       case 92: // G92
         gcode_G92(); break;
-
-      default: code_is_good = false;
     }
     break;
 
     case 'M': switch (codenum) {
-      #ifdef ULTIPANEL
+      #if ENABLED(ULTIPANEL)
         case 0: // M0 - Unconditional stop - Wait for user button press on LCD
         case 1: // M1 - Conditional stop - Wait for user button press on LCD
           gcode_M0_M1(); break;
       #endif //ULTIPANEL
 
-      #ifdef LASERBEAM
+      #if ENABLED(LASERBEAM)
         case 3: // M03 S - Setting laser beam
           gcode_M3(); break;
         case 4: // M04 - Turn on laser beam
@@ -6255,7 +6253,7 @@ void process_next_command() {
       case 17: //M17 - Enable/Power all stepper motors
         gcode_M17(); break;
 
-      #ifdef SDSUPPORT
+      #if ENABLED(SDSUPPORT)
         case 20: // M20 - list SD card
           gcode_M20(); break;
         case 21: // M21 - init SD card
@@ -6284,7 +6282,7 @@ void process_next_command() {
         #if ENABLED(LONG_FILENAME_HOST_SUPPORT)
           case 33: // M33 - Get the long full path to a file or folder
             gcode_M33(); break;
-        #endif // LONG_FILENAME_HOST_SUPPORT
+        #endif
 
         case 928: // M928 - Start SD write
           gcode_M928(); break;
@@ -6292,20 +6290,20 @@ void process_next_command() {
       #endif //SDSUPPORT
 
 
-      case 31: //M31 take time since the start of the SD print or an M109 command
+      case 31: // M31 take time since the start of the SD print or an M109 command
         gcode_M31(); break;
-      case 42: //M42 -Change pin status via gcode
+      case 42: // M42 -Change pin status via gcode
         gcode_M42(); break;
 
-      #if defined(ENABLE_AUTO_BED_LEVELING) && defined(Z_PROBE_REPEATABILITY_TEST)
-        case 49: //M49 Z-Probe repeatability
+      #if ENABLED(ENABLE_AUTO_BED_LEVELING) && ENABLED(Z_PROBE_REPEATABILITY_TEST)
+        case 49: // M49 Z-Probe repeatability
           gcode_M49(); break;
-      #endif //defined(ENABLE_AUTO_BED_LEVELING) && defined(Z_PROBE_REPEATABILITY_TEST)
+      #endif
 
       #if HAS_POWER_SWITCH
-        case 80: //M80 - Turn on Power Supply
+        case 80: // M80 - Turn on Power Supply
           gcode_M80(); break;
-      #endif //HAS_POWER_SWITCH
+      #endif
       
       case 81: // M81 - Turn off Power, including Power Supply, if possible
         gcode_M81(); break;
@@ -6344,7 +6342,7 @@ void process_next_command() {
       case 115: // M115 Report capabilities
         gcode_M115(); break;
 
-      #ifdef ULTIPANEL
+      #if ENABLED(ULTIPANEL)
         case 117: // M117 display message
           gcode_M117(); break;
       #endif
@@ -6356,7 +6354,7 @@ void process_next_command() {
       case 121: // M121 Disable endstops
         gcode_M121(); break;
 
-      #ifdef BARICUDA
+      #if ENABLED(BARICUDA)
         // PWM for HEATER_1_PIN
         #if HAS_HEATER_1
           case 126: // M126 valve open
@@ -6377,7 +6375,7 @@ void process_next_command() {
       case 140: // M140 Set bed temp
         gcode_M140(); break;
 
-      #ifdef BLINKM
+      #if ENABLED(BLINKM)
         case 150: // M150
           gcode_M150(); break;
       #endif //BLINKM
@@ -6405,7 +6403,7 @@ void process_next_command() {
       case 206: // M206 additional homing offset
         gcode_M206(); break;
 
-      #ifdef FWRETRACT
+      #if ENABLED(FWRETRACT)
         case 207: //M207 - set retract length S[positive mm] F[feedrate mm/min] Z[additional zlift/hop]
           gcode_M207(); break;
         case 208: // M208 - set retract recover length S[positive mm surplus to the M207 S*] F[feedrate mm/min]
@@ -6426,12 +6424,12 @@ void process_next_command() {
       case 226: // M226 P<pin number> S<pin state>- Wait until the specified pin reaches the state required
         gcode_M226(); break;
 
-      #if defined(CHDK) || (defined(PHOTOGRAPH_PIN) && PHOTOGRAPH_PIN > -1)
+      #if ENABLED(CHDK) || (ENABLED(PHOTOGRAPH_PIN) && PHOTOGRAPH_PIN > -1)
         case 240: // M240  Triggers a camera by emulating a Canon RC-1 : http://www.doc-diy.net/photo/rc-1_hacked/
           gcode_M240(); break;
       #endif // CHDK || PHOTOGRAPH_PIN
 
-      #if defined(DOGLCD) && LCD_CONTRAST >= 0
+      #if ENABLED(DOGLCD) && LCD_CONTRAST >= 0
         case 250: // M250  Set LCD contrast value: C<value> (value 0..63)
           gcode_M250(); break;
       #endif // DOGLCD
@@ -6446,12 +6444,12 @@ void process_next_command() {
           gcode_M300(); break;
       #endif // HAS_LCD_BUZZ
 
-      #ifdef PIDTEMP
+      #if ENABLED(PIDTEMP)
         case 301: // M301
           gcode_M301(); break;
       #endif // PIDTEMP
 
-      #ifdef PREVENT_DANGEROUS_EXTRUDE
+      #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
         case 302: // allow cold extrudes, or set the minimum extrude temperature
           gcode_M302(); break;
       #endif // PREVENT_DANGEROUS_EXTRUDE
@@ -6462,7 +6460,7 @@ void process_next_command() {
         FlushSerialRequestResend();
         break;
 
-      #ifdef PIDTEMPBED
+      #if ENABLED(PIDTEMPBED)
         case 304: // M304
           gcode_M304(); break;
       #endif // PIDTEMPBED
@@ -6476,7 +6474,7 @@ void process_next_command() {
           break;
       #endif // HAS_MICROSTEPS
 
-      #ifdef SCARA
+      #if ENABLED(SCARA)
         case 360:  // M360 SCARA Theta pos1
           if (gcode_M360()) return; break;
         case 361:  // M361 SCARA Theta pos2
@@ -6501,7 +6499,7 @@ void process_next_command() {
           gcode_M402(); break;
       #endif
 
-      #ifdef FILAMENT_SENSOR
+      #if ENABLED(FILAMENT_SENSOR)
         case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or display nominal filament width
           gcode_M404(); break;
         case 405:  //M405 Turn on filament sensor for control
@@ -6527,25 +6525,25 @@ void process_next_command() {
       case 503: // M503 print settings currently in memory
         gcode_M503(); break;
 
-      #ifdef ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
+      #if ENABLED(ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED)
         case 540:
           gcode_M540(); break;
       #endif
 
-      #ifdef FILAMENTCHANGEENABLE
+      #if ENABLED(FILAMENTCHANGEENABLE)
         case 600: // M600 Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
           gcode_M600(); break;
-      #endif // FILAMENTCHANGEENABLE
+      #endif
 
-      #ifdef DUAL_X_CARRIAGE
+      #if ENABLED(DUAL_X_CARRIAGE)
         case 605:
           gcode_M605(); break;
-      #endif // DUAL_X_CARRIAGE
+      #endif
 
-      #if defined(ENABLE_AUTO_BED_LEVELING) || defined(DELTA)
-        case 666: //M666 Set Z probe offset or set delta endstop and geometry adjustment
+      #if ENABLED(ENABLE_AUTO_BED_LEVELING) || ENABLED(DELTA)
+        case 666: // M666 Set Z probe offset or set delta endstop and geometry adjustment
           gcode_M666(); break;
-      #endif //defined(ENABLE_AUTO_BED_LEVELING) || defined(DELTA)
+      #endif
 
       case 907: // M907 Set digital trimpot motor current using axis codes.
         gcode_M907(); break;
@@ -6555,7 +6553,7 @@ void process_next_command() {
           gcode_M908(); break;
       #endif // HAS_DIGIPOTSS
 
-      #ifdef NPR2
+      #if ENABLED(NPR2)
         case 997: // M997 Cxx Move Carter xx gradi
           gcode_M997(); break;
       #endif // NPR2
@@ -6563,18 +6561,18 @@ void process_next_command() {
        case 999: // M999: Restart after being Stopped
         gcode_M999(); break;
 
-      #ifdef CUSTOM_M_CODE_SET_Z_PROBE_OFFSET
+      #if ENABLED(CUSTOM_M_CODE_SET_Z_PROBE_OFFSET)
         case CUSTOM_M_CODE_SET_Z_PROBE_OFFSET:
           gcode_SET_Z_PROBE_OFFSET(); break;
       #endif // CUSTOM_M_CODE_SET_Z_PROBE_OFFSET
-
-      default: code_is_good = false;
     }
     break;
 
     case 'T':
       gcode_T(codenum);
     break;
+
+    default: code_is_good = false;    
   }
 
 ExitUnknownCommand:
@@ -6594,11 +6592,11 @@ void FlushSerialRequestResend() {
 
 void ok_to_send() {
   refresh_cmd_timeout();
-  #ifdef SDSUPPORT
+  #if ENABLED(SDSUPPORT)
     if (fromsd[cmd_queue_index_r]) return;
   #endif
   ECHO_S(OK);
-  #ifdef ADVANCED_OK
+  #if ENABLED(ADVANCED_OK)
     ECHO_MV(" N", gcode_LastN);
     ECHO_MV(" P", (int)(BLOCK_BUFFER_SIZE - movesplanned() - 1));
     ECHO_MV(" B", BUFSIZE - commands_in_queue);
@@ -6612,7 +6610,7 @@ void clamp_to_software_endstops(float target[3]) {
     NOLESS(target[Y_AXIS], min_pos[Y_AXIS]);
     
     float negative_z_offset = 0;
-    #ifdef ENABLE_AUTO_BED_LEVELING
+    #if ENABLED(ENABLE_AUTO_BED_LEVELING)
       if (Z_PROBE_OFFSET_FROM_EXTRUDER < 0) negative_z_offset += Z_PROBE_OFFSET_FROM_EXTRUDER;
       if (home_offset[Z_AXIS] < 0) negative_z_offset += home_offset[Z_AXIS];
     #endif
@@ -6626,7 +6624,7 @@ void clamp_to_software_endstops(float target[3]) {
   }
 }
 
-#ifdef PREVENT_DANGEROUS_EXTRUDE
+#if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
 
   inline void prevent_dangerous_extrude(float &curr_e, float &dest_e) {
     float de = dest_e - curr_e;
@@ -6636,7 +6634,7 @@ void clamp_to_software_endstops(float target[3]) {
         curr_e = dest_e; // Behave as if the move really took place, but ignore E part
         ECHO_LM(ER, MSG_ERR_COLD_EXTRUDE_STOP);
       }
-      #ifdef PREVENT_LENGTHY_EXTRUDE
+      #if ENABLED(PREVENT_LENGTHY_EXTRUDE)
         if (labs(de) > EXTRUDE_MAXLENGTH) {
           curr_e = dest_e; // Behave as if the move really took place, but ignore E part
           ECHO_LM(ER, MSG_ERR_LONG_EXTRUDE_STOP);
@@ -6647,7 +6645,7 @@ void clamp_to_software_endstops(float target[3]) {
 
 #endif // PREVENT_DANGEROUS_EXTRUDE
 
-#if defined(DELTA) || defined(SCARA)
+#if ENABLED(DELTA) || ENABLED(SCARA)
 
   inline bool prepare_move_delta() {
     float difference[NUM_AXIS];
