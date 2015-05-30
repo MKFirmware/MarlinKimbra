@@ -6,7 +6,7 @@
 void Config_ResetDefault();
 void ConfigSD_ResetDefault();
 
-#if DISABLED(DISABLE_M503)
+#ifndef DISABLE_M503
   void Config_PrintSettings(bool forReplay = false);
   void ConfigSD_PrintSettings(bool forReplay = false);
 #else
@@ -22,7 +22,7 @@ void ConfigSD_ResetDefault();
   FORCE_INLINE void Config_RetrieveSettings() { Config_ResetDefault(); Config_PrintSettings(); }
 #endif
 
-#if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
+#if defined(SDSUPPORT) && defined(SD_SETTINGS)
   static const char *cfgSD_KEY[] = { //Keep this in lexicographical order for better search performance(O(Nlog2(N)) insted of O(N*N)) (if you don't keep this sorted, the algorithm for find the key index won't work, keep attention.)
     #ifdef POWER_CONSUMPTION
       "PWR",

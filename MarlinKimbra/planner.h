@@ -37,7 +37,7 @@ typedef struct {
   long acceleration_rate;                   // The acceleration rate used for acceleration calculation
   unsigned char direction_bits;             // The direction bit set for this block (refers to *_DIRECTION_BIT in config.h)
   unsigned char active_driver;              // Selects the active driver
-  #if ENABLED(ADVANCE)
+  #ifdef ADVANCE
     long advance_rate;
     volatile long initial_advance;
     volatile long final_advance;
@@ -60,11 +60,11 @@ typedef struct {
   unsigned long final_rate;                          // The minimal rate at exit
   unsigned long acceleration_st;                     // acceleration steps/sec^2
   unsigned long fan_speed;
-  #if ENABLED(BARICUDA)
+  #ifdef BARICUDA
     unsigned long valve_pressure;
     unsigned long e_to_p_pressure;
   #endif
-  #if ENABLED(LASERBEAM)
+  #ifdef LASERBEAM
     unsigned long laser_ttlmodulation;
   #endif
   volatile char busy;
@@ -82,7 +82,7 @@ extern volatile unsigned char block_buffer_head;
 extern volatile unsigned char block_buffer_tail;
 FORCE_INLINE uint8_t movesplanned() { return BLOCK_MOD(block_buffer_head - block_buffer_tail + BLOCK_BUFFER_SIZE); }
 
-#if ENABLED(ENABLE_AUTO_BED_LEVELING)
+#ifdef ENABLE_AUTO_BED_LEVELING
 
   #include "vector_3.h"
 
@@ -132,7 +132,7 @@ extern float max_e_jerk;
 extern float mintravelfeedrate;
 extern unsigned long axis_steps_per_sqr_second[3 + EXTRUDERS];
 
-#if ENABLED(AUTOTEMP)
+#ifdef AUTOTEMP
   extern bool autotemp_enabled;
   extern float autotemp_max;
   extern float autotemp_min;

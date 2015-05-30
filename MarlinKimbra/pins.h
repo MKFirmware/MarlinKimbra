@@ -4909,7 +4909,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 ********************************* END MOTHERBOARD ***************************************
 /****************************************************************************************/
 
-#if DISABLED(KNOWN_BOARD)
+#ifndef KNOWN_BOARD
   #error Unknown MOTHERBOARD value in configuration.h
 #endif
 
@@ -4980,35 +4980,35 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
   #define Z_MAX_PIN        -1
 #endif //Z_HOME_DIR > 0
 
-#if DISABLED(Z_PROBE_ENDSTOP) // Allow code to compile regardless of Z_PROBE_ENDSTOP setting.
+#ifndef Z_PROBE_ENDSTOP // Allow code to compile regardless of Z_PROBE_ENDSTOP setting.
   #define Z_PROBE_PIN        -1
 #endif
 
-#if ENABLED(DISABLE_XMAX_ENDSTOP)
+#ifdef DISABLE_XMAX_ENDSTOP
   #undef X_MAX_PIN
   #define X_MAX_PIN          -1
 #endif
 
-#if ENABLED(DISABLE_XMIN_ENDSTOP)
+#ifdef DISABLE_XMIN_ENDSTOP
   #undef X_MIN_PIN 
   #define X_MIN_PIN          -1
 #endif
 
-#if ENABLED(DISABLE_YMAX_ENDSTOP)
+#ifdef DISABLE_YMAX_ENDSTOP
   #define Y_MAX_PIN          -1
 #endif
 
-#if ENABLED(DISABLE_YMIN_ENDSTOP)
+#ifdef DISABLE_YMIN_ENDSTOP
   #undef Y_MIN_PIN
   #define Y_MIN_PIN          -1
 #endif
 
-#if ENABLED(DISABLE_ZMAX_ENDSTOP)
+#ifdef DISABLE_ZMAX_ENDSTOP
   #undef Z_MAX_PIN
   #define Z_MAX_PIN          -1
 #endif
 
-#if ENABLED(DISABLE_ZMIN_ENDSTOP)
+#ifdef DISABLE_ZMIN_ENDSTOP
   #undef Z_MIN_PIN 
   #define Z_MIN_PIN          -1
 #endif
@@ -5049,7 +5049,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
   #define TEMP_3_PIN    -1
 #endif
 
-#if ENABLED(MKR4)
+#ifdef MKR4
   #if (EXTRUDERS == 2) && (DRIVER_EXTRUDERS == 1)    // Use this for one driver and two extruder
     #define E0E1_CHOICE_PIN    5
   #elif (EXTRUDERS == 3) && (DRIVER_EXTRUDERS == 1)  // Use this for one driver and 3 extruder
@@ -5067,20 +5067,20 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
   #endif //EXTRUDERS
 #endif //MKR4
 
-#if ENABLED(NPR2)
+#ifdef NPR2
   #define E_MIN_PIN           -1
 #endif //NPR2
 
-#if ENABLED(LASERBEAM)
+#ifdef LASERBEAM
   #define LASER_PWR_PIN       41
   #define LASER_TTL_PIN	      42
 #endif
 
-#if ENABLED(FILAMENT_RUNOUT_SENSOR)
+#ifdef FILAMENT_RUNOUT_SENSOR
   #define FILRUNOUT_PIN       -1
 #endif
 
-#if ENABLED(FILAMENT_SENSOR)
+#ifdef FILAMENT_SENSOR
   // FMM added for Filament Extruder
   //define analog pin for the filament width sensor input
   //Use the RAMPS 1.4 Analog input 5 on the AUX2 connector

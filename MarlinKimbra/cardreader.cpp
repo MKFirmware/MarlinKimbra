@@ -5,7 +5,7 @@
 #include "temperature.h"
 #include "language.h"
 
-#if ENABLED(SDSUPPORT)
+#ifdef SDSUPPORT
 
 CardReader::CardReader() {
   filesize = 0;
@@ -126,7 +126,7 @@ void CardReader::ls()  {
   lsDive("", root);
 }
 
-#if ENABLED(LONG_FILENAME_HOST_SUPPORT)
+#ifdef LONG_FILENAME_HOST_SUPPORT
 
   /**
    * Get a long pretty path based on a DOS 8.3 path
@@ -191,7 +191,7 @@ void CardReader::initsd() {
   cardOK = false;
   if (root.isOpen()) root.close();
 
-  #if ENABLED(SDSLOW)
+  #ifdef SDSLOW
     #define SPI_SPEED SPI_HALF_SPEED
   #else
     #define SPI_SPEED SPI_FULL_SPEED
@@ -202,7 +202,7 @@ void CardReader::initsd() {
       && !card.init(SPI_SPEED, LCD_SDSS)
     #endif
   ) {
-    ECHO_LM(ER, MSG_SD_INIT_FAIL);
+    ECHO_LM(DB, MSG_SD_INIT_FAIL);
   }
   else if (!volume.init(&card)) {
     ECHO_LM(ER, MSG_SD_VOL_INIT_FAIL);
@@ -212,7 +212,7 @@ void CardReader::initsd() {
   }
   else {
     cardOK = true;
-    ECHO_LM(OK, MSG_SD_CARD_OK);
+    ECHO_LM(DB, MSG_SD_CARD_OK);
   }
   workDir = root;
   curDir = &root;
@@ -264,7 +264,7 @@ void CardReader::getAbsFilename(char *t) {
     t[0] = 0;
 }
 
-void CardReader::openFile(char* name, bool read, bool replace_current/*=true*/, bool lcd_status/*=true*/) {
+void CardReader::openFile(char* name, bool read, bool replace_current/*=true*/) {
   if (!cardOK) return;
   if (file.isOpen()) { //replacing current file by new file, or subfile call
     if (!replace_current) {
@@ -357,7 +357,6 @@ void CardReader::openFile(char* name, bool read, bool replace_current/*=true*/, 
     else {
       saving = true;
       ECHO_EMV(MSG_SD_WRITE_TO_FILE, name);
-      lcd_setstatus(fname);
     }
   }
 }
@@ -383,7 +382,8 @@ void CardReader::removeFile(char* name) {
         subdirname[dirname_end - dirname_start] = 0;
         ECHO_EV(subdirname);
         if (!myDir.open(curDir, subdirname, O_READ)) {
-          ECHO_LMV(ER, MSG_SD_OPEN_FILE_FAIL, subdirname);
+          ECHO_MV(MSG_SD_OPEN_FILE_FAIL, subdirname);
+          ECHO_C('.');
           return;
         }
 
@@ -401,21 +401,22 @@ void CardReader::removeFile(char* name) {
   }
 
   if (file.remove(curDir, fname)) {
-    ECHO_LMV(OK, MSG_SD_FILE_DELETED, fname);
+    ECHO_EMV(MSG_SD_FILE_DELETED, fname);
     sdpos = 0;
   }
   else {
-    ECHO_LMV(ER, MSG_SD_FILE_DELETION_ERR, fname);
+    ECHO_MV(MSG_SD_FILE_DELETION_ERR, fname);
+    ECHO_C('.');
   }
 }
 
 void CardReader::getStatus() {
   if (cardOK) {
-    ECHO_SMV(OK, MSG_SD_PRINTING_BYTE, sdpos);
+    ECHO_MV(MSG_SD_PRINTING_BYTE, sdpos);
     ECHO_EMV(MSG_SD_SLASH, filesize);
   }
   else {
-    ECHO_LM(OK, MSG_SD_NOT_PRINTING);
+    ECHO_EM(MSG_SD_NOT_PRINTING);
   }
 }
 

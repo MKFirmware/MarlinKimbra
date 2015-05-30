@@ -3,7 +3,7 @@
 
 #include "Marlin.h"
 
-#if ENABLED(ULTRA_LCD)
+#ifdef ULTRA_LCD
   int lcd_strlen(char *s);
   int lcd_strlen_P(const char *s);
   void lcd_update();
@@ -15,17 +15,18 @@
   void lcd_reset_alert_level();
   bool lcd_detected(void);
 
-  #if ENABLED(LCD_PROGRESS_BAR) && PROGRESS_MSG_EXPIRE > 0
+  #if defined(LCD_PROGRESS_BAR) && PROGRESS_MSG_EXPIRE > 0
     void dontExpireStatus();
   #endif
 
-  #if ENABLED(DOGLCD) && LCD_CONTRAST >= 0
+  #if defined(DOGLCD) && LCD_CONTRAST >= 0
     extern int lcd_contrast;
     void lcd_setcontrast(uint8_t value);
   #endif
 
-  void set_pageShowInfo(int value);
-  void set_ChangeScreen(boolean state);
+  #if !defined(DELTA) && !defined(Z_SAFE_HOMING) && Z_HOME_DIR < 0
+    void set_pageShowInfo(int value);
+  #endif
 
   #define LCD_MESSAGEPGM(x) lcd_setstatuspgm(PSTR(x))
   #define LCD_ALERTMESSAGEPGM(x) lcd_setalertstatuspgm(PSTR(x))
@@ -33,10 +34,10 @@
   #define LCD_UPDATE_INTERVAL 100
   #define LCD_TIMEOUT_TO_STATUS 15000
 
-  #if ENABLED(ULTIPANEL)
+  #ifdef ULTIPANEL
     void lcd_buttons_update();
     extern volatile uint8_t buttons;  //the last checked buttons in a bit array.
-    #if ENABLED(REPRAPWORLD_KEYPAD)
+    #ifdef REPRAPWORLD_KEYPAD
       extern volatile uint8_t buttons_reprapworld_keypad; // to store the keypad shift register values
     #endif
   #else
@@ -65,17 +66,17 @@
 
   void lcd_ignore_click(bool b=true);
 
-  #if ENABLED(NEWPANEL)
+  #ifdef NEWPANEL
     #define EN_C BIT(BLEN_C)
     #define EN_B BIT(BLEN_B)
     #define EN_A BIT(BLEN_A)
 
     #define LCD_CLICKED (buttons&EN_C)
-   	#if ENABLED(BTN_BACK) && BTN_BACK > 0
+   	#if defined(BTN_BACK) && BTN_BACK > 0
    	  #define EN_D BIT(BLEN_D)
    	  #define LCD_BACK_CLICKED (buttons&EN_D)
    	#endif
-    #if ENABLED(REPRAPWORLD_KEYPAD)
+    #ifdef REPRAPWORLD_KEYPAD
   	  #define EN_REPRAPWORLD_KEYPAD_F3 (BIT(BLEN_REPRAPWORLD_KEYPAD_F3))
   	  #define EN_REPRAPWORLD_KEYPAD_F2 (BIT(BLEN_REPRAPWORLD_KEYPAD_F2))
   	  #define EN_REPRAPWORLD_KEYPAD_F1 (BIT(BLEN_REPRAPWORLD_KEYPAD_F1))

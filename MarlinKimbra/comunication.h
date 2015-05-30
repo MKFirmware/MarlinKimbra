@@ -1,6 +1,6 @@
 /**
  *  Comunication.h - serial messages functions
- *  Part of Marlin
+ *  Part of MarlinKimbra
  *  
  *  Author: Simone Primarosa
 */
@@ -40,7 +40,7 @@
 #endif
 
 #define START       "start"               //start for host
-#define OK          "ok"                  //ok answer for host
+#define OK          "ok "                 //ok answer for host
 #define ER          "Error: "             //error for host
 #define WT          "wait"                //wait for host
 #define DB          "echo: "              //message for user
@@ -54,9 +54,13 @@
 #define SERIAL_PRINT(msg, args...) MYSERIAL.print(msg, ##args)
 #define SERIAL_ENDL MYSERIAL.println()
 
+// Things to write to serial from Program memory. Saves 400 to 2k of RAM.
 FORCE_INLINE void PS_PGM(const char *str) {
   char ch;
-  while ((ch = pgm_read_byte(str++))) { SERIAL_WRITE(ch); }
+  while ((ch = pgm_read_byte(str))) {
+    MYSERIAL.write(ch);
+    str++;
+  }
 }
 
 #define ECHO_ENDL SERIAL_ENDL
@@ -65,8 +69,8 @@ FORCE_INLINE void PS_PGM(const char *str) {
 #define ECHO_MV(msg, val, args...) ECHO_PGM(msg),ECHO_V(val, ##args)
 #define ECHO_VM(val, msg, args...) ECHO_V(val, ##args),ECHO_PGM(msg)
 #define ECHO_M(msg) ECHO_PGM(msg)
-#define ECHO_V SERIAL_PRINT
-#define ECHO_C SERIAL_WRITE
+#define ECHO_V(msg, args...) SERIAL_PRINT(msg, ##args)
+#define ECHO_C(x) SERIAL_WRITE(x)
 #define ECHO_S(srt) ECHO_PGM(srt)
 
 #define ECHO_SM(srt, msg) ECHO_S(srt),ECHO_M(msg)

@@ -35,6 +35,22 @@
   #include "WProgram.h"
 #endif
 
+// Macros for bit masks
+#define BIT(b) (1<<(b))
+#define TEST(n,b) (((n)&BIT(b))!=0)
+#define SET_BIT(n,b,value) (n) ^= ((-value)^(n)) & (BIT(b))
+
+// Macros for maths shortcuts
+#define M_PI 3.1415926536
+#define RADIANS(d) ((d)*M_PI/180.0)
+#define DEGREES(r) ((r)*180.0/M_PI)
+#define SIN_60 0.8660254037844386
+#define COS_60 0.5
+
+// Macros to contrain values
+#define NOLESS(v,n) do{ if (v < n) v = n; }while(0)
+#define NOMORE(v,n) do{ if (v > n) v = n; }while(0)
+
 typedef unsigned long millis_t;
 
 // Arduino < 1.0.0 does not define this, so we need to do it ourselves
@@ -50,7 +66,7 @@ void idle(bool ignore_stepper_queue = false);
 
 void manage_inactivity(bool ignore_stepper_queue=false);
 
-#if ENABLED(DUAL_X_CARRIAGE) && HAS_X_ENABLE && HAS_X2_ENABLE
+#if defined(DUAL_X_CARRIAGE) && HAS_X_ENABLE && HAS_X2_ENABLE
   #define  enable_x() do { X_ENABLE_WRITE( X_ENABLE_ON); X2_ENABLE_WRITE( X_ENABLE_ON); } while (0)
   #define disable_x() do { X_ENABLE_WRITE(!X_ENABLE_ON); X2_ENABLE_WRITE(!X_ENABLE_ON); axis_known_position[X_AXIS] = false; } while (0)
 #elif HAS_X_ENABLE
@@ -62,7 +78,7 @@ void manage_inactivity(bool ignore_stepper_queue=false);
 #endif
 
 #if HAS_Y_ENABLE
-  #if ENABLED(Y_DUAL_STEPPER_DRIVERS)
+  #ifdef Y_DUAL_STEPPER_DRIVERS
     #define  enable_y() { Y_ENABLE_WRITE( Y_ENABLE_ON); Y2_ENABLE_WRITE(Y_ENABLE_ON); }
     #define disable_y() { Y_ENABLE_WRITE(!Y_ENABLE_ON); Y2_ENABLE_WRITE(!Y_ENABLE_ON); axis_known_position[Y_AXIS] = false; }
   #else
@@ -75,7 +91,7 @@ void manage_inactivity(bool ignore_stepper_queue=false);
 #endif
 
 #if HAS_Z_ENABLE
-  #if ENABLED(Z_DUAL_STEPPER_DRIVERS)
+  #ifdef Z_DUAL_STEPPER_DRIVERS
     #define  enable_z() { Z_ENABLE_WRITE( Z_ENABLE_ON); Z2_ENABLE_WRITE(Z_ENABLE_ON); }
     #define disable_z() { Z_ENABLE_WRITE(!Z_ENABLE_ON); Z2_ENABLE_WRITE(!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }
   #else
@@ -142,25 +158,25 @@ void disable_all_steppers();
 void FlushSerialRequestResend();
 void ok_to_send();
 
-#if ENABLED(DELTA)
-float probe_bed(float x, float y);
-void set_delta_constants();
-void home_delta_axis();
-void calibration_report();
-void bed_probe_all();
-void set_default_z_probe_offset();
-void set_delta_constants();
-void save_carriage_positions(int position_num);
-void calculate_delta(float cartesian[3]);
-void adjust_delta(float cartesian[3]);
-void prepare_move_raw();
-extern float delta[3];
-extern float delta_tmp[3];
-extern float delta_tower1_x, delta_tower1_y;
-extern float delta_tower2_x, delta_tower2_y;
-extern float delta_tower3_x, delta_tower3_y;
+#ifdef DELTA
+  float probe_bed(float x, float y);
+  void set_delta_constants();
+  void home_delta_axis();
+  void calibration_report();
+  void bed_probe_all();
+  void set_default_z_probe_offset();
+  void set_delta_constants();
+  void save_carriage_positions(int position_num);
+  void calculate_delta(float cartesian[3]);
+  void adjust_delta(float cartesian[3]);
+  void prepare_move_raw();
+  extern float delta[3];
+  extern float delta_tmp[3];
+  extern float delta_tower1_x, delta_tower1_y;
+  extern float delta_tower2_x, delta_tower2_y;
+  extern float delta_tower3_x, delta_tower3_y;
 #endif
-#if ENABLED(SCARA)
+#ifdef SCARA
   void calculate_delta(float cartesian[3]);
   void calculate_SCARA_forward_Transform(float f_scara[3]);
 #endif
@@ -168,7 +184,7 @@ void prepare_move();
 void kill(const char *);
 void Stop();
 
-#if ENABLED(FILAMENT_RUNOUT_SENSOR)
+#ifdef FILAMENT_RUNOUT_SENSOR
   void filrunout();
 #endif
 
@@ -197,7 +213,7 @@ void clamp_to_software_endstops(float target[3]);
 extern millis_t previous_cmd_ms;
 inline void refresh_cmd_timeout() { previous_cmd_ms = millis(); }
 
-#if ENABLED(FAST_PWM_FAN)
+#ifdef FAST_PWM_FAN
   void setPwmFrequency(uint8_t pin, int val);
 #endif
 
@@ -227,22 +243,22 @@ extern float home_offset[3];
   extern float hotend_offset[NUM_HOTEND_OFFSETS][HOTENDS];
 #endif // HOTENDS > 1
 
-#if  ENABLED(NPR2)
+#ifdef NPR2
   extern int old_color; // old color for system NPR2
 #endif
 
-#if ENABLED(DELTA)
+#ifdef DELTA
   extern float z_probe_offset[3];
   extern float endstop_adj[3];
   extern float tower_adj[6];
   extern float delta_radius;
   extern float delta_diagonal_rod;
   extern float delta_segments_per_second;
-#elif ENABLED(Z_DUAL_ENDSTOPS)
+#elif defined(Z_DUAL_ENDSTOPS)
   extern float z_endstop_adj;
 #endif
 
-#if ENABLED(SCARA)
+#ifdef SCARA
   extern float axis_scaling[3];  // Build size scaling
 #endif
 
@@ -255,18 +271,18 @@ extern float zprobe_zoffset;
 // Lifetime stats
 extern unsigned long printer_usage_seconds;  //this can old about 136 year before go overflow. If you belive that you can live more than this please contact me.
 
-#if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
+#ifdef PREVENT_DANGEROUS_EXTRUDE
   extern float extrude_min_temp;
 #endif
 
 extern int fanSpeed;
 
-#if ENABLED(BARICUDA)
+#ifdef BARICUDA
   extern int ValvePressure;
   extern int EtoPPressure;
 #endif
 
-#if ENABLED(FAN_SOFT_PWM)
+#ifdef FAN_SOFT_PWM
   extern unsigned char fanSpeedSoftPwm;
 #endif
 
@@ -287,26 +303,26 @@ extern int fanSpeed;
   extern unsigned long stoppower;
 #endif
 
-#if ENABLED(IDLE_OOZING_PREVENT)
+#ifdef IDLE_OOZING_PREVENT
   extern bool idleoozing_enabled;
 #endif
 
-#if ENABLED(FWRETRACT)
+#ifdef FWRETRACT
   extern bool autoretract_enabled;
   extern bool retracted[EXTRUDERS];
   extern float retract_length, retract_length_swap, retract_feedrate, retract_zlift;
   extern float retract_recover_length, retract_recover_length_swap, retract_recover_feedrate;
 #endif
 
-#if ENABLED(EASY_LOAD)
+#ifdef EASY_LOAD
   extern bool allow_lengthy_extrude_once; // for load/unload
 #endif
 
-#if ENABLED(LASERBEAM)
+#ifdef LASERBEAM
   extern int laser_ttl_modulation;
 #endif
 
-#if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
+#if defined(SDSUPPORT) && defined(SD_SETTINGS)
   extern millis_t config_last_update;
   extern bool config_readed;
 #endif
@@ -318,12 +334,12 @@ extern millis_t print_job_stop_ms;
 extern uint8_t active_extruder;
 extern uint8_t active_driver;
 
-#if ENABLED(DIGIPOT_I2C)
+#ifdef DIGIPOT_I2C
   extern void digipot_i2c_set_current( int channel, float current );
   extern void digipot_i2c_init();
 #endif
 
-#if ENABLED(FIRMWARE_TEST)
+#ifdef FIRMWARE_TEST
   void FirmwareTest();
 #endif
 

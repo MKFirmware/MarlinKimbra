@@ -9,7 +9,7 @@
 // coarse Endstop Settings
 #define ENDSTOPPULLUPS // Comment this out (using // at the start of the line) to disable the endstop pullup resistors
 
-#if DISABLED(ENDSTOPPULLUPS)
+#ifndef ENDSTOPPULLUPS
   // fine endstop settings: Individual pullups. will be ignored if ENDSTOPPULLUPS is defined
   // #define ENDSTOPPULLUP_XMAX
   // #define ENDSTOPPULLUP_YMAX
@@ -76,10 +76,10 @@
 #define E_MIN_POS 0
 
 //=====================================================================================
-//============================= Bed Manual or Auto Leveling ===========================
+//================ Manual Bed Leveling (MBL) or Auto Bed Leveling =====================
 //=====================================================================================
 
-// set the rectangle in which to probe in manual or automatic
+// set the rectangle in which to probe in MBL or ABL
 #define LEFT_PROBE_BED_POSITION 20
 #define RIGHT_PROBE_BED_POSITION 180
 #define FRONT_PROBE_BED_POSITION 20
@@ -90,7 +90,7 @@
 //If you have enabled the Auto Bed Levelling and are using the same Z Probe for Z Homing,
 //it is highly recommended you let this Z_SAFE_HOMING enabled!!!
 //#define Z_SAFE_HOMING
-#if ENABLED(Z_SAFE_HOMING)
+#ifdef Z_SAFE_HOMING
   #define Z_SAFE_HOMING_X_POINT (X_MAX_LENGTH/2)    // X point for Z homing when homing all axis (G28) or homing Z
   #define Z_SAFE_HOMING_Y_POINT (Y_MAX_LENGTH/2)    // Y point for Z homing when homing all axis (G28) or homing Z
 #endif
@@ -98,7 +98,7 @@
 //#define ENABLE_AUTO_BED_LEVELING    // Delete the comment to enable (ABL)
 //#define Z_PROBE_REPEATABILITY_TEST  // Delete the comment to enable
 
-#if ENABLED(ENABLE_AUTO_BED_LEVELING)
+#ifdef ENABLE_AUTO_BED_LEVELING
 
   // There are 2 different ways to specify probing locations
   //
@@ -176,7 +176,7 @@
 //#define BED_CENTER_AT_0_0  // If defined, the center of the bed is at (X=0, Y=0)
 
 //Manual homing switch locations:
-#if ENABLED(MANUAL_HOME_POSITIONS)
+#ifdef MANUAL_HOME_POSITIONS
   #define MANUAL_X_HOME_POS 0
   #define MANUAL_Y_HOME_POS 0
   #define MANUAL_Z_HOME_POS 0
@@ -210,7 +210,7 @@
 
 // Custom M code points
 //#define CUSTOM_M_CODES
-#if ENABLED(CUSTOM_M_CODES)
+#ifdef CUSTOM_M_CODES
   #define CUSTOM_M_CODE_SET_Z_PROBE_OFFSET 851
   #define Z_PROBE_OFFSET_RANGE_MIN -20
   #define Z_PROBE_OFFSET_RANGE_MAX 20

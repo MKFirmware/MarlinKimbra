@@ -197,9 +197,9 @@
 #define MSG_KP                              " Kp: "
 #define MSG_KI                              " Ki: "
 #define MSG_KD                              " Kd: "
-#define MSG_B                               " B:"
-#define MSG_T                               " T:"
-#define MSG_AT                              " @:"
+#define MSG_T                               "T:"
+#define MSG_B                               "B:"
+#define MSG_AT                              "@:"
 #define MSG_PID_AUTOTUNE_FINISHED           MSG_PID_AUTOTUNE " finished! Put the last Kp, Ki and Kd constants from above into Configuration.h or send command M500 for save in EEPROM the new value!"
 #define MSG_PID_DEBUG                       " PID_DEBUG "
 #define MSG_PID_DEBUG_INPUT                 ": Input "
@@ -232,7 +232,8 @@
 #define MSG_BED_LEVELLING_Z                 " Z: "
 
 // LCD Menu Messages
-#if !(ENABLED(DISPLAY_CHARSET_HD44780_JAPAN) || ENABLED(DISPLAY_CHARSET_HD44780_WESTERN) || ENABLED(DISPLAY_CHARSET_HD44780_CYRILLIC))
+
+#if !(defined( DISPLAY_CHARSET_HD44780_JAPAN ) || defined( DISPLAY_CHARSET_HD44780_WESTERN ) || defined( DISPLAY_CHARSET_HD44780_CYRILLIC ))
   #define DISPLAY_CHARSET_HD44780_JAPAN
 #endif
 

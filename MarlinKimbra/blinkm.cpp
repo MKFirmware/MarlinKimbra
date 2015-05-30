@@ -3,7 +3,7 @@
   Created by Tim Koster, August 21 2013.
 */
 #include "Marlin.h"
-#if ENABLED(BLINKM)
+#ifdef BLINKM
 
 #include "blinkm.h"
 

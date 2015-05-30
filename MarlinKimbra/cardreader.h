@@ -1,7 +1,7 @@
 #ifndef CARDREADER_H
 #define CARDREADER_H
 
-#if ENABLED(SDSUPPORT)
+#ifdef SDSUPPORT
 
 #define MAX_DIR_DEPTH 10          // Maximum folder depth
 
@@ -18,7 +18,7 @@ public:
   //this is to delay autostart and hence the initialisaiton of the sd card to some seconds after the normal init, so the device is available quick after a reset
 
   void checkautostart(bool x);
-  void openFile(char* name, bool read, bool replace_current = true, bool lcd_status = true);
+  void openFile(char* name,bool read,bool replace_current=true);
   void openLogFile(char* name);
   void removeFile(char* name);
   void closeFile(bool store_location = false);
@@ -30,7 +30,7 @@ public:
   void getStatus();
   void printingHasFinished();
 
-  #if ENABLED(LONG_FILENAME_HOST_SUPPORT)
+  #ifdef LONG_FILENAME_HOST_SUPPORT
     void printLongPath(char *path);
   #endif
 
@@ -84,7 +84,7 @@ extern CardReader card;
 #define IS_SD_PRINTING (card.sdprinting)
 
 #if (SDCARDDETECT > -1)
-  #if ENABLED(SDCARDDETECTINVERTED)
+  #ifdef SDCARDDETECTINVERTED
     #define IS_SD_INSERTED (READ(SDCARDDETECT) != 0)
   #else
     #define IS_SD_INSERTED (READ(SDCARDDETECT) == 0)

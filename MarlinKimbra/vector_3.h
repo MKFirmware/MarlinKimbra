@@ -19,7 +19,7 @@
 #ifndef VECTOR_3_H
 #define VECTOR_3_H
 
-#if ENABLED(ENABLE_AUTO_BED_LEVELING)
+#ifdef ENABLE_AUTO_BED_LEVELING
 class matrix_3x3;
 
 struct vector_3

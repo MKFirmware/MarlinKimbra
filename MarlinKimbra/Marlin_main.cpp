@@ -147,7 +147,7 @@
  * M112 - Emergency stop
  * M114 - Output current position to serial port, (V)erbose for user
  * M115 - Capabilities string
- * M117 - display message
+ * M117 - Display a message on the controller screen
  * M119 - Output Endstop status to serial port
  * M120 - Enable endstop detection
  * M121 - Disable endstop detection
@@ -231,7 +231,7 @@
 
 bool Running = true;
 
-uint8_t debugLevel = DEBUG_INFO|DEBUG_COMMUNICATION;
+uint8_t debugLevel = DEBUG_INFO|DEBUG_ERRORS;
 
 static float feedrate = 1500.0, saved_feedrate;
 float current_position[NUM_AXIS] = { 0.0 };
@@ -286,12 +286,12 @@ bool target_direction;
 
 unsigned long printer_usage_seconds;
 
-#if DISABLED(DELTA)
+#ifndef DELTA
   int xy_travel_speed = XY_TRAVEL_SPEED;
   float zprobe_zoffset = 0;
 #endif
 
-#if ENABLED(Z_DUAL_ENDSTOPS) && DISABLED(DELTA)
+#if defined(Z_DUAL_ENDSTOPS) && !defined(DELTA)
   float z_endstop_adj = 0;
 #endif
 
@@ -305,7 +305,7 @@ unsigned long printer_usage_seconds;
   float hotend_offset[NUM_HOTEND_OFFSETS][HOTENDS];
 #endif
 
-#if ENABLED(NPR2)
+#ifdef NPR2
   int old_color = 99;
 #endif
 
@@ -314,12 +314,13 @@ unsigned long printer_usage_seconds;
   int servo_endstop_angles[] = SERVO_ENDSTOP_ANGLES;
 #endif
 
-#if ENABLED(BARICUDA)
+#ifdef BARICUDA
   int ValvePressure = 0;
   int EtoPPressure = 0;
 #endif
 
-#if ENABLED(FWRETRACT)
+#ifdef FWRETRACT
+
   bool autoretract_enabled = false;
   bool retracted[EXTRUDERS] = { false };
   bool retracted_swap[EXTRUDERS] = { false };
@@ -331,9 +332,10 @@ unsigned long printer_usage_seconds;
   float retract_recover_length = RETRACT_RECOVER_LENGTH;
   float retract_recover_length_swap = RETRACT_RECOVER_LENGTH_SWAP;
   float retract_recover_feedrate = RETRACT_RECOVER_FEEDRATE;
+
 #endif // FWRETRACT
 
-#if ENABLED(ULTIPANEL) && HAS_POWER_SWITCH
+#if defined(ULTIPANEL) && HAS_POWER_SWITCH
   bool powersupply = 
     #ifdef PS_DEFAULT_OFF
       false
@@ -343,7 +345,7 @@ unsigned long printer_usage_seconds;
   ;
 #endif
 
-#if ENABLED(DELTA)
+#ifdef DELTA
   float delta[3] = { 0.0 };
   float tower_adj[6] = { 0, 0, 0, 0, 0, 0 };
   float delta_radius; // = DEFAULT_delta_radius;
@@ -396,7 +398,7 @@ unsigned long printer_usage_seconds;
   static bool home_all_axis = true;
 #endif // DELTA
 
-#if ENABLED(SCARA)
+#ifdef SCARA
   float delta_segments_per_second = SCARA_SEGMENTS_PER_SECOND;
   static float delta[3] = { 0 };
   float axis_scaling[3] = { 1, 1, 1 };    // Build size scaling, default to 1
@@ -419,7 +421,7 @@ unsigned long printer_usage_seconds;
   bool printing = false;
 #endif
 
-#if ENABLED(SDSUPPORT)
+#ifdef SDSUPPORT
   static bool fromsd[BUFSIZE];
   #ifdef SD_SETTINGS
     millis_t config_last_update = 0;
@@ -427,16 +429,16 @@ unsigned long printer_usage_seconds;
   #endif
 #endif
 
-#if ENABLED(FILAMENTCHANGEENABLE)
+#ifdef FILAMENTCHANGEENABLE
 	bool filament_changing = false;
 #endif
 
-#if ENABLED(IDLE_OOZING_PREVENT) || ENABLED(EXTRUDER_RUNOUT_PREVENT)
+#if defined(IDLE_OOZING_PREVENT) || defined(EXTRUDER_RUNOUT_PREVENT)
   unsigned long axis_last_activity = 0;
   bool axis_is_moving = false;
 #endif
 
-#if  ENABLED(IDLE_OOZING_PREVENT)
+#ifdef IDLE_OOZING_PREVENT
   bool idleoozing_enabled = true;
   bool IDLE_OOZING_retracted[EXTRUDERS] = ARRAY_BY_EXTRUDERS(false, false, false, false);
 #endif
@@ -448,16 +450,16 @@ unsigned long printer_usage_seconds;
   unsigned long stoppower = 0;
 #endif
 
-#if ENABLED(LASERBEAM)
+#ifdef LASERBEAM
   int laser_ttl_modulation = 0;
 #endif
 
-#if ENABLED(NPR2)
+#ifdef NPR2
   static float color_position[] = COLOR_STEP;
   static float color_step_moltiplicator = (DRIVER_MICROSTEP / MOTOR_ANGLE) * CARTER_MOLTIPLICATOR;
 #endif // NPR2
 
-#if ENABLED(EASY_LOAD)
+#ifdef EASY_LOAD
   bool allow_lengthy_extrude_once; // for load/unload
 #endif
 
@@ -478,7 +480,7 @@ void process_next_command();
 
 bool setTargetedHotend(int code);
 
-#if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
+#ifdef PREVENT_DANGEROUS_EXTRUDE
   float extrude_min_temp = EXTRUDE_MINTEMP;
 #endif
 
@@ -555,7 +557,8 @@ bool enqueuecommand(const char *cmd) {
   // This is dangerous if a mixing of serial and this happens
   char *command = command_queue[cmd_queue_index_w];
   strcpy(command, cmd);
-  ECHO_LMV(DB, MSG_ENQUEUEING, command);
+  ECHO_SMV(DB, MSG_ENQUEUEING, command);
+  ECHO_EM("\"");
   cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
   commands_in_queue++;
   return true;
@@ -684,7 +687,7 @@ void setup() {
   SERIAL_INIT(BAUDRATE);
 
   ECHO_S(START);
-  ECHO_E;
+  ECHO_S(DB);
 
   // Check startup - does nothing if bootloader sets MCUSR to 0
   byte mcu = MCUSR;
@@ -699,14 +702,15 @@ void setup() {
 
   #ifdef STRING_VERSION_CONFIG_H
     #ifdef STRING_CONFIG_H_AUTHOR
-      ECHO_LM(OK, MSG_CONFIGURATION_VER STRING_VERSION_CONFIG_H MSG_AUTHOR STRING_CONFIG_H_AUTHOR MSG_COMPILED __DATE__);
+      ECHO_LM(DB, MSG_CONFIGURATION_VER STRING_VERSION_CONFIG_H MSG_AUTHOR STRING_CONFIG_H_AUTHOR);
+      ECHO_EM(MSG_COMPILED __DATE__);
     #endif // STRING_CONFIG_H_AUTHOR
   #endif // STRING_VERSION_CONFIG_H
 
   ECHO_SMV(DB, MSG_FREE_MEMORY, freeMemory());
   ECHO_EMV(MSG_PLANNER_BUFFER_BYTES, (int)sizeof(block_t)*BLOCK_BUFFER_SIZE);
 
-  #if ENABLED(SDSUPPORT)
+  #ifdef SDSUPPORT
     for (int8_t i = 0; i < BUFSIZE; i++) fromsd[i] = false;
   #endif
 
@@ -735,7 +739,7 @@ void setup() {
     digipot_i2c_init();
   #endif
 
-  #if ENABLED(Z_PROBE_SLED)
+  #ifdef Z_PROBE_SLED
     OUT_WRITE(SERVO0_PIN, LOW); // turn it off
   #endif // Z_PROBE_SLED
 
@@ -751,7 +755,7 @@ void setup() {
     digitalWrite(STAT_LED_BLUE, LOW); // turn it off
   #endif
 
-  #if ENABLED(FIRMWARE_TEST)
+  #ifdef FIRMWARE_TEST
     FirmwareTest();
   #endif // FIRMWARE_TEST
 }
@@ -769,13 +773,13 @@ void setup() {
 void loop() {
   if (commands_in_queue < BUFSIZE - 1) get_command();
 
-  #if ENABLED(SDSUPPORT)
+  #ifdef SDSUPPORT
     card.checkautostart(false);
   #endif
 
   if (commands_in_queue) {
 
-    #if ENABLED(SDSUPPORT)
+    #ifdef SDSUPPORT
 
       if (card.saving) {
         char *command = command_queue[cmd_queue_index_r];
@@ -828,7 +832,7 @@ void get_command() {
 
   if (drain_queued_commands_P()) return; // priority is given to non-serial commands
 
-  #if ENABLED(NO_TIMEOUTS)
+  #ifdef NO_TIMEOUTS
     static millis_t last_command_time = 0;
     millis_t ms = millis();
 
@@ -843,7 +847,7 @@ void get_command() {
   //
   while (MYSERIAL.available() > 0 && commands_in_queue < BUFSIZE) {
 
-    #if ENABLED(NO_TIMEOUTS)
+    #ifdef NO_TIMEOUTS
       last_command_time = ms;
     #endif
 
@@ -863,7 +867,7 @@ void get_command() {
       command[serial_count] = 0; // terminate string
 
       // this item in the queue is not from sd
-      #if ENABLED(SDSUPPORT)
+      #ifdef SDSUPPORT
         fromsd[cmd_queue_index_w] = false;
       #endif
 
@@ -921,10 +925,6 @@ void get_command() {
 
       // If command was e-stop process now
       if (strcmp(command, "M112") == 0) kill(PSTR(MSG_KILLED));
-
-      #if ENABLED(FILAMENTCHANGEENABLE)
-        if (strcmp(command, "M601") == 0) filament_changing = false;
-      #endif //FILAMENTCHANGEENABL
 
       cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
       commands_in_queue += 1;
@@ -1051,7 +1051,7 @@ XYZ_CONSTS_FROM_CONFIG(float, base_min_pos,    MIN_POS);
 XYZ_CONSTS_FROM_CONFIG(float, home_bump_mm,    HOME_BUMP_MM);
 XYZ_CONSTS_FROM_CONFIG(signed char, home_dir,  HOME_DIR);
 
-#if ENABLED(DUAL_X_CARRIAGE)
+#ifdef DUAL_X_CARRIAGE
 
   #define DXC_FULL_CONTROL_MODE 0
   #define DXC_AUTO_PARK_MODE    1
@@ -1196,7 +1196,7 @@ inline void line_to_destination() {
 inline void sync_plan_position() {
   plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 }
-#if ENABLED(DELTA) || ENABLED(SCARA)
+#if defined(DELTA) || defined(SCARA)
   inline void sync_plan_position_delta() {
     calculate_delta(current_position);
     plan_set_position(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS]);
@@ -1213,7 +1213,7 @@ static void setup_for_endstop_move() {
   enable_endstops(true);
 }
 
-#if ENABLED(CARTESIAN) || ENABLED(COREXY) || ENABLED(SCARA)
+#if defined(CARTESIAN) || defined(COREXY) || defined(SCARA)
 
   static void do_blocking_move_to(float x, float y, float z) {
     float oldFeedRate = feedrate;
@@ -1536,7 +1536,7 @@ static void setup_for_endstop_move() {
   #define HOMEAXIS(LETTER) homeaxis(LETTER##_AXIS)
 #endif // Cartesian || CoreXY || Scara
 
-#if ENABLED(DELTA)
+#ifdef DELTA
 
   static void homeaxis(AxisEnum axis) {
     #define HOMEAXIS_DO(LETTER) \
@@ -2393,7 +2393,7 @@ static void setup_for_endstop_move() {
   }
 #endif //DELTA
 
-#if  ENABLED(IDLE_OOZING_PREVENT)
+#ifdef IDLE_OOZING_PREVENT
   void IDLE_OOZING_retract(bool retracting) {  
     if (retracting && !IDLE_OOZING_retracted[active_extruder]) {
   	  set_destination_to_current();
@@ -2418,7 +2418,7 @@ static void setup_for_endstop_move() {
   }
 #endif
 
-#if ENABLED(FWRETRACT)
+#ifdef FWRETRACT
   void retract(bool retracting, bool swapping = false) {
 
     if (retracting == retracted[active_extruder]) return;
@@ -2469,7 +2469,7 @@ static void setup_for_endstop_move() {
   } // retract()
 #endif //FWRETRACT
 
-#if ENABLED(Z_PROBE_SLED)
+#ifdef Z_PROBE_SLED
 
   #ifndef SLED_DOCKING_OFFSET
     #define SLED_DOCKING_OFFSET 0
@@ -2578,11 +2578,6 @@ inline void wait_bed() {
   }
   LCD_MESSAGEPGM(MSG_BED_DONE);
   refresh_cmd_timeout();
-}
-
-void error_invalid_extruder(int code, int e) {
-  ECHO_SMV(DB, "M", code);
-  ECHO_EMV(MSG_INVALID_EXTRUDER, e);
 }
 
 /******************************************************************************
@@ -3011,10 +3006,8 @@ inline void gcode_G28(boolean home_XY = false) {
           // Manual G28 bed level
           #ifdef ULTIPANEL
             ECHO_LM(DB, " --LEVEL PLATE SCRIPT--");
-            set_ChangeScreen(true);
             while(!lcd_clicked()) {
-              set_pageShowInfo(0);
-              lcd_update();
+              idle(true);
             }
             saved_feedrate = feedrate;
             saved_feedrate_multiplier = feedrate_multiplier;
@@ -3051,63 +3044,52 @@ inline void gcode_G28(boolean home_XY = false) {
 
             // PROBE FIRST POINT
             set_pageShowInfo(1);
-            set_ChangeScreen(true);
             do_blocking_move_to(LEFT_PROBE_BED_POSITION, FRONT_PROBE_BED_POSITION, current_position[Z_AXIS]);
             do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], Z_MIN_POS);
             while(!lcd_clicked()) {          
-              manage_heater();
-              manage_inactivity();
+              idle(true);
             }
 
             // PROBE SECOND POINT
-            set_ChangeScreen(true);
             set_pageShowInfo(2);
             do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS + 5);
             do_blocking_move_to(RIGHT_PROBE_BED_POSITION, FRONT_PROBE_BED_POSITION, current_position[Z_AXIS]);
             do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS);
             while(!lcd_clicked()) {
-              manage_heater();
-              manage_inactivity();
+              idle(true);
             }
 
             // PROBE THIRD POINT
-            set_ChangeScreen(true);
             set_pageShowInfo(3);
             do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS + 5);
             do_blocking_move_to(RIGHT_PROBE_BED_POSITION, BACK_PROBE_BED_POSITION, current_position[Z_AXIS]);
             do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS);
             while(!lcd_clicked()) {
-              manage_heater();
-              manage_inactivity();
+              idle(true);
             }     
 
             // PROBE FOURTH POINT
-            set_ChangeScreen(true);
             set_pageShowInfo(4);
             do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS + 5);
             do_blocking_move_to(LEFT_PROBE_BED_POSITION, BACK_PROBE_BED_POSITION, current_position[Z_AXIS]);
             do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS);
             while(!lcd_clicked()) {
-              manage_heater();
-              manage_inactivity();
+              idle(true);
             }
 
             // PROBE CENTER
-            set_ChangeScreen(true);
             set_pageShowInfo(5);
             do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS + 5);
             do_blocking_move_to((X_MAX_POS-X_MIN_POS)/2, (Y_MAX_POS-Y_MIN_POS)/2, current_position[Z_AXIS]);
             do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS);
             while(!lcd_clicked()) {
-              manage_heater();
-              manage_inactivity();
+              idle(true);
             }
 
             // FINISH MANUAL BED LEVEL
-            set_ChangeScreen(true);
             set_pageShowInfo(6);
             do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS + 5);
-            enqueuecommands_P(PSTR("G28 X0 Y0\nG4 P0\nG4 P0\nG4 P0"));
+            enqueuecommands_P(PSTR("G28"));
           #endif // ULTIPANEL
         }
         else if (home_all_axis || homeZ) HOMEAXIS(Z);
@@ -3947,7 +3929,8 @@ inline void gcode_M31() {
     }
   }
 
-  #if ENABLED(LONG_FILENAME_HOST_SUPPORT)
+  #ifdef LONG_FILENAME_HOST_SUPPORT
+
     /**
      * M33: Get the long full path of a file or folder
      *
@@ -3963,6 +3946,7 @@ inline void gcode_M31() {
     inline void gcode_M33() {
       card.printLongPath(current_command_args);
     }
+
   #endif
 
   /**
@@ -4389,7 +4373,7 @@ inline void gcode_M105() {
       ECHO_MV(" /", degTargetHotend(target_extruder), 1);
     #endif
     #if HAS_TEMP_BED
-      ECHO_MV(MSG_B, degBed(), 1);
+      ECHO_MV(" " MSG_B, degBed(), 1);
       ECHO_MV(" /", degTargetBed(), 1);
     #endif
     for (int8_t e = 0; e < EXTRUDERS; ++e) {
@@ -4647,7 +4631,7 @@ inline void gcode_M140() {
   if (code_seen('S')) setTargetBed(code_value());
 }
 
-#ifdef ULTIPANEL
+#if defined(ULTIPANEL) && TEMP_SENSOR_0 != 0
 
   /**
    * M145: Set the heatup state for a material in the LCD menu
@@ -4749,19 +4733,14 @@ inline void gcode_M140() {
 #endif // HAS_TEMP_BED
 
 /**
- * M200: Set filament diameter and set E axis units to cubic millimeters (use S0 to set back to millimeters).
- *       T<extruder>
- *       D<millimeters>
+ * M200: Set filament diameter and set E axis units to cubic millimetres
+ *
+ *    T<extruder> - Optional extruder number. Current extruder if omitted.
+ *    D<mm> - Diameter of the filament. Use "D0" to set units back to millimetres.
  */
 inline void gcode_M200() {
-  int tmp_extruder = active_extruder;
-  if (code_seen('T')) {
-    tmp_extruder = code_value_short();
-    if (tmp_extruder >= EXTRUDERS) {
-      error_invalid_extruder(200, tmp_extruder);
-      return;
-    }
-  }
+
+  if (setTargetedHotend(200)) return;
 
   if (code_seen('D')) {
     float diameter = code_value();
@@ -4770,10 +4749,10 @@ inline void gcode_M200() {
     // for all extruders
     volumetric_enabled = (diameter != 0.0);
     if (volumetric_enabled) {
-      filament_size[tmp_extruder] = diameter;
+      filament_size[target_extruder] = diameter;
       // make sure all extruders have some sane value for the filament size
-      for (int i=0; i<EXTRUDERS; i++)
-        if (! filament_size[i]) filament_size[i] = DEFAULT_NOMINAL_FILAMENT_DIA;
+      for (int i = 0; i < EXTRUDERS; i++)
+        if (!filament_size[i]) filament_size[i] = DEFAULT_NOMINAL_FILAMENT_DIA;
     }
   }
   else {
@@ -4787,7 +4766,7 @@ inline void gcode_M200() {
  * M201: Set max acceleration in units/s^2 for print moves (M201 X1000 Y1000)
  */
 inline void gcode_M201() {
-  for (int8_t i=0; i < NUM_AXIS; i++) {
+  for (int8_t i = 0; i < NUM_AXIS; i++) {
     if (code_seen(axis_codes[i])) {
       max_acceleration_units_per_sq_second[i] = code_value();
     }
@@ -4798,7 +4777,7 @@ inline void gcode_M201() {
 
 #if 0 // Not used for Sprinter/grbl gen6
   inline void gcode_M202() {
-    for(int8_t i=0; i < NUM_AXIS; i++) {
+    for(int8_t i = 0; i < NUM_AXIS; i++) {
       if(code_seen(axis_codes[i])) axis_travel_steps_per_sqr_second[i] = code_value() * axis_steps_per_unit[i];
     }
   }
@@ -5163,6 +5142,8 @@ inline void gcode_M303() {
   int c = code_seen('C') ? code_value_short() : 5;
   float temp = code_seen('S') ? code_value() : (e < 0 ? 70.0 : 150.0);
   PID_autotune(temp, e, c);
+  gcode_LastN += 1;
+  FlushSerialRequestResend();
 }
 
 #ifdef PIDTEMPBED
@@ -5670,12 +5651,6 @@ inline void gcode_M503() {
 
     filament_changing = false;
   }
-
-  /**
-   * M601: Resume the print from filament change
-   */
-  inline void gcode_M601() { filament_changing = false; }
-
 #endif //FILAMENTCHANGEENABLE
 
 #ifdef DUAL_X_CARRIAGE
@@ -6136,79 +6111,44 @@ inline void gcode_T(uint8_t tmp_extruder) {
 }
 
 /**
- * Process Commands and dispatch them to handlers
+ * Process a single command and dispatch it to its handler
  * This is called from the main loop()
  */
 void process_next_command() {
-  current_command = command_queue[cmd_queue_index_r];
 
   if ((debugLevel & DEBUG_ECHO)) {
-    ECHO_LV(DB, current_command);
+    ECHO_LV(DB, command_queue[cmd_queue_index_r]);
   }
 
-  // Sanitize the current command:
-  //  - Skip leading spaces
-  //  - Bypass N...
-  //  - Overwrite * with nul to mark the end
-  while (*current_command == ' ') ++current_command;
-  if (*current_command == 'N' && current_command[1] >= '0' && current_command[1] <= '9') {
-    while (*current_command != ' ') ++current_command;
-    while (*current_command == ' ') ++current_command;
-  }
-  char *starpos = strchr(current_command, '*');  // * should always be the last parameter
-  if (starpos) *starpos = '\0';
-
-  // Get the command code, which must be G, M, or T
-  char command_code = *current_command;
-
-  // The code must have a numeric value
-  bool code_is_good = (current_command[1] >= '0' && current_command[1] <= '9');
-
-  int codenum; // define ahead of goto
-
-  // Bail early if there's no code
-  if (!code_is_good) goto ExitUnknownCommand;
-
-  // Args pointer optimizes code_seen, especially those taking XYZEF
-  // This wastes a little cpu on commands that expect no arguments.
-  current_command_args = current_command;
-  while (*current_command_args != ' ') ++current_command_args;
-  while (*current_command_args == ' ') ++current_command_args;
-
-  // Interpret the code int
-  seen_pointer = current_command;
-  codenum = code_value_short();
-
-  // Handle a known G, M, or T
-  switch(command_code) {
-    case 'G': switch (codenum) {
-
+  if(code_seen('G')) {
+    int gCode = code_value_short();
+    switch(gCode) {
       //G0 -> G1
       case 0:
       case 1:
         gcode_G0_G1(); break;
 
       // G2, G3
-      #if DISABLED(SCARA)
+      #ifndef SCARA
         case 2: // G2  - CW ARC
         case 3: // G3  - CCW ARC
-          gcode_G2_G3(codenum == 2); break;
+          gcode_G2_G3(gCode == 2); break;
       #endif
 
       // G4 Dwell
       case 4:
         gcode_G4(); break;
 
-      #if ENABLED(FWRETRACT)
+      #ifdef FWRETRACT
         case 10: // G10: retract
         case 11: // G11: retract_recover
-          gcode_G10_G11(codenum == 10); break;
-      #endif // FWRETRACT
+          gcode_G10_G11(gCode == 10); break;
+      #endif //FWRETRACT
 
       case 28: //G28: Home all axes, one at a time
         gcode_G28(); gcode_M114(); break;
 
-      #if ENABLED(ENABLE_AUTO_BED_LEVELING)
+      #ifdef ENABLE_AUTO_BED_LEVELING
         case 29: // G29 Detailed Z-Probe, probes the bed at 3 or more points.
           gcode_G29(); gcode_M114(); break;
         #ifndef Z_PROBE_SLED
@@ -6217,11 +6157,11 @@ void process_next_command() {
         #else // Z_PROBE_SLED
           case 31: // G31: dock the sled
           case 32: // G32: undock the sled
-            dock_sled(codenum == 31); break;
+            dock_sled(gCode == 31); break;
         #endif // Z_PROBE_SLED
       #endif // ENABLE_AUTO_BED_LEVELING
 
-      #if ENABLED(DELTA) && ENABLED(Z_PROBE_ENDSTOP)
+      #if defined(DELTA) && defined(Z_PROBE_ENDSTOP)
         case 29: // G29 Detailed Z-Probe, probes the bed at more points.
           gcode_G29(); break;
         case 30:  // G30 Delta AutoCalibration
@@ -6239,16 +6179,17 @@ void process_next_command() {
       case 92: // G92
         gcode_G92(); break;
     }
-    break;
+  }
 
-    case 'M': switch (codenum) {
-      #if ENABLED(ULTIPANEL)
+  else if (code_seen('M')) {
+    switch(code_value_short()) {
+      #ifdef ULTIPANEL
         case 0: // M0 - Unconditional stop - Wait for user button press on LCD
         case 1: // M1 - Conditional stop - Wait for user button press on LCD
           gcode_M0_M1(); break;
       #endif //ULTIPANEL
 
-      #if ENABLED(LASERBEAM)
+      #ifdef LASERBEAM
         case 3: // M03 S - Setting laser beam
           gcode_M3(); break;
         case 4: // M04 - Turn on laser beam
@@ -6265,7 +6206,7 @@ void process_next_command() {
       case 17: //M17 - Enable/Power all stepper motors
         gcode_M17(); break;
 
-      #if ENABLED(SDSUPPORT)
+      #ifdef SDSUPPORT
         case 20: // M20 - list SD card
           gcode_M20(); break;
         case 21: // M21 - init SD card
@@ -6291,7 +6232,7 @@ void process_next_command() {
         case 32: // M32 - Select file and start SD print
           gcode_M32(); break;
 
-        #if ENABLED(LONG_FILENAME_HOST_SUPPORT)
+        #ifdef LONG_FILENAME_HOST_SUPPORT
           case 33: // M33 - Get the long full path to a file or folder
             gcode_M33(); break;
         #endif
@@ -6307,7 +6248,7 @@ void process_next_command() {
       case 42: // M42 -Change pin status via gcode
         gcode_M42(); break;
 
-      #if ENABLED(ENABLE_AUTO_BED_LEVELING) && ENABLED(Z_PROBE_REPEATABILITY_TEST)
+      #if defined(ENABLE_AUTO_BED_LEVELING) && defined(Z_PROBE_REPEATABILITY_TEST)
         case 49: // M49 Z-Probe repeatability
           gcode_M49(); break;
       #endif
@@ -6354,7 +6295,7 @@ void process_next_command() {
       case 115: // M115 Report capabilities
         gcode_M115(); break;
 
-      #if ENABLED(ULTIPANEL)
+      #ifdef ULTIPANEL
         case 117: // M117 display message
           gcode_M117(); break;
       #endif
@@ -6366,7 +6307,7 @@ void process_next_command() {
       case 121: // M121 Disable endstops
         gcode_M121(); break;
 
-      #if ENABLED(BARICUDA)
+      #ifdef BARICUDA
         // PWM for HEATER_1_PIN
         #if HAS_HEATER_1
           case 126: // M126 valve open
@@ -6387,7 +6328,7 @@ void process_next_command() {
       case 140: // M140 Set bed temp
         gcode_M140(); break;
 
-      #if ENABLED(BLINKM)
+      #ifdef BLINKM
         case 150: // M150
           gcode_M150(); break;
       #endif //BLINKM
@@ -6415,7 +6356,7 @@ void process_next_command() {
       case 206: // M206 additional homing offset
         gcode_M206(); break;
 
-      #if ENABLED(FWRETRACT)
+      #ifdef FWRETRACT
         case 207: //M207 - set retract length S[positive mm] F[feedrate mm/min] Z[additional zlift/hop]
           gcode_M207(); break;
         case 208: // M208 - set retract recover length S[positive mm surplus to the M207 S*] F[feedrate mm/min]
@@ -6436,12 +6377,12 @@ void process_next_command() {
       case 226: // M226 P<pin number> S<pin state>- Wait until the specified pin reaches the state required
         gcode_M226(); break;
 
-      #if ENABLED(CHDK) || (ENABLED(PHOTOGRAPH_PIN) && PHOTOGRAPH_PIN > -1)
+      #if defined(CHDK) || (defined(PHOTOGRAPH_PIN) && PHOTOGRAPH_PIN > -1)
         case 240: // M240  Triggers a camera by emulating a Canon RC-1 : http://www.doc-diy.net/photo/rc-1_hacked/
           gcode_M240(); break;
       #endif // CHDK || PHOTOGRAPH_PIN
 
-      #if ENABLED(DOGLCD) && LCD_CONTRAST >= 0
+      #if defined(DOGLCD) && LCD_CONTRAST >= 0
         case 250: // M250  Set LCD contrast value: C<value> (value 0..63)
           gcode_M250(); break;
       #endif // DOGLCD
@@ -6456,23 +6397,20 @@ void process_next_command() {
           gcode_M300(); break;
       #endif // HAS_LCD_BUZZ
 
-      #if ENABLED(PIDTEMP)
+      #ifdef PIDTEMP
         case 301: // M301
           gcode_M301(); break;
       #endif // PIDTEMP
 
-      #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
+      #ifdef PREVENT_DANGEROUS_EXTRUDE
         case 302: // allow cold extrudes, or set the minimum extrude temperature
           gcode_M302(); break;
       #endif // PREVENT_DANGEROUS_EXTRUDE
 
       case 303: // M303 PID autotune
-        gcode_M303();
-        gcode_LastN += 1;
-        FlushSerialRequestResend();
-        break;
+        gcode_M303(); break;
 
-      #if ENABLED(PIDTEMPBED)
+      #ifdef PIDTEMPBED
         case 304: // M304
           gcode_M304(); break;
       #endif // PIDTEMPBED
@@ -6486,7 +6424,7 @@ void process_next_command() {
           break;
       #endif // HAS_MICROSTEPS
 
-      #if ENABLED(SCARA)
+      #ifdef SCARA
         case 360:  // M360 SCARA Theta pos1
           if (gcode_M360()) return; break;
         case 361:  // M361 SCARA Theta pos2
@@ -6511,7 +6449,7 @@ void process_next_command() {
           gcode_M402(); break;
       #endif
 
-      #if ENABLED(FILAMENT_SENSOR)
+      #ifdef FILAMENT_SENSOR
         case 404:  //M404 Enter the nominal filament width (3mm, 1.75mm ) N<3.0> or display nominal filament width
           gcode_M404(); break;
         case 405:  //M405 Turn on filament sensor for control
@@ -6537,22 +6475,22 @@ void process_next_command() {
       case 503: // M503 print settings currently in memory
         gcode_M503(); break;
 
-      #if ENABLED(ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED)
+      #ifdef ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
         case 540:
           gcode_M540(); break;
       #endif
 
-      #if ENABLED(FILAMENTCHANGEENABLE)
-        case 600: // M600 Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
+      #ifdef FILAMENTCHANGEENABLE
+        case 600: //Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
           gcode_M600(); break;
       #endif
 
-      #if ENABLED(DUAL_X_CARRIAGE)
+      #ifdef DUAL_X_CARRIAGE
         case 605:
           gcode_M605(); break;
       #endif
 
-      #if ENABLED(ENABLE_AUTO_BED_LEVELING) || ENABLED(DELTA)
+      #if defined(ENABLE_AUTO_BED_LEVELING) || defined(DELTA)
         case 666: // M666 Set Z probe offset or set delta endstop and geometry adjustment
           gcode_M666(); break;
       #endif
@@ -6565,7 +6503,7 @@ void process_next_command() {
           gcode_M908(); break;
       #endif // HAS_DIGIPOTSS
 
-      #if ENABLED(NPR2)
+      #ifdef NPR2
         case 997: // M997 Cxx Move Carter xx gradi
           gcode_M997(); break;
       #endif // NPR2
@@ -6573,24 +6511,21 @@ void process_next_command() {
        case 999: // M999: Restart after being Stopped
         gcode_M999(); break;
 
-      #if ENABLED(CUSTOM_M_CODE_SET_Z_PROBE_OFFSET)
+        #ifdef CUSTOM_M_CODE_SET_Z_PROBE_OFFSET
         case CUSTOM_M_CODE_SET_Z_PROBE_OFFSET:
           gcode_SET_Z_PROBE_OFFSET(); break;
       #endif // CUSTOM_M_CODE_SET_Z_PROBE_OFFSET
     }
-    break;
-
-    case 'T':
-      gcode_T(codenum);
-    break;
-
-    default: code_is_good = false;    
   }
 
-ExitUnknownCommand:
+  else if (code_seen('T')) {
+    gcode_T(code_value_short());
+  }
 
-  // Still unknown command? Throw an error
-  if (!code_is_good) unknown_command_error();
+  else {
+    ECHO_SM(ER, MSG_UNKNOWN_COMMAND);
+    ECHO_EVM(command_queue[cmd_queue_index_r], "\"");
+  }
 
   ok_to_send();
 }
@@ -6604,11 +6539,11 @@ void FlushSerialRequestResend() {
 
 void ok_to_send() {
   refresh_cmd_timeout();
-  #if ENABLED(SDSUPPORT)
+  #ifdef SDSUPPORT
     if (fromsd[cmd_queue_index_r]) return;
   #endif
   ECHO_S(OK);
-  #if ENABLED(ADVANCED_OK)
+  #ifdef ADVANCED_OK
     ECHO_MV(" N", gcode_LastN);
     ECHO_MV(" P", (int)(BLOCK_BUFFER_SIZE - movesplanned() - 1));
     ECHO_MV(" B", BUFSIZE - commands_in_queue);
@@ -6622,7 +6557,7 @@ void clamp_to_software_endstops(float target[3]) {
     NOLESS(target[Y_AXIS], min_pos[Y_AXIS]);
     
     float negative_z_offset = 0;
-    #if ENABLED(ENABLE_AUTO_BED_LEVELING)
+    #ifdef ENABLE_AUTO_BED_LEVELING
       if (Z_PROBE_OFFSET_FROM_EXTRUDER < 0) negative_z_offset += Z_PROBE_OFFSET_FROM_EXTRUDER;
       if (home_offset[Z_AXIS] < 0) negative_z_offset += home_offset[Z_AXIS];
     #endif
@@ -6636,7 +6571,7 @@ void clamp_to_software_endstops(float target[3]) {
   }
 }
 
-#if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
+#ifdef PREVENT_DANGEROUS_EXTRUDE
 
   inline void prevent_dangerous_extrude(float &curr_e, float &dest_e) {
     float de = dest_e - curr_e;
@@ -6646,7 +6581,7 @@ void clamp_to_software_endstops(float target[3]) {
         curr_e = dest_e; // Behave as if the move really took place, but ignore E part
         ECHO_LM(ER, MSG_ERR_COLD_EXTRUDE_STOP);
       }
-      #if ENABLED(PREVENT_LENGTHY_EXTRUDE)
+      #ifdef PREVENT_LENGTHY_EXTRUDE
         if (labs(de) > EXTRUDE_MAXLENGTH) {
           curr_e = dest_e; // Behave as if the move really took place, but ignore E part
           ECHO_LM(ER, MSG_ERR_LONG_EXTRUDE_STOP);
@@ -6657,7 +6592,7 @@ void clamp_to_software_endstops(float target[3]) {
 
 #endif // PREVENT_DANGEROUS_EXTRUDE
 
-#if ENABLED(DELTA) || ENABLED(SCARA)
+#if defined(DELTA) || defined(SCARA)
 
   inline bool prepare_move_delta() {
     float difference[NUM_AXIS];
@@ -7256,15 +7191,8 @@ bool setTargetedHotend(int code) {
   if (code_seen('T')) {
     target_extruder = code_value_short();
     if (target_extruder >= EXTRUDERS) {
-      switch(code) {
-        case 104:
-        case 105:
-        case 109:
-        case 218:
-        case 221:
-          error_invalid_extruder(code, target_extruder);
-          break;
-      }
+      ECHO_SMV(ER, "M", code);
+      ECHO_EMV(" " MSG_INVALID_EXTRUDER, target_extruder);
       return true;
     }
   }
