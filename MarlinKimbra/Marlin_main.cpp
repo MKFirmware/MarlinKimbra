@@ -6544,7 +6544,7 @@ void ok_to_send() {
   #endif
   ECHO_S(OK);
   #ifdef ADVANCED_OK
-    ECHO_MV(" N", gcode_LastN);
+    ECHO_MV("N", gcode_LastN);
     ECHO_MV(" P", (int)(BLOCK_BUFFER_SIZE - movesplanned() - 1));
     ECHO_MV(" B", BUFSIZE - commands_in_queue);
   #endif
