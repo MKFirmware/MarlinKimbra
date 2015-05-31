@@ -450,7 +450,7 @@ ISR(TIMER1_COMPA_vect) {
       #endif
 
       // #ifdef ADVANCE
-      //   e_steps[current_block->active_extruder] = 0;
+      //   e_steps[current_block->active_driver] = 0;
       // #endif
     }
     else {

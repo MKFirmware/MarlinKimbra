@@ -12,7 +12,7 @@ int8_t encoderDiff; // updated from interrupt context and added to encoderPositi
 bool encoderRateMultiplierEnabled;
 int32_t lastEncoderMovementMillis;
 
-#if defined(DELTA) && defined(Z_SAFE_HOMING) && Z_HOME_DIR < 0
+#if !defined(DELTA) && !defined(Z_SAFE_HOMING) && Z_HOME_DIR < 0
   int  pageShowInfo = 0;
   void set_pageShowInfo(int value){ pageShowInfo = value; }
 #endif

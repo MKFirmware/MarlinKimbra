@@ -54,7 +54,6 @@
 #define SERIAL_PRINT(msg, args...) MYSERIAL.print(msg, ##args)
 #define SERIAL_ENDL MYSERIAL.println()
 
-// Things to write to serial from Program memory. Saves 400 to 2k of RAM.
 FORCE_INLINE void PS_PGM(const char *str) {
   char ch;
   while ((ch = pgm_read_byte(str))) {

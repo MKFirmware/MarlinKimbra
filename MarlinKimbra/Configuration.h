@@ -450,6 +450,7 @@
 
 //========================== EXTRA SETTINGS ON SD ===========================
 // Uncomment SD SETTINGS to enable the firmware to write some configuration, that require frequent update, on the SD card.
+// ATTENTION NOT FUNCTION WIDTH OCTOPRINT
 //#define SD_SETTINGS
 #define SD_CFG_SECONDS        300         //seconds between update
 #define CFG_SD_FILE           "INFO.CFG"  //name of the configuration file

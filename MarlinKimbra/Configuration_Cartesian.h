@@ -115,7 +115,7 @@
   // Note: this feature generates 10KB extra code size
   #define AUTO_BED_LEVELING_GRID
 
-  #if ENABLED(AUTO_BED_LEVELING_GRID)
+  #ifdef AUTO_BED_LEVELING_GRID
 
     #define MIN_PROBE_EDGE 10 // The probe square sides can be no smaller than this
 

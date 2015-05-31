@@ -76,10 +76,10 @@
 #define E_MIN_POS 0
 
 //=====================================================================================
-//============================= Bed Manual or Auto Leveling ===========================
+//================ Manual Bed Leveling (MBL) or Auto Bed Leveling =====================
 //=====================================================================================
 
-// set the rectangle in which to probe in manual or automatic
+// set the rectangle in which to probe in MBL or ABL
 #define LEFT_PROBE_BED_POSITION 20
 #define RIGHT_PROBE_BED_POSITION 180
 #define FRONT_PROBE_BED_POSITION 20
