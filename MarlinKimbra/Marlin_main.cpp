@@ -5645,7 +5645,7 @@ inline void gcode_M503() {
       line_to_destination();
     #endif
 
-    #ifdef FILAMENT_RUNOUT_SENSOR
+    #if HAS_FILRUNOUT
       filrunoutEnqueued = false;
     #endif
 
