@@ -264,7 +264,7 @@ void CardReader::getAbsFilename(char *t) {
     t[0] = 0;
 }
 
-void CardReader::openFile(char* name, bool read, bool replace_current/*=true*/) {
+void CardReader::openFile(char* name, bool read, bool replace_current/*=true*/, bool lcd_status/*=true*/) {
   if (!cardOK) return;
   if (file.isOpen()) { //replacing current file by new file, or subfile call
     if (!replace_current) {
@@ -342,7 +342,7 @@ void CardReader::openFile(char* name, bool read, bool replace_current/*=true*/) 
 
       ECHO_EM(MSG_SD_FILE_SELECTED);
       getfilename(0, fname);
-      lcd_setstatus(longFilename[0] ? longFilename : fname);
+      if(lcd_status) lcd_setstatus(longFilename[0] ? longFilename : fname);
     }
     else {
       ECHO_MV(MSG_SD_OPEN_FILE_FAIL, fname);
@@ -353,6 +353,7 @@ void CardReader::openFile(char* name, bool read, bool replace_current/*=true*/) 
     if (!file.open(curDir, fname, O_CREAT | O_APPEND | O_WRITE | O_TRUNC)) {
       ECHO_MV(MSG_SD_OPEN_FILE_FAIL, fname);
       ECHO_PGM(".\n");
+      if(lcd_status) lcd_setstatus(fname);
     }
     else {
       saving = true;
