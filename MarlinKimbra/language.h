@@ -200,6 +200,8 @@
 #define MSG_T                               "T:"
 #define MSG_B                               "B:"
 #define MSG_AT                              "@:"
+#define MSG_BAT                             "B@:"
+#define MSG_W                               "W:"
 #define MSG_PID_AUTOTUNE_FINISHED           MSG_PID_AUTOTUNE " finished! Put the last Kp, Ki and Kd constants from above into Configuration.h or send command M500 for save in EEPROM the new value!"
 #define MSG_PID_DEBUG                       " PID_DEBUG "
 #define MSG_PID_DEBUG_INPUT                 ": Input "

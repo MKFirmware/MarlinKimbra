@@ -1029,7 +1029,7 @@ long code_value_long() { return strtol(seen_pointer + 1, NULL, 10); }
 int16_t code_value_short() { return (int16_t)strtol(seen_pointer + 1, NULL, 10); }
 
 bool code_seen(char code) {
-  seen_pointer = strchr(command_queue[cmd_queue_index_r], code);
+  seen_pointer = strchr(current_command_args, code); // +3 since "G0 " is the shortest prefix
   return (seen_pointer != NULL);  //Return True if a character was found
 }
 
@@ -2525,10 +2525,10 @@ inline void wait_heater() {
 
     { // while loop
       if (millis() > temp_ms + 1000UL) { //Print temp & remaining time every 1s while waiting
-        ECHO_MV("T:", degHotend(target_extruder), 1);
+        ECHO_MV(MSG_T, degHotend(target_extruder), 1);
         ECHO_MV(" E:", (int)target_extruder);
         #ifdef TEMP_RESIDENCY_TIME
-          ECHO_M(" W:");
+          ECHO_M(" " MSG_W);
           if (residency_start_ms > -1) {
             temp_ms = ((TEMP_RESIDENCY_TIME * 1000UL) - (millis() - residency_start_ms)) / 1000UL;
             ECHO_EV(temp_ms);
@@ -2572,13 +2572,11 @@ inline void wait_bed() {
     if (ms > temp_ms + 1000UL) { //Print Temp Reading every 1 second while heating up.
       temp_ms = ms;
       float tt = degHotend(active_extruder);
-      ECHO_MV("T:", tt);
+      ECHO_MV(MSG_T, tt);
       ECHO_MV(" E:", active_extruder);
-      ECHO_EMV(" B:", degBed(), 1);
+      ECHO_EMV(" " MSG_B, degBed(), 1);
     }
-    manage_heater();
-    manage_inactivity();
-    lcd_update();
+    idle();
   }
   LCD_MESSAGEPGM(MSG_BED_DONE);
   refresh_cmd_timeout();
@@ -2851,7 +2849,7 @@ inline void gcode_G4() {
  *  Z   Home to the Z endstop
  *
  */
-inline void gcode_G28(boolean home_XY = false) {
+inline void gcode_G28() {
 
   // Wait for planner moves to finish!
   st_synchronize();
@@ -2867,10 +2865,10 @@ inline void gcode_G28(boolean home_XY = false) {
 
   feedrate = 0.0;
 
-  bool  homeX = code_seen(axis_codes[X_AXIS]) || home_XY,
-        homeY = code_seen(axis_codes[Y_AXIS]) || home_XY,
-        homeZ = code_seen(axis_codes[Z_AXIS]) && !home_XY,
-        homeE = code_seen(axis_codes[E_AXIS]) && !home_XY;
+  bool  homeX = code_seen(axis_codes[X_AXIS]),
+        homeY = code_seen(axis_codes[Y_AXIS]),
+        homeZ = code_seen(axis_codes[Z_AXIS]),
+        homeE = code_seen(axis_codes[E_AXIS]);
         
   home_all_axis = (!homeX && !homeY && !homeZ && !homeE) || (homeX && homeY && homeZ);
 
@@ -3812,10 +3810,7 @@ inline void gcode_M17() {
    * M23: Select a file
    */
   inline void gcode_M23() {
-    char* codepos = seen_pointer + 4;
-    char* starpos = strchr(codepos, '*');
-    if (starpos) *starpos = '\0';
-    card.openFile(codepos, true);
+    card.openFile(current_command_args, true);
   }
 
   /**
@@ -3855,14 +3850,7 @@ inline void gcode_M17() {
    * M28: Start SD Write
    */
   inline void gcode_M28() {
-    char* codepos = seen_pointer + 4;
-    char* starpos = strchr(codepos, '*');
-    if (starpos) {
-      char* npos = strchr(command_queue[cmd_queue_index_r], 'N');
-      seen_pointer = strchr(npos, ' ') + 1;
-      *(starpos) = '\0';
-    }
-    card.openFile(codepos, false);
+    card.openFile(current_command_args, false);
   }
 
   /**
@@ -3879,13 +3867,7 @@ inline void gcode_M17() {
   inline void gcode_M30() {
     if (card.cardOK) {
       card.closeFile();
-      char* starpos = strchr(seen_pointer + 4, '*');
-      if (starpos) {
-        char* npos = strchr(command_queue[cmd_queue_index_r], 'N');
-        seen_pointer = strchr(npos, ' ') + 1;
-        *(starpos) = '\0';
-      }
-      card.removeFile(seen_pointer + 4);
+      card.removeFile(current_command_args);
     }
   }
 #endif
@@ -3910,8 +3892,7 @@ inline void gcode_M31() {
    * M32: Select file and start SD Print
    */
   inline void gcode_M32() {
-    if (card.sdprinting)
-      st_synchronize();
+    if (card.sdprinting) st_synchronize();
 
     char* namestartpos = strchr(current_command_args, '!');  // Find ! to indicate filename string start.
     if (!namestartpos)
@@ -3957,13 +3938,7 @@ inline void gcode_M31() {
    * M928: Start SD Write
    */
   inline void gcode_M928() {
-    char* starpos = strchr(seen_pointer + 5, '*');
-    if (starpos) {
-      char* npos = strchr(command_queue[cmd_queue_index_r], 'N');
-      seen_pointer = strchr(npos, ' ') + 1;
-      *(starpos) = '\0';
-    }
-    card.openLogFile(seen_pointer + 5);
+    card.openLogFile(current_command_args);
   }
 
 #endif // SDSUPPORT
@@ -4347,19 +4322,17 @@ inline void gcode_M92() {
 inline void gcode_M104() {
   if (setTargetedHotend(104)) return;
   if (debugLevel & DEBUG_DRYRUN) return;
+
   #if HOTENDS == 1
     if (target_extruder != active_extruder) return;
   #endif
+
   if (code_seen('S')) {
     float temp = code_value();
     setTargetHotend(temp, target_extruder);
     #ifdef DUAL_X_CARRIAGE
       if (dual_x_carriage_mode == DXC_DUPLICATION_MODE && target_extruder == 0)
         setTargetHotend1(temp == 0.0 ? 0.0 : temp + duplicate_extruder_temp_offset);
-    #endif
-
-    #ifdef THERMAL_PROTECTION_HOTENDS
-      start_watching_heater(target_extruder);
     #endif
   }
 }
@@ -4387,17 +4360,16 @@ inline void gcode_M105() {
     }
   #else // !HAS_TEMP_0 && !HAS_TEMP_BED
     ECHO_LM(ER, MSG_ERR_NO_THERMISTORS);
-    return;
   #endif
 
-  ECHO_M(" @:");
+  ECHO_M(" " MSG_AT);
   #ifdef HOTEND_WATTS
     ECHO_VM((HOTEND_WATTS * getHeaterPower(target_extruder))/127, "W");
   #else
     ECHO_V(getHeaterPower(target_extruder));
   #endif
 
-  ECHO_M(" B@:");
+  ECHO_M(" " MSG_BAT);
   #ifdef BED_WATTS
     ECHO_VM((BED_WATTS * getHeaterPower(-1))/127, "W");
   #else
@@ -4406,10 +4378,10 @@ inline void gcode_M105() {
 
   #ifdef SHOW_TEMP_ADC_VALUES
     #if HAS_TEMP_BED
-      ECHO_MV("    ADC B:", degBed(),1);
-      ECHO_MV("C->", rawBedTemp()/OVERSAMPLENR,0);
+      ECHO_MV("    ADC B:", degBed(), 1);
+      ECHO_MV("C->", rawBedTemp()/OVERSAMPLENR, 0);
     #endif
-    for (int8_t cur_extruder = 0; cur_extruder < HOTENDS; ++cur_extruder) {
+    for (int8_t cur_extruder = 0; cur_extruder < EXTRUDERS; ++cur_extruder) {
       ECHO_MV("  T", cur_extruder);
       ECHO_MV(":", degHotend(cur_extruder),1);
       ECHO_MV("C->", rawHotendTemp(cur_extruder)/OVERSAMPLENR,0);
@@ -4437,6 +4409,7 @@ inline void gcode_M105() {
 inline void gcode_M109() {
   if (setTargetedHotend(109)) return;
   if (debugLevel & DEBUG_DRYRUN) return;
+
   #if HOTENDS == 1
     if (target_extruder != active_extruder) return;
   #endif
@@ -4468,6 +4441,7 @@ inline void gcode_M109() {
  */
 inline void gcode_M111() {
   debugLevel = code_seen('S') ? code_value_short() : DEBUG_INFO|DEBUG_COMMUNICATION;
+
   if (debugLevel & DEBUG_ECHO) ECHO_LM(DB, MSG_DEBUG_ECHO);
   //if (debugLevel & DEBUG_INFO) ECHO_LM(DB, MSG_DEBUG_INFO);
   //if (debugLevel & DEBUG_ERRORS) ECHO_LM(DB, MSG_DEBUG_ERRORS);
@@ -4490,7 +4464,7 @@ inline void gcode_M112() { kill(PSTR(MSG_KILLED)); }
  */
 inline void gcode_M114() {
   //MESSAGE for Host
-  ECHO_SMV(OK, " X:", current_position[X_AXIS]);
+  ECHO_SMV(OK, "X:", current_position[X_AXIS]);
   ECHO_MV(" Y:", current_position[Y_AXIS]);
   ECHO_MV(" Z:", current_position[Z_AXIS]);
   ECHO_MV(" E:", current_position[E_AXIS]);
@@ -4549,7 +4523,7 @@ inline void gcode_M115() {
    * M117: Set LCD Status Message
    */
   inline void gcode_M117() {
-    lcd_setstatus(seen_pointer + 5);
+    lcd_setstatus(current_command_args);
   }
 
 #endif
@@ -4595,12 +4569,12 @@ inline void gcode_M119() {
 /**
  * M120: Enable endstops
  */
-inline void gcode_M120() { enable_endstops(false); }
+inline void gcode_M120() { enable_endstops(true); }
 
 /**
  * M121: Disable endstops
  */
-inline void gcode_M121() { enable_endstops(true); }
+inline void gcode_M121() { enable_endstops(false); }
 
 #ifdef BARICUDA
   #if HAS_HEATER_1
@@ -4727,6 +4701,7 @@ inline void gcode_M140() {
    */
   inline void gcode_M190() {
     if (debugLevel & DEBUG_DRYRUN) return;
+
     LCD_MESSAGEPGM(MSG_BED_HEATING);
     no_wait_for_cooling = code_seen('S');
     if (no_wait_for_cooling || code_seen('R'))
@@ -4870,20 +4845,35 @@ inline void gcode_M206() {
 #ifdef FWRETRACT
 
   /**
-   * M207: Set retract length S[positive mm] F[feedrate mm/min] Z[additional zlift/hop]
+   * M207: Set firmware retraction values
+   *
+   *   S[+mm]    retract_length
+   *   W[+mm]    retract_length_swap (multi-extruder)
+   *   F[mm/min] retract_feedrate
+   *   Z[mm]     retract_zlift
    */
   inline void gcode_M207() {
     if (code_seen('S')) retract_length = code_value();
     if (code_seen('F')) retract_feedrate = code_value() / 60;
     if (code_seen('Z')) retract_zlift = code_value();
+    #if EXTRUDERS > 1
+      if (code_seen('W')) retract_length_swap = code_value();
+    #endif
   }
 
   /**
-   * M208: Set retract recover length S[positive mm surplus to the M207 S*] F[feedrate mm/min]
+   * M208: Set firmware un-retraction values
+   *
+   *   S[+mm]    retract_recover_length (in addition to M207 S*)
+   *   W[+mm]    retract_recover_length_swap (multi-extruder)
+   *   F[mm/min] retract_recover_feedrate
    */
   inline void gcode_M208() {
     if (code_seen('S')) retract_recover_length = code_value();
     if (code_seen('F')) retract_recover_feedrate = code_value() / 60;
+    #if EXTRUDERS > 1
+      if (code_seen('W')) retract_recover_length_swap = code_value();
+    #endif
   }
 
   /**
@@ -4901,8 +4891,7 @@ inline void gcode_M206() {
           autoretract_enabled = true;
           break;
         default:
-          ECHO_SM(ER, MSG_UNKNOWN_COMMAND);
-          ECHO_EVM(command_queue[cmd_queue_index_r], "\"");
+          unknown_command_error();
           return;
       }
       for (int i=0; i < EXTRUDERS; i++) retracted[i] = false;
@@ -5036,7 +5025,7 @@ inline void gcode_M226() {
   }
 #endif // CHDK || PHOTOGRAPH_PIN
 
-#if defined(DOGLCD) && LCD_CONTRAST >= 0
+#ifdef HAS_LCD_CONTRAST
   /**
    * M250: Read and optionally set the LCD contrast
    */
@@ -5110,8 +5099,7 @@ inline void gcode_M226() {
       if (code_seen('D')) PID_PARAM(Kd, e) = scalePID_d(code_value());
 
       updatePID();
-      ECHO_S(DB);
-      ECHO_MV(" e:", e);
+      ECHO_SMV(OK, "e:", e);
       ECHO_MV(" p:", PID_PARAM(Kp, e));
       ECHO_MV(" i:", unscalePID_i(PID_PARAM(Ki, e)));
       ECHO_EMV(" d:", unscalePID_d(PID_PARAM(Kd, e)));
@@ -5146,6 +5134,7 @@ inline void gcode_M303() {
   int c = code_seen('C') ? code_value_short() : 5;
   float temp = code_seen('S') ? code_value() : (e < 0 ? 70.0 : 150.0);
   PID_autotune(temp, e, c);
+  // Suppress a line mismatch error
   gcode_LastN += 1;
   FlushSerialRequestResend();
 }
@@ -5158,8 +5147,7 @@ inline void gcode_M303() {
     if (code_seen('D')) bedKd = scalePID_d(code_value());
 
     updatePID();
-    ECHO_S(DB);
-    ECHO_MV(" p:", bedKp);
+    ECHO_SMV(OK, "p:", bedKp);
     ECHO_MV(" i:", unscalePID_i(bedKi));
     ECHO_EMV(" d:", unscalePID_d(bedKd));
   }
@@ -5168,9 +5156,9 @@ inline void gcode_M303() {
 #if HAS_MICROSTEPS
   // M350 Set microstepping mode. Warning: Steps per unit remains unchanged. S code sets stepping mode for all drivers.
   inline void gcode_M350() {
-    if(code_seen('S')) for(int i=0;i<=4;i++) microstep_mode(i,code_value());
-    for(int i=0;i<NUM_AXIS;i++) if(code_seen(axis_codes[i])) microstep_mode(i,(uint8_t)code_value());
-    if(code_seen('B')) microstep_mode(4,code_value());
+    if(code_seen('S')) for(int i = 0; i <= 4; i++) microstep_mode(i, code_value());
+    for(int i = 0; i < NUM_AXIS; i++) if(code_seen(axis_codes[i])) microstep_mode(i, (uint8_t)code_value());
+    if(code_seen('B')) microstep_mode(4, code_value());
     microstep_readings();
   }
 
@@ -5181,11 +5169,11 @@ inline void gcode_M303() {
   inline void gcode_M351() {
     if (code_seen('S')) switch(code_value_short()) {
       case 1:
-        for(int i=0;i<NUM_AXIS;i++) if (code_seen(axis_codes[i])) microstep_ms(i, code_value(), -1);
+        for(int i = 0; i < NUM_AXIS; i++) if (code_seen(axis_codes[i])) microstep_ms(i, code_value(), -1);
         if (code_seen('B')) microstep_ms(4, code_value(), -1);
         break;
       case 2:
-        for(int i=0;i<NUM_AXIS;i++) if (code_seen(axis_codes[i])) microstep_ms(i, -1, code_value());
+        for(int i = 0; i < NUM_AXIS; i++) if (code_seen(axis_codes[i])) microstep_ms(i, -1, code_value());
         if (code_seen('B')) microstep_ms(4, -1, code_value());
         break;
     }
@@ -5432,7 +5420,7 @@ inline void gcode_M428() {
       #else
         float base = (new_pos[i] > (min_pos[i] + max_pos[i]) / 2) ? base_home_pos(i) : 0,
       #endif
-            diff = new_pos[i] - base;
+              diff = new_pos[i] - base;
       if (diff > -20 && diff < 20) {
         new_offs[i] -= diff;
         new_pos[i] = base;
@@ -6119,15 +6107,50 @@ inline void gcode_T(uint8_t tmp_extruder) {
  * This is called from the main loop()
  */
 void process_next_command() {
+  current_command = command_queue[cmd_queue_index_r];
 
   if ((debugLevel & DEBUG_ECHO)) {
-    ECHO_LV(DB, command_queue[cmd_queue_index_r]);
+    ECHO_LV(DB, current_command);
   }
 
-  if(code_seen('G')) {
-    int gCode = code_value_short();
-    switch(gCode) {
-      //G0 -> G1
+  // Sanitize the current command:
+  //  - Skip leading spaces
+  //  - Bypass N...
+  //  - Overwrite * with nul to mark the end
+  while (*current_command == ' ') ++current_command;
+  if (*current_command == 'N' && current_command[1] >= '0' && current_command[1] <= '9') {
+    while (*current_command != ' ' && *current_command != 'G' && *current_command != 'M' && *current_command != 'T') ++current_command;
+    while (*current_command == ' ') ++current_command;
+  }
+  char *starpos = strchr(current_command, '*');  // * should always be the last parameter
+  if (starpos) *starpos = '\0';
+
+  // Get the command code, which must be G, M, or T
+  char command_code = *current_command;
+
+  // The code must have a numeric value
+  bool code_is_good = (current_command[1] >= '0' && current_command[1] <= '9');
+
+  int codenum; // define ahead of goto
+
+  // Bail early if there's no code
+  if (!code_is_good) goto ExitUnknownCommand;
+
+  // Args pointer optimizes code_seen, especially those taking XYZEF
+  // This wastes a little cpu on commands that expect no arguments.
+  current_command_args = current_command;
+  while (*current_command_args != ' ') ++current_command_args;
+  while (*current_command_args == ' ') ++current_command_args;
+
+  // Interpret the code int
+  seen_pointer = current_command;
+  codenum = code_value_short();
+
+  // Handle a known G, M, or T
+  switch(command_code) {
+    case 'G': switch (codenum) {
+
+      // G0 -> G1
       case 0:
       case 1:
         gcode_G0_G1(); break;
@@ -6136,7 +6159,7 @@ void process_next_command() {
       #ifndef SCARA
         case 2: // G2  - CW ARC
         case 3: // G3  - CCW ARC
-          gcode_G2_G3(gCode == 2); break;
+          gcode_G2_G3(codenum == 2); break;
       #endif
 
       // G4 Dwell
@@ -6146,7 +6169,7 @@ void process_next_command() {
       #ifdef FWRETRACT
         case 10: // G10: retract
         case 11: // G11: retract_recover
-          gcode_G10_G11(gCode == 10); break;
+          gcode_G10_G11(codenum == 10); break;
       #endif //FWRETRACT
 
       case 28: //G28: Home all axes, one at a time
@@ -6161,7 +6184,7 @@ void process_next_command() {
         #else // Z_PROBE_SLED
           case 31: // G31: dock the sled
           case 32: // G32: undock the sled
-            dock_sled(gCode == 31); break;
+            dock_sled(codenum == 31); break;
         #endif // Z_PROBE_SLED
       #endif // ENABLE_AUTO_BED_LEVELING
 
@@ -6183,10 +6206,10 @@ void process_next_command() {
       case 92: // G92
         gcode_G92(); break;
     }
-  }
+    break;
 
-  else if (code_seen('M')) {
-    switch(code_value_short()) {
+    case 'M': switch (codenum) {
+
       #ifdef ULTIPANEL
         case 0: // M0 - Unconditional stop - Wait for user button press on LCD
         case 1: // M1 - Conditional stop - Wait for user button press on LCD
@@ -6243,9 +6266,7 @@ void process_next_command() {
 
         case 928: // M928 - Start SD write
           gcode_M928(); break;
-
       #endif //SDSUPPORT
-
 
       case 31: // M31 take time since the start of the SD print or an M109 command
         gcode_M31(); break;
@@ -6261,7 +6282,7 @@ void process_next_command() {
         case 80: // M80 - Turn on Power Supply
           gcode_M80(); break;
       #endif
-      
+
       case 81: // M81 - Turn off Power, including Power Supply, if possible
         gcode_M81(); break;
       case 82:
@@ -6278,7 +6299,7 @@ void process_next_command() {
       case 104: // M104
         gcode_M104(); break;
       case 105: // M105 Read current temperature
-        gcode_M105(); return; break;
+        gcode_M105(); return; break; // "ok" already printed
 
       #if HAS_FAN
         case 106: //M106 Fan On
@@ -6520,16 +6541,19 @@ void process_next_command() {
           gcode_SET_Z_PROBE_OFFSET(); break;
       #endif // CUSTOM_M_CODE_SET_Z_PROBE_OFFSET
     }
+    break;
+
+    case 'T':
+      gcode_T(codenum);
+    break;
+
+    default: code_is_good = false;
   }
 
-  else if (code_seen('T')) {
-    gcode_T(code_value_short());
-  }
+ExitUnknownCommand:
 
-  else {
-    ECHO_SM(ER, MSG_UNKNOWN_COMMAND);
-    ECHO_EVM(command_queue[cmd_queue_index_r], "\"");
-  }
+  // Still unknown command? Throw an error
+  if (!code_is_good) unknown_command_error();
 
   ok_to_send();
 }
