@@ -9,7 +9,9 @@
 // Make delta curves from many straight lines (linear interpolation).
 // This is a trade-off between visible corners (not enough segments)
 // and processor overload (too many expensive sqrt calls).
-#define DELTA_SEGMENTS_PER_SECOND 200
+// The new function do not use segments per second but segments per mm
+// if you want use new function comment this (using // at the start of the line)
+#define DELTA_SEGMENTS_PER_SECOND 150
 
 // Center-to-center distance of the holes in the diagonal push rods.
 #define DEFAULT_DELTA_DIAGONAL_ROD 217.0      // mm

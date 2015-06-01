@@ -385,12 +385,16 @@
 
 // Panucatt VIKI LCD with status LEDs, integrated click & L/R/U/P buttons, separate encoder inputs
 //#define LCD_I2C_VIKI
+  
+// SSD1306 OLED generic display support
+// ==> REMEMBER TO INSTALL U8glib to your ARDUINO library folder: http://code.google.com/p/u8glib/wiki/u8glib
+//#define U8GLIB_SSD1306
 
 // Shift register panels
 // ---------------------
 // 2 wire Non-latching LCD SR from:
 // https://bitbucket.org/fmalpartida/new-liquidcrystal/wiki/schematics#!shiftregister-connection
-
+// LCD configuration: http://reprap.org/wiki/SAV_3D_LCD
 //#define SAV_3DLCD
 
 // option for invert rotary switch
@@ -450,7 +454,6 @@
 
 //========================== EXTRA SETTINGS ON SD ===========================
 // Uncomment SD SETTINGS to enable the firmware to write some configuration, that require frequent update, on the SD card.
-// ATTENTION NOT FUNCTION WIDTH OCTOPRINT
 //#define SD_SETTINGS
 #define SD_CFG_SECONDS        300         //seconds between update
 #define CFG_SD_FILE           "INFO.CFG"  //name of the configuration file

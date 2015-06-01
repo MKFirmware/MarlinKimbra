@@ -35,7 +35,7 @@
 #include "ultralcd_st7920_u8glib_rrd.h"
 #include "Configuration.h"
 
-#if defined(MAPPER_C2C3) && defined(MAPPER_NON) && defined(USE_BIG_EDIT_FONT)
+#if !defined(MAPPER_C2C3) && !defined(MAPPER_NON) && defined(USE_BIG_EDIT_FONT)
    #undef USE_BIG_EDIT_FONT
 #endif
 
@@ -125,6 +125,9 @@
 #elif defined(U8GLIB_LM6059_AF)
   // Based on the Adafruit ST7565 (http://www.adafruit.com/products/250)
   U8GLIB_LM6059 u8g(DOGLCD_CS, DOGLCD_A0);
+#elif defined U8GLIB_SSD1306
+  // Generic support for SSD1306 OLED I2C LCDs
+  U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_NONE);
 #else
   // for regular DOGM128 display with HW-SPI
   U8GLIB_DOGM128 u8g(DOGLCD_CS, DOGLCD_A0);  // HW-SPI Com: CS, A0
@@ -344,19 +347,28 @@ static void lcd_implementation_status_screen() {
   u8g.drawPixel(8,XYZ_BASELINE - 5);
   u8g.drawPixel(8,XYZ_BASELINE - 3);
   u8g.setPrintPos(10,XYZ_BASELINE);
-  lcd_print(ftostr31ns(current_position[X_AXIS]));
+  if (axis_known_position[X_AXIS])
+    lcd_print(ftostr31ns(current_position[X_AXIS]));
+  else
+    lcd_printPGM(PSTR("---"));
   u8g.setPrintPos(43,XYZ_BASELINE);
   lcd_print('Y');
   u8g.drawPixel(49,XYZ_BASELINE - 5);
   u8g.drawPixel(49,XYZ_BASELINE - 3);
   u8g.setPrintPos(51,XYZ_BASELINE);
-  lcd_print(ftostr31ns(current_position[Y_AXIS]));
+  if (axis_known_position[Y_AXIS])
+    lcd_print(ftostr31ns(current_position[Y_AXIS]));
+  else
+    lcd_printPGM(PSTR("---"));
   u8g.setPrintPos(83,XYZ_BASELINE);
   lcd_print('Z');
   u8g.drawPixel(89,XYZ_BASELINE - 5);
   u8g.drawPixel(89,XYZ_BASELINE - 3);
   u8g.setPrintPos(91,XYZ_BASELINE);
-  lcd_print(ftostr31(current_position[Z_AXIS]));
+  if (axis_known_position[Z_AXIS])
+    lcd_print(ftostr32sp(current_position[Z_AXIS]));
+  else
+    lcd_printPGM(PSTR("---.--"));
   u8g.setColorIndex(1); // black on white
  
   // Feedrate

@@ -351,7 +351,6 @@ unsigned long printer_usage_seconds;
   float delta_radius; // = DEFAULT_delta_radius;
   float delta_diagonal_rod; // = DEFAULT_DELTA_DIAGONAL_ROD;
   float delta_diagonal_rod_2;
-  float delta_segments_per_second = DELTA_SEGMENTS_PER_SECOND;
   float ac_prec = AUTOCALIBRATION_PRECISION;
   float bed_radius = PRINTER_RADIUS;
   float delta_tower1_x, delta_tower1_y;
@@ -399,9 +398,14 @@ unsigned long printer_usage_seconds;
 #endif // DELTA
 
 #ifdef SCARA
-  float delta_segments_per_second = SCARA_SEGMENTS_PER_SECOND;
   static float delta[3] = { 0 };
   float axis_scaling[3] = { 1, 1, 1 };    // Build size scaling, default to 1
+#endif
+
+#if defined (DELTA_SEGMENTS_PER_SECOND)
+  float delta_segments_per_second = DELTA_SEGMENTS_PER_SECOND;
+#elif defined (SCARA_SEGMENTS_PER_SECOND)
+  float delta_segments_per_second = SCARA_SEGMENTS_PER_SECOND;
 #endif
 
 #if HAS_FILAMENT_SENSOR
@@ -1981,8 +1985,8 @@ static void setup_for_endstop_move() {
 
   // Adjust print surface height by linear interpolation over the bed_level array.
   void adjust_delta(float cartesian[3]) {
-    float grid_x = max(-2.999, min(2.999, cartesian[X_AXIS] / AUTOLEVEL_GRID));
-    float grid_y = max(-2.999, min(2.999, cartesian[Y_AXIS] / AUTOLEVEL_GRID));
+    float grid_x = max(-2.999, min(2.999, cartesian[X_AXIS] * AUTOLEVEL_GRID_MULTI));
+    float grid_y = max(-2.999, min(2.999, cartesian[Y_AXIS] * AUTOLEVEL_GRID_MULTI));
     int floor_x = floor(grid_x);
     int floor_y = floor(grid_y);
     float ratio_x = grid_x - floor_x;
@@ -6545,13 +6549,13 @@ void ok_to_send() {
   ECHO_S(OK);
   #ifdef ADVANCED_OK
     ECHO_MV("N", gcode_LastN);
-    ECHO_MV(" P", (int)(BLOCK_BUFFER_SIZE - movesplanned() - 1));
+    ECHO_MV(" P", (int(BLOCK_BUFFER_SIZE - movesplanned() - 1)));
     ECHO_MV(" B", BUFSIZE - commands_in_queue);
   #endif
   ECHO_E;
 }
 
-void clamp_to_software_endstops(float target[3]) {
+FORCE_INLINE void clamp_to_software_endstops(float target[3]) {
   if (min_software_endstops) {
     NOLESS(target[X_AXIS], min_pos[X_AXIS]);
     NOLESS(target[Y_AXIS], min_pos[Y_AXIS]);
@@ -6573,7 +6577,7 @@ void clamp_to_software_endstops(float target[3]) {
 
 #ifdef PREVENT_DANGEROUS_EXTRUDE
 
-  inline void prevent_dangerous_extrude(float &curr_e, float &dest_e) {
+  FORCE_INLINE void prevent_dangerous_extrude(float &curr_e, float &dest_e) {
     float de = dest_e - curr_e;
     if (debugLevel & DEBUG_DRYRUN) return;
     if (de) {
@@ -6594,38 +6598,93 @@ void clamp_to_software_endstops(float target[3]) {
 
 #if defined(DELTA) || defined(SCARA)
 
-  inline bool prepare_move_delta() {
+  FORCE_INLINE bool prepare_move_delta() {
+
     float difference[NUM_AXIS];
+    float addDistance[NUM_AXIS];
+    float fractions[NUM_AXIS];
+    float frfm = feedrate/60*feedrate_multiplier/100.0;
+    
     for (int8_t i = 0; i < NUM_AXIS; i++) difference[i] = destination[i] - current_position[i];
 
     float cartesian_mm = sqrt(sq(difference[X_AXIS]) + sq(difference[Y_AXIS]) + sq(difference[Z_AXIS]));
     if (cartesian_mm < 0.000001) cartesian_mm = abs(difference[E_AXIS]);
     if (cartesian_mm < 0.000001) return false;
-    float seconds = 6000 * cartesian_mm / feedrate / feedrate_multiplier;
-    int steps = max(1, int(delta_segments_per_second * seconds));
 
-    // ECHO_SMV(DB, "mm =", cartesian_mm);
-    // ECHO_MV(" seconds =", seconds);
-    // ECHOEMV(" steps =", steps);
+    #if defined(DELTA_SEGMENTS_PER_SECOND) || defined(SCARA_SEGMENTS_PER_SECOND)
+      float seconds = 6000 * cartesian_mm / feedrate / feedrate_multiplier;
+      int steps = max(1, int(delta_segments_per_second * seconds));
+    #else
+      float fTemp = cartesian_mm * 5;
+      int steps = (int)fTemp;
+
+      if (steps == 0) {
+        steps = 1;
+        for (int8_t i=0; i < NUM_AXIS; i++) fractions[i] = difference[i];
+      }
+      else {
+        fTemp = 1 / float(steps);
+        for (int8_t i=0; i < NUM_AXIS; i++) fractions[i] = difference[i] * fTemp;
+      }
+
+      // For number of steps, for each step add one fraction
+      // First, set initial destination to current position
+      for (int8_t i=0; i < NUM_AXIS; i++) addDistance[i] = 0.0;
+    #endif
 
     for (int s = 1; s <= steps; s++) {
 
-      float fraction = float(s) / float(steps);
+      #if defined(DELTA_SEGMENTS_PER_SECOND) || defined(SCARA_SEGMENTS_PER_SECOND)
+        float fraction = float(s) / float(steps);
+        for (int8_t i = 0; i < NUM_AXIS; i++)
+          destination[i] = current_position[i] + difference[i] * fraction;
+      #else
+        for (int8_t i=0; i < NUM_AXIS; i++) {
+          addDistance[i] += fractions[i];
+          destination[i] = current_position[i] + addDistance[i];
+        }
+      #endif
 
-      for (int8_t i = 0; i < NUM_AXIS; i++)
-        destination[i] = current_position[i] + difference[i] * fraction;
+      //calculate_delta(destination);
+      delta[X_AXIS] = sqrt(delta_diagonal_rod_2
+                         - sq(delta_tower1_x-destination[X_AXIS])
+                         - sq(delta_tower1_y-destination[Y_AXIS])
+                         ) + destination[Z_AXIS];
+      delta[Y_AXIS] = sqrt(delta_diagonal_rod_2
+                         - sq(delta_tower2_x-destination[X_AXIS])
+                         - sq(delta_tower2_y-destination[Y_AXIS])
+                         ) + destination[Z_AXIS];
+      delta[Z_AXIS] = sqrt(delta_diagonal_rod_2
+                         - sq(delta_tower3_x-destination[X_AXIS])
+                         - sq(delta_tower3_y-destination[Y_AXIS])
+                         ) + destination[Z_AXIS];
 
-      calculate_delta(destination);
-      adjust_delta(destination);
+      //adjust_delta(destination);
+      float grid_x = destination[X_AXIS] * AUTOLEVEL_GRID_MULTI;
+      if (2.999 < grid_x) grid_x = 2.999;
+      else if (-2.999 > grid_x) grid_x = -2.999;
 
-      //ECHO_LMV(DB, "destination[X_AXIS]=", destination[X_AXIS]);
-      //ECHO_LMV(DB, "destination[Y_AXIS]="); SERIAL_ECHOLN(destination[Y_AXIS]);
-      //ECHO_LMV(DB, "destination[Z_AXIS]="); SERIAL_ECHOLN(destination[Z_AXIS]);
-      //ECHO_LMV(DB, "delta[X_AXIS]=", delta[X_AXIS]);
-      //ECHO_LMV(DB, "delta[Y_AXIS]=", delta[Y_AXIS]);
-      //ECHO_LMV(DB, "delta[Z_AXIS]=", delta[Z_AXIS]);
+      float grid_y = destination[Y_AXIS] * AUTOLEVEL_GRID_MULTI;
+      if (2.999 < grid_y) grid_y = 2.999;
+      else if (-2.999 > grid_y) grid_y = -2.999;
 
-      plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], destination[E_AXIS], feedrate/60*feedrate_multiplier/100.0, active_extruder, active_driver);
+      int floor_x = floor(grid_x);
+      int floor_y = floor(grid_y);
+      float ratio_x = grid_x - floor_x;
+      float ratio_y = grid_y - floor_y;
+      float z1 = bed_level[floor_x+3][floor_y+3];
+      float z2 = bed_level[floor_x+3][floor_y+4];
+      float z3 = bed_level[floor_x+4][floor_y+3];
+      float z4 = bed_level[floor_x+4][floor_y+4];
+      float left = (1-ratio_y)*z1 + ratio_y*z2;
+      float right = (1-ratio_y)*z3 + ratio_y*z4;
+      float offset = (1-ratio_x)*left + ratio_x*right;
+
+      delta[X_AXIS] += offset;
+      delta[Y_AXIS] += offset;
+      delta[Z_AXIS] += offset;
+
+      plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], destination[E_AXIS], frfm, active_extruder, active_driver);
     }
     return true;
   }

@@ -1246,7 +1246,7 @@ static void lcd_control_volumetric_menu() {
  * "Control" > "Contrast" submenu
  *
  */
-#if HAS_LCD_CONTRAST
+#ifdef HAS_LCD_CONTRAST
   static void lcd_set_contrast() {
     if (encoderPosition != 0) {
       #ifdef U8GLIB_LM6059_AF
