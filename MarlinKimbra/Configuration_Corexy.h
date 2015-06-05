@@ -25,10 +25,12 @@
 #define X_MIN_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
 #define Y_MIN_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
 #define Z_MIN_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
+#define Z2_MIN_ENDSTOP_LOGIC  false   // set to true to invert the logic of the endstop.
 #define E_MIN_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
 #define X_MAX_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
 #define Y_MAX_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
 #define Z_MAX_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
+#define Z2_MAX_ENDSTOP_LOGIC  false   // set to true to invert the logic of the endstop.
 #define Z_PROBE_ENDSTOP_LOGIC false   // set to true to invert the logic of the endstop.
 
 // ENDSTOP SETTINGS:
@@ -74,10 +76,10 @@
 #define E_MIN_POS 0
 
 //=====================================================================================
-//============================= Bed Manual or Auto Leveling ===========================
+//================ Manual Bed Leveling (MBL) or Auto Bed Leveling =====================
 //=====================================================================================
 
-// set the rectangle in which to probe in manual or automatic
+// set the rectangle in which to probe in MBL or ABL
 #define LEFT_PROBE_BED_POSITION 20
 #define RIGHT_PROBE_BED_POSITION 180
 #define FRONT_PROBE_BED_POSITION 20
@@ -88,7 +90,7 @@
 //If you have enabled the Auto Bed Levelling and are using the same Z Probe for Z Homing,
 //it is highly recommended you let this Z_SAFE_HOMING enabled!!!
 //#define Z_SAFE_HOMING
-#ifdef Z_SAFE_HOMING
+#ifndef Z_SAFE_HOMING
   #define Z_SAFE_HOMING_X_POINT (X_MAX_LENGTH/2)    // X point for Z homing when homing all axis (G28) or homing Z
   #define Z_SAFE_HOMING_Y_POINT (Y_MAX_LENGTH/2)    // Y point for Z homing when homing all axis (G28) or homing Z
 #endif
@@ -186,9 +188,7 @@
 // default settings
 #define DEFAULT_AXIS_STEPS_PER_UNIT     {80,80,3200,625,625,625,625}       // X, Y, Z, E0, E1, E2, E3 default steps per unit
 #define DEFAULT_MAX_FEEDRATE            {300,300,2,100,100,100,100}        // X, Y, Z, E0, E1, E2, E3 (mm/sec)
-#define DEFAULT_RETRACTION_MAX_FEEDRATE {110,110,110,110}                  // E0, E1, E2, E3 (mm/sec)
 #define DEFAULT_MAX_ACCELERATION        {3000,3000,50,1000,1000,1000,1000} // X, Y, Z, E0, E1, E2, E3 maximum start speed for accelerated moves.
-
 #define DEFAULT_ACCELERATION          2500      // X, Y, Z and E max acceleration in mm/s^2 for printing moves
 #define DEFAULT_RETRACT_ACCELERATION 10000      // E max acceleration in mm/s^2 for retracts
 #define DEFAULT_TRAVEL_ACCELERATION   3000      // X, Y, Z acceleration in mm/s^2 for travel (non printing) moves

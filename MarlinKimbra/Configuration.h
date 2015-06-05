@@ -1,27 +1,33 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
-// This configuration file contains basic settings. Select your:
-//  - board type
-//  - Mechanism type (cartesian-corexy-delta-scara)
-//  - temperature sensor type
-//
-// Mechanisms-settings can be found in configuration_xxxxxx.h
-// Advanced settings can be found in Configuration_adv.h
-
-
 #include "boards.h"
-// Choose your board type.
-// Either an numeric ID or name defined in boards.h is valid.
-// See: https://github.com/MagoKimbra/MarlinKimbra/blob/master/Documentation/Hardware.md
 
+//===========================================================================
+//============================= Getting Started =============================
+//===========================================================================
+
+/*
+ * This configuration file contains basic settings. Select your:
+ * - board type
+ * - Mechanism type (cartesian-corexy-delta-scara)
+ * - temperature sensor type
+ *
+ * Mechanisms-settings can be found in configuration_xxxxxx.h
+ * Advanced settings can be found in Configuration_adv.h
+ */
+
+/*
+ * Choose your board type.
+ * Either an numeric ID or name defined in boards.h is valid.
+ * See: https://github.com/MagoKimbra/MarlinKimbra/blob/master/Documentation/Hardware.md
+ */
 #define MOTHERBOARD BOARD_RAMPS_13_EFB
 
 // User-specified version info of this build to display in [Pronterface, etc] terminal window during
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
 // build by the user have been successfully uploaded into firmware.
-#define STRING_VERSION "4.1.2"
-#define STRING_URL "reprap.org"
+#define STRING_VERSION "4.1.3"
 #define STRING_VERSION_CONFIG_H __DATE__ " " __TIME__     // build date and time
 #define STRING_CONFIG_H_AUTHOR "(none, default config)"   // Who made the changes.
 #define STRING_SPLASH_LINE1 "v" STRING_VERSION            // will be shown during bootup in line 1
@@ -33,7 +39,7 @@
 #define SERIAL_PORT 0
 
 // This determines the communication speed of the printer
-// 115200 - 250000
+// 2400,9600,19200,38400,57600,115200,250000
 #define BAUDRATE 115200
 
 // This enables the serial port associated to the Bluetooth interface on AT90USB devices
@@ -158,7 +164,7 @@
 // 1010 is Pt1000 with 1k pullup (non standard)
 // 147 is Pt100 with 4k7 pullup
 // 110 is Pt100 with 1k pullup (non standard)
-// 998 and 999 are Dummy Tables. They will ALWAYS read 25°C or the temperature defined below. 
+// 998 and 999 are Dummy Tables. They will ALWAYS read 25°C or the temperature defined below.
 //     Use it for Testing or Development purposes. NEVER for production machine.
 //     #define DUMMY_THERMISTOR_998_VALUE 25
 //     #define DUMMY_THERMISTOR_999_VALUE 100
@@ -219,9 +225,10 @@
 //#define SLOW_PWM_HEATERS // PWM with very low frequency (roughly 0.125Hz=8s) and minimum state time of approximately 1s useful for heaters driven by a relay
 // If the temperature difference between the target temperature and the actual temperature
 // is more then PID_FUNCTIONAL_RANGE then the PID will be shut off and the heater will be set to min/max.
-#define PID_FUNCTIONAL_RANGE 10 // degC
-#define PID_INTEGRAL_DRIVE_MAX PID_MAX // Limit for the integral term
-#define K1 0.95 // Smoothing factor within the PID
+#define PID_FUNCTIONAL_RANGE 10         // degC
+#define PID_INTEGRAL_DRIVE_MAX PID_MAX  // Limit for the integral term
+#define K1 0.95                         // Smoothing factor within the PID
+#define MAX_OVERSHOOT_PID_AUTOTUNE 20   // Max valor for overshoot autotune
 
 //             HotEnd{HE0,HE1,HE2,HE3}
 #define DEFAULT_Kp {40, 40, 40, 40}     // Kp for E0, E1, E2, E3
@@ -253,6 +260,7 @@
 #define MAX_BED_POWER 255 // limits duty cycle to bed; 255=full current
 
 //#define PID_BED_DEBUG // Sends debug data to the serial port.
+#define PID_BED_INTEGRAL_DRIVE_MAX MAX_BED_POWER // limit for the integral term
 //120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
 //from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
 #define  DEFAULT_bedKp 10.00
@@ -278,7 +286,6 @@
 #define EXTRUDE_MINTEMP 170 // degC
 #define EXTRUDE_MAXLENGTH (X_MAX_LENGTH+Y_MAX_LENGTH) //prevent extrusion of very large distances.
 
-
 //===========================================================================
 //======================== Thermal Runaway Protection =======================
 //===========================================================================
@@ -294,30 +301,16 @@
  * The solution: Once the temperature reaches the target, start observing.
  * If the temperature stays too far below the target (hysteresis) for too long,
  * the firmware will halt as a safety precaution.
- *
- * Note that because the countdown starts only AFTER the temperature reaches
- * the target, this will not catch a thermistor that is already disconnected
- * when the print starts!
- *
- * To enable for all extruder heaters, uncomment the two defines below:
  */
 
-// Parameters for all extruder heaters
-#define THERMAL_RUNAWAY_PROTECTION_PERIOD 40    // in seconds
-#define THERMAL_RUNAWAY_PROTECTION_HYSTERESIS 4 // in degree Celsius
-
-// To enable for the bed heater, uncomment the two defines below:
-
-// Parameters for the bed heater
-#define THERMAL_RUNAWAY_PROTECTION_BED_PERIOD 20    // in seconds
-#define THERMAL_RUNAWAY_PROTECTION_BED_HYSTERESIS 2 // in degree Celsius
-
+//#define THERMAL_PROTECTION_HOTENDS // Enable thermal protection for all extruders
+//#define THERMAL_PROTECTION_BED     // Enable thermal protection for the heated bed
 
 //===========================================================================
 //============================ User Interfaces ==============================
 //===========================================================================
 
-//==============================LCD and SD support=============================
+//============================ LCD and SD support ===========================
 
 // Choose ONE of these 3 charsets. This has to match your hardware. Ignored for full graphic display.
 // To find out what type you have - compile with (test) - upload - click to get the menu. You'll see two typical lines from the upper half of the charset.
@@ -352,6 +345,11 @@
 //#define VIKI2
 //#define miniVIKI
 
+// This is a new controller currently under development.
+// https://github.com/eboston/Adafruit-ST7565-Full-Graphic-Controller/
+// ==> REMEMBER TO INSTALL U8glib to your ARDUINO library folder: http://code.google.com/p/u8glib/wiki/u8glib
+//#define ELB_FULL_GRAPHIC_CONTROLLER
+
 // The RepRapDiscount Smart Controller (white PCB)
 // http://reprap.org/wiki/RepRapDiscount_Smart_Controller
 //#define REPRAP_DISCOUNT_SMART_CONTROLLER
@@ -376,7 +374,10 @@
 // REMEMBER TO INSTALL LiquidCrystal_I2C.h in your ARDUINO library folder: https://github.com/kiyoshigawa/LiquidCrystal_I2C
 //#define RA_CONTROL_PANEL
 
-// I2C Panels
+/**
+ * I2C Panels
+ */
+
 //#define LCD_I2C_SAINSMART_YWROBOT
 
 // PANELOLU2 LCD with status LEDs, separate encoder and click inputs
@@ -384,12 +385,16 @@
 
 // Panucatt VIKI LCD with status LEDs, integrated click & L/R/U/P buttons, separate encoder inputs
 //#define LCD_I2C_VIKI
+  
+// SSD1306 OLED generic display support
+// ==> REMEMBER TO INSTALL U8glib to your ARDUINO library folder: http://code.google.com/p/u8glib/wiki/u8glib
+//#define U8GLIB_SSD1306
 
 // Shift register panels
 // ---------------------
 // 2 wire Non-latching LCD SR from:
 // https://bitbucket.org/fmalpartida/new-liquidcrystal/wiki/schematics#!shiftregister-connection
-
+// LCD configuration: http://reprap.org/wiki/SAV_3D_LCD
 //#define SAV_3DLCD
 
 // option for invert rotary switch
@@ -402,13 +407,13 @@
 // #define LCD_SCREEN_ROT_270
 
 // SPLASH SCREEN duration in millisecond
-#define SPLASH_SCREEN_DURATION 2000 // Millisecond
+#define SPLASH_SCREEN_DURATION 5000 // Millisecond
 
 /** Display Voltage Logic Selector on Alligator Board
  0 = Voltage level 3.3V
  1 = Voltage level 5V
  */
-#define UI_VOLTAGE_LEVEL 0 // Set 5 o 3.3 V
+#define UI_VOLTAGE_LEVEL 1 // Set 5 o 3.3 V
 
 
 //============================== Languages UI =========================
@@ -441,12 +446,20 @@
 // M502 - reverts to the default "factory settings".  You still need to store them in EEPROM afterwards if you want to.
 //define this to enable EEPROM support
 //#define EEPROM_SETTINGS
-//#define EEPROM_CHITCHAT
+#define EEPROM_CHITCHAT
 // to disable EEPROM Serial responses and decrease program space by ~1700 byte: comment this out:
 // please keep turned on if you can.
 //#define DISABLE_M503
 //===========================================================================
 
+//========================== EXTRA SETTINGS ON SD ===========================
+// Uncomment SD SETTINGS to enable the firmware to write some configuration, that require frequent update, on the SD card.
+//#define SD_SETTINGS
+#define SD_CFG_SECONDS        300         //seconds between update
+#define CFG_SD_FILE           "INFO.CFG"  //name of the configuration file
+#define CFG_SD_MAX_KEY_LEN    3+1         //icrease this if you add key name longer than the actual value.
+#define CFG_SD_MAX_VALUE_LEN  12+1        //this should be enought for int, long and float if you need to retrive strings increase this carefully
+//===========================================================================
 
 //==================== Bowden Filament management ===========================
 //#define EASY_LOAD
@@ -496,9 +509,9 @@
  * Support for a filament diameter sensor
  * Also allows adjustment of diameter at print time (vs  at slicing)
  * Single extruder only at this point (extruder 0)
- * 
+ *
  * Motherboards
- * 34 - RAMPS1.4 - uses Analog input 5 on the AUX2 connector 
+ * 34 - RAMPS1.4 - uses Analog input 5 on the AUX2 connector
  * 81 - Printrboard - Uses Analog input 2 on the Exp1 connector (version B,C,D,E)
  * 301 - Rambo  - uses Analog input 3
  * Note may require analog pins to be defined for different motherboards

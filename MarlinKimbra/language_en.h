@@ -24,14 +24,15 @@
 #define MSG_AUTOSTART                       "Autostart"
 #define MSG_DISABLE_STEPPERS                "Disable steppers"
 #define MSG_AUTO_HOME                       "Auto home"
-#define MSG_BED_SETTING                     "Bed Setting"
-#define MSG_LP_INTRO                        " Leveling bed...       Press to start  "
-#define MSG_LP_1                            " Adjust first point  & Press the button"
-#define MSG_LP_2                            " Adjust second point & Press the button"
-#define MSG_LP_3                            " Adjust third point  & Press the button"
-#define MSG_LP_4                            " Adjust fourth point & Press the button"
-#define MSG_LP_5                            "     Is it ok?         Press to end"       
-#define MSG_LP_6                            " BED leveled!"
+#define MSG_MBL_SETTING                     "Manual Bed Leveling"
+#define MSG_MBL_BUTTON                      " Press the button   "
+#define MSG_MBL_INTRO                       " Leveling bed...    "
+#define MSG_MBL_1                           " Adjust first point "
+#define MSG_MBL_2                           " Adjust second point"
+#define MSG_MBL_3                           " Adjust third point "
+#define MSG_MBL_4                           " Adjust fourth point"
+#define MSG_MBL_5                           "    Is it ok?       "
+#define MSG_MBL_6                           " BED leveled!       "
 #define MSG_SET_HOME_OFFSETS                "Set home offsets"
 #define MSG_SET_ORIGIN                      "Set origin"
 #define MSG_PREHEAT_PLA                     "Preheat PLA"
@@ -143,20 +144,24 @@
 #define MSG_BABYSTEP_Y                      "Babystep Y"
 #define MSG_BABYSTEP_Z                      "Babystep Z"
 #define MSG_ENDSTOP_ABORT                   "Endstop abort"
-#define MSG_END_HOUR                        "hours"
-#define MSG_END_MINUTE                      "minutes"
 #define MSG_HEATING_FAILED_LCD              "Heating failed"
 #define MSG_ERR_REDUNDANT_TEMP              "Err: REDUNDANT TEMP ERROR"
 #define MSG_THERMAL_RUNAWAY                 "THERMAL RUNAWAY"
 #define MSG_ERR_MAXTEMP                     "Err: MAXTEMP"
 #define MSG_ERR_MINTEMP                     "Err: MINTEMP"
 #define MSG_ERR_MAXTEMP_BED                 "Err: MAXTEMP BED"
+#define MSG_ERR_MINTEMP_BED                 "Err: MINTEMP BED"
+#define MSG_END_DAY                         "days"
+#define MSG_END_HOUR                        "hours"
+#define MSG_END_MINUTE                      "minutes"
 
+// Debug
 #define MSG_DEBUG_ECHO                      "DEBUG ECHO ENABLED"
 #define MSG_DEBUG_INFO                      "DEBUG INFO ENABLED"
 #define MSG_DEBUG_ERRORS                    "DEBUG ERRORS ENABLED"
 #define MSG_DEBUG_DRYRUN                    "DEBUG DRYRUN ENABLED"
 
+// Calibrate Delta
 #ifdef DELTA
   #define MSG_DELTA_CALIBRATE               "Delta Calibration"
   #define MSG_DELTA_CALIBRATE_X             "Calibrate X"
@@ -165,6 +170,7 @@
   #define MSG_DELTA_CALIBRATE_CENTER        "Calibrate Center"
 #endif // DELTA
 
+// Scara
 #ifdef SCARA
   #define MSG_XSCALE                        "X Scale"
   #define MSG_YSCALE                        "Y Scale"

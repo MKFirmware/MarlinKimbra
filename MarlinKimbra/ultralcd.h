@@ -24,10 +24,9 @@
     void lcd_setcontrast(uint8_t value);
   #endif
 
-  void set_pageShowInfo(int value);
-  void set_ChangeScreen(boolean state);
-  void config_lcd_level_bed(void);
-  void lcd_level_bed(void);
+  #if !defined(DELTA) && !defined(Z_SAFE_HOMING) && Z_HOME_DIR < 0
+    void set_pageShowInfo(int value);
+  #endif
 
   #define LCD_MESSAGEPGM(x) lcd_setstatuspgm(PSTR(x))
   #define LCD_ALERTMESSAGEPGM(x) lcd_setalertstatuspgm(PSTR(x))
@@ -57,7 +56,7 @@
 
   extern bool cancel_heatup;
   
-  #if (HAS_FILAMENT_SENSOR && defined(FILAMENT_LCD_DISPLAY)) || (HAS_POWER_CONSUMPTION_SENSOR && defined(POWER_CONSUMPTION_LCD_DISPLAY))
+  #if HAS_LCD_FILAMENT_SENSOR || HAS_LCD_POWER_SENSOR
     extern millis_t previous_lcd_status_ms;
   #endif
 
@@ -118,7 +117,7 @@
   FORCE_INLINE void lcd_setstatuspgm(const char* message, const uint8_t level=0) {}
   FORCE_INLINE void lcd_buttons_update() {}
   FORCE_INLINE void lcd_reset_alert_level() {}
-  FORCE_INLINE void lcd_buzz(long duration,uint16_t freq) {}
+  FORCE_INLINE void lcd_buzz(long duration, uint16_t freq) {}
   FORCE_INLINE bool lcd_detected(void) { return true; }
 
   #define LCD_MESSAGEPGM(x) do{}while(0)

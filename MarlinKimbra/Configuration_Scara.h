@@ -7,7 +7,7 @@
 // QHARLEYS Autobedlevelling has not been ported, because Marlin has now Bed-levelling
 // You might need Z-Min endstop on SCARA-Printer to use this feature. Actually untested!
 // Uncomment to use Morgan scara mode
-#define scara_segments_per_second 200 //careful, two much will decrease performance...
+#define SCARA_SEGMENTS_PER_SECOND 200 // If movement is choppy try lowering this value
 // Length of inner support arm
 #define Linkage_1 150 //mm      Preprocessor cannot handle decimal point...
 // Length of outer support arm     Measure arm lengths precisely and enter 
@@ -210,9 +210,7 @@
 // default settings
 #define DEFAULT_AXIS_STEPS_PER_UNIT     {103.69,103.69,200/1.25,1000,1000,1000,1000}    // X, Y, Z, E0, E1, E2, E3
 #define DEFAULT_MAX_FEEDRATE            {300,300,4,45,45,45,45}                         // X, Y, Z, E0, E1, E2, E3 (mm/sec)
-#define DEFAULT_RETRACTION_MAX_FEEDRATE {80,80,80,80}                                   // E0, E1, E2, E3 (mm/sec)
 #define DEFAULT_MAX_ACCELERATION        {5000,5000,50,5000,5000,5000,5000}              // X, Y, Z, E0, E1, E2, E3 maximum start speed for accelerated moves.
-
 #define DEFAULT_ACCELERATION           400      // X, Y, Z and E max acceleration in mm/s^2 for printing moves
 #define DEFAULT_RETRACT_ACCELERATION  2000      // X, Y, Z and E max acceleration in mm/s^2 for retracts
 #define DEFAULT_TRAVEL_ACCELERATION    400      // X, Y, Z acceleration in mm/s^2 for travel (non printing) moves

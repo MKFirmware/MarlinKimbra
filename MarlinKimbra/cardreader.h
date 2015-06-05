@@ -18,7 +18,7 @@ public:
   //this is to delay autostart and hence the initialisaiton of the sd card to some seconds after the normal init, so the device is available quick after a reset
 
   void checkautostart(bool x);
-  void openFile(char* name, bool read, bool replace_current = true, bool lcd_status = true);
+  void openFile(char* name,bool read,bool replace_current=true,bool lcd_status=true);
   void openLogFile(char* name);
   void removeFile(char* name);
   void closeFile(bool store_location = false);
@@ -29,6 +29,10 @@ public:
   void pauseSDPrint();
   void getStatus();
   void printingHasFinished();
+
+  #ifdef LONG_FILENAME_HOST_SUPPORT
+    void printLongPath(char *path);
+  #endif
 
   void getfilename(uint16_t nr, const char* const match = NULL);
   uint16_t getnrfilenames();

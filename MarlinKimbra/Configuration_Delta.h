@@ -9,7 +9,9 @@
 // Make delta curves from many straight lines (linear interpolation).
 // This is a trade-off between visible corners (not enough segments)
 // and processor overload (too many expensive sqrt calls).
-#define DELTA_SEGMENTS_PER_SECOND 200
+// The new function do not use segments per second but segments per mm
+// if you want use new function comment this (using // at the start of the line)
+#define DELTA_SEGMENTS_PER_SECOND 150
 
 // Center-to-center distance of the holes in the diagonal push rods.
 #define DEFAULT_DELTA_DIAGONAL_ROD 217.0      // mm
@@ -29,6 +31,9 @@
 //Uncomment to enable autocalibration debug messages
 #define DEBUG_MESSAGES
 
+//Amount to lift head after probing a point
+#define AUTOCAL_PROBELIFT 3 // mm
+
 // Precision for G30 delta autocalibration function
 #define AUTOCALIBRATION_PRECISION 0.1      // mm
 
@@ -37,14 +42,14 @@
 
 // Z-Probe variables
 // Start and end location values are used to deploy/retract the probe (will move from start to end and back again)
-#define PROBING_FEEDRATE 500                          // Speed for individual probe Use: G30 A F600
+#define PROBING_FEEDRATE 1000                         // Speed in mm/min for individual probe Use: G30 A F600
 #define Z_PROBE_OFFSET {0, 0, -1, 0}                  // X, Y, Z, E distance between hotend nozzle and deployed bed leveling probe.
 #define Z_PROBE_DEPLOY_START_LOCATION {0, 0, 30, 0}   // X, Y, Z, E start location for z-probe deployment sequence
 #define Z_PROBE_DEPLOY_END_LOCATION {0, 0, 30, 0}     // X, Y, Z, E end location for z-probe deployment sequence
 #define Z_PROBE_RETRACT_START_LOCATION {0, 0, 30, 0}  // X, Y, Z, E start location for z-probe retract sequence
 #define Z_PROBE_RETRACT_END_LOCATION {0, 0, 30, 0}    // X, Y, Z, E end location for z-probe retract sequence
 #define Z_RAISE_BETWEEN_PROBINGS 2                    // How much the extruder will be raised when travelling from between next probing points
-#define AUTOLEVEL_GRID 24                             // Distance between autolevel Z probing points, should be less than print surface radius/3.
+#define AUTOLEVEL_GRID 20                             // Distance between autolevel Z probing points, should be less than print surface radius/3.
 
 //===========================================================================
 //=============================Mechanical Settings===========================
@@ -80,9 +85,9 @@
 
 // ENDSTOP SETTINGS:
 // Sets direction of endstop when homing; 1=MAX, -1=MIN
-#define X_HOME_DIR 1 //DELTA MUST HAVE MAX ENDSTOP
-#define Y_HOME_DIR 1 //DELTA MUST HAVE MAX ENDSTOP
-#define Z_HOME_DIR 1 //DELTA MUST HAVE MAX ENDSTOP
+#define X_HOME_DIR 1 // DELTA MUST HAVE MAX ENDSTOP
+#define Y_HOME_DIR 1 // DELTA MUST HAVE MAX ENDSTOP
+#define Z_HOME_DIR 1 // DELTA MUST HAVE MAX ENDSTOP
 
 #define min_software_endstops true  // If true, axis won't move to coordinates less than HOME_POS.
 #define max_software_endstops true  // If true, axis won't move to coordinates greater than the defined lengths below.
@@ -136,9 +141,7 @@
 // delta speeds must be the same on xyz
 #define DEFAULT_AXIS_STEPS_PER_UNIT {80,80,80,451,625,625,625}        // X, Y, Z, E0, E1, E2, E3
 #define DEFAULT_MAX_FEEDRATE {300,300,300,45,100,100,100}             // X, Y, Z, E0, E1, E2, E3 (mm/sec)
-#define DEFAULT_RETRACTION_MAX_FEEDRATE {150,150,150,150}             // E0, E1, E2, E3 (mm/sec)
 #define DEFAULT_MAX_ACCELERATION {2000,2000,2000,1000,1000,1000,1000} // X, Y, Z, E0, E1, E2, E3 maximum start speed for accelerated moves.
-
 #define DEFAULT_ACCELERATION          1000      // X, Y, Z and E max acceleration in mm/s^2 for printing moves
 #define DEFAULT_RETRACT_ACCELERATION  2500      // X, Y, Z and E max acceleration in mm/s^2 for retracts
 #define DEFAULT_TRAVEL_ACCELERATION   3000      // X, Y, Z acceleration in mm/s^2 for travel (non printing) moves

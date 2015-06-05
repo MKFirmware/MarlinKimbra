@@ -7,17 +7,16 @@
 #include "stepper.h"
 #include "configuration_store.h"
 
-int8_t encoderDiff; /* encoderDiff is updated from interrupt context and added to encoderPosition every LCD update */
+int8_t encoderDiff; // updated from interrupt context and added to encoderPosition every LCD update
 
 bool encoderRateMultiplierEnabled;
 int32_t lastEncoderMovementMillis;
 
-int  pageShowInfo = 0;
-boolean ChangeScreen = false;
-void set_pageShowInfo(int value){ pageShowInfo = value; }
-void set_ChangeScreen(boolean state) { ChangeScreen = state; }
+#if !defined(DELTA) && !defined(Z_SAFE_HOMING) && Z_HOME_DIR < 0
+  int  pageShowInfo = 0;
+  void set_pageShowInfo(int value){ pageShowInfo = value; }
+#endif
 
-/* Configuration settings */
 int plaPreheatHotendTemp;
 int plaPreheatHPBTemp;
 int plaPreheatFanSpeed;
@@ -38,9 +37,7 @@ int gumPreheatFanSpeed;
   millis_t print_millis = 0;
 #endif
 
-/* !Configuration settings */
-
-//Function pointer to menu functions.
+// Function pointer to menu functions.
 typedef void (*menuFunc_t)();
 
 uint8_t lcd_status_message_level;
@@ -48,7 +45,7 @@ char lcd_status_message[3*LCD_WIDTH+1] = WELCOME_MSG; // worst case is kana with
 
 #ifdef DOGLCD
   #include "dogm_lcd_implementation.h"
-  #define LCD_Printpos(x, y) u8g.setPrintPos(x, y)
+  #define LCD_Printpos(x, y)  u8g.setPrintPos(x + 5, (y + 1) * (DOG_CHAR_HEIGHT + 2))
 #else
   #include "ultralcd_implementation_hitachi_HD44780.h"
   #define LCD_Printpos(x, y)  lcd.setCursor(x, y)
@@ -84,6 +81,9 @@ static void lcd_status_screen();
   
   #ifdef DELTA
     static void lcd_delta_calibrate_menu();
+  #elif !defined(DELTA) && !defined(Z_SAFE_HOMING) && Z_HOME_DIR < 0
+    static void lcd_level_bed();
+    static void config_lcd_level_bed();
   #endif // DELTA
 
   /* Different types of actions that can be used in menu items. */
@@ -239,11 +239,11 @@ static void lcd_status_screen();
       } } while(0)
 
   /** Used variables to keep track of the menu */
-  #ifndef REPRAPWORLD_KEYPAD
-    volatile uint8_t buttons; // Bits of the pressed buttons.
-  #else
-    volatile uint8_t buttons_reprapworld_keypad; // The reprapworld_keypad shift register values
+  volatile uint8_t buttons;  //the last checked buttons in a bit array.
+  #ifdef REPRAPWORLD_KEYPAD
+    volatile uint8_t buttons_reprapworld_keypad; // to store the keypad shift register values
   #endif
+
   #ifdef LCD_HAS_SLOW_BUTTONS
     volatile uint8_t slow_buttons; // Bits of the pressed buttons.
   #endif
@@ -279,7 +279,7 @@ float raw_Ki, raw_Kd;
 /**
  * General function to go directly to a menu
  */
-static void lcd_goto_menu(menuFunc_t menu, const bool feedback=false, const uint32_t encoder=0) {
+static void lcd_goto_menu(menuFunc_t menu, const bool feedback = false, const uint32_t encoder = 0) {
   if (currentMenu != menu) {
     currentMenu = menu;
     #ifdef NEWPANEL
@@ -375,7 +375,7 @@ static void lcd_status_screen() {
           currentMenu == lcd_status_screen
         #endif
       );
-      #ifdef FILAMENT_LCD_DISPLAY
+      #if HAS_LCD_FILAMENT_SENSOR || HAS_LCD_POWER_SENSOR
         previous_lcd_status_ms = millis();  // get status message to show up for a while
       #endif
     }
@@ -412,18 +412,20 @@ static void lcd_status_screen() {
 
 static void lcd_return_to_status() { lcd_goto_menu(lcd_status_screen); }
 
-static void lcd_sdcard_pause() { card.pauseSDPrint(); }
+#ifdef SDSUPPORT
+  static void lcd_sdcard_pause() { card.pauseSDPrint(); }
 
-static void lcd_sdcard_resume() { card.startFileprint(); }
+  static void lcd_sdcard_resume() { card.startFileprint(); }
 
-static void lcd_sdcard_stop() {
-  quickStop();
-  card.sdprinting = false;
-  card.closeFile();
-  autotempShutdown();
-  cancel_heatup = true;
-  lcd_setstatus(MSG_PRINT_ABORTED, true);
-}
+  static void lcd_sdcard_stop() {
+    quickStop();
+    card.sdprinting = false;
+    card.closeFile();
+    autotempShutdown();
+    cancel_heatup = true;
+    lcd_setstatus(MSG_PRINT_ABORTED, true);
+  }
+#endif
 
 /**
  *
@@ -583,12 +585,11 @@ static void lcd_tune_menu() {
 
 void _lcd_preheat(int endnum, const float temph, const float tempb, const int fan) {
   if (temph > 0) setTargetHotend(temph, endnum);
-  setTargetBed(tempb);
+  #if TEMP_SENSOR_BED != 0
+    setTargetBed(tempb);
+  #endif
   fanSpeed = fan;
   lcd_return_to_status();
-  #ifdef WATCH_TEMP_PERIOD
-    if (endnum >= 0) start_watching_heater(endnum);
-  #endif
 }
 void lcd_preheat_pla0() { _lcd_preheat(0, plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed); }
 void lcd_preheat_abs0() { _lcd_preheat(0, absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed); }
@@ -678,7 +679,7 @@ void lcd_preheat_gum0() { _lcd_preheat(0, gumPreheatHotendTemp, gumPreheatHPBTem
     }
 
     static void lcd_preheat_gum_menu() {
-      START_MENU();
+      START_MENU(lcd_prepare_menu);
       MENU_ITEM(back, MSG_PREPARE, lcd_prepare_menu);
       MENU_ITEM(function, MSG_PREHEAT_GUM " 1", lcd_preheat_gum0);
       #if TEMP_SENSOR_1 != 0 //2 extruder preheat
@@ -700,91 +701,9 @@ void lcd_preheat_gum0() { _lcd_preheat(0, gumPreheatHotendTemp, gumPreheatHPBTem
 #endif //more than one extruder present
 
 void lcd_cooldown() {
-  setTargetHotend0(0);
-  setTargetHotend1(0);
-  setTargetHotend2(0);
-  setTargetHotend3(0);
-  setTargetBed(0);
+  disable_all_heaters();
   fanSpeed = 0;
   lcd_return_to_status();
-}
-
-void config_lcd_level_bed() {
-	setTargetHotend(0,0);
-
-	ECHO_EM("Leveling...");	
-	currentMenu = lcd_level_bed;
-	enqueuecommands_P(PSTR("G28 M"));
-	pageShowInfo = 0;
-}
-
-void lcd_level_bed() {
-  if(ChangeScreen) {
-    lcd_implementation_clear;
-    switch(pageShowInfo) {
-      case 0:
-        {
-          LCD_Printpos(0, 1);
-          lcd_printPGM(PSTR(MSG_LP_INTRO));
-          currentMenu = lcd_level_bed;
-          ChangeScreen=false;
-        }
-      break;
-      case 1:
-        {
-          LCD_Printpos(0, 1);
-          lcd_printPGM(PSTR(MSG_LP_1));
-          currentMenu = lcd_level_bed;
-          ChangeScreen=false;
-        }
-      break;
-      case 2:
-        {
-          LCD_Printpos(0, 1);
-          lcd_printPGM(PSTR(MSG_LP_2));
-              currentMenu = lcd_level_bed;
-           ChangeScreen=false;
-        }
-      break;
-      case 3:
-        {  
-          LCD_Printpos(0, 1);
-          lcd_printPGM(PSTR(MSG_LP_3));
-          currentMenu = lcd_level_bed;
-          ChangeScreen=false;
-        }
-      break;        
-      case 4:
-        {
-          LCD_Printpos(0, 1);
-          lcd_printPGM(PSTR(MSG_LP_4));
-          currentMenu = lcd_level_bed;
-          ChangeScreen=false; 
-        }
-      break;
-      case 5:
-        {
-          LCD_Printpos(0, 1);
-          lcd_printPGM(PSTR(MSG_LP_5));
-          currentMenu = lcd_level_bed;
-          ChangeScreen=false;
-        }
-      break;
-      case 6:
-        {
-          LCD_Printpos(2, 2);
-          lcd_printPGM(PSTR(MSG_LP_6));
-          ChangeScreen=false;
-          delay(1200);
-          encoderPosition = 0;
-          lcd_implementation_clear();
-          currentMenu = lcd_status_screen;
-          lcd_status_screen();
-          pageShowInfo=0;
-        }
-      break;
-    }
-  }
 }
 
 /**
@@ -805,8 +724,15 @@ static void lcd_prepare_menu() {
   // Auto Home
   //
   MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
-  #ifndef DELTA
-    MENU_ITEM(function, MSG_BED_SETTING, config_lcd_level_bed);
+
+  //
+  // Level Bed
+  //
+  #ifdef ENABLE_AUTO_BED_LEVELING
+    if (axis_known_position[X_AXIS] && axis_known_position[Y_AXIS])
+      MENU_ITEM(gcode, MSG_LEVEL_BED, PSTR("G29"));
+  #elif !defined(DELTA) && !defined(Z_SAFE_HOMING) && Z_HOME_DIR < 0
+    MENU_ITEM(submenu, MSG_MBL_SETTING, config_lcd_level_bed);
   #endif
 
   //
@@ -824,16 +750,6 @@ static void lcd_prepare_menu() {
     else {
       WRITE(LASER_PWR_PIN, HIGH);
     }
-  #endif
-
-  //
-  // Level Bed
-  //
-  #ifdef ENABLE_AUTO_BED_LEVELING
-    if (axis_known_position[X_AXIS] && axis_known_position[Y_AXIS])
-      MENU_ITEM(gcode, MSG_LEVEL_BED, PSTR("G29"));
-  #elif !defined(DELTA)
-    MENU_ITEM(function, MSG_BED_SETTING, config_lcd_level_bed);
   #endif
 
   //
@@ -871,7 +787,7 @@ static void lcd_prepare_menu() {
   //
   // Easy Load
   //
-  #if defined(EASY_LOAD) 
+  #ifdef EASY_LOAD
     MENU_ITEM(function, MSG_E_BOWDEN_LENGTH, lcd_easy_load);
     MENU_ITEM(function, MSG_R_BOWDEN_LENGTH, lcd_easy_unload);
     MENU_ITEM(function, MSG_PURGE_XMM, lcd_purge);
@@ -1073,10 +989,17 @@ static void lcd_control_menu() {
  * "Control" > "Temperature" submenu
  *
  */
-
 static void lcd_control_temperature_menu() {
   START_MENU(lcd_control_menu);
+
+  //
+  // ^ Control
+  //
   MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
+
+  //
+  // Nozzle, Nozzle 2, Nozzle 3, Nozzle 4
+  //
   #if TEMP_SENSOR_0 != 0
     MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE, &target_temperature[0], 0, HEATER_0_MAXTEMP + LCD_MAX_TEMP_OFFSET);
   #endif
@@ -1095,19 +1018,35 @@ static void lcd_control_temperature_menu() {
       #endif //HOTENDS > 3
     #endif //HOTENDS > 2
   #endif //HOTENDS > 1
+
+  //
+  // Bed
+  //
   #if TEMP_SENSOR_BED != 0
     MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP + LCD_MAX_TEMP_OFFSET);
   #endif
+
+  //
+  // Fan Speed
+  //
   MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255);
   #ifdef IDLE_OOZING_PREVENT
     MENU_ITEM_EDIT(bool, MSG_IDLEOOZING, &idleoozing_enabled);
   #endif
+
+  //
+  // Autotemp, Min, Max, Fact
+  //
   #if defined(AUTOTEMP) && (TEMP_SENSOR_0 != 0)
     MENU_ITEM_EDIT(bool, MSG_AUTOTEMP, &autotemp_enabled);
     MENU_ITEM_EDIT(float3, MSG_MIN, &autotemp_min, 0, HEATER_0_MAXTEMP + LCD_MAX_TEMP_OFFSET);
     MENU_ITEM_EDIT(float3, MSG_MAX, &autotemp_max, 0, HEATER_0_MAXTEMP + LCD_MAX_TEMP_OFFSET);
     MENU_ITEM_EDIT(float32, MSG_FACTOR, &autotemp_factor, 0.0, 1.0);
   #endif
+
+  //
+  // PID-P, PID-I, PID-D
+  //
   #ifdef PIDTEMP
     // set up temp variables - undo the default scaling
     raw_Ki = unscalePID_i(PID_PARAM(Ki,0));
@@ -1144,8 +1083,20 @@ static void lcd_control_temperature_menu() {
       #endif //HOTENDS > 2
     #endif //HOTENDS > 1
   #endif //PIDTEMP
+
+  //
+  // Preheat PLA conf
+  //
   MENU_ITEM(submenu, MSG_PREHEAT_PLA_SETTINGS, lcd_control_temperature_preheat_pla_settings_menu);
+
+  //
+  // Preheat ABS conf
+  //
   MENU_ITEM(submenu, MSG_PREHEAT_ABS_SETTINGS, lcd_control_temperature_preheat_abs_settings_menu);
+
+  //
+  // Preheat GUM conf
+  //
   MENU_ITEM(submenu, MSG_PREHEAT_GUM_SETTINGS, lcd_control_temperature_preheat_gum_settings_menu);
   END_MENU();
 }
@@ -1155,7 +1106,6 @@ static void lcd_control_temperature_menu() {
  * "Temperature" > "Preheat PLA conf" submenu
  *
  */
-
 static void lcd_control_temperature_preheat_pla_settings_menu() {
   START_MENU(lcd_control_temperature_menu);
   MENU_ITEM(back, MSG_TEMPERATURE, lcd_control_temperature_menu);
@@ -1177,7 +1127,6 @@ static void lcd_control_temperature_preheat_pla_settings_menu() {
  * "Temperature" > "Preheat ABS conf" submenu
  *
  */
-
 static void lcd_control_temperature_preheat_abs_settings_menu() {
   START_MENU(lcd_control_temperature_menu);
   MENU_ITEM(back, MSG_TEMPERATURE, lcd_control_temperature_menu);
@@ -1220,7 +1169,6 @@ static void lcd_control_temperature_preheat_gum_settings_menu() {
  * "Control" > "Motion" submenu
  *
  */
-
 static void lcd_control_motion_menu() {
   START_MENU(lcd_control_menu);
   MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
@@ -1271,7 +1219,6 @@ static void lcd_control_motion_menu() {
  * "Control" > "Filament" submenu
  *
  */
-
 static void lcd_control_volumetric_menu() {
   START_MENU(lcd_control_menu);
   MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
@@ -1299,17 +1246,27 @@ static void lcd_control_volumetric_menu() {
  * "Control" > "Contrast" submenu
  *
  */
-
 #ifdef HAS_LCD_CONTRAST
   static void lcd_set_contrast() {
     if (encoderPosition != 0) {
-      lcd_contrast -= encoderPosition;
-      lcd_contrast &= 0x3F;
+      #ifdef U8GLIB_LM6059_AF
+        lcd_contrast += encoderPosition;
+        lcd_contrast &= 0xFF;
+      #else
+        lcd_contrast -= encoderPosition;
+        lcd_contrast &= 0x3F;
+      #endif
       encoderPosition = 0;
       lcdDrawUpdate = 1;
       u8g.setContrast(lcd_contrast);
     }
-    if (lcdDrawUpdate) lcd_implementation_drawedit(PSTR(MSG_CONTRAST), itostr2(lcd_contrast));
+    if (lcdDrawUpdate) {
+      #ifdef U8GLIB_LM6059_AF
+        lcd_implementation_drawedit(PSTR(MSG_CONTRAST), itostr3(lcd_contrast));
+      #else
+        lcd_implementation_drawedit(PSTR(MSG_CONTRAST), itostr2(lcd_contrast));
+      #endif
+    }
     if (LCD_CLICKED) lcd_goto_menu(lcd_control_menu);
   }
 #endif // HAS_LCD_CONTRAST
@@ -1319,7 +1276,6 @@ static void lcd_control_volumetric_menu() {
  * "Control" > "Retract" submenu
  *
  */
-
 #ifdef FWRETRACT
   static void lcd_control_retract_menu() {
     START_MENU(lcd_control_menu);
@@ -1340,58 +1296,59 @@ static void lcd_control_volumetric_menu() {
   }
 #endif // FWRETRACT
 
-#if SDCARDDETECT == -1
-  static void lcd_sd_refresh() {
-    card.initsd();
+#ifdef SDSUPPORT
+  #if SDCARDDETECT == -1
+    static void lcd_sd_refresh() {
+      card.initsd();
+      currentMenuViewOffset = 0;
+    }
+  #endif
+
+  static void lcd_sd_updir() {
+    card.updir();
     currentMenuViewOffset = 0;
   }
-#endif
 
-static void lcd_sd_updir() {
-  card.updir();
-  currentMenuViewOffset = 0;
-}
-
-/**
- *
- * "Print from SD" submenu
- *
- */
-
-void lcd_sdcard_menu() {
-  if (lcdDrawUpdate == 0 && LCD_CLICKED == 0) return;	// nothing to do (so don't thrash the SD card)
-  uint16_t fileCnt = card.getnrfilenames();
-  START_MENU(lcd_main_menu);
-  MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
-  card.getWorkDirName();
-  if (card.filename[0] == '/') {
-    #if SDCARDDETECT == -1
-      MENU_ITEM(function, LCD_STR_REFRESH MSG_REFRESH, lcd_sd_refresh);
-    #endif
-  }
-  else {
-    MENU_ITEM(function, LCD_STR_FOLDER "..", lcd_sd_updir);
-  }
-
-  for (uint16_t i = 0; i < fileCnt; i++) {
-    if (_menuItemNr == _lineNr) {
-      card.getfilename(
-        #ifdef SDCARD_RATHERRECENTFIRST
-          fileCnt-1 -
-        #endif
-        i
-      );
-      if (card.filenameIsDir)
-        MENU_ITEM(sddirectory, MSG_CARD_MENU, card.filename, card.longFilename);
-      else
-        MENU_ITEM(sdfile, MSG_CARD_MENU, card.filename, card.longFilename);
+  /**
+  *
+  * "Print from SD" submenu
+  *
+  */
+  void lcd_sdcard_menu() {
+    if (lcdDrawUpdate == 0 && LCD_CLICKED == 0) return;	// nothing to do (so don't thrash the SD card)
+    uint16_t fileCnt = card.getnrfilenames();
+    START_MENU(lcd_main_menu);
+    MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
+    card.getWorkDirName();
+    if (card.filename[0] == '/') {
+      #if SDCARDDETECT == -1
+        MENU_ITEM(function, LCD_STR_REFRESH MSG_REFRESH, lcd_sd_refresh);
+      #endif
     }
     else {
-      MENU_ITEM_DUMMY();
+      MENU_ITEM(function, LCD_STR_FOLDER "..", lcd_sd_updir);
     }
+
+    for (uint16_t i = 0; i < fileCnt; i++) {
+      if (_menuItemNr == _lineNr) {
+        card.getfilename(
+          #ifdef SDCARD_RATHERRECENTFIRST
+            fileCnt-1 -
+          #endif
+          i
+        );
+        if (card.filenameIsDir)
+          MENU_ITEM(sddirectory, MSG_CARD_MENU, card.filename, card.longFilename);
+        else
+          MENU_ITEM(sdfile, MSG_CARD_MENU, card.filename, card.longFilename);
+      }
+      else {
+        MENU_ITEM_DUMMY();
+      }
+    }
+    END_MENU();
   }
-  END_MENU();
-}
+#endif // SDSUPPORT
 
 /**
  *
@@ -1483,7 +1440,7 @@ menu_edit_type(unsigned long, long5, ftostr5, 0.01)
   static void reprapworld_keypad_move_home() {
     enqueuecommands_P((PSTR("G28"))); // move all axis home
   }
-#endif //REPRAPWORLD_KEYPAD
+#endif // REPRAPWORLD_KEYPAD
 
 
 /**
@@ -1503,7 +1460,7 @@ void lcd_quick_feedback() {
       #define LCD_FEEDBACK_FREQUENCY_DURATION_MS (1000/6)
     #endif    
     lcd_buzz(LCD_FEEDBACK_FREQUENCY_DURATION_MS, LCD_FEEDBACK_FREQUENCY_HZ);
-  #elif defined(BEEPER) && BEEPER > -1
+  #elif defined(BEEPER) && BEEPER >= 0
     #ifndef LCD_FEEDBACK_FREQUENCY_HZ
       #define LCD_FEEDBACK_FREQUENCY_HZ 5000
     #endif
@@ -1528,19 +1485,23 @@ static void menu_action_back(menuFunc_t func) { lcd_goto_menu(func); }
 static void menu_action_submenu(menuFunc_t func) { lcd_goto_menu(func); }
 static void menu_action_gcode(const char* pgcode) { enqueuecommands_P(pgcode); }
 static void menu_action_function(menuFunc_t func) { (*func)(); }
-static void menu_action_sdfile(const char* filename, char* longFilename) {
-  char cmd[30];
-  char* c;
-  sprintf_P(cmd, PSTR("M23 %s"), filename);
-  for(c = &cmd[4]; *c; c++) *c = tolower(*c);
-  enqueuecommand(cmd);
-  enqueuecommands_P(PSTR("M24"));
-  lcd_return_to_status();
-}
-static void menu_action_sddirectory(const char* filename, char* longFilename) {
-  card.chdir(filename);
-  encoderPosition = 0;
-}
+
+#ifdef SDSUPPORT
+  static void menu_action_sdfile(const char* filename, char* longFilename) {
+    char cmd[30];
+    char* c;
+    sprintf_P(cmd, PSTR("M23 %s"), filename);
+    for(c = &cmd[4]; *c; c++) *c = tolower(*c);
+    enqueuecommand(cmd);
+    enqueuecommands_P(PSTR("M24"));
+    lcd_return_to_status();
+  }
+  static void menu_action_sddirectory(const char* filename, char* longFilename) {
+    card.chdir(filename);
+    encoderPosition = 0;
+  }
+#endif // SDSUPPORT
+
 static void menu_action_setting_edit_bool(const char* pstr, bool* ptr) { *ptr = !(*ptr); }
 static void menu_action_setting_edit_callback_bool(const char* pstr, bool* ptr, menuFunc_t callback) {
   menu_action_setting_edit_bool(pstr, ptr);
@@ -1749,11 +1710,19 @@ void lcd_update() {
     #endif
 
     #ifdef ULTIPANEL
-      if (currentMenu != lcd_status_screen && millis() > return_to_status_ms) {
+
+      // Return to Status Screen after a timeout
+      if (currentMenu != lcd_status_screen &&
+        #if !defined(DELTA) && !defined(Z_SAFE_HOMING) && Z_HOME_DIR < 0
+          currentMenu != lcd_level_bed &&
+        #endif
+        millis() > return_to_status_ms
+      ) {
         lcd_return_to_status();
         lcdDrawUpdate = 2;
       }
-    #endif //ULTIPANEL
+
+    #endif // ULTIPANEL
 
     if (lcdDrawUpdate == 2) lcd_implementation_clear();
     if (lcdDrawUpdate) lcdDrawUpdate--;
@@ -1775,7 +1744,7 @@ void lcd_finishstatus(bool persist=false) {
   #endif
   lcdDrawUpdate = 2;
 
-  #ifdef FILAMENT_LCD_DISPLAY
+  #if HAS_LCD_FILAMENT_SENSOR || HAS_LCD_POWER_SENSOR
     previous_lcd_status_ms = millis();  //get status message to show up for a while
   #endif
 }
@@ -1931,13 +1900,12 @@ void lcd_reset_alert_level() { lcd_status_message_level = 0; }
 
   void lcd_buzz(long duration, uint16_t freq) {
     if (freq > 0) {
-      #if BEEPER > 0
-        SET_OUTPUT(BEEPER);
-        tone(BEEPER, freq);
-        delay(duration);
-        noTone(BEEPER);
-      #elif defined(LCD_USE_I2C_BUZZER)
+      #ifdef LCD_USE_I2C_BUZZER
         lcd.buzz(duration, freq);
+      #elif defined(BEEPER) && BEEPER >= 0
+        SET_OUTPUT(BEEPER);
+        tone(BEEPER, freq, duration);
+        delay(duration);
       #else
         delay(duration);
       #endif
@@ -2226,5 +2194,66 @@ char *ftostr52(const float &x) {
   return conv;
 }
 
+#if !defined(DELTA) && !defined(Z_SAFE_HOMING) && Z_HOME_DIR < 0
+
+  static void lcd_level_bed() {
+
+    switch(pageShowInfo) {
+      case 0:
+        {
+          LCD_Printpos(0, 0); lcd_printPGM(PSTR(MSG_MBL_INTRO));
+          LCD_Printpos(0, 1); lcd_printPGM(PSTR(MSG_MBL_BUTTON));
+        }
+      break;
+      case 1:
+        {
+          LCD_Printpos(0, 0); lcd_printPGM(PSTR(MSG_MBL_1));
+          LCD_Printpos(0, 1); lcd_printPGM(PSTR(MSG_MBL_BUTTON));
+        }
+      break;
+      case 2:
+        {
+          LCD_Printpos(0, 0); lcd_printPGM(PSTR(MSG_MBL_2));
+          LCD_Printpos(0, 1); lcd_printPGM(PSTR(MSG_MBL_BUTTON));
+        }
+      break;
+      case 3:
+        {
+          LCD_Printpos(0, 0); lcd_printPGM(PSTR(MSG_MBL_3));
+          LCD_Printpos(0, 1); lcd_printPGM(PSTR(MSG_MBL_BUTTON));
+        }
+      break;
+      case 4:
+        {
+          LCD_Printpos(0, 0); lcd_printPGM(PSTR(MSG_MBL_4));
+          LCD_Printpos(0, 1); lcd_printPGM(PSTR(MSG_MBL_BUTTON));
+        }
+      break;
+      case 5:
+        {
+          LCD_Printpos(0, 0); lcd_printPGM(PSTR(MSG_MBL_5));
+          LCD_Printpos(0, 1); lcd_printPGM(PSTR(MSG_MBL_BUTTON));
+        }
+      break;
+      case 6:
+        {
+          LCD_Printpos(0, 0); lcd_printPGM(PSTR(MSG_MBL_6));
+          LCD_Printpos(0, 1); lcd_printPGM(PSTR("                  "));
+          delay(5000);
+          enqueuecommands_P(PSTR("G28"));
+          lcd_return_to_status();
+        }
+      break;
+    }
+  }
+
+  static void config_lcd_level_bed() {
+    ECHO_EM(MSG_MBL_SETTING);
+    enqueuecommands_P(PSTR("G28 M"));
+    pageShowInfo = 0;
+    lcd_goto_menu(lcd_level_bed);
+  }
+
+#endif
 
 #endif //ULTRA_LCD

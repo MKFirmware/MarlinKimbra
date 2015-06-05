@@ -23,24 +23,38 @@
 #define BED_CHECK_INTERVAL 5000 //ms between checks in bang-bang control
 
 /**
- * Heating Sanity Check
- *
- * Whenever an M104 or M109 increases the target temperature this will wait for WATCH_TEMP_PERIOD milliseconds,
- * and if the temperature hasn't increased by WATCH_TEMP_INCREASE degrees, the machine is halted, requiring a
- * hard reset. This test restarts with any M104/M109, but only if the current temperature is below the target
- * by at least 2 * WATCH_TEMP_INCREASE degrees celsius.
+ * Thermal Protection parameters
  */
-//#define WATCH_TEMP_PERIOD 16000 // 16 seconds
-//#define WATCH_TEMP_INCREASE 4  // Heat up at least 4 degrees in 16 seconds
+#ifdef THERMAL_PROTECTION_HOTENDS
+  #define THERMAL_PROTECTION_PERIOD    40     // Seconds
+  #define THERMAL_PROTECTION_HYSTERESIS 4     // Degrees Celsius
+
+  /**
+   * Whenever an M104 or M109 increases the target temperature the firmware will wait for the
+   * WATCH_TEMP_PERIOD to expire, and if the temperature hasn't increased by WATCH_TEMP_INCREASE
+   * degrees, the machine is halted, requiring a hard reset. This test restarts with any M104/M109,
+   * but only if the current temperature is far enough below the target for a reliable test.
+   */
+  #define WATCH_TEMP_PERIOD  16               // Seconds
+  #define WATCH_TEMP_INCREASE 4               // Degrees Celsius
+#endif
+
+#ifdef THERMAL_PROTECTION_BED
+  #define THERMAL_PROTECTION_BED_PERIOD    20 // Seconds
+  #define THERMAL_PROTECTION_BED_HYSTERESIS 2 // Degrees Celsius
+#endif
 
 
-//automatic temperature: The hot end target temperature is calculated by all the buffered lines of gcode.
-//The maximum buffered steps/sec of the extruder motor are called "se".
-//You enter the autotemp mode by a M109 S<mintemp> B<maxtemp> F<factor>
-// the target temperature is set to mintemp+factor*se[steps/sec] and limited by mintemp and maxtemp
-// you exit the value by any M109 without F*
-// Also, if the temperature is set to a value <mintemp, it is not changed by autotemp.
-// on an Ultimaker, some initial testing worked with M109 S215 B260 F1 in the start.gcode
+/**
+ * Automatic Temperature:
+ * The hotend target temperature is calculated by all the buffered lines of gcode.
+ * The maximum buffered steps/sec of the extruder motor is called "se".
+ * Start autotemp mode with M109 S<mintemp> B<maxtemp> F<factor>
+ * The target temperature is set to mintemp+factor*se[steps/sec] and is limited by
+ * mintemp and maxtemp. Turn this off by excuting M109 without F*
+ * Also, if the temperature is set to a value below mintemp, it will not be changed by autotemp.
+ * On an Ultimaker, some initial testing worked with M109 S215 B260 F1 in the start.gcode
+ */
 #define AUTOTEMP
 #ifdef AUTOTEMP
   #define AUTOTEMP_OLDWEIGHT 0.98
@@ -50,11 +64,13 @@
 //The M105 command return, besides traditional information, the ADC value read from temperature sensors.
 //#define SHOW_TEMP_ADC_VALUES
 
-//extruder idle oozing prevention
-//if the extruder motor is idle for more than SECONDS, and the temperature over MINTEMP,
-//some filament is retracted. The filament retracted is re-added before the next extrusion
-//or when the target temperature is less than EXTRUDE_MINTEMP and the actual temperature
-//is greater than IDLE_OOZING_MINTEMP and less than IDLE_OOZING_FEEDRATE
+/**
+ * extruder idle oozing prevention
+ * if the extruder motor is idle for more than SECONDS, and the temperature over MINTEMP,
+ * some filament is retracted. The filament retracted is re-added before the next extrusion
+ * or when the target temperature is less than EXTRUDE_MINTEMP and the actual temperature
+ * is greater than IDLE_OOZING_MINTEMP and less than IDLE_OOZING_FEEDRATE
+ */
 //#define IDLE_OOZING_PREVENT
 #define IDLE_OOZING_MINTEMP           EXTRUDE_MINTEMP + 5
 #define IDLE_OOZING_MAXTEMP           IDLE_OOZING_MINTEMP + 5
@@ -214,6 +230,9 @@
 // Default stepper release if idle. Set to 0 to deactivate.
 #define DEFAULT_STEPPER_DEACTIVE_TIME 60
 
+// Default step delay for any driver
+//#define STEPPER_HIGH_LOW_DELAY 1  // Delay in microseconds
+
 #define DEFAULT_MINIMUMFEEDRATE       0.0     // minimum feedrate
 #define DEFAULT_MINTRAVELFEEDRATE     0.0
 
@@ -284,7 +303,7 @@
   //#define MENU_ADDAUTOSTART
 
   // Show a progress bar on HD44780 LCDs for SD printing
-  #define LCD_PROGRESS_BAR
+  //#define LCD_PROGRESS_BAR
 
   #ifdef LCD_PROGRESS_BAR
     // Amount of time (ms) to show the bar
@@ -297,7 +316,21 @@
     //#define PROGRESS_MSG_ONCE
   #endif
 
+  // This allows hosts to request long names for files and folders with M33
+  //#define LONG_FILENAME_HOST_SUPPORT
+
 #endif // SDSUPPORT
+
+// for dogm lcd displays you can choose some additional fonts:
+#ifdef DOGLCD
+  // save 3120 bytes of PROGMEM by commenting out #define USE_BIG_EDIT_FONT
+  // we don't have a big font for Cyrillic, Kana
+  //#define USE_BIG_EDIT_FONT
+ 
+  // If you have spare 2300Byte of progmem and want to use a 
+  // smaller font on the Info-screen uncomment the next line.
+  //#define USE_SMALL_INFOFONT
+#endif // DOGLCD
 
 // The hardware watchdog should reset the microcontroller disabling all outputs, in case the firmware gets stuck and doesn't do temperature regulation.
 //#define USE_WATCHDOG
@@ -341,7 +374,7 @@
 #define MM_PER_ARC_SEGMENT 1
 #define N_ARC_CORRECTION 25
 
-const unsigned int dropsegments=5; //everything with less than this number of steps will be ignored as move and joined with the next movement
+const unsigned int dropsegments = 5; // everything with less than this number of steps will be ignored as move and joined with the next movement
 
 // Control heater 0 and heater 1 in parallel.
 //#define HEATERS_PARALLEL
@@ -364,9 +397,10 @@ const unsigned int dropsegments=5; //everything with less than this number of st
 #define BUFSIZE 4
 
 // Bad Serial-connections can miss a received command by sending an 'ok'
-// Therefore some clients go after 30 seconds in a timeout. Some other clients start sending commands while receiving a 'wait'.
-// This wait is only send when the buffer is empty. The timeout-length is in milliseconds. 1000 is a good value.
-#define NO_TIMEOUTS 1000
+// Therefore some clients abort after 30 seconds in a timeout.
+// Some other clients start sending commands while receiving a 'wait'.
+// This "wait" is only sent when the buffer is empty. 1 second is a good value here.
+#define NO_TIMEOUTS 1000 // Milliseconds
 
 // Some clients will have this feature soon. This could make the NO_TIMEOUTS unnecessary.
 #define ADVANCED_OK
@@ -389,7 +423,7 @@ const unsigned int dropsegments=5; //everything with less than this number of st
   #define RETRACT_RECOVER_FEEDRATE    8   //default feedrate for recovering from retraction (mm/s)
 #endif
 
-// Add support for experimental filament exchange support M600; requires display
+// Add support for filament exchange support M600; requires display
 #ifdef ULTIPANEL
   #define FILAMENTCHANGEENABLE
   #ifdef FILAMENTCHANGEENABLE

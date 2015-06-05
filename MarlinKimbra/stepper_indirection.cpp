@@ -23,8 +23,8 @@
 #include "Configuration.h"
 
 #ifdef HAVE_TMCDRIVER
-#include <SPI.h>
-#include <TMC26XStepper.h>
+  #include <SPI.h>
+  #include <TMC26XStepper.h>
 #endif
 
 // Stepper objects of TMC steppers used

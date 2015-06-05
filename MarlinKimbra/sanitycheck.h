@@ -124,7 +124,7 @@
      * Require a Z Min pin
      */
     #if Z_MIN_PIN == -1
-      #if Z_PROBE_PIN == -1 || (!defined(Z_PROBE_ENDSTOP) || defined(DISABLE_Z_PROBE_ENDSTOP)) // It's possible for someone to set a pin for the Z Probe, but not enable it.
+      #if Z_PROBE_PIN == -1 || defined(Z_PROBE_ENDSTOP) // It's possible for someone to set a pin for the Z Probe, but not enable it.
         #ifdef Z_PROBE_REPEATABILITY_TEST
           #error You must have a Z_MIN or Z_PROBE endstop to enable Z_PROBE_REPEATABILITY_TEST.
         #else
@@ -236,18 +236,11 @@
    */
   #if defined(DELTA) && defined(Z_PROBE_ENDSTOP)
     #ifndef Z_PROBE_PIN
-      #error You must have a Z_PROBE_PIN defined in your pins_XXXX.h file if you enable Z_PROBE_ENDSTOP
+      #error You must have a Z_PROBE_PIN defined in your pins2tool.h file if you enable Z_PROBE_ENDSTOP
     #endif
     #if Z_PROBE_PIN == -1
       #error You must set Z_PROBE_PIN to a valid pin if you enable Z_PROBE_ENDSTOP
     #endif
-  #endif
-
-  /**
-   * Allen Key Z Probe requires Auto Bed Leveling grid and Delta
-   */
-  #if defined(Z_PROBE_ALLEN_KEY) && !(defined(AUTO_BED_LEVELING_GRID) && defined(DELTA))
-    #error Invalid use of Z_PROBE_ALLEN_KEY.
   #endif
 
   /**
@@ -302,6 +295,25 @@
   #endif
   #if !HAS_HEATER_0
     #error HEATER_0_PIN not defined for this board
+  #endif
+
+  /**
+   * Warnings for old configurations
+   */
+  #ifdef X_HOME_RETRACT_MM
+    #error [XYZ]_HOME_RETRACT_MM settings have been renamed [XYZ]_HOME_BUMP_MM
+  #endif
+
+  #if WATCH_TEMP_PERIOD > 500
+    #error WATCH_TEMP_PERIOD now uses seconds instead of milliseconds
+  #endif
+
+  #if !defined(THERMAL_PROTECTION_HOTENDS) && (defined(WATCH_TEMP_PERIOD) || defined(THERMAL_PROTECTION_PERIOD))
+    #error Thermal Runaway Protection for hotends must now be enabled with THERMAL_PROTECTION_HOTENDS
+  #endif
+
+  #if !defined(THERMAL_PROTECTION_BED) && defined(THERMAL_PROTECTION_BED_PERIOD)
+    #error Thermal Runaway Protection for the bed must now be enabled with THERMAL_PROTECTION_BED
   #endif
 
 #endif //SANITYCHECK_H

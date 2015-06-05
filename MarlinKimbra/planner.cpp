@@ -61,7 +61,6 @@
 
 millis_t minsegmenttime;
 float max_feedrate[3 + EXTRUDERS]; // Max speeds in mm per minute
-float max_retraction_feedrate[EXTRUDERS]; // set the max speeds for retraction
 float axis_steps_per_unit[3 + EXTRUDERS];
 unsigned long max_acceleration_units_per_sq_second[3 + EXTRUDERS]; // Use M201 to override by software
 float minimumfeedrate;
@@ -432,11 +431,12 @@ void check_axes_activity() {
     #ifdef FAN_KICKSTART_TIME
       static millis_t fan_kick_end;
       if (tail_fan_speed) {
+        millis_t ms = millis();
         if (fan_kick_end == 0) {
           // Just starting up fan - run at full power.
-          fan_kick_end = millis() + FAN_KICKSTART_TIME;
+          fan_kick_end = ms + FAN_KICKSTART_TIME;
           tail_fan_speed = 255;
-        } else if (fan_kick_end > millis())
+        } else if (fan_kick_end > ms)
           // Fan still spinning up.
           tail_fan_speed = 255;
         } else {
@@ -478,18 +478,14 @@ float junction_deviation = 0.1;
   void plan_buffer_line(float x, float y, float z, const float &e, float feed_rate, const uint8_t &extruder, const uint8_t &driver)
 #else
   void plan_buffer_line(const float &x, const float &y, const float &z, const float &e, float feed_rate, const uint8_t &extruder, const uint8_t &driver)
-#endif  //ENABLE_AUTO_BED_LEVELING
+#endif  // ENABLE_AUTO_BED_LEVELING
 {
   // Calculate the buffer head after we push this byte
   int next_buffer_head = next_block_index(block_buffer_head);
 
   // If the buffer is full: good! That means we are well ahead of the robot. 
   // Rest here until there is room in the buffer.
-  while(block_buffer_tail == next_buffer_head) {
-    manage_heater(); 
-    manage_inactivity(); 
-    lcd_update();
-  }
+  while (block_buffer_tail == next_buffer_head) idle();
 
   #ifdef ENABLE_AUTO_BED_LEVELING
     apply_rotation_xyz(plan_bed_level_matrix, x, y, z);
@@ -513,13 +509,12 @@ float junction_deviation = 0.1;
     if (de) {
       #ifdef NPR2
         if (extruder != 1)
-      #endif // NPR2
+      #endif
         {
           if (degHotend(extruder) < extrude_min_temp && !(debugLevel & DEBUG_DRYRUN)) {
             position[E_AXIS] = target[E_AXIS]; //behave as if the move really took place, but ignore E part
             de = 0; // no difference
-            ECHO_S(OK);
-            ECHO_EM(MSG_ERR_COLD_EXTRUDE_STOP);
+            ECHO_LM(ER, MSG_ERR_COLD_EXTRUDE_STOP);
           }
         }
 
@@ -530,8 +525,7 @@ float junction_deviation = 0.1;
           #endif
           position[E_AXIS] = target[E_AXIS]; // Behave as if the move really took place, but ignore E part
           de = 0; // no difference
-          ECHO_S(OK);
-          ECHO_EM(MSG_ERR_LONG_EXTRUDE_STOP);
+          ECHO_LM(ER, MSG_ERR_LONG_EXTRUDE_STOP);
           #ifdef EASY_LOAD
             }
             allow_lengthy_extrude_once = false;
@@ -574,7 +568,7 @@ float junction_deviation = 0.1;
     block->valve_pressure = ValvePressure;
     block->e_to_p_pressure = EtoPPressure;
   #endif
-  
+
   // Add update block variables for LASER BEAM control 
   #ifdef LASERBEAM
     block->laser_ttlmodulation = laser_ttl_modulation;
@@ -693,7 +687,6 @@ float junction_deviation = 0.1;
         break;
       }
     #endif //!MKR4 && !NPR2
-    if (feed_rate < minimumfeedrate) feed_rate = minimumfeedrate;
   }
 
   if (block->steps[E_AXIS])
@@ -796,22 +789,10 @@ float junction_deviation = 0.1;
   // Calculate and limit speed in mm/sec for each axis
   float current_speed[NUM_AXIS];
   float speed_factor = 1.0; //factor <=1 do decrease speed
-  for (int i = 0; i < 3; i++) {
+  for (int i = 0; i < NUM_AXIS; i++) {
     current_speed[i] = delta_mm[i] * inverse_second;
     float cs = fabs(current_speed[i]), mf = max_feedrate[i];
     if (cs > mf) speed_factor = min(speed_factor, mf / cs);
-  }
-
-  current_speed[E_AXIS] = delta_mm[E_AXIS] * inverse_second;
-  if (target[E_AXIS] < position[E_AXIS])
-  {
-    if(fabs(current_speed[E_AXIS]) > max_retraction_feedrate[extruder])
-      speed_factor = min(speed_factor, max_retraction_feedrate[extruder]/ fabs(current_speed[E_AXIS]));
-  }
-  else
-  {
-    if(fabs(current_speed[E_AXIS]) > max_feedrate[E_AXIS + extruder])
-      speed_factor = min(speed_factor, max_feedrate[E_AXIS + extruder] / fabs(current_speed[E_AXIS]));
   }
 
   // Max segement time in us.
@@ -1028,11 +1009,14 @@ float junction_deviation = 0.1;
 #endif // ENABLE_AUTO_BED_LEVELING
 
 #ifdef ENABLE_AUTO_BED_LEVELING
-  void plan_set_position(float x, float y, float z, const float &e) {
-    apply_rotation_xyz(plan_bed_level_matrix, x, y, z);
+  void plan_set_position(float x, float y, float z, const float &e)
 #else
-  void plan_set_position(const float &x, const float &y, const float &z, const float &e) {
+  void plan_set_position(const float &x, const float &y, const float &z, const float &e)
 #endif // ENABLE_AUTO_BED_LEVELING
+  {
+    #ifdef ENABLE_AUTO_BED_LEVELING
+      apply_rotation_xyz(plan_bed_level_matrix, x, y, z);
+    #endif
 
     float nx = position[X_AXIS] = lround(x * axis_steps_per_unit[X_AXIS]),
           ny = position[Y_AXIS] = lround(y * axis_steps_per_unit[Y_AXIS]),
@@ -1051,6 +1035,6 @@ void plan_set_e_position(const float &e) {
 
 // Calculate the steps/s^2 acceleration rates, based on the mm/s^s
 void reset_acceleration_rates() {
-	for (int i = 0; i < 3 + EXTRUDERS; i++)
+  for (int i = 0; i < 3 + EXTRUDERS; i++)
     axis_steps_per_sqr_second[i] = max_acceleration_units_per_sq_second[i] * axis_steps_per_unit[i];
 }

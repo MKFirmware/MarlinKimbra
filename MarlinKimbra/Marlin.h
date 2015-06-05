@@ -23,6 +23,11 @@
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 #include "Configuration.h"
+#include "pins.h"
+
+#ifndef SANITYCHECK_H
+  #error Your Configuration.h and Configuration_adv.h files are outdated!
+#endif
 
 #if (ARDUINO >= 100)
   #include "Arduino.h"
@@ -30,10 +35,19 @@
   #include "WProgram.h"
 #endif
 
+// Macros for bit masks
 #define BIT(b) (1<<(b))
 #define TEST(n,b) (((n)&BIT(b))!=0)
+#define SET_BIT(n,b,value) (n) ^= ((-value)^(n)) & (BIT(b))
+
+// Macros for maths shortcuts
+#define M_PI 3.1415926536
 #define RADIANS(d) ((d)*M_PI/180.0)
-#define DEGREES(r) ((d)*180.0/M_PI)
+#define DEGREES(r) ((r)*180.0/M_PI)
+#define SIN_60 0.8660254037844386
+#define COS_60 0.5
+
+// Macros to contrain values
 #define NOLESS(v,n) do{ if (v < n) v = n; }while(0)
 #define NOMORE(v,n) do{ if (v > n) v = n; }while(0)
 
@@ -47,7 +61,8 @@ typedef unsigned long millis_t;
 #include "comunication.h"
 
 void get_command();
-void process_commands();
+
+void idle(bool ignore_stepper_queue = false);
 
 void manage_inactivity(bool ignore_stepper_queue=false);
 
@@ -135,37 +150,38 @@ void manage_inactivity(bool ignore_stepper_queue=false);
  */
 enum AxisEnum {X_AXIS=0, Y_AXIS=1, A_AXIS=0, B_AXIS=1, Z_AXIS=2, E_AXIS=3, X_HEAD=4, Y_HEAD=5};
 
+enum EndstopEnum {X_MIN=0, Y_MIN=1, Z_MIN=2, Z_PROBE=3, X_MAX=4, Y_MAX=5, Z_MAX=6, Z2_MIN=7, Z2_MAX=8};
+
 void enable_all_steppers();
 void disable_all_steppers();
 
 void FlushSerialRequestResend();
-void ClearToSend();
+void ok_to_send();
 
-void get_coordinates();
 #ifdef DELTA
-float probe_bed(float x, float y);
-void set_delta_constants();
-void home_delta_axis();
-void calibration_report();
-void bed_probe_all();
-void set_default_z_probe_offset();
-void set_delta_constants();
-void save_carriage_positions(int position_num);
-void calculate_delta(float cartesian[3]);
-void adjust_delta(float cartesian[3]);
-void prepare_move_raw();
-extern float delta[3];
-extern float delta_tmp[3];
-extern float delta_tower1_x,delta_tower1_y;
-extern float delta_tower2_x,delta_tower2_y;
-extern float delta_tower3_x,delta_tower3_y;
+  float probe_bed(float x, float y);
+  void set_delta_constants();
+  void home_delta_axis();
+  void calibration_report();
+  void bed_probe_all();
+  void set_default_z_probe_offset();
+  void set_delta_constants();
+  void save_carriage_positions(int position_num);
+  void calculate_delta(float cartesian[3]);
+  void adjust_delta(float cartesian[3]);
+  void prepare_move_raw();
+  extern float delta[3];
+  extern float delta_tmp[3];
+  extern float delta_tower1_x, delta_tower1_y;
+  extern float delta_tower2_x, delta_tower2_y;
+  extern float delta_tower3_x, delta_tower3_y;
 #endif
 #ifdef SCARA
   void calculate_delta(float cartesian[3]);
   void calculate_SCARA_forward_Transform(float f_scara[3]);
 #endif
 void prepare_move();
-void kill();
+void kill(const char *);
 void Stop();
 
 #ifdef FILAMENT_RUNOUT_SENSOR
@@ -237,6 +253,7 @@ extern float home_offset[3];
   extern float tower_adj[6];
   extern float delta_radius;
   extern float delta_diagonal_rod;
+  extern float delta_segments_per_second;
 #elif defined(Z_DUAL_ENDSTOPS)
   extern float z_endstop_adj;
 #endif
@@ -253,7 +270,6 @@ extern float zprobe_zoffset;
 
 // Lifetime stats
 extern unsigned long printer_usage_seconds;  //this can old about 136 year before go overflow. If you belive that you can live more than this please contact me.
-extern millis_t config_last_update;
 
 #ifdef PREVENT_DANGEROUS_EXTRUDE
   extern float extrude_min_temp;
@@ -304,6 +320,11 @@ extern int fanSpeed;
 
 #ifdef LASERBEAM
   extern int laser_ttl_modulation;
+#endif
+
+#if defined(SDSUPPORT) && defined(SD_SETTINGS)
+  extern millis_t config_last_update;
+  extern bool config_readed;
 #endif
 
 extern millis_t print_job_start_ms;
