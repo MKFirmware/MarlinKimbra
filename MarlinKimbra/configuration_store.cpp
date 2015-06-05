@@ -824,7 +824,7 @@ void Config_ResetDefault() {
     }
     char time[30];
     int day = printer_usage_seconds / 60 / 60 / 24, hours = (printer_usage_seconds / 60 / 60) % 24, minutes = (printer_usage_seconds / 60) % 60;
-    sprintf_P(time, PSTR("%i " MSG_END_DAY " %i " MSG_END_HOUR " %i " MSG_END_MINUTE), day, hours, minutes);
+    sprintf_P(time, PSTR("  %i " MSG_END_DAY " %i " MSG_END_HOUR " %i " MSG_END_MINUTE), day, hours, minutes);
     ECHO_LV(DB, time);
   }
 

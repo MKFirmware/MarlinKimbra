@@ -76,6 +76,7 @@ unsigned char soft_pwm_bed;
 
 #if defined(THERMAL_PROTECTION_HOTENDS) || defined(THERMAL_PROTECTION_BED)
   enum TRState { TRReset, TRInactive, TRFirstHeating, TRStable, TRRunaway };
+  static float tr_target_temperature[HOTENDS + 1] = { 0.0 };
   void thermal_runaway_protection(TRState *state, millis_t *timer, float temperature, float target_temperature, int heater_id, int period_seconds, int hysteresis_degc);
   #ifdef THERMAL_PROTECTION_HOTENDS
     static TRState thermal_runaway_state_machine[4] = { TRReset, TRReset, TRReset, TRReset };
@@ -312,12 +313,14 @@ void PID_autotune(float temp, int hotend, int ncycles) {
       if (hotend < 0) {
         p = soft_pwm_bed;
         ECHO_SMV(OK, MSG_B, input);
+        ECHO_MV(" /", temp, 1);
         ECHO_EMV(" " MSG_AT, p);
       }
       else {
         p = soft_pwm[hotend];
         ECHO_SMV(OK, MSG_T, input, 1);
-        ECHO_EMV(MSG_AT, p);
+        ECHO_MV(" /", temp, 1);
+        ECHO_EMV(" " MSG_AT, p);
       }
 
       temp_ms = ms;
@@ -733,12 +736,7 @@ static float analog2temp(int raw, uint8_t e) {
 
     return celsius;
   }
-
-  #ifdef __SAM3X8E__
-    return ((raw * ((3.3 * 100) / 1024) / OVERSAMPLENR) * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET;
-  #else
     return ((raw * ((5.0 * 100.0) / 1024.0) / OVERSAMPLENR) * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET;
-  #endif
 }
 
 // Derived from RepRap FiveD extruder::getTemperature()
@@ -763,12 +761,8 @@ static float analog2tempBed(int raw) {
 
     return celsius;
   #elif defined BED_USES_AD595
-    #ifdef __SAM3X8E__
-      return ((raw * ((3.3 * 100) / 1024) / OVERSAMPLENR) * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET;
-    #else
       return ((raw * ((5.0 * 100.0) / 1024.0) / OVERSAMPLENR) * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET;
-    #endif
-  #else //NO BED_USES_THERMISTOR
+  #else
     return 0;
   #endif
 }
@@ -916,12 +910,6 @@ void tp_init() {
 
   #endif // HEATER_0_USES_MAX6675
 
-#ifdef __SAM3X8E__
-  // Use timer0 for temperature measurement
-  // Interleave temperature interrupt with millies interrupt
-  HAL_temp_timer_start(TEMP_TIMER_NUM);
-  HAL_timer_enable_interrupt (TEMP_TIMER_NUM);
-#else
   #ifdef DIDR2
     #define ANALOG_SELECT(pin) do{ if (pin < 8) DIDR0 |= BIT(pin); else DIDR2 |= BIT(pin - 8); }while(0)
   #else
@@ -960,7 +948,6 @@ void tp_init() {
   // Interleave temperature interrupt with millies interrupt
   OCR0B = 128;
   TIMSK0 |= BIT(OCIE0B);  
-#endif
 
   // Wait for temperature measurement to settle
   delay(250);
@@ -1015,7 +1002,6 @@ void tp_init() {
   #endif // HOTENDS > 1
 
   #ifdef BED_MINTEMP
-    /* No bed MINTEMP error implemented?!? */ /*
     while(analog2tempBed(bed_minttemp_raw) < BED_MINTEMP) {
       #if HEATER_BED_RAW_LO_TEMP < HEATER_BED_RAW_HI_TEMP
         bed_minttemp_raw += OVERSAMPLENR;
@@ -1023,7 +1009,6 @@ void tp_init() {
         bed_minttemp_raw -= OVERSAMPLENR;
       #endif
     }
-    */
   #endif //BED_MINTEMP
   #ifdef BED_MAXTEMP
     while(analog2tempBed(bed_maxttemp_raw) > BED_MAXTEMP) {
@@ -1056,8 +1041,6 @@ void tp_init() {
 
   void thermal_runaway_protection(TRState *state, millis_t *timer, float temperature, float target_temperature, int heater_id, int period_seconds, int hysteresis_degc) {
 
-    static float tr_target_temperature[EXTRUDERS+1] = { 0.0 };
-
     /*
         ECHO_SM(DB, "Thermal Thermal Runaway Running. Heater ID: ");
         if (heater_id < 0) ECHO_M("bed"); else ECHO_V(heater_id);
@@ -1067,7 +1050,7 @@ void tp_init() {
         ECHO_EMV(" ;  Target Temp:", target_temperature);
     */
 
-    int heater_index = heater_id >= 0 ? heater_id : EXTRUDERS;
+    int heater_index = heater_id >= 0 ? heater_id : HOTENDS;
 
     // If the target temperature changes, restart
     if (tr_target_temperature[heater_index] != target_temperature)
@@ -1168,8 +1151,8 @@ void disable_all_heaters() {
     WRITE(MAX6675_SS, 0);
 
     // ensure 100ns delay - a bit extra is fine
-    asm("nop");// 50ns on 20Mhz, 62.5ns on 16Mhz
-    asm("nop");// 50ns on 20Mhz, 62.5ns on 16Mhz
+    asm("nop");//50ns on 20Mhz, 62.5ns on 16Mhz
+    asm("nop");//50ns on 20Mhz, 62.5ns on 16Mhz
 
     // read MSB
     SPDR = 0;

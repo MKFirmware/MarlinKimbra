@@ -353,11 +353,11 @@ void CardReader::openFile(char* name, bool read, bool replace_current/*=true*/, 
     if (!file.open(curDir, fname, O_CREAT | O_APPEND | O_WRITE | O_TRUNC)) {
       ECHO_MV(MSG_SD_OPEN_FILE_FAIL, fname);
       ECHO_PGM(".\n");
-      if(lcd_status) lcd_setstatus(fname);
     }
     else {
       saving = true;
       ECHO_EMV(MSG_SD_WRITE_TO_FILE, name);
+      if(lcd_status) lcd_setstatus(fname);
     }
   }
 }

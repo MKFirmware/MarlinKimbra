@@ -5873,7 +5873,7 @@ inline void gcode_T(uint8_t tmp_extruder) {
   long csteps;
   if (tmp_extruder >= EXTRUDERS) {
     ECHO_SMV(DB, "T", tmp_extruder);
-    ECHO_EM(MSG_INVALID_EXTRUDER);
+    ECHO_EM(" " MSG_INVALID_EXTRUDER);
   }
   else {
     target_extruder = tmp_extruder;
@@ -6996,9 +6996,20 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
 
   if (max_inactive_time && ms > previous_cmd_ms + max_inactive_time) kill(PSTR(MSG_KILLED));
 
-  if (stepper_inactive_time && ms > previous_cmd_ms + stepper_inactive_time
-      && !ignore_stepper_queue && !blocks_queued())
-    disable_all_steppers();
+  if (stepper_inactive_time && ms > previous_cmd_ms + stepper_inactive_time && !ignore_stepper_queue && !blocks_queued()) {
+    #if DISABLE_X == true
+      disable_x();
+    #endif
+    #if DISABLE_Y == true
+      disable_y();
+    #endif
+    #if DISABLE_Z == true
+      disable_z();
+    #endif
+    #if DISABLE_E == true
+      disable_e();
+    #endif
+  }
 
   #ifdef CHDK // Check if pin should be set to LOW after M240 set it to HIGH
     if (chdkActive && ms > chdkHigh + CHDK_DELAY) {
