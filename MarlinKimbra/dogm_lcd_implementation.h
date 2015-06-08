@@ -116,6 +116,8 @@
 #ifdef U8GLIB_ST7920
   //U8GLIB_ST7920_128X64_RRD u8g(0,0,0);
   U8GLIB_ST7920_128X64_RRD u8g(0);
+#elif defined(U8GLIB_SSD1306)
+  U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_DEV_0|U8G_I2C_OPT_NO_ACK|U8G_I2C_OPT_FAST);
 #elif defined(MAKRPANEL)
   // The MaKrPanel display, ST7565 controller as well
   U8GLIB_NHD_C12864 u8g(DOGLCD_CS, DOGLCD_A0);
@@ -194,21 +196,21 @@ static void lcd_implementation_init() {
 
   #ifdef LCD_PIN_BL // Enable LCD backlight
     pinMode(LCD_PIN_BL, OUTPUT);
-	  digitalWrite(LCD_PIN_BL, HIGH);
+    digitalWrite(LCD_PIN_BL, HIGH);
   #endif
 
-  u8g.setContrast(lcd_contrast);	
-	// FIXME: remove this workaround
+  u8g.setContrast(lcd_contrast);
+  // FIXME: remove this workaround
   // Uncomment this if you have the first generation (V1.10) of STBs board
-  // pinMode(17, OUTPUT);	// Enable LCD backlight
+  // pinMode(17, OUTPUT); // Enable LCD backlight
   // digitalWrite(17, HIGH);
 
   #ifdef LCD_SCREEN_ROT_90
     u8g.setRot90();   // Rotate screen by 90°
   #elif defined(LCD_SCREEN_ROT_180)
-    u8g.setRot180();	// Rotate screen by 180°
+    u8g.setRot180();  // Rotate screen by 180°
   #elif defined(LCD_SCREEN_ROT_270)
-    u8g.setRot270();	// Rotate screen by 270°
+    u8g.setRot270();  // Rotate screen by 270°
   #endif
 
   // Show splashscreen
@@ -221,7 +223,7 @@ static void lcd_implementation_init() {
 
   int txt1X = (u8g.getWidth() - (sizeof(STRING_SPLASH_LINE1) - 1)*DOG_CHAR_WIDTH) / 2;
 
-	u8g.firstPage();
+  u8g.firstPage();
   do {
     if (show_splashscreen) {
       u8g.drawBitmapP(offx, offy, START_BMPBYTEWIDTH, START_BMPHEIGHT, start_bmp);

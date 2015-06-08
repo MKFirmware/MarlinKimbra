@@ -25,9 +25,6 @@
 #include "planner.h"
 #include "stepper.h"
 
-// for smoother temperature
-#define MEDIAN_COUNT 10
-
 // public functions
 void tp_init();  //initialize the heating
 void manage_heater(); //it is critical that this is called periodically.

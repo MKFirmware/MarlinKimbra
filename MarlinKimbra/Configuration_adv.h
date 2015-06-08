@@ -106,6 +106,11 @@
 // before setting a PWM value. (Does not work with software PWM for fan on Sanguinololu)
 //#define FAN_KICKSTART_TIME 100
 
+// This defines the minimal speed for the main fan, run in PWM mode
+// to enable uncomment and set minimal PWM speed for reliable running (1-255)
+// if fan speed is [1 - (FAN_MIN_PWM-1)] it is set to FAN_MIN_PWM
+//#define FAN_MIN_PWM 50
+
 // Extruder cooling fans
 // Configure fan pin outputs to automatically turn on/off when the associated
 // extruder temperature is above/below EXTRUDER_AUTO_FAN_TEMPERATURE.
@@ -230,8 +235,8 @@
 // Default stepper release if idle. Set to 0 to deactivate.
 #define DEFAULT_STEPPER_DEACTIVE_TIME 60
 
-// Default step delay for any driver
-//#define STEPPER_HIGH_LOW_DELAY 1  // Delay in microseconds
+// Uncomment it if you have High speed stepping driver
+#define ENABLE_HIGH_SPEED_STEPPING
 
 #define DEFAULT_MINIMUMFEEDRATE       0.0     // minimum feedrate
 #define DEFAULT_MINTRAVELFEEDRATE     0.0
@@ -292,7 +297,9 @@
   // You can get round this by connecting a push button or single throw switch to the pin defined as SDCARDCARDDETECT
   // in the pins.h file.  When using a push button pulling the pin to ground this will need inverted.  This setting should
   // be commented out otherwise
-  #define SDCARDDETECTINVERTED
+  #ifndef ELB_FULL_GRAPHIC_CONTROLLER
+    #define SDCARDDETECTINVERTED
+  #endif
 
   #define SD_FINISHED_STEPPERRELEASE true  //if sd support and the file is finished: disable steppers?
   #define SD_FINISHED_RELEASECOMMAND "M84 X Y Z E" // You might want to keep the z enabled so your bed stays in place.
@@ -368,7 +375,7 @@
   #define EXTRUDER_ADVANCE_K .0
   #define D_FILAMENT 2.85
   #define STEPS_MM_E 836
-#endif // ADVANCE
+#endif
 
 // Arc interpretation settings:
 #define MM_PER_ARC_SEGMENT 1
@@ -400,10 +407,10 @@ const unsigned int dropsegments = 5; // everything with less than this number of
 // Therefore some clients abort after 30 seconds in a timeout.
 // Some other clients start sending commands while receiving a 'wait'.
 // This "wait" is only sent when the buffer is empty. 1 second is a good value here.
-#define NO_TIMEOUTS 1000 // Milliseconds
+//#define NO_TIMEOUTS 1000 // Milliseconds
 
 // Some clients will have this feature soon. This could make the NO_TIMEOUTS unnecessary.
-#define ADVANCED_OK
+//#define ADVANCED_OK
 
 // Firmware based and LCD controlled retract
 // M207 and M208 can be used to define parameters for the retraction.

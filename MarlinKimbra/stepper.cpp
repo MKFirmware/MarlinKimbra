@@ -77,10 +77,11 @@ volatile long endstops_stepsTotal, endstops_stepsDone;
 static volatile char endstop_hit_bits = 0; // use X_MIN, Y_MIN, Z_MIN and Z_PROBE as BIT value
 
 #ifndef Z_DUAL_ENDSTOPS
-  static byte old_endstop_bits = 0; // use X_MIN, X_MAX... Z_MAX, Z_PROBE, Z2_MIN, Z2_MAX
+  static byte
 #else
-  static uint16_t old_endstop_bits = 0; // use X_MIN, X_MAX... Z_MAX, Z_PROBE, Z2_MIN, Z2_MAX
+  static uint16_t
 #endif
+  old_endstop_bits = 0; // use X_MIN, X_MAX... Z_MAX, Z_PROBE, Z2_MIN, Z2_MAX
 
 #ifdef ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
   bool abort_on_endstop_hit = false;
@@ -315,15 +316,18 @@ FORCE_INLINE unsigned short calc_timer(unsigned short step_rate) {
   unsigned short timer;
   if (step_rate > MAX_STEP_FREQUENCY) step_rate = MAX_STEP_FREQUENCY;
 
-  if (step_rate > 20000) { // If steprate > 20kHz >> step 4 times
-    step_rate = (step_rate >> 2) & 0x3fff;
-    step_loops = 4;
-  }
-  else if (step_rate > 10000) { // If steprate > 10kHz >> step 2 times
-    step_rate = (step_rate >> 1) & 0x7fff;
-    step_loops = 2;
-  }
-  else {
+  #ifdef ENABLE_HIGH_SPEED_STEPPING
+    if (step_rate > 20000) { // If steprate > 20kHz >> step 4 times
+      step_rate = (step_rate >> 2) & 0x3fff;
+      step_loops = 4;
+    }
+    else if (step_rate > 10000) { // If steprate > 10kHz >> step 2 times
+      step_rate = (step_rate >> 1) & 0x7fff;
+      step_loops = 2;
+    }
+    else
+  #endif
+  {
     step_loops = 1;
   }
 
@@ -415,11 +419,45 @@ FORCE_INLINE void trapezoid_generator_reset() {
   OCR1A = acceleration_time;
 }
 
+#define _ENDSTOP_PIN(AXIS, MINMAX) AXIS ##_## MINMAX ##_PIN
+#define _ENDSTOP_INVERTING(AXIS, MINMAX) AXIS ##_## MINMAX ##_ENDSTOP_INVERTING
+#define _AXIS(AXIS) AXIS ##_AXIS
+#define _ENDSTOP_HIT(AXIS) endstop_hit_bits |= BIT(_ENDSTOP(AXIS, MIN))
+#define _ENDSTOP(AXIS, MINMAX) AXIS ##_## MINMAX
+
+// SET_ENDSTOP_BIT: set the current endstop bits for an endstop to its status
+#define SET_ENDSTOP_BIT(AXIS, MINMAX) SET_BIT(current_endstop_bits, _ENDSTOP(AXIS, MINMAX), (READ(_ENDSTOP_PIN(AXIS, MINMAX)) != _ENDSTOP_INVERTING(AXIS, MINMAX)))
+// COPY_BIT: copy the value of COPY_BIT to BIT in bits
+#define COPY_BIT(bits, COPY_BIT, BIT) SET_BIT(bits, BIT, TEST(bits, COPY_BIT))
+// TEST_ENDSTOP: test the old and the current status of an endstop
+#define TEST_ENDSTOP(ENDSTOP) (TEST(current_endstop_bits, ENDSTOP) && TEST(old_endstop_bits, ENDSTOP))
+
+#define UPDATE_ENDSTOP(AXIS,MINMAX) \
+  SET_ENDSTOP_BIT(AXIS, MINMAX); \
+  if (TEST_ENDSTOP(_ENDSTOP(AXIS, MINMAX))  && (current_block->steps[_AXIS(AXIS)] > 0)) { \
+    endstops_trigsteps[_AXIS(AXIS)] = count_position[_AXIS(AXIS)]; \
+    _ENDSTOP_HIT(AXIS); \
+    step_events_completed = current_block->step_event_count; \
+  }
+
+#define _COUNTER(axis) counter_## axis
+#define _APPLY_STEP(AXIS) AXIS ##_APPLY_STEP
+#define _INVERT_STEP_PIN(AXIS) INVERT_## AXIS ##_STEP_PIN
+
+#define STEP_START(axis, AXIS) \
+  _COUNTER(axis) += current_block->steps[_AXIS(AXIS)]; \
+  if (_COUNTER(axis) > 0) { \
+    _APPLY_STEP(AXIS)(!_INVERT_STEP_PIN(AXIS),0); \
+    _COUNTER(axis) -= current_block->step_event_count; \
+    count_position[_AXIS(AXIS)] += count_direction[_AXIS(AXIS)]; }
+
+#define STEP_END(axis, AXIS) _APPLY_STEP(AXIS)(_INVERT_STEP_PIN(AXIS),0)
+
 // "The Stepper Driver Interrupt" - This timer interrupt is the workhorse.
 // It pops blocks from the block_buffer and executes them by pulsing the stepper pins appropriately.
 ISR(TIMER1_COMPA_vect) {
 
-  if(cleaning_buffer_counter) {
+  if (cleaning_buffer_counter) {
     current_block = NULL;
     plan_discard_current_block();
     #ifdef SD_FINISHED_RELEASECOMMAND
@@ -464,31 +502,11 @@ ISR(TIMER1_COMPA_vect) {
     if (check_endstops) {
 
       #ifdef Z_DUAL_ENDSTOPS
-        uint16_t current_endstop_bits = 0;
+        uint16_t
       #else
-        byte current_endstop_bits = 0;
+        byte
       #endif
-
-      #define _ENDSTOP_PIN(AXIS, MINMAX) AXIS ##_## MINMAX ##_PIN
-      #define _ENDSTOP_INVERTING(AXIS, MINMAX) AXIS ##_## MINMAX ##_ENDSTOP_INVERTING
-      #define _AXIS(AXIS) AXIS ##_AXIS
-      #define _ENDSTOP_HIT(AXIS) endstop_hit_bits |= BIT(_ENDSTOP(AXIS, MIN))
-      #define _ENDSTOP(AXIS, MINMAX) AXIS ##_## MINMAX
-
-      // SET_ENDSTOP_BIT: set the current endstop bits for an endstop to its status
-      #define SET_ENDSTOP_BIT(AXIS, MINMAX) SET_BIT(current_endstop_bits, _ENDSTOP(AXIS, MINMAX), (READ(_ENDSTOP_PIN(AXIS, MINMAX)) != _ENDSTOP_INVERTING(AXIS, MINMAX)))
-      // COPY_BIT: copy the value of COPY_BIT to BIT in bits
-      #define COPY_BIT(bits, COPY_BIT, BIT) SET_BIT(bits, BIT, TEST(bits, COPY_BIT))
-      // TEST_ENDSTOP: test the old and the current status of an endstop
-      #define TEST_ENDSTOP(ENDSTOP) (TEST(current_endstop_bits, ENDSTOP) && TEST(old_endstop_bits, ENDSTOP))
-
-      #define UPDATE_ENDSTOP(AXIS,MINMAX) \
-        SET_ENDSTOP_BIT(AXIS, MINMAX); \
-        if (TEST_ENDSTOP(_ENDSTOP(AXIS, MINMAX))  && (current_block->steps[_AXIS(AXIS)] > 0)) { \
-          endstops_trigsteps[_AXIS(AXIS)] = count_position[_AXIS(AXIS)]; \
-          _ENDSTOP_HIT(AXIS); \
-          step_events_completed = current_block->step_event_count; \
-        }
+      current_endstop_bits;
 
       #ifdef COREXY
         // Head direction in -X axis for CoreXY bots.
@@ -550,7 +568,7 @@ ISR(TIMER1_COMPA_vect) {
               #if HAS_Z2_MIN
                 SET_ENDSTOP_BIT(Z2, MIN);
               #else
-                COPY_BIT(current_endstop_bits, Z_MIN, Z2_MIN)
+                COPY_BIT(current_endstop_bits, Z_MIN, Z2_MIN);
               #endif
 
             byte z_test = TEST_ENDSTOP(Z_MIN) << 0 + TEST_ENDSTOP(Z2_MIN) << 1; // bit 0 for Z, bit 1 for Z2
@@ -608,57 +626,44 @@ ISR(TIMER1_COMPA_vect) {
       old_endstop_bits = current_endstop_bits;
     }
 
+    #ifdef ENABLE_HIGH_SPEED_STEPPING
+      // Take multiple steps per interrupt (For high speed moves)
+      for (int8_t i = 0; i < step_loops; i++) {
 
-    // Take multiple steps per interrupt (For high speed moves)
-    for (int8_t i = 0; i < step_loops; i++) {
-      #ifndef AT90USB
-        MSerial.checkRx(); // Check for serial chars.
-      #endif
+        #ifdef ADVANCE
+          counter_e += current_block->steps[E_AXIS];
+          if (counter_e > 0) {
+            counter_e -= current_block->step_event_count;
+            e_steps[current_block->active_driver] += TEST(out_bits, E_AXIS) ? -1 : 1;
+          }
+        #endif //ADVANCE
 
-      #ifdef ADVANCE
-        counter_e += current_block->steps[E_AXIS];
-        if (counter_e > 0) {
-          counter_e -= current_block->step_event_count;
-          e_steps[current_block->active_driver] += TEST(out_bits, E_AXIS) ? -1 : 1;
-        }
-      #endif //ADVANCE
+        STEP_START(x,X);
+        STEP_START(y,Y);
+        STEP_START(z,Z);
+        #ifndef ADVANCE
+          STEP_START(e,E);
+        #endif
 
-      #define _COUNTER(axis) counter_## axis
-      #define _APPLY_STEP(AXIS) AXIS ##_APPLY_STEP
-      #define _INVERT_STEP_PIN(AXIS) INVERT_## AXIS ##_STEP_PIN
+        STEP_END(x, X);
+        STEP_END(y, Y);
+        STEP_END(z, Z);
+        #ifndef ADVANCE
+          STEP_END(e, E);
+        #endif
 
-      #define STEP_START(axis, AXIS) \
-        _COUNTER(axis) += current_block->steps[_AXIS(AXIS)]; \
-        if (_COUNTER(axis) > 0) { _APPLY_STEP(AXIS)(!_INVERT_STEP_PIN(AXIS),0); }
-          
+        step_events_completed++;
+        if (step_events_completed >= current_block->step_event_count) break;
+      }
+    #else
       STEP_START(x,X);
       STEP_START(y,Y);
       STEP_START(z,Z);
       #ifndef ADVANCE
         STEP_START(e,E);
       #endif
-
-      #ifdef STEPPER_HIGH_LOW_DELAY
-        delayMicroseconds(STEPPER_HIGH_LOW_DELAY);
-      #endif
-
-      #define STEP_END(axis, AXIS) \
-        if (_COUNTER(axis) > 0) { \
-          _COUNTER(axis) -= current_block->step_event_count; \
-          count_position[_AXIS(AXIS)] += count_direction[_AXIS(AXIS)]; \
-          _APPLY_STEP(AXIS)(_INVERT_STEP_PIN(AXIS),0); \
-        }
-
-      STEP_END(x, X);
-      STEP_END(y, Y);
-      STEP_END(z, Z);
-      #ifndef ADVANCE
-        STEP_END(e, E);
-      #endif
-
       step_events_completed++;
-      if (step_events_completed >= current_block->step_event_count) break;
-    }
+    #endif
     // Calculate new timer value
     unsigned short timer;
     unsigned short step_rate;
@@ -687,6 +692,7 @@ ISR(TIMER1_COMPA_vect) {
       #endif
     }
     else if (step_events_completed > (unsigned long)current_block->decelerate_after) {
+
       MultiU24X32toH16(step_rate, deceleration_time, current_block->acceleration_rate);
 
       if (step_rate > acc_step_rate) { // Check step_rate stays positive
@@ -719,13 +725,21 @@ ISR(TIMER1_COMPA_vect) {
       // ensure we're running at the correct step rate, even if we just came off an acceleration
       step_loops = step_loops_nominal;
     }
+    #ifndef ENABLE_HIGH_SPEED_STEPPING
+      STEP_END(x, X);
+      STEP_END(y, Y);
+      STEP_END(z, Z);
+      #ifndef ADVANCE
+        STEP_END(e, E);
+      #endif
+    #endif
 
     // If current block is finished, reset pointer
     if (step_events_completed >= current_block->step_event_count) {
       current_block = NULL;
       plan_discard_current_block();
     }
-  }
+  } // current_block != NULL
 }
 
 #ifdef ADVANCE

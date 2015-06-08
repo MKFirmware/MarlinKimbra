@@ -442,12 +442,17 @@ void check_axes_activity() {
         } else {
           fan_kick_end = 0;
         }
-    #endif//FAN_KICKSTART_TIME
-    #ifdef FAN_SOFT_PWM
-      fanSpeedSoftPwm = tail_fan_speed;
+    #endif //FAN_KICKSTART_TIME
+    #ifdef FAN_MIN_PWM
+      #define CALC_FAN_SPEED (tail_fan_speed ? ( FAN_MIN_PWM + (tail_fan_speed * (255 - FAN_MIN_PWM)) / 255 ) : 0)
     #else
-      analogWrite(FAN_PIN, tail_fan_speed);
-    #endif //!FAN_SOFT_PWM
+      #define CALC_FAN_SPEED tail_fan_speed
+    #endif // FAN_MIN_PWM
+    #ifdef FAN_SOFT_PWM
+      fanSpeedSoftPwm = CALC_FAN_SPEED;
+    #else
+      analogWrite(FAN_PIN, CALC_FAN_SPEED);
+    #endif // FAN_SOFT_PWM
   #endif // HAS_FAN
 
   #ifdef AUTOTEMP
@@ -498,7 +503,7 @@ float junction_deviation = 0.1;
   target[X_AXIS] = lround(x * axis_steps_per_unit[X_AXIS]);
   target[Y_AXIS] = lround(y * axis_steps_per_unit[Y_AXIS]);
   target[Z_AXIS] = lround(z * axis_steps_per_unit[Z_AXIS]);     
-  target[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + active_extruder]);
+  target[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + extruder]);
 
   float dx = target[X_AXIS] - position[X_AXIS],
         dy = target[Y_AXIS] - position[Y_AXIS],
@@ -556,7 +561,7 @@ float junction_deviation = 0.1;
   block->steps[Z_AXIS] = labs(dz);
   block->steps[E_AXIS] = labs(de);
   block->steps[E_AXIS] *= volumetric_multiplier[extruder];
-  block->steps[E_AXIS] *= extruder_multiply[extruder];
+  block->steps[E_AXIS] *= extruder_multiplier[extruder];
   block->steps[E_AXIS] /= 100;
   block->step_event_count = max(block->steps[X_AXIS], max(block->steps[Y_AXIS], max(block->steps[Z_AXIS], block->steps[E_AXIS])));
 
@@ -714,7 +719,7 @@ float junction_deviation = 0.1;
     delta_mm[Y_AXIS] = dy / axis_steps_per_unit[Y_AXIS];
   #endif
   delta_mm[Z_AXIS] = dz / axis_steps_per_unit[Z_AXIS];
-  delta_mm[E_AXIS] = (de / axis_steps_per_unit[E_AXIS + extruder]) * volumetric_multiplier[extruder] * extruder_multiply[extruder] / 100.0;
+  delta_mm[E_AXIS] = (de / axis_steps_per_unit[E_AXIS + extruder]) * volumetric_multiplier[extruder] * extruder_multiplier[extruder] / 100.0;
 
   if (block->steps[X_AXIS] <= dropsegments && block->steps[Y_AXIS] <= dropsegments && block->steps[Z_AXIS] <= dropsegments) {
     block->millimeters = fabs(delta_mm[E_AXIS]);

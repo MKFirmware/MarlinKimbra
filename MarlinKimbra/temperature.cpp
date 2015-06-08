@@ -312,13 +312,13 @@ void PID_autotune(float temp, int hotend, int ncycles) {
       int p;
       if (hotend < 0) {
         p = soft_pwm_bed;
-        ECHO_SMV(OK, MSG_B, input);
+        ECHO_MV(MSG_B, input);
         ECHO_MV(" /", temp, 1);
         ECHO_EMV(" " MSG_AT, p);
       }
       else {
         p = soft_pwm[hotend];
-        ECHO_SMV(OK, MSG_T, input, 1);
+        ECHO_MV(MSG_T, input, 1);
         ECHO_MV(" /", temp, 1);
         ECHO_EMV(" " MSG_AT, p);
       }

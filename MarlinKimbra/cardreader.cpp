@@ -311,7 +311,8 @@ void CardReader::openFile(char* name, bool read, bool replace_current/*=true*/, 
         subdirname[dirname_end - dirname_start] = 0;
         ECHO_EV(subdirname);
         if (!myDir.open(curDir, subdirname, O_READ)) {
-          ECHO_LMV(ER, MSG_SD_OPEN_FILE_FAIL, subdirname);
+          ECHO_MV(MSG_SD_OPEN_FILE_FAIL, subdirname);
+          ECHO_C('.');
           return;
         }
         else {

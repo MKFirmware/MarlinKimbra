@@ -217,23 +217,24 @@
 // PID Tuning Guide here: http://reprap.org/wiki/PID_Tuning
 // Comment the following line to disable PID and enable bang-bang.
 #define PIDTEMP
-
 #define BANG_MAX 255       // limits current to nozzle while in bang-bang mode; 255=full current
 #define PID_MAX BANG_MAX   // limits current to nozzle while PID is active (see PID_FUNCTIONAL_RANGE below); 255=full current
-//#define PID_DEBUG        // Sends debug data to the serial port.
-//#define PID_OPENLOOP 1   // Puts PID in open loop. M104/M140 sets the output power from 0 to PID_MAX
-//#define SLOW_PWM_HEATERS // PWM with very low frequency (roughly 0.125Hz=8s) and minimum state time of approximately 1s useful for heaters driven by a relay
-// If the temperature difference between the target temperature and the actual temperature
-// is more then PID_FUNCTIONAL_RANGE then the PID will be shut off and the heater will be set to min/max.
-#define PID_FUNCTIONAL_RANGE 10         // degC
-#define PID_INTEGRAL_DRIVE_MAX PID_MAX  // Limit for the integral term
-#define K1 0.95                         // Smoothing factor within the PID
-#define MAX_OVERSHOOT_PID_AUTOTUNE 20   // Max valor for overshoot autotune
+#ifdef PIDTEMP
+  //#define PID_DEBUG        // Sends debug data to the serial port.
+  //#define PID_OPENLOOP 1   // Puts PID in open loop. M104/M140 sets the output power from 0 to PID_MAX
+  //#define SLOW_PWM_HEATERS // PWM with very low frequency (roughly 0.125Hz=8s) and minimum state time of approximately 1s useful for heaters driven by a relay
+  // If the temperature difference between the target temperature and the actual temperature
+  // is more then PID_FUNCTIONAL_RANGE then the PID will be shut off and the heater will be set to min/max.
+  #define PID_FUNCTIONAL_RANGE 10         // degC
+  #define PID_INTEGRAL_DRIVE_MAX PID_MAX  // Limit for the integral term
+  #define K1 0.95                         // Smoothing factor within the PID
+  #define MAX_OVERSHOOT_PID_AUTOTUNE 20   // Max valor for overshoot autotune
 
-//             HotEnd{HE0,HE1,HE2,HE3}
-#define DEFAULT_Kp {40, 40, 40, 40}     // Kp for E0, E1, E2, E3
-#define DEFAULT_Ki {07, 07, 07, 07}     // Ki for E0, E1, E2, E3
-#define DEFAULT_Kd {60, 60, 60, 60}     // Kd for E0, E1, E2, E3
+  //             HotEnd{HE0,HE1,HE2,HE3}
+  #define DEFAULT_Kp {40, 40, 40, 40}     // Kp for E0, E1, E2, E3
+  #define DEFAULT_Ki {07, 07, 07, 07}     // Ki for E0, E1, E2, E3
+  #define DEFAULT_Kd {60, 60, 60, 60}     // Kd for E0, E1, E2, E3
+#endif // PIDTEMP
 //===========================================================================
 
 
@@ -260,12 +261,14 @@
 #define MAX_BED_POWER 255 // limits duty cycle to bed; 255=full current
 
 //#define PID_BED_DEBUG // Sends debug data to the serial port.
-#define PID_BED_INTEGRAL_DRIVE_MAX MAX_BED_POWER // limit for the integral term
+
+#ifdef PIDTEMPBED
+  #define PID_BED_INTEGRAL_DRIVE_MAX MAX_BED_POWER // limit for the integral term
 //120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
 //from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
-#define  DEFAULT_bedKp 10.00
-#define  DEFAULT_bedKi .023
-#define  DEFAULT_bedKd 305.4
+  #define  DEFAULT_bedKp 10.00
+  #define  DEFAULT_bedKi .023
+  #define  DEFAULT_bedKd 305.4
 
 //120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
 //from pidautotune
@@ -274,6 +277,7 @@
 //    #define  DEFAULT_bedKd 1675.16
 
 // FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
+#endif // PIDTEMPBED
 //===========================================================================
 
 
@@ -330,7 +334,12 @@
 //#define ULTIPANEL  //the UltiPanel as on Thingiverse
 //#define LCD_FEEDBACK_FREQUENCY_DURATION_MS 100 // the duration the buzzer plays the UI feedback sound. ie Screen Click
 //#define LCD_FEEDBACK_FREQUENCY_HZ 1000         // this is the tone frequency the buzzer plays when on UI feedback. ie Screen Click
-                                                 // 0 to disable buzzer feedback. Test with M300 S<frequency Hz> P<duration ms>
+                                                 // 0 to disable buzzer feedback  
+
+// Original RADDS Display from Willy
+// http://max3dshop.org/index.php/default/elektronik/radds-lcd-sd-display-with-reset-and-back-buttom.html
+//#define RADDS_DISPLAY
+
 // PanelOne from T3P3 (via RAMPS 1.4 AUX2/AUX3)
 // http://reprap.org/wiki/PanelOne
 //#define PANEL_ONE
@@ -347,8 +356,10 @@
 
 // This is a new controller currently under development.
 // https://github.com/eboston/Adafruit-ST7565-Full-Graphic-Controller/
+//
 // ==> REMEMBER TO INSTALL U8glib to your ARDUINO library folder: http://code.google.com/p/u8glib/wiki/u8glib
 //#define ELB_FULL_GRAPHIC_CONTROLLER
+//#define SDCARDDETECTINVERTED
 
 // The RepRapDiscount Smart Controller (white PCB)
 // http://reprap.org/wiki/RepRapDiscount_Smart_Controller
