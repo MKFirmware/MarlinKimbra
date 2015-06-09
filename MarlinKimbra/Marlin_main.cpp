@@ -3204,10 +3204,10 @@ inline void gcode_G28() {
 
 #ifdef ENABLE_AUTO_BED_LEVELING
 
-  void out_of_range_error(const char *edge) {
-    char msg[40];
-    sprintf_P(msg, PSTR("?Probe %s position out of range.\n"), edge);
-    ECHO_V(msg);
+  void out_of_range_error(const char *p_edge) {
+    ECHO_M("?Probe ");
+    PS_PGM(p_edge);
+    ECHO_EM(" position out of range.");
   }
 
   /**
@@ -5123,18 +5123,20 @@ inline void gcode_M226() {
 
 #endif // PREVENT_DANGEROUS_EXTRUDE
 
-/**
- * M303: PID relay autotune
- *       S<temperature> sets the target temperature. (default target temperature = 150C)
- *       E<extruder> (-1 for the bed)
- *       C<cycles>
- */
-inline void gcode_M303() {
-  int e = code_seen('E') ? code_value_short() : 0;
-  int c = code_seen('C') ? code_value_short() : 5;
-  float temp = code_seen('S') ? code_value() : (e < 0 ? 70.0 : 150.0);
-  PID_autotune(temp, e, c);
-}
+#if defined(PIDTEMP) || defined(PIDTEMPBED)
+  /**
+   * M303: PID relay autotune
+   *       S<temperature> sets the target temperature. (default target temperature = 150C)
+   *       E<extruder> (-1 for the bed)
+   *       C<cycles>
+   */
+  inline void gcode_M303() {
+    int e = code_seen('E') ? code_value_short() : 0;
+    int c = code_seen('C') ? code_value_short() : 5;
+    float temp = code_seen('S') ? code_value() : (e < 0 ? 70.0 : 150.0);
+    PID_autotune(temp, e, c);
+  }
+#endif
 
 #ifdef PIDTEMPBED
   // M304: Set bed PID parameters P I and D
@@ -6425,8 +6427,10 @@ void process_next_command() {
           gcode_M302(); break;
       #endif // PREVENT_DANGEROUS_EXTRUDE
 
-      case 303: // M303 PID autotune
-        gcode_M303(); break;
+      #if defined(PIDTEMP) || defined(PIDTEMPBED)
+        case 303: // M303 PID autotune
+          gcode_M303(); break;
+      #endif
 
       #ifdef PIDTEMPBED
         case 304: // M304

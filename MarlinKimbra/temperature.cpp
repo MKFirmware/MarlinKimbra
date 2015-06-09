@@ -184,175 +184,179 @@ static void updateTemperaturesFromRawValues();
 //================================ Functions ================================
 //===========================================================================
 
-void PID_autotune(float temp, int hotend, int ncycles) {
-  float input = 0.0;
-  int cycles = 0;
-  bool heating = true;
+#if defined(PIDTEMP) || defined(PIDTEMPBED)
+  void PID_autotune(float temp, int hotend, int ncycles) {
+    float input = 0.0;
+    int cycles = 0;
+    bool heating = true;
 
-  millis_t temp_ms = millis(), t1 = temp_ms, t2 = temp_ms;
-  long t_high = 0, t_low = 0;
+    millis_t temp_ms = millis(), t1 = temp_ms, t2 = temp_ms;
+    long t_high = 0, t_low = 0;
 
-  long bias, d;
-  float Ku, Tu;
-  float Kp_temp, Ki_temp, Kd_temp;
-  float max = 0, min = 10000;
+    long bias, d;
+    float Ku, Tu;
+    float Kp_temp, Ki_temp, Kd_temp;
+    float max = 0, min = 10000;
 
-  #if HAS_AUTO_FAN
-    millis_t next_auto_fan_check_ms = temp_ms + 2500;
-  #endif
-
-  if (hotend >= HOTENDS
-    #if !HAS_TEMP_BED
-       || hotend < 0
+    #if HAS_AUTO_FAN
+      millis_t next_auto_fan_check_ms = temp_ms + 2500;
     #endif
-  ) {
-    ECHO_LM(ER, MSG_PID_BAD_EXTRUDER_NUM);
-    return;
-  }
 
-  ECHO_LM(DB, MSG_PID_AUTOTUNE_START);
-  if (hotend < 0) {
-    ECHO_SM(DB, "BED");
-  }
-  else {
-      ECHO_SMV(DB, "Hotend: ", hotend);
-  }
-  ECHO_MV(" Temp: ", temp);
-  ECHO_EMV(" Cycles: ", ncycles);
-
-  disable_all_heaters(); // switch off all heaters.
-
-  if (hotend < 0)
-    soft_pwm_bed = bias = d = MAX_BED_POWER / 2;
-  else
-    soft_pwm[hotend] = bias = d = PID_MAX / 2;
-
-  // PID Tuning loop
-  for (;;) {
-
-    millis_t ms = millis();
-
-    if (temp_meas_ready) { // temp sample ready
-      updateTemperaturesFromRawValues();
-
-      input = (hotend<0)?current_temperature_bed:current_temperature[hotend];
-
-      max = max(max, input);
-      min = min(min, input);
-
-      #if HAS_AUTO_FAN
-        if (ms > next_auto_fan_check_ms) {
-          checkExtruderAutoFans();
-          next_auto_fan_check_ms = ms + 2500;
-        }
+    if (hotend >= HOTENDS
+      #if !HAS_TEMP_BED
+         || hotend < 0
       #endif
+    ) {
+      ECHO_LM(ER, MSG_PID_BAD_EXTRUDER_NUM);
+      return;
+    }
 
-      if (heating && input > temp) {
-        if (ms > t2 + 5000) {
-          heating = false;
-          if (hotend < 0)
-            soft_pwm_bed = (bias - d) >> 1;
-          else
-            soft_pwm[hotend] = (bias - d) >> 1;
-          t1 = ms;
-          t_high = t1 - t2;
-          max = temp;
-        }
-      }
+    ECHO_LM(DB, MSG_PID_AUTOTUNE_START);
+    if (hotend < 0) {
+      ECHO_SM(DB, "BED");
+    }
+    else {
+        ECHO_SMV(DB, "Hotend: ", hotend);
+    }
+    ECHO_MV(" Temp: ", temp);
+    ECHO_EMV(" Cycles: ", ncycles);
 
-      if (!heating && input < temp) {
-        if (ms > t1 + 5000) {
-          heating = true;
-          t2 = ms;
-          t_low = t2 - t1;
-          if (cycles > 0) {
-            long max_pow = hotend < 0 ? MAX_BED_POWER : PID_MAX;
-            bias += (d*(t_high - t_low))/(t_low + t_high);
-            bias = constrain(bias, 20, max_pow - 20);
-            d = (bias > max_pow / 2) ? max_pow - 1 - bias : bias;
+    disable_all_heaters(); // switch off all heaters.
 
-            ECHO_MV(MSG_BIAS, bias);
-            ECHO_MV(MSG_D, d);
-            ECHO_MV(MSG_T_MIN, min);
-            ECHO_MV(MSG_T_MAX, max);
-            if (cycles > 2) {
-              Ku = (4.0 * d) / (3.14159265 * (max - min) / 2.0);
-              Tu = ((float)(t_low + t_high) / 1000.0);
-              ECHO_MV(MSG_KU, Ku);
-              ECHO_EMV(MSG_TU, Tu);
-              Kp_temp = 0.6 * Ku;
-              Ki_temp = 2 * Kp_temp / Tu;
-              Kd_temp = Kp_temp * Tu / 8;
-              
-              ECHO_EM(MSG_CLASSIC_PID);
-              ECHO_MV(MSG_KP, Kp_temp);
-              ECHO_MV(MSG_KI, Ki_temp);
-              ECHO_EMV(MSG_KD, Kd_temp);
-            }
-            else {
-              ECHO_E;
-            }
+    if (hotend < 0)
+      soft_pwm_bed = bias = d = MAX_BED_POWER / 2;
+    else
+      soft_pwm[hotend] = bias = d = PID_MAX / 2;
+
+    // PID Tuning loop
+    for (;;) {
+
+      millis_t ms = millis();
+
+      if (temp_meas_ready) { // temp sample ready
+        updateTemperaturesFromRawValues();
+
+        input = (hotend<0)?current_temperature_bed:current_temperature[hotend];
+
+        max = max(max, input);
+        min = min(min, input);
+
+        #if HAS_AUTO_FAN
+          if (ms > next_auto_fan_check_ms) {
+            checkExtruderAutoFans();
+            next_auto_fan_check_ms = ms + 2500;
           }
-          if (hotend < 0)
-            soft_pwm_bed = (bias + d) >> 1;
-          else
-            soft_pwm[hotend] = (bias + d) >> 1;
-          cycles++;
-          min = temp;
+        #endif
+
+        if (heating && input > temp) {
+          if (ms > t2 + 5000) {
+            heating = false;
+            if (hotend < 0)
+              soft_pwm_bed = (bias - d) >> 1;
+            else
+              soft_pwm[hotend] = (bias - d) >> 1;
+            t1 = ms;
+            t_high = t1 - t2;
+            max = temp;
+          }
+        }
+
+        if (!heating && input < temp) {
+          if (ms > t1 + 5000) {
+            heating = true;
+            t2 = ms;
+            t_low = t2 - t1;
+            if (cycles > 0) {
+              long max_pow = hotend < 0 ? MAX_BED_POWER : PID_MAX;
+              bias += (d*(t_high - t_low))/(t_low + t_high);
+              bias = constrain(bias, 20, max_pow - 20);
+              d = (bias > max_pow / 2) ? max_pow - 1 - bias : bias;
+
+              ECHO_MV(MSG_BIAS, bias);
+              ECHO_MV(MSG_D, d);
+              ECHO_MV(MSG_T_MIN, min);
+              ECHO_MV(MSG_T_MAX, max);
+              if (cycles > 2) {
+                Ku = (4.0 * d) / (3.14159265 * (max - min) / 2.0);
+                Tu = ((float)(t_low + t_high) / 1000.0);
+                ECHO_MV(MSG_KU, Ku);
+                ECHO_EMV(MSG_TU, Tu);
+                Kp_temp = 0.6 * Ku;
+                Ki_temp = 2 * Kp_temp / Tu;
+                Kd_temp = Kp_temp * Tu / 8;
+                
+                ECHO_EM(MSG_CLASSIC_PID);
+                ECHO_MV(MSG_KP, Kp_temp);
+                ECHO_MV(MSG_KI, Ki_temp);
+                ECHO_EMV(MSG_KD, Kd_temp);
+              }
+              else {
+                ECHO_E;
+              }
+            }
+            if (hotend < 0)
+              soft_pwm_bed = (bias + d) >> 1;
+            else
+              soft_pwm[hotend] = (bias + d) >> 1;
+            cycles++;
+            min = temp;
+          }
         }
       }
-    }
-    if (input > temp + MAX_OVERSHOOT_PID_AUTOTUNE) {
-      ECHO_LM(ER, MSG_PID_TEMP_TOO_HIGH);
-      return;
-    }
-
-    // Every 2 seconds...
-    if (ms > temp_ms + 2000) {
-      int p;
-      if (hotend < 0) {
-        p = soft_pwm_bed;
-        ECHO_MV(MSG_B, input);
-        ECHO_MV(" /", temp, 1);
-        ECHO_EMV(" " MSG_AT, p);
-      }
-      else {
-        p = soft_pwm[hotend];
-        ECHO_MV(MSG_T, input, 1);
-        ECHO_MV(" /", temp, 1);
-        ECHO_EMV(" " MSG_AT, p);
+      if (input > temp + MAX_OVERSHOOT_PID_AUTOTUNE) {
+        ECHO_LM(ER, MSG_PID_TEMP_TOO_HIGH);
+        return;
       }
 
-      temp_ms = ms;
-    } // every 2 seconds
+      // Every 2 seconds...
+      if (ms > temp_ms + 2000) {
+        int p;
+        if (hotend < 0) {
+          p = soft_pwm_bed;
+          ECHO_MV(MSG_B, input);
+          ECHO_MV(" /", temp, 1);
+          ECHO_EMV(" " MSG_AT, p);
+        }
+        else {
+          p = soft_pwm[hotend];
+          ECHO_MV(MSG_T, input, 1);
+          ECHO_MV(" /", temp, 1);
+          ECHO_EMV(" " MSG_AT, p);
+        }
 
-    // Over 2 minutes?
-    if (((ms - t1) + (ms - t2)) > (10L*60L*1000L*2L)) {
-      ECHO_LM(ER, MSG_PID_TIMEOUT);
-      return;
-    }
-    if (cycles > ncycles) {
-      ECHO_LM(DB, MSG_PID_AUTOTUNE_FINISHED);
-      if (hotend >= 0) {
-        PID_PARAM(Kp, hotend) = Kp_temp;
-        PID_PARAM(Ki, hotend) = scalePID_i(Ki_temp);
-        PID_PARAM(Kd, hotend) = scalePID_d(Kd_temp);
-        updatePID();
+        temp_ms = ms;
+      } // every 2 seconds
 
-        ECHO_SMV(DB, MSG_KP, PID_PARAM(Kp, hotend));
-        ECHO_MV(MSG_KI, unscalePID_i(PID_PARAM(Ki, hotend)));
-        ECHO_EMV(MSG_KD, unscalePID_d(PID_PARAM(Kd, hotend)));
+      // Over 2 minutes?
+      if (((ms - t1) + (ms - t2)) > (10L*60L*1000L*2L)) {
+        ECHO_LM(ER, MSG_PID_TIMEOUT);
+        return;
       }
-      else {
-        ECHO_LMV(DB, "#define DEFAULT_bedKp ", Kp_temp);
-        ECHO_LMV(DB, "#define DEFAULT_bedKi ", unscalePID_i(Ki_temp));
-        ECHO_LMV(DB, "#define DEFAULT_bedKd ", unscalePID_d(Kd_temp));
+      if (cycles > ncycles) {
+        ECHO_LM(DB, MSG_PID_AUTOTUNE_FINISHED);
+        #ifdef PIDTEMP
+          if (hotend >= 0) {
+            PID_PARAM(Kp, hotend) = Kp_temp;
+            PID_PARAM(Ki, hotend) = scalePID_i(Ki_temp);
+            PID_PARAM(Kd, hotend) = scalePID_d(Kd_temp);
+            updatePID();
+
+            ECHO_SMV(DB, MSG_KP, PID_PARAM(Kp, hotend));
+            ECHO_MV(MSG_KI, unscalePID_i(PID_PARAM(Ki, hotend)));
+            ECHO_EMV(MSG_KD, unscalePID_d(PID_PARAM(Kd, hotend)));
+          }
+          else {
+            ECHO_LMV(DB, "#define DEFAULT_bedKp ", Kp_temp);
+            ECHO_LMV(DB, "#define DEFAULT_bedKi ", unscalePID_i(Ki_temp));
+            ECHO_LMV(DB, "#define DEFAULT_bedKd ", unscalePID_d(Kd_temp));
+          }
+        #endif
+        return;
       }
-      return;
+      lcd_update();
     }
-    lcd_update();
   }
-}
+#endif
 
 void updatePID() {
   #ifdef PIDTEMP
@@ -1646,10 +1650,10 @@ ISR(TIMER0_COMPB_vect) {
   #endif //BABYSTEPPING
 }
 
-#ifdef PIDTEMP
+#if defined(PIDTEMP) || defined(PIDTEMPBED)
   // Apply the scale factors to the PID values
   float scalePID_i(float i)   { return i * PID_dT; }
   float unscalePID_i(float i) { return i / PID_dT; }
   float scalePID_d(float d)   { return d / PID_dT; }
   float unscalePID_d(float d) { return d * PID_dT; }
-#endif //PIDTEMP
+#endif // defined(PIDTEMP) || defined(PIDTEMPBED)
