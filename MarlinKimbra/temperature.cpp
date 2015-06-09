@@ -53,6 +53,10 @@ float current_temperature_bed = 0.0;
   float redundant_temperature = 0.0;
 #endif
 
+#ifdef PIDTEMP
+  float Kp[HOTENDS], Ki[HOTENDS], Kd[HOTENDS];
+#endif //PIDTEMP
+
 #ifdef PIDTEMPBED
   float bedKp=DEFAULT_bedKp;
   float bedKi=(DEFAULT_bedKi*PID_dT);
@@ -134,10 +138,6 @@ static unsigned char soft_pwm[HOTENDS];
   static millis_t next_auto_fan_check_ms;
 #endif  
 
-#ifdef PIDTEMP
-  float Kp[HOTENDS], Ki[HOTENDS], Kd[HOTENDS];
-#endif //PIDTEMP
-
 // Init min and max temp with extreme values to prevent false errors during startup
 static int minttemp_raw[HOTENDS] = ARRAY_BY_HOTENDS( HEATER_0_RAW_LO_TEMP , HEATER_1_RAW_LO_TEMP , HEATER_2_RAW_LO_TEMP, HEATER_3_RAW_LO_TEMP);
 static int maxttemp_raw[HOTENDS] = ARRAY_BY_HOTENDS( HEATER_0_RAW_HI_TEMP , HEATER_1_RAW_HI_TEMP , HEATER_2_RAW_HI_TEMP, HEATER_3_RAW_HI_TEMP);
@@ -181,8 +181,7 @@ static void updateTemperaturesFromRawValues();
 //================================ Functions ================================
 //===========================================================================
 
-void PID_autotune(float temp, int hotend, int ncycles)
-{
+void PID_autotune(float temp, int hotend, int ncycles) {
   float input = 0.0;
   int cycles = 0;
   bool heating = true;
@@ -309,12 +308,12 @@ void PID_autotune(float temp, int hotend, int ncycles)
       int p;
       if (hotend < 0) {
         p = soft_pwm_bed;
-        ECHO_SMV(OK, MSG_B, input);
+        ECHO_MV(MSG_B, input);
         ECHO_EMV(MSG_AT, p);
       }
       else {
         p = soft_pwm[hotend];
-        ECHO_SMV(OK, MSG_T, input);
+        ECHO_MV(MSG_T, input);
         ECHO_EMV(MSG_AT, p);
       }
 
@@ -328,20 +327,23 @@ void PID_autotune(float temp, int hotend, int ncycles)
     }
     if (cycles > ncycles) {
       ECHO_LM(DB, MSG_PID_AUTOTUNE_FINISHED);
-      if (hotend >= 0) {
-        PID_PARAM(Kp, hotend) = Kp_temp;
-        PID_PARAM(Ki, hotend) = scalePID_i(Ki_temp);
-        PID_PARAM(Kd, hotend) = scalePID_d(Kd_temp);
-        updatePID();
-
-        ECHO_SMV(DB, MSG_KP, PID_PARAM(Kp, hotend));
-        ECHO_MV(MSG_KI, unscalePID_i(PID_PARAM(Ki, hotend)));
-        ECHO_EMV(MSG_KD, unscalePID_d(PID_PARAM(Kd, hotend)));
-      }
-      else {
+      #ifdef PIDTEMP
+        if (hotend >= 0) {
+          PID_PARAM(Kp, hotend) = Kp_temp;
+          PID_PARAM(Ki, hotend) = scalePID_i(Ki_temp);
+          PID_PARAM(Kd, hotend) = scalePID_d(Kd_temp);
+          updatePID();
+  
+          ECHO_SMV(DB, MSG_KP, PID_PARAM(Kp, hotend));
+          ECHO_MV(MSG_KI, unscalePID_i(PID_PARAM(Ki, hotend)));
+          ECHO_EMV(MSG_KD, unscalePID_d(PID_PARAM(Kd, hotend)));
+        }
+        else
+      #endif
+      {
         ECHO_LMV(DB, "#define DEFAULT_bedKp ", Kp_temp);
-        ECHO_LMV(DB, "#define DEFAULT_bedKi ", unscalePID_i(Ki_temp));
-        ECHO_LMV(DB, "#define DEFAULT_bedKd ", unscalePID_d(Kd_temp));
+        ECHO_LMV(DB, "#define DEFAULT_bedKi ", Ki_temp);
+        ECHO_LMV(DB, "#define DEFAULT_bedKd ", Kd_temp);
       }
       return;
     }
