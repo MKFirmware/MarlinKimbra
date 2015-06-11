@@ -107,7 +107,7 @@ http://reprap.org/wiki/RUMBA
 #define BOARD_TEENSY2           84   // Teensy++2.0 (AT90USB1286) - CLI compile: DEFINES=AT90USBxx_TEENSYPP_ASSIGNMENTS HARDWARE_MOTHERBOARD=84  make
 #define BOARD_MEGATRONICS       70   // Megatronics
 #define BOARD_MEGATRONICS_2     701  // Megatronics v2.0
-#define BOARD_MEGATRONICS_1     702  // Minitronics v1.0
+#define BOARD_MINITRONICS       702  // Minitronics v1.0
 #define BOARD_MEGATRONICS_3     703  // Megatronics v3.0
 #define BOARD_OMCA_A            90   // Alpha OMCA board
 #define BOARD_OMCA              91   // Final OMCA board

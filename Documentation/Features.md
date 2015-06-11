@@ -24,6 +24,7 @@
 *   PID tuning
 *   Cartesian kinematics
 *   CoreXY kinematics (www.corexy.com/theory.html)
+*   CoreXZ kinematics
 *   Delta kinematics
 *   SCARA kinematics
 *   One firmware for all printers, see configurations.h.
@@ -37,7 +38,7 @@
 *   Setting step for unit and feedrate for extruders
 *   Setting PID for any extruder
 *   Real-time filament diameter measurement and control
-*   MKR4 suppport for 4 extruder but only two driver
+*   MKR4 suppport for 4 extruder but width only one driver
 *   Singlenozzle support
 *   NPr2 support, multiextruder by NicolaP http://www.3dmakerlab.it/extruder-npr2.html
 *   Laserbeam support
