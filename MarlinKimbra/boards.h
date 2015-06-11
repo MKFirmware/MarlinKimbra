@@ -19,6 +19,7 @@
 #define BOARD_RAMPS_13_EFF      35   // RAMPS 1.3 / 1.4 (Power outputs: Hotend, Fan, Fan)
 #define BOARD_RAMPS_13_EEF      36   // RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Fan)
 #define BOARD_RAMBO             301  // Rambo
+#define BOARD_MINIRAMBO         302  // Mini-Rambo
 
 #define BOARD_DUEMILANOVE_328P  4    // Duemilanove w/ ATMega328P pin assignments
 #define BOARD_RADDS             402  // RADDS
@@ -42,7 +43,7 @@
 #define BOARD_ULTIMAKER         7    // Ultimaker
 #define BOARD_MEGATRONICS       70   // Megatronics
 #define BOARD_MEGATRONICS_2     701  // Megatronics v2.0
-#define BOARD_MEGATRONICS_1     702  // Minitronics v1.0
+#define BOARD_MINITRONICS       702  // Minitronics v1.0
 #define BOARD_MEGATRONICS_3     703  // Megatronics v3.0
 #define BOARD_ULTIMAKER_OLD     71   // Ultimaker (Older electronics. Pre 1.5.4. This is rare)
 #define BOARD_ULTIMAIN_2        72   // Ultimainboard 2.x (Uses TEMP_SENSOR 20)

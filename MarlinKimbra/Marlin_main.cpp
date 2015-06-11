@@ -1046,7 +1046,7 @@ static const PROGMEM type array##_P[3] =        \
 static inline type array(int axis)          \
     { return pgm_read_any(&array##_P[axis]); }
 
-#if defined(CARTESIAN) || defined(COREXY) || defined(SCARA)
+#if defined(CARTESIAN) || defined(COREXY) || defined(COREXZ) || defined(SCARA)
   XYZ_CONSTS_FROM_CONFIG(float, base_max_pos,  MAX_POS);
   XYZ_CONSTS_FROM_CONFIG(float, base_home_pos, HOME_POS);
   XYZ_CONSTS_FROM_CONFIG(float, max_length,    MAX_LENGTH);
@@ -1217,7 +1217,7 @@ static void setup_for_endstop_move() {
   enable_endstops(true);
 }
 
-#if defined(CARTESIAN) || defined(COREXY) || defined(SCARA)
+#if defined(CARTESIAN) || defined(COREXY) || defined(COREXZ) || defined(SCARA)
 
   static void do_blocking_move_to(float x, float y, float z) {
     float oldFeedRate = feedrate;
@@ -1538,7 +1538,7 @@ static void setup_for_endstop_move() {
     }
   }
   #define HOMEAXIS(LETTER) homeaxis(LETTER##_AXIS)
-#endif // Cartesian || CoreXY || Scara
+#endif // CARTESIAN || COREXY || COREXZ || SCARA
 
 #ifdef DELTA
 
@@ -6754,7 +6754,7 @@ FORCE_INLINE void clamp_to_software_endstops(float target[3]) {
 
 #endif // DUAL_X_CARRIAGE
 
-#if defined(CARTESIAN) || defined(COREXY)
+#if defined(CARTESIAN) || defined(COREXY) || defined(COREXZ)
 
   inline bool prepare_move_cartesian() {
     // Do not use feedrate_multiplier for E or Z only moves
@@ -6767,7 +6767,7 @@ FORCE_INLINE void clamp_to_software_endstops(float target[3]) {
     return true;
   }
 
-#endif // CARTESIAN || COREXY
+#endif // CARTESIAN || COREXY || COREXZ
 
 /**
  * Prepare a single move and get ready for the next one
@@ -6790,7 +6790,7 @@ void prepare_move() {
     if (!prepare_move_dual_x_carriage()) return;
   #endif
 
-  #if defined(CARTESIAN) || defined(COREXY)
+  #if defined(CARTESIAN) || defined(COREXY) || defined(COREXZ)
     if (!prepare_move_cartesian()) return;
   #endif
 

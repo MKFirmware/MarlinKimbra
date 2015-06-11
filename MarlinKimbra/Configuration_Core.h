@@ -1,6 +1,6 @@
 // Define this to set a custom name for your generic Mendel,
 // Displayed in the LCD "Ready" message
-#define CUSTOM_MACHINE_NAME "Core XY"
+#define CUSTOM_MACHINE_NAME "Core"
 
 //===========================================================================
 //=============================Mechanical Settings===========================

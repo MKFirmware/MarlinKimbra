@@ -20,6 +20,7 @@
 * 36 BOARD_RAMPS_13_EEF - RAMPS 1.3 / 1.4 (Power outputs: Extruder0, Extruder1, Fan)
 *
 *301 BOARD_RAMBO - Rambo
+*302 BOARD_MINIRAMBO - Mini Rambo
 *
 *  4 BOARD_DUEMILANOVE_328P - Duemilanove w/ ATMega328P pin assignment
 *401 BOARD_RADDS       - Radds Arduino DUE
@@ -45,7 +46,7 @@
 *
 * 70 BOARD_MEGATRONICS   - Megatronics
 *701 BOARD_MEGATRONICS_2 - Megatronics v2.0
-*702 BOARD_MEGATRONICS_1 - Minitronics v1.0
+*702 BOARD_MINITRONICS   - Minitronics v1.0
 *703 BOARD_MEGATRONICS_3 - Megatronics v3.0
 * 71 BOARD_ULTIMAKER_OLD - Ultimaker (Older electronics. Pre 1.5.4. This is rare)
 * 72 BOARD_ULTIMAIN_2 - Ultimainboard 2.x (Uses TEMP_SENSOR 20)
@@ -3327,7 +3328,7 @@
 * Minitronics v1.0
 ****************************************************************************************/
 
-#if MB(MEGATRONICS_1)
+#if MB(MINITRONICS)
 #define KNOWN_BOARD 1
 
 
