@@ -166,17 +166,12 @@
 #define MSG_BABYSTEPPING_Y                  "Babystepping Y"
 #define MSG_BABYSTEPPING_Z                  "Babystepping Z"
 #define MSG_SERIAL_ERROR_MENU_STRUCTURE     "Error in menu structure"
-#define MSG_MICROSTEP_MS1_MS2                "MS1,MS2 Pins"
-#define MSG_MICROSTEP_X                      "X:"
-#define MSG_MICROSTEP_Y                      "Y:"
-#define MSG_MICROSTEP_Z                      "Z:"
-#define MSG_MICROSTEP_E0                     "E0:"
-#define MSG_MICROSTEP_E1                     "E1:"
-#define MSG_ENDSTOP_X                        " X:"
-#define MSG_ENDSTOP_Y                        " Y:"
-#define MSG_ENDSTOP_Z                        " Z:"
-#define MSG_ENDSTOP_E                        " E:"
-#define MSG_ENDSTOP_ZP                       " ZP:"
+#define MSG_MICROSTEP_MS1_MS2               "MS1,MS2 Pins"
+#define MSG_MICROSTEP_X                     "X:"
+#define MSG_MICROSTEP_Y                     "Y:"
+#define MSG_MICROSTEP_Z                     "Z:"
+#define MSG_MICROSTEP_E0                    "E0:"
+#define MSG_MICROSTEP_E1                    "E1:"
 
 #define MSG_ERR_EEPROM_WRITE                "Error writing to EEPROM!"
 
@@ -219,6 +214,18 @@
 #define MSG_T_MAXTEMP                       "MAXTEMP triggered"
 #define MSG_T_MINTEMP                       "MINTEMP triggered"
 
+// Move
+#define MSG_MOVE_X                          "X"
+#define MSG_MOVE_y                          "Y"
+#define MSG_MOVE_Z                          "Z"
+#define MSG_MOVE_E                          "Extruder"
+
+// Endstop
+#define MSG_ENDSTOP_X                       " X:"
+#define MSG_ENDSTOP_Y                       " Y:"
+#define MSG_ENDSTOP_Z                       " Z:"
+#define MSG_ENDSTOP_E                       " E:"
+#define MSG_ENDSTOP_ZP                      " ZP:"
 #define MSG_ENDSTOP_XS                      "X"
 #define MSG_ENDSTOP_YS                      "Y"
 #define MSG_ENDSTOP_ZS                      "Z"
@@ -234,7 +241,6 @@
 #define MSG_BED_LEVELLING_Z                 " Z: "
 
 // LCD Menu Messages
-
 #if !(defined( DISPLAY_CHARSET_HD44780_JAPAN ) || defined( DISPLAY_CHARSET_HD44780_WESTERN ) || defined( DISPLAY_CHARSET_HD44780_CYRILLIC ))
   #define DISPLAY_CHARSET_HD44780_JAPAN
 #endif

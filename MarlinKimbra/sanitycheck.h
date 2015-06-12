@@ -138,10 +138,10 @@
      */
     #if defined(Z_PROBE_ENDSTOP)
       #ifndef Z_PROBE_PIN
-        #error You must have a Z_PROBE_PIN defined in your pins_XXXX.h file if you enable Z_PROBE_ENDSTOP
+        #error You must have a Z_PROBE_PIN defined in pins2tool.h file if you enable Z_PROBE_ENDSTOP.
       #endif
       #if Z_PROBE_PIN == -1
-        #error You must set Z_PROBE_PIN to a valid pin if you enable Z_PROBE_ENDSTOP
+        #error You must set Z_PROBE_PIN to a valid pin if you enable Z_PROBE_ENDSTOP.
       #endif
 // Forcing Servo definitions can break some hall effect sensor setups. Leaving these here for further comment.
 //      #ifndef NUM_SERVOS
@@ -161,7 +161,12 @@
      * Check if Probe_Offset * Grid Points is greater than Probing Range
      */
     #ifdef AUTO_BED_LEVELING_GRID
-
+      // Be sure points are in the right order
+      #if LEFT_PROBE_BED_POSITION > RIGHT_PROBE_BED_POSITION
+        #error LEFT_PROBE_BED_POSITION must be less than RIGHT_PROBE_BED_POSITION.
+      #elif FRONT_PROBE_BED_POSITION > BACK_PROBE_BED_POSITION
+        #error BACK_PROBE_BED_POSITION must be less than FRONT_PROBE_BED_POSITION.
+      #endif
       // Make sure probing points are reachable
       #if LEFT_PROBE_BED_POSITION < MIN_PROBE_X
         #error "The given LEFT_PROBE_BED_POSITION can't be reached by the probe."
