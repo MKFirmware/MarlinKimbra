@@ -1796,13 +1796,24 @@ static void clean_up_after_endstop_move() {
     // First point
     bed_level_c = probe_bed(0.0, 0.0);
 
+    bool zig = true;
+
     for (int yCount = 0; yCount < auto_bed_leveling_grid_points; yCount++) {
       double yProbe = front_probe_bed_position + yGridSpacing * yCount;
       int xStart, xStop, xInc;
 
-      xStart = 0;
-      xStop = auto_bed_leveling_grid_points;
-      xInc = 1;
+      if (zig) {
+        xStart = 0;
+        xStop = auto_bed_leveling_grid_points;
+        xInc = 1;
+      }
+      else {
+        xStart = auto_bed_leveling_grid_points - 1;
+        xStop = -1;
+        xInc = -1;
+      }
+
+      zig = !zig;
 
       for (int xCount = xStart; xCount != xStop; xCount += xInc) {
         double xProbe = left_probe_bed_position + xGridSpacing * xCount;
@@ -6209,6 +6220,7 @@ void process_next_command() {
       case 92: // G92
         gcode_G92(); break;
     }
+    code_is_good = false;
     break;
 
     case 'M': switch (codenum) {
@@ -6546,6 +6558,7 @@ void process_next_command() {
           gcode_SET_Z_PROBE_OFFSET(); break;
       #endif // CUSTOM_M_CODE_SET_Z_PROBE_OFFSET
     }
+    code_is_good = false;
     break;
 
     case 'T':
