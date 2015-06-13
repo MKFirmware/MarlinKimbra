@@ -65,7 +65,7 @@
 #endif
 
 #ifndef BUILD_VERSION
-  #define BUILD_VERSION "V4;"
+  #define BUILD_VERSION "V1; Sprinter/grbl mashup for gen6"
 #endif
 
 #ifndef MACHINE_UUID
@@ -88,13 +88,14 @@
 
 #define MSG_ENQUEUEING                      "enqueueing \""
 #define MSG_POWERUP                         "PowerUp"
-#define MSG_EXTERNAL_RESET                  " External Reset"
-#define MSG_BROWNOUT_RESET                  " Brown out Reset"
-#define MSG_WATCHDOG_RESET                  " Watchdog Reset"
-#define MSG_SOFTWARE_RESET                  " Software Reset"
+#define MSG_EXTERNAL_RESET                  "External Reset"
+#define MSG_BROWNOUT_RESET                  "Brown out Reset"
+#define MSG_WATCHDOG_RESET                  "Watchdog Reset"
+#define MSG_SOFTWARE_RESET                  "Software Reset"
 #define MSG_AUTHOR                          " | Author: "
-#define MSG_CONFIGURATION_VER               " Last Updated: "
-#define MSG_FREE_MEMORY                     " Free Memory: "
+#define MSG_CONFIGURATION_VER               "Last Updated: "
+#define MSG_COMPILED                        "Compiled: "
+#define MSG_FREE_MEMORY                     "Free Memory: "
 #define MSG_PLANNER_BUFFER_BYTES            " PlannerBufferBytes: "
 #define MSG_FILE_SAVED                      "Done saving file."
 #define MSG_ERR_LINE_NO                     "Line Number is not Last Line Number+1, Last Line: "
@@ -233,7 +234,6 @@
 #define MSG_ENDSTOP_ES                      "E"
 
 //other
-#define MSG_COMPILED                        "Compiled: "
 #define MSG_ERR_HOMING_DIV                  "The Homing Bump Feedrate Divisor cannot be less than 1"
 #define MSG_BED_LEVELLING_BED               "Bed"
 #define MSG_BED_LEVELLING_X                 " X: "

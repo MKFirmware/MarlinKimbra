@@ -165,6 +165,7 @@ void ok_to_send();
   void save_carriage_positions(int position_num);
   void calculate_delta(float cartesian[3]);
   void adjust_delta(float cartesian[3]);
+  void reset_bed_level();
   void prepare_move_raw();
   extern float delta[3];
   extern float delta_tmp[3];
