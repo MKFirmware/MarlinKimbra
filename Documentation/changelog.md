@@ -1,3 +1,9 @@
+### Version 4.1.3
+* Improved support for Delta, SCARA, COREXY & COREXZ kinematics.
+* Improved stepper timer for high velocity driver and not.
+* Add calibrate surface width DELTA.
+* Improved serial comunication width most popular Host.
+
 ### Version 4.1.2
 * Serial message function standardized for a better code style
 * Auto-Create configuration file if not exist
