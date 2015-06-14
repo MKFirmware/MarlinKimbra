@@ -1178,32 +1178,47 @@ static void lcd_control_motion_menu() {
   MENU_ITEM_EDIT(float5, MSG_ACC, &acceleration, 10, 99000);
   MENU_ITEM_EDIT(float3, MSG_VXY_JERK, &max_xy_jerk, 1, 990);
   MENU_ITEM_EDIT(float52, MSG_VZ_JERK, &max_z_jerk, 0.1, 990);
-  MENU_ITEM_EDIT(float3, MSG_VE_JERK, &max_e_jerk, 1, 990);
   MENU_ITEM_EDIT(float3, MSG_VMAX MSG_X, &max_feedrate[X_AXIS], 1, 999);
   MENU_ITEM_EDIT(float3, MSG_VMAX MSG_Y, &max_feedrate[Y_AXIS], 1, 999);
   MENU_ITEM_EDIT(float3, MSG_VMAX MSG_Z, &max_feedrate[Z_AXIS], 1, 999);
-  MENU_ITEM_EDIT(float3, MSG_VMAX MSG_E, &max_feedrate[E_AXIS], 1, 999);
   MENU_ITEM_EDIT(float3, MSG_VMIN, &minimumfeedrate, 0, 999);
   MENU_ITEM_EDIT(float3, MSG_VTRAV_MIN, &mintravelfeedrate, 0, 999);
   MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_X, &max_acceleration_units_per_sq_second[X_AXIS], 100, 99000, reset_acceleration_rates);
   MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_Y, &max_acceleration_units_per_sq_second[Y_AXIS], 100, 99000, reset_acceleration_rates);
   MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_Z, &max_acceleration_units_per_sq_second[Z_AXIS], 10, 99000, reset_acceleration_rates);
-  MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_E, &max_acceleration_units_per_sq_second[E_AXIS], 100, 99000, reset_acceleration_rates);
-  MENU_ITEM_EDIT(float5, MSG_A_RETRACT, &retract_acceleration, 100, 99000);
   MENU_ITEM_EDIT(float5, MSG_A_TRAVEL, &travel_acceleration, 100, 99000);
   MENU_ITEM_EDIT(float52, MSG_XSTEPS, &axis_steps_per_unit[X_AXIS], 5, 9999);
   MENU_ITEM_EDIT(float52, MSG_YSTEPS, &axis_steps_per_unit[Y_AXIS], 5, 9999);
   MENU_ITEM_EDIT(float51, MSG_ZSTEPS, &axis_steps_per_unit[Z_AXIS], 5, 9999);
-  MENU_ITEM_EDIT(float51, MSG_E0STEPS, &axis_steps_per_unit[E_AXIS+0], 5, 9999);
-  #if EXTRUDERS > 1 
-    MENU_ITEM_EDIT(float51, MSG_E1STEPS, &axis_steps_per_unit[E_AXIS+1], 5, 9999);
-  #endif 
-  #if EXTRUDERS > 2
-    MENU_ITEM_EDIT(float51, MSG_E2STEPS, &axis_steps_per_unit[E_AXIS+2], 5, 9999);
-  #endif 
-  #if EXTRUDERS > 3
-    MENU_ITEM_EDIT(float51, MSG_E3STEPS, &axis_steps_per_unit[E_AXIS+3], 5, 9999);
-  #endif
+  #if EXTRUDERS > 0
+    MENU_ITEM_EDIT(float3, MSG_VE_JERK MSG_E "0", &max_e_jerk[0], 1, 990);
+    MENU_ITEM_EDIT(float3, MSG_VMAX MSG_E "0", &max_feedrate[E_AXIS], 1, 999);
+    MENU_ITEM_EDIT(long5, MSG_AMAX MSG_E "0", &max_acceleration_units_per_sq_second[E_AXIS], 100, 99000);
+    MENU_ITEM_EDIT(float5, MSG_A_RETRACT MSG_E "0", &retract_acceleration[0], 100, 99000);
+    MENU_ITEM_EDIT(float51, MSG_E0STEPS, &axis_steps_per_unit[E_AXIS], 5, 9999);
+    #if EXTRUDERS > 1
+      MENU_ITEM_EDIT(float3, MSG_VE_JERK MSG_E "1", &max_e_jerk[1], 1, 990);
+      MENU_ITEM_EDIT(float3, MSG_VMAX MSG_E "1", &max_feedrate[E_AXIS + 1], 1, 999);
+      MENU_ITEM_EDIT(long5, MSG_AMAX MSG_E "1", &max_acceleration_units_per_sq_second[E_AXIS + 1], 100, 99000);
+      MENU_ITEM_EDIT(float5, MSG_A_RETRACT MSG_E "1", &retract_acceleration[1], 100, 99000);
+      MENU_ITEM_EDIT(float51, MSG_E1STEPS, &axis_steps_per_unit[E_AXIS + 1], 5, 9999);
+      #if EXTRUDERS > 2
+        MENU_ITEM_EDIT(float3, MSG_VE_JERK MSG_E "2", &max_e_jerk[2], 1, 990);
+        MENU_ITEM_EDIT(float3, MSG_VMAX MSG_E "2", &max_feedrate[E_AXIS + 2], 1, 999);
+        MENU_ITEM_EDIT(long5, MSG_AMAX MSG_E "2", &max_acceleration_units_per_sq_second[E_AXIS + 2], 100, 99000);
+        MENU_ITEM_EDIT(float5, MSG_A_RETRACT MSG_E "2", &retract_acceleration[2], 100, 99000);
+        MENU_ITEM_EDIT(float51, MSG_E2STEPS, &axis_steps_per_unit[E_AXIS + 2], 5, 9999);
+        #if EXTRUDERS > 3
+          MENU_ITEM_EDIT(float3, MSG_VE_JERK MSG_E  "3", &max_e_jerk[3], 1, 990);
+          MENU_ITEM_EDIT(float3, MSG_VMAX MSG_E "3", &max_feedrate[E_AXIS + 3], 1, 999);
+          MENU_ITEM_EDIT(long5, MSG_AMAX MSG_E "3", &max_acceleration_units_per_sq_second[E_AXIS + 3], 100, 99000);
+          MENU_ITEM_EDIT(float5, MSG_A_RETRACT MSG_E "3", &retract_acceleration[3], 100, 99000);
+          MENU_ITEM_EDIT(float51, MSG_E3STEPS, &axis_steps_per_unit[E_AXIS + 3], 5, 9999);
+        #endif // EXTRUDERS > 3
+      #endif // EXTRUDERS > 2
+    #endif // EXTRUDERS > 1
+  #endif // EXTRUDERS > 0
+
   #ifdef ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
     MENU_ITEM_EDIT(bool, MSG_ENDSTOP_ABORT, &abort_on_endstop_hit);
   #endif

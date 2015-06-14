@@ -64,12 +64,12 @@ float max_feedrate[3 + EXTRUDERS]; // Max speeds in mm per minute
 float axis_steps_per_unit[3 + EXTRUDERS];
 unsigned long max_acceleration_units_per_sq_second[3 + EXTRUDERS]; // Use M201 to override by software
 float minimumfeedrate;
-float acceleration;         // Normal acceleration mm/s^2  DEFAULT ACCELERATION for all printing moves. M204 SXXXX
-float retract_acceleration; // Retract acceleration mm/s^2 filament pull-back and push-forward while standing still in the other axes M204 TXXXX
-float travel_acceleration;  // Travel acceleration mm/s^2  DEFAULT ACCELERATION for all NON printing moves. M204 MXXXX
-float max_xy_jerk;          // The largest speed change requiring no acceleration
+float acceleration;                     // Normal acceleration mm/s^2  DEFAULT ACCELERATION for all printing moves. M204 SXXXX
+float retract_acceleration[EXTRUDERS];  // mm/s^2 filament pull-back and push-forward while standing still in the other axes M204 TXXXX
+float travel_acceleration;              // Travel acceleration mm/s^2  DEFAULT ACCELERATION for all NON printing moves. M204 MXXXX
+float max_xy_jerk;                      // The largest speed change requiring no acceleration
 float max_z_jerk;
-float max_e_jerk;
+float max_e_jerk[EXTRUDERS];            // mm/s - initial speed for extruder retract moves
 float mintravelfeedrate;
 unsigned long axis_steps_per_sqr_second[3 + EXTRUDERS];
 
@@ -879,7 +879,7 @@ float junction_deviation = 0.1;
   float steps_per_mm = block->step_event_count / block->millimeters;
   long bsx = block->steps[X_AXIS], bsy = block->steps[Y_AXIS], bsz = block->steps[Z_AXIS], bse = block->steps[E_AXIS];
   if (bsx == 0 && bsy == 0 && bsz == 0) {
-    block->acceleration_st = ceil(retract_acceleration * steps_per_mm); // convert to: acceleration steps/sec^2
+    block->acceleration_st = ceil(retract_acceleration[extruder] * steps_per_mm); // convert to: acceleration steps/sec^2
   }
   else if (bse == 0) {
     block->acceleration_st = ceil(travel_acceleration * steps_per_mm); // convert to: acceleration steps/sec^2
@@ -951,7 +951,7 @@ float junction_deviation = 0.1;
   // Start with a safe speed
   float vmax_junction = max_xy_jerk / 2;
   float vmax_junction_factor = 1.0; 
-  float mz2 = max_z_jerk / 2, me2 = max_e_jerk / 2;
+  float mz2 = max_z_jerk / 2, me2 = max_e_jerk[extruder] / 2;
   float csz = current_speed[Z_AXIS], cse = current_speed[E_AXIS];
   if (fabs(csz) > mz2) vmax_junction = min(vmax_junction, mz2);
   if (fabs(cse) > me2) vmax_junction = min(vmax_junction, me2);
@@ -970,7 +970,7 @@ float junction_deviation = 0.1;
     //    }
     if (jerk > max_xy_jerk) vmax_junction_factor = max_xy_jerk / jerk;
     if (dz > max_z_jerk) vmax_junction_factor = min(vmax_junction_factor, max_z_jerk / dz);
-    if (de > max_e_jerk) vmax_junction_factor = min(vmax_junction_factor, max_e_jerk / de);
+    if (de > max_e_jerk[extruder]) vmax_junction_factor = min(vmax_junction_factor, max_e_jerk[extruder] / de);
 
     vmax_junction = min(previous_nominal_speed, vmax_junction * vmax_junction_factor); // Limit speed to max previous speed
   }
@@ -1059,7 +1059,7 @@ float junction_deviation = 0.1;
     st_set_position(nx, ny, nz, ne);
     previous_nominal_speed = 0.0; // Resets planner junction speeds. Assumes start from rest.
 
-    for (int i=0; i<NUM_AXIS; i++) previous_speed[i] = 0.0;
+    for (int i=0; i < NUM_AXIS; i++) previous_speed[i] = 0.0;
   }
 
 void plan_set_e_position(const float &e) {

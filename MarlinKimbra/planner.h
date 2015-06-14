@@ -124,11 +124,11 @@ extern float axis_steps_per_unit[3 + EXTRUDERS];
 extern unsigned long max_acceleration_units_per_sq_second[3 + EXTRUDERS]; // Use M201 to override by software
 extern float minimumfeedrate;
 extern float acceleration;         // Normal acceleration mm/s^2  THIS IS THE DEFAULT ACCELERATION for all moves. M204 SXXXX
-extern float retract_acceleration; //  mm/s^2   filament pull-pack and push-forward  while standing still in the other axis M204 TXXXX
+extern float retract_acceleration[EXTRUDERS]; //  mm/s^2   filament pull-pack and push-forward  while standing still in the other axis M204 TXXXX
 extern float travel_acceleration;  // Travel acceleration mm/s^2  THIS IS THE DEFAULT ACCELERATION for all NON printing moves. M204 MXXXX
 extern float max_xy_jerk; //speed than can be stopped at once, if i understand correctly.
 extern float max_z_jerk;
-extern float max_e_jerk;
+extern float max_e_jerk[EXTRUDERS]; // mm/s - initial speed for extruder retract moves
 extern float mintravelfeedrate;
 extern unsigned long axis_steps_per_sqr_second[3 + EXTRUDERS];
 

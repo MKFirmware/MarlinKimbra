@@ -134,20 +134,20 @@
 
 // default settings
 // delta speeds must be the same on xyz
-#define DEFAULT_AXIS_STEPS_PER_UNIT {80,80,80,451,625,625,625}        // X, Y, Z, E0, E1, E2, E3
-#define DEFAULT_MAX_FEEDRATE {300,300,300,45,100,100,100}             // X, Y, Z, E0, E1, E2, E3 (mm/sec)
-#define DEFAULT_MAX_ACCELERATION {2000,2000,2000,1000,1000,1000,1000} // X, Y, Z, E0, E1, E2, E3 maximum start speed for accelerated moves.
-#define DEFAULT_ACCELERATION          1000      // X, Y, Z and E max acceleration in mm/s^2 for printing moves
-#define DEFAULT_RETRACT_ACCELERATION  2500      // X, Y, Z and E max acceleration in mm/s^2 for retracts
-#define DEFAULT_TRAVEL_ACCELERATION   3000      // X, Y, Z acceleration in mm/s^2 for travel (non printing) moves
+#define DEFAULT_AXIS_STEPS_PER_UNIT   {80,80,80,451,625,625,625}            // X, Y, Z, E0...(per extruder). Default steps per unit
+#define DEFAULT_MAX_FEEDRATE          {500,500,500,45,45,45,45}             // X, Y, Z, E0...(per extruder). (mm/sec)
+#define DEFAULT_MAX_ACCELERATION      {5000,5000,5000,1000,1000,1000,1000}  // X, Y, Z, E0...(per extruder). Maximum start speed for accelerated moves.
+#define DEFAULT_RETRACT_ACCELERATION  {10000,10000,10000,10000}             // E0... (per extruder) max acceleration in mm/s^2 for retracts
+#define DEFAULT_ACCELERATION            3000                                // X, Y, Z and E max acceleration in mm/s^2 for printing moves
+#define DEFAULT_TRAVEL_ACCELERATION     3000                                // X, Y, Z acceleration in mm/s^2 for travel (non printing) moves
 
 // Offset of the extruders (uncomment if using more than one and relying on firmware to position when changing).
-// The offset has to be X=0, Y=0 for the extruder 0 hotend (default extruder).
-// For the other hotends it is their distance from the extruder 0 hotend.
-//#define HOTEND_OFFSET_X {0.0, 5.00, 0.0, 0.0} // (in mm) for each extruder, offset of the hotend on the X axis
-//#define HOTEND_OFFSET_Y {0.0, 5.00, 0.0, 0.0} // (in mm) for each extruder, offset of the hotend on the Y axis
+// The offset has to be X=0, Y=0 for the hotend 0 (default hotend).
+// For the other hotends it is their distance from the hotend 0.
+//#define HOTEND_OFFSET_X {0.0, 5.00, 0.0, 0.0} // (in mm) for each hotend, offset of the hotend on the X axis
+//#define HOTEND_OFFSET_Y {0.0, 5.00, 0.0, 0.0} // (in mm) for each hotend, offset of the hotend on the Y axis
 
 // The speed change that does not require acceleration (i.e. the software might assume it can be done instantaneously)
-#define DEFAULT_XYJERK 20  // (mm/sec)
-#define DEFAULT_ZJERK  20  // (mm/sec)
-#define DEFAULT_EJERK   5  // (mm/sec)
+#define DEFAULT_XYJERK 20                   // (mm/sec)
+#define DEFAULT_ZJERK  20                   // (mm/sec)
+#define DEFAULT_EJERK  {5.0,5.0,5.0,5.0}    // E0... (mm/sec) per extruder, max initial speed for retract moves

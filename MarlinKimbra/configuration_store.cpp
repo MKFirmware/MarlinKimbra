@@ -14,28 +14,28 @@
  *
  */
 
-#define EEPROM_VERSION "V22"
+#define EEPROM_VERSION "V23"
 
 /**
- * V22 EEPROM Layout:
+ * V23 EEPROM Layout:
  *
  *  ver
- *  M92   XYZ E0 E1 E2 E3 axis_steps_per_unit (x7)
- *  M203  XYZ E0 E1 E2 E3 max_feedrate (x7)
- *  M201  XYZ E0 E1 E2 E3 max_acceleration_units_per_sq_second (x7)
+ *  M92   XYZ E0 ...      axis_steps_per_unit X,Y,Z,E0 ... (per extruder)
+ *  M203  XYZ E0 ...      max_feedrate X,Y,Z,E0 ... (per extruder)
+ *  M201  XYZ E0 ...      max_acceleration_units_per_sq_second X,Y,Z,E0 ... (per extruder)
  *  M204  P               acceleration
- *  M204  R               retract_acceleration
+ *  M204  R   E0 ...      retract_acceleration (per extruder)
  *  M204  T               travel_acceleration
  *  M205  S               minimumfeedrate
  *  M205  T               mintravelfeedrate
  *  M205  B               minsegmenttime
  *  M205  X               max_xy_jerk
  *  M205  Z               max_z_jerk
- *  M205  E               max_e_jerk
+ *  M205  E  E0 ...       max_e_jerk (per extruder)
  *  M206  XYZ             home_offset (x3)
  *  M666  P               zprobe_zoffset
  *
- * HOTEND OFFSET:
+ * HOTENDS OFFSET:
  *  M218 T  XY            hotend_offset (x4) (T0..3)
  *
  * DELTA:
@@ -134,8 +134,6 @@ void _EEPROM_readData(int &pos, uint8_t* value, uint8_t size) {
  * Store Configuration Settings - M500
  */
 
-#define DUMMY_PID_VALUE 3000.0f
-
 #define EEPROM_OFFSET 100
 
 #ifdef EEPROM_SETTINGS
@@ -194,31 +192,19 @@ void Config_StoreSettings() {
   EEPROM_WRITE_VAR(i, gumPreheatHPBTemp);
   EEPROM_WRITE_VAR(i, gumPreheatFanSpeed);
 
-  for (int e = 0; e < 4; e++) {
-    #ifdef PIDTEMP
-      if (e < HOTENDS) {
-        EEPROM_WRITE_VAR(i, PID_PARAM(Kp, e));
-        EEPROM_WRITE_VAR(i, PID_PARAM(Ki, e));
-        EEPROM_WRITE_VAR(i, PID_PARAM(Kd, e));
-      }
-      else
-    #endif // !PIDTEMP
-      {
-        dummy = DUMMY_PID_VALUE; // When read, will not change the existing value
-        EEPROM_WRITE_VAR(i, dummy);
-        dummy = 0.0f;
-        for (int q = 3; q--;) EEPROM_WRITE_VAR(i, dummy);
-      }
-
-  } // Extruders Loop
-
-  #ifndef PIDTEMPBED
-    float bedKp = DUMMY_PID_VALUE, bedKi = DUMMY_PID_VALUE, bedKd = DUMMY_PID_VALUE;
+  #ifdef PIDTEMP
+    for (int e = 0; e < HOTENDS; e++) {
+      EEPROM_WRITE_VAR(i, PID_PARAM(Kp, e));
+      EEPROM_WRITE_VAR(i, PID_PARAM(Ki, e));
+      EEPROM_WRITE_VAR(i, PID_PARAM(Kd, e));
+    }
   #endif
 
-  EEPROM_WRITE_VAR(i, bedKp);
-  EEPROM_WRITE_VAR(i, bedKi);
-  EEPROM_WRITE_VAR(i, bedKd);
+  #ifdef PIDTEMPBED
+    EEPROM_WRITE_VAR(i, bedKp);
+    EEPROM_WRITE_VAR(i, bedKi);
+    EEPROM_WRITE_VAR(i, bedKd);
+  #endif
 
   #if defined(DOGLCD) || LCD_CONTRAST < 0
     const int lcd_contrast = 32;
@@ -227,9 +213,6 @@ void Config_StoreSettings() {
 
   #ifdef SCARA
     EEPROM_WRITE_VAR(i, axis_scaling); // 3 floats
-  #else
-    dummy = 1.0f;
-    EEPROM_WRITE_VAR(i, dummy);
   #endif
 
   #ifdef FWRETRACT
@@ -346,36 +329,18 @@ void Config_RetrieveSettings() {
     EEPROM_READ_VAR(i, gumPreheatFanSpeed);
 
     #ifdef PIDTEMP
-      for (int e = 0; e < 4; e++) { // 4 = max hotend currently supported
-        EEPROM_READ_VAR(i, dummy); // Kp
-        if (e < EXTRUDERS && dummy != DUMMY_PID_VALUE) {
-          // do not need to scale PID values as the values in EEPROM are already scaled
-          PID_PARAM(Kp, e) = dummy;
-          EEPROM_READ_VAR(i, PID_PARAM(Ki, e));
-          EEPROM_READ_VAR(i, PID_PARAM(Kd, e));
-        }
-        else {
-          for (int q=3; q--;) EEPROM_READ_VAR(i, dummy); // Ki, Kd, Kc
-        }
+      for (int8_t e = 0; e < HOTENDS; e++) {
+        EEPROM_READ_VAR(i, PID_PARAM(Kp, e));
+        EEPROM_READ_VAR(i, PID_PARAM(Ki, e));
+        EEPROM_READ_VAR(i, PID_PARAM(Kd, e));
       }
-    #else // !PIDTEMP
-      // 4 x 3 = 12 slots for PID parameters
-      for (int q = 12; q--;) EEPROM_READ_VAR(i, dummy);  // 4x Kp, Ki, Kd
-    #endif // !PIDTEMP
+    #endif // PIDTEMP
 
-    #ifndef PIDTEMPBED
-      float bedKp, bedKi, bedKd;
-    #endif
-
-    EEPROM_READ_VAR(i, dummy); // bedKp
-    if (dummy != DUMMY_PID_VALUE) {
-      bedKp = dummy;
+    #ifdef PIDTEMPBED
+      EEPROM_READ_VAR(i, bedKp);
       EEPROM_READ_VAR(i, bedKi);
       EEPROM_READ_VAR(i, bedKd);
-    }
-    else {
-      for (int q = 2; q--;) EEPROM_READ_VAR(i, dummy); // bedKi, bedKd
-    }
+    #endif
 
     #if defined(DOGLCD) || LCD_CONTRAST < 0
       int lcd_contrast;
@@ -385,8 +350,6 @@ void Config_RetrieveSettings() {
 
     #ifdef SCARA
       EEPROM_READ_VAR(i, axis_scaling);  // 3 floats
-    #else
-      EEPROM_READ_VAR(i, dummy);
     #endif
 
     #ifdef FWRETRACT
@@ -410,7 +373,7 @@ void Config_RetrieveSettings() {
 
     EEPROM_READ_VAR(i, volumetric_enabled);
 
-    for (int q = 0; q < 4; q++) {
+    for (int8_t q = 0; q < 4; q++) {
       EEPROM_READ_VAR(i, dummy);
       if (q < EXTRUDERS) filament_size[q] = dummy;
     }
@@ -444,49 +407,82 @@ void Config_ResetDefault() {
   float tmp1[] = DEFAULT_AXIS_STEPS_PER_UNIT;
   float tmp2[] = DEFAULT_MAX_FEEDRATE;
   long  tmp3[] = DEFAULT_MAX_ACCELERATION;
+  long  tmp4[] = DEFAULT_RETRACT_ACCELERATION;
+  long  tmp5[] = DEFAULT_EJERK;
   #ifdef PIDTEMP
-    float tmp4[] = DEFAULT_Kp;
-    float tmp5[] = DEFAULT_Ki;
-    float tmp6[] = DEFAULT_Kd;
+    float tmp6[] = DEFAULT_Kp;
+    float tmp7[] = DEFAULT_Ki;
+    float tmp8[] = DEFAULT_Kd;
   #endif // PIDTEMP
 
   #if defined(HOTEND_OFFSET_X) && defined(HOTEND_OFFSET_Y)
-    float tmp7[] = HOTEND_OFFSET_X;
-    float tmp8[] = HOTEND_OFFSET_Y;
+    float tmp9[] = HOTEND_OFFSET_X;
+    float tmp10[] = HOTEND_OFFSET_Y;
   #else
-    float tmp7[] = {0,0,0,0};
-    float tmp8[] = {0,0,0,0};
+    float tmp9[] = {0};
+    float tmp10[] = {0};
   #endif
 
-  for (int i = 0; i < 3 + EXTRUDERS; i++) {
-    axis_steps_per_unit[i] = tmp1[i];
-    max_feedrate[i] = tmp2[i];
-    max_acceleration_units_per_sq_second[i] = tmp3[i];
+  for (int8_t i = 0; i < 3 + EXTRUDERS; i++) {
+    short max_i;
+    max_i = sizeof(tmp1) / sizeof(*tmp1);
+    if(i < max_i)
+      axis_steps_per_unit[i] = tmp1[i];
+    else
+      axis_steps_per_unit[i] = tmp1[max_i - 1];
+    max_i = sizeof(tmp2) / sizeof(*tmp2);
+    if(i < max_i)
+      max_feedrate[i] = tmp2[i];
+    else
+      max_feedrate[i] = tmp2[max_i - 1];
+    max_i = sizeof(tmp3) / sizeof(*tmp3);
+    if(i < max_i)
+      max_acceleration_units_per_sq_second[i] = tmp3[i];
+    else
+      max_acceleration_units_per_sq_second[i] = tmp3[max_i - 1];
+    if(i < EXTRUDERS) {
+      max_i = sizeof(tmp4) / sizeof(*tmp4);
+      if(i < max_i)
+        retract_acceleration[i] = tmp4[i];
+      else
+        retract_acceleration[i] = tmp4[max_i - 1];
+      max_i = sizeof(tmp5) / sizeof(*tmp5);
+      if(i < max_i)
+        max_e_jerk[i] = tmp5[i];
+      else
+        max_e_jerk[i] = tmp5[max_i - 1];
+      #if HOTENDS > 1
+      max_i = sizeof(tmp9) / sizeof(*tmp9);
+      if(i < max_i)
+        extruder_offset[X_AXIS][i] = tmp9[i];
+      else
+        extruder_offset[X_AXIS][i] = 0;
+      max_i = sizeof(tmp10) / sizeof(*tmp10);
+      if(i < max_i)
+        extruder_offset[Y_AXIS][i] = tmp10[i];
+      else
+        extruder_offset[Y_AXIS][i] = 0;
+      #endif // HOTENDS > 1
+    }
   }
 
-  for (int i = 0; i < EXTRUDERS; i++) {
-    #if HOTENDS > 1
-      hotend_offset[X_AXIS][i] = tmp7[i];
-      hotend_offset[Y_AXIS][i] = tmp8[i];
-    #endif
-    #ifdef SCARA
+  #ifdef SCARA
+    for (int8_t i = 0; i < NUM_AXIS; i++) {
       if (i < sizeof(axis_scaling) / sizeof(*axis_scaling))
         axis_scaling[i] = 1;
-    #endif
-  }
+    }
+  #endif
 
   // steps per sq second need to be updated to agree with the units per sq second
   reset_acceleration_rates();
 
   acceleration = DEFAULT_ACCELERATION;
-  retract_acceleration = DEFAULT_RETRACT_ACCELERATION;
   travel_acceleration = DEFAULT_TRAVEL_ACCELERATION;
   minimumfeedrate = DEFAULT_MINIMUMFEEDRATE;
   minsegmenttime = DEFAULT_MINSEGMENTTIME;
   mintravelfeedrate = DEFAULT_MINTRAVELFEEDRATE;
   max_xy_jerk = DEFAULT_XYJERK;
   max_z_jerk = DEFAULT_ZJERK;
-  max_e_jerk = DEFAULT_EJERK;
   home_offset[X_AXIS] = home_offset[Y_AXIS] = home_offset[Z_AXIS] = 0;
 
   #ifdef ENABLE_AUTO_BED_LEVELING
@@ -522,11 +518,10 @@ void Config_ResetDefault() {
   #endif //DOGLCD
 
   #ifdef PIDTEMP
-    for (int e = 0; e < HOTENDS; e++) 
-    {
-      Kp[e] = tmp4[e];
-      Ki[e] = scalePID_i(tmp5[e]);
-      Kd[e] = scalePID_d(tmp6[e]);
+    for (int8_t e = 0; e < HOTENDS; e++) {
+      Kp[e] = tmp6[e];
+      Ki[e] = scalePID_i(tmp7[e]);
+      Kd[e] = scalePID_d(tmp8[e]);
     }
     // call updatePID (similar to when we have processed M301)
     updatePID();
@@ -554,16 +549,11 @@ void Config_ResetDefault() {
   #endif
 
   volumetric_enabled = false;
-  filament_size[0] = DEFAULT_NOMINAL_FILAMENT_DIA;
-  #if EXTRUDERS > 1
-    filament_size[1] = DEFAULT_NOMINAL_FILAMENT_DIA;
-    #if EXTRUDERS > 2
-      filament_size[2] = DEFAULT_NOMINAL_FILAMENT_DIA;
-      #if EXTRUDERS > 3
-        filament_size[3] = DEFAULT_NOMINAL_FILAMENT_DIA;
-      #endif // EXTRUDERS > 3
-    #endif // EXTRUDERS > 2
-  #endif // EXTRUDERS > 1
+
+  for (short i = 0; i < EXTRUDERS; i++) {
+    filament_size[i] = DEFAULT_NOMINAL_FILAMENT_DIA;
+  }
+
   calculate_volumetric_multipliers();
 
   #ifdef IDLE_OOZING_PREVENT
@@ -587,17 +577,13 @@ void Config_ResetDefault() {
     ECHO_SMV(DB, "  M92 X", axis_steps_per_unit[X_AXIS]);
     ECHO_MV(" Y", axis_steps_per_unit[Y_AXIS]);
     ECHO_MV(" Z", axis_steps_per_unit[Z_AXIS]);
-    ECHO_MV(" E0 S", axis_steps_per_unit[E_AXIS + 0]);
+    ECHO_EMV(" E", axis_steps_per_unit[E_AXIS]);
     #if EXTRUDERS > 1
-      ECHO_MV(" E1 S", axis_steps_per_unit[E_AXIS + 1]);
-      #if EXTRUDERS > 2
-        ECHO_MV(" E2 S", axis_steps_per_unit[E_AXIS + 2]);
-        #if EXTRUDERS > 3
-          ECHO_MV(" E3 S", axis_steps_per_unit[E_AXIS + 3]);
-        #endif //EXTRUDERS > 3
-      #endif //EXTRUDERS > 2
+      for (short i = 1; i < EXTRUDERS; i++) {
+        ECHO_SMV(DB, "  M92 T", i);
+        ECHO_EMV(" E", axis_steps_per_unit[E_AXIS + i]);
+      }
     #endif //EXTRUDERS > 1
-    ECHO_E;
 
     #ifdef SCARA
       if (!forReplay) {
@@ -614,17 +600,13 @@ void Config_ResetDefault() {
     ECHO_SMV(DB, "  M203 X", max_feedrate[X_AXIS]);
     ECHO_MV(" Y", max_feedrate[Y_AXIS] ); 
     ECHO_MV(" Z", max_feedrate[Z_AXIS] ); 
-    ECHO_MV(" E0 S", max_feedrate[E_AXIS + 0]);
+    ECHO_EMV(" E", max_feedrate[E_AXIS]);
     #if EXTRUDERS > 1
-      ECHO_MV(" E1 S", max_feedrate[E_AXIS + 1]);
-      #if EXTRUDERS > 2
-        ECHO_MV(" E2 S", max_feedrate[E_AXIS + 2]);
-        #if EXTRUDERS > 3
-          ECHO_MV(" E3 S", max_feedrate[E_AXIS + 3]);
-        #endif //EXTRUDERS > 3
-      #endif //EXTRUDERS > 2
+      for (short i = 1; i < EXTRUDERS; i++) {
+        ECHO_SMV(DB, "  M203 T", i);
+        ECHO_EMV(" E", max_feedrate[E_AXIS + i]);
+      }
     #endif //EXTRUDERS > 1
-    ECHO_E;
 
     if (!forReplay) {
       ECHO_LM(DB, "Maximum Acceleration (mm/s2):");
@@ -632,34 +614,42 @@ void Config_ResetDefault() {
     ECHO_SMV(DB, "  M201 X", max_acceleration_units_per_sq_second[X_AXIS] );
     ECHO_MV(" Y", max_acceleration_units_per_sq_second[Y_AXIS] );
     ECHO_MV(" Z", max_acceleration_units_per_sq_second[Z_AXIS] );
-    ECHO_MV(" E0 S", max_acceleration_units_per_sq_second[E_AXIS]);
+    ECHO_EMV(" E", max_acceleration_units_per_sq_second[E_AXIS]);
     #if EXTRUDERS > 1
-      ECHO_MV(" E1 S", max_acceleration_units_per_sq_second[E_AXIS+1]);
-      #if EXTRUDERS > 2
-        ECHO_MV(" E2 S", max_acceleration_units_per_sq_second[E_AXIS+2]);
-        #if EXTRUDERS > 3
-          ECHO_MV(" E3 S", max_acceleration_units_per_sq_second[E_AXIS+3]);
-        #endif //EXTRUDERS > 3
-      #endif //EXTRUDERS > 2
+      for (short i = 1; i < EXTRUDERS; i++) {
+        ECHO_SMV(DB, "  M201 T", i);
+        ECHO_EMV(" E", max_acceleration_units_per_sq_second[E_AXIS + i]);
+      }
     #endif //EXTRUDERS > 1
     ECHO_E;
     
     if (!forReplay) {
-      ECHO_LM(DB, "Accelerations: P=printing, R=retract and T=travel");
+      ECHO_LM(DB, "Accelerations: P=printing, V=travel and T* R=retract");
     }
-    ECHO_SMV(DB,"  M204 P", acceleration );
-    ECHO_MV(" R", retract_acceleration);
-    ECHO_EMV(" T", travel_acceleration);
+    ECHO_SMV(DB,"  M204 P", acceleration);
+    ECHO_EMV(" V", travel_acceleration);
+    #if EXTRUDERS > 0
+      for (short i = 0; i < EXTRUDERS; i++) {
+        ECHO_SMV(DB, "  M204 T", i);
+        ECHO_EMV(" R" ,retract_acceleration[i]);
+      }
+    #endif
 
     if (!forReplay) {
-      ECHO_LM(DB, "Advanced variables: S=Min feedrate (mm/s), T=Min travel feedrate (mm/s), B=minimum segment time (ms), X=maximum XY jerk (mm/s),  Z=maximum Z jerk (mm/s),  E=maximum E jerk (mm/s)");
+      ECHO_LM(DB, "Advanced variables: S=Min feedrate (mm/s), V=Min travel feedrate (mm/s), B=minimum segment time (ms), X=maximum XY jerk (mm/s),  Z=maximum Z jerk (mm/s),  E=maximum E jerk (mm/s)");
     }
     ECHO_SMV(DB, "  M205 S", minimumfeedrate );
-    ECHO_MV(" T", mintravelfeedrate );
+    ECHO_MV(" V", mintravelfeedrate );
     ECHO_MV(" B", minsegmenttime );
     ECHO_MV(" X", max_xy_jerk );
     ECHO_MV(" Z", max_z_jerk);
-    ECHO_EMV(" E", max_e_jerk);
+    ECHO_EMV(" E", max_e_jerk[0]);
+    #if (EXTRUDERS > 1)
+      for(short i = 1; i < EXTRUDERS; i++) {
+        ECHO_SMV(DB, "  M205 T", i);
+        ECHO_EMV(" E" , max_e_jerk[i]);
+      }
+    #endif
 
     if (!forReplay) {
       ECHO_LM(DB, "Home offset (mm):");

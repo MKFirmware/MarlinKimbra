@@ -4316,22 +4316,19 @@ inline void gcode_M85() {
  * M92: Set axis_steps_per_unit
  */
 inline void gcode_M92() {
-  for(int8_t i = 0; i <= Z_AXIS; i++) {
-    if (code_seen(axis_codes[i])) axis_steps_per_unit[i] = code_value();
-  }
+  if (setTargetedHotend(92)) return;
 
-  if (code_seen('E')) {
-    int tmp_extruder = 0;
-    tmp_extruder = code_value();
-    float value = code_seen('S') ? code_value() : axis_steps_per_unit[E_AXIS + tmp_extruder];
-    if (value < 20.0) {
-      float factor = axis_steps_per_unit[E_AXIS + tmp_extruder] / value; // increase e constants if M92 E14 is given for netfab.
-      max_e_jerk *= factor;
-      max_feedrate[E_AXIS + tmp_extruder] *= factor;
-      axis_steps_per_sqr_second[E_AXIS + tmp_extruder] *= factor;
+  for(int8_t i = 0; i <= NUM_AXIS; i++) {
+    if (code_seen(axis_codes[i])) {
+      if (i == E_AXIS)
+        axis_steps_per_unit[i + target_extruder] = code_value();
+      else
+        axis_steps_per_unit[i] = code_value();
     }
-    axis_steps_per_unit[E_AXIS + tmp_extruder] = value;
   }
+  st_synchronize();
+  // This recalculates position in steps in case user has changed steps/unit
+  plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 }
 
 /**
@@ -4782,31 +4779,37 @@ inline void gcode_M201() {
 
 
 /**
- * M203: Set maximum feedrate that your machine can sustain (M203 X200 Y200 Z300 E10000) in mm/sec
+ * M203: Set maximum feedrate that your machine can sustain in mm/sec
+ *
+ *    X,Y,Z   = AXIS
+ *    T* E    = E_AXIS
+ *
  */
 inline void gcode_M203() {
-  for(int8_t i = 0; i <= Z_AXIS; i++) {
-    if (code_seen(axis_codes[i])) max_feedrate[i] = code_value();
-  }
+  if (setTargetedHotend(203)) return;
 
-  if (code_seen('E')) {
-    int tmp_extruder = 0;
-    tmp_extruder = code_value();
-    float value = code_seen('S') ? code_value() : max_feedrate[E_AXIS + tmp_extruder];
-    max_feedrate[E_AXIS + tmp_extruder] = value;
+  for(int8_t i = 0; i < NUM_AXIS; i++) {
+    if (code_seen(axis_codes[i])) {
+      if (i == E_AXIS)
+        max_feedrate[i + target_extruder] = code_value();
+      else
+        max_feedrate[i] = code_value();
+    }
   }
 }
 
 /**
- * M204: Set Accelerations in mm/sec^2 (M204 P1200 R3000 T3000)
+ * M204: Set Accelerations in mm/sec^2 (M204 P1200 T0 R3000 V3000)
  *
- *    P = Printing moves
- *    R = Retract only (no X, Y, Z) moves
- *    T = Travel (non printing) moves
+ *    P     = Printing moves
+ *    T* R  = Retract only (no X, Y, Z) moves
+ *    V     = Travel (non printing) moves
  *
  *  Also sets minimum segment time in ms (B20000) to prevent buffer under-runs and M20 minimum feedrate
  */
 inline void gcode_M204() {
+  if (setTargetedHotend(204)) return;
+
   if (code_seen('S')) {  // Kept for legacy compatibility. Should NOT BE USED for new developments.
     acceleration = code_value();
     travel_acceleration = acceleration;
@@ -4817,10 +4820,10 @@ inline void gcode_M204() {
     ECHO_LMV(DB, "Setting Print Acceleration: ", acceleration );
   }
   if (code_seen('R')) {
-    retract_acceleration = code_value();
-    ECHO_LMV(DB, "Setting Retract Acceleration: ", retract_acceleration );
+    retract_acceleration[target_extruder] = code_value();
+    ECHO_LMV(DB, "Setting Retract Acceleration: ", retract_acceleration[target_extruder]);
   }
-  if (code_seen('T')) {
+  if (code_seen('V')) {
     travel_acceleration = code_value();
     ECHO_LMV(DB, "Setting Travel Acceleration: ", travel_acceleration );
   }
@@ -4830,19 +4833,21 @@ inline void gcode_M204() {
  * M205: Set Advanced Settings
  *
  *    S = Min Feed Rate (mm/s)
- *    T = Min Travel Feed Rate (mm/s)
+ *    V = Min Travel Feed Rate (mm/s)
  *    B = Min Segment Time (µs)
  *    X = Max XY Jerk (mm/s/s)
  *    Z = Max Z Jerk (mm/s/s)
  *    E = Max E Jerk (mm/s/s)
  */
 inline void gcode_M205() {
+  if (setTargetedHotend(205)) return;
+
   if (code_seen('S')) minimumfeedrate = code_value();
-  if (code_seen('T')) mintravelfeedrate = code_value();
+  if (code_seen('V')) mintravelfeedrate = code_value();
   if (code_seen('B')) minsegmenttime = code_value();
   if (code_seen('X')) max_xy_jerk = code_value();
   if (code_seen('Z')) max_z_jerk = code_value();
-  if (code_seen('E')) max_e_jerk = code_value();
+  if (code_seen('E')) max_e_jerk[target_extruder] = code_value();
 }
 
 /**
@@ -6220,7 +6225,6 @@ void process_next_command() {
       case 92: // G92
         gcode_G92(); break;
     }
-    code_is_good = false;
     break;
 
     case 'M': switch (codenum) {
@@ -6558,7 +6562,6 @@ void process_next_command() {
           gcode_SET_Z_PROBE_OFFSET(); break;
       #endif // CUSTOM_M_CODE_SET_Z_PROBE_OFFSET
     }
-    code_is_good = false;
     break;
 
     case 'T':
