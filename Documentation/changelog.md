@@ -3,6 +3,9 @@
 * Improved stepper timer for high velocity driver and not.
 * Add calibrate surface width DELTA.
 * Improved serial comunication width most popular Host.
+* Add Acceleration retraction for extruder.
+* Add EJerk for extruder
+* Remove limit for virtual extruder to 4. Now width MKR4 or NPr2 is possible have infinite extruder...
 
 ### Version 4.1.2
 * Serial message function standardized for a better code style
