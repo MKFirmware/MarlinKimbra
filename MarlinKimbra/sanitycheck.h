@@ -79,10 +79,6 @@
    */
   #if EXTRUDERS > 1
 
-    #if EXTRUDERS > 4
-      #error The maximum number of EXTRUDERS is 4.
-    #endif
-
     #ifdef TEMP_SENSOR_1_AS_REDUNDANT
       #error EXTRUDERS must be 1 with TEMP_SENSOR_1_AS_REDUNDANT.
     #endif
