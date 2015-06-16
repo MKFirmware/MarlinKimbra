@@ -89,12 +89,8 @@
 *  M302 - Allow cold extrudes
 *  M303 - PID relay autotune S[temperature] sets the target temperature. (default target temperature = 150C)
 *  M304 - Set bed PID parameters P I and D
-* M331 - Save current position coordinates (all axes, for active extruder).
-*        S<SLOT> - specifies memory slot # (0-based) to save into (default 0).
-* M332 - Apply/restore saved coordinates to the active extruder.
-*        X Y Z E - Value to add at stored coordinates.
-*        F<speed> - Set Feedrate.
-*        S<SLOT> - specifies memory slot # (0-based) to restore from (default 0).
+*  M331 - Save current position coordinates (all axes, for active extruder). S<SLOT> - specifies memory slot # (0-based) to save into (default 0).
+*  M332 - Apply/restore saved coordinates to the active extruder. X Y Z E - Value to add at stored coordinates. F<speed> - Set Feedrate. S<SLOT> - specifies memory slot # (0-based) to restore from (default 0).
 *  M350 - Set microstepping mode.
 *  M351 - Toggle MS1 MS2 pins directly.
 *  M400 - Finish all moves
