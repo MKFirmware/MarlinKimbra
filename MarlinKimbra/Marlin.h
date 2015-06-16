@@ -262,7 +262,6 @@ extern float home_offset[3];
 extern float min_pos[3];
 extern float max_pos[3];
 extern bool axis_known_position[3];
-extern float lastpos[4];
 extern float zprobe_zoffset;
 
 // Lifetime stats

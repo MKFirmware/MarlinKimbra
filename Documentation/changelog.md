@@ -6,6 +6,16 @@
 * Add Acceleration retraction for extruder.
 * Add EJerk for extruder
 * Remove limit for virtual extruder to 4. Now width MKR4 or NPr2 is possible have infinite extruder...
+* Add M92 T* E (Set step per unit for any extruder)
+* Add M203 T* E (Set max feedrate for any extruder)
+* Add M204 T* R (Set acc retraction for any extruder)
+* Add M205 T* E (Set E Jerk for any extruder)
+* Add M331 Save current position coordinates (all axes, for active extruder).
+	S<SLOT> - specifies memory slot # (0-based) to save into (default 0).
+* Add M332 Apply/restore saved coordinates to the active extruder.
+	X Y Z E - Value to add at stored coordinates.
+	F<speed> - Set Feedrate.
+	S<SLOT> - specifies memory slot # (0-based) to save into (default 0).
 
 ### Version 4.1.2
 * Serial message function standardized for a better code style

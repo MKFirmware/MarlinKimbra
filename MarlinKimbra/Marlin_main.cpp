@@ -92,8 +92,6 @@
  * G30 - Single Z Probe, probes bed at current XY location. - Bed Probe and Delta geometry Autocalibration
  * G31 - Dock sled (Z_PROBE_SLED only)
  * G32 - Undock sled (Z_PROBE_SLED only)
- * G60 - Store in memory actual position
- * G61 - Move X Y Z to position in memory
  * G90 - Use Absolute Coordinates
  * G91 - Use Relative Coordinates
  * G92 - Set current position to coordinates given
@@ -181,6 +179,12 @@
  * M302 - Allow cold extrudes, or set the minimum extrude S<temperature>.
  * M303 - PID relay autotune S<temperature> sets the target temperature. (default target temperature = 150C)
  * M304 - Set bed PID parameters P I and D
+ * M331 - Save current position coordinates (all axes, for active extruder).
+ *        S<SLOT> - specifies memory slot # (0-based) to save into (default 0).
+ * M332 - Apply/restore saved coordinates to the active extruder.
+ *        X Y Z E - Value to add at stored coordinates.
+ *        F<speed> - Set Feedrate.
+ *        S<SLOT> - specifies memory slot # (0-based) to restore from (default 0).
  * M350 - Set microstepping mode.
  * M351 - Toggle MS1 MS2 pins directly.
  * M380 - Activate solenoid on active extruder
@@ -235,8 +239,10 @@ uint8_t debugLevel = DEBUG_INFO|DEBUG_ERRORS;
 static float feedrate = 1500.0, saved_feedrate;
 float current_position[NUM_AXIS] = { 0.0 };
 float destination[NUM_AXIS] = { 0.0 };
-float lastpos[NUM_AXIS] = { 0.0 };
 bool axis_known_position[3] = { false };
+
+bool pos_saved = false;
+float stored_position[NUM_POSITON_SLOTS][NUM_AXIS];
 
 static long gcode_N, gcode_LastN, Stopped_gcode_LastN = 0;
 
@@ -562,7 +568,7 @@ bool enqueuecommand(const char *cmd) {
     SET_OUTPUT(EXP_VOLTAGE_LEVEL_PIN);
     WRITE(EXP_VOLTAGE_LEVEL_PIN,UI_VOLTAGE_LEVEL);
     ExternalDac::begin(); //initialize ExternalDac
-    lcd_buzz(10,10);
+    buzz(10,10);
   }
 #endif
 
@@ -3639,38 +3645,6 @@ inline void gcode_G28() {
   }
 #endif // DELTA && Z_PROBE_ENDSTOP
 
-// G60: Store in memory actual position
-inline void gcode_G60() {
-  memcpy(lastpos, current_position, sizeof(lastpos));
-  //ECHO_SMV(DB, " Lastpos X: ", lastpos[X_AXIS]);
-  //ECHO_MV(" Lastpos Y: ", lastpos[Y_AXIS]);
-  //ECHO_MV(" Lastpos Z: ", lastpos[Z_AXIS]);
-  //ECHO_EMV(" Lastpos E: ", lastpos[E_AXIS]);
-}
-
-// G61: move to X Y Z in memory
-inline void gcode_G61() {
-  for(int8_t i = 0; i < NUM_AXIS; i++) {
-    if(code_seen(axis_codes[i])) {
-      destination[i] = (float)code_value() + lastpos[i];
-    }
-    else {
-      destination[i] = current_position[i];
-    }
-  }
-  //ECHO_SMV(DB, " Move to X: ", destination[X_AXIS]);
-  //ECHO_MV(" Move to Y: ", destination[Y_AXIS]);
-  //ECHO_MV(" Move to Z: ", destination[Z_AXIS]);
-  //ECHO_EMV(" Move to E: ", destination[E_AXIS]);
-
-  if(code_seen('F')) {
-    float next_feedrate = code_value();
-    if(next_feedrate > 0.0) feedrate = next_feedrate;
-  }
-  //finish moves
-  prepare_move();
-}
-
 /**
  * G92: Set current position to given X Y Z E
  */
@@ -5091,7 +5065,7 @@ inline void gcode_M226() {
   }
 #endif // NUM_SERVOS > 0
 
-#if HAS_LCD_BUZZ
+#if HAS_BUZZER
 
   /**
    * M300: Play beep sound S<frequency Hz> P<duration ms>
@@ -5100,10 +5074,10 @@ inline void gcode_M226() {
     uint16_t beepS = code_seen('S') ? code_value_short() : 100;
     uint32_t beepP = code_seen('P') ? code_value_long() : 1000;
     if (beepP > 5000) beepP = 5000; // limit to 5 seconds
-    lcd_buzz(beepP, beepS);
+    buzz(beepP, beepS);
   }
 
-#endif // HAS_LCD_BUZZ
+#endif // HAS_BUZZER
 
 
 #ifdef PIDTEMP
@@ -5174,6 +5148,73 @@ inline void gcode_M226() {
     ECHO_EMV(" d:", unscalePID_d(bedKd));
   }
 #endif // PIDTEMPBED
+
+/**
+ * M331:  save current position
+ *        S<slot> specifies memory slot # (0-based) to save into (default 0)
+ */
+inline void gcode_M331() {
+  int slot = 0;
+  if (code_seen('S')) slot = code_value();
+
+  if (slot < 0 || slot >= NUM_POSITON_SLOTS) {
+    ECHO_LMV(ER, MSG_INVALID_POS_SLOT, (int)NUM_POSITON_SLOTS);
+    return;
+  } 
+  memcpy(stored_position[slot], current_position, sizeof(*stored_position));
+  pos_saved = true;
+
+  ECHO_SM(DB, MSG_SAVED_POS);
+  ECHO_MV(" S", slot);
+  ECHO_MV("<-X:", stored_position[slot][X_AXIS]);
+  ECHO_MV(" Y:", stored_position[slot][Y_AXIS]);
+  ECHO_MV(" Z:", stored_position[slot][Z_AXIS]);
+  ECHO_EMV(" E:", stored_position[slot][E_AXIS]);
+}
+
+/**
+ * M332:  Apply/restore saved coordinates to the active extruder.
+ *        X Y Z E - Value to add at stored coordinates.
+ *        F<speed> - Set Feedrate.
+ *        S<slot> specifies memory slot # (0-based) to save into (default 0).
+ */
+inline void gcode_M332() {
+  if (!pos_saved) return;
+
+  bool make_move = false;
+  int slot = 0;
+  if (code_seen('S')) slot = code_value();
+
+  if (slot < 0 || slot >= NUM_POSITON_SLOTS) {
+    ECHO_LMV(ER, MSG_INVALID_POS_SLOT, (int)NUM_POSITON_SLOTS);
+    return;
+  }
+
+  ECHO_SM(DB, MSG_RESTORING_POS);
+  ECHO_MV(" S", slot);
+  ECHO_M("->");
+
+  if (code_seen('F')) {
+    float next_feedrate = code_value();
+    if (next_feedrate > 0.0) feedrate = next_feedrate;
+  }
+
+  for(int8_t i = 0; i < NUM_AXIS; i++) {
+    if(code_seen(axis_codes[i])) {
+      destination[i] = (float)code_value() + stored_position[slot][i];
+    }
+    else {
+      destination[i] = current_position[i];
+    }
+    ECHO_MV(" ", axis_codes[i]);
+    ECHO_MV(":", destination[i]);
+  }
+  ECHO_E;
+
+  //finish moves
+  prepare_move();
+  st_synchronize();
+}
 
 #if HAS_MICROSTEPS
   // M350 Set microstepping mode. Warning: Steps per unit remains unchanged. S code sets stepping mode for all drivers.
@@ -5450,7 +5491,7 @@ inline void gcode_M428() {
       else {
         ECHO_LM(ER, MSG_ERR_M428_TOO_FAR);
         LCD_ALERTMESSAGEPGM("Err: Too far!");
-        #if HAS_LCD_BUZZ
+        #if HAS_BUZZER
           enqueuecommands_P(PSTR("M300 S40 P200"));
         #endif
         err = true;
@@ -5469,7 +5510,7 @@ inline void gcode_M428() {
     #endif
     ECHO_LM(DB, "Offset applied.");
     LCD_ALERTMESSAGEPGM("Offset applied.");
-    #if HAS_LCD_BUZZ
+    #if HAS_BUZZER
       enqueuecommands_P(PSTR("M300 S659 P200\nM300 S698 P200"));
     #endif
   }
@@ -5528,7 +5569,7 @@ inline void gcode_M503() {
    *
    */
   inline void gcode_M600() {
-    float target[NUM_AXIS], fr60 = feedrate / 60;
+    float lastpos[NUM_AXIS], target[NUM_AXIS], fr60 = feedrate / 60;
     filament_changing = true;
     for (int i = 0; i < NUM_AXIS; i++)
       target[i] = lastpos[i] = current_position[i];
@@ -5605,7 +5646,7 @@ inline void gcode_M503() {
         LCD_ALERTMESSAGEPGM("Zzzz Zzzz Zzzz");
       }
       if (beep) {
-        for(int8_t i = 0; i < 3; i++) lcd_buzz(100, 1000);
+        for(int8_t i = 0; i < 3; i++) buzz(100, 1000);
         last_set = millis();
         beep = false;
         ++cnt;
@@ -6215,9 +6256,9 @@ void process_next_command() {
       #endif // DELTA && Z_PROBE_ENDSTOP
 
       case 60: // G60 Store in memory actual position
-        gcode_G60(); break;
+        gcode_M331(); break;
       case 61: // G61 move to X Y Z in memory
-        gcode_G61(); break;
+        gcode_M332(); break;
       case 90: // G90
         relative_mode = false; break;
       case 91: // G91
@@ -6436,10 +6477,10 @@ void process_next_command() {
           gcode_M280(); break;
       #endif // NUM_SERVOS > 0
 
-      #if HAS_LCD_BUZZ
+      #if HAS_BUZZER
         case 300: // M300 - Play beep tone
           gcode_M300(); break;
-      #endif // HAS_LCD_BUZZ
+      #endif // HAS_BUZZER
 
       #ifdef PIDTEMP
         case 301: // M301
@@ -6461,13 +6502,16 @@ void process_next_command() {
           gcode_M304(); break;
       #endif // PIDTEMPBED
 
+      case 331: // M331 Saved Coordinated
+        gcode_M331(); break;
+      case 332: // M332 Restored Coordinates
+        gcode_M332(); break;
+
       #if HAS_MICROSTEPS
         case 350: // M350 Set microstepping mode. Warning: Steps per unit remains unchanged. S code sets stepping mode for all drivers.
-          gcode_M350();
-          break;
+          gcode_M350(); break;
         case 351: // M351 Toggle MS1 MS2 pins directly, S# determines MS1 or MS2, X# sets the pin high/low.
-          gcode_M351();
-          break;
+          gcode_M351(); break;
       #endif // HAS_MICROSTEPS
 
       #ifdef SCARA

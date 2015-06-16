@@ -546,31 +546,46 @@ static void lcd_implementation_status_screen() {
 
       #if HOTENDS > 1 && TEMP_SENSOR_BED != 0
 
-        // If we both have a 2nd extruder and a heated bed,
+        // If we both have a 2nd hotend and a heated bed,
         // show the heated bed temp on the left,
-        // since the first line is filled with extruder temps
+        // since the first line is filled with hotend temps
         LCD_TEMP(degBed(), degTargetBed(), LCD_STR_BEDTEMP[0]);
 
       #else
 
+        lcd.print('X');
+        if (axis_known_position[X_AXIS])
+          #ifdef DELTA
+            lcd.print(ftostr30(current_position[X_AXIS]));
+          #else
+            lcd.print(ftostr3(current_position[X_AXIS]));
+          #endif
+        else
+          lcd_printPGM(PSTR("---"));
+
         #ifdef DELTA
-          lcd.print('X');
-          lcd.print(ftostr30(current_position[X_AXIS]));
           lcd_printPGM(PSTR(" Y"));
-          lcd.print(ftostr30(current_position[Y_AXIS]));
+          if (axis_known_position[Y_AXIS])
+            lcd.print(ftostr30(current_position[Y_AXIS]));
+          else
         #else
-          lcd.print('X');
-          lcd.print(ftostr3(current_position[X_AXIS]));
           lcd_printPGM(PSTR("  Y"));
-          lcd.print(ftostr3(current_position[Y_AXIS]));
+          if (axis_known_position[Y_AXIS])
+            lcd.print(ftostr3(current_position[Y_AXIS]));
+          else
         #endif // DELTA
+          lcd_printPGM(PSTR("---"));
+
       #endif // HOTENDS > 1 || TEMP_SENSOR_BED != 0
 
     #endif // LCD_WIDTH >= 20
 
     lcd.setCursor(LCD_WIDTH - 8, 1);
     lcd.print('Z');
-    lcd.print(ftostr32sp(current_position[Z_AXIS] + 0.00001));
+    if (axis_known_position[Z_AXIS])
+      lcd.print(ftostr32sp(current_position[Z_AXIS] + 0.00001));
+    else
+      lcd_printPGM(PSTR("---.--"));
 
   #endif // LCD_HEIGHT > 2
 

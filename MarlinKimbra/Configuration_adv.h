@@ -381,6 +381,10 @@
 #define MM_PER_ARC_SEGMENT 1
 #define N_ARC_CORRECTION 25
 
+// Defines the number of memory slots for saving/restoring position (M331/M332)
+// The values should not be less than 1
+#define NUM_POSITON_SLOTS 2
+
 const unsigned int dropsegments = 5; // everything with less than this number of steps will be ignored as move and joined with the next movement
 
 // Control heater 0 and heater 1 in parallel.
