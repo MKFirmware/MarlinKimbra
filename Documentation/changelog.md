@@ -10,12 +10,9 @@
 * Add M203 T* E (Set max feedrate for any extruder)
 * Add M204 T* R (Set acc retraction for any extruder)
 * Add M205 T* E (Set E Jerk for any extruder)
-* Add M331 Save current position coordinates (all axes, for active extruder).
-	S<SLOT> - specifies memory slot # (0-based) to save into (default 0).
-* Add M332 Apply/restore saved coordinates to the active extruder.
-	X Y Z E - Value to add at stored coordinates.
-	F<speed> - Set Feedrate.
-	S<SLOT> - specifies memory slot # (0-based) to save into (default 0).
+* Add Slot for G60 & G61
+* G60 Save current position coordinates (all axes, for active extruder).	S<SLOT> - specifies memory slot # (0-based) to save into (default 0).
+* G61 Apply/restore saved coordinates to the active extruder. X Y Z E - Value to add at stored coordinates. F<speed> - Set Feedrate. S<SLOT> - specifies memory slot # (0-based) to save into (default 0).
 
 ### Version 4.1.2
 * Serial message function standardized for a better code style

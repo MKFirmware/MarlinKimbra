@@ -92,6 +92,12 @@
  * G30 - Single Z Probe, probes bed at current XY location. - Bed Probe and Delta geometry Autocalibration
  * G31 - Dock sled (Z_PROBE_SLED only)
  * G32 - Undock sled (Z_PROBE_SLED only)
+ * G60 - Save current position coordinates (all axes, for active extruder).
+ *        S<SLOT> - specifies memory slot # (0-based) to save into (default 0).
+ * G61 - Apply/restore saved coordinates to the active extruder.
+ *        X Y Z E - Value to add at stored coordinates.
+ *        F<speed> - Set Feedrate.
+ *        S<SLOT> - specifies memory slot # (0-based) to restore from (default 0).
  * G90 - Use Absolute Coordinates
  * G91 - Use Relative Coordinates
  * G92 - Set current position to coordinates given
@@ -179,12 +185,6 @@
  * M302 - Allow cold extrudes, or set the minimum extrude S<temperature>.
  * M303 - PID relay autotune S<temperature> sets the target temperature. (default target temperature = 150C)
  * M304 - Set bed PID parameters P I and D
- * M331 - Save current position coordinates (all axes, for active extruder).
- *        S<SLOT> - specifies memory slot # (0-based) to save into (default 0).
- * M332 - Apply/restore saved coordinates to the active extruder.
- *        X Y Z E - Value to add at stored coordinates.
- *        F<speed> - Set Feedrate.
- *        S<SLOT> - specifies memory slot # (0-based) to restore from (default 0).
  * M350 - Set microstepping mode.
  * M351 - Toggle MS1 MS2 pins directly.
  * M380 - Activate solenoid on active extruder
@@ -3646,6 +3646,73 @@ inline void gcode_G28() {
 #endif // DELTA && Z_PROBE_ENDSTOP
 
 /**
+ * G60:  save current position
+ *        S<slot> specifies memory slot # (0-based) to save into (default 0)
+ */
+inline void gcode_G60() {
+  int slot = 0;
+  if (code_seen('S')) slot = code_value();
+
+  if (slot < 0 || slot >= NUM_POSITON_SLOTS) {
+    ECHO_LMV(ER, MSG_INVALID_POS_SLOT, (int)NUM_POSITON_SLOTS);
+    return;
+  } 
+  memcpy(stored_position[slot], current_position, sizeof(*stored_position));
+  pos_saved = true;
+
+  ECHO_SM(DB, MSG_SAVED_POS);
+  ECHO_MV(" S", slot);
+  ECHO_MV("<-X:", stored_position[slot][X_AXIS]);
+  ECHO_MV(" Y:", stored_position[slot][Y_AXIS]);
+  ECHO_MV(" Z:", stored_position[slot][Z_AXIS]);
+  ECHO_EMV(" E:", stored_position[slot][E_AXIS]);
+}
+
+/**
+ * G61:  Apply/restore saved coordinates to the active extruder.
+ *        X Y Z E - Value to add at stored coordinates.
+ *        F<speed> - Set Feedrate.
+ *        S<slot> specifies memory slot # (0-based) to save into (default 0).
+ */
+inline void gcode_G61() {
+  if (!pos_saved) return;
+
+  bool make_move = false;
+  int slot = 0;
+  if (code_seen('S')) slot = code_value();
+
+  if (slot < 0 || slot >= NUM_POSITON_SLOTS) {
+    ECHO_LMV(ER, MSG_INVALID_POS_SLOT, (int)NUM_POSITON_SLOTS);
+    return;
+  }
+
+  ECHO_SM(DB, MSG_RESTORING_POS);
+  ECHO_MV(" S", slot);
+  ECHO_M("->");
+
+  if (code_seen('F')) {
+    float next_feedrate = code_value();
+    if (next_feedrate > 0.0) feedrate = next_feedrate;
+  }
+
+  for(int8_t i = 0; i < NUM_AXIS; i++) {
+    if(code_seen(axis_codes[i])) {
+      destination[i] = (float)code_value() + stored_position[slot][i];
+    }
+    else {
+      destination[i] = current_position[i];
+    }
+    ECHO_MV(" ", axis_codes[i]);
+    ECHO_MV(":", destination[i]);
+  }
+  ECHO_E;
+
+  //finish moves
+  prepare_move();
+  st_synchronize();
+}
+
+/**
  * G92: Set current position to given X Y Z E
  */
 inline void gcode_G92() {
@@ -5149,73 +5216,6 @@ inline void gcode_M226() {
   }
 #endif // PIDTEMPBED
 
-/**
- * M331:  save current position
- *        S<slot> specifies memory slot # (0-based) to save into (default 0)
- */
-inline void gcode_M331() {
-  int slot = 0;
-  if (code_seen('S')) slot = code_value();
-
-  if (slot < 0 || slot >= NUM_POSITON_SLOTS) {
-    ECHO_LMV(ER, MSG_INVALID_POS_SLOT, (int)NUM_POSITON_SLOTS);
-    return;
-  } 
-  memcpy(stored_position[slot], current_position, sizeof(*stored_position));
-  pos_saved = true;
-
-  ECHO_SM(DB, MSG_SAVED_POS);
-  ECHO_MV(" S", slot);
-  ECHO_MV("<-X:", stored_position[slot][X_AXIS]);
-  ECHO_MV(" Y:", stored_position[slot][Y_AXIS]);
-  ECHO_MV(" Z:", stored_position[slot][Z_AXIS]);
-  ECHO_EMV(" E:", stored_position[slot][E_AXIS]);
-}
-
-/**
- * M332:  Apply/restore saved coordinates to the active extruder.
- *        X Y Z E - Value to add at stored coordinates.
- *        F<speed> - Set Feedrate.
- *        S<slot> specifies memory slot # (0-based) to save into (default 0).
- */
-inline void gcode_M332() {
-  if (!pos_saved) return;
-
-  bool make_move = false;
-  int slot = 0;
-  if (code_seen('S')) slot = code_value();
-
-  if (slot < 0 || slot >= NUM_POSITON_SLOTS) {
-    ECHO_LMV(ER, MSG_INVALID_POS_SLOT, (int)NUM_POSITON_SLOTS);
-    return;
-  }
-
-  ECHO_SM(DB, MSG_RESTORING_POS);
-  ECHO_MV(" S", slot);
-  ECHO_M("->");
-
-  if (code_seen('F')) {
-    float next_feedrate = code_value();
-    if (next_feedrate > 0.0) feedrate = next_feedrate;
-  }
-
-  for(int8_t i = 0; i < NUM_AXIS; i++) {
-    if(code_seen(axis_codes[i])) {
-      destination[i] = (float)code_value() + stored_position[slot][i];
-    }
-    else {
-      destination[i] = current_position[i];
-    }
-    ECHO_MV(" ", axis_codes[i]);
-    ECHO_MV(":", destination[i]);
-  }
-  ECHO_E;
-
-  //finish moves
-  prepare_move();
-  st_synchronize();
-}
-
 #if HAS_MICROSTEPS
   // M350 Set microstepping mode. Warning: Steps per unit remains unchanged. S code sets stepping mode for all drivers.
   inline void gcode_M350() {
@@ -6255,10 +6255,10 @@ void process_next_command() {
           gcode_G30(); break;
       #endif // DELTA && Z_PROBE_ENDSTOP
 
-      case 60: // G60 Store in memory actual position
-        gcode_M331(); break;
-      case 61: // G61 move to X Y Z in memory
-        gcode_M332(); break;
+      case 60: // G60 Saved Coordinates
+        gcode_G60(); break;
+      case 61: // G61 Restore Coordinates
+        gcode_G61(); break;
       case 90: // G90
         relative_mode = false; break;
       case 91: // G91
@@ -6501,11 +6501,6 @@ void process_next_command() {
         case 304: // M304
           gcode_M304(); break;
       #endif // PIDTEMPBED
-
-      case 331: // M331 Saved Coordinated
-        gcode_M331(); break;
-      case 332: // M332 Restored Coordinates
-        gcode_M332(); break;
 
       #if HAS_MICROSTEPS
         case 350: // M350 Set microstepping mode. Warning: Steps per unit remains unchanged. S code sets stepping mode for all drivers.
