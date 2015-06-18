@@ -226,18 +226,18 @@
 // Comment the following line to disable PID and enable bang-bang.
 #define PIDTEMP
 #ifdef PIDTEMP
-  //#define PID_DEBUG        // Sends debug data to the serial port.
-  //#define PID_OPENLOOP 1   // Puts PID in open loop. M104/M140 sets the output power from 0 to PID_MAX
-  //#define SLOW_PWM_HEATERS // PWM with very low frequency (roughly 0.125Hz=8s) and minimum state time of approximately 1s useful for heaters driven by a relay
-  // If the temperature difference between the target temperature and the actual temperature
-  // is more then PID_FUNCTIONAL_RANGE then the PID will be shut off and the heater will be set to min/max.
-  #define PID_FUNCTIONAL_RANGE 10         // degC
-  #define PID_INTEGRAL_DRIVE_MAX PID_MAX  // Limit for the integral term
+//#define PID_DEBUG        // Sends debug data to the serial port.
+//#define PID_OPENLOOP 1   // Puts PID in open loop. M104/M140 sets the output power from 0 to PID_MAX
+//#define SLOW_PWM_HEATERS // PWM with very low frequency (roughly 0.125Hz=8s) and minimum state time of approximately 1s useful for heaters driven by a relay
+// If the temperature difference between the target temperature and the actual temperature
+// is more then PID_FUNCTIONAL_RANGE then the PID will be shut off and the heater will be set to min/max.
+#define PID_FUNCTIONAL_RANGE 10         // degC
+#define PID_INTEGRAL_DRIVE_MAX PID_MAX  // Limit for the integral term
 
-  //             HotEnd{HE0,HE1,HE2,HE3}
-  #define DEFAULT_Kp {40, 40, 40, 40}     // Kp for E0, E1, E2, E3
-  #define DEFAULT_Ki {07, 07, 07, 07}     // Ki for E0, E1, E2, E3
-  #define DEFAULT_Kd {60, 60, 60, 60}     // Kd for E0, E1, E2, E3
+//           HotEnd{HE0,HE1,HE2,HE3}
+#define DEFAULT_Kp {40, 40, 40, 40}     // Kp for E0, E1, E2, E3
+#define DEFAULT_Ki {07, 07, 07, 07}     // Ki for E0, E1, E2, E3
+#define DEFAULT_Kd {60, 60, 60, 60}     // Kd for E0, E1, E2, E3
 #endif // PIDTEMP
 
 //===========================================================================
@@ -265,12 +265,12 @@
 //#define PID_BED_DEBUG // Sends debug data to the serial port.
 
 #ifdef PIDTEMPBED
-  #define PID_BED_INTEGRAL_DRIVE_MAX MAX_BED_POWER // limit for the integral term
+#define PID_BED_INTEGRAL_DRIVE_MAX MAX_BED_POWER // limit for the integral term
 //120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
 //from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
-  #define  DEFAULT_bedKp 10.00
-  #define  DEFAULT_bedKi .023
-  #define  DEFAULT_bedKd 305.4
+#define  DEFAULT_bedKp 10.00
+#define  DEFAULT_bedKi .023
+#define  DEFAULT_bedKd 305.4
 
 //120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
 //from pidautotune
@@ -620,9 +620,9 @@
                                  // It is assumed that when logic high = filament available
                                  //                    when logic  low = filament run out
 #ifdef FILAMENT_RUNOUT_SENSOR
-  const bool FILRUNOUT_PIN_INVERTING = true;  // Should be uncommented and true or false should assigned
-  #define ENDSTOPPULLUP_FIL_RUNOUT            // Uncomment to use internal pullup for filament runout pins if the sensor is defined.
-  #define FILAMENT_RUNOUT_SCRIPT "M600"       // Script execute when filament run out
+const bool FILRUNOUT_PIN_INVERTING = true;  // Should be uncommented and true or false should assigned
+#define ENDSTOPPULLUP_FIL_RUNOUT            // Uncomment to use internal pullup for filament runout pins if the sensor is defined.
+#define FILAMENT_RUNOUT_SCRIPT "M600"       // Script execute when filament run out
 #endif
 
 //===========================================================================

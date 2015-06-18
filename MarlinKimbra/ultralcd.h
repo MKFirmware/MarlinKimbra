@@ -2,6 +2,7 @@
 #define ULTRALCD_H
 
 #include "Marlin.h"
+#include "buzzer.h"
 
 #ifdef ULTRA_LCD
   int lcd_strlen(char *s);

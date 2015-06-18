@@ -47,6 +47,7 @@
 #include "language.h"
 #include "pins_arduino.h"
 #include "math.h"
+#include "buzzer.h"
 
 #ifdef BLINKM
   #include "blinkm.h"
@@ -1840,7 +1841,7 @@ static void clean_up_after_endstop_move() {
 
   float probe_bed(float x, float y) {
     //Probe bed at specified location and return z height of bed
-    float probe_bed_z, probe_z, probe_h, probe_l;
+    float probe_bed_z, probe_z;
     int probe_count;
     //  feedrate = homing_feedrate[Z_AXIS];
     destination[X_AXIS] = x - z_probe_offset[X_AXIS];
@@ -1855,14 +1856,9 @@ static void clean_up_after_endstop_move() {
 
     probe_count = 0;
     probe_z = -100;
-    probe_h = -100;
-    probe_l = 100;
-    do
-    {
+    do {
       probe_bed_z = probe_z;
       probe_z = z_probe() + z_probe_offset[Z_AXIS];
-      if (probe_z > probe_h) probe_h = probe_z;
-      if (probe_z < probe_l) probe_l = probe_z;
       probe_count ++;
     } while ((probe_z != probe_bed_z) and (probe_count < 21));
 
@@ -6250,7 +6246,7 @@ void process_next_command() {
 
       #if defined(DELTA) && defined(Z_PROBE_ENDSTOP)
         case 29: // G29 Detailed Z-Probe, probes the bed at more points.
-          gcode_G29(); break;
+          gcode_G29(); gcode_M114(); break;
         case 30:  // G30 Delta AutoCalibration
           gcode_G30(); break;
       #endif // DELTA && Z_PROBE_ENDSTOP

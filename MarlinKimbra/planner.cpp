@@ -1059,7 +1059,7 @@ float junction_deviation = 0.1;
     st_set_position(nx, ny, nz, ne);
     previous_nominal_speed = 0.0; // Resets planner junction speeds. Assumes start from rest.
 
-    for (int i=0; i < NUM_AXIS; i++) previous_speed[i] = 0.0;
+    for (int i = 0; i < NUM_AXIS; i++) previous_speed[i] = 0.0;
   }
 
 void plan_set_e_position(const float &e) {

@@ -384,7 +384,7 @@
       #define DOUBLE_STEP_FREQUENCY MAX_STEP_FREQUENCY
     #else
       #define MAX_STEP_FREQUENCY 500000    // Max step frequency for the Due is approx. 330kHz
-      #define DOUBLE_STEP_FREQUENCY 120000  //96kHz is close to maximum for an Arduino Due
+      #define DOUBLE_STEP_FREQUENCY 100000  //96kHz is close to maximum for an Arduino Due
     #endif
   #else
     #if defined(CONFIG_STEPPERS_TOSHIBA) || !defined(ENABLE_HIGH_SPEED_STEPPING)
