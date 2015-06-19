@@ -2474,7 +2474,7 @@
 #endif
 
 #if NUM_SERVOS > 0
-  #define SERVO0_PIN          -1
+  #define SERVO0_PIN        -1
 #endif
 
 #if NUM_SERVOS > 1

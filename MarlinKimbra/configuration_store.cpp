@@ -454,14 +454,14 @@ void Config_ResetDefault() {
       #if HOTENDS > 1
       max_i = sizeof(tmp9) / sizeof(*tmp9);
       if(i < max_i)
-        extruder_offset[X_AXIS][i] = tmp9[i];
+        hotend_offset[X_AXIS][i] = tmp9[i];
       else
-        extruder_offset[X_AXIS][i] = 0;
+        hotend_offset[X_AXIS][i] = 0;
       max_i = sizeof(tmp10) / sizeof(*tmp10);
       if(i < max_i)
-        extruder_offset[Y_AXIS][i] = tmp10[i];
+        hotend_offset[Y_AXIS][i] = tmp10[i];
       else
-        extruder_offset[Y_AXIS][i] = 0;
+        hotend_offset[Y_AXIS][i] = 0;
       #endif // HOTENDS > 1
     }
   }

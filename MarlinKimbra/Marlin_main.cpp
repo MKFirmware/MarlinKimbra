@@ -147,6 +147,7 @@
  * M109 - Sxxx Wait for extruder current temp to reach target temp. Waits only when heating
  *        Rxxx Wait for extruder current temp to reach target temp. Waits when heating and cooling
  *        IF AUTOTEMP is enabled, S<mintemp> B<maxtemp> F<factor>. Exit autotemp by any M109 without F
+ * M110 - Set current line number.
  * M111 - Set debug flags with S<mask>. See flag bits defined in Marlin.h.
  * M112 - Emergency stop
  * M114 - Output current position to serial port, (V)erbose for user
@@ -876,9 +877,16 @@ void get_command() {
       char *apos = strchr(command, '*');
       if (npos) {
         gcode_N = strtol(npos + 1, NULL, 10);
-        if (gcode_N != gcode_LastN + 1 && strstr_P(command, PSTR("M110")) == NULL) {
-          gcode_line_error(PSTR(MSG_ERR_LINE_NO));
-          return;
+        if (gcode_N != gcode_LastN + 1) {
+          if (strstr_P(command, PSTR("M110")) == NULL) {
+            gcode_line_error(PSTR(MSG_ERR_LINE_NO));
+            return;
+          }
+          else {
+            npos = strchr(npos, 'N');
+            gcode_N = strtol(npos + 1, NULL, 10);
+            gcode_LastN = gcode_N;
+          }
         }
 
         if (apos) {
@@ -5722,10 +5730,10 @@ inline void gcode_M503() {
         if (code_seen('X')) duplicate_hotend_x_offset = max(code_value(), X2_MIN_POS - x_home_pos(0));
         if (code_seen('R')) duplicate_extruder_temp_offset = code_value();
         ECHO_SM(DB, MSG_HOTEND_OFFSET);
-        ECHO_MV(" ", extruder_offset[X_AXIS][0]);
-        ECHO_MV(",", extruder_offset[Y_AXIS][0]);
+        ECHO_MV(" ", hotend_offset[X_AXIS][0]);
+        ECHO_MV(",", hotend_offset[Y_AXIS][0]);
         ECHO_MV(" ", duplicate_hotend_x_offset);
-        ECHO_EMV(",", extruder_offset[Y_AXIS][1]);
+        ECHO_EMV(",", hotend_offset[Y_AXIS][1]);
         break;
       case DXC_FULL_CONTROL_MODE:
       case DXC_AUTO_PARK_MODE:
