@@ -977,7 +977,7 @@ static void lcd_control_menu() {
       void copy_and_scalePID_d_H2() { copy_and_scalePID_d(2); }
       #if HOTENDS > 3
         void copy_and_scalePID_i_H3() { copy_and_scalePID_i(3); }
-        void copy_and_scalePID_d_H4() { copy_and_scalePID_d(3); }
+        void copy_and_scalePID_d_H3() { copy_and_scalePID_d(3); }
       #endif //HOTENDS > 3
     #endif //HOTENDS > 2
   #endif //HOTENDS > 1

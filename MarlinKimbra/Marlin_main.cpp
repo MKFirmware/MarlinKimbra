@@ -2909,7 +2909,7 @@ inline void gcode_G28() {
 
   // For auto bed leveling, clear the level matrix
   #ifdef ENABLE_AUTO_BED_LEVELING
-    if (!home_XY) plan_bed_level_matrix.set_to_identity();
+    plan_bed_level_matrix.set_to_identity();
   #elif defined(DELTA)
     reset_bed_level();
   #endif
@@ -5753,7 +5753,7 @@ inline void gcode_M503() {
   inline void gcode_M666() {
     if (code_seen('P')) {
       zprobe_zoffset = code_value();
-      ECHO_LM(DB, MSG_ZPROBE_ZOFFSET " " OK)
+      ECHO_LM(DB, MSG_ZPROBE_ZOFFSET " " OK);
     }
     if (code_seen('L')) {
       ECHO_LMV(DB, "P (Z-Probe Offset):", zprobe_zoffset);
