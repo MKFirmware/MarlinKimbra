@@ -325,11 +325,18 @@ FORCE_INLINE unsigned short calc_timer(unsigned short step_rate) {
       step_rate = (step_rate >> 1) & 0x7fff;
       step_loops = 2;
     }
-    else
+    else {
+      step_loops = 1;
+    }
+  #else
+    if (step_rate > 10000) { // If steprate > 10kHz >> step 2 times
+      step_rate = (step_rate >> 1) & 0x7fff;
+      step_loops = 2;
+    }
+    else {
+      step_loops = 1;
+    }
   #endif
-  {
-    step_loops = 1;
-  }
 
   if (step_rate < (F_CPU / 500000)) step_rate = (F_CPU / 500000);
   step_rate -= (F_CPU / 500000); // Correct for minimal speed
@@ -724,7 +731,7 @@ ISR(TIMER1_COMPA_vect) {
         step_rate = current_block->final_rate;
       }
       else {
-        step_rate = acc_step_rate - step_rate; // Decelerate from aceleration end point.
+        step_rate = acc_step_rate - step_rate; // Decelerate from acceleration end point.
       }
 
       // lower limit

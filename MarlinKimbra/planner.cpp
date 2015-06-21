@@ -72,6 +72,7 @@ float max_z_jerk;
 float max_e_jerk[EXTRUDERS];            // mm/s - initial speed for extruder retract moves
 float mintravelfeedrate;
 unsigned long axis_steps_per_sqr_second[3 + EXTRUDERS];
+uint8_t last_extruder;
 
 #ifdef ENABLE_AUTO_BED_LEVELING
   // Transform required to compensate for bed level
@@ -505,6 +506,17 @@ float junction_deviation = 0.1;
   target[Z_AXIS] = lround(z * axis_steps_per_unit[Z_AXIS]);     
   target[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + extruder]);
 
+  // If changing extruder have to recalculate current position based on 
+  // the steps-per-mm value for the new extruder.
+  #if EXTRUDERS > 1
+    if(last_extruder != extruder && axis_steps_per_unit[E_AXIS + extruder] != 
+                                    axis_steps_per_unit[E_AXIS + last_extruder]) {
+      float factor = float(axis_steps_per_unit[E_AXIS + extruder]) /
+                     float(axis_steps_per_unit[E_AXIS + last_extruder]);
+      position[E_AXIS] = lround(position[E_AXIS] * factor);
+    }
+  #endif
+
   float dx = target[X_AXIS] - position[X_AXIS],
         dy = target[Y_AXIS] - position[Y_AXIS],
         dz = target[Z_AXIS] - position[Z_AXIS],
@@ -892,7 +904,7 @@ float junction_deviation = 0.1;
                 xsteps = axis_steps_per_sqr_second[X_AXIS],
                 ysteps = axis_steps_per_sqr_second[Y_AXIS],
                 zsteps = axis_steps_per_sqr_second[Z_AXIS],
-                esteps = axis_steps_per_sqr_second[E_AXIS + active_extruder];
+                esteps = axis_steps_per_sqr_second[E_AXIS + extruder];
   if ((float)acc_st * bsx / block->step_event_count > xsteps) acc_st = xsteps;
   if ((float)acc_st * bsy / block->step_event_count > ysteps) acc_st = ysteps;
   if ((float)acc_st * bsz / block->step_event_count > zsteps) acc_st = zsteps;
@@ -991,8 +1003,10 @@ float junction_deviation = 0.1;
   block->nominal_length_flag = (block->nominal_speed <= v_allowable); 
   block->recalculate_flag = true; // Always calculate trapezoid for new block
 
+  calculate_trapezoid_for_block(block, block->entry_speed / block->nominal_speed, safe_speed / block->nominal_speed);
+
   // Update previous path unit_vector and nominal speed
-  for (int i = 0; i < NUM_AXIS; i++) previous_speed[i] = current_speed[i];
+  memcpy(previous_speed, current_speed, sizeof(previous_speed)); // previous_speed[] = current_speed[]
   previous_nominal_speed = block->nominal_speed;
 
   #ifdef ADVANCE
@@ -1013,13 +1027,11 @@ float junction_deviation = 0.1;
     */
   #endif // ADVANCE
 
-  calculate_trapezoid_for_block(block, block->entry_speed / block->nominal_speed, safe_speed / block->nominal_speed);
-
   // Move buffer head
   block_buffer_head = next_buffer_head;
 
   // Update position
-  for (int i = 0; i < NUM_AXIS; i++) position[i] = target[i];
+  memcpy(position, target, sizeof(target)); // position[] = target[]
 
   planner_recalculate();
 
@@ -1056,6 +1068,7 @@ float junction_deviation = 0.1;
           ny = position[Y_AXIS] = lround(y * axis_steps_per_unit[Y_AXIS]),
           nz = position[Z_AXIS] = lround(z * axis_steps_per_unit[Z_AXIS]),
           ne = position[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + active_extruder]);
+    last_extruder = active_extruder;
     st_set_position(nx, ny, nz, ne);
     previous_nominal_speed = 0.0; // Resets planner junction speeds. Assumes start from rest.
 
@@ -1064,6 +1077,7 @@ float junction_deviation = 0.1;
 
 void plan_set_e_position(const float &e) {
   position[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + active_extruder]);  
+  last_extruder = active_extruder;
   st_set_e_position(position[E_AXIS]);
 }
 
