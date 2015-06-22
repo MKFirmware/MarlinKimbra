@@ -1,6 +1,8 @@
+<img align="center" src="Documentation/Logo/MarlinKimbra%20Logo%20GitHub.png" />
+
 # MarlinKimbra 3D Printer Firmware
 
-## Version 4.1.3 dev <img align="right" src="Documentation/Logo/MarlinKimbra%20Logo%20GitHub.png" />
+## Version 4.1.3 dev
 
   * [Configuration & Compilation](/Documentation/Compilation.md)
   * Supported
