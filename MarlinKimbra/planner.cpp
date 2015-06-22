@@ -73,6 +73,7 @@ float max_z_jerk;
 float max_e_jerk;
 float mintravelfeedrate;
 unsigned long axis_steps_per_sqr_second[3 + EXTRUDERS];
+uint8_t last_extruder;
 
 #ifdef ENABLE_AUTO_BED_LEVELING
   // Transform required to compensate for bed level
@@ -502,7 +503,18 @@ float junction_deviation = 0.1;
   target[X_AXIS] = lround(x * axis_steps_per_unit[X_AXIS]);
   target[Y_AXIS] = lround(y * axis_steps_per_unit[Y_AXIS]);
   target[Z_AXIS] = lround(z * axis_steps_per_unit[Z_AXIS]);     
-  target[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + active_extruder]);
+  target[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + extruder]);
+
+  // If changing extruder have to recalculate current position based on 
+  // the steps-per-mm value for the new extruder.
+  #if EXTRUDERS > 1
+    if(last_extruder != extruder && axis_steps_per_unit[E_AXIS + extruder] != 
+                                    axis_steps_per_unit[E_AXIS + last_extruder]) {
+      float factor = float(axis_steps_per_unit[E_AXIS + extruder]) /
+                     float(axis_steps_per_unit[E_AXIS + last_extruder]);
+      position[E_AXIS] = lround(position[E_AXIS] * factor);
+    }
+  #endif
 
   float dx = target[X_AXIS] - position[X_AXIS],
         dy = target[Y_AXIS] - position[Y_AXIS],
@@ -1038,6 +1050,7 @@ float junction_deviation = 0.1;
           ny = position[Y_AXIS] = lround(y * axis_steps_per_unit[Y_AXIS]),
           nz = position[Z_AXIS] = lround(z * axis_steps_per_unit[Z_AXIS]),
           ne = position[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + active_extruder]);
+    last_extruder = active_extruder;
     st_set_position(nx, ny, nz, ne);
     previous_nominal_speed = 0.0; // Resets planner junction speeds. Assumes start from rest.
 
@@ -1045,7 +1058,8 @@ float junction_deviation = 0.1;
   }
 
 void plan_set_e_position(const float &e) {
-  position[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + active_extruder]);  
+  position[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + active_extruder]);
+  last_extruder = active_extruder;
   st_set_e_position(position[E_AXIS]);
 }
 
