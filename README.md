@@ -3,7 +3,6 @@
 
 ## Version 4.1.3 dev
 
-
   * [Configuration & Compilation](/Documentation/Compilation.md)
   * Supported
     * [Features](/Documentation/Features.md)
