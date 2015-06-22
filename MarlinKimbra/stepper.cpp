@@ -92,6 +92,7 @@ static volatile char endstop_hit_bits = 0; // use X_MIN, Y_MIN, Z_MIN and Z_PROB
 #endif
 
 static bool check_endstops = true;
+static bool stepper_start_x, stepper_start_y, stepper_start_z, stepper_start_e = false;
 
 volatile long count_position[NUM_AXIS] = { 0 };
 volatile signed char count_direction[NUM_AXIS] = { 1, 1, 1, 1 };
@@ -459,10 +460,15 @@ FORCE_INLINE void trapezoid_generator_reset() {
   _COUNTER(axis) += current_block->steps[_AXIS(AXIS)]; \
   if (_COUNTER(axis) > 0) { \
     _APPLY_STEP(AXIS)(!_INVERT_STEP_PIN(AXIS),0); \
+    stepper_start_## axis = true; \
     _COUNTER(axis) -= current_block->step_event_count; \
     count_position[_AXIS(AXIS)] += count_direction[_AXIS(AXIS)]; }
 
-#define STEP_END(axis, AXIS) _APPLY_STEP(AXIS)(_INVERT_STEP_PIN(AXIS),0)
+#define STEP_END(axis, AXIS) \
+  if (stepper_start_## axis) { \
+    _APPLY_STEP(AXIS)(_INVERT_STEP_PIN(AXIS),0); \
+    stepper_start_## axis = false; \
+  }
 
 // "The Stepper Driver Interrupt" - This timer interrupt is the workhorse.
 // It pops blocks from the block_buffer and executes them by pulsing the stepper pins appropriately.

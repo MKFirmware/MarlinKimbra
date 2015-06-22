@@ -1076,7 +1076,7 @@ float junction_deviation = 0.1;
   }
 
 void plan_set_e_position(const float &e) {
-  position[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + active_extruder]);  
+  position[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + active_extruder]);
   last_extruder = active_extruder;
   st_set_e_position(position[E_AXIS]);
 }
