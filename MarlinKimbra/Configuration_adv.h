@@ -235,8 +235,8 @@
 // Default stepper release if idle. Set to 0 to deactivate.
 #define DEFAULT_STEPPER_DEACTIVE_TIME 60
 
-// Uncomment it if you have High speed stepping driver
-#define ENABLE_HIGH_SPEED_STEPPING
+// Decomment it if you have low speed stepper driver
+//#define STEPPER_HIGH_LOW_DELAY 1u  // Delay in microseconds
 
 #define DEFAULT_MINIMUMFEEDRATE       0.0     // minimum feedrate
 #define DEFAULT_MINTRAVELFEEDRATE     0.0
