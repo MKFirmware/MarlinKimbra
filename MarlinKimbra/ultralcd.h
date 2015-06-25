@@ -20,7 +20,7 @@
     void dontExpireStatus();
   #endif
 
-  #if defined(DOGLCD) && LCD_CONTRAST >= 0
+  #ifdef DOGLCD
     extern int lcd_contrast;
     void lcd_setcontrast(uint8_t value);
   #endif

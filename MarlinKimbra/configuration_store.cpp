@@ -206,7 +206,7 @@ void Config_StoreSettings() {
     EEPROM_WRITE_VAR(i, bedKd);
   #endif
 
-  #if defined(DOGLCD) || LCD_CONTRAST < 0
+  #ifndef HAS_LCD_CONTRAST
     const int lcd_contrast = 32;
   #endif
   EEPROM_WRITE_VAR(i, lcd_contrast);
@@ -342,7 +342,7 @@ void Config_RetrieveSettings() {
       EEPROM_READ_VAR(i, bedKd);
     #endif
 
-    #if defined(DOGLCD) || LCD_CONTRAST < 0
+    #ifndef HAS_LCD_CONTRAST
       int lcd_contrast;
     #endif
 
@@ -513,7 +513,7 @@ void Config_ResetDefault() {
     gumPreheatFanSpeed = GUM_PREHEAT_FAN_SPEED;
   #endif
 
-  #if HAS_LCD_CONTRAST
+  #ifdef HAS_LCD_CONTRAST
     lcd_contrast = DEFAULT_LCD_CONTRAST;
   #endif //DOGLCD
 
