@@ -392,6 +392,7 @@
       #define DOUBLE_STEP_FREQUENCY MAX_STEP_FREQUENCY
     #else
       #define MAX_STEP_FREQUENCY 40000 // Max step frequency for Arduino mega
+      #define DOUBLE_STEP_FREQUENCY 10000
     #endif
   #endif
 

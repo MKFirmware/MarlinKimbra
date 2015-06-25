@@ -503,7 +503,7 @@ float junction_deviation = 0.1;
   long target[NUM_AXIS];
   target[X_AXIS] = lround(x * axis_steps_per_unit[X_AXIS]);
   target[Y_AXIS] = lround(y * axis_steps_per_unit[Y_AXIS]);
-  target[Z_AXIS] = lround(z * axis_steps_per_unit[Z_AXIS]);     
+  target[Z_AXIS] = lround(z * axis_steps_per_unit[Z_AXIS]);
   target[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + extruder]);
 
   // If changing extruder have to recalculate current position based on 
@@ -1000,10 +1000,8 @@ float junction_deviation = 0.1;
   // block nominal speed limits both the current and next maximum junction speeds. Hence, in both
   // the reverse and forward planners, the corresponding block junction speed will always be at the
   // the maximum junction speed and may always be ignored for any speed reduction checks.
-  block->nominal_length_flag = (block->nominal_speed <= v_allowable); 
+  block->nominal_length_flag = (block->nominal_speed <= v_allowable);
   block->recalculate_flag = true; // Always calculate trapezoid for new block
-
-  calculate_trapezoid_for_block(block, block->entry_speed / block->nominal_speed, safe_speed / block->nominal_speed);
 
   // Update previous path unit_vector and nominal speed
   memcpy(previous_speed, current_speed, sizeof(previous_speed)); // previous_speed[] = current_speed[]
@@ -1026,6 +1024,8 @@ float junction_deviation = 0.1;
     ECHO_EMV("advance rate :", block->advance_rate/256);
     */
   #endif // ADVANCE
+
+  calculate_trapezoid_for_block(block, block->entry_speed / block->nominal_speed, safe_speed / block->nominal_speed);
 
   // Move buffer head
   block_buffer_head = next_buffer_head;
