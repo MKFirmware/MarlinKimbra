@@ -4365,7 +4365,7 @@ inline void gcode_M85() {
 inline void gcode_M92() {
   if (setTargetedHotend(92)) return;
 
-  for(int8_t i = 0; i <= NUM_AXIS; i++) {
+  for(int8_t i = 0; i < NUM_AXIS; i++) {
     if (code_seen(axis_codes[i])) {
       if (i == E_AXIS)
         axis_steps_per_unit[i + target_extruder] = code_value();
