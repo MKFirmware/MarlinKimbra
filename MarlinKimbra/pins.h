@@ -2813,20 +2813,20 @@
 #define ORIG_X_STEP_PIN         54
 #define ORIG_X_DIR_PIN          55
 #define ORIG_X_ENABLE_PIN       38
-#define X_MIN_PIN           3
-#define X_MAX_PIN           2
+#define X_MIN_PIN               3
+#define X_MAX_PIN               2
 
 #define ORIG_Y_STEP_PIN         60
 #define ORIG_Y_DIR_PIN          61
 #define ORIG_Y_ENABLE_PIN       56
-#define Y_MIN_PIN          14
-#define Y_MAX_PIN          15
+#define Y_MIN_PIN               14
+#define Y_MAX_PIN               15
 
 #define ORIG_Z_STEP_PIN         46
 #define ORIG_Z_DIR_PIN          48
 #define ORIG_Z_ENABLE_PIN       62
-#define Z_MIN_PIN          18
-#define Z_MAX_PIN          19
+#define Z_MIN_PIN               18
+#define Z_MAX_PIN               19
 
 #define Y2_STEP_PIN             36
 #define Y2_DIR_PIN              34
@@ -2856,7 +2856,9 @@
 #define SDSS                    53
 #define LED_PIN                 13
 
-#define ORIG_FAN_PIN             9
+#define ORIG_FAN_PIN            6
+#define BEEPER                  33
+#define CONTROLLERFAN_PIN       4
 #define PS_ON_PIN               12
 
 #if defined(REPRAP_DISCOUNT_SMART_CONTROLLER) || defined(G3D_PANEL)
@@ -2875,32 +2877,29 @@
 #define TEMP_2_PIN         12   // ANALOG NUMBERING
 #define TEMP_3_PIN         11   // ANALOG NUMBERING
 
-#define TC1                      4   // ANALOG NUMBERING Thermo couple on Azteeg X3Pro
-#define TC2                      5   // ANALOG NUMBERING Thermo couple on Azteeg X3Pro
+#define TC1                4    // ANALOG NUMBERING Thermo couple on Azteeg X3Pro
+#define TC2                5    // ANALOG NUMBERING Thermo couple on Azteeg X3Pro
 
 #define HEATER_BED_PIN      8   // BED
 
 #define TEMP_BED_PIN       14   // ANALOG NUMBERING
 
-#if NUM_SERVOS > 0
-  #define SERVO0_PIN              11
-#endif
-
-#if NUM_SERVOS > 1
-  #define SERVO1_PIN               6
-#endif
-
-#if NUM_SERVOS > 2
-  #define SERVO2_PIN               5
-#endif
-
-#if NUM_SERVOS > 3
-  #define SERVO3_PIN               4
+#ifdef NUM_SERVOS
+   #define SERVO0_PIN       47
+   #if NUM_SERVOS > 1
+     #define SERVO1_PIN     -1
+     #if NUM_SERVOS > 2
+       #define SERVO2_PIN   -1
+       #if NUM_SERVOS > 3
+         #define SERVO3_PIN -1
+       #endif
+     #endif
+   #endif
 #endif
   
 #ifdef TEMP_STAT_LEDS
-  #define STAT_LED_RED       6
-  #define STAT_LED_BLUE     11
+  #define STAT_LED_RED      32
+  #define STAT_LED_BLUE     35
 #endif
 
 #ifdef ULTRA_LCD
@@ -2981,8 +2980,24 @@
 
 #endif //ULTRA_LCD
 
-// SPI for Max6675 Thermocouple
+#if defined(VIKI2) || defined(miniVIKI)
+  #define BEEPER           33
+ // Pins for DOGM SPI LCD Support
+  #define DOGLCD_A0        44
+  #define DOGLCD_CS        45
+  #define LCD_SCREEN_ROT_180
 
+ //The encoder and click button
+  #define BTN_EN1          22
+  #define BTN_EN2           7
+  #define BTN_ENC          39  //the click switch
+
+  #define SDSS             53
+  #define SDCARDDETECT     49
+
+  #define KILL_PIN         31
+#endif
+ 
 #ifndef SDSUPPORT
 // these pins are defined in the SD library if building with SD support
   #define SCK_PIN          52
