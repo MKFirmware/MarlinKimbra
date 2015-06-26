@@ -47,6 +47,7 @@
 #define MSG_PREHEAT_GUM_ALL                 "Preheat GUM All"
 #define MSG_PREHEAT_GUM_BEDONLY             "Preheat GUM Bed"
 #define MSG_PREHEAT_GUM_SETTINGS            "Preheat GUM conf"
+#define MSG_TOO_COLD_FOR_M600               "M600 Hotend too cold to change filament"
 #define MSG_COOLDOWN                        "Cooldown"
 #define MSG_SWITCH_PS_ON                    "Switch power on"
 #define MSG_SWITCH_PS_OFF                   "Switch power off"

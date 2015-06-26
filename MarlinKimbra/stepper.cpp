@@ -509,7 +509,7 @@ ISR(TIMER1_COMPA_vect) {
       #else
         byte
       #endif
-      current_endstop_bits;
+      current_endstop_bits = 0;
 
       #ifdef COREXY
         // Head direction in -X axis for CoreXY bots.

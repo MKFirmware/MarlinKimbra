@@ -5565,17 +5565,24 @@ inline void gcode_M503() {
   /**
    * M600: Pause for filament change
    *
-   *  E[mm] - Retract the filament this far (negative value)
-   *  Z[mm] - Move the Z axis by this distance
-   *  X[mm] - Move to this X position, with Y
-   *  Y[mm] - Move to this Y position, with X
-   *  L[mm] - Retract distance for removal (manual reload)
+   *  E[distance] - Retract the filament this far (negative value)
+   *  Z[distance] - Move the Z axis by this distance
+   *  X[position] - Move to this X position, with Y
+   *  Y[position] - Move to this Y position, with X
+   *  L[distance] - Retract distance for removal (manual reload)
    *
    *  Default values are used for omitted arguments.
    *
    */
   inline void gcode_M600() {
+
+    if (degHotend(active_extruder) < extrude_min_temp) {
+      ECHO_LM(ER, MSG_TOO_COLD_FOR_M600);
+      return;
+    }
+
     float lastpos[NUM_AXIS], target[NUM_AXIS], fr60 = feedrate / 60;
+
     filament_changing = true;
     for (int i = 0; i < NUM_AXIS; i++)
       target[i] = lastpos[i] = current_position[i];

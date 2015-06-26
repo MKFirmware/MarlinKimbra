@@ -47,6 +47,7 @@
 #define MSG_PREHEAT_GUM_ALL                 "Preri. GOMMA Tutto"
 #define MSG_PREHEAT_GUM_BEDONLY             "Preri. GOMMA Piatto"
 #define MSG_PREHEAT_GUM_SETTINGS            "Config. prer. GOMMA"
+#define MSG_TOO_COLD_FOR_M600               "M600 Hotend troppo freddo per il cambio filo"
 #define MSG_COOLDOWN                        "Raffredda"
 #define MSG_SWITCH_PS_ON                    "Accendi aliment."
 #define MSG_SWITCH_PS_OFF                   "Spegni aliment."

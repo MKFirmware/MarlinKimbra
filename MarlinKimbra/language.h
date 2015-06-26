@@ -33,7 +33,7 @@
 
 #if MB(ULTIMAKER)|| MB(ULTIMAKER_OLD)|| MB(ULTIMAIN_2)
   #define MACHINE_NAME "Ultimaker"
-  #define FIRMWARE_URL "http://firmware.ultimaker.com"
+  #define FIRMWARE_URL "https://github.com/Ultimaker/Marlin"
 #elif MB(RUMBA)
   #define MACHINE_NAME "Rumba"
 #elif MB(3DRAG)
@@ -65,7 +65,7 @@
 #endif
 
 #ifndef BUILD_VERSION
-  #define BUILD_VERSION "V1; Sprinter/grbl mashup for gen6"
+  #define BUILD_VERSION "V4; MarlinKimbra for 4 extruder"
 #endif
 
 #ifndef MACHINE_UUID
