@@ -109,13 +109,14 @@
  *                                                                     *
  ***********************************************************************/
 //#define NPR2
-
+#if defined(NPR2)
 #define COLOR_STEP {120,25,-65,-155} // CARTER ANGLE
 #define COLOR_SLOWRATE 170           // MICROSECOND delay for carter motor routine (Carter Motor Feedrate: upper value-slow feedrate)  
 #define COLOR_HOMERATE 4             // FEEDRATE for carter home
 #define MOTOR_ANGLE 1.8              // Nema angle for single step 
 #define DRIVER_MICROSTEP 4           // Microstep moltiplicator driver (set jumper MS1-2-3) off-on-off 1/4 microstepping.
 #define CARTER_MOLTIPLICATOR 14.22   // CARTER MOLTIPLICATOR (gear ratio 13/31-10/31)
+#endif
 //**********************************************************************
 
 
@@ -225,7 +226,7 @@
 
 // Comment the following line to disable PID and enable bang-bang.
 #define PIDTEMP
-#ifdef PIDTEMP
+#if defined(PIDTEMP)
 //#define PID_DEBUG        // Sends debug data to the serial port.
 //#define PID_OPENLOOP 1   // Puts PID in open loop. M104/M140 sets the output power from 0 to PID_MAX
 //#define SLOW_PWM_HEATERS // PWM with very low frequency (roughly 0.125Hz=8s) and minimum state time of approximately 1s useful for heaters driven by a relay
@@ -264,7 +265,7 @@
 
 //#define PID_BED_DEBUG // Sends debug data to the serial port.
 
-#ifdef PIDTEMPBED
+#if defined(PIDTEMPBED)
 #define PID_BED_INTEGRAL_DRIVE_MAX MAX_BED_POWER // limit for the integral term
 //120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
 //from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
@@ -309,7 +310,7 @@
  * the firmware will halt as a safety precaution.
  */
 
-//#define THERMAL_PROTECTION_HOTENDS // Enable thermal protection for all extruders
+//#define THERMAL_PROTECTION_HOTENDS // Enable thermal protection for all hotends
 //#define THERMAL_PROTECTION_BED     // Enable thermal protection for the heated bed
 
 //===========================================================================
@@ -321,9 +322,9 @@
 // Choose ONE of these 3 charsets. This has to match your hardware. Ignored for full graphic display.
 // To find out what type you have - compile with (test) - upload - click to get the menu. You'll see two typical lines from the upper half of the charset.
 // See also documentation/LCDLanguageFont.md
-  #define DISPLAY_CHARSET_HD44780_JAPAN        // this is the most common hardware
-  //#define DISPLAY_CHARSET_HD44780_WESTERN
-  //#define DISPLAY_CHARSET_HD44780_CYRILLIC
+#define DISPLAY_CHARSET_HD44780_JAPAN        // this is the most common hardware
+//#define DISPLAY_CHARSET_HD44780_WESTERN
+//#define DISPLAY_CHARSET_HD44780_CYRILLIC
 
 //#define ULTRA_LCD  //general LCD support, also 16x2
 //#define DOGLCD  // Support for SPI LCD 128x64 (Controller ST7565R graphic Display Family)
@@ -476,7 +477,7 @@
 
 //==================== Bowden Filament management ===========================
 //#define EASY_LOAD
-
+#if defined(EASY_LOAD)
 #define BOWDEN_LENGTH 250       // mm
 #define LCD_PURGE_LENGTH 3      // mm
 #define LCD_RETRACT_LENGTH 3    // mm
@@ -484,6 +485,7 @@
 #define LCD_RETRACT_FEEDRATE 10 // mm/s
 #define LCD_LOAD_FEEDRATE 8     // mm/s
 #define LCD_UNLOAD_FEEDRATE 8   // mm/s
+#endif //EASY_LOAD
 //===========================================================================
 
 

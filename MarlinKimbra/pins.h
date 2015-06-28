@@ -857,50 +857,50 @@
   #define LARGE_FLASH true
   
   //X axis pins
-  #define ORIG_X_STEP_PIN        54
-  #define ORIG_X_DIR_PIN         55
-  #define ORIG_X_ENABLE_PIN      38
-  #define X_MIN_PIN          3
-  #define X_MAX_PIN          2
+  #define ORIG_X_STEP_PIN         54
+  #define ORIG_X_DIR_PIN          55
+  #define ORIG_X_ENABLE_PIN       38
+  #define X_MIN_PIN               3
+  #define X_MAX_PIN               2
   
   //Y axis pins
-  #define ORIG_Y_STEP_PIN        60
-  #define ORIG_Y_DIR_PIN         61
-  #define ORIG_Y_ENABLE_PIN      56
-  #define Y_MIN_PIN         14
-  #define Y_MAX_PIN         15
+  #define ORIG_Y_STEP_PIN         60
+  #define ORIG_Y_DIR_PIN          61
+  #define ORIG_Y_ENABLE_PIN       56
+  #define Y_MIN_PIN               14
+  #define Y_MAX_PIN               15
   
-  #define Y2_STEP_PIN       36
-  #define Y2_DIR_PIN        34
-  #define Y2_ENABLE_PIN     30
+  #define Y2_STEP_PIN             36
+  #define Y2_DIR_PIN              34
+  #define Y2_ENABLE_PIN           30
 
   //Z axis pins
-  #define ORIG_Z_STEP_PIN        46
-  #define ORIG_Z_DIR_PIN         48
-  #define ORIG_Z_ENABLE_PIN      62
-  #define Z_MIN_PIN         18
-  #define Z_MAX_PIN         19
-  #define Z_PROBE_PIN       18
+  #define ORIG_Z_STEP_PIN         46
+  #define ORIG_Z_DIR_PIN          48
+  #define ORIG_Z_ENABLE_PIN       62
+  #define Z_MIN_PIN               18
+  #define Z_MAX_PIN               19
+  #define Z_PROBE_PIN             19
 
-  #define Z2_STEP_PIN       36
-  #define Z2_DIR_PIN        34
-  #define Z2_ENABLE_PIN     30
+  #define Z2_STEP_PIN             36
+  #define Z2_DIR_PIN              34
+  #define Z2_ENABLE_PIN           30
 
   //E axis pins
-  #define ORIG_E0_STEP_PIN       26
-  #define ORIG_E0_DIR_PIN        28
-  #define ORIG_E0_ENABLE_PIN     24
+  #define ORIG_E0_STEP_PIN        26
+  #define ORIG_E0_DIR_PIN         28
+  #define ORIG_E0_ENABLE_PIN      24
 
-  #define ORIG_E1_STEP_PIN       36
-  #define ORIG_E1_DIR_PIN        34
-  #define ORIG_E1_ENABLE_PIN     30
+  #define ORIG_E1_STEP_PIN        36
+  #define ORIG_E1_DIR_PIN         34
+  #define ORIG_E1_ENABLE_PIN      30
   
-  #define SDPOWER           -1
-  #define SDSS              53
-  #define LED_PIN           13
+  #define SDPOWER                 -1
+  #define SDSS                    53
+  #define LED_PIN                 13
   
   #define ORIG_FAN_PIN            9
-  #define PS_ON_PIN         12
+  #define PS_ON_PIN               12
   
   #define HEATER_0_PIN      10   // Hotend 1
   #define HEATER_1_PIN      -1
@@ -1089,7 +1089,7 @@
   #define ORIG_Z_ENABLE_PIN      62
   #define Z_MIN_PIN         18
   #define Z_MAX_PIN         19
-  #define Z_PROBE_PIN       18
+  #define Z_PROBE_PIN       19
 
   #define Z2_STEP_PIN       36
   #define Z2_DIR_PIN        34
@@ -1292,7 +1292,7 @@
   #define ORIG_Z_ENABLE_PIN     62
   #define Z_MIN_PIN             18
   #define Z_MAX_PIN             19
-  #define Z_PROBE_PIN           18
+  #define Z_PROBE_PIN           19
 
   #define Z2_STEP_PIN           36
   #define Z2_DIR_PIN            34
@@ -1495,7 +1495,7 @@
   #define ORIG_Z_ENABLE_PIN       62
   #define Z_MIN_PIN          18
   #define Z_MAX_PIN          19
-  #define Z_PROBE_PIN        18
+  #define Z_PROBE_PIN        19
 
   #define Z2_STEP_PIN        36
   #define Z2_DIR_PIN         34
@@ -2283,7 +2283,7 @@
 #define Z_MIN_PIN             38  // PC6
 #define Z_MAX_PIN             39  // PC7
 #define Z_MS1_PIN             44  // PC19
-#define Z_PROBE_PIN           38  // PC6
+#define Z_PROBE_PIN           39  // PC7
 
 // E AXIS
 #define ORIG_E0_STEP_PIN       5  // PC25

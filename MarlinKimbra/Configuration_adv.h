@@ -381,7 +381,7 @@
 #define MM_PER_ARC_SEGMENT 1
 #define N_ARC_CORRECTION 25
 
-// Defines the number of memory slots for saving/restoring position (M331/M332)
+// Defines the number of memory slots for saving/restoring position (G60/G61)
 // The values should not be less than 1
 #define NUM_POSITON_SLOTS 2
 
