@@ -1266,9 +1266,6 @@ static void clean_up_after_endstop_move() {
         current_position[Y_AXIS] = corrected_position.y;
         current_position[Z_AXIS] = corrected_position.z;
 
-        // put the bed at 0 so we don't go below it.
-        //current_position[Z_AXIS] = zprobe_zoffset; // in the lsq we reach here after raising the extruder due to the loop structure
-
         sync_plan_position();
       }
     #else // not AUTO_BED_LEVELING_GRID
@@ -1294,8 +1291,6 @@ static void clean_up_after_endstop_move() {
         current_position[Y_AXIS] = corrected_position.y;
         current_position[Z_AXIS] = corrected_position.z;
 
-        // put the bed at 0 so we don't go below it.
-        //current_position[Z_AXIS] += zprobe_zoffset;
         sync_plan_position();
       }
 
@@ -3424,7 +3419,6 @@ inline void gcode_G28() {
           xInc = -1;
         }
 
-
         // If topo_flag is set then don't zig-zag. Just scan in one direction.
         // This gets the probe points in more readable order.
         if (!do_topography_map) zig = !zig;
@@ -3534,7 +3528,7 @@ inline void gcode_G28() {
             real_z = (float)st_get_position(Z_AXIS) / axis_steps_per_unit[Z_AXIS];  //get the real Z (since the auto bed leveling is already correcting the plane)
 
       apply_rotation_xyz(plan_bed_level_matrix, x_tmp, y_tmp, z_tmp); //Apply the correction sending the probe offset
-      current_position[Z_AXIS] += z_tmp - real_z;                     //The difference is added to current position and sent to planner.
+      current_position[Z_AXIS] = z_tmp - real_z - zprobe_zoffset;
       sync_plan_position();
     }
 
@@ -5930,7 +5924,7 @@ inline void gcode_M999() {
       }
     }
     else {
-      ECHO_LMV(DB, MSG_ZPROBE_ZOFFSET " : ", -zprobe_zoffset);
+      ECHO_LMV(DB, MSG_ZPROBE_ZOFFSET " : ", zprobe_zoffset);
     }
   }
 
@@ -6652,14 +6646,14 @@ void ok_to_send() {
   ECHO_E;
 }
 
-FORCE_INLINE void clamp_to_software_endstops(float target[3]) {
+void clamp_to_software_endstops(float target[3]) {
   if (min_software_endstops) {
     NOLESS(target[X_AXIS], min_pos[X_AXIS]);
     NOLESS(target[Y_AXIS], min_pos[Y_AXIS]);
     
     float negative_z_offset = 0;
     #ifdef ENABLE_AUTO_BED_LEVELING
-      if (Z_PROBE_OFFSET_FROM_EXTRUDER < 0) negative_z_offset += Z_PROBE_OFFSET_FROM_EXTRUDER;
+      if (zprobe_zoffset < 0) negative_z_offset += zprobe_zoffset;
       if (home_offset[Z_AXIS] < 0) negative_z_offset += home_offset[Z_AXIS];
     #endif
     NOLESS(target[Z_AXIS], min_pos[Z_AXIS] + negative_z_offset);
@@ -6812,6 +6806,9 @@ FORCE_INLINE void clamp_to_software_endstops(float target[3]) {
 
 /**
  * Prepare a single move and get ready for the next one
+ *
+ * (This may call plan_buffer_line several times to put
+ *  smaller moves into the planner for DELTA or SCARA.)
  */
 void prepare_move() {
   clamp_to_software_endstops(destination);
@@ -7338,6 +7335,6 @@ float calculate_volumetric_multiplier(float diameter) {
 }
 
 void calculate_volumetric_multipliers() {
-  for (int i=0; i<EXTRUDERS; i++)
+  for (int i = 0; i < EXTRUDERS; i++)
     volumetric_multiplier[i] = calculate_volumetric_multiplier(filament_size[i]);
 }

@@ -226,7 +226,7 @@
 
 // Comment the following line to disable PID and enable bang-bang.
 #define PIDTEMP
-#if defined(PIDTEMP)
+#ifdef PIDTEMP
 //#define PID_DEBUG        // Sends debug data to the serial port.
 //#define PID_OPENLOOP 1   // Puts PID in open loop. M104/M140 sets the output power from 0 to PID_MAX
 //#define SLOW_PWM_HEATERS // PWM with very low frequency (roughly 0.125Hz=8s) and minimum state time of approximately 1s useful for heaters driven by a relay
@@ -265,7 +265,7 @@
 
 //#define PID_BED_DEBUG // Sends debug data to the serial port.
 
-#if defined(PIDTEMPBED)
+#ifdef PIDTEMPBED
 #define PID_BED_INTEGRAL_DRIVE_MAX MAX_BED_POWER // limit for the integral term
 //120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
 //from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
@@ -469,15 +469,17 @@
 //========================== EXTRA SETTINGS ON SD ===========================
 // Uncomment SD SETTINGS to enable the firmware to write some configuration, that require frequent update, on the SD card.
 //#define SD_SETTINGS
+#ifdef SD_SETTINGS
 #define SD_CFG_SECONDS        300         //seconds between update
 #define CFG_SD_FILE           "INFO.CFG"  //name of the configuration file
 #define CFG_SD_MAX_KEY_LEN    3+1         //icrease this if you add key name longer than the actual value.
 #define CFG_SD_MAX_VALUE_LEN  12+1        //this should be enought for int, long and float if you need to retrive strings increase this carefully
+#endif
 //===========================================================================
 
 //==================== Bowden Filament management ===========================
 //#define EASY_LOAD
-#if defined(EASY_LOAD)
+#ifdef EASY_LOAD
 #define BOWDEN_LENGTH 250       // mm
 #define LCD_PURGE_LENGTH 3      // mm
 #define LCD_RETRACT_LENGTH 3    // mm
@@ -536,7 +538,6 @@
 
 #define FILAMENT_SENSOR_EXTRUDER_NUM  0     //The number of the extruder that has the filament sensor (0,1,2,3)
 #define MEASUREMENT_DELAY_CM         14     //measurement delay in cm.  This is the distance from filament sensor to middle of barrel
-
 #define DEFAULT_NOMINAL_FILAMENT_DIA  1.75  //Enter the diameter (in mm) of the filament generally used (3.0 mm or 1.75 mm) - this is then used in the slicer software.  Used for sensor reading validation
 #define MEASURED_UPPER_LIMIT          2.00  //upper limit factor used for sensor reading validation in mm
 #define MEASURED_LOWER_LIMIT          1.35  //lower limit factor for sensor reading validation in mm
@@ -564,7 +565,7 @@
  **********************************************************************/
 // Uncomment below to enable
 //#define POWER_CONSUMPTION
-
+#ifdef POWER_CONSUMPTION
 #define POWER_VOLTAGE      12.00    //(V) The power supply OUT voltage
 #define POWER_ZERO          2.54459 //(V) The /\V coming out from the sensor when no current flow.
 #define POWER_SENSITIVITY   0.066   //(V/A) How much increase V for 1A of increase
@@ -574,6 +575,7 @@
 
 //When using an LCD, uncomment the line below to display the Power consumption sensor data on the last line instead of status.  Status will appear for 5 sec.
 //#define POWER_CONSUMPTION_LCD_DISPLAY
+#endif
 //===========================================================================
 
 

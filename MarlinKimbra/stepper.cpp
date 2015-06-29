@@ -420,42 +420,6 @@ FORCE_INLINE void trapezoid_generator_reset() {
   OCR1A = acceleration_time;
 }
 
-#define _ENDSTOP_PIN(AXIS, MINMAX) AXIS ##_## MINMAX ##_PIN
-#define _ENDSTOP_INVERTING(AXIS, MINMAX) AXIS ##_## MINMAX ##_ENDSTOP_INVERTING
-#define _AXIS(AXIS) AXIS ##_AXIS
-#define _ENDSTOP_HIT(AXIS) endstop_hit_bits |= BIT(_ENDSTOP(AXIS, MIN))
-#define _ENDSTOP(AXIS, MINMAX) AXIS ##_## MINMAX
-
-// SET_ENDSTOP_BIT: set the current endstop bits for an endstop to its status
-#define SET_ENDSTOP_BIT(AXIS, MINMAX) SET_BIT(current_endstop_bits, _ENDSTOP(AXIS, MINMAX), (READ(_ENDSTOP_PIN(AXIS, MINMAX)) != _ENDSTOP_INVERTING(AXIS, MINMAX)))
-// COPY_BIT: copy the value of COPY_BIT to BIT in bits
-#define COPY_BIT(bits, COPY_BIT, BIT) SET_BIT(bits, BIT, TEST(bits, COPY_BIT))
-// TEST_ENDSTOP: test the old and the current status of an endstop
-#define TEST_ENDSTOP(ENDSTOP) (TEST(current_endstop_bits, ENDSTOP) && TEST(old_endstop_bits, ENDSTOP))
-
-#define UPDATE_ENDSTOP(AXIS,MINMAX) \
-  SET_ENDSTOP_BIT(AXIS, MINMAX); \
-  if (TEST_ENDSTOP(_ENDSTOP(AXIS, MINMAX))  && (current_block->steps[_AXIS(AXIS)] > 0)) { \
-    endstops_trigsteps[_AXIS(AXIS)] = count_position[_AXIS(AXIS)]; \
-    _ENDSTOP_HIT(AXIS); \
-    step_events_completed = current_block->step_event_count; \
-  }
-
-#define _COUNTER(axis) counter_## axis
-#define _APPLY_STEP(AXIS) AXIS ##_APPLY_STEP
-#define _INVERT_STEP_PIN(AXIS) INVERT_## AXIS ##_STEP_PIN
-
-#define STEP_START(axis, AXIS) \
-        _COUNTER(axis) += current_block->steps[_AXIS(AXIS)]; \
-        if (_COUNTER(axis) > 0) { _APPLY_STEP(AXIS)(!_INVERT_STEP_PIN(AXIS),0); }
-
-#define STEP_END(axis, AXIS) \
-        if (_COUNTER(axis) > 0) { \
-          _COUNTER(axis) -= current_block->step_event_count; \
-          count_position[_AXIS(AXIS)] += count_direction[_AXIS(AXIS)]; \
-          _APPLY_STEP(AXIS)(_INVERT_STEP_PIN(AXIS),0); \
-        }
-
 // "The Stepper Driver Interrupt" - This timer interrupt is the workhorse.
 // It pops blocks from the block_buffer and executes them by pulsing the stepper pins appropriately.
 ISR(TIMER1_COMPA_vect) {
@@ -509,8 +473,29 @@ ISR(TIMER1_COMPA_vect) {
       #else
         byte
       #endif
-      current_endstop_bits = 0;
+          current_endstop_bits = 0;
 
+      #define _ENDSTOP_PIN(AXIS, MINMAX) AXIS ##_## MINMAX ##_PIN
+      #define _ENDSTOP_INVERTING(AXIS, MINMAX) AXIS ##_## MINMAX ##_ENDSTOP_INVERTING
+      #define _AXIS(AXIS) AXIS ##_AXIS
+      #define _ENDSTOP_HIT(AXIS) endstop_hit_bits |= BIT(_ENDSTOP(AXIS, MIN))
+      #define _ENDSTOP(AXIS, MINMAX) AXIS ##_## MINMAX
+
+      // SET_ENDSTOP_BIT: set the current endstop bits for an endstop to its status
+      #define SET_ENDSTOP_BIT(AXIS, MINMAX) SET_BIT(current_endstop_bits, _ENDSTOP(AXIS, MINMAX), (READ(_ENDSTOP_PIN(AXIS, MINMAX)) != _ENDSTOP_INVERTING(AXIS, MINMAX)))
+      // COPY_BIT: copy the value of COPY_BIT to BIT in bits
+      #define COPY_BIT(bits, COPY_BIT, BIT) SET_BIT(bits, BIT, TEST(bits, COPY_BIT))
+      // TEST_ENDSTOP: test the old and the current status of an endstop
+      #define TEST_ENDSTOP(ENDSTOP) (TEST(current_endstop_bits, ENDSTOP) && TEST(old_endstop_bits, ENDSTOP))
+
+      #define UPDATE_ENDSTOP(AXIS,MINMAX) \
+        SET_ENDSTOP_BIT(AXIS, MINMAX); \
+        if (TEST_ENDSTOP(_ENDSTOP(AXIS, MINMAX))  && (current_block->steps[_AXIS(AXIS)] > 0)) { \
+          endstops_trigsteps[_AXIS(AXIS)] = count_position[_AXIS(AXIS)]; \
+          _ENDSTOP_HIT(AXIS); \
+          step_events_completed = current_block->step_event_count; \
+        }
+      
       #ifdef COREXY
         // Head direction in -X axis for CoreXY bots.
         // If DeltaX == -DeltaY, the movement is only in Y axis
@@ -663,6 +648,14 @@ ISR(TIMER1_COMPA_vect) {
         }
       #endif //ADVANCE
 
+      #define _COUNTER(axis) counter_## axis
+      #define _APPLY_STEP(AXIS) AXIS ##_APPLY_STEP
+      #define _INVERT_STEP_PIN(AXIS) INVERT_## AXIS ##_STEP_PIN
+
+      #define STEP_START(axis, AXIS) \
+        _COUNTER(axis) += current_block->steps[_AXIS(AXIS)]; \
+        if (_COUNTER(axis) > 0) { _APPLY_STEP(AXIS)(!_INVERT_STEP_PIN(AXIS),0); }
+
       STEP_START(x,X);
       STEP_START(y,Y);
       STEP_START(z,Z);
@@ -673,6 +666,13 @@ ISR(TIMER1_COMPA_vect) {
       #ifdef STEPPER_HIGH_LOW_DELAY
         delayMicroseconds(STEPPER_HIGH_LOW_DELAY);
       #endif
+
+      #define STEP_END(axis, AXIS) \
+        if (_COUNTER(axis) > 0) { \
+          _COUNTER(axis) -= current_block->step_event_count; \
+          count_position[_AXIS(AXIS)] += count_direction[_AXIS(AXIS)]; \
+          _APPLY_STEP(AXIS)(_INVERT_STEP_PIN(AXIS),0); \
+        }
 
       STEP_END(x, X);
       STEP_END(y, Y);

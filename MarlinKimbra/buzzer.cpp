@@ -1,7 +1,3 @@
-/*
-  buzzer.cpp - Library for controlling a buzzer
-  Created by Mago Kimbra, 10/05/2015
-*/
 #include "Marlin.h"
 #include "buzzer.h"
 #include "ultralcd.h"

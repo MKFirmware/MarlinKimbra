@@ -488,12 +488,11 @@ static void lcd_implementation_status_screen() {
     //
     #if HOTENDS > 1 || TEMP_SENSOR_BED != 0
 
-      // If we have an 2nd extruder or heated bed, show that in the top right corner
       lcd.setCursor(8, 0);
       #if HOTENDS > 1
         lcd.print(LCD_STR_THERMOMETER[0]);
         LCD_TEMP_ONLY(degHotend(1), degTargetHotend(1));
-      #else // Heated bed
+      #else
         lcd.print(LCD_STR_BEDTEMP[0]);
         LCD_TEMP_ONLY(degBed(), degTargetBed());
       #endif
