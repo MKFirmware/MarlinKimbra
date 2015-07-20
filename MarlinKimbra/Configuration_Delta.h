@@ -128,6 +128,9 @@
 #define Z_MIN_POS 0
 #define E_MIN_POS 0
 
+#define DELTA_DIAGONAL_X_CORRECTION 1.0 // front left tower
+#define DELTA_DIAGONAL_Y_CORRECTION 1.0 // front right tower
+#define DELTA_DIAGONAL_Z_CORRECTION 1.0 // back middle tower
 
 // MOVEMENT SETTINGS
 #define HOMING_FEEDRATE {100*60, 100*60, 100*60, 0}      // set the homing speeds (mm/min)
