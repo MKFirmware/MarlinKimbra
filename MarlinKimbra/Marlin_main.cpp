@@ -357,7 +357,9 @@ unsigned long printer_usage_seconds;
   float tower_adj[6] = { 0, 0, 0, 0, 0, 0 };
   float delta_radius; // = DEFAULT_delta_radius;
   float delta_diagonal_rod; // = DEFAULT_DELTA_DIAGONAL_ROD;
-  float delta_diagonal_rod_2;
+  float DELTA_DIAGONAL_ROD_2_X;
+  float DELTA_DIAGONAL_ROD_2_Y;
+  float DELTA_DIAGONAL_ROD_2_Z;
   float delta_segments_per_second = DELTA_SEGMENTS_PER_SECOND;
   float ac_prec = AUTOCALIBRATION_PRECISION;
   float bed_radius = PRINTER_RADIUS;
@@ -1609,7 +1611,12 @@ static void clean_up_after_endstop_move() {
     base_max_pos[Z_AXIS]  = max_pos[Z_AXIS];
     base_home_pos[Z_AXIS] = max_pos[Z_AXIS];
 
-    delta_diagonal_rod_2 = sq(delta_diagonal_rod);
+    DELTA_DIAGONAL_ROD_2_X= pow((delta_diagonal_rod*DELTA_DIAGONAL_X_CORRECTION),2);
+    
+    DELTA_DIAGONAL_ROD_2_Y= pow((delta_diagonal_rod*DELTA_DIAGONAL_Y_CORRECTION),2);
+    
+    DELTA_DIAGONAL_ROD_2_Z= pow((delta_diagonal_rod*DELTA_DIAGONAL_Z_CORRECTION),2);
+
 
     // Effective X/Y positions of the three vertical towers.
     delta_tower1_x = (delta_radius + tower_adj[3]) * cos((210 + tower_adj[0]) * M_PI/180); // front left tower
@@ -2011,15 +2018,15 @@ static void clean_up_after_endstop_move() {
   }
 
   void calculate_delta(float cartesian[3]) {
-    delta[X_AXIS] = sqrt(delta_diagonal_rod_2
+   delta[X_AXIS] = sqrt(DELTA_DIAGONAL_ROD_2_X
                          - sq(delta_tower1_x-cartesian[X_AXIS])
                          - sq(delta_tower1_y-cartesian[Y_AXIS])
                          ) + cartesian[Z_AXIS];
-    delta[Y_AXIS] = sqrt(delta_diagonal_rod_2
+    delta[Y_AXIS] = sqrt(DELTA_DIAGONAL_ROD_2_Y
                          - sq(delta_tower2_x-cartesian[X_AXIS])
                          - sq(delta_tower2_y-cartesian[Y_AXIS])
                          ) + cartesian[Z_AXIS];
-    delta[Z_AXIS] = sqrt(delta_diagonal_rod_2
+    delta[Z_AXIS] = sqrt(DELTA_DIAGONAL_ROD_2_Z
                          - sq(delta_tower3_x-cartesian[X_AXIS])
                          - sq(delta_tower3_y-cartesian[Y_AXIS])
                          ) + cartesian[Z_AXIS];
