@@ -1611,11 +1611,11 @@ static void clean_up_after_endstop_move() {
     base_max_pos[Z_AXIS]  = max_pos[Z_AXIS];
     base_home_pos[Z_AXIS] = max_pos[Z_AXIS];
 
-    DELTA_DIAGONAL_ROD_2_X= pow((delta_diagonal_rod+DELTA_DIAGONAL_X_CORRECTION),2);
+    DELTA_DIAGONAL_ROD_2_X= pow((delta_diagonal_rod*DELTA_DIAGONAL_X_CORRECTION),2);
     
-    DELTA_DIAGONAL_ROD_2_Y= pow((delta_diagonal_rod+DELTA_DIAGONAL_Y_CORRECTION),2);
+    DELTA_DIAGONAL_ROD_2_Y= pow((delta_diagonal_rod*DELTA_DIAGONAL_Y_CORRECTION),2);
     
-    DELTA_DIAGONAL_ROD_2_Z= pow((delta_diagonal_rod+DELTA_DIAGONAL_Z_CORRECTION),2);
+    DELTA_DIAGONAL_ROD_2_Z= pow((delta_diagonal_rod*DELTA_DIAGONAL_Z_CORRECTION),2);
 
 
     // Effective X/Y positions of the three vertical towers.
