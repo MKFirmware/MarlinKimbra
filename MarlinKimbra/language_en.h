@@ -2,7 +2,7 @@
  * English
  *
  * LCD Menu Messages
- * Se also documentation/LCDLanguageFont.md
+ * See also documentation/LCDLanguageFont.md
  *
  */
 #ifndef LANGUAGE_EN_H
@@ -13,7 +13,7 @@
 #endif
 
 //#define SIMULATE_ROMFONT //Comment in to see what is seen on the character based displays
-#if !( defined(SIMULATE_ROMFONT)|| defined(DISPLAY_CHARSET_ISO10646_1)|| defined(DISPLAY_CHARSET_ISO10646_5)|| defined(DISPLAY_CHARSET_ISO10646_KANA) )
+#if !( defined(SIMULATE_ROMFONT)|| defined(DISPLAY_CHARSET_ISO10646_1)|| defined(DISPLAY_CHARSET_ISO10646_5)|| defined(DISPLAY_CHARSET_ISO10646_KANA)|| defined(DISPLAY_CHARSET_ISO10646_CN) )
   #define DISPLAY_CHARSET_ISO10646_1 // use the better font on full graphic displays.
 #endif
 
@@ -68,9 +68,9 @@
 #define MSG_FAN_SPEED                       "Fan speed"
 #define MSG_FLOW                            "Flow"
 #define MSG_CONTROL                         "Control"
-#define MSG_MIN                             " "LCD_STR_THERMOMETER " Min"
-#define MSG_MAX                             " "LCD_STR_THERMOMETER " Max"
-#define MSG_FACTOR                          " "LCD_STR_THERMOMETER " Fact"
+#define MSG_MIN                             LCD_STR_THERMOMETER " Min"
+#define MSG_MAX                             LCD_STR_THERMOMETER " Max"
+#define MSG_FACTOR                          LCD_STR_THERMOMETER " Fact"
 #define MSG_IDLEOOZING                      "Anti oozing"
 #define MSG_AUTOTEMP                        "Autotemp"
 #define MSG_ON                              "On "
@@ -84,7 +84,7 @@
 #define MSG_ACC                             "Accel"
 #define MSG_VXY_JERK                        "Vxy-jerk"
 #define MSG_VZ_JERK                         "Vz-jerk"
-#define MSG_VE_JERK                         "Ve-jerk "
+#define MSG_VE_JERK                         "Ve-jerk"
 #define MSG_VMAX                            "Vmax "
 #define MSG_X                               "X"
 #define MSG_Y                               "Y"
@@ -176,6 +176,11 @@
   #define MSG_XSCALE                        "X Scale"
   #define MSG_YSCALE                        "Y Scale"
 #endif
+
+#define MSG_HEATING                         "Heating..."
+#define MSG_HEATING_COMPLETE                "Heating done."
+#define MSG_BED_HEATING                     "Bed Heating."
+#define MSG_BED_DONE                        "Bed done."
 
 // Extra
 #define MSG_LASER                           "Laser Preset"

@@ -24,8 +24,7 @@
 static void ST7920_SWSPI_SND_8BIT(uint8_t val)
 {
   uint8_t i;
-  for( i = 0; i < 8; i++ )
-  {
+  for( i = 0; i < 8; i++ ) {
     WRITE(ST7920_CLK_PIN,0);
     #if F_CPU == 20000000
       __asm__("nop\n\t"); 

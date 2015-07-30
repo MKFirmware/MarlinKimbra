@@ -1,5 +1,5 @@
 /*
- Servo.cpp - Interrupt driven Servo library for Arduino using 16 bit timers- Version 2
+ servo.cpp - Interrupt driven Servo library for Arduino using 16 bit timers- Version 2
  Copyright (c) 2009 Michael Margolis.  All right reserved.
 
  This library is free software; you can redistribute it and/or
@@ -35,12 +35,14 @@
 
  write()     - Sets the servo angle in degrees.  (invalid angle that is valid as pulse in microseconds is treated as microseconds)
  writeMicroseconds() - Sets the servo pulse width in microseconds
+ move(pin, angle) - Sequence of attach(pin), write(angle).
+                    With DEACTIVATE_SERVOS_AFTER_MOVE it waits SERVO_DEACTIVATION_DELAY and detaches.
  read()      - Gets the last written servo pulse width as an angle between 0 and 180.
  readMicroseconds()   - Gets the last written servo pulse width in microseconds. (was read_us() in first release)
  attached()  - Returns true if there is a servo attached.
  detach()    - Stops an attached servos from pulsing its i/o pin.
 
-*/
+ */
 #include "Configuration.h" 
 
 #if NUM_SERVOS > 0
@@ -57,7 +59,7 @@
 
 //#define NBR_TIMERS        (MAX_SERVOS / SERVOS_PER_TIMER)
 
-static servo_t servos[MAX_SERVOS];                          // static array of servo structures
+static ServoInfo_t servo_info[MAX_SERVOS];                  // static array of servo info structures
 static volatile int8_t Channel[_Nbr_16timers ];             // counter for the servo being pulsed for each timer (or -1 if refresh interval)
 
 uint8_t ServoCount = 0;                                     // the total number of attached servos
@@ -67,7 +69,7 @@ uint8_t ServoCount = 0;                                     // the total number 
 #define SERVO_INDEX_TO_TIMER(_servo_nbr) ((timer16_Sequence_t)(_servo_nbr / SERVOS_PER_TIMER)) // returns the timer controlling this servo
 #define SERVO_INDEX_TO_CHANNEL(_servo_nbr) (_servo_nbr % SERVOS_PER_TIMER)       // returns the index of the servo on this timer
 #define SERVO_INDEX(_timer,_channel)  ((_timer*SERVOS_PER_TIMER) + _channel)     // macro to access servo index by timer and channel
-#define SERVO(_timer,_channel)  (servos[SERVO_INDEX(_timer,_channel)])            // macro to access servo class by timer and channel
+#define SERVO(_timer,_channel)  (servo_info[SERVO_INDEX(_timer,_channel)])       // macro to access servo class by timer and channel
 
 #define SERVO_MIN() (MIN_PULSE_WIDTH - this->min * 4)  // minimum value in uS for this servo
 #define SERVO_MAX() (MAX_PULSE_WIDTH - this->max * 4)  // maximum value in uS for this servo
@@ -79,14 +81,14 @@ static inline void handle_interrupts(timer16_Sequence_t timer, volatile uint16_t
     *TCNTn = 0; // channel set to -1 indicated that refresh interval completed so reset the timer
   else {
     if (SERVO_INDEX(timer,Channel[timer]) < ServoCount && SERVO(timer,Channel[timer]).Pin.isActive)
-      digitalWrite( SERVO(timer,Channel[timer]).Pin.nbr,LOW); // pulse this channel low if activated
+      digitalWrite( SERVO(timer,Channel[timer]).Pin.nbr, LOW); // pulse this channel low if activated
   }
 
   Channel[timer]++;    // increment to the next channel
   if (SERVO_INDEX(timer,Channel[timer]) < ServoCount && Channel[timer] < SERVOS_PER_TIMER) {
     *OCRnA = *TCNTn + SERVO(timer,Channel[timer]).ticks;
     if (SERVO(timer,Channel[timer]).Pin.isActive)     // check if activated
-      digitalWrite( SERVO(timer,Channel[timer]).Pin.nbr,HIGH); // its an active channel so pulse it high
+      digitalWrite( SERVO(timer,Channel[timer]).Pin.nbr, HIGH); // its an active channel so pulse it high
   }
   else {
     // finished all channels so wait for the refresh period to expire before starting over
@@ -144,7 +146,7 @@ static void initISR(timer16_Sequence_t timer) {
         TIFR1 |= _BV(OCF1A);     // clear any pending interrupts;
         TIMSK1 |= _BV(OCIE1A);   // enable the output compare interrupt
       #endif
-      #if defined(WIRING)
+      #ifdef WIRING
         timerAttach(TIMER1OUTCOMPAREA_INT, Timer1Service);
       #endif
     }
@@ -228,38 +230,39 @@ static boolean isTimerActive(timer16_Sequence_t timer) {
 /****************** end of static functions ******************************/
 
 Servo::Servo() {
-  if ( ServoCount < MAX_SERVOS) {
+  if (ServoCount < MAX_SERVOS) {
     this->servoIndex = ServoCount++;                    // assign a servo index to this instance
-    servos[this->servoIndex].ticks = usToTicks(DEFAULT_PULSE_WIDTH);   // store default values  - 12 Aug 2009
+    servo_info[this->servoIndex].ticks = usToTicks(DEFAULT_PULSE_WIDTH);   // store default values
   }
   else
     this->servoIndex = INVALID_SERVO;  // too many servos
 }
 
-uint8_t Servo::attach(int pin) {
+int8_t Servo::attach(int pin) {
   return this->attach(pin, MIN_PULSE_WIDTH, MAX_PULSE_WIDTH);
 }
 
-uint8_t Servo::attach(int pin, int min, int max) {
-  if (this->servoIndex < MAX_SERVOS ) {
-  #if defined(ENABLE_AUTO_BED_LEVELING) && (PROBE_SERVO_DEACTIVATION_DELAY > 0)
-    if (pin > 0) this->pin = pin; else pin = this->pin;
-  #endif
-    pinMode(pin, OUTPUT);                                   // set servo pin to output
-    servos[this->servoIndex].Pin.nbr = pin;
-    // todo min/max check: abs(min - MIN_PULSE_WIDTH) /4 < 128
-    this->min = (MIN_PULSE_WIDTH - min) / 4; //resolution of min/max is 4 uS
-    this->max = (MAX_PULSE_WIDTH - max) / 4;
-    // initialize the timer if it has not already been initialized
-    timer16_Sequence_t timer = SERVO_INDEX_TO_TIMER(servoIndex);
-    if (!isTimerActive(timer)) initISR(timer);
-    servos[this->servoIndex].Pin.isActive = true;  // this must be set after the check for isTimerActive
-  }
+int8_t Servo::attach(int pin, int min, int max) {
+
+  if (this->servoIndex >= MAX_SERVOS) return -1;
+
+  if (pin > 0) servo_info[this->servoIndex].Pin.nbr = pin;
+  pinMode(servo_info[this->servoIndex].Pin.nbr, OUTPUT); // set servo pin to output
+
+  // todo min/max check: abs(min - MIN_PULSE_WIDTH) /4 < 128
+  this->min = (MIN_PULSE_WIDTH - min) / 4; //resolution of min/max is 4 uS
+  this->max = (MAX_PULSE_WIDTH - max) / 4;
+
+  // initialize the timer if it has not already been initialized
+  timer16_Sequence_t timer = SERVO_INDEX_TO_TIMER(servoIndex);
+  if (!isTimerActive(timer)) initISR(timer);
+  servo_info[this->servoIndex].Pin.isActive = true;  // this must be set after the check for isTimerActive
+
   return this->servoIndex;
 }
 
 void Servo::detach() {
-  servos[this->servoIndex].Pin.isActive = false;
+  servo_info[this->servoIndex].Pin.isActive = false;
   timer16_Sequence_t timer = SERVO_INDEX_TO_TIMER(servoIndex);
   if (!isTimerActive(timer)) finISR(timer);
 }
@@ -268,7 +271,7 @@ void Servo::write(int value) {
   if (value < MIN_PULSE_WIDTH) { // treat values less than 544 as angles in degrees (valid values in microseconds are handled as microseconds)
     if (value < 0) value = 0;
     if (value > 180) value = 180;
-    value = map(value, 0, 180, SERVO_MIN(),  SERVO_MAX());
+    value = map(value, 0, 180, SERVO_MIN(), SERVO_MAX());
   }
   this->writeMicroseconds(value);
 }
@@ -282,12 +285,12 @@ void Servo::writeMicroseconds(int value) {
     else if (value > SERVO_MAX())
       value = SERVO_MAX();
 
-  	value = value - TRIM_DURATION;
-    value = usToTicks(value);  // convert to ticks after compensating for interrupt overhead - 12 Aug 2009
+    value = value - TRIM_DURATION;
+    value = usToTicks(value);  // convert to ticks after compensating for interrupt overhead
 
     uint8_t oldSREG = SREG;
     cli();
-    servos[channel].ticks = value;
+    servo_info[channel].ticks = value;
     SREG = oldSREG;
   }
 }
@@ -296,9 +299,19 @@ void Servo::writeMicroseconds(int value) {
 int Servo::read() { return map( this->readMicroseconds()+1, SERVO_MIN(), SERVO_MAX(), 0, 180); }
 
 int Servo::readMicroseconds() {
-  return (this->servoIndex == INVALID_SERVO) ? 0 : ticksToUs(servos[this->servoIndex].ticks) + TRIM_DURATION;
+  return (this->servoIndex == INVALID_SERVO) ? 0 : ticksToUs(servo_info[this->servoIndex].ticks) + TRIM_DURATION;
 }
 
-bool Servo::attached() { return servos[this->servoIndex].Pin.isActive; }
+bool Servo::attached() { return servo_info[this->servoIndex].Pin.isActive; }
+
+void Servo::move(int value) {
+  if (this->attach(0) >= 0) {
+    this->write(value);
+    #ifdef DEACTIVATE_SERVOS_AFTER_MOVE
+      delay(SERVO_DEACTIVATION_DELAY);
+      this->detach();
+    #endif
+  }
+}
 
 #endif

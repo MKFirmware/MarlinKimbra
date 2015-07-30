@@ -18,6 +18,7 @@
 #define BOARD_RAMPS_13_EEB      34   // RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Bed)
 #define BOARD_RAMPS_13_EFF      35   // RAMPS 1.3 / 1.4 (Power outputs: Hotend, Fan, Fan)
 #define BOARD_RAMPS_13_EEF      36   // RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Fan)
+#define BOARD_RAMPS_13_EEE      37   // RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Hotend2)
 #define BOARD_RAMBO             301  // Rambo
 #define BOARD_MINIRAMBO         302  // Mini-Rambo
 

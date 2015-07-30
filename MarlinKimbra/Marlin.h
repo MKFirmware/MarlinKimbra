@@ -31,22 +31,6 @@
 
 #include "Arduino.h"
 
-// Macros for bit masks
-#define BIT(b) (1<<(b))
-#define TEST(n,b) (((n)&BIT(b))!=0)
-#define SET_BIT(n,b,value) (n) ^= ((-value)^(n)) & (BIT(b))
-
-// Macros for maths shortcuts
-#define M_PI 3.1415926536
-#define RADIANS(d) ((d)*M_PI/180.0)
-#define DEGREES(r) ((r)*180.0/M_PI)
-#define SIN_60 0.8660254037844386
-#define COS_60 0.5
-
-// Macros to contrain values
-#define NOLESS(v,n) do{ if (v < n) v = n; }while(0)
-#define NOMORE(v,n) do{ if (v > n) v = n; }while(0)
-
 typedef unsigned long millis_t;
 
 // Arduino < 1.0.0 does not define this, so we need to do it ourselves
@@ -157,6 +141,8 @@ void ok_to_send();
 #ifdef DELTA
   float probe_bed(float x, float y);
   void set_delta_constants();
+  void adj_tower_delta(int tower);
+  void adj_tower_radius(int tower);
   void home_delta_axis();
   void calibration_report();
   void bed_probe_all();
@@ -165,6 +151,7 @@ void ok_to_send();
   void save_carriage_positions(int position_num);
   void calculate_delta(float cartesian[3]);
   void adjust_delta(float cartesian[3]);
+  void adj_endstops();
   void reset_bed_level();
   void prepare_move_raw();
   extern float delta[3];
@@ -172,6 +159,12 @@ void ok_to_send();
   extern float delta_tower1_x, delta_tower1_y;
   extern float delta_tower2_x, delta_tower2_y;
   extern float delta_tower3_x, delta_tower3_y;
+  extern float z_probe_offset[3];
+  extern float endstop_adj[3];
+  extern float tower_adj[6];
+  extern float diagrod_adj[3];
+  extern float delta_radius;
+  extern float delta_diagonal_rod;
 #endif
 #ifdef SCARA
   void calculate_delta(float cartesian[3]);

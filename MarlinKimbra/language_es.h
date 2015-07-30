@@ -42,12 +42,14 @@
 #define MSG_PREHEAT_GUM_ALL                 "Preheat GUM All"
 #define MSG_PREHEAT_GUM_BEDONLY             "Preheat GUM Bed"
 #define MSG_PREHEAT_GUM_SETTINGS            "Preheat GUM conf"
+#define MSG_TOO_COLD_FOR_M600               "M600 Hotend too cold to change filament"
 #define MSG_COOLDOWN                        "Enfriar"
 #define MSG_SWITCH_PS_ON                    "Encender"
 #define MSG_SWITCH_PS_OFF                   "Apagar"
 #define MSG_EXTRUDE                         "Extruir"
 #define MSG_RETRACT                         "Retraer"
 #define MSG_MOVE_AXIS                       "Mover ejes"
+#define MSG_LEVEL_BED                       "Level bed"
 #define MSG_MOVE_X                          "Mover X"
 #define MSG_MOVE_Y                          "Mover Y"
 #define MSG_MOVE_Z                          "Mover Z"
@@ -61,24 +63,28 @@
 #define MSG_FAN_SPEED                       "Ventilador"
 #define MSG_FLOW                            "Flujo"
 #define MSG_CONTROL                         "Control"
-#define MSG_MIN                             " " STR_THERMOMETER " Min"
-#define MSG_MAX                             " " STR_THERMOMETER " Max"
-#define MSG_FACTOR                          " " STR_THERMOMETER " Fact"
+#define MSG_MIN                             STR_THERMOMETER " Min"
+#define MSG_MAX                             STR_THERMOMETER " Max"
+#define MSG_FACTOR                          STR_THERMOMETER " Fact"
+#define MSG_IDLEOOZING                      "Anti oozing"
 #define MSG_AUTOTEMP                        "Autotemp"
 #define MSG_ON                              "On "
 #define MSG_OFF                             "Off"
 #define MSG_PID_P                           "PID-P"
 #define MSG_PID_I                           "PID-I"
 #define MSG_PID_D                           "PID-D"
+#define MSG_H1                              " H1"
+#define MSG_H2                              " H2"
+#define MSG_H3                              " H3"
 #define MSG_ACC                             "Accel"
 #define MSG_VXY_JERK                        "Vxy-jerk"
 #define MSG_VZ_JERK                         "Vz-jerk"
 #define MSG_VE_JERK                         "Ve-jerk"
 #define MSG_VMAX                            "Vmax "
-#define MSG_X                               "x"
-#define MSG_Y                               "y"
-#define MSG_Z                               "z"
-#define MSG_E                               "e"
+#define MSG_X                               "X"
+#define MSG_Y                               "Y"
+#define MSG_Z                               "Z"
+#define MSG_E                               "E"
 #define MSG_VMIN                            "Vmin"
 #define MSG_VTRAV_MIN                       "Vvacio min"
 #define MSG_AMAX                            "Amax"
@@ -94,7 +100,7 @@
 #define MSG_TEMPERATURE                     "Temperatura"
 #define MSG_MOTION                          "Movimiento"
 #define MSG_VOLUMETRIC                      "Filament"
-#define MSG_VOLUMETRIC_ENABLED		          "E in mm" STR_h3
+#define MSG_VOLUMETRIC_ENABLED              "E in mm3"
 #define MSG_FILAMENT_SIZE_EXTRUDER          "Fil. Dia."
 #define MSG_CONTRAST                        "Contraste"
 #define MSG_STORE_EPROM                     "Guardar memoria"
@@ -134,14 +140,24 @@
 #define MSG_BABYSTEP_Y                      "Babystep Y"
 #define MSG_BABYSTEP_Z                      "Babystep Z"
 #define MSG_ENDSTOP_ABORT                   "Endstop abort"
-
 #define MSG_HEATING_FAILED_LCD              "Heating failed"
 #define MSG_ERR_REDUNDANT_TEMP              "Err: REDUNDANT TEMP ERROR"
 #define MSG_THERMAL_RUNAWAY                 "THERMAL RUNAWAY"
 #define MSG_ERR_MAXTEMP                     "Err: MAXTEMP"
 #define MSG_ERR_MINTEMP                     "Err: MINTEMP"
 #define MSG_ERR_MAXTEMP_BED                 "Err: MAXTEMP BED"
+#define MSG_ERR_MINTEMP_BED                 "Err: MINTEMP BED"
+#define MSG_END_DAY                         "days"
+#define MSG_END_HOUR                        "hours"
+#define MSG_END_MINUTE                      "minutes"
 
+// Debug
+#define MSG_DEBUG_ECHO                      "DEBUG ECHO ENABLED"
+#define MSG_DEBUG_INFO                      "DEBUG INFO ENABLED"
+#define MSG_DEBUG_ERRORS                    "DEBUG ERRORS ENABLED"
+#define MSG_DEBUG_DRYRUN                    "DEBUG DRYRUN ENABLED"
+
+// Calibrate Delta
 #ifdef DELTA
   #define MSG_DELTA_CALIBRATE               "Delta Calibration"
   #define MSG_DELTA_CALIBRATE_X             "Calibrate X"
@@ -150,19 +166,29 @@
   #define MSG_DELTA_CALIBRATE_CENTER        "Calibrate Center"
 #endif // DELTA
 
+// Scara
 #ifdef SCARA
   #define MSG_XSCALE                        "X Scale"
   #define MSG_YSCALE                        "Y Scale"
 #endif
 
+#define MSG_HEATING                         "Heating..."
+#define MSG_HEATING_COMPLETE                "Heating done."
+#define MSG_BED_HEATING                     "Bed Heating."
+#define MSG_BED_DONE                        "Bed done."
+
+// Extra
 #define MSG_LASER                           "Laser Preset"
 #define MSG_CONFIG                          "Configuration"
-#define MSG_BAUDRATE                        "Baudrate"
 #define MSG_E_BOWDEN_LENGTH                 "Extrude " STRINGIFY(BOWDEN_LENGTH) "mm"
 #define MSG_R_BOWDEN_LENGTH                 "Retract " STRINGIFY(BOWDEN_LENGTH) "mm"
 #define MSG_PURGE_XMM                       "Purge " STRINGIFY(LCD_PURGE_LENGTH) "mm"
 #define MSG_RETRACT_XMM                     "Retract " STRINGIFY(LCD_RETRACT_LENGTH) "mm"
+#define MSG_SAVED_POS                       "Saved position"
+#define MSG_RESTORING_POS                   "Restoring position"
+#define MSG_INVALID_POS_SLOT                "Invalid slot, total slots: "
 
+// Firmware Test
 #ifdef FIRMWARE_TEST
   #define MSG_FWTEST_YES                    "Put the Y command to go next"
   #define MSG_FWTEST_NO                     "Put the N command to go next"
@@ -178,6 +204,7 @@
   #define MSG_FWTEST_03                     "Start check ENDSTOP"
   #define MSG_FWTEST_04                     "Start check MOTOR"
   #define MSG_FWTEST_ATTENTION              "ATTENTION! Check that the three axes are more than 5 mm from the endstop!"
+  #define MSG_FWTEST_END                    "Finish Test. Disable FIRMWARE_TEST and recompile."
 #endif // FIRMWARE_TEST
 
 #endif // LANGUAGE_ES_H

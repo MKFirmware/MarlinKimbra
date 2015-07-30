@@ -1,4 +1,5 @@
 #include "ultralcd.h"
+
 #ifdef ULTRA_LCD
 #include "Marlin.h"
 #include "language.h"
@@ -343,14 +344,14 @@ static void lcd_status_screen() {
     #if HAS_LCD_FILAMENT_SENSOR && HAS_LCD_POWER_SENSOR
       if (millis() > previous_lcd_status_ms + 15000)
     #else
-     if (millis() > previous_lcd_status_ms + 10000)
+      if (millis() > previous_lcd_status_ms + 10000)
     #endif
     {
       previous_lcd_status_ms = millis();
     }
   #endif
 
-#ifdef ULTIPANEL
+  #ifdef ULTIPANEL
 
     bool current_click = LCD_CLICKED;
 
@@ -1003,21 +1004,15 @@ static void lcd_control_temperature_menu() {
   #if TEMP_SENSOR_0 != 0
     MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 0", &target_temperature[0], 0, HEATER_0_MAXTEMP + LCD_MAX_TEMP_OFFSET);
   #endif
-  #if HOTENDS > 1
-    #if TEMP_SENSOR_1 != 0
-      MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 1", &target_temperature[1], 0, HEATER_1_MAXTEMP + LCD_MAX_TEMP_OFFSET);
-    #endif
-    #if HOTENDS > 2
-      #if TEMP_SENSOR_2 != 0
-        MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 2", &target_temperature[2], 0, HEATER_2_MAXTEMP + LCD_MAX_TEMP_OFFSET);
-      #endif
-      #if HOTENDS > 3
-        #if TEMP_SENSOR_3 != 0
-          MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 3", &target_temperature[3], 0, HEATER_3_MAXTEMP + LCD_MAX_TEMP_OFFSET);
-        #endif
-      #endif //HOTENDS > 3
-    #endif //HOTENDS > 2
-  #endif //HOTENDS > 1
+  #if HOTENDS > 1 && TEMP_SENSOR_1 != 0
+    MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 1", &target_temperature[1], 0, HEATER_1_MAXTEMP + LCD_MAX_TEMP_OFFSET);
+    #if HOTENDS > 2 && TEMP_SENSOR_2 != 0
+      MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 2", &target_temperature[2], 0, HEATER_2_MAXTEMP + LCD_MAX_TEMP_OFFSET);
+      #if HOTENDS > 3 && TEMP_SENSOR_3 != 0
+        MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 3", &target_temperature[3], 0, HEATER_3_MAXTEMP + LCD_MAX_TEMP_OFFSET);
+      #endif // HOTENDS > 3
+    #endif // HOTENDS > 2
+  #endif // HOTENDS > 1
 
   //
   // Bed
@@ -1079,10 +1074,10 @@ static void lcd_control_temperature_menu() {
           // i is typically a small value so allows values below 1
           MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_I MSG_H3, &raw_Ki, 0.01, 9990, copy_and_scalePID_i_H3);
           MENU_ITEM_EDIT_CALLBACK(float52, MSG_PID_D MSG_H3, &raw_Kd, 1, 9990, copy_and_scalePID_d_H3);
-        #endif //HOTENDS > 3
-      #endif //HOTENDS > 2
-    #endif //HOTENDS > 1
-  #endif //PIDTEMP
+        #endif // HOTENDS > 3
+      #endif // HOTENDS > 2
+    #endif // HOTENDS > 1
+  #endif // PIDTEMP
 
   //
   // Preheat PLA conf
@@ -1583,6 +1578,7 @@ void lcd_init() {
   #ifdef ULTIPANEL
     encoderDiff = 0;
   #endif
+
 }
 
 int lcd_strlen(char *s) {
@@ -1831,7 +1827,7 @@ void lcd_reset_alert_level() { lcd_status_message_level = 0; }
     #define encrot1 2
     #define encrot2 3
     #define encrot3 1
-  #endif 
+  #endif
 
   /**
    * Read encoder buttons from the hardware registers
@@ -2258,7 +2254,564 @@ char *ftostr52(const float &x) {
     pageShowInfo = 0;
     lcd_goto_menu(lcd_level_bed);
   }
-
 #endif
+
+#elif defined(NEXTION)
+
+#include "Marlin.h"
+#include "language.h"
+#include "cardreader.h"
+#include "temperature.h"
+#include "stepper.h"
+#include "configuration_store.h"
+#include "NexText.h"
+#include "NexHotspot.h"
+#include "NexProgressBar.h"
+
+char buffer[100]    = {0};
+char lcd_status_message[30] = WELCOME_MSG; // worst case is kana with up to 3*LCD_WIDTH+1
+uint8_t lcd_status_message_level = 0;
+
+// Text
+NexText Hotend0     = NexText(1, 3,   "t0");
+NexText Hotend1     = NexText(1, 7,   "t1");
+NexText Hotend2     = NexText(1, 9,   "t2");
+NexText Hotend3     = NexText(1, 12,  "t3");
+NexText Bed         = NexText(1, 16,  "t4");
+NexText LedStatus   = NexText(1, 26,  "t5");
+NexText LedCoord    = NexText(1, 27,  "t6");
+NexText set0        = NexText(2, 2,   "set0");
+NexText set1        = NexText(2, 15,  "set1");
+
+// Progress Bar
+NexProgressBar jp0  = NexProgressBar(1, 2, "jp0");
+NexProgressBar jp1  = NexProgressBar(1, 5, "jp1");
+NexProgressBar jp2  = NexProgressBar(1, 8, "jp2");
+NexProgressBar jp3  = NexProgressBar(1, 11, "jp3");
+NexProgressBar jp4  = NexProgressBar(1, 14, "jp4");
+
+// Touch area
+NexHotspot homex    = NexHotspot(1, 17, "homex",  homePopCallback,    &homex);
+NexHotspot homey    = NexHotspot(1, 18, "homey",  homePopCallback,    &homey);
+NexHotspot homez    = NexHotspot(1, 19, "homez",  homePopCallback,    &homez);
+NexHotspot home0    = NexHotspot(1, 20, "home0",  homePopCallback,    &home0);
+NexHotspot hot0     = NexHotspot(1, 21, "hot0",   hotPopCallback,     &hot0);
+NexHotspot hot1     = NexHotspot(1, 22, "hot1",   hotPopCallback,     &hot1);
+NexHotspot hot2     = NexHotspot(1, 23, "hot2",   hotPopCallback,     &hot2);
+NexHotspot hot3     = NexHotspot(1, 24, "hot3",   hotPopCallback,     &hot3);
+NexHotspot hot4     = NexHotspot(1, 25, "hot4",   hotPopCallback,     &hot4);
+NexHotspot m11      = NexHotspot(2, 14, "m11",    sethotPopCallback,  &m11);
+NexHotspot tup      = NexHotspot(2, 16, "tup",    settempPopCallback, &tup);
+NexHotspot tdown    = NexHotspot(2, 17, "tdown",  settempPopCallback, &tdown);
+
+NexTouch *nexListenList[] = 
+{
+  &homex,
+  &homey,
+  &homez,
+  &home0,
+  &hot0,
+  &hot1,
+  &hot2,
+  &hot3,
+  &hot4,
+  &m11,
+  &tup,
+  &tdown,
+  NULL
+};
+
+void homePopCallback(void *ptr) {
+  if (ptr == &homex)
+    enqueuecommands_P(PSTR("G28 X"));
+  else if (ptr == &homey)
+    enqueuecommands_P(PSTR("G28 Y"));
+  else if (ptr == &homey)
+    enqueuecommands_P(PSTR("G28 Z"));
+  else if (ptr == &home0)
+    enqueuecommands_P(PSTR("G28"));
+}
+
+void hotPopCallback(void *ptr) {
+  NexTouch::sendCommand("page 2");
+  memset(buffer, 0, sizeof(buffer));
+  if (ptr == &hot0) {
+    if (degTargetHotend(0) != 0) {
+      itoa(degTargetHotend(0), buffer, 10);
+    }
+    set1.setText("M104 T0 S");
+  }
+  if (ptr == &hot1) {
+    if (degTargetHotend(1) != 0) {
+      itoa(degTargetHotend(1), buffer, 10);
+    }
+    set1.setText("M104 T1 S");
+  }
+  if (ptr == &hot2) {
+    if (degTargetHotend(2) != 0) {
+      itoa(degTargetHotend(2), buffer, 10);
+    }
+    set1.setText("M104 T2 S");
+  }
+  if (ptr == &hot3) {
+    if (degTargetHotend(3) != 0) {
+      itoa(degTargetHotend(3), buffer, 10);
+    }
+    set1.setText("M104 T3 S");
+  }
+  if (ptr == &hot4) {
+    if (degTargetBed() != 0) {
+      itoa(degTargetBed(), buffer, 10);
+    }
+    set1.setText("M140 S");
+  }
+  set0.setText(buffer);
+}
+
+void settempPopCallback(void *ptr) {
+  uint16_t number;
+
+  memset(buffer, 0, sizeof(buffer));
+  set0.getText(buffer, sizeof(buffer));
+
+  number = atoi(buffer);
+
+  if (ptr == &tup) number += 1;
+  if (ptr == &tdown) number -= 1;
+
+  memset(buffer, 0, sizeof(buffer));
+  itoa(number, buffer, 10);
+
+  set0.setText(buffer);
+}
+
+void sethotPopCallback(void *ptr) {
+  memset(buffer, 0, sizeof(buffer));
+  set1.getText(buffer, sizeof(buffer));
+  enqueuecommands_P(buffer);
+  NexTouch::sendCommand("page menu");
+  lcd_setstatus(lcd_status_message);
+}
+
+millis_t next_lcd_update_ms;
+
+void lcd_init() {
+  nexInit();
+  delay(SPLASH_SCREEN_DURATION);  // wait to display the splash screen
+  NexTouch::sendCommand("page menu");
+  lcd_setstatus(WELCOME_MSG);
+}
+
+static void temptoLCD(int h, int T1, int T2) {
+  char valuetemp[25] = {0};
+  memset(buffer, 0, sizeof(buffer));
+  itoa(T1, valuetemp, 10);
+  strcat(buffer, valuetemp);
+  strcat(buffer, "/");
+  itoa(T2, valuetemp, 10);
+  strcat(buffer, valuetemp);
+  uint32_t color = 1023;
+  uint32_t prc = (T1/(T2 + 0.1)) * 100;
+  String tempprc = String(prc);
+  String bar_id  = "j" + String(h);
+  
+  if (prc >= 50 && prc < 75)
+    color = 65519;
+  else if (prc >= 75 && prc < 95)
+    color = 64487;
+  else if (prc >= 95 && prc < 100)
+    color = 63488;
+
+  switch (h) {
+    case 0:
+    {
+      Hotend0.setText(buffer);
+      Hotend0.setColor(color);
+      jp0.setValue(prc);
+      break;
+    }
+    case 1:
+    {
+      Hotend1.setText(buffer);
+      Hotend1.setColor(color);
+      jp1.setValue(prc);
+      break;
+    }
+    case 2:
+    {
+      Hotend2.setText(buffer);
+      Hotend2.setColor(color);
+      jp2.setValue(prc);
+      break;
+    }
+    case 3:
+    {
+      Hotend3.setText(buffer);
+      Hotend3.setColor(color);
+      jp3.setValue(prc);
+      break;
+    }
+    case 4:
+    {
+      Bed.setText(buffer);
+      Bed.setColor(color);
+      jp4.setValue(prc);
+      break;
+    }
+  }
+}
+
+static void coordtoLCD() {
+  char *valuetemp;
+
+  memset(buffer, 0, sizeof(buffer));
+  strcat(buffer, "X");
+  if (axis_known_position[X_AXIS]) {
+    #ifdef DELTA
+      valuetemp = ftostr30(current_position[X_AXIS]);
+    #else
+      valuetemp = ftostr3(current_position[X_AXIS]);
+    #endif
+    strcat(buffer, valuetemp);
+  }
+  else
+    strcat(buffer, "---");
+
+  strcat(buffer, " Y");
+  if (axis_known_position[Y_AXIS]) {
+    #ifdef DELTA
+      valuetemp = ftostr30(current_position[Y_AXIS]);
+    #else
+      valuetemp = ftostr3(current_position[Y_AXIS]);
+    #endif
+    strcat(buffer, valuetemp);
+  }
+  else
+    strcat(buffer, "---");
+  
+  strcat(buffer, " Z");
+  if (axis_known_position[Z_AXIS]) {
+    valuetemp = ftostr32sp(current_position[Z_AXIS] + 0.00001);
+    strcat(buffer, valuetemp);
+  }
+  else
+    strcat(buffer, "---");
+  
+  LedCoord.setText(buffer);
+}
+
+void lcd_update() {
+  millis_t ms = millis();
+
+  if (ms > next_lcd_update_ms) {
+
+    nexLoop(nexListenList);
+
+    for (int h = 0; h < HOTENDS; h++) temptoLCD(h, degHotend(h), degTargetHotend(h));
+
+    #if TEMP_SENSOR_BED != 0
+      temptoLCD(4, degBed(), degTargetBed());
+    #endif
+
+    coordtoLCD();
+
+    next_lcd_update_ms = ms + LCD_UPDATE_INTERVAL;
+  }
+}
+
+void lcd_setstatus(const char* message, bool persist) {
+  if (lcd_status_message_level > 0) return;
+  strncpy(lcd_status_message, message, 30);
+  LedStatus.setText(lcd_status_message);
+}
+
+void lcd_setstatuspgm(const char* message, uint8_t level) {
+  if (level >= lcd_status_message_level) {
+    strncpy_P(lcd_status_message, message, 30);
+    lcd_status_message_level = level;
+    LedStatus.setText(lcd_status_message);
+  }
+}
+
+void lcd_setalertstatuspgm(const char* message) {
+  lcd_setstatuspgm(message, 1);
+}
+
+void lcd_reset_alert_level() { lcd_status_message_level = 0; }
+
+/*********************************/
+/** Number to string conversion **/
+/*********************************/
+
+char conv[8];
+
+// Convert float to string with +123.4 format
+char *ftostr3(const float &x) {
+  return itostr3((int)x);
+}
+
+// Convert int to string with 12 format
+char *itostr2(const uint8_t &x) {
+  //sprintf(conv,"%5.1f",x);
+  int xx = x;
+  conv[0] = (xx / 10) % 10 + '0';
+  conv[1] = xx % 10 + '0';
+  conv[2] = 0;
+  return conv;
+}
+
+// Convert float to string with +123.4 format
+char *ftostr31(const float &x) {
+  int xx = abs(x * 10);
+  conv[0] = (x >= 0) ? '+' : '-';
+  conv[1] = (xx / 1000) % 10 + '0';
+  conv[2] = (xx / 100) % 10 + '0';
+  conv[3] = (xx / 10) % 10 + '0';
+  conv[4] = '.';
+  conv[5] = xx % 10 + '0';
+  conv[6] = 0;
+  return conv;
+}
+
+// Convert float to string with 123.4 format, dropping sign
+char *ftostr31ns(const float &x) {
+  int xx = abs(x * 10);
+  conv[0] = (xx / 1000) % 10 + '0';
+  conv[1] = (xx / 100) % 10 + '0';
+  conv[2] = (xx / 10) % 10 + '0';
+  conv[3] = '.';
+  conv[4] = xx % 10 + '0';
+  conv[5] = 0;
+  return conv;
+}
+
+// Convert float to string with 123.4 format
+char *ftostr32(const float &x) {
+  long xx = abs(x * 100);
+  conv[0] = x >= 0 ? (xx / 10000) % 10 + '0' : '-';
+  conv[1] = (xx / 1000) % 10 + '0';
+  conv[2] = (xx / 100) % 10 + '0';
+  conv[3] = '.';
+  conv[4] = (xx / 10) % 10 + '0';
+  conv[5] = xx % 10 + '0';
+  conv[6] = 0;
+  return conv;
+}
+
+// Convert float to string with 1.234 format
+char *ftostr43(const float &x) {
+	long xx = x * 1000;
+    if (xx >= 0)
+		conv[0] = (xx / 1000) % 10 + '0';
+	else
+		conv[0] = '-';
+	xx = abs(xx);
+	conv[1] = '.';
+	conv[2] = (xx / 100) % 10 + '0';
+	conv[3] = (xx / 10) % 10 + '0';
+	conv[4] = (xx) % 10 + '0';
+	conv[5] = 0;
+	return conv;
+}
+
+// Convert float to string with 1.23 format
+char *ftostr12ns(const float &x) {
+  long xx=x*100;
+  
+  xx=abs(xx);
+  conv[0]=(xx/100)%10+'0';
+  conv[1]='.';
+  conv[2]=(xx/10)%10+'0';
+  conv[3]=(xx)%10+'0';
+  conv[4]=0;
+  return conv;
+}
+
+// Convert float to space-padded string with -_23.4_ format
+char *ftostr32sp(const float &x) {
+  long xx = abs(x * 100);
+  uint8_t dig;
+
+  if (x < 0) { // negative val = -_0
+    conv[0] = '-';
+    dig = (xx / 1000) % 10;
+    conv[1] = dig ? '0' + dig : ' ';
+  }
+  else { // positive val = __0
+    dig = (xx / 10000) % 10;
+    if (dig) {
+      conv[0] = '0' + dig;
+      conv[1] = '0' + (xx / 1000) % 10;
+    }
+    else {
+      conv[0] = ' ';
+      dig = (xx / 1000) % 10;
+      conv[1] = dig ? '0' + dig : ' ';
+    }
+  }
+
+  conv[2] = '0' + (xx / 100) % 10; // lsd always
+
+  dig = xx % 10;
+  if (dig) { // 2 decimal places
+    conv[5] = '0' + dig;
+    conv[4] = '0' + (xx / 10) % 10;
+    conv[3] = '.';
+  }
+  else { // 1 or 0 decimal place
+    dig = (xx / 10) % 10;
+    if (dig) {
+      conv[4] = '0' + dig;
+      conv[3] = '.';
+    }
+    else {
+      conv[3] = conv[4] = ' ';
+    }
+    conv[5] = ' ';
+  }
+  conv[6] = '\0';
+  return conv;
+}
+
+// Convert int to lj string with +123.0 format
+char *itostr31(const int &x) {
+  conv[0] = x >= 0 ? '+' : '-';
+  int xx = abs(x);
+  conv[1] = (xx / 100) % 10 + '0';
+  conv[2] = (xx / 10) % 10 + '0';
+  conv[3] = xx % 10 + '0';
+  conv[4] = '.';
+  conv[5] = '0';
+  conv[6] = 0;
+  return conv;
+}
+
+// Convert int to rj string with 123 or -12 format
+char *itostr3(const int &x) {
+  int xx = x;
+  if (xx < 0) {
+     conv[0] = '-';
+     xx = -xx;
+  }
+  else
+    conv[0] = xx >= 100 ? (xx / 100) % 10 + '0' : ' ';
+
+  conv[1] = xx >= 10 ? (xx / 10) % 10 + '0' : ' ';
+  conv[2] = xx % 10 + '0';
+  conv[3] = 0;
+  return conv;
+}
+
+// Convert int to lj string with 123 format
+char *itostr3left(const int &xx) {
+  if (xx >= 100) {
+    conv[0] = (xx / 100) % 10 + '0';
+    conv[1] = (xx / 10) % 10 + '0';
+    conv[2] = xx % 10 + '0';
+    conv[3] = 0;
+  }
+  else if (xx >= 10) {
+    conv[0] = (xx / 10) % 10 + '0';
+    conv[1] = xx % 10 + '0';
+    conv[2] = 0;
+  }
+  else {
+    conv[0] = xx % 10 + '0';
+    conv[1] = 0;
+  }
+  return conv;
+}
+
+// Convert int to rj string with 1234 format
+char *itostr4(const int &xx) {
+  conv[0] = xx >= 1000 ? (xx / 1000) % 10 + '0' : ' ';
+  conv[1] = xx >= 100 ? (xx / 100) % 10 + '0' : ' ';
+  conv[2] = xx >= 10 ? (xx / 10) % 10 + '0' : ' ';
+  conv[3] = xx % 10 + '0';
+  conv[4] = 0;
+  return conv;
+}
+
+char *ltostr7(const long &xx) {
+  if (xx >= 1000000)
+    conv[0]=(xx/1000000)%10+'0';
+  else
+    conv[0]=' ';
+  if (xx >= 100000)
+    conv[1]=(xx/100000)%10+'0';
+  else
+    conv[1]=' ';
+  if (xx >= 10000)
+    conv[2]=(xx/10000)%10+'0';
+  else
+    conv[2]=' ';
+  if (xx >= 1000)
+    conv[3]=(xx/1000)%10+'0';
+  else
+    conv[3]=' ';
+  if (xx >= 100)
+    conv[4]=(xx/100)%10+'0';
+  else
+    conv[4]=' ';
+  if (xx >= 10)
+    conv[5]=(xx/10)%10+'0';
+  else
+    conv[5]=' ';
+  conv[6]=(xx)%10+'0';
+  conv[7]=0;
+  return conv;
+}
+
+// convert float to string with +123 format
+char *ftostr30(const float &x) {
+  int xx=x;
+  conv[0]=(xx>=0)?'+':'-';
+  xx=abs(xx);
+  conv[1]=(xx/100)%10+'0';
+  conv[2]=(xx/10)%10+'0';
+  conv[3]=(xx)%10+'0';
+  conv[4]=0;
+  return conv;
+}
+
+// Convert float to rj string with 12345 format
+char *ftostr5(const float &x) {
+  long xx = abs(x);
+  conv[0] = xx >= 10000 ? (xx / 10000) % 10 + '0' : ' ';
+  conv[1] = xx >= 1000 ? (xx / 1000) % 10 + '0' : ' ';
+  conv[2] = xx >= 100 ? (xx / 100) % 10 + '0' : ' ';
+  conv[3] = xx >= 10 ? (xx / 10) % 10 + '0' : ' ';
+  conv[4] = xx % 10 + '0';
+  conv[5] = 0;
+  return conv;
+}
+
+// Convert float to string with +1234.5 format
+char *ftostr51(const float &x) {
+  long xx = abs(x * 10);
+  conv[0] = (x >= 0) ? '+' : '-';
+  conv[1] = (xx / 10000) % 10 + '0';
+  conv[2] = (xx / 1000) % 10 + '0';
+  conv[3] = (xx / 100) % 10 + '0';
+  conv[4] = (xx / 10) % 10 + '0';
+  conv[5] = '.';
+  conv[6] = xx % 10 + '0';
+  conv[7] = 0;
+  return conv;
+}
+
+// Convert float to string with +123.45 format
+char *ftostr52(const float &x) {
+  conv[0] = (x >= 0) ? '+' : '-';
+  long xx = abs(x * 100);
+  conv[1] = (xx / 10000) % 10 + '0';
+  conv[2] = (xx / 1000) % 10 + '0';
+  conv[3] = (xx / 100) % 10 + '0';
+  conv[4] = '.';
+  conv[5] = (xx / 10) % 10 + '0';
+  conv[6] = xx % 10 + '0';
+  conv[7] = 0;
+  return conv;
+}
 
 #endif //ULTRA_LCD

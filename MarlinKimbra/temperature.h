@@ -146,7 +146,7 @@ int getHeaterPower(int heater);
 void disable_all_heaters();
 void updatePID();
 
-void PID_autotune(float temp, int extruder, int ncycles);
+void PID_autotune(float temp, int hotend, int ncycles);
 
 void setExtruderAutoFanState(int pin, bool state);
 void checkExtruderAutoFans();

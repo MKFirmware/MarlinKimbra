@@ -14,10 +14,10 @@
  *
  */
 
-#define EEPROM_VERSION "V23"
+#define EEPROM_VERSION "V24"
 
 /**
- * V23 EEPROM Layout:
+ * V24 EEPROM Layout:
  *
  *  ver
  *  M92   XYZ E0 ...      axis_steps_per_unit X,Y,Z,E0 ... (per extruder)
@@ -40,10 +40,11 @@
  *
  * DELTA:
  *  M666  XYZ             endstop_adj (x3)
- *  M666  ABCDEFG         tower_adj (x6) 
  *  M666  R               delta_radius
  *  M666  D               delta_diagonal_rod
  *  M666  H               Z max_pos
+ *  M666  ABCIJK          tower_adj (x6)
+ *  M666  UVW             diagrod_adj (x3)
  *  M666  P XYZ           XYZ probe_offset (x3)
  *
  * Z_DUAL_ENDSTOPS
@@ -171,6 +172,7 @@ void Config_StoreSettings() {
     EEPROM_WRITE_VAR(i, delta_diagonal_rod);
     EEPROM_WRITE_VAR(i, max_pos);
     EEPROM_WRITE_VAR(i, tower_adj);
+    EEPROM_WRITE_VAR(i, diagrod_adj);
     EEPROM_WRITE_VAR(i, z_probe_offset);
   #elif defined(Z_DUAL_ENDSTOPS)
     EEPROM_WRITE_VAR(i, z_endstop_adj);            // 1 floats
@@ -253,7 +255,7 @@ void Config_StoreSettings() {
   EEPROM_WRITE_VAR(j, ver2); // validate data
 
   // Report storage size
-  ECHO_SMV(DB, "Settings Stored (", i);
+  ECHO_SMV(DB, "Settings Stored (", (unsigned long)i);
   ECHO_EM(" bytes)");
 }
 
@@ -307,6 +309,7 @@ void Config_RetrieveSettings() {
       EEPROM_READ_VAR(i, delta_diagonal_rod);
       EEPROM_READ_VAR(i, max_pos);
       EEPROM_READ_VAR(i, tower_adj);
+      EEPROM_READ_VAR(i, diagrod_adj);
       EEPROM_READ_VAR(i, z_probe_offset);
       // Update delta constants for updated delta_radius & tower_adj values
       set_delta_constants();
@@ -389,7 +392,7 @@ void Config_RetrieveSettings() {
 
     // Report settings retrieved and length
     ECHO_SV(DB, ver);
-    ECHO_MV(" stored settings retrieved (", i);
+    ECHO_MV(" stored settings retrieved (", (unsigned long)i);
     ECHO_EM(" bytes)");
   }
 
@@ -468,7 +471,7 @@ void Config_ResetDefault() {
 
   #ifdef SCARA
     for (int8_t i = 0; i < NUM_AXIS; i++) {
-      if (i < sizeof(axis_scaling) / sizeof(*axis_scaling))
+      if (i < COUNT(axis_scaling))
         axis_scaling[i] = 1;
     }
   #endif
@@ -492,10 +495,20 @@ void Config_ResetDefault() {
   #endif
 
   #ifdef DELTA
-    endstop_adj[X_AXIS] = endstop_adj[Y_AXIS] = endstop_adj[Z_AXIS] = 0;
     delta_radius = DEFAULT_DELTA_RADIUS;
     delta_diagonal_rod = DEFAULT_DELTA_DIAGONAL_ROD;
-    tower_adj[0] = tower_adj[1] = tower_adj[2] = tower_adj[3] = tower_adj[4] = tower_adj[5] = 0;
+    endstop_adj[0] = TOWER_A_ENDSTOP_ADJ;
+    endstop_adj[1] = TOWER_B_ENDSTOP_ADJ;
+    endstop_adj[2] = TOWER_C_ENDSTOP_ADJ;
+    tower_adj[0] = TOWER_A_POSITION_ADJ;
+    tower_adj[1] = TOWER_B_POSITION_ADJ;
+    tower_adj[2] = TOWER_C_POSITION_ADJ;
+    tower_adj[3] = TOWER_A_RADIUS_ADJ;
+    tower_adj[4] = TOWER_B_RADIUS_ADJ;
+    tower_adj[5] = TOWER_C_RADIUS_ADJ;
+    diagrod_adj[0] = TOWER_A_DIAGROD_ADJ;
+    diagrod_adj[1] = TOWER_B_DIAGROD_ADJ;
+    diagrod_adj[2] = TOWER_C_DIAGROD_ADJ;
     max_pos[2] = MANUAL_Z_HOME_POS;
     set_default_z_probe_offset();
     set_delta_constants();
@@ -679,6 +692,9 @@ void Config_ResetDefault() {
       ECHO_MV(" I", tower_adj[3], 3);
       ECHO_MV(" J", tower_adj[4], 3);
       ECHO_MV(" K", tower_adj[5], 3);
+      ECHO_MV(" U", diagrod_adj[0], 3);
+      ECHO_MV(" V", diagrod_adj[1], 3);
+      ECHO_MV(" W", diagrod_adj[2], 3);
       ECHO_MV(" R", delta_radius);
       ECHO_MV(" D", delta_diagonal_rod);
       ECHO_EMV(" H", max_pos[2]);

@@ -75,13 +75,12 @@ unsigned char soft_pwm_bed;
 
 #if defined(THERMAL_PROTECTION_HOTENDS) || defined(THERMAL_PROTECTION_BED)
   enum TRState { TRReset, TRInactive, TRFirstHeating, TRStable, TRRunaway };
-  static float tr_target_temperature[HOTENDS + 1] = { 0.0 };
   void thermal_runaway_protection(TRState *state, millis_t *timer, float temperature, float target_temperature, int heater_id, int period_seconds, int hysteresis_degc);
   #ifdef THERMAL_PROTECTION_HOTENDS
     static TRState thermal_runaway_state_machine[4] = { TRReset, TRReset, TRReset, TRReset };
     static millis_t thermal_runaway_timer[4]; // = {0,0,0,0};
   #endif
-  #ifdef THERMAL_PROTECTION_BED
+  #if defined(THERMAL_PROTECTION_BED) && TEMP_SENSOR_BED != 0
     static TRState thermal_runaway_bed_state_machine = TRReset;
     static millis_t thermal_runaway_bed_timer;
   #endif
@@ -426,11 +425,11 @@ void checkExtruderAutoFans() {
   // update extruder auto fan states
   #if HAS_AUTO_FAN_0
     setExtruderAutoFanState(EXTRUDER_0_AUTO_FAN_PIN, (fanState & 1) != 0);
-  #endif 
+  #endif
   #if HAS_AUTO_FAN_1
     if (EXTRUDER_1_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN)
       setExtruderAutoFanState(EXTRUDER_1_AUTO_FAN_PIN, (fanState & 2) != 0);
-  #endif 
+  #endif
   #if HAS_AUTO_FAN_2
     if (EXTRUDER_2_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN
         && EXTRUDER_2_AUTO_FAN_PIN != EXTRUDER_1_AUTO_FAN_PIN)
@@ -485,6 +484,8 @@ float get_pid_output(int e) {
       pid_output = constrain(target_temperature[e], 0, PID_MAX);
     #else
       pid_error[e] = target_temperature[e] - current_temperature[e];
+      dTerm[e] = K2 * PID_PARAM(Kd,e) * (current_temperature[e] - temp_dState[e]) + K1 * dTerm[e];
+      temp_dState[e] = current_temperature[e];
       if (pid_error[e] > PID_FUNCTIONAL_RANGE) {
         pid_output = BANG_MAX;
         pid_reset[e] = true;
@@ -503,7 +504,6 @@ float get_pid_output(int e) {
         temp_iState[e] = constrain(temp_iState[e], temp_iState_min[e], temp_iState_max[e]);
         iTerm[e] = PID_PARAM(Ki,e) * temp_iState[e];
 
-        dTerm[e] = K2 * PID_PARAM(Kd,e) * (current_temperature[e] - temp_dState[e]) + K1 * dTerm[e];
         pid_output = pTerm[e] + iTerm[e] - dTerm[e];
         if (pid_output > PID_MAX) {
           if (pid_error[e] > 0) temp_iState[e] -= pid_error[e]; // conditional un-integration
@@ -514,7 +514,6 @@ float get_pid_output(int e) {
           pid_output = 0;
         }
       }
-      temp_dState[e] = current_temperature[e];
     #endif //PID_OPENLOOP
 
     #ifdef PID_DEBUG
@@ -1043,7 +1042,7 @@ void tp_init() {
   void start_watching_heater(int e) {
     if (degHotend(e) < degTargetHotend(e) - (WATCH_TEMP_INCREASE + TEMP_HYSTERESIS + 1)) {
       watch_target_temp[e] = degHotend(e) + WATCH_TEMP_INCREASE;
-      watch_heater_next_ms[e] = millis() + WATCH_TEMP_PERIOD * 1000;
+      watch_heater_next_ms[e] = millis() + WATCH_TEMP_PERIOD * 1000UL;
     }
     else
       watch_heater_next_ms[e] = 0;
@@ -1054,6 +1053,7 @@ void tp_init() {
 
   void thermal_runaway_protection(TRState *state, millis_t *timer, float temperature, float target_temperature, int heater_id, int period_seconds, int hysteresis_degc) {
 
+    static float tr_target_temperature[HOTENDS + 1] = { 0.0 };
     /*
         ECHO_SM(DB, "Thermal Thermal Runaway Running. Heater ID: ");
         if (heater_id < 0) ECHO_M("bed"); else ECHO_V(heater_id);
@@ -1073,7 +1073,6 @@ void tp_init() {
       case TRReset:
         *timer = 0;
         *state = TRInactive;
-        break;
       // Inactive state waits for a target temperature to be set
       case TRInactive:
         if (target_temperature > 0) {
@@ -1112,7 +1111,9 @@ void disable_all_heaters() {
   }
 
   #if HAS_TEMP_0
-    DISABLE_HEATER(0);
+    target_temperature[0] = 0;
+    soft_pwm[0] = 0;
+    WRITE_HEATER_0P(LOW); // Should HEATERS_PARALLEL apply here? Then change to DISABLE_HEATER(0)
   #endif
 
   #if HOTENDS > 1 && HAS_TEMP_1
@@ -1269,7 +1270,7 @@ ISR(TIMER0_COMPB_vect) {
       static unsigned char state_timer_heater_ ## n = 0
   #else
     #define ISR_STATICS(n) static unsigned char soft_pwm_ ## n
-  #endif 
+  #endif
 
   // Statics per heater
   ISR_STATICS(0);
@@ -1396,7 +1397,6 @@ ISR(TIMER0_COMPB_vect) {
           #endif
         #endif
       #endif
-
       #if HAS_HEATER_BED
         _SLOW_PWM_ROUTINE(BED, soft_pwm_bed); // BED
       #endif
@@ -1413,7 +1413,6 @@ ISR(TIMER0_COMPB_vect) {
         #endif
       #endif
     #endif
-
     #if HAS_HEATER_BED
       PWM_OFF_ROUTINE(BED); // BED
     #endif
@@ -1445,7 +1444,6 @@ ISR(TIMER0_COMPB_vect) {
           #endif
         #endif
       #endif
-
       #if HAS_HEATER_BED
         if (state_timer_heater_BED > 0) state_timer_heater_BED--;
       #endif
@@ -1569,7 +1567,7 @@ ISR(TIMER0_COMPB_vect) {
       temp_state = PrepareTemp_0;
       break;
 
-    //default:
+    // default:
     //  ECHO_LM(ER, MSG_TEMP_READ_ERROR);
     //  break;
   } // switch(temp_state)
@@ -1601,7 +1599,7 @@ ISR(TIMER0_COMPB_vect) {
       if (minttemp_raw[0] GE0 current_temperature_raw[0]) min_temp_error(0);
     #endif
 
-    #if HAS_TEMP_1
+    #if HAS_TEMP_1 && HOTENDS > 1
       #if HEATER_1_RAW_LO_TEMP > HEATER_1_RAW_HI_TEMP
         #define GE1 <=
       #else
@@ -1609,9 +1607,9 @@ ISR(TIMER0_COMPB_vect) {
       #endif
       if (current_temperature_raw[1] GE1 maxttemp_raw[1]) max_temp_error(1);
       if (minttemp_raw[1] GE1 current_temperature_raw[1]) min_temp_error(1);
-    #endif // HAS_TEMP_1
+    #endif // TEMP_SENSOR_1
 
-    #if HAS_TEMP_2
+    #if HAS_TEMP_2 && HOTENDS > 2
       #if HEATER_2_RAW_LO_TEMP > HEATER_2_RAW_HI_TEMP
         #define GE2 <=
       #else
@@ -1619,9 +1617,9 @@ ISR(TIMER0_COMPB_vect) {
       #endif
       if (current_temperature_raw[2] GE2 maxttemp_raw[2]) max_temp_error(2);
       if (minttemp_raw[2] GE2 current_temperature_raw[2]) min_temp_error(2);
-    #endif // HAS_TEMP_2
+    #endif // TEMP_SENSOR_2
 
-    #if HAS_TEMP_3
+    #if HAS_TEMP_3 && HOTENDS > 3
       #if HEATER_3_RAW_LO_TEMP > HEATER_3_RAW_HI_TEMP
         #define GE3 <=
       #else
@@ -1629,7 +1627,7 @@ ISR(TIMER0_COMPB_vect) {
       #endif
       if (current_temperature_raw[3] GE3 maxttemp_raw[3]) max_temp_error(3);
       if (minttemp_raw[3] GE3 current_temperature_raw[3]) min_temp_error(3);
-    #endif // HAS_TEMP_3
+    #endif // TEMP_SENSOR_3
 
     #if HAS_TEMP_BED
       #if HEATER_BED_RAW_LO_TEMP > HEATER_BED_RAW_HI_TEMP

@@ -174,36 +174,6 @@
         #error "The given BACK_PROBE_BED_POSITION can't be reached by the probe."
       #endif
 
-      #define PROBE_SIZE_X (X_PROBE_OFFSET_FROM_EXTRUDER * (AUTO_BED_LEVELING_GRID_POINTS-1))
-      #define PROBE_SIZE_Y (Y_PROBE_OFFSET_FROM_EXTRUDER * (AUTO_BED_LEVELING_GRID_POINTS-1))
-      #define PROBE_AREA_WIDTH (RIGHT_PROBE_BED_POSITION - LEFT_PROBE_BED_POSITION)
-      #define PROBE_AREA_DEPTH (BACK_PROBE_BED_POSITION - FRONT_PROBE_BED_POSITION)
-      #if X_PROBE_OFFSET_FROM_EXTRUDER < 0
-        #if PROBE_SIZE_X <= -PROBE_AREA_WIDTH
-          #define X_PROBE_ERROR
-        #endif
-      #elif PROBE_SIZE_X >= PROBE_AREA_WIDTH
-        #define X_PROBE_ERROR
-      #endif
-      #ifdef X_PROBE_ERROR
-        #error The X axis probing range is too small to fit all the points defined in AUTO_BED_LEVELING_GRID_POINTS
-      #endif
-      #if Y_PROBE_OFFSET_FROM_EXTRUDER < 0
-        #if PROBE_SIZE_Y <= -PROBE_AREA_DEPTH
-          #define Y_PROBE_ERROR
-        #endif
-      #elif PROBE_SIZE_Y >= PROBE_AREA_DEPTH
-        #define Y_PROBE_ERROR
-      #endif
-      #ifdef Y_PROBE_ERROR
-        #error The Y axis probing range is too small to fit all the points defined in AUTO_BED_LEVELING_GRID_POINTS
-      #endif
-
-      #undef PROBE_SIZE_X
-      #undef PROBE_SIZE_Y
-      #undef PROBE_AREA_WIDTH
-      #undef PROBE_AREA_DEPTH
-
     #else // !AUTO_BED_LEVELING_GRID
 
       // Check the triangulation points
@@ -264,18 +234,18 @@
    */
   #if HAS_AUTO_FAN && HAS_FAN
     #if EXTRUDER_0_AUTO_FAN_PIN == FAN_PIN
-      #error You cannot set EXTRUDER_0_AUTO_FAN_PIN equal to FAN_PIN
+      #error You cannot set EXTRUDER_0_AUTO_FAN_PIN equal to FAN_PIN.
     #elif EXTRUDER_1_AUTO_FAN_PIN == FAN_PIN
-      #error You cannot set EXTRUDER_1_AUTO_FAN_PIN equal to FAN_PIN
+      #error You cannot set EXTRUDER_1_AUTO_FAN_PIN equal to FAN_PIN.
     #elif EXTRUDER_2_AUTO_FAN_PIN == FAN_PIN
-      #error You cannot set EXTRUDER_2_AUTO_FAN_PIN equal to FAN_PIN
+      #error You cannot set EXTRUDER_2_AUTO_FAN_PIN equal to FAN_PIN.
     #elif EXTRUDER_3_AUTO_FAN_PIN == FAN_PIN
-      #error You cannot set EXTRUDER_3_AUTO_FAN_PIN equal to FAN_PIN
+      #error You cannot set EXTRUDER_3_AUTO_FAN_PIN equal to FAN_PIN.
     #endif
   #endif
 
   #if HAS_FAN && CONTROLLERFAN_PIN == FAN_PIN
-    #error You cannot set CONTROLLERFAN_PIN equal to FAN_PIN
+    #error You cannot set CONTROLLERFAN_PIN equal to FAN_PIN.
   #endif
 
   /**
@@ -293,28 +263,37 @@
     #if !HAS_HEATER_1
       #error HEATER_1_PIN not defined for this board
     #endif
-  #endif
-  #if !HAS_HEATER_0
-    #error HEATER_0_PIN not defined for this board
+  #elif HOTENDS > 0
+    #if !HAS_HEATER_0
+      #error HEATER_0_PIN not defined for this board
+    #endif
   #endif
 
   /**
    * Warnings for old configurations
    */
   #ifdef X_HOME_RETRACT_MM
-    #error [XYZ]_HOME_RETRACT_MM settings have been renamed [XYZ]_HOME_BUMP_MM
+    #error [XYZ]_HOME_RETRACT_MM settings have been renamed [XYZ]_HOME_BUMP_MM.
   #endif
 
   #if WATCH_TEMP_PERIOD > 500
-    #error WATCH_TEMP_PERIOD now uses seconds instead of milliseconds
+    #error WATCH_TEMP_PERIOD now uses seconds instead of milliseconds.
   #endif
 
   #if !defined(THERMAL_PROTECTION_HOTENDS) && (defined(WATCH_TEMP_PERIOD) || defined(THERMAL_PROTECTION_PERIOD))
-    #error Thermal Runaway Protection for hotends must now be enabled with THERMAL_PROTECTION_HOTENDS
+    #error Thermal Runaway Protection for hotends must now be enabled with THERMAL_PROTECTION_HOTENDS.
   #endif
 
   #if !defined(THERMAL_PROTECTION_BED) && defined(THERMAL_PROTECTION_BED_PERIOD)
-    #error Thermal Runaway Protection for the bed must now be enabled with THERMAL_PROTECTION_BED
+    #error Thermal Runaway Protection for the bed must now be enabled with THERMAL_PROTECTION_BED.
+  #endif
+
+  #ifdef PROBE_SERVO_DEACTIVATION_DELAY
+    #error PROBE_SERVO_DEACTIVATION_DELAY has been replaced with DEACTIVATE_SERVOS_AFTER_MOVE and SERVO_DEACTIVATION_DELAY.
+  #endif
+
+  #if defined(COREXZ) && defined(Z_LATE_ENABLE)
+    #error "Z_LATE_ENABLE can't be used with COREXZ."
   #endif
 
 #endif //SANITYCHECK_H

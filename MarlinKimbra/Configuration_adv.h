@@ -151,12 +151,13 @@
   // Play a little bit with small adjustments (0.5mm) and check the behaviour.
   // The M119 (endstops report) will start reporting the Z2 Endstop as well.
 
-  #define Z_DUAL_ENDSTOPS
+  #define Z2_STEP_PIN E2_STEP_PIN           // Stepper to be used to Z2 axis.
+  #define Z2_DIR_PIN E2_DIR_PIN
+  #define Z2_ENABLE_PIN E2_ENABLE_PIN
+
+  // #define Z_DUAL_ENDSTOPS
 
   #ifdef Z_DUAL_ENDSTOPS
-    #define Z2_STEP_PIN E2_STEP_PIN           // Stepper to be used to Z2 axis.
-    #define Z2_DIR_PIN E2_DIR_PIN
-    #define Z2_ENABLE_PIN E2_ENABLE_PIN
     #define Z2_MAX_PIN 36                     //Endstop used for Z2 axis. In this case I'm using XMAX in a Rumba Board (pin 36)
     const bool Z2_MAX_ENDSTOP_INVERTING = false;
     #define DISABLE_XMAX_ENDSTOP              //Better to disable the XMAX to avoid conflict. Just rename "XMAX_ENDSTOP" by the endstop you are using for Z2 axis.
@@ -286,7 +287,6 @@
 #define ENCODER_RATE_MULTIPLIER         // If defined, certain menu edit operations automatically multiply the steps when the encoder is moved quickly
 #define ENCODER_10X_STEPS_PER_SEC   75  // If the encoder steps per sec exceeds this value, multiply steps moved x10 to quickly advance the value
 #define ENCODER_100X_STEPS_PER_SEC 160  // If the encoder steps per sec exceeds this value, multiply steps moved x100 to really quickly advance the value
-//#define ENCODER_RATE_MULTIPLIER_DEBUG // If defined, output the encoder steps per second value
 
 //#define CHDK 4        //Pin for triggering CHDK to take a picture see how to use it here http://captain-slow.dk/2014/03/09/3d-printing-timelapses/
 #define CHDK_DELAY 50   //How long in ms the pin should stay HIGH before going LOW again
@@ -326,6 +326,12 @@
   // This allows hosts to request long names for files and folders with M33
   //#define LONG_FILENAME_HOST_SUPPORT
 
+  // This option allows you to abort SD printing when any endstop is triggered.
+  // This feature must be enabled with "M540 S1" or from the LCD menu.
+  // To have any effect, endstops must be enabled during SD printing.
+  // With ENDSTOPS_ONLY_FOR_HOMING you must send "M120" to enable endstops.
+  //#define ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
+
 #endif // SDSUPPORT
 
 // for dogm lcd displays you can choose some additional fonts:
@@ -348,9 +354,6 @@
 //  However, THIS FEATURE IS UNSAFE!, as it will only work if interrupts are disabled. And the code could hang in an interrupt routine with interrupts disabled.
 //#define WATCHDOG_RESET_MANUAL
 #endif
-
-// Enable the option to stop SD printing when hitting and endstops, needs to be enabled from the LCD menu when this option is enabled.
-//#define ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
 
 // Babystepping enables the user to control the axis in tiny amounts, independently from the normal printing process
 // it can e.g. be used to change z-positions in the print startup phase in real-time

@@ -52,7 +52,16 @@
     #define REPRAP_DISCOUNT_SMART_CONTROLLER
   #endif
 
-  #if defined(ULTIMAKERCONTROLLER) || defined(REPRAP_DISCOUNT_SMART_CONTROLLER) || defined(G3D_PANEL)
+  #ifdef SPARK_FULL_GRAPHICS
+    #define ENCODER_PULSES_PER_STEP 2
+    #define ENCODER_STEPS_PER_MENU_ITEM 1
+
+    #define DOGLCD
+    #define U8GLIB_ST7920
+    #define REPRAP_DISCOUNT_SMART_CONTROLLER
+  #endif
+
+  #if defined(ULTIMAKERCONTROLLER) || defined(REPRAP_DISCOUNT_SMART_CONTROLLER) || defined(G3D_PANEL) || defined(RIGIDBOT_PANEL)
     #define ULTIPANEL
     #define NEWPANEL
   #endif
@@ -60,6 +69,7 @@
   #ifdef RADDS_DISPLAY
     #define ENCODER_PULSES_PER_STEP 2
     #define ENCODER_STEPS_PER_MENU_ITEM 1
+
     #define ULTIPANEL
     #define NEWPANEL
   #endif
@@ -74,6 +84,14 @@
     #define LCD_I2C_ADDRESS 0x27   // I2C Address of the port expander
     #define ULTIPANEL
     #define NEWPANEL
+  #endif
+
+  #ifdef MINIPANEL
+   #define DOGLCD
+   #define SDSUPPORT
+   #define ULTIPANEL
+   #define NEWPANEL
+   #define DEFAULT_LCD_CONTRAST 17
   #endif
 
   /**
@@ -91,11 +109,6 @@
 
   // PANELOLU2 LCD with status LEDs, separate encoder and click inputs
   #ifdef LCD_I2C_PANELOLU2
-    // This uses the LiquidTWI2 library v1.2.3 or later ( https://github.com/lincomatic/LiquidTWI2 )
-    // Make sure the LiquidTWI2 directory is placed in the Arduino or Sketchbook libraries subdirectory.
-    // (v1.2.3 no longer requires you to define PANELOLU in the LiquidTWI2.h library header file)
-    // Note: The PANELOLU2 encoder click input can either be directly connected to a pin
-    //       (if BTN_ENC defined to != -1) or read through I2C (when BTN_ENC == -1).
     #define LCD_I2C_TYPE_MCP23017
     #define LCD_I2C_ADDRESS 0x20 // I2C Address of the port expander
     #define LCD_USE_I2C_BUZZER //comment out to disable buzzer on LCD
@@ -325,7 +338,6 @@
 
     // Effective horizontal distance bridged by diagonal push rods.
     #define DEFAULT_DELTA_RADIUS (DELTA_SMOOTH_ROD_OFFSET-DELTA_EFFECTOR_OFFSET-DELTA_CARRIAGE_OFFSET)
-    #define DELTA_PROBABLE_RADIUS (PRINTER_RADIUS - 10)
     #define LEFT_PROBE_BED_POSITION -DELTA_PROBABLE_RADIUS
     #define RIGHT_PROBE_BED_POSITION DELTA_PROBABLE_RADIUS
     #define FRONT_PROBE_BED_POSITION -DELTA_PROBABLE_RADIUS
@@ -334,7 +346,6 @@
     
   /**
    * AUTOSET LOCATIONS OF LIMIT SWITCHES
-   * Added by ZetaPhoenix 09-15-2012
    */
   #ifdef MANUAL_HOME_POSITIONS  // Use manual limit switch locations
     #define X_HOME_POS MANUAL_X_HOME_POS
@@ -360,7 +371,18 @@
     #define MAX_PROBE_X (min(X_MAX_POS, X_MAX_POS + X_PROBE_OFFSET_FROM_EXTRUDER))
     #define MIN_PROBE_Y (max(Y_MIN_POS, Y_MIN_POS + Y_PROBE_OFFSET_FROM_EXTRUDER))
     #define MAX_PROBE_Y (min(Y_MAX_POS, Y_MAX_POS + Y_PROBE_OFFSET_FROM_EXTRUDER))
+
+    // Z_RAISE_AFTER_PROBING is not for all probes. Be sure that it is zero in that cases
+    #if (NUM_SERVOS == 0) && !defined(Z_PROBE_SLED)
+      #undef Z_RAISE_AFTER_PROBING
+      #define Z_RAISE_AFTER_PROBING 0
+    #endif
   #endif
+
+  /**
+   * Servo Leveling
+   */
+  #define SERVO_LEVELING (defined(SERVO_ENDSTOPS) && defined(DEACTIVATE_SERVOS_AFTER_MOVE))
 
    /**
     * Sled Options
@@ -368,12 +390,6 @@
   #ifdef Z_PROBE_SLED
     #define Z_SAFE_HOMING
   #endif
-  
-  /**
-   * Servo Leveling
-   */
-  #define SERVO_LEVELING (NUM_SERVOS > 0 && defined(ENABLE_AUTO_BED_LEVELING))
-  #define SERVO_LEVELING_DELAY (SERVO_LEVELING && PROBE_SERVO_DEACTIVATION_DELAY > 0)
 
   /**
    * MAX_STEP_FREQUENCY differs for TOSHIBA OR ARDUINO DUE OR ARDUINO MEGA
@@ -492,15 +508,29 @@
   /**
    * ARRAY_BY_EXTRUDERS based on EXTRUDERS
    */
-  #if EXTRUDERS > 3
-    #define ARRAY_BY_EXTRUDERS(v1, v2, v3, v4) { v1, v2, v3, v4 }
+  #if EXTRUDERS > 9
+    #define ARRAY_BY_EXTRUDER(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10) { v1, v2, v3, v4, v5, v6, v7, v8, v9, v10 }
+  #elif EXTRUDERS > 8
+    #define ARRAY_BY_EXTRUDER(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10) { v1, v2, v3, v4, v5, v6, v7, v8, v9 }
+  #elif EXTRUDERS > 7
+    #define ARRAY_BY_EXTRUDER(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10) { v1, v2, v3, v4, v5, v6, v7, v8 }
+  #elif EXTRUDERS > 6
+    #define ARRAY_BY_EXTRUDER(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10) { v1, v2, v3, v4, v5, v6, v7 }
+  #elif EXTRUDERS > 5
+    #define ARRAY_BY_EXTRUDER(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10) { v1, v2, v3, v4, v5, v6 }
+  #elif EXTRUDERS > 4
+    #define ARRAY_BY_EXTRUDER(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10) { v1, v2, v3, v4, v5 }
+  #elif EXTRUDERS > 3
+    #define ARRAY_BY_EXTRUDER(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10) { v1, v2, v3, v4 }
   #elif EXTRUDERS > 2
-    #define ARRAY_BY_EXTRUDERS(v1, v2, v3, v4) { v1, v2, v3 }
+    #define ARRAY_BY_EXTRUDER(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10) { v1, v2, v3 }
   #elif EXTRUDERS > 1
-    #define ARRAY_BY_EXTRUDERS(v1, v2, v3, v4) { v1, v2 }
+    #define ARRAY_BY_EXTRUDER(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10) { v1, v2 }
   #else
-    #define ARRAY_BY_EXTRUDERS(v1, v2, v3, v4) { v1 }
+    #define ARRAY_BY_EXTRUDER(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10) { v1 }
   #endif
+  
+  #define ARRAY_BY_EXTRUDERS(v1) ARRAY_BY_EXTRUDER(v1, v1, v1, v1, v1, v1, v1, v1, v1, v1)
 
   /**
    * ARRAY_BY_HOTENDS based on HOTENDS
@@ -514,6 +544,8 @@
   #else
     #define ARRAY_BY_HOTENDS(v1, v2, v3, v4) { v1 }
   #endif
+
+  #define ARRAY_BY_HOTENDS1(v1) ARRAY_BY_HOTENDS(v1, v1, v1, v1)
 
   /**
    * Shorthand for pin tests, used wherever needed
@@ -563,6 +595,7 @@
   #define HAS_MICROSTEPS_E0 (PIN_EXISTS(E0_MS1))
   #define HAS_MICROSTEPS_E1 (PIN_EXISTS(E1_MS1))
   #define HAS_MICROSTEPS_E2 (PIN_EXISTS(E2_MS1))
+  #define HAS_STEPPER_RESET (PIN_EXISTS(STEPPER_RESET))
   #define HAS_X_ENABLE (PIN_EXISTS(X_ENABLE))
   #define HAS_X2_ENABLE (PIN_EXISTS(X2_ENABLE))
   #define HAS_Y_ENABLE (PIN_EXISTS(Y_ENABLE))
@@ -630,10 +663,18 @@
     #define WRITE_HEATER_0(v) WRITE_HEATER_0P(v)
   #endif
   #if HAS_HEATER_BED
-    #define WRITE_HEATER_BED(v) WRITE_HEATER(HEATER_BED_PIN, v)
+    #ifdef INVERTED_BED_PINS
+      #define WRITE_HEATER_BED(v) WRITE(HEATER_BED_PIN,!v)
+    #else
+      #define WRITE_HEATER_BED(v) WRITE(HEATER_BED_PIN,v)
+    #endif
   #endif
   #if HAS_FAN
-    #define WRITE_FAN(v) WRITE(FAN_PIN, v)
+    #ifdef INVERTED_HEATER_PINS
+      #define WRITE_FAN(v) WRITE(FAN_PIN, !v)
+    #else
+      #define WRITE_FAN(v) WRITE(FAN_PIN, v)
+    #endif
   #endif
 
   /**

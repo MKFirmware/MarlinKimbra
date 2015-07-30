@@ -8,14 +8,10 @@
 #ifndef LANGUAGE_IT_H
 #define LANGUAGE_IT_H
 
-#if !( defined(MAPPER_NON)|| defined(MAPPER_C2C3)|| defined(MAPPER_D0D1)|| defined(MAPPER_D0D1_MOD)|| defined(MAPPER_E382E383) )
-  #define MAPPER_NON         // For direct asci codes
-#endif
-
-//#define SIMULATE_ROMFONT //Comment in to see what is seen on the character based displays
-#if !( defined(SIMULATE_ROMFONT)|| defined(DISPLAY_CHARSET_ISO10646_1)|| defined(DISPLAY_CHARSET_ISO10646_5)|| defined(DISPLAY_CHARSET_ISO10646_KANA) )
-  #define DISPLAY_CHARSET_ISO10646_1 // use the better font on full graphic displays.
-#endif
+#define MAPPER_NON
+// Define SIMULATE_ROMFONT to see what is seen on the character based display defined in Configuration.h
+//#define SIMULATE_ROMFONT
+#define DISPLAY_CHARSET_ISO10646_1
 
 #define WELCOME_MSG                         MACHINE_NAME " pronta."
 #define MSG_SD_INSERTED                     "SD Card inserita"
@@ -68,13 +64,13 @@
 #define MSG_FAN_SPEED                       "Ventola"
 #define MSG_FLOW                            "Flusso"
 #define MSG_CONTROL                         "Controllo"
-#define MSG_MIN                             " "LCD_STR_THERMOMETER " Min"
-#define MSG_MAX                             " "LCD_STR_THERMOMETER " Max"
-#define MSG_FACTOR                          " "LCD_STR_THERMOMETER " Fact"
+#define MSG_MIN                             LCD_STR_THERMOMETER " Min"
+#define MSG_MAX                             LCD_STR_THERMOMETER " Max"
+#define MSG_FACTOR                          LCD_STR_THERMOMETER " Fact"
 #define MSG_IDLEOOZING                      "Anti oozing"
 #define MSG_AUTOTEMP                        "Autotemp"
-#define MSG_ON                              "On "
-#define MSG_OFF                             "Off"
+#define MSG_ON                              "ON "
+#define MSG_OFF                             "OFF"
 #define MSG_PID_P                           "PID-P"
 #define MSG_PID_I                           "PID-I"
 #define MSG_PID_D                           "PID-D"
@@ -116,8 +112,8 @@
 #define MSG_PREPARE                         "Prepara"
 #define MSG_TUNE                            "Adatta"
 #define MSG_PAUSE_PRINT                     "Pausa"
-#define MSG_RESUME_PRINT                    "Riprendi Stampa"
-#define MSG_STOP_PRINT                      "Arresta Stampa"
+#define MSG_RESUME_PRINT                    "Riprendi stampa"
+#define MSG_STOP_PRINT                      "Arresta stampa"
 #define MSG_CARD_MENU                       "SD Card Menu"
 #define MSG_NO_CARD                         "No SD Card"
 #define MSG_DWELL                           "Sospensione..."
@@ -132,7 +128,7 @@
 #define MSG_CONTROL_RETRACTF                "Ritrai  V"
 #define MSG_CONTROL_RETRACT_ZLIFT           "Salta mm"
 #define MSG_CONTROL_RETRACT_RECOVER         "UnRet +mm"
-#define MSG_CONTROL_RETRACT_RECOVER_SWAP    "S UnRet+mm"
+#define MSG_CONTROL_RETRACT_RECOVER_SWAP    "Scamb. UnRet +mm"
 #define MSG_CONTROL_RETRACT_RECOVERF        "UnRet  V"
 #define MSG_AUTORETRACT                     "AutoArretramento"
 #define MSG_FILAMENTCHANGE                  "Cambia filamento"
@@ -176,6 +172,11 @@
   #define MSG_XSCALE                        "X Scale"
   #define MSG_YSCALE                        "Y Scale"
 #endif
+
+#define MSG_HEATING                         "Riscaldamento..."
+#define MSG_HEATING_COMPLETE                "Riscaldamento finito."
+#define MSG_BED_HEATING                     "Bed Riscaldamento."
+#define MSG_BED_DONE                        "Bed done."
 
 // Extra
 #define MSG_LASER                           "Laser Preset"
