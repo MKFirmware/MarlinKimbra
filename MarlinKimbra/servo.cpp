@@ -42,10 +42,10 @@
  attached()  - Returns true if there is a servo attached.
  detach()    - Stops an attached servos from pulsing its i/o pin.
 
- */
+*/
 #include "Configuration.h" 
 
-#if NUM_SERVOS > 0
+#if HAS_SERVOS
 
 #include <avr/interrupt.h>
 #include <Arduino.h>
@@ -81,14 +81,14 @@ static inline void handle_interrupts(timer16_Sequence_t timer, volatile uint16_t
     *TCNTn = 0; // channel set to -1 indicated that refresh interval completed so reset the timer
   else {
     if (SERVO_INDEX(timer,Channel[timer]) < ServoCount && SERVO(timer,Channel[timer]).Pin.isActive)
-      digitalWrite( SERVO(timer,Channel[timer]).Pin.nbr, LOW); // pulse this channel low if activated
+      digitalWrite( SERVO(timer,Channel[timer]).Pin.nbr,LOW); // pulse this channel low if activated
   }
 
   Channel[timer]++;    // increment to the next channel
   if (SERVO_INDEX(timer,Channel[timer]) < ServoCount && Channel[timer] < SERVOS_PER_TIMER) {
     *OCRnA = *TCNTn + SERVO(timer,Channel[timer]).ticks;
     if (SERVO(timer,Channel[timer]).Pin.isActive)     // check if activated
-      digitalWrite( SERVO(timer,Channel[timer]).Pin.nbr, HIGH); // its an active channel so pulse it high
+      digitalWrite( SERVO(timer,Channel[timer]).Pin.nbr,HIGH); // its an active channel so pulse it high
   }
   else {
     // finished all channels so wait for the refresh period to expire before starting over
@@ -103,29 +103,29 @@ static inline void handle_interrupts(timer16_Sequence_t timer, volatile uint16_t
 #ifndef WIRING // Wiring pre-defines signal handlers so don't define any if compiling for the Wiring platform
 
   // Interrupt handlers for Arduino
-  #ifdef _useTimer1
+  #if ENABLED(_useTimer1)
     SIGNAL (TIMER1_COMPA_vect) { handle_interrupts(_timer1, &TCNT1, &OCR1A); }
   #endif
 
-  #ifdef _useTimer3
+  #if ENABLED(_useTimer3)
     SIGNAL (TIMER3_COMPA_vect) { handle_interrupts(_timer3, &TCNT3, &OCR3A); }
   #endif
 
-  #ifdef _useTimer4
+  #if ENABLED(_useTimer4)
     SIGNAL (TIMER4_COMPA_vect) { handle_interrupts(_timer4, &TCNT4, &OCR4A); }
   #endif
 
-  #ifdef _useTimer5
+  #if ENABLED(_useTimer5)
     SIGNAL (TIMER5_COMPA_vect) { handle_interrupts(_timer5, &TCNT5, &OCR5A); }
   #endif
 
 #else //!WIRING
 
   // Interrupt handlers for Wiring
-  #ifdef _useTimer1
+  #if ENABLED(_useTimer1)
     void Timer1Service() { handle_interrupts(_timer1, &TCNT1, &OCR1A); }
   #endif
-  #ifdef _useTimer3
+  #if ENABLED(_useTimer3)
     void Timer3Service() { handle_interrupts(_timer3, &TCNT3, &OCR3A); }
   #endif
 
@@ -133,7 +133,7 @@ static inline void handle_interrupts(timer16_Sequence_t timer, volatile uint16_t
 
 
 static void initISR(timer16_Sequence_t timer) {
-  #ifdef _useTimer1
+  #if ENABLED(_useTimer1)
     if (timer == _timer1) {
       TCCR1A = 0;             // normal counting mode
       TCCR1B = _BV(CS11);     // set prescaler of 8
@@ -152,7 +152,7 @@ static void initISR(timer16_Sequence_t timer) {
     }
   #endif
 
-  #ifdef _useTimer3
+  #if ENABLED(_useTimer3)
     if (timer == _timer3) {
       TCCR3A = 0;             // normal counting mode
       TCCR3B = _BV(CS31);     // set prescaler of 8
@@ -170,7 +170,7 @@ static void initISR(timer16_Sequence_t timer) {
     }
   #endif
 
-  #ifdef _useTimer4
+  #if ENABLED(_useTimer4)
     if (timer == _timer4) {
       TCCR4A = 0;             // normal counting mode
       TCCR4B = _BV(CS41);     // set prescaler of 8
@@ -180,7 +180,7 @@ static void initISR(timer16_Sequence_t timer) {
     }
   #endif
 
-  #ifdef _useTimer5
+  #if ENABLED(_useTimer5)
     if (timer == _timer5) {
       TCCR5A = 0;             // normal counting mode
       TCCR5B = _BV(CS51);     // set prescaler of 8
@@ -230,9 +230,9 @@ static boolean isTimerActive(timer16_Sequence_t timer) {
 /****************** end of static functions ******************************/
 
 Servo::Servo() {
-  if (ServoCount < MAX_SERVOS) {
+  if ( ServoCount < MAX_SERVOS) {
     this->servoIndex = ServoCount++;                    // assign a servo index to this instance
-    servo_info[this->servoIndex].ticks = usToTicks(DEFAULT_PULSE_WIDTH);   // store default values
+    servo_info[this->servoIndex].ticks = usToTicks(DEFAULT_PULSE_WIDTH);   // store default values  - 12 Aug 2009
   }
   else
     this->servoIndex = INVALID_SERVO;  // too many servos

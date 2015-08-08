@@ -66,15 +66,15 @@
 /***********************************************************************\
  ********************** Do not touch this section **********************
  ***********************************************************************/
-#if defined(CARTESIAN)
+#if ENABLED(CARTESIAN)
   #include "Configuration_Cartesian.h"
-#elif defined(COREXY)
+#elif ENABLED(COREXY)
   #include "Configuration_Core.h"
-#elif defined(COREXZ)
+#elif ENABLED(COREXZ)
   #include "Configuration_Core.h"
-#elif defined(DELTA)
+#elif ENABLED(DELTA)
   #include "Configuration_Delta.h"
-#elif defined(SCARA)
+#elif ENABLED(SCARA)
   #include "Configuration_Scara.h"
 #endif
 /***********************************************************************/
@@ -110,7 +110,7 @@
  *                                                                     *
  ***********************************************************************/
 //#define NPR2
-#if defined(NPR2)
+#if ENABLED(NPR2)
 #define COLOR_STEP {120,25,-65,-155} // CARTER ANGLE
 #define COLOR_SLOWRATE 170           // MICROSECOND delay for carter motor routine (Carter Motor Feedrate: upper value-slow feedrate)  
 #define COLOR_HOMERATE 4             // FEEDRATE for carter home
@@ -227,7 +227,7 @@
 
 // Comment the following line to disable PID and enable bang-bang.
 #define PIDTEMP
-#ifdef PIDTEMP
+#if ENABLED(PIDTEMP)
 //#define PID_DEBUG        // Sends debug data to the serial port.
 //#define PID_OPENLOOP 1   // Puts PID in open loop. M104/M140 sets the output power from 0 to PID_MAX
 //#define SLOW_PWM_HEATERS // PWM with very low frequency (roughly 0.125Hz=8s) and minimum state time of approximately 1s useful for heaters driven by a relay
@@ -266,7 +266,7 @@
 
 //#define PID_BED_DEBUG // Sends debug data to the serial port.
 
-#ifdef PIDTEMPBED
+#if ENABLED(PIDTEMPBED)
 #define PID_BED_INTEGRAL_DRIVE_MAX MAX_BED_POWER // limit for the integral term
 //120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
 //from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
@@ -363,7 +363,7 @@
 //
 // ==> REMEMBER TO INSTALL U8glib to your ARDUINO library folder: http://code.google.com/p/u8glib/wiki/u8glib
 //#define ELB_FULL_GRAPHIC_CONTROLLER
-//#define SDCARDDETECTINVERTED
+//#define SD_DETECT_INVERTED
 
 // The RepRapDiscount Smart Controller (white PCB)
 // http://reprap.org/wiki/RepRapDiscount_Smart_Controller
@@ -485,13 +485,13 @@
 //
 // M100 Free Memory Watcher
 //
-#define M100_FREE_MEMORY_WATCHER // uncomment to add the M100 Free Memory Watcher for debug purpose
+//#define M100_FREE_MEMORY_WATCHER // uncomment to add the M100 Free Memory Watcher for debug purpose
 //===========================================================================
 
 //========================== EXTRA SETTINGS ON SD ===========================
 // Uncomment SD SETTINGS to enable the firmware to write some configuration, that require frequent update, on the SD card.
 //#define SD_SETTINGS
-#ifdef SD_SETTINGS
+#if ENABLED(SD_SETTINGS)
 #define SD_CFG_SECONDS        300         //seconds between update
 #define CFG_SD_FILE           "INFO.CFG"  //name of the configuration file
 #define CFG_SD_MAX_KEY_LEN    3+1         //icrease this if you add key name longer than the actual value.
@@ -501,7 +501,7 @@
 
 //==================== Bowden Filament management ===========================
 //#define EASY_LOAD
-#ifdef EASY_LOAD
+#if ENABLED(EASY_LOAD)
 #define BOWDEN_LENGTH 250       // mm
 #define LCD_PURGE_LENGTH 3      // mm
 #define LCD_RETRACT_LENGTH 3    // mm
@@ -509,7 +509,7 @@
 #define LCD_RETRACT_FEEDRATE 10 // mm/s
 #define LCD_LOAD_FEEDRATE 8     // mm/s
 #define LCD_UNLOAD_FEEDRATE 8   // mm/s
-#endif //EASY_LOAD
+#endif
 //===========================================================================
 
 
@@ -527,8 +527,11 @@
 #define GUM_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
 //===========================================================================
 
+/*********************************************************************\
+* R/C SERVO support
+* Sponsored by TrinityLabs, Reworked by codexmas
+**********************************************************************/
 
-//============================= R/C Servo support ===========================
 // Number of servos
 // If you select a configuration below, this will receive a default value and does not need to be set manually
 // set it manually if you have more servos than extruders and wish to manually control some
@@ -538,17 +541,21 @@
 #if NUM_SERVOS > 0
 // Servo Endstops
 // This allows for servo actuated endstops, primary usage is for the Z Axis to eliminate calibration or bed height changes.
-// Use M666 command to correct for switch height offset to actual nozzle height. Store that setting with M500.
-//
-#define SERVO_ENDSTOPS {-1, -1, 0}          // Servo index for X, Y, Z. Disable with -1
-#define SERVO_ENDSTOP_ANGLES {0,0,0,0,90,0} // X,Y,Z Axis Extend and Retract angles
+// Use M666 H to set the z-probe vertical offset from the nozzle. Store that setting with M500.
+// Define nr servo for endstop -1 not define. Servo index start 0
+#define X_ENDSTOP_SERVO_NR -1
+#define Y_ENDSTOP_SERVO_NR -1
+#define Z_ENDSTOP_SERVO_NR 0
+#define X_ENDSTOP_SERVO_ANGLES {0,0}  // X Axis Extend and Retract angles
+#define Y_ENDSTOP_SERVO_ANGLES {0,0}  // Y Axis Extend and Retract angles
+#define Z_ENDSTOP_SERVO_ANGLES {90,0} // Z Axis Extend and Retract angles
 
 // Servo deactivation
 //
 // With this option servos are powered only during movement, then turned off to prevent jitter.
 //#define DEACTIVATE_SERVOS_AFTER_MOVE
 
-#ifdef DEACTIVATE_SERVOS_AFTER_MOVE
+#if ENABLED(DEACTIVATE_SERVOS_AFTER_MOVE)
   // Delay (in microseconds) before turning the servo off. This depends on the servo speed.
   // 300ms is a good value but you can try less delay.
   // If the servo can't reach the requested position, increase it.
@@ -575,6 +582,7 @@
 
 #define FILAMENT_SENSOR_EXTRUDER_NUM  0     //The number of the extruder that has the filament sensor (0,1,2,3)
 #define MEASUREMENT_DELAY_CM         14     //measurement delay in cm.  This is the distance from filament sensor to middle of barrel
+
 #define DEFAULT_NOMINAL_FILAMENT_DIA  1.75  //Enter the diameter (in mm) of the filament generally used (3.0 mm or 1.75 mm) - this is then used in the slicer software.  Used for sensor reading validation
 #define MEASURED_UPPER_LIMIT          2.00  //upper limit factor used for sensor reading validation in mm
 #define MEASURED_LOWER_LIMIT          1.35  //lower limit factor for sensor reading validation in mm
@@ -602,7 +610,7 @@
  **********************************************************************/
 // Uncomment below to enable
 //#define POWER_CONSUMPTION
-#ifdef POWER_CONSUMPTION
+#if ENABLED(POWER_CONSUMPTION)
 #define POWER_VOLTAGE      12.00    //(V) The power supply OUT voltage
 #define POWER_ZERO          2.54459 //(V) The /\V coming out from the sensor when no current flow.
 #define POWER_SENSITIVITY   0.066   //(V/A) How much increase V for 1A of increase
@@ -660,7 +668,7 @@
 //#define FILAMENT_RUNOUT_SENSOR // Uncomment for defining a filament runout sensor such as a mechanical or opto endstop to check the existence of filament
                                  // It is assumed that when logic high = filament available
                                  //                    when logic  low = filament run out
-#ifdef FILAMENT_RUNOUT_SENSOR
+#if ENABLED(FILAMENT_RUNOUT_SENSOR)
 const bool FILRUNOUT_PIN_INVERTING = true;  // Should be uncommented and true or false should assigned
 #define ENDSTOPPULLUP_FIL_RUNOUT            // Uncomment to use internal pullup for filament runout pins if the sensor is defined.
 #define FILAMENT_RUNOUT_SCRIPT "M600"       // Script execute when filament run out

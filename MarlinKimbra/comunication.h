@@ -8,7 +8,7 @@
 #ifndef COMUNICATION_H
 #define COMUNICATION_H
 
-#ifdef AT90USB
+#ifdef USBCON
   #include "HardwareSerial.h"
 #endif
 

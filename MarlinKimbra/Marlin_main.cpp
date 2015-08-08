@@ -29,9 +29,9 @@
 
 #include "Marlin.h"
 
-#ifdef ENABLE_AUTO_BED_LEVELING
+#if ENABLED(ENABLE_AUTO_BED_LEVELING)
   #include "vector_3.h"
-  #ifdef AUTO_BED_LEVELING_GRID
+  #if ENABLED(AUTO_BED_LEVELING_GRID)
     #include "qr_solve.h"
   #endif
 #endif // ENABLE_AUTO_BED_LEVELING
@@ -49,12 +49,12 @@
 #include "math.h"
 #include "buzzer.h"
 
-#ifdef BLINKM
+#if ENABLED(BLINKM)
   #include "blinkm.h"
   #include "Wire.h"
 #endif
 
-#if NUM_SERVOS > 0
+#if HAS_SERVOS
   #include "servo.h"
 #endif
 
@@ -62,7 +62,7 @@
   #include <SPI.h>
 #endif
 
-#ifdef FIRMWARE_TEST
+#if ENABLED(FIRMWARE_TEST)
   #include "firmware_test.h"
 #endif
 
@@ -75,9 +75,9 @@
  *  - http://reprap.org/wiki/G-code
  *  - https://github.com/MagoKimbra/MarlinKimbra/blob/master/Documentation/GCodes.md
  *
- * ------------------
+ * -----------------
  * Implemented Codes
- * ------------------
+ * -----------------
  *
  * "G" Codes
  *
@@ -102,7 +102,7 @@
  * G90 - Use Absolute Coordinates
  * G91 - Use Relative Coordinates
  * G92 - Set current position to coordinates given
- * 
+ *
  * "M" Codes
  *
  * M0   - Unconditional stop - Wait for user to press a button on the LCD (Only if ULTRA_LCD is enabled)
@@ -231,11 +231,11 @@
  *
  */
 
-#ifdef M100_FREE_MEMORY_WATCHER
+#if ENABLED(M100_FREE_MEMORY_WATCHER)
   void gcode_M100();
 #endif
 
-#ifdef SDSUPPORT
+#if ENABLED(SDSUPPORT)
   CardReader card;
 #endif
 
@@ -298,12 +298,12 @@ bool target_direction;
 
 unsigned long printer_usage_seconds;
 
-#ifndef DELTA
+#if DISABLED(DELTA)
   int xy_travel_speed = XY_TRAVEL_SPEED;
   float zprobe_zoffset = 0;
 #endif
 
-#if defined(Z_DUAL_ENDSTOPS) && !defined(DELTA)
+#if ENABLED(Z_DUAL_ENDSTOPS) && DISABLED(DELTA)
   float z_endstop_adj = 0;
 #endif
 
@@ -317,21 +317,21 @@ unsigned long printer_usage_seconds;
   float hotend_offset[NUM_HOTEND_OFFSETS][HOTENDS];
 #endif
 
-#ifdef NPR2
+#if ENABLED(NPR2)
   int old_color = 99;
 #endif
 
-#ifdef SERVO_ENDSTOPS
-  const int servo_endstops[] = SERVO_ENDSTOPS;
-  const int servo_endstop_angles[] = SERVO_ENDSTOP_ANGLES;
+#if HAS_SERVO_ENDSTOPS
+  const int servo_endstop_id[] = SERVO_ENDSTOP_IDS;
+  const int servo_endstop_angle[][2] = {X_ENDSTOP_SERVO_ANGLES, Y_ENDSTOP_SERVO_ANGLES, Z_ENDSTOP_SERVO_ANGLES};
 #endif
 
-#ifdef BARICUDA
+#if ENABLED(BARICUDA)
   int ValvePressure = 0;
   int EtoPPressure = 0;
 #endif
 
-#ifdef FWRETRACT
+#if ENABLED(FWRETRACT)
 
   bool autoretract_enabled = false;
   bool retracted[EXTRUDERS] = { false };
@@ -347,9 +347,9 @@ unsigned long printer_usage_seconds;
 
 #endif // FWRETRACT
 
-#if defined(ULTIPANEL) && HAS_POWER_SWITCH
+#if ENABLED(ULTIPANEL) && HAS_POWER_SWITCH
   bool powersupply = 
-    #ifdef PS_DEFAULT_OFF
+    #if ENABLED(PS_DEFAULT_OFF)
       false
     #else
       true
@@ -357,7 +357,7 @@ unsigned long printer_usage_seconds;
   ;
 #endif
 
-#ifdef DELTA
+#if ENABLED(DELTA)
   float delta[3] = { 0.0 };
   float delta_tmp[3] = { 0.0 };
   float endstop_adj[3] = { 0 };
@@ -406,15 +406,15 @@ unsigned long printer_usage_seconds;
   static bool home_all_axis = true;
 #else
   static bool home_all_axis = true;
-#endif // DELTA
+#endif
 
-#ifdef SCARA
+#if ENABLED(SCARA)
   float delta_segments_per_second = SCARA_SEGMENTS_PER_SECOND;
   static float delta[3] = { 0 };
   float axis_scaling[3] = { 1, 1, 1 };    // Build size scaling, default to 1
 #endif
 
-#if HAS_FILAMENT_SENSOR
+#if ENABLED(FILAMENT_SENSOR)
   //Variables for Filament Sensor input
   float filament_width_nominal = DEFAULT_NOMINAL_FILAMENT_DIA;  //Set nominal filament width, can be changed with M404 
   bool filament_sensor = false;                                 //M405 turns on filament_sensor control, M406 turns it off 
@@ -431,24 +431,24 @@ unsigned long printer_usage_seconds;
   bool printing = false;
 #endif
 
-#ifdef SDSUPPORT
+#if ENABLED(SDSUPPORT)
   static bool fromsd[BUFSIZE];
-  #ifdef SD_SETTINGS
+  #if ENABLED(SD_SETTINGS)
     millis_t config_last_update = 0;
     bool config_readed = false;
   #endif
 #endif
 
-#ifdef FILAMENTCHANGEENABLE
+#if ENABLED(FILAMENTCHANGEENABLE)
 	bool filament_changing = false;
 #endif
 
-#if defined(IDLE_OOZING_PREVENT) || defined(EXTRUDER_RUNOUT_PREVENT)
+#if ENABLED(IDLE_OOZING_PREVENT) || ENABLED(EXTRUDER_RUNOUT_PREVENT)
   unsigned long axis_last_activity = 0;
   bool axis_is_moving = false;
 #endif
 
-#ifdef IDLE_OOZING_PREVENT
+#if ENABLED(IDLE_OOZING_PREVENT)
   bool idleoozing_enabled = true;
   bool IDLE_OOZING_retracted[EXTRUDERS] = ARRAY_BY_EXTRUDERS(false);
 #endif
@@ -460,20 +460,20 @@ unsigned long printer_usage_seconds;
   unsigned long stoppower = 0;
 #endif
 
-#ifdef LASERBEAM
+#if ENABLED(LASERBEAM)
   int laser_ttl_modulation = 0;
 #endif
 
-#ifdef NPR2
+#if ENABLED(NPR2)
   static float color_position[] = COLOR_STEP;
   static float color_step_moltiplicator = (DRIVER_MICROSTEP / MOTOR_ANGLE) * CARTER_MOLTIPLICATOR;
 #endif // NPR2
 
-#ifdef EASY_LOAD
+#if ENABLED(EASY_LOAD)
   bool allow_lengthy_extrude_once; // for load/unload
 #endif
 
-#if NUM_SERVOS > 0
+#if HAS_SERVOS
   Servo servo[NUM_SERVOS];
 #endif
 
@@ -492,12 +492,12 @@ void plan_arc(float target[NUM_AXIS], float *offset, uint8_t clockwise);
 
 bool setTargetedHotend(int code);
 
-#ifdef PREVENT_DANGEROUS_EXTRUDE
+#if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
   float extrude_min_temp = EXTRUDE_MINTEMP;
 #endif
 
 #ifdef __AVR__ // HAL for Due
-#ifdef SDSUPPORT
+#if ENABLED(SDSUPPORT)
   #include "SdFatUtil.h"
   int freeMemory() { return SdFatUtil::FreeRam(); }
 #else
@@ -598,7 +598,7 @@ void setup_killpin() {
 void setup_filrunoutpin() {
   #if HAS_FILRUNOUT
     pinMode(FILRUNOUT_PIN, INPUT);
-    #ifdef ENDSTOPPULLUP_FIL_RUNOUT
+    #if ENABLED(ENDSTOPPULLUP_FIL_RUNOUT)
       WRITE(FILRUNOUT_PIN, HIGH);
     #endif
   #endif
@@ -612,6 +612,7 @@ void setup_homepin(void) {
   #endif
 }
 
+
 void setup_photpin() {
   #if HAS_PHOTOGRAPH
     OUT_WRITE(PHOTOGRAPH_PIN, LOW);
@@ -619,7 +620,7 @@ void setup_photpin() {
 }
 
 void setup_laserbeampin() {
-  #ifdef LASERBEAM
+  #if ENABLED(LASERBEAM)
     OUT_WRITE(LASER_PWR_PIN, LOW);
     OUT_WRITE(LASER_TTL_PIN, LOW);
   #endif
@@ -630,7 +631,7 @@ void setup_powerhold() {
     OUT_WRITE(SUICIDE_PIN, HIGH);
   #endif
   #if HAS_POWER_SWITCH
-    #ifdef PS_DEFAULT_OFF
+    #if ENABLED(PS_DEFAULT_OFF)
       OUT_WRITE(PS_ON_PIN, PS_ON_ASLEEP);
     #else
       OUT_WRITE(PS_ON_PIN, PS_ON_AWAKE);
@@ -663,10 +664,10 @@ void servo_init() {
   #endif
 
   // Set position of Servo Endstops that are defined
-  #ifdef SERVO_ENDSTOPS
+  #if HAS_SERVO_ENDSTOPS
     for (int i = 0; i < 3; i++)
-      if (servo_endstops[i] >= 0)
-        servo[servo_endstops[i]].move(servo_endstop_angles[i * 2 + 1]);
+      if (servo_endstop_id[i] >= 0)
+        servo[servo_endstop_id[i]].move(servo_endstop_angle[i][1]);
   #endif
 
 }
@@ -1374,16 +1375,16 @@ static void clean_up_after_endstop_move() {
     }
 
     static void deploy_z_probe() {
-      #ifdef SERVO_ENDSTOPS
+      #if HAS_SERVO_ENDSTOPS
         // Engage Z Servo endstop if enabled
-        if (servo_endstops[Z_AXIS] >= 0) servo[servo_endstops[Z_AXIS]].move(servo_endstop_angles[Z_AXIS * 2]);
+        if (servo_endstop_id[Z_AXIS] >= 0) servo[servo_endstop_id[Z_AXIS]].move(servo_endstop_angle[Z_AXIS][0]);
       #endif
     }
 
     static void stow_z_probe(bool doRaise = true) {
-      #ifdef SERVO_ENDSTOPS
+      #if HAS_SERVO_ENDSTOPS
         // Retract Z Servo endstop if enabled
-        if (servo_endstops[Z_AXIS] >= 0) {
+        if (servo_endstop_id[Z_AXIS] >= 0) {
 
           #if Z_RAISE_AFTER_PROBING > 0
             if (doRaise) {
@@ -1393,7 +1394,7 @@ static void clean_up_after_endstop_move() {
           #endif
 
           // Change the Z servo angle
-          servo[servo_endstops[Z_AXIS]].move(servo_endstop_angles[Z_AXIS * 2 + 1]);
+          servo[servo_endstop_id[Z_AXIS]].move(servo_endstop_angle[Z_AXIS][1]);
         }
       #endif
     }
@@ -1455,19 +1456,17 @@ static void clean_up_after_endstop_move() {
         }
       #endif
 
-      #if SERVO_LEVELING && !defined(Z_PROBE_SLED)
+      #if SERVO_LEVELING && DISABLED(Z_PROBE_SLED)
         // Deploy a probe if there is one, and homing towards the bed
         if (axis == Z_AXIS) {
           if (axis_home_dir < 0) deploy_z_probe();
         }
       #endif
 
-      #if SERVO_LEVELING
-        if (axis != Z_AXIS) {
-          // Engage Servo endstop if enabled
-          if (servo_endstops[axis] >= 0)
-            servo[servo_endstops[axis]].move(servo_endstop_angles[axis * 2]);
-        }
+      #if HAS_SERVO_ENDSTOPS
+        // Engage Servo endstop if enabled
+        if (axis != Z_AXIS && servo_endstop_id[axis] >= 0)
+          servo[servo_endstop_id[axis]].move(servo_endstop_angle[axis][0]);
       #endif
 
       // Set a flag for Z motor locking
@@ -1536,27 +1535,27 @@ static void clean_up_after_endstop_move() {
       endstops_hit_on_purpose(); // clear endstop hit flags
       axis_known_position[axis] = true;
 
-      #ifdef Z_PROBE_SLED
+      #if ENABLED(Z_PROBE_SLED)
         // bring probe back
           if (axis == Z_AXIS) {
             if (axis_home_dir < 0) dock_sled(true);
           }
       #endif
 
-      #if SERVO_LEVELING && !defined(Z_PROBE_SLED)
+      #if SERVO_LEVELING && DISABLED(Z_PROBE_SLED)
         // Deploy a probe if there is one, and homing towards the bed
         if (axis == Z_AXIS) {
           if (axis_home_dir < 0) stow_z_probe();
         }
         else
       #endif
-      #if SERVO_LEVELING
-        {
+      {
+        #if HAS_SERVO_ENDSTOPS
           // Retract Servo endstop if enabled
-          if (servo_endstops[axis] > -1)
-            servo[servo_endstops[axis]].move(servo_endstop_angles[axis * 2 + 1]);
-        }
-      #endif
+          if (servo_endstop_id[axis] >= 0)
+          servo[servo_endstop_id[axis]].move(servo_endstop_angle[axis][1]);
+        #endif
+      }
     }
   }
   #define HOMEAXIS(LETTER) homeaxis(LETTER##_AXIS)
@@ -1701,19 +1700,9 @@ static void clean_up_after_endstop_move() {
 
   void deploy_z_probe() {
 
-    #ifdef SERVO_ENDSTOPS
+    #if HAS_SERVO_ENDSTOPS
       // Engage Z Servo endstop if enabled
-      if (servo_endstops[Z_AXIS] >= 0) {
-        Servo *srv = &servo[servo_endstops[Z_AXIS]];
-        #if SERVO_LEVELING
-          srv->attach(0);
-        #endif
-        srv->write(servo_endstop_angles[Z_AXIS * 2]);
-        #if SERVO_LEVELING_DELAY
-          delay(SERVO_DEACTIVATION_DELAY);
-          srv->detach();
-        #endif
-      }
+      if (servo_endstop_id[Z_AXIS] >= 0) servo[servo_endstop_id[Z_AXIS]].move(servo_endstop_angle[Z_AXIS][0]);
     #endif
 
     feedrate = homing_feedrate[X_AXIS];
@@ -1760,21 +1749,11 @@ static void clean_up_after_endstop_move() {
     prepare_move_raw();
     st_synchronize();
 
-    #ifdef SERVO_ENDSTOPS
+     #if HAS_SERVO_ENDSTOPS
       // Retract Z Servo endstop if enabled
-      if (servo_endstops[Z_AXIS] >= 0) {
+      if (servo_endstop_id[Z_AXIS] >= 0)
         // Change the Z servo angle
-        Servo *srv = &servo[servo_endstops[Z_AXIS]];
-        #if SERVO_LEVELING
-          srv->attach(0);
-        #endif
-        srv->write(servo_endstop_angles[Z_AXIS * 2 + 1]);
-        #if SERVO_LEVELING
-          delay(SERVO_DEACTIVATION_DELAY);
-          srv->detach();
-        #endif
-
-      }
+        servo[servo_endstop_id[Z_AXIS]].move(servo_endstop_angle[Z_AXIS][1]);
     #endif
   }
 
@@ -6125,7 +6104,7 @@ inline void gcode_M907() {
 inline void gcode_M999() {
   Running = true;
   lcd_reset_alert_level();
-  gcode_LastN = Stopped_gcode_LastN;
+  //gcode_LastN = Stopped_gcode_LastN;
   FlushSerialRequestResend();
 }
 

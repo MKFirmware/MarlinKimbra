@@ -4,7 +4,7 @@
 #include "Marlin.h"
 #include "buzzer.h"
 
-#ifdef ULTRA_LCD
+#if ENABLED(ULTRA_LCD)
   int lcd_strlen(char *s);
   int lcd_strlen_P(const char *s);
   void lcd_update();
@@ -16,20 +16,20 @@
   void lcd_reset_alert_level();
   bool lcd_detected(void);
 
-  #ifdef LCD_USE_I2C_BUZZER
+  #if ENABLED(LCD_USE_I2C_BUZZER)
     void lcd_buzz(long duration, uint16_t freq);
   #endif
 
-  #if defined(LCD_PROGRESS_BAR) && PROGRESS_MSG_EXPIRE > 0
+  #if ENABLED(LCD_PROGRESS_BAR) && PROGRESS_MSG_EXPIRE > 0
     void dontExpireStatus();
   #endif
 
-  #ifdef DOGLCD
+  #if ENABLED(DOGLCD)
     extern int lcd_contrast;
     void lcd_setcontrast(uint8_t value);
   #endif
 
-  #if !defined(DELTA) && !defined(Z_SAFE_HOMING) && Z_HOME_DIR < 0
+  #if DISABLED(DELTA) && DISABLED(Z_SAFE_HOMING) && Z_HOME_DIR < 0
     void set_pageShowInfo(int value);
   #endif
 
@@ -39,10 +39,10 @@
   #define LCD_UPDATE_INTERVAL 100
   #define LCD_TIMEOUT_TO_STATUS 15000
 
-  #ifdef ULTIPANEL
+  #if ENABLED(ULTIPANEL)
     void lcd_buttons_update();
     extern volatile uint8_t buttons;  //the last checked buttons in a bit array.
-    #ifdef REPRAPWORLD_KEYPAD
+    #if ENABLED(REPRAPWORLD_KEYPAD)
       extern volatile uint8_t buttons_reprapworld_keypad; // to store the keypad shift register values
     #endif
   #else
@@ -69,7 +69,7 @@
 
   void lcd_ignore_click(bool b=true);
 
-  #ifdef NEWPANEL
+  #if ENABLED(NEWPANEL)
     #define EN_C BIT(BLEN_C)
     #define EN_B BIT(BLEN_B)
     #define EN_A BIT(BLEN_A)
@@ -79,7 +79,7 @@
    	  #define EN_D BIT(BLEN_D)
    	  #define LCD_BACK_CLICKED (buttons&EN_D)
    	#endif
-    #ifdef REPRAPWORLD_KEYPAD
+    #if ENABLED(REPRAPWORLD_KEYPAD)
   	  #define EN_REPRAPWORLD_KEYPAD_F3 (BIT(BLEN_REPRAPWORLD_KEYPAD_F3))
   	  #define EN_REPRAPWORLD_KEYPAD_F2 (BIT(BLEN_REPRAPWORLD_KEYPAD_F2))
   	  #define EN_REPRAPWORLD_KEYPAD_F1 (BIT(BLEN_REPRAPWORLD_KEYPAD_F1))
@@ -112,7 +112,7 @@
     #define LCD_CLICKED ((buttons&B_MI)||(buttons&B_ST))
   #endif//NEWPANEL
 
-#elif defined(NEXTION)
+#elif ENABLED(NEXTION)
 
   #define LCD_UPDATE_INTERVAL 1000
 

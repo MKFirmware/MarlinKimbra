@@ -9,24 +9,24 @@
   /**
    * Dual Stepper Drivers
    */
-  #if defined(Z_DUAL_STEPPER_DRIVERS) && defined(Y_DUAL_STEPPER_DRIVERS)
+  #if ENABLED(Z_DUAL_STEPPER_DRIVERS) && ENABLED(Y_DUAL_STEPPER_DRIVERS)
     #error You cannot have dual stepper drivers for both Y and Z.
   #endif
 
   /**
    * Progress Bar
    */
-  #ifdef LCD_PROGRESS_BAR
-    #ifndef SDSUPPORT
+  #if ENABLED(LCD_PROGRESS_BAR)
+    #if DISABLED(SDSUPPORT)
       #error LCD_PROGRESS_BAR requires SDSUPPORT.
     #endif
-    #ifdef DOGLCD
+    #if ENABLED(DOGLCD)
       #error LCD_PROGRESS_BAR does not apply to graphical displays.
     #endif
-    #ifdef FILAMENT_LCD_DISPLAY
+    #if ENABLED(FILAMENT_LCD_DISPLAY)
       #error LCD_PROGRESS_BAR and FILAMENT_LCD_DISPLAY are not fully compatible. Comment out this line to use both.
     #endif
-    #ifdef POWER_CONSUMPTION_LCD_DISPLAY
+    #if ENABLED(POWER_CONSUMPTION_LCD_DISPLAY)
       #error LCD_PROGRESS_BAR and POWER_CONSUMPTION_LCD_DISPLAY are not fully compatible. Comment out this line to use both.
     #endif
   #endif
@@ -34,14 +34,14 @@
   /**
    * Babystepping
    */
-  #ifdef BABYSTEPPING
-    #ifdef COREXY
-      #error BABYSTEPPING not implemented for COREXY yet.
+  #if ENABLED(BABYSTEPPING)
+    #if ENABLED(COREXY) && ENABLED(BABYSTEP_XY)
+      #error BABYSTEPPING only implemented for Z axis on CoreXY.
     #endif
-    #ifdef SCARA
+    #if ENABLED(SCARA)
       #error BABYSTEPPING is not implemented for SCARA yet.
     #endif
-    #if defined(DELTA) && defined(BABYSTEP_XY)
+    #if ENABLED(DELTA) && ENABLED(BABYSTEP_XY)
       #error BABYSTEPPING only implemented for Z axis on deltabots.
     #endif
   #endif
@@ -49,28 +49,28 @@
   /**
    * Filament Change with Extruder Runout Prevention
    */
-  #if defined(FILAMENTCHANGEENABLE) && defined(EXTRUDER_RUNOUT_PREVENT)
+  #if ENABLED(FILAMENTCHANGEENABLE) && ENABLED(EXTRUDER_RUNOUT_PREVENT)
     #error EXTRUDER_RUNOUT_PREVENT currently incompatible with FILAMENTCHANGE.
   #endif
 
   /**
    * Extruder Runout Prevention
    */
-  #if defined(EXTRUDER_RUNOUT_PREVENT) && EXTRUDER_RUNOUT_MINTEMP < EXTRUDE_MINTEMP
+  #if ENABLED(EXTRUDER_RUNOUT_PREVENT) && EXTRUDER_RUNOUT_MINTEMP < EXTRUDE_MINTEMP
     #error EXTRUDER_RUNOUT_MINTEMP have to be greater than EXTRUDE_MINTEMP
   #endif
 
   /**
    * Idle oozing prevent with Extruder Runout Prevention
    */
-  #if defined(EXTRUDER_RUNOUT_PREVENT) && defined(IDLE_OOZING_PREVENT)
+  #if ENABLED(EXTRUDER_RUNOUT_PREVENT) && ENABLED(IDLE_OOZING_PREVENT)
     #error EXTRUDER_RUNOUT_PREVENT and IDLE_OOZING_PREVENT are incopatible. Please comment one of them.
   #endif
 
   /**
    * Idle oozing prevent
    */
-  #if defined(IDLE_OOZING_PREVENT) && IDLE_OOZING_MINTEMP < EXTRUDE_MINTEMP
+  #if ENABLED(IDLE_OOZING_PREVENT) && IDLE_OOZING_MINTEMP < EXTRUDE_MINTEMP
     #error IDLE_OOZING_MINTEMP have to be greater than EXTRUDE_MINTEMP
   #endif
 
@@ -79,20 +79,12 @@
    */
   #if EXTRUDERS > 1
 
-    #ifdef TEMP_SENSOR_1_AS_REDUNDANT
+    #if ENABLED(TEMP_SENSOR_1_AS_REDUNDANT)
       #error EXTRUDERS must be 1 with TEMP_SENSOR_1_AS_REDUNDANT.
     #endif
 
-    #ifdef HEATERS_PARALLEL
+    #if ENABLED(HEATERS_PARALLEL)
       #error EXTRUDERS must be 1 with HEATERS_PARALLEL.
-    #endif
-
-    #ifdef Y_DUAL_STEPPER_DRIVERS
-      #error EXTRUDERS must be 1 with Y_DUAL_STEPPER_DRIVERS.
-    #endif
-
-    #ifdef Z_DUAL_STEPPER_DRIVERS
-      #error EXTRUDERS must be 1 with Z_DUAL_STEPPER_DRIVERS.
     #endif
 
   #endif // EXTRUDERS > 1
@@ -103,25 +95,43 @@
   #if NUM_SERVOS > 4
     #error The maximum number of SERVOS in Marlin is 4.
   #endif
+  #if defined(NUM_SERVOS) && NUM_SERVOS > 0
+    #if X_ENDSTOP_SERVO_NR >= 0 || Y_ENDSTOP_SERVO_NR >= 0 || Z_ENDSTOP_SERVO_NR >= 0
+      #if X_ENDSTOP_SERVO_NR >= NUM_SERVOS
+        #error X_ENDSTOP_SERVO_NR must be smaller than NUM_SERVOS.
+      #elif Y_ENDSTOP_SERVO_NR >= NUM_SERVOS
+        #error Y_ENDSTOP_SERVO_NR must be smaller than NUM_SERVOS.
+      #elif Z_ENDSTOP_SERVO_NR >= NUM_SERVOS
+        #error Z_ENDSTOP_SERVO_NR must be smaller than NUM_SERVOS.
+      #endif
+    #endif
+  #endif
+
+  /**
+   * Servo deactivation depends on servo endstops
+   */
+  #if ENABLED(DEACTIVATE_SERVOS_AFTER_MOVE) && !HAS_SERVO_ENDSTOPS
+    #error At least one of the ?_ENDSTOP_SERVO_NR is required for DEACTIVATE_SERVOS_AFTER_MOVE.
+  #endif
 
   /**
    * Required LCD language
    */
-  #if !defined(DOGLCD) && defined(ULTRA_LCD) && !defined(DISPLAY_CHARSET_HD44780_JAPAN) && !defined(DISPLAY_CHARSET_HD44780_WESTERN)&& !defined(DISPLAY_CHARSET_HD44780_CYRILLIC)
+  #if DISABLED(DOGLCD) && ENABLED(ULTRA_LCD) && DISABLED(DISPLAY_CHARSET_HD44780_JAPAN) && DISABLED(DISPLAY_CHARSET_HD44780_WESTERN) && DISABLED(DISPLAY_CHARSET_HD44780_CYRILLIC)
     #error You must enable either DISPLAY_CHARSET_HD44780_JAPAN or DISPLAY_CHARSET_HD44780_WESTERN  or DISPLAY_CHARSET_HD44780_CYRILLIC for your LCD controller.
   #endif
 
   /**
    * Auto Bed Leveling
    */
-  #ifdef ENABLE_AUTO_BED_LEVELING
+  #if ENABLED(ENABLE_AUTO_BED_LEVELING)
 
     /**
      * Require a Z Min pin
      */
     #if Z_MIN_PIN == -1
-      #if Z_PROBE_PIN == -1 || defined(Z_PROBE_ENDSTOP) // It's possible for someone to set a pin for the Z Probe, but not enable it.
-        #ifdef Z_PROBE_REPEATABILITY_TEST
+      #if Z_PROBE_PIN == -1 || DISABLED(Z_PROBE_ENDSTOP) // It's possible for someone to set a pin for the Z Probe, but not enable it.
+        #if ENABLED(Z_PROBE_REPEATABILITY_TEST)
           #error You must have a Z_MIN or Z_PROBE endstop to enable Z_PROBE_REPEATABILITY_TEST.
         #else
           #error ENABLE_AUTO_BED_LEVELING requires a Z_MIN or Z_PROBE endstop. Z_MIN_PIN or Z_PROBE_PIN must point to a valid hardware pin.
@@ -132,7 +142,7 @@
     /**
      * Require a Z Probe Pin if Z_PROBE_ENDSTOP is enabled.
      */
-    #if defined(Z_PROBE_ENDSTOP)
+    #if ENABLED(Z_PROBE_ENDSTOP)
       #ifndef Z_PROBE_PIN
         #error You must have a Z_PROBE_PIN defined in pins2tool.h file if you enable Z_PROBE_ENDSTOP.
       #endif
@@ -141,22 +151,22 @@
       #endif
 // Forcing Servo definitions can break some hall effect sensor setups. Leaving these here for further comment.
 //      #ifndef NUM_SERVOS
-//        #error You must have NUM_SERVOS defined and there must be at least 1 configured to use Z_PROBE_ENDSTOP
+//        #error You must have NUM_SERVOS defined and there must be at least 1 configured to use Z_PROBE_ENDSTOP.
 //      #endif
 //      #if defined(NUM_SERVOS) && NUM_SERVOS < 1
-//        #error You must have at least 1 servo defined for NUM_SERVOS to use Z_PROBE_ENDSTOP
+//        #error You must have at least 1 servo defined for NUM_SERVOS to use Z_PROBE_ENDSTOP.
 //      #endif
-//      #ifndef SERVO_ENDSTOPS
-//        #error You must have SERVO_ENDSTOPS defined and have the Z index set to at least 0 or above to use Z_PROBE_ENDSTOP
+//      #if Z_ENDSTOP_SERVO_NR < 0
+//        #error You must have Z_ENDSTOP_SERVO_NR set to at least 0 or above to use Z_PROBE_ENDSTOP.
 //      #endif
 //      #ifndef SERVO_ENDSTOP_ANGLES
-//        #error You must have SERVO_ENDSTOP_ANGLES defined for Z Extend and Retract to use Z_PROBE_AND_ENSTOP
+//        #error You must have SERVO_ENDSTOP_ANGLES defined for Z Extend and Retract to use Z_PROBE_ENDSTOP.
 //      #endif
     #endif
     /**
      * Check if Probe_Offset * Grid Points is greater than Probing Range
      */
-    #ifdef AUTO_BED_LEVELING_GRID
+    #if ENABLED(AUTO_BED_LEVELING_GRID)
       // Be sure points are in the right order
       #if LEFT_PROBE_BED_POSITION > RIGHT_PROBE_BED_POSITION
         #error LEFT_PROBE_BED_POSITION must be less than RIGHT_PROBE_BED_POSITION.
@@ -198,14 +208,14 @@
   /**
    * ULTIPANEL encoder
    */
-  #if defined(ULTIPANEL) && !defined(NEWPANEL) && !defined(SR_LCD_2W_NL) && !defined(SHIFT_CLK)
+  #if ENABLED(ULTIPANEL) && DISABLED(NEWPANEL) && DISABLED(SR_LCD_2W_NL) && !defined(SHIFT_CLK)
     #error ULTIPANEL requires some kind of encoder.
   #endif
 
   /**
    * Delta & Z_PROBE_ENDSTOP
    */
-  #if defined(DELTA) && defined(Z_PROBE_ENDSTOP)
+  #if ENABLED(DELTA) && ENABLED(Z_PROBE_ENDSTOP)
     #ifndef Z_PROBE_PIN
       #error You must have a Z_PROBE_PIN defined in your pins2tool.h file if you enable Z_PROBE_ENDSTOP
     #endif
@@ -217,8 +227,8 @@
   /**
    * Dual X Carriage requirements
    */
-  #ifdef DUAL_X_CARRIAGE
-    #if EXTRUDERS == 1 || defined(COREXY) \
+  #if ENABLED(DUAL_X_CARRIAGE)
+    #if EXTRUDERS == 1 || ENABLED(COREXY) \
         || !HAS_X2_ENABLE || !HAS_X2_STEP || !HAS_X2_DIR \
         || !defined(X2_HOME_POS) || !defined(X2_MIN_POS) || !defined(X2_MAX_POS) \
         || !HAS_X_MAX
@@ -280,11 +290,11 @@
     #error WATCH_TEMP_PERIOD now uses seconds instead of milliseconds.
   #endif
 
-  #if !defined(THERMAL_PROTECTION_HOTENDS) && (defined(WATCH_TEMP_PERIOD) || defined(THERMAL_PROTECTION_PERIOD))
+  #if DISABLED(THERMAL_PROTECTION_HOTENDS) && (defined(WATCH_TEMP_PERIOD) || defined(THERMAL_PROTECTION_PERIOD))
     #error Thermal Runaway Protection for hotends must now be enabled with THERMAL_PROTECTION_HOTENDS.
   #endif
 
-  #if !defined(THERMAL_PROTECTION_BED) && defined(THERMAL_PROTECTION_BED_PERIOD)
+  #if DISABLED(THERMAL_PROTECTION_BED) && defined(THERMAL_PROTECTION_BED_PERIOD)
     #error Thermal Runaway Protection for the bed must now be enabled with THERMAL_PROTECTION_BED.
   #endif
 
@@ -294,6 +304,18 @@
 
   #if defined(COREXZ) && defined(Z_LATE_ENABLE)
     #error "Z_LATE_ENABLE can't be used with COREXZ."
+  #endif
+
+  #ifdef BEEPER
+    #error BEEPER has been replaced with BEEPER_PIN. Please update your pins definitions.
+  #endif
+
+  #ifdef SDCARDDETECT
+    #error SDCARDDETECT is now SD_DETECT_PIN. Please update your pins definitions.
+  #endif
+
+  #ifdef SDCARDDETECTINVERTED
+    #error SDCARDDETECTINVERTED is now SD_DETECT_INVERTED. Please update your configuration.
   #endif
 
 #endif //SANITYCHECK_H

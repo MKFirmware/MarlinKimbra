@@ -153,8 +153,8 @@
   //#define TORIG_X_ENABLE_PIN  12
   //#define RORIG_X_ENABLE_PIN  13
   
-  #define BEEPER           -1
-  #define SDCARDDETECT     -1
+  #define BEEPER_PIN       -1
+  #define SD_DETECT_PIN    -1
   #define SUICIDE_PIN      -1  //has to be defined; otherwise Power_off doesn't work
   
   #define KILL_PIN         -1
@@ -485,7 +485,7 @@
   #define BLEN_A 0
   
   //Cheaptronic v1.0 does not use this port
-  #define SDCARDDETECT -1
+  #define SD_DETECT_PIN -1
   
 #endif // CHEAPTRONIC
 /****************************************************************************************/
@@ -632,7 +632,7 @@
   #define TEMP_2_PIN         1 //ANALOG NUMBERING
   #define TEMP_BED_PIN       0 //ANALOG NUMBERING
   
-  #define BEEPER 		        36
+  #define BEEPER_PIN 		    36
   
   #define KILL_PIN          -1
   
@@ -642,7 +642,7 @@
   
   #ifdef RA_CONTROL_PANEL
     #define SDSS            53
-    #define SDCARDDETECT    28
+    #define SD_DETECT_PIN   28
 
     #define BTN_EN1         14
     #define BTN_EN2         39
@@ -861,8 +861,8 @@
   #define ORIG_X_STEP_PIN         54
   #define ORIG_X_DIR_PIN          55
   #define ORIG_X_ENABLE_PIN       38
-  #define X_MIN_PIN               3
-  #define X_MAX_PIN               2
+  #define X_MIN_PIN                3
+  #define X_MAX_PIN                2
   
   //Y axis pins
   #define ORIG_Y_STEP_PIN         60
@@ -900,7 +900,7 @@
   #define SDSS                    53
   #define LED_PIN                 13
   
-  #define ORIG_FAN_PIN            9
+  #define ORIG_FAN_PIN             9
   #define PS_ON_PIN               12
   
   #define HEATER_0_PIN      10   // Hotend 1
@@ -916,7 +916,7 @@
   #define HEATER_BED_PIN     8   // BED
   #define TEMP_BED_PIN      14   // ANALOG NUMBERING
 
-  #if defined(REPRAP_DISCOUNT_SMART_CONTROLLER) || defined(G3D_PANEL)
+  #if ENABLED(REPRAP_DISCOUNT_SMART_CONTROLLER) || ENABLED(G3D_PANEL)
     #define KILL_PIN        41
   #else
     #define KILL_PIN        -1
@@ -954,40 +954,40 @@
       #endif //PANEL_ONE
   
       #ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
-        #define BEEPER        37
+        #define BEEPER_PIN    37
 
         #define BTN_EN1       31
         #define BTN_EN2       33
         #define BTN_ENC       35
 
-        #define SDCARDDETECT  49
+        #define SD_DETECT_PIN 49
       #elif defined(LCD_I2C_PANELOLU2)
         #define BTN_EN1       47  //reverse if the encoder turns the wrong way.
         #define BTN_EN2       43
         #define BTN_ENC       32
         #define LCD_SDSS      53
-        #define SDCARDDETECT  -1
+        #define SD_DETECT_PIN -1
         #define KILL_PIN      41
       #elif defined(LCD_I2C_VIKI)
         #define BTN_EN1       22  //reverse if the encoder turns the wrong way.
         #define BTN_EN2        7
         #define BTN_ENC       -1
         #define LCD_SDSS      53
-        #define SDCARDDETECT  49
+        #define SD_DETECT_PIN 49
       #elif defined(ELB_FULL_GRAPHIC_CONTROLLER)
         #define BTN_EN1       35  // reverse if the encoder turns the wrong way.
         #define BTN_EN2       37
         #define BTN_ENC       31
-        #define SDCARDDETECT  49
+        #define SD_DETECT_PIN 49
         #define LCD_SDSS      53
         #define KILL_PIN      41
-        #define BEEPER        23
+        #define BEEPER_PIN    23
         #define DOGLCD_CS     29
         #define DOGLCD_A0     27
         #define LCD_PIN_BL    33
       #else
         //arduino pin which triggers an piezzo beeper
-        #define BEEPER        33  // Beeper on AUX-4
+        #define BEEPER_PIN    33  // Beeper on AUX-4
 
         //buttons are directly attached using AUX-2
         #ifdef REPRAPWORLD_KEYPAD
@@ -1008,17 +1008,17 @@
         #endif
   
         #ifdef G3D_PANEL
-          #define SDCARDDETECT    49
+          #define SD_DETECT_PIN    49
         #else
-          #define SDCARDDETECT    -1  // Ramps does not use this port
+          #define SD_DETECT_PIN    -1  // Ramps does not use this port
         #endif
 
       #endif
   
     #else //old style panel with shift register
       //arduino pin witch triggers an piezzo beeper
-      #define BEEPER              33   //No Beeper added
-  
+      #define BEEPER_PIN          33   //No Beeper added
+
       //buttons are attached to a shift register
       // Not wired this yet
       //#define SHIFT_CLK         38
@@ -1157,40 +1157,40 @@
       #endif //PANEL_ONE
   
       #ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
-        #define BEEPER        37
+        #define BEEPER_PIN    37
 
         #define BTN_EN1       31
         #define BTN_EN2       33
         #define BTN_ENC       35
 
-        #define SDCARDDETECT  49
+        #define SD_DETECT_PIN 49
       #elif defined(LCD_I2C_PANELOLU2)
         #define BTN_EN1       47  //reverse if the encoder turns the wrong way.
         #define BTN_EN2       43
         #define BTN_ENC       32
         #define LCD_SDSS      53
-        #define SDCARDDETECT  -1
+        #define SD_DETECT_PIN -1
         #define KILL_PIN      41
       #elif defined(LCD_I2C_VIKI)
         #define BTN_EN1       22  //reverse if the encoder turns the wrong way.
         #define BTN_EN2        7
         #define BTN_ENC       -1
         #define LCD_SDSS      53
-        #define SDCARDDETECT  49
+        #define SD_DETECT_PIN 49
       #elif defined(ELB_FULL_GRAPHIC_CONTROLLER)
         #define BTN_EN1       35  // reverse if the encoder turns the wrong way.
         #define BTN_EN2       37
         #define BTN_ENC       31
-        #define SDCARDDETECT  49
+        #define SD_DETECT_PIN 49
         #define LCD_SDSS      53
         #define KILL_PIN      41
-        #define BEEPER        23
+        #define BEEPER_PIN    23
         #define DOGLCD_CS     29
         #define DOGLCD_A0     27
         #define LCD_PIN_BL    33
       #else
         //arduino pin which triggers an piezzo beeper
-        #define BEEPER        33  // Beeper on AUX-4
+        #define BEEPER_PIN    33  // Beeper on AUX-4
 
         //buttons are directly attached using AUX-2
         #ifdef REPRAPWORLD_KEYPAD
@@ -1211,16 +1211,16 @@
         #endif
   
         #ifdef G3D_PANEL
-          #define SDCARDDETECT    49
+          #define SD_DETECT_PIN    49
         #else
-          #define SDCARDDETECT    -1  // Ramps does not use this port
+          #define SD_DETECT_PIN    -1  // Ramps does not use this port
         #endif
 
       #endif
   
     #else //old style panel with shift register
       //arduino pin witch triggers an piezzo beeper
-      #define BEEPER              33   //No Beeper added
+      #define BEEPER_PIN          33   //No Beeper added
   
       //buttons are attached to a shift register
       // Not wired this yet
@@ -1360,40 +1360,40 @@
       #endif //PANEL_ONE
   
       #ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
-        #define BEEPER          37
+        #define BEEPER_PIN      37
 
         #define BTN_EN1         31
         #define BTN_EN2         33
         #define BTN_ENC         35
 
-        #define SDCARDDETECT    49
+        #define SD_DETECT_PIN   49
       #elif defined(LCD_I2C_PANELOLU2)
         #define BTN_EN1         47  //reverse if the encoder turns the wrong way.
         #define BTN_EN2         43
         #define BTN_ENC         32
         #define LCD_SDSS        53
-        #define SDCARDDETECT    -1
+        #define SD_DETECT_PIN   -1
         #define KILL_PIN        41
       #elif defined(LCD_I2C_VIKI)
         #define BTN_EN1         22  //reverse if the encoder turns the wrong way.
         #define BTN_EN2          7
         #define BTN_ENC         -1
         #define LCD_SDSS        53
-        #define SDCARDDETECT    49
+        #define SD_DETECT_PIN   49
       #elif defined(ELB_FULL_GRAPHIC_CONTROLLER)
         #define BTN_EN1       35  // reverse if the encoder turns the wrong way.
         #define BTN_EN2       37
         #define BTN_ENC       31
-        #define SDCARDDETECT  49
+        #define SD_DETECT_PIN 49
         #define LCD_SDSS      53
         #define KILL_PIN      41
-        #define BEEPER        23
+        #define BEEPER_PIN    23
         #define DOGLCD_CS     29
         #define DOGLCD_A0     27
         #define LCD_PIN_BL    33
       #else
         //arduino pin which triggers an piezzo beeper
-        #define BEEPER        33  // Beeper on AUX-4
+        #define BEEPER_PIN    33  // Beeper on AUX-4
 
         //buttons are directly attached using AUX-2
         #ifdef REPRAPWORLD_KEYPAD
@@ -1414,16 +1414,16 @@
         #endif
   
         #ifdef G3D_PANEL
-          #define SDCARDDETECT    49
+          #define SD_DETECT_PIN    49
         #else
-          #define SDCARDDETECT    -1  // Ramps does not use this port
+          #define SD_DETECT_PIN    -1  // Ramps does not use this port
         #endif
 
       #endif
   
     #else //old style panel with shift register
       //arduino pin witch triggers an piezzo beeper
-      #define BEEPER              33   //No Beeper added
+      #define BEEPER_PIN          33   //No Beeper added
   
       //buttons are attached to a shift register
       // Not wired this yet
@@ -1563,40 +1563,40 @@
       #endif //PANEL_ONE
   
       #ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
-        #define BEEPER        37
+        #define BEEPER_PIN    37
 
         #define BTN_EN1       31
         #define BTN_EN2       33
         #define BTN_ENC       35
 
-        #define SDCARDDETECT  49
+        #define SD_DETECT_PIN 49
       #elif defined(LCD_I2C_PANELOLU2)
         #define BTN_EN1       47  //reverse if the encoder turns the wrong way.
         #define BTN_EN2       43
         #define BTN_ENC       32
         #define LCD_SDSS      53
-        #define SDCARDDETECT  -1
+        #define SD_DETECT_PIN -1
         #define KILL_PIN      41
       #elif defined(LCD_I2C_VIKI)
         #define BTN_EN1       22  //reverse if the encoder turns the wrong way.
         #define BTN_EN2        7
         #define BTN_ENC       -1
         #define LCD_SDSS      53
-        #define SDCARDDETECT  49
+        #define SD_DETECT_PIN 49
       #elif defined(ELB_FULL_GRAPHIC_CONTROLLER)
         #define BTN_EN1       35  // reverse if the encoder turns the wrong way.
         #define BTN_EN2       37
         #define BTN_ENC       31
-        #define SDCARDDETECT  49
+        #define SD_DETECT_PIN 49
         #define LCD_SDSS      53
         #define KILL_PIN      41
-        #define BEEPER        23
+        #define BEEPER_PIN    23
         #define DOGLCD_CS     29
         #define DOGLCD_A0     27
         #define LCD_PIN_BL    33
       #else
         //arduino pin which triggers an piezzo beeper
-        #define BEEPER        33  // Beeper on AUX-4
+        #define BEEPER_PIN    33  // Beeper on AUX-4
 
         //buttons are directly attached using AUX-2
         #ifdef REPRAPWORLD_KEYPAD
@@ -1617,16 +1617,16 @@
         #endif
   
         #ifdef G3D_PANEL
-          #define SDCARDDETECT    49
+          #define SD_DETECT_PIN    49
         #else
-          #define SDCARDDETECT    -1  // Ramps does not use this port
+          #define SD_DETECT_PIN    -1  // Ramps does not use this port
         #endif
 
       #endif
   
     #else //old style panel with shift register
       //arduino pin witch triggers an piezzo beeper
-      #define BEEPER              33   //No Beeper added
+      #define BEEPER_PIN          33   //No Beeper added
   
       //buttons are attached to a shift register
       // Not wired this yet
@@ -1766,40 +1766,40 @@
       #endif //PANEL_ONE
   
       #ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
-        #define BEEPER        37
+        #define BEEPER_PIN    37
 
         #define BTN_EN1       31
         #define BTN_EN2       33
         #define BTN_ENC       35
 
-        #define SDCARDDETECT  49
+        #define SD_DETECT_PIN 49
       #elif defined(LCD_I2C_PANELOLU2)
         #define BTN_EN1       47  //reverse if the encoder turns the wrong way.
         #define BTN_EN2       43
         #define BTN_ENC       32
         #define LCD_SDSS      53
-        #define SDCARDDETECT  -1
+        #define SD_DETECT_PIN -1
         #define KILL_PIN      41
       #elif defined(LCD_I2C_VIKI)
         #define BTN_EN1       22  //reverse if the encoder turns the wrong way.
         #define BTN_EN2        7
         #define BTN_ENC       -1
         #define LCD_SDSS      53
-        #define SDCARDDETECT  49
+        #define SD_DETECT_PIN 49
       #elif defined(ELB_FULL_GRAPHIC_CONTROLLER)
         #define BTN_EN1       35  // reverse if the encoder turns the wrong way.
         #define BTN_EN2       37
         #define BTN_ENC       31
-        #define SDCARDDETECT  49
+        #define SD_DETECT_PIN 49
         #define LCD_SDSS      53
         #define KILL_PIN      41
-        #define BEEPER        23
+        #define BEEPER_PIN    23
         #define DOGLCD_CS     29
         #define DOGLCD_A0     27
         #define LCD_PIN_BL    33
       #else
         //arduino pin which triggers an piezzo beeper
-        #define BEEPER        33  // Beeper on AUX-4
+        #define BEEPER_PIN    33  // Beeper on AUX-4
 
         //buttons are directly attached using AUX-2
         #ifdef REPRAPWORLD_KEYPAD
@@ -1820,16 +1820,16 @@
         #endif
   
         #ifdef G3D_PANEL
-          #define SDCARDDETECT    49
+          #define SD_DETECT_PIN    49
         #else
-          #define SDCARDDETECT    -1  // Ramps does not use this port
+          #define SD_DETECT_PIN    -1  // Ramps does not use this port
         #endif
 
       #endif
   
     #else //old style panel with shift register
       //arduino pin witch triggers an piezzo beeper
-      #define BEEPER              33   //No Beeper added
+      #define BEEPER_PIN          33   //No Beeper added
   
       //buttons are attached to a shift register
       // Not wired this yet
@@ -1944,7 +1944,7 @@
   #define KILL_PIN 80
   #ifdef NEWPANEL
    //arduino pin which triggers an piezzo beeper
-    #define BEEPER 79      // Beeper on AUX-4
+    #define BEEPER_PIN 79      // Beeper on AUX-4
     #define LCD_PINS_RS 70
     #define LCD_PINS_ENABLE 71
     #define LCD_PINS_D4 72
@@ -1961,11 +1961,11 @@
     #define BLEN_B 1
     #define BLEN_A 0
 
-    #define SDCARDDETECT 81    // Ramps does not use this port
+    #define SD_DETECT_PIN 81    // Ramps does not use this port
 
   #else //old style panel with shift register
     //arduino pin witch triggers an piezzo beeper
-    #define BEEPER 33    No Beeper added
+    #define BEEPER_PIN 33    No Beeper added
     //buttons are attached to a shift register
     // Not wired this yet
     // #define SHIFT_CLK 38
@@ -2095,11 +2095,11 @@
 #define ORIG_E2_DIR_PIN         53
 #define ORIG_E2_ENABLE_PIN      49
 
-#define SDPOWER            -1
-#define SDSS               10
-#define LED_PIN            -1
+#define SDPOWER                 -1
+#define SDSS                    10
+#define LED_PIN                 -1
 
-#define BEEPER             41
+#define BEEPER_PIN              41
 
 #define ORIG_FAN_PIN            -1
 
@@ -2150,11 +2150,11 @@
     #define LCD_PINS_D7 		47
 
     #ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
-      #define BEEPER        41
+      #define BEEPER_PIN    41
       #define BTN_EN1       52
       #define BTN_EN2       50
       #define BTN_ENC       48
-      #define SDCARDDETECT  14
+      #define SD_DETECT_PIN 14
     #endif
   #endif
 #endif //ULTRA_LCD
@@ -2236,7 +2236,7 @@
 #define SDSS                     4
 #define LED_PIN                 13
 
-#define BEEPER                  -1
+#define BEEPER_PIN              -1
 
 #define ORIG_FAN_PIN            -1
 
@@ -2291,13 +2291,13 @@
     #define LCD_PINS_D7         29
 
     #ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
-      #define BEEPER            37
+      #define BEEPER_PIN        37
 
       #define BTN_EN1           33
       #define BTN_EN2           31
       #define BTN_ENC           35
 
-      #define SDCARDDETECT      49
+      #define SD_DETECT_PIN     49
     #endif
   #endif
 #endif //ULTRA_LCD
@@ -2515,8 +2515,8 @@
 
 #define SDPOWER 	            -1
 #define SDSS                  77 // PA28
-#define SDCARDDETECT          87 // PA29
-#define SDCARDDETECTINVERTED  false
+#define SD_DETECT_PIN         87 // PA29
+#define SD_DETECT_INVERTED  false
 #define LED_PIN 	            -1
 
 #define ORIG_FAN_PIN          92 // PA5
@@ -2572,7 +2572,7 @@
   #define LCD_PINS_RS         18
   #define LCD_PINS_ENABLE     15
   #define LCD_PINS_D4         19
-  #define BEEPER              64
+  #define BEEPER_PIN          64
 
   #define BTN_EN1             14
   #define BTN_EN2             16
@@ -2734,14 +2734,14 @@
 #ifdef ULTRA_LCD
   #ifdef NEWPANEL
     //we have no buzzer installed
-    #define BEEPER -1
+    #define BEEPER_PIN -1
     //LCD Pins
     #ifdef DOGLCD
       #ifdef U8GLIB_ST7920 //SPI GLCD 12864 ST7920 ( like [www.digole.com] ) For Melzi V2.0
         #define LCD_PINS_RS 30 //CS chip select /SS chip slave select
         #define LCD_PINS_ENABLE 29 //SID (MOSI)
         #define LCD_PINS_D4 17 //SCK (CLK) clock
-        #define BEEPER 27 // Pin 27 is take by LED_Pin, but Melzi LED do nothing with Marlin and I take this pin for BEEPER.... See here > [github.com] , If you want use this pin with Gcode M42 instead BEEPER
+        #define BEEPER_PIN 27 // Pin 27 is take by LED_Pin, but Melzi LED do nothing with Marlin and I take this pin for BEEPER.... See here > [github.com] , If you want use this pin with Gcode M42 instead BEEPER
       #else
 	  	  // Pins for DOGM SPI LCD Support
 	  	  #define DOGLCD_A0 30
@@ -2776,13 +2776,13 @@
       #define LCD_SDSS 28 //to use the SD card reader on the smart controller rather than the melzi board
     #endif //Panelolu2
     //not connected to a pin
-    #define SDCARDDETECT -1
+    #define SD_DETECT_PIN -1
 
   #endif //Newpanel
 #endif //ULTRA_LCD
 
 #ifdef MAKRPANEL
-  #define BEEPER 29
+  #define BEEPER_PIN 29
   // Pins for DOGM SPI LCD Support
   #define DOGLCD_A0  30
   #define DOGLCD_CS  17
@@ -2799,7 +2799,7 @@
   #define BTN_EN2 10
   #define BTN_ENC 16  //the click switch
   //not connected to a pin
-  #define SDCARDDETECT -1
+  #define SD_DETECT_PIN -1
 #endif //Makrpanel
 
 #endif // SANGUINOLOLU_11
@@ -2913,29 +2913,29 @@
     #define LCD_PINS_D7 29
 
     #ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
-      #define BEEPER 37
+      #define BEEPER_PIN 37
 
       #define BTN_EN1 31
       #define BTN_EN2 33
       #define BTN_ENC 35
 
-      #define SDCARDDETECT 49
+      #define SD_DETECT_PIN 49
     #elif defined(LCD_I2C_PANELOLU2)
       #define BTN_EN1 47  //reverse if the encoder turns the wrong way.
       #define BTN_EN2 43
       #define BTN_ENC 32
       #define LCD_SDSS 53
-      #define SDCARDDETECT -1
+      #define SD_DETECT_PIN -1
       #define KILL_PIN 41
     #elif defined(LCD_I2C_VIKI)
       #define BTN_EN1 22  //reverse if the encoder turns the wrong way.
       #define BTN_EN2 7
       #define BTN_ENC -1
       #define LCD_SDSS 53
-      #define SDCARDDETECT 49
+      #define SD_DETECT_PIN 49
     #else
       //arduino pin which triggers an piezzo beeper
-      #define BEEPER 33  // Beeper on AUX-4
+      #define BEEPER_PIN 33  // Beeper on AUX-4
 
       //buttons are directly attached using AUX-2
       #ifdef REPRAPWORLD_KEYPAD
@@ -2952,16 +2952,16 @@
       #endif
 
       #ifdef G3D_PANEL
-        #define SDCARDDETECT 49
+        #define SD_DETECT_PIN 49
       #else
-        #define SDCARDDETECT -1  // Ramps does not use this port
+        #define SD_DETECT_PIN -1  // Ramps does not use this port
       #endif
 
     #endif
 
   #else //old style panel with shift register
     //arduino pin witch triggers an piezzo beeper
-    #define BEEPER 33   //No Beeper added
+    #define BEEPER_PIN 33   //No Beeper added
 
     //buttons are attached to a shift register
     // Not wired this yet
@@ -3060,7 +3060,7 @@
 #define LED_PIN                 13
 
 #define ORIG_FAN_PIN            6
-#define BEEPER                  33
+#define BEEPER_PIN              33
 #define CONTROLLERFAN_PIN       4
 #define PS_ON_PIN               12
 
@@ -3116,29 +3116,29 @@
     #define LCD_PINS_D7 29
 
     #ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
-      #define BEEPER 37
+      #define BEEPER_PIN 37
 
       #define BTN_EN1 31
       #define BTN_EN2 33
       #define BTN_ENC 35
 
-      #define SDCARDDETECT 49
+      #define SD_DETECT_PIN 49
     #elif defined(LCD_I2C_PANELOLU2)
       #define BTN_EN1 47  //reverse if the encoder turns the wrong way.
       #define BTN_EN2 43
       #define BTN_ENC 32
       #define LCD_SDSS 53
-      #define SDCARDDETECT -1
+      #define SD_DETECT_PIN -1
       #define KILL_PIN 41
     #elif defined(LCD_I2C_VIKI)
       #define BTN_EN1 22  //reverse if the encoder turns the wrong way.
       #define BTN_EN2 7
       #define BTN_ENC -1
       #define LCD_SDSS 53
-      #define SDCARDDETECT 49
+      #define SD_DETECT_PIN 49
     #else
       //arduino pin which triggers an piezzo beeper
-      #define BEEPER 33  // Beeper on AUX-4
+      #define BEEPER_PIN 33  // Beeper on AUX-4
 
       //buttons are directly attached using AUX-2
       #ifdef REPRAPWORLD_KEYPAD
@@ -3155,16 +3155,16 @@
       #endif
 
       #ifdef G3D_PANEL
-        #define SDCARDDETECT 49
+        #define SD_DETECT_PIN 49
       #else
-        #define SDCARDDETECT -1  // Ramps does not use this port
+        #define SD_DETECT_PIN -1  // Ramps does not use this port
       #endif
 
     #endif
 
   #else //old style panel with shift register
     //arduino pin witch triggers an piezzo beeper
-    #define BEEPER 33   //No Beeper added
+    #define BEEPER_PIN 33   //No Beeper added
 
     //buttons are attached to a shift register
     // Not wired this yet
@@ -3184,7 +3184,7 @@
 #endif //ULTRA_LCD
 
 #if defined(VIKI2) || defined(miniVIKI)
-  #define BEEPER           33
+  #define BEEPER_PIN       33
  // Pins for DOGM SPI LCD Support
   #define DOGLCD_A0        44
   #define DOGLCD_CS        45
@@ -3196,7 +3196,7 @@
   #define BTN_ENC          39  //the click switch
 
   #define SDSS             53
-  #define SDCARDDETECT     49
+  #define SD_DETECT_PIN    49
 
   #define KILL_PIN         31
 #endif
@@ -3282,7 +3282,7 @@
 
   #ifdef NEWPANEL
   //arduino pin witch triggers an piezzo beeper
-    #define BEEPER 18
+    #define BEEPER_PIN 18
 
     #define LCD_PINS_RS 20
     #define LCD_PINS_ENABLE 17
@@ -3296,11 +3296,11 @@
     #define BTN_EN2 42
     #define BTN_ENC 19  //the click
 
-    #define SDCARDDETECT 38
+    #define SD_DETECT_PIN 38
 
   #else //old style panel with shift register
     //arduino pin witch triggers an piezzo beeper
-    #define BEEPER 18
+    #define BEEPER_PIN 18
 
     //buttons are attached to a shift register
     #define SHIFT_CLK 38
@@ -3315,7 +3315,7 @@
     #define LCD_PINS_D6 20
     #define LCD_PINS_D7 19
 
-    #define SDCARDDETECT -1
+    #define SD_DETECT_PIN -1
   #endif
 #endif //ULTRA_LCD
 
@@ -3389,7 +3389,7 @@
 #define HEATER_BED_PIN     10   // BED
 #define TEMP_BED_PIN       14   // ANALOG NUMBERING
 
-#define BEEPER 33     // Beeper on AUX-4
+#define BEEPER_PIN 33     // Beeper on AUX-4
 
 
 #ifdef ULTRA_LCD
@@ -3413,7 +3413,7 @@
     #define BLEN_B 1
     #define BLEN_A 0
 
-    #define SDCARDDETECT -1   // Ramps does not use this port
+    #define SD_DETECT_PIN -1   // Ramps does not use this port
   #endif //NEWPANEL
 
 #endif //ULTRA_LCD
@@ -3508,7 +3508,7 @@
    #define TEMP_BED_PIN 14 // ANALOG NUMBERING
  #endif
 
- #define BEEPER 64
+ #define BEEPER_PIN 64
 
 
  #define LCD_PINS_RS 14
@@ -3528,7 +3528,7 @@
  #define BLEN_B 1
  #define BLEN_A 0
 
- #define SDCARDDETECT -1  // Megatronics does not use this port
+ #define SD_DETECT_PIN -1  // Megatronics does not use this port
 
 #endif // MEGATRONICS_2
 /****************************************************************************************/
@@ -3605,7 +3605,7 @@
  #define HEATER_BED_PIN 3 // BED
  #define TEMP_BED_PIN 6 // ANALOG NUMBERING
  
- #define BEEPER -1	
+ #define BEEPER_PIN -1	
  
  
  #define LCD_PINS_RS -1
@@ -3625,7 +3625,7 @@
  #define BLEN_B 1
  #define BLEN_A 0
 
- #define SDCARDDETECT -1  // Megatronics does not use this port
+ #define SD_DETECT_PIN -1  // Megatronics does not use this port
 
 #endif // MEGATRONICS_1
 /****************************************************************************************/
@@ -3731,7 +3731,7 @@
     #define TEMP_BED_PIN 14 // ANALOG NUMBERING
   #endif
 
-  #define BEEPER 61	
+  #define BEEPER_PIN 61	
 
   #define LCD_PINS_RS 32 
   #define LCD_PINS_ENABLE 31
@@ -3754,7 +3754,7 @@
   #define BLEN_B 1
   #define BLEN_A 0
 
-  #define SDCARDDETECT -1	// Megatronics does not use this port
+  #define SD_DETECT_PIN -1	// Megatronics does not use this port
 
 #endif  // MEGATRONICS_3
 /****************************************************************************************/
@@ -3900,7 +3900,7 @@
 #define DEFAULT_PWM_MOTOR_CURRENT  {1300, 1300, 1250}
 
 //arduino pin witch triggers an piezzo beeper
-#define BEEPER 18
+#define BEEPER_PIN 18
 
 #define LCD_PINS_RS 20
 #define LCD_PINS_ENABLE 15
@@ -3918,7 +3918,7 @@
 #define BLEN_B 1
 #define BLEN_A 0
 
-#define SDCARDDETECT 39
+#define SD_DETECT_PIN 39
 
 #endif // ULTIMAIN_2
 /****************************************************************************************/
@@ -4017,10 +4017,10 @@
   #define SERVO3_PIN              4
 #endif
 
-#define BEEPER                   33
+#define BEEPER_PIN               33
 
 #if defined(ULTRA_LCD) && defined(NEWPANEL)
-  #define BEEPER -1
+  #define BEEPER_PIN -1
 
   #define LCD_PINS_RS 27
   #define LCD_PINS_ENABLE 29
@@ -4143,10 +4143,10 @@
   #define SERVO3_PIN              4
 #endif
 
-#define BEEPER                   33
+#define BEEPER_PIN                   33
 
 #if defined(ULTRA_LCD) && defined(NEWPANEL)
-  #define BEEPER -1
+  #define BEEPER_PIN -1
 
   #define LCD_PINS_RS 27
   #define LCD_PINS_ENABLE 29
@@ -4371,8 +4371,8 @@
 
 #define SDPOWER            -1
 #define SDSS               53
-#define SDCARDDETECT       49
-#define BEEPER             44
+#define SD_DETECT_PIN      49
+#define BEEPER_PIN         44
 #define LCD_PINS_RS        19
 #define LCD_PINS_ENABLE    42
 #define LCD_PINS_D4        18
@@ -4515,7 +4515,7 @@
 #define LED_PIN                 -1
 #define PS_ON_PIN               -1
 #define ALARM_PIN               -1
-#define SDCARDDETECT            -1
+#define SD_DETECT_PIN           -1
 
 
 #ifndef SDSUPPORT
@@ -4525,7 +4525,7 @@
   #define MOSI_PIN         10
 #endif
 
-#define BEEPER             -1
+#define BEEPER_PIN         -1
 #define LCD_PINS_RS        -1
 #define LCD_PINS_ENABLE    -1
 #define LCD_PINS_D4        -1
@@ -4651,7 +4651,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define TEMP_2_PIN         -1
 
 #define SDPOWER            -1
-#define SDCARDDETECT       -1		
+#define SD_DETECT_PIN      -1		
 #define SDSS               20 // 8
 #define LED_PIN             6
 #define PS_ON_PIN          27
@@ -4891,9 +4891,9 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 
 #define SDPOWER            -1
 #define SDSS               11
-#define SDCARDDETECT       -1 // 10 optional also used as mode pin
+#define SD_DETECT_PIN      -1 // 10 optional also used as mode pin
 #define LED_PIN            -1
-#define ORIG_FAN_PIN            3
+#define ORIG_FAN_PIN        3
 #define PS_ON_PIN          -1
 #define KILL_PIN           -1
 
@@ -4953,7 +4953,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 
 #define SDPOWER            -1
 #define SDSS               11
-#define SDCARDDETECT       -1 // 10 optional also used as mode pin
+#define SD_DETECT_PIN      -1 // 10 optional also used as mode pin
 #define LED_PIN            -1
 #define ORIG_FAN_PIN            14 /* PWM on MIDDLE connector */
 #define PS_ON_PIN          -1
@@ -5027,7 +5027,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 
 #define SDPOWER                 -1
 #define SDSS                    11
-#define SDCARDDETECT            -1 // 10 optional also used as mode pin
+#define SD_DETECT_PIN           -1 // 10 optional also used as mode pin
 #define LED_PIN                 13
 #define ORIG_FAN_PIN             7
 #define PS_ON_PIN               -1

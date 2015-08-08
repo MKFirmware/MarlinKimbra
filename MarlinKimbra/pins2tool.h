@@ -50,6 +50,7 @@
 // #undef X_MIN_PIN
 // #define X_MIN_PIN newpin
 
-
+#undef Z_PROBE_PIN
+#define Z_PROBE_PIN 18
 
 //============================================================================

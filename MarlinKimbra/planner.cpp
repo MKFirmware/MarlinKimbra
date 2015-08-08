@@ -74,7 +74,7 @@ float mintravelfeedrate;
 unsigned long axis_steps_per_sqr_second[3 + EXTRUDERS];
 uint8_t last_extruder;
 
-#ifdef ENABLE_AUTO_BED_LEVELING
+#if ENABLED(ENABLE_AUTO_BED_LEVELING)
   // Transform required to compensate for bed level
   matrix_3x3 plan_bed_level_matrix = {
     1.0, 0.0, 0.0,
@@ -83,7 +83,7 @@ uint8_t last_extruder;
   };
 #endif // ENABLE_AUTO_BED_LEVELING
 
-#ifdef AUTOTEMP
+#if ENABLED(AUTOTEMP)
   float autotemp_max = 250;
   float autotemp_min = 210;
   float autotemp_factor = 0.1;
@@ -118,7 +118,7 @@ unsigned char g_uc_extruder_last_move[4] = {0,0,0,0};
   static long axis_segment_time[2][3] = { {MAX_FREQ_TIME+1,0,0}, {MAX_FREQ_TIME+1,0,0} };
 #endif
 
-#ifdef FILAMENT_SENSOR
+#if ENABLED(FILAMENT_SENSOR)
   static char meas_sample; //temporary variable to hold filament measurement sample
 #endif
 
@@ -175,7 +175,7 @@ void calculate_trapezoid_for_block(block_t *block, float entry_factor, float exi
     plateau_steps = 0;
   }
 
-#ifdef ADVANCE
+#if ENABLED(ADVANCE)
   volatile long initial_advance = block->advance * entry_factor * entry_factor; 
   volatile long final_advance = block->advance * exit_factor * exit_factor;
 #endif // ADVANCE
@@ -188,7 +188,7 @@ void calculate_trapezoid_for_block(block_t *block, float entry_factor, float exi
     block->decelerate_after = accelerate_steps+plateau_steps;
     block->initial_rate = initial_rate;
     block->final_rate = final_rate;
-    #ifdef ADVANCE
+    #if ENABLED(ADVANCE)
       block->initial_advance = initial_advance;
       block->final_advance = final_advance;
     #endif
@@ -358,7 +358,7 @@ void plan_init() {
 }
 
 
-#ifdef AUTOTEMP
+#if ENABLED(AUTOTEMP)
   void getHighESpeed() {
     static float oldt = 0;
 
@@ -391,11 +391,11 @@ void plan_init() {
 void check_axes_activity() {
   unsigned char axis_active[NUM_AXIS] = { 0 },
                 tail_fan_speed = fanSpeed;
-  #ifdef BARICUDA
+  #if ENABLED(BARICUDA)
     unsigned char tail_valve_pressure = ValvePressure,
                   tail_e_to_p_pressure = EtoPPressure;
   #endif
-  #ifdef LASERBEAM
+  #if ENABLED(LASERBEAM)
     unsigned char tail_laser_ttl_modulation = laser_ttl_modulation;
   #endif
   block_t *block;
@@ -403,12 +403,12 @@ void check_axes_activity() {
   if (blocks_queued()) {
     uint8_t block_index = block_buffer_tail;
     tail_fan_speed = block_buffer[block_index].fan_speed;
-    #ifdef BARICUDA
+    #if ENABLED(BARICUDA)
       block = &block_buffer[block_index];
       tail_valve_pressure = block->valve_pressure;
       tail_e_to_p_pressure = block->e_to_p_pressure;
     #endif
-    #ifdef LASERBEAM
+    #if ENABLED(LASERBEAM)
       tail_laser_ttl_modulation = block_buffer[block_index].laser_ttlmodulation;
     #endif
 
@@ -444,23 +444,23 @@ void check_axes_activity() {
           fan_kick_end = 0;
         }
     #endif //FAN_KICKSTART_TIME
-    #ifdef FAN_MIN_PWM
+    #if ENABLED(FAN_MIN_PWM)
       #define CALC_FAN_SPEED (tail_fan_speed ? ( FAN_MIN_PWM + (tail_fan_speed * (255 - FAN_MIN_PWM)) / 255 ) : 0)
     #else
       #define CALC_FAN_SPEED tail_fan_speed
     #endif // FAN_MIN_PWM
-    #ifdef FAN_SOFT_PWM
+    #if ENABLED(FAN_SOFT_PWM)
       fanSpeedSoftPwm = CALC_FAN_SPEED;
     #else
       analogWrite(FAN_PIN, CALC_FAN_SPEED);
     #endif // FAN_SOFT_PWM
   #endif // HAS_FAN
 
-  #ifdef AUTOTEMP
+  #if ENABLED(AUTOTEMP)
     getHighESpeed();
   #endif
 
-  #ifdef BARICUDA
+  #if ENABLED(BARICUDA)
     #if HAS_HEATER_1
       analogWrite(HEATER_1_PIN,tail_valve_pressure);
     #endif
@@ -470,7 +470,7 @@ void check_axes_activity() {
   #endif
 
   // add Laser TTL Modulation(PWM) Control
-  #ifdef LASERBEAM
+  #if ENABLED(LASERBEAM)
     analogWrite(LASER_TTL_PIN, tail_laser_ttl_modulation);
   #endif
 }
@@ -480,7 +480,7 @@ float junction_deviation = 0.1;
 // Add a new linear movement to the buffer. steps[X_AXIS], _y and _z is the absolute position in 
 // mm. Microseconds specify how many microseconds the move should take to perform. To aid acceleration
 // calculation the caller must also provide the physical length of the line in millimeters.
-#ifdef ENABLE_AUTO_BED_LEVELING
+#if ENABLED(ENABLE_AUTO_BED_LEVELING)
   void plan_buffer_line(float x, float y, float z, const float &e, float feed_rate, const uint8_t &extruder, const uint8_t &driver)
 #else
   void plan_buffer_line(const float &x, const float &y, const float &z, const float &e, float feed_rate, const uint8_t &extruder, const uint8_t &driver)
@@ -493,7 +493,7 @@ float junction_deviation = 0.1;
   // Rest here until there is room in the buffer.
   while (block_buffer_tail == next_buffer_head) idle();
 
-  #ifdef ENABLE_AUTO_BED_LEVELING
+  #if ENABLED(ENABLE_AUTO_BED_LEVELING)
     apply_rotation_xyz(plan_bed_level_matrix, x, y, z);
   #endif
 
@@ -522,9 +522,9 @@ float junction_deviation = 0.1;
         dz = target[Z_AXIS] - position[Z_AXIS],
         de = target[E_AXIS] - position[E_AXIS];
 
-  #ifdef PREVENT_DANGEROUS_EXTRUDE
+  #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
     if (de) {
-      #ifdef NPR2
+      #if ENABLED(NPR2)
         if (extruder != 1)
       #endif
         {
@@ -535,7 +535,7 @@ float junction_deviation = 0.1;
           }
         }
 
-      #ifdef PREVENT_LENGTHY_EXTRUDE
+      #if ENABLED(PREVENT_LENGTHY_EXTRUDE)
         if (labs(de) > axis_steps_per_unit[E_AXIS + extruder] * EXTRUDE_MAXLENGTH) {
           #ifdef EASY_LOAD
             if (!allow_lengthy_extrude_once) {
@@ -543,7 +543,7 @@ float junction_deviation = 0.1;
           position[E_AXIS] = target[E_AXIS]; // Behave as if the move really took place, but ignore E part
           de = 0; // no difference
           ECHO_LM(ER, MSG_ERR_LONG_EXTRUDE_STOP);
-          #ifdef EASY_LOAD
+          #if ENABLED(EASY_LOAD)
             }
             allow_lengthy_extrude_once = false;
           #endif
@@ -559,13 +559,13 @@ float junction_deviation = 0.1;
   block->busy = false;
 
   // Number of steps for each axis
-  #ifdef COREXY
+  #if ENABLED(COREXY)
     // corexy planning
     // these equations follow the form of the dA and dB equations on http://www.corexy.com/theory.html
     block->steps[A_AXIS] = labs(dx + dy);
     block->steps[B_AXIS] = labs(dx - dy);
     block->steps[Z_AXIS] = labs(dz);
-  #elif defined(COREXZ)
+  #elif ENABLED(COREXZ)
     // corexz planning
     block->steps[A_AXIS] = labs(dx + dz);
     block->steps[Y_AXIS] = labs(dy);
@@ -587,25 +587,25 @@ float junction_deviation = 0.1;
   if (block->step_event_count <= dropsegments) return;
 
   block->fan_speed = fanSpeed;
-  #ifdef BARICUDA
+  #if ENABLED(BARICUDA)
     block->valve_pressure = ValvePressure;
     block->e_to_p_pressure = EtoPPressure;
   #endif
 
   // Add update block variables for LASER BEAM control 
-  #ifdef LASERBEAM
+  #if ENABLED(LASERBEAM)
     block->laser_ttlmodulation = laser_ttl_modulation;
   #endif
 
   // Compute direction bits for this block 
   uint8_t db = 0;
-  #ifdef COREXY
+  #if ENABLED(COREXY)
     if (dx < 0) db |= BIT(X_HEAD); // Save the real Extruder (head) direction in X Axis
     if (dy < 0) db |= BIT(Y_HEAD); // ...and Y
     if (dz < 0) db |= BIT(Z_AXIS);
     if (dx + dy < 0) db |= BIT(A_AXIS); // Motor A direction
     if (dx - dy < 0) db |= BIT(B_AXIS); // Motor B direction
-  #elif defined(COREXZ)
+  #elif ENABLED(COREXZ)
     if (dx < 0) db |= BIT(X_HEAD); // Save the real Extruder (head) direction in X Axis
     if (dy < 0) db |= BIT(Y_AXIS);
     if (dz < 0) db |= BIT(Z_HEAD); // ...and Z
@@ -622,7 +622,7 @@ float junction_deviation = 0.1;
   block->active_driver = driver;
 
   //enable active axes
-  #ifdef COREXY
+  #if ENABLED(COREXY)
     if (block->steps[A_AXIS] || block->steps[B_AXIS]) {
       enable_x();
       enable_y();
@@ -630,7 +630,7 @@ float junction_deviation = 0.1;
     #ifndef Z_LATE_ENABLE
       if (block->steps[Z_AXIS]) enable_z();
     #endif
-  #elif defined(COREXZ)
+  #elif ENABLED(COREXZ)
     if (block->steps[A_AXIS] || block->steps[C_AXIS]) {
       enable_x();
       enable_z();
@@ -649,7 +649,7 @@ float junction_deviation = 0.1;
     #if !defined(MKR4) && !defined(NPR2)
       if (DISABLE_INACTIVE_EXTRUDER) { //enable only selected extruder
 
-        for (int i=0; i<EXTRUDERS; i++)
+        for (int i = 0; i < EXTRUDERS; i++)
           if (g_uc_extruder_last_move[i] > 0) g_uc_extruder_last_move[i]--;
 
         switch(extruder) {
@@ -740,14 +740,14 @@ float junction_deviation = 0.1;
    * So we need to create other 2 "AXIS", named X_HEAD and Y_HEAD, meaning the real displacement of the Head. 
    * Having the real displacement of the head, we can calculate the total movement length and apply the desired speed.
    */ 
-  #ifdef COREXY
+  #if ENABLED(COREXY)
     float delta_mm[6];
     delta_mm[X_HEAD] = dx / axis_steps_per_unit[A_AXIS];
     delta_mm[Y_HEAD] = dy / axis_steps_per_unit[B_AXIS];
     delta_mm[Z_AXIS] = dz / axis_steps_per_unit[Z_AXIS];
     delta_mm[A_AXIS] = (dx + dy) / axis_steps_per_unit[A_AXIS];
     delta_mm[B_AXIS] = (dx - dy) / axis_steps_per_unit[B_AXIS];
-  #elif defined(COREXZ)
+  #elif ENABLED(COREXZ)
     float delta_mm[6];
     delta_mm[X_HEAD] = dx / axis_steps_per_unit[A_AXIS];
     delta_mm[Y_AXIS] = dy / axis_steps_per_unit[Y_AXIS];
@@ -767,9 +767,9 @@ float junction_deviation = 0.1;
   }
   else {
     block->millimeters = sqrt(
-      #ifdef COREXY
+      #if ENABLED(COREXY)
         square(delta_mm[X_HEAD]) + square(delta_mm[Y_HEAD]) + square(delta_mm[Z_AXIS])
-      #elif defined(COREXZ)
+      #elif ENABLED(COREXZ)
         square(delta_mm[X_HEAD]) + square(delta_mm[Y_AXIS]) + square(delta_mm[Z_HEAD])
       #else
         square(delta_mm[X_AXIS]) + square(delta_mm[Y_AXIS]) + square(delta_mm[Z_AXIS])
@@ -784,12 +784,12 @@ float junction_deviation = 0.1;
   int moves_queued = movesplanned();
 
   // Slow down when the buffer starts to empty, rather than wait at the corner for a buffer refill
-  #if defined(OLD_SLOWDOWN) || defined(SLOWDOWN)
+  #if ENABLED(OLD_SLOWDOWN) || ENABLED(SLOWDOWN)
     bool mq = moves_queued > 1 && moves_queued < BLOCK_BUFFER_SIZE / 2;
-    #ifdef OLD_SLOWDOWN
+    #if ENABLED(OLD_SLOWDOWN)
       if (mq) feed_rate *= 2.0 * moves_queued / BLOCK_BUFFER_SIZE;
     #endif
-    #ifdef SLOWDOWN
+    #if ENABLED(SLOWDOWN)
       //  segment time im micro seconds
       unsigned long segment_time = lround(1000000.0/inverse_second);
       if (mq) {
@@ -807,7 +807,7 @@ float junction_deviation = 0.1;
   block->nominal_speed = block->millimeters * inverse_second; // (mm/sec) Always > 0
   block->nominal_rate = ceil(block->step_event_count * inverse_second); // (step/sec) Always > 0
 
-  #ifdef FILAMENT_SENSOR
+  #if ENABLED(FILAMENT_SENSOR)
     //FMM update ring buffer used for delay with filament measurements
 
     if (extruder == FILAMENT_SENSOR_EXTRUDER_NUM && delay_index2 > -1) {  //only for extruder with filament sensor and if ring buffer is initialized
@@ -1008,7 +1008,7 @@ float junction_deviation = 0.1;
   memcpy(previous_speed, current_speed, sizeof(previous_speed)); // previous_speed[] = current_speed[]
   previous_nominal_speed = block->nominal_speed;
 
-  #ifdef ADVANCE
+  #if ENABLED(ADVANCE)
     // Calculate advance rate
     if (!bse || (!bsx && !bsy && !bsz)) {
       block->advance_rate = 0;
@@ -1040,7 +1040,7 @@ float junction_deviation = 0.1;
 
 } // plan_buffer_line()
 
-#ifdef ENABLE_AUTO_BED_LEVELING
+#if ENABLED(ENABLE_AUTO_BED_LEVELING)
   vector_3 plan_get_position() {
     vector_3 position = vector_3(st_get_position_mm(X_AXIS), st_get_position_mm(Y_AXIS), st_get_position_mm(Z_AXIS));
 
@@ -1055,13 +1055,13 @@ float junction_deviation = 0.1;
   }
 #endif // ENABLE_AUTO_BED_LEVELING
 
-#ifdef ENABLE_AUTO_BED_LEVELING
+#if ENABLED(ENABLE_AUTO_BED_LEVELING)
   void plan_set_position(float x, float y, float z, const float &e)
 #else
   void plan_set_position(const float &x, const float &y, const float &z, const float &e)
 #endif // ENABLE_AUTO_BED_LEVELING
   {
-    #ifdef ENABLE_AUTO_BED_LEVELING
+    #if ENABLED(ENABLE_AUTO_BED_LEVELING)
       apply_rotation_xyz(plan_bed_level_matrix, x, y, z);
     #endif
 
