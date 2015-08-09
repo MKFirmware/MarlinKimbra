@@ -1,7 +1,7 @@
 // BitMap for splashscreen
 // Generated with: http://www.digole.com/tools/PicturetoC_Hex_converter.php
 // Please note that using the high-res version takes 402Bytes of PROGMEM. 
-//#define START_BMPHIGH
+#define START_BMPHIGH
 
 #if ENABLED(START_BMPHIGH)
   #define START_BMPWIDTH      112
