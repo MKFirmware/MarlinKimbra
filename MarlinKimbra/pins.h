@@ -14,11 +14,11 @@
 * 22 BOARD_GEN3_MONOLITHIC - Gen3 Monolithic Electronics
 *
 *  3 BOARD_RAMPS_OLD - MEGA/RAMPS up to 1.2
-* 33 BOARD_RAMPS_13_EFB - RAMPS 1.3 / 1.4 (Power outputs: Extruder, Fan, Bed)
+* 33 BOARD_RAMPS_13_EFB - RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Fan, Bed)
 * 34 BOARD_RAMPS_13_EEB - RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Bed)
-* 35 BOARD_RAMPS_13_EFF - RAMPS 1.3 / 1.4 (Power outputs: Extruder, Fan, Fan)
+* 35 BOARD_RAMPS_13_EFF - RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Fan, Fan)
 * 36 BOARD_RAMPS_13_EEF - RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Fan)
-* 37 BOARD_RAMPS_13_EEF - RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Hotend2)
+* 37 BOARD_RAMPS_13_EEE - RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Hotend2)
 *
 *301 BOARD_RAMBO - Rambo
 *302 BOARD_MINIRAMBO - Mini Rambo
@@ -39,7 +39,7 @@
 * 63 BOARD_MELZI - Melzi
 * 64 BOARD_STB_11 - STB V1.1
 * 65 BOARD_AZTEEG_X1 - Azteeg X1
-* 66 BOARD_MELZI_1284 - Melzi with ATmega1284 (MaKr3d version)
+* 66 BOARD_MELZI_MAKR3D - Melzi with ATmega1284 (MaKr3d version)
 * 67 BOARD_AZTEEG_X3 - Azteeg X3
 * 68 BOARD_AZTEEG_X3_PRO - Azteeg X3 Pro
 *
@@ -129,15 +129,15 @@
   #define ORIG_E0_DIR_PIN       27
   #define ORIG_E0_ENABLE_PIN    24
   
-  #define TEMP_0_PIN        2
-  #define TEMP_1_PIN       -1
-  #define TEMP_2_PIN       -1
-  #define TEMP_BED_PIN      1  // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!! (pin 34 bed)
+  #define ORIG_TEMP_0_PIN        2
+  #define ORIG_TEMP_1_PIN       -1
+  #define ORIG_TEMP_2_PIN       -1
+  #define ORIG_TEMP_BED_PIN      1  // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!! (pin 34 bed)
  
-  #define HEATER_0_PIN      4
-  #define HEATER_1_PIN     -1
-  #define HEATER_2_PIN     -1
-  #define HEATER_BED_PIN    3  // (bed)
+  #define ORIG_HEATER_0_PIN      4
+  #define ORIG_HEATER_1_PIN     -1
+  #define ORIG_HEATER_2_PIN     -1
+  #define ORIG_HEATER_BED_PIN    3  // (bed)
   
   #define SDPOWER          -1
   #define SDSS             31  // SCL pin of I2C header || CS Pin for SD Card support
@@ -216,15 +216,15 @@
   #define ORIG_E0_DIR_PIN       27
   #define ORIG_E0_ENABLE_PIN    24
   
-  #define TEMP_0_PIN        1
-  #define TEMP_1_PIN       -1
-  #define TEMP_2_PIN       -1
-  #define TEMP_BED_PIN      2
+  #define ORIG_TEMP_0_PIN        1
+  #define ORIG_TEMP_1_PIN       -1
+  #define ORIG_TEMP_2_PIN       -1
+  #define ORIG_TEMP_BED_PIN      2
   
-  #define HEATER_0_PIN      4
-  #define HEATER_1_PIN     -1
-  #define HEATER_2_PIN     -1
-  #define HEATER_BED_PIN    3
+  #define ORIG_HEATER_0_PIN      4
+  #define ORIG_HEATER_1_PIN     -1
+  #define ORIG_HEATER_2_PIN     -1
+  #define ORIG_HEATER_BED_PIN    3
   
   #define KILL_PIN         -1
   
@@ -291,15 +291,15 @@
   #define ORIG_E0_DIR_PIN       27
   #define ORIG_E0_ENABLE_PIN    24
   
-  #define TEMP_0_PIN        1
-  #define TEMP_1_PIN       -1
-  #define TEMP_2_PIN       -1
-  #define TEMP_BED_PIN      2
+  #define ORIG_TEMP_0_PIN        1
+  #define ORIG_TEMP_1_PIN       -1
+  #define ORIG_TEMP_2_PIN       -1
+  #define ORIG_TEMP_BED_PIN      2
   
-  #define HEATER_0_PIN      4
-  #define HEATER_1_PIN     -1
-  #define HEATER_2_PIN     -1
-  #define HEATER_BED_PIN    3
+  #define ORIG_HEATER_0_PIN      4
+  #define ORIG_HEATER_1_PIN     -1
+  #define ORIG_HEATER_2_PIN     -1
+  #define ORIG_HEATER_BED_PIN    3
   
   #define KILL_PIN         -1
   
@@ -362,15 +362,15 @@
   #define ORIG_E0_DIR_PIN       18
   #define ORIG_E0_ENABLE_PIN    25
   
-  #define TEMP_0_PIN        1
-  #define TEMP_1_PIN       -1
-  #define TEMP_2_PIN       -1
-  #define TEMP_BED_PIN      0
+  #define ORIG_TEMP_0_PIN        1
+  #define ORIG_TEMP_1_PIN       -1
+  #define ORIG_TEMP_2_PIN       -1
+  #define ORIG_TEMP_BED_PIN      0
   
-  #define HEATER_0_PIN      4
-  #define HEATER_1_PIN     -1
-  #define HEATER_2_PIN     -1
-  #define HEATER_BED_PIN    3
+  #define ORIG_HEATER_0_PIN      4
+  #define ORIG_HEATER_1_PIN     -1
+  #define ORIG_HEATER_2_PIN     -1
+  #define ORIG_HEATER_BED_PIN    3
   
   #define KILL_PIN         -1
 
@@ -455,18 +455,18 @@
   #define PS_ON_PIN -1
   #define KILL_PIN -1
   
-  #define HEATER_0_PIN 19 // EXTRUDER 1
-  #define HEATER_1_PIN 23 // EXTRUDER 2
+  #define ORIG_HEATER_0_PIN 19 // EXTRUDER 1
+  #define ORIG_HEATER_1_PIN 23 // EXTRUDER 2
   //HeatedBad
-  #define HEATER_BED_PIN 22
+  #define ORIG_HEATER_BED_PIN 22
   //Cheaptronic v1.0 hasent EXTRUDER 3
-  #define HEATER_2_PIN -1
+  #define ORIG_HEATER_2_PIN -1
   
   //Temperature sensors
-  #define TEMP_0_PIN 15
-  #define TEMP_1_PIN 14
-  #define TEMP_2_PIN -1
-  #define TEMP_BED_PIN 13
+  #define ORIG_TEMP_0_PIN 15
+  #define ORIG_TEMP_1_PIN 14
+  #define ORIG_TEMP_2_PIN -1
+  #define ORIG_TEMP_BED_PIN 13
   
   //Cheaptronic v1.0 dont support LCD
   #define LCD_PINS_RS -1
@@ -532,15 +532,15 @@
   #define ORIG_E0_DIR_PIN 27
   #define ORIG_E0_ENABLE_PIN 24
   
-  #define TEMP_0_PIN 1
-  #define TEMP_1_PIN -1
-  #define TEMP_2_PIN -1
-  #define TEMP_BED_PIN 2
+  #define ORIG_TEMP_0_PIN 1
+  #define ORIG_TEMP_1_PIN -1
+  #define ORIG_TEMP_2_PIN -1
+  #define ORIG_TEMP_BED_PIN 2
   
-  #define HEATER_0_PIN 4
-  #define HEATER_1_PIN -1
-  #define HEATER_2_PIN -1
-  #define HEATER_BED_PIN 3
+  #define ORIG_HEATER_0_PIN 4
+  #define ORIG_HEATER_1_PIN -1
+  #define ORIG_HEATER_2_PIN -1
+  #define ORIG_HEATER_BED_PIN 3
   
   #define KILL_PIN -1
   
@@ -623,14 +623,14 @@
   #define PS_ON_PIN         10 //Set to -1 if using a manual switch on the PWRSW Connector
   #define SLEEP_WAKE_PIN    26 //This feature still needs work
   
-  #define HEATER_0_PIN      45 //12V PWM1
-  #define HEATER_1_PIN      46 //12V PWM2
-  #define HEATER_2_PIN      17 //12V PWM3
-  #define HEATER_BED_PIN    44 //DOUBLE 12V PWM
-  #define TEMP_0_PIN         3 //ANALOG NUMBERING
-  #define TEMP_1_PIN         2 //ANALOG NUMBERING
-  #define TEMP_2_PIN         1 //ANALOG NUMBERING
-  #define TEMP_BED_PIN       0 //ANALOG NUMBERING
+  #define ORIG_HEATER_0_PIN      45 //12V PWM1
+  #define ORIG_HEATER_1_PIN      46 //12V PWM2
+  #define ORIG_HEATER_2_PIN      17 //12V PWM3
+  #define ORIG_HEATER_BED_PIN    44 //DOUBLE 12V PWM
+  #define ORIG_TEMP_0_PIN         3 //ANALOG NUMBERING
+  #define ORIG_TEMP_1_PIN         2 //ANALOG NUMBERING
+  #define ORIG_TEMP_2_PIN         1 //ANALOG NUMBERING
+  #define ORIG_TEMP_BED_PIN       0 //ANALOG NUMBERING
   
   #define BEEPER_PIN 		    36
   
@@ -735,14 +735,14 @@
   #define ORIG_E0_DIR_PIN          17
   #define ORIG_E0_ENABLE_PIN       3
   
-  #define HEATER_0_PIN 16
-  #define TEMP_0_PIN 0
+  #define ORIG_HEATER_0_PIN 16
+  #define ORIG_TEMP_0_PIN 0
   
   #define ORIG_FAN_PIN -1
   
   //bed pins
-  #define HEATER_BED_PIN -1
-  #define TEMP_BED_PIN -1
+  #define ORIG_HEATER_BED_PIN -1
+  #define ORIG_TEMP_BED_PIN -1
   
   #define SDSS		   -1
   #define SDPOWER          -1
@@ -753,9 +753,9 @@
   
   //Alex extras from Gen3+
   #define KILL_PIN                -1
-  #define TEMP_1_PIN         -1
-  #define TEMP_2_PIN         -1
-  #define HEATER_2_PIN       -1
+  #define ORIG_TEMP_1_PIN         -1
+  #define ORIG_TEMP_2_PIN         -1
+  #define ORIG_HEATER_2_PIN       -1
 
 #endif // GEN3_MONOLITHIC
 /****************************************************************************************/
@@ -806,21 +806,21 @@
   #define KILL_PIN           -1
   
   #ifdef RAMPS_V_1_0 // RAMPS_V_1_0
-    #define HEATER_0_PIN     12    // RAMPS 1.0
-    #define HEATER_BED_PIN   -1    // RAMPS 1.0
+    #define ORIG_HEATER_0_PIN     12    // RAMPS 1.0
+    #define ORIG_HEATER_BED_PIN   -1    // RAMPS 1.0
     #define ORIG_FAN_PIN          11    // RAMPS 1.0
   #else // RAMPS_V_1_1 or RAMPS_V_1_2
-    #define HEATER_0_PIN     10    // RAMPS 1.1
-    #define HEATER_BED_PIN    8    // RAMPS 1.1
+    #define ORIG_HEATER_0_PIN     10    // RAMPS 1.1
+    #define ORIG_HEATER_BED_PIN    8    // RAMPS 1.1
     #define ORIG_FAN_PIN           9    // RAMPS 1.1
   #endif
 
-  #define HEATER_1_PIN       -1
-  #define HEATER_2_PIN       -1
-  #define TEMP_0_PIN          2    // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
-  #define TEMP_1_PIN         -1
-  #define TEMP_2_PIN         -1
-  #define TEMP_BED_PIN        1    // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
+  #define ORIG_HEATER_1_PIN       -1
+  #define ORIG_HEATER_2_PIN       -1
+  #define ORIG_TEMP_0_PIN          2    // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
+  #define ORIG_TEMP_1_PIN         -1
+  #define ORIG_TEMP_2_PIN         -1
+  #define ORIG_TEMP_BED_PIN        1    // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
   
   // SPI for Max6675 Thermocouple
   #ifndef SDSUPPORT
@@ -903,18 +903,18 @@
   #define ORIG_FAN_PIN             9
   #define PS_ON_PIN               12
   
-  #define HEATER_0_PIN      10   // Hotend 1
-  #define HEATER_1_PIN      -1
-  #define HEATER_2_PIN      -1
-  #define HEATER_3_PIN      -1
+  #define ORIG_HEATER_0_PIN      10   // Hotend 1
+  #define ORIG_HEATER_1_PIN      -1
+  #define ORIG_HEATER_2_PIN      -1
+  #define ORIG_HEATER_3_PIN      -1
 
-  #define TEMP_0_PIN        13   // ANALOG NUMBERING
-  #define TEMP_1_PIN        15   // ANALOG NUMBERING
-  #define TEMP_2_PIN        -1   // ANALOG NUMBERING
-  #define TEMP_3_PIN        -1   // ANALOG NUMBERING
+  #define ORIG_TEMP_0_PIN        13   // ANALOG NUMBERING
+  #define ORIG_TEMP_1_PIN        15   // ANALOG NUMBERING
+  #define ORIG_TEMP_2_PIN        -1   // ANALOG NUMBERING
+  #define ORIG_TEMP_3_PIN        -1   // ANALOG NUMBERING
   
-  #define HEATER_BED_PIN     8   // BED
-  #define TEMP_BED_PIN      14   // ANALOG NUMBERING
+  #define ORIG_HEATER_BED_PIN     8   // BED
+  #define ORIG_TEMP_BED_PIN      14   // ANALOG NUMBERING
 
   #if ENABLED(REPRAP_DISCOUNT_SMART_CONTROLLER) || ENABLED(G3D_PANEL)
     #define KILL_PIN        41
@@ -1112,18 +1112,18 @@
   #define ORIG_FAN_PIN            4
   #define PS_ON_PIN         12
 
-  #define HEATER_0_PIN      10   // HOTEND 1
-  #define HEATER_1_PIN       9   // HOTEND 2
-  #define HEATER_2_PIN      -1
-  #define HEATER_3_PIN      -1
+  #define ORIG_HEATER_0_PIN      10   // HOTEND 1
+  #define ORIG_HEATER_1_PIN       9   // HOTEND 2
+  #define ORIG_HEATER_2_PIN      -1
+  #define ORIG_HEATER_3_PIN      -1
 
-  #define TEMP_0_PIN        13   // ANALOG NUMBERING
-  #define TEMP_1_PIN        15   // ANALOG NUMBERING
-  #define TEMP_2_PIN        -1   // ANALOG NUMBERING
-  #define TEMP_3_PIN        -1   // ANALOG NUMBERING
+  #define ORIG_TEMP_0_PIN        13   // ANALOG NUMBERING
+  #define ORIG_TEMP_1_PIN        15   // ANALOG NUMBERING
+  #define ORIG_TEMP_2_PIN        -1   // ANALOG NUMBERING
+  #define ORIG_TEMP_3_PIN        -1   // ANALOG NUMBERING
 
-  #define HEATER_BED_PIN     8   // BED
-  #define TEMP_BED_PIN      14   // ANALOG NUMBERING
+  #define ORIG_HEATER_BED_PIN     8   // BED
+  #define ORIG_TEMP_BED_PIN      14   // ANALOG NUMBERING
 
   #if NUM_SERVOS > 0
     #define SERVO0_PIN      11
@@ -1315,18 +1315,18 @@
   #define ORIG_FAN_PIN           9
   #define PS_ON_PIN             12
 
-  #define HEATER_0_PIN          10   // HOTEND 1
-  #define HEATER_1_PIN          -1
-  #define HEATER_2_PIN          -1
-  #define HEATER_3_PIN          -1
+  #define ORIG_HEATER_0_PIN          10   // HOTEND 1
+  #define ORIG_HEATER_1_PIN          -1
+  #define ORIG_HEATER_2_PIN          -1
+  #define ORIG_HEATER_3_PIN          -1
 
-  #define TEMP_0_PIN            13   // ANALOG NUMBERING
-  #define TEMP_1_PIN            15   // ANALOG NUMBERING
-  #define TEMP_2_PIN            -1   // ANALOG NUMBERING
-  #define TEMP_3_PIN            -1   // ANALOG NUMBERING
+  #define ORIG_TEMP_0_PIN            13   // ANALOG NUMBERING
+  #define ORIG_TEMP_1_PIN            15   // ANALOG NUMBERING
+  #define ORIG_TEMP_2_PIN            -1   // ANALOG NUMBERING
+  #define ORIG_TEMP_3_PIN            -1   // ANALOG NUMBERING
 
-  #define HEATER_BED_PIN        -1   // BED
-  #define TEMP_BED_PIN          14   // ANALOG NUMBERING
+  #define ORIG_HEATER_BED_PIN        -1   // BED
+  #define ORIG_TEMP_BED_PIN          14   // ANALOG NUMBERING
 
   #if NUM_SERVOS > 0
     #define SERVO0_PIN          11
@@ -1518,18 +1518,18 @@
   #define ORIG_FAN_PIN             8
   #define PS_ON_PIN          12
 
-  #define HEATER_0_PIN       10   // HOTEND 1
-  #define HEATER_1_PIN        9   // HOTEND 2
-  #define HEATER_2_PIN       -1
-  #define HEATER_3_PIN       -1
+  #define ORIG_HEATER_0_PIN       10   // HOTEND 1
+  #define ORIG_HEATER_1_PIN        9   // HOTEND 2
+  #define ORIG_HEATER_2_PIN       -1
+  #define ORIG_HEATER_3_PIN       -1
 
-  #define TEMP_0_PIN         13   // ANALOG NUMBERING
-  #define TEMP_1_PIN         15   // ANALOG NUMBERING
-  #define TEMP_2_PIN         -1   // ANALOG NUMBERING
-  #define TEMP_3_PIN         -1   // ANALOG NUMBERING
+  #define ORIG_TEMP_0_PIN         13   // ANALOG NUMBERING
+  #define ORIG_TEMP_1_PIN         15   // ANALOG NUMBERING
+  #define ORIG_TEMP_2_PIN         -1   // ANALOG NUMBERING
+  #define ORIG_TEMP_3_PIN         -1   // ANALOG NUMBERING
 
-  #define HEATER_BED_PIN      8   // BED
-  #define TEMP_BED_PIN       14   // ANALOG NUMBERING
+  #define ORIG_HEATER_BED_PIN      8   // BED
+  #define ORIG_TEMP_BED_PIN       14   // ANALOG NUMBERING
 
   #if NUM_SERVOS > 0
     #define SERVO0_PIN      11
@@ -1721,18 +1721,18 @@
   #define ORIG_FAN_PIN             8
   #define PS_ON_PIN          12
 
-  #define HEATER_0_PIN       10   // HOTEND 1
-  #define HEATER_1_PIN        9   // HOTEND 2
-  #define HEATER_2_PIN        8   // HOTEND 3
-  #define HEATER_3_PIN       -1
+  #define ORIG_HEATER_0_PIN       10   // HOTEND 1
+  #define ORIG_HEATER_1_PIN        9   // HOTEND 2
+  #define ORIG_HEATER_2_PIN        8   // HOTEND 3
+  #define ORIG_HEATER_3_PIN       -1
 
-  #define TEMP_0_PIN         13   // ANALOG NUMBERING
-  #define TEMP_1_PIN         15   // ANALOG NUMBERING
-  #define TEMP_2_PIN         14   // ANALOG NUMBERING
-  #define TEMP_3_PIN         -1   // ANALOG NUMBERING
+  #define ORIG_TEMP_0_PIN         13   // ANALOG NUMBERING
+  #define ORIG_TEMP_1_PIN         15   // ANALOG NUMBERING
+  #define ORIG_TEMP_2_PIN         14   // ANALOG NUMBERING
+  #define ORIG_TEMP_3_PIN         -1   // ANALOG NUMBERING
 
-  #define HEATER_BED_PIN     -1   // BED
-  #define TEMP_BED_PIN       -1   // ANALOG NUMBERING
+  #define ORIG_HEATER_BED_PIN     -1   // BED
+  #define ORIG_TEMP_BED_PIN       -1   // ANALOG NUMBERING
 
   #if NUM_SERVOS > 0
     #define SERVO0_PIN      11
@@ -1901,21 +1901,21 @@
 #define Z_MS1_PIN 68
 #define Z_MS2_PIN 67
 
-#define HEATER_BED_PIN 3
-#define TEMP_BED_PIN 2
+#define ORIG_HEATER_BED_PIN 3
+#define ORIG_TEMP_BED_PIN 2
 
-#define HEATER_0_PIN  9
-#define TEMP_0_PIN 0
+#define ORIG_HEATER_0_PIN  9
+#define ORIG_TEMP_0_PIN 0
 
-#define HEATER_1_PIN 7
-#define TEMP_1_PIN 1
+#define ORIG_HEATER_1_PIN 7
+#define ORIG_TEMP_1_PIN 1
 
 #ifdef BARICUDA
-#define HEATER_2_PIN 6
+#define ORIG_HEATER_2_PIN 6
 #else
-#define HEATER_2_PIN -1
+#define ORIG_HEATER_2_PIN -1
 #endif
-#define TEMP_2_PIN -1
+#define ORIG_TEMP_2_PIN -1
 
 #define ORIG_E0_STEP_PIN         34
 #define ORIG_E0_DIR_PIN          43
@@ -2036,14 +2036,14 @@
 #define PS_ON_PIN          -1
 #define KILL_PIN           -1
 
-#define HEATER_0_PIN        6
-#define HEATER_1_PIN        -1
-#define HEATER_2_PIN        -1
-#define TEMP_0_PIN          0    // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
-#define TEMP_1_PIN          -1
-#define TEMP_2_PIN          -1
-#define HEATER_BED_PIN      -1
-#define TEMP_BED_PIN        -1
+#define ORIG_HEATER_0_PIN        6
+#define ORIG_HEATER_1_PIN        -1
+#define ORIG_HEATER_2_PIN        -1
+#define ORIG_TEMP_0_PIN          0    // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
+#define ORIG_TEMP_1_PIN          -1
+#define ORIG_TEMP_2_PIN          -1
+#define ORIG_HEATER_BED_PIN      -1
+#define ORIG_TEMP_BED_PIN        -1
 
 #endif // DUEMILANOVE_328P
 /****************************************************************************************/
@@ -2109,16 +2109,16 @@
 
 #define KILL_PIN           -1
 
-#define HEATER_BED_PIN     7    // BED
-#define HEATER_0_PIN       13
-#define HEATER_1_PIN       12
-#define HEATER_2_PIN       11
+#define ORIG_HEATER_BED_PIN     7    // BED
+#define ORIG_HEATER_0_PIN       13
+#define ORIG_HEATER_1_PIN       12
+#define ORIG_HEATER_2_PIN       11
 
-#define TEMP_BED_PIN       4   // ANALOG NUMBERING
-#define TEMP_0_PIN         0   // ANALOG NUMBERING
-#define TEMP_1_PIN         -1  // 1   // ANALOG NUMBERING
-#define TEMP_2_PIN         -1  // 2   // ANALOG NUMBERING
-#define TEMP_3_PIN         -1  // 3   // ANALOG NUMBERING
+#define ORIG_TEMP_BED_PIN       4   // ANALOG NUMBERING
+#define ORIG_TEMP_0_PIN         0   // ANALOG NUMBERING
+#define ORIG_TEMP_1_PIN         -1  // 1   // ANALOG NUMBERING
+#define ORIG_TEMP_2_PIN         -1  // 2   // ANALOG NUMBERING
+#define ORIG_TEMP_3_PIN         -1  // 3   // ANALOG NUMBERING
 
 
 
@@ -2247,19 +2247,19 @@
 #define KILL_PIN                -1
 
 
-#define HEATER_BED_PIN           8    // BED
+#define ORIG_HEATER_BED_PIN           8    // BED
 
-#define HEATER_0_PIN             9
-#define HEATER_1_PIN            10
-#define HEATER_2_PIN            11
+#define ORIG_HEATER_0_PIN             9
+#define ORIG_HEATER_1_PIN            10
+#define ORIG_HEATER_2_PIN            11
 
-#define TEMP_BED_PIN             7   // ANALOG NUMBERING
+#define ORIG_TEMP_BED_PIN             7   // ANALOG NUMBERING
 
-#define TEMP_0_PIN               6   // ANALOG NUMBERING
-#define TEMP_1_PIN               5   // 2    // ANALOG NUMBERING
-#define TEMP_2_PIN               4   // 3     // ANALOG NUMBERING
+#define ORIG_TEMP_0_PIN               6   // ANALOG NUMBERING
+#define ORIG_TEMP_1_PIN               5   // 2    // ANALOG NUMBERING
+#define ORIG_TEMP_2_PIN               4   // 3     // ANALOG NUMBERING
 
-#define TEMP_3_PIN              -1   // ANALOG NUMBERING
+#define ORIG_TEMP_3_PIN              -1   // ANALOG NUMBERING
 #define TEMP_4_PIN              -1   // ANALOG NUMBERING
 
 
@@ -2414,20 +2414,20 @@
     #define ORIG_E0_STEP_PIN      4    //Edited @ EJE Electronics 20100715
     #define ORIG_E0_DIR_PIN       2    //Edited @ EJE Electronics 20100715
     #define ORIG_E0_ENABLE_PIN    3    //Added @ EJE Electronics 20100715
-    #define TEMP_0_PIN      5     //changed @ rkoeppl 20110410
-    #define TEMP_1_PIN      -1    //changed @ rkoeppl 20110410
+    #define ORIG_TEMP_0_PIN      5     //changed @ rkoeppl 20110410
+    #define ORIG_TEMP_1_PIN      -1    //changed @ rkoeppl 20110410
 
 
-    #define TEMP_2_PIN      -1    //changed @ rkoeppl 20110410
-    #define HEATER_0_PIN    14    //changed @ rkoeppl 20110410
-    #define HEATER_1_PIN    -1
-    #define HEATER_2_PIN    -1
+    #define ORIG_TEMP_2_PIN      -1    //changed @ rkoeppl 20110410
+    #define ORIG_HEATER_0_PIN    14    //changed @ rkoeppl 20110410
+    #define ORIG_HEATER_1_PIN    -1
+    #define ORIG_HEATER_2_PIN    -1
     #if MOTHERBOARD == 5
-    #define HEATER_BED_PIN  -1    //changed @ rkoeppl 20110410
-    #define TEMP_BED_PIN    -1    //changed @ rkoeppl 20110410
+    #define ORIG_HEATER_BED_PIN  -1    //changed @ rkoeppl 20110410
+    #define ORIG_TEMP_BED_PIN    -1    //changed @ rkoeppl 20110410
     #else
-    #define HEATER_BED_PIN   1    //changed @ rkoeppl 20110410
-    #define TEMP_BED_PIN     0    //changed @ rkoeppl 20110410
+    #define ORIG_HEATER_BED_PIN   1    //changed @ rkoeppl 20110410
+    #define ORIG_TEMP_BED_PIN     0    //changed @ rkoeppl 20110410
     #endif
     #define SDPOWER          -1
     #define SDSS          17
@@ -2529,20 +2529,20 @@
 
 
 // Note that on the Due pin A0 on the board is channel 2 on the ARM chip
-#define HEATER_BED_PIN        69 // PA0
-#define HEATER_0_PIN          68 // PA1
+#define ORIG_HEATER_BED_PIN        69 // PA0
+#define ORIG_HEATER_0_PIN          68 // PA1
 /*
-#define HEATER_1_PIN           8 // PC22 on piggy
-#define HEATER_2_PIN           9 // PC21 on piggy
-#define HEATER_3_PIN          97 // PC20 on piggy
+#define ORIG_HEATER_1_PIN           8 // PC22 on piggy
+#define ORIG_HEATER_2_PIN           9 // PC21 on piggy
+#define ORIG_HEATER_3_PIN          97 // PC20 on piggy
 */
 
-#define TEMP_BED_PIN           0 // PA16
-#define TEMP_0_PIN             1 // PA24, analog pin
+#define ORIG_TEMP_BED_PIN           0 // PA16
+#define ORIG_TEMP_0_PIN             1 // PA24, analog pin
 /*
-#define TEMP_1_PIN             5 // PA23 analog pin on piggy
-#define TEMP_2_PIN             4 // PA22, analog pin on piggy
-#define TEMP_3_PIN             3 // PA6, analog on piggy
+#define ORIG_TEMP_1_PIN             5 // PA23 analog pin on piggy
+#define ORIG_TEMP_2_PIN             4 // PA22, analog pin on piggy
+#define ORIG_TEMP_3_PIN             3 // PA6, analog on piggy
 */
 
 #define LED_RED_PIN           40 // PC8
@@ -2695,13 +2695,13 @@
 #define PS_ON_PIN          -1
 #define KILL_PIN           -1
 
-#define HEATER_0_PIN       13 // (extruder)
-#define HEATER_1_PIN       -1
-#define HEATER_2_PIN       -1
+#define ORIG_HEATER_0_PIN       13 // (extruder)
+#define ORIG_HEATER_1_PIN       -1
+#define ORIG_HEATER_2_PIN       -1
 
 #ifdef SANGUINOLOLU_V_1_2
 
- #define HEATER_BED_PIN         12 // (bed)
+ #define ORIG_HEATER_BED_PIN         12 // (bed)
  #define ORIG_X_ENABLE_PIN      14
  #define ORIG_Y_ENABLE_PIN      14
  #define ORIG_Z_ENABLE_PIN      26
@@ -2713,7 +2713,7 @@
 
 #else
 
-#define HEATER_BED_PIN          14  // (bed)
+#define ORIG_HEATER_BED_PIN          14  // (bed)
 #define ORIG_X_ENABLE_PIN       -1
 #define ORIG_Y_ENABLE_PIN       -1
 #define ORIG_Z_ENABLE_PIN       -1
@@ -2721,10 +2721,10 @@
 
 #endif
 
-#define TEMP_0_PIN          7   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!! (pin 33 extruder)
-#define TEMP_1_PIN         -1
-#define TEMP_2_PIN         -1
-#define TEMP_BED_PIN        6   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!! (pin 34 bed)
+#define ORIG_TEMP_0_PIN          7   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!! (pin 33 extruder)
+#define ORIG_TEMP_1_PIN         -1
+#define ORIG_TEMP_2_PIN         -1
+#define ORIG_TEMP_BED_PIN        6   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!! (pin 34 bed)
 #define SDPOWER            -1
 #define SDSS               31
 
@@ -2868,18 +2868,18 @@
   #define KILL_PIN              -1
 #endif
 
-#define HEATER_0_PIN       10   // HOTEND 1
-#define HEATER_1_PIN       -1
-#define HEATER_2_PIN       -1
-#define HEATER_3_PIN       -1
+#define ORIG_HEATER_0_PIN       10   // HOTEND 1
+#define ORIG_HEATER_1_PIN       -1
+#define ORIG_HEATER_2_PIN       -1
+#define ORIG_HEATER_3_PIN       -1
 
-#define TEMP_0_PIN         13   // ANALOG NUMBERING
-#define TEMP_1_PIN         15   // ANALOG NUMBERING
-#define TEMP_2_PIN         -1   // ANALOG NUMBERING
+#define ORIG_TEMP_0_PIN         13   // ANALOG NUMBERING
+#define ORIG_TEMP_1_PIN         15   // ANALOG NUMBERING
+#define ORIG_TEMP_2_PIN         -1   // ANALOG NUMBERING
 
-#define HEATER_BED_PIN      8   // BED
+#define ORIG_HEATER_BED_PIN      8   // BED
 
-#define TEMP_BED_PIN       14   // ANALOG NUMBERING
+#define ORIG_TEMP_BED_PIN       14   // ANALOG NUMBERING
 
 #if NUM_SERVOS > 0
   #define SERVO0_PIN              11
@@ -3070,22 +3070,22 @@
   #define KILL_PIN              -1
 #endif
 
-#define HEATER_0_PIN       10   // HOTEND 1
-#define HEATER_1_PIN        9   // HOTEND 2
-#define HEATER_2_PIN       16   // HOTEND 3
-#define HEATER_3_PIN       17   // HOTEND 4
+#define ORIG_HEATER_0_PIN       10   // HOTEND 1
+#define ORIG_HEATER_1_PIN        9   // HOTEND 2
+#define ORIG_HEATER_2_PIN       16   // HOTEND 3
+#define ORIG_HEATER_3_PIN       17   // HOTEND 4
 
-#define TEMP_0_PIN         13   // ANALOG NUMBERING
-#define TEMP_1_PIN         15   // ANALOG NUMBERING
-#define TEMP_2_PIN         12   // ANALOG NUMBERING
-#define TEMP_3_PIN         11   // ANALOG NUMBERING
+#define ORIG_TEMP_0_PIN         13   // ANALOG NUMBERING
+#define ORIG_TEMP_1_PIN         15   // ANALOG NUMBERING
+#define ORIG_TEMP_2_PIN         12   // ANALOG NUMBERING
+#define ORIG_TEMP_3_PIN         11   // ANALOG NUMBERING
 
 #define TC1                4    // ANALOG NUMBERING Thermo couple on Azteeg X3Pro
 #define TC2                5    // ANALOG NUMBERING Thermo couple on Azteeg X3Pro
 
-#define HEATER_BED_PIN      8   // BED
+#define ORIG_HEATER_BED_PIN      8   // BED
 
-#define TEMP_BED_PIN       14   // ANALOG NUMBERING
+#define ORIG_TEMP_BED_PIN       14   // ANALOG NUMBERING
 
 #ifdef NUM_SERVOS
    #define SERVO0_PIN       47
@@ -3250,17 +3250,17 @@
 #define Z_MAX_PIN 32
 #define ORIG_Z_ENABLE_PIN 35
 
-#define HEATER_BED_PIN 4
-#define TEMP_BED_PIN 10
+#define ORIG_HEATER_BED_PIN 4
+#define ORIG_TEMP_BED_PIN 10
 
-#define HEATER_0_PIN  2
-#define TEMP_0_PIN 8
+#define ORIG_HEATER_0_PIN  2
+#define ORIG_TEMP_0_PIN 8
 
-#define HEATER_1_PIN 3
-#define TEMP_1_PIN 9
+#define ORIG_HEATER_1_PIN 3
+#define ORIG_TEMP_1_PIN 9
 
-#define HEATER_2_PIN -1
-#define TEMP_2_PIN -1
+#define ORIG_HEATER_2_PIN -1
+#define ORIG_TEMP_2_PIN -1
 
 #define ORIG_E0_STEP_PIN         43
 #define ORIG_E0_DIR_PIN          45
@@ -3373,21 +3373,21 @@
 #define PS_ON_PIN          12
 #define KILL_PIN           -1
 
-#define HEATER_0_PIN       9    // EXTRUDER 1
-#define HEATER_1_PIN       8    // EXTRUDER 2 (FAN On Sprinter)
-#define HEATER_2_PIN       -1
+#define ORIG_HEATER_0_PIN       9    // EXTRUDER 1
+#define ORIG_HEATER_1_PIN       8    // EXTRUDER 2 (FAN On Sprinter)
+#define ORIG_HEATER_2_PIN       -1
 
 #if TEMP_SENSOR_0 == -1
-#define TEMP_0_PIN         8   // ANALOG NUMBERING
+#define ORIG_TEMP_0_PIN         8   // ANALOG NUMBERING
 #else
-#define TEMP_0_PIN         13   // ANALOG NUMBERING
+#define ORIG_TEMP_0_PIN         13   // ANALOG NUMBERING
 
 #endif
 
-#define TEMP_1_PIN         15   // ANALOG NUMBERING
-#define TEMP_2_PIN         -1   // ANALOG NUMBERING
-#define HEATER_BED_PIN     10   // BED
-#define TEMP_BED_PIN       14   // ANALOG NUMBERING
+#define ORIG_TEMP_1_PIN         15   // ANALOG NUMBERING
+#define ORIG_TEMP_2_PIN         -1   // ANALOG NUMBERING
+#define ORIG_HEATER_BED_PIN     10   // BED
+#define ORIG_TEMP_BED_PIN       14   // ANALOG NUMBERING
 
 #define BEEPER_PIN 33     // Beeper on AUX-4
 
@@ -3476,9 +3476,9 @@
 #define PS_ON_PIN 12
 #define KILL_PIN -1
 
-#define HEATER_0_PIN 9 // EXTRUDER 1
-#define HEATER_1_PIN 8 // EXTRUDER 2
-#define HEATER_2_PIN -1
+#define ORIG_HEATER_0_PIN 9 // EXTRUDER 1
+#define ORIG_HEATER_1_PIN 8 // EXTRUDER 2
+#define ORIG_HEATER_2_PIN -1
  
 #define SHIFT_CLK 63
 #define SHIFT_LD 42
@@ -3486,26 +3486,26 @@
 #define SHIFT_EN 17
  
 #if TEMP_SENSOR_0 == -1
-  #define TEMP_0_PIN 4 // ANALOG NUMBERING
+  #define ORIG_TEMP_0_PIN 4 // ANALOG NUMBERING
 #else
-  #define TEMP_0_PIN 13 // ANALOG NUMBERING
+  #define ORIG_TEMP_0_PIN 13 // ANALOG NUMBERING
 #endif
 
 
  #if TEMP_SENSOR_1 == -1
-   #define TEMP_1_PIN 8 // ANALOG NUMBERING
+   #define ORIG_TEMP_1_PIN 8 // ANALOG NUMBERING
  #else
-   #define TEMP_1_PIN 15 // ANALOG NUMBERING
+   #define ORIG_TEMP_1_PIN 15 // ANALOG NUMBERING
  #endif
 
- #define TEMP_2_PIN -1 // ANALOG NUMBERING
+ #define ORIG_TEMP_2_PIN -1 // ANALOG NUMBERING
 
- #define HEATER_BED_PIN 10 // BED
+ #define ORIG_HEATER_BED_PIN 10 // BED
 
  #if TEMP_SENSOR_BED == -1
-   #define TEMP_BED_PIN 8 // ANALOG NUMBERING
+   #define ORIG_TEMP_BED_PIN 8 // ANALOG NUMBERING
  #else
-   #define TEMP_BED_PIN 14 // ANALOG NUMBERING
+   #define ORIG_TEMP_BED_PIN 14 // ANALOG NUMBERING
  #endif
 
  #define BEEPER_PIN 64
@@ -3590,20 +3590,20 @@
  #define PS_ON_PIN -1
  #define KILL_PIN -1
  
- #define HEATER_0_PIN 7 // EXTRUDER 1
- #define HEATER_1_PIN 8 // EXTRUDER 2
- #define HEATER_2_PIN 9 // thermo couple
+ #define ORIG_HEATER_0_PIN 7 // EXTRUDER 1
+ #define ORIG_HEATER_1_PIN 8 // EXTRUDER 2
+ #define ORIG_HEATER_2_PIN 9 // thermo couple
  
  #if TEMP_SENSOR_0 == -1
- 	#define TEMP_0_PIN 5 // ANALOG NUMBERING
+ 	#define ORIG_TEMP_0_PIN 5 // ANALOG NUMBERING
  #else
- 	#define TEMP_0_PIN 7 // ANALOG NUMBERING
+ 	#define ORIG_TEMP_0_PIN 7 // ANALOG NUMBERING
  #endif
- #define TEMP_1_PIN 6 // ANALOG NUMBERING
- #define TEMP_2_PIN -1 // ANALOG NUMBERING
+ #define ORIG_TEMP_1_PIN 6 // ANALOG NUMBERING
+ #define ORIG_TEMP_2_PIN -1 // ANALOG NUMBERING
  
- #define HEATER_BED_PIN 3 // BED
- #define TEMP_BED_PIN 6 // ANALOG NUMBERING
+ #define ORIG_HEATER_BED_PIN 3 // BED
+ #define ORIG_TEMP_BED_PIN 6 // ANALOG NUMBERING
  
  #define BEEPER_PIN -1	
  
@@ -3700,35 +3700,35 @@
   #define PS_ON_PIN 12
   #define KILL_PIN -1
 
-  #define HEATER_0_PIN 2 
-  #define HEATER_1_PIN 8 
-  #define HEATER_2_PIN 9 
-  #define HEATER_BED_PIN 10 
+  #define ORIG_HEATER_0_PIN 2 
+  #define ORIG_HEATER_1_PIN 8 
+  #define ORIG_HEATER_2_PIN 9 
+  #define ORIG_HEATER_BED_PIN 10 
   #define ORIG_FAN_PIN 6
   #define FAN2_PIN 7
 
   #if TEMP_SENSOR_0 == -1
-    #define TEMP_0_PIN 11 // ANALOG NUMBERING
+    #define ORIG_TEMP_0_PIN 11 // ANALOG NUMBERING
   #else
-    #define TEMP_0_PIN 15 // ANALOG NUMBERING
+    #define ORIG_TEMP_0_PIN 15 // ANALOG NUMBERING
   #endif
 
   #if TEMP_SENSOR_1 == -1
-    #define TEMP_1_PIN 10 // ANALOG NUMBERING
+    #define ORIG_TEMP_1_PIN 10 // ANALOG NUMBERING
   #else
-    #define TEMP_1_PIN 13 // ANALOG NUMBERING
+    #define ORIG_TEMP_1_PIN 13 // ANALOG NUMBERING
   #endif
 
   #if TEMP_SENSOR_2 == -1
-    #define TEMP_2_PIN 9 // ANALOG NUMBERING
+    #define ORIG_TEMP_2_PIN 9 // ANALOG NUMBERING
   #else
-    #define TEMP_2_PIN 12 // ANALOG NUMBERING
+    #define ORIG_TEMP_2_PIN 12 // ANALOG NUMBERING
   #endif
 
   #if TEMP_SENSOR_BED == -1
-    #define TEMP_BED_PIN 8 // ANALOG NUMBERING
+    #define ORIG_TEMP_BED_PIN 8 // ANALOG NUMBERING
   #else 
-    #define TEMP_BED_PIN 14 // ANALOG NUMBERING
+    #define ORIG_TEMP_BED_PIN 14 // ANALOG NUMBERING
   #endif
 
   #define BEEPER_PIN 61	
@@ -3795,17 +3795,17 @@
 #define Z_MAX_PIN 18
 #define ORIG_Z_ENABLE_PIN 35
 
-#define HEATER_BED_PIN -1
-#define TEMP_BED_PIN -1
+#define ORIG_HEATER_BED_PIN -1
+#define ORIG_TEMP_BED_PIN -1
 
-#define HEATER_0_PIN  2
-#define TEMP_0_PIN 8
+#define ORIG_HEATER_0_PIN  2
+#define ORIG_TEMP_0_PIN 8
 
-#define HEATER_1_PIN 1
-#define TEMP_1_PIN 1
+#define ORIG_HEATER_1_PIN 1
+#define ORIG_TEMP_1_PIN 1
 
-#define HEATER_2_PIN -1
-#define TEMP_2_PIN -1
+#define ORIG_HEATER_2_PIN -1
+#define ORIG_TEMP_2_PIN -1
 
 #define ORIG_E0_STEP_PIN         43
 #define ORIG_E0_DIR_PIN          45
@@ -3862,17 +3862,17 @@
 #define Z_STOP_PIN 29
 #define ORIG_Z_ENABLE_PIN 34
 
-#define HEATER_BED_PIN 4
-#define TEMP_BED_PIN 10
+#define ORIG_HEATER_BED_PIN 4
+#define ORIG_TEMP_BED_PIN 10
 
-#define HEATER_0_PIN  2
-#define TEMP_0_PIN 8
+#define ORIG_HEATER_0_PIN  2
+#define ORIG_TEMP_0_PIN 8
 
-#define HEATER_1_PIN 3
-#define TEMP_1_PIN 9
+#define ORIG_HEATER_1_PIN 3
+#define ORIG_TEMP_1_PIN 9
 
-#define HEATER_2_PIN -1
-#define TEMP_2_PIN -1
+#define ORIG_HEATER_2_PIN -1
+#define ORIG_TEMP_2_PIN -1
 
 #define ORIG_E0_STEP_PIN         42
 #define ORIG_E0_DIR_PIN          43
@@ -3988,18 +3988,18 @@
   #define KILL_PIN               -1
 #endif
 
-#define HEATER_0_PIN        10  // HOTEND 1
-#define HEATER_1_PIN        12  // HOTEND 2
-#define HEATER_2_PIN         6  // HOTEND 3
-#define HEATER_3_PIN        -1
+#define ORIG_HEATER_0_PIN        10  // HOTEND 1
+#define ORIG_HEATER_1_PIN        12  // HOTEND 2
+#define ORIG_HEATER_2_PIN         6  // HOTEND 3
+#define ORIG_HEATER_3_PIN        -1
 
-#define TEMP_0_PIN          13   // ANALOG NUMBERING
-#define TEMP_1_PIN          15   // ANALOG NUMBERING
-#define TEMP_2_PIN          -1   // ANALOG NUMBERING
+#define ORIG_TEMP_0_PIN          13   // ANALOG NUMBERING
+#define ORIG_TEMP_1_PIN          15   // ANALOG NUMBERING
+#define ORIG_TEMP_2_PIN          -1   // ANALOG NUMBERING
 
-#define HEATER_BED_PIN       9   // NO BED
+#define ORIG_HEATER_BED_PIN       9   // NO BED
 
-#define TEMP_BED_PIN        14   // ANALOG NUMBERING
+#define ORIG_TEMP_BED_PIN        14   // ANALOG NUMBERING
 
 #if NUM_SERVOS > 0
   #define SERVO0_PIN             11
@@ -4114,18 +4114,18 @@
   #define KILL_PIN               -1
 #endif
 
-#define HEATER_0_PIN        10  // HOTEND 1
-#define HEATER_1_PIN        12  // HOTEND 2
-#define HEATER_2_PIN         6  // HOTEND 3
-#define HEATER_3_PIN        -1
+#define ORIG_HEATER_0_PIN        10  // HOTEND 1
+#define ORIG_HEATER_1_PIN        12  // HOTEND 2
+#define ORIG_HEATER_2_PIN         6  // HOTEND 3
+#define ORIG_HEATER_3_PIN        -1
 
-#define TEMP_0_PIN          13   // ANALOG NUMBERING
-#define TEMP_1_PIN          15   // ANALOG NUMBERING
-#define TEMP_2_PIN          -1   // ANALOG NUMBERING
+#define ORIG_TEMP_0_PIN          13   // ANALOG NUMBERING
+#define ORIG_TEMP_1_PIN          15   // ANALOG NUMBERING
+#define ORIG_TEMP_2_PIN          -1   // ANALOG NUMBERING
 
-#define HEATER_BED_PIN       9   // NO BED
+#define ORIG_HEATER_BED_PIN       9   // NO BED
 
-#define TEMP_BED_PIN        14   // ANALOG NUMBERING
+#define ORIG_TEMP_BED_PIN        14   // ANALOG NUMBERING
 
 #if NUM_SERVOS > 0
   #define SERVO0_PIN             11
@@ -4215,10 +4215,10 @@
 #define ORIG_E0_DIR_PIN          7
 #define ORIG_E0_ENABLE_PIN      19
 
-#define HEATER_0_PIN       21  // Extruder
-#define HEATER_1_PIN       -1
-#define HEATER_2_PIN       -1
-#define HEATER_BED_PIN     20  // Bed
+#define ORIG_HEATER_0_PIN       21  // Extruder
+#define ORIG_HEATER_1_PIN       -1
+#define ORIG_HEATER_2_PIN       -1
+#define ORIG_HEATER_BED_PIN     20  // Bed
 #define ORIG_FAN_PIN            22  // Fan
 // You may need to change ORIG_FAN_PIN to 16 because Marlin isn't using fastio.h
 // for the fan and Teensyduino uses a different pin mapping.
@@ -4227,18 +4227,18 @@
   #define X_STOP_PIN         13
   #define Y_STOP_PIN         14
   #define Z_STOP_PIN         15
-  #define TEMP_0_PIN          7  // Extruder / Analog pin numbering
-  #define TEMP_BED_PIN        6  // Bed / Analog pin numbering
+  #define ORIG_TEMP_0_PIN          7  // Extruder / Analog pin numbering
+  #define ORIG_TEMP_BED_PIN        6  // Bed / Analog pin numbering
 #else  // Printrboard
   #define X_STOP_PIN         35
   #define Y_STOP_PIN          8
   #define Z_STOP_PIN         36
-  #define TEMP_0_PIN          1  // Extruder / Analog pin numbering
-  #define TEMP_BED_PIN        0  // Bed / Analog pin numbering
+  #define ORIG_TEMP_0_PIN          1  // Extruder / Analog pin numbering
+  #define ORIG_TEMP_BED_PIN        0  // Bed / Analog pin numbering
 #endif
 
-#define TEMP_1_PIN         -1
-#define TEMP_2_PIN         -1
+#define ORIG_TEMP_1_PIN         -1
+#define ORIG_TEMP_2_PIN         -1
 
 #define SDPOWER            -1
 #define SDSS                8
@@ -4319,53 +4319,53 @@
 #define KILL_PIN                46
 
 #if (TEMP_SENSOR_0==0)
- #define TEMP_0_PIN             -1
- #define HEATER_0_PIN           -1
+ #define ORIG_TEMP_0_PIN             -1
+ #define ORIG_HEATER_0_PIN           -1
 #else
- #define HEATER_0_PIN           2    // EXTRUDER 1
+ #define ORIG_HEATER_0_PIN           2    // EXTRUDER 1
  #if (TEMP_SENSOR_0==-1)
-  #define TEMP_0_PIN            6    // ANALOG NUMBERING - connector *K1* on RUMBA thermocouple ADD ON is used
+  #define ORIG_TEMP_0_PIN            6    // ANALOG NUMBERING - connector *K1* on RUMBA thermocouple ADD ON is used
  #else
-  #define TEMP_0_PIN            15   // ANALOG NUMBERING - default connector for thermistor *T0* on rumba board is used
+  #define ORIG_TEMP_0_PIN            15   // ANALOG NUMBERING - default connector for thermistor *T0* on rumba board is used
  #endif
 #endif
 
 #if (TEMP_SENSOR_1==0)
- #define TEMP_1_PIN             -1
- #define HEATER_1_PIN           -1
+ #define ORIG_TEMP_1_PIN             -1
+ #define ORIG_HEATER_1_PIN           -1
 #else
- #define HEATER_1_PIN           3    // EXTRUDER 2
+ #define ORIG_HEATER_1_PIN           3    // EXTRUDER 2
  #if (TEMP_SENSOR_1==-1)
-  #define TEMP_1_PIN            5    // ANALOG NUMBERING - connector *K2* on RUMBA thermocouple ADD ON is used
+  #define ORIG_TEMP_1_PIN            5    // ANALOG NUMBERING - connector *K2* on RUMBA thermocouple ADD ON is used
  #else
-  #define TEMP_1_PIN            14   // ANALOG NUMBERING - default connector for thermistor *T1* on rumba board is used
+  #define ORIG_TEMP_1_PIN            14   // ANALOG NUMBERING - default connector for thermistor *T1* on rumba board is used
  #endif
 #endif
 
 #if (TEMP_SENSOR_2==0)
- #define TEMP_2_PIN         -1
- #define HEATER_2_PIN       -1
+ #define ORIG_TEMP_2_PIN         -1
+ #define ORIG_HEATER_2_PIN       -1
 #else
- #define HEATER_2_PIN        6    // EXTRUDER 3
+ #define ORIG_HEATER_2_PIN        6    // EXTRUDER 3
  #if (TEMP_SENSOR_2==-1)
-  #define TEMP_2_PIN         7    // ANALOG NUMBERING - connector *K3* on RUMBA thermocouple ADD ON is used <-- this can not be used when TEMP_SENSOR_BED is defined as thermocouple
+  #define ORIG_TEMP_2_PIN         7    // ANALOG NUMBERING - connector *K3* on RUMBA thermocouple ADD ON is used <-- this can not be used when TEMP_SENSOR_BED is defined as thermocouple
  #else
-  #define TEMP_2_PIN         13   // ANALOG NUMBERING - default connector for thermistor *T2* on rumba board is used
+  #define ORIG_TEMP_2_PIN         13   // ANALOG NUMBERING - default connector for thermistor *T2* on rumba board is used
  #endif
 #endif
 
 //optional for extruder 4 or chamber: #define TEMP_X_PIN         12   // ANALOG NUMBERING - default connector for thermistor *T3* on rumba board is used
-//optional FAN1 can be used as 4th heater output: #define HEATER_3_PIN       8    // EXTRUDER 4
+//optional FAN1 can be used as 4th heater output: #define ORIG_HEATER_3_PIN       8    // EXTRUDER 4
 
 #if (TEMP_SENSOR_BED==0)
- #define TEMP_BED_PIN       -1
- #define HEATER_BED_PIN     -1
+ #define ORIG_TEMP_BED_PIN       -1
+ #define ORIG_HEATER_BED_PIN     -1
 #else
- #define HEATER_BED_PIN      9    // BED
+ #define ORIG_HEATER_BED_PIN      9    // BED
  #if (TEMP_SENSOR_BED==-1)
-  #define TEMP_BED_PIN       7    // ANALOG NUMBERING - connector *K3* on RUMBA thermocouple ADD ON is used <-- this can not be used when TEMP_SENSOR_2 is defined as thermocouple
+  #define ORIG_TEMP_BED_PIN       7    // ANALOG NUMBERING - connector *K3* on RUMBA thermocouple ADD ON is used <-- this can not be used when TEMP_SENSOR_2 is defined as thermocouple
  #else
-  #define TEMP_BED_PIN       11   // ANALOG NUMBERING - default connector for thermistor *THB* on rumba board is used
+  #define ORIG_TEMP_BED_PIN       11   // ANALOG NUMBERING - default connector for thermistor *THB* on rumba board is used
  #endif
 #endif
 
@@ -4428,16 +4428,16 @@
 #define ORIG_E0_ENABLE_PIN      22
 #define E0_ATT_PIN         20
 
-#define HEATER_0_PIN        4  // Extruder
-#define HEATER_1_PIN       -1
-#define HEATER_2_PIN       -1
-#define HEATER_BED_PIN     38  // Bed
+#define ORIG_HEATER_0_PIN        4  // Extruder
+#define ORIG_HEATER_1_PIN       -1
+#define ORIG_HEATER_2_PIN       -1
+#define ORIG_HEATER_BED_PIN     38  // Bed
 #define ORIG_FAN_PIN             3  // Fan
 
-#define TEMP_0_PIN          7  // Extruder / Analog pin numbering
-#define TEMP_1_PIN         -1
-#define TEMP_2_PIN         -1
-#define TEMP_BED_PIN        6  // Bed / Analog pin numbering
+#define ORIG_TEMP_0_PIN          7  // Extruder / Analog pin numbering
+#define ORIG_TEMP_1_PIN         -1
+#define ORIG_TEMP_2_PIN         -1
+#define ORIG_TEMP_BED_PIN        6  // Bed / Analog pin numbering
 
 #define SDPOWER            -1
 #define SDSS               -1
@@ -4493,10 +4493,10 @@
 #define ORIG_E0_DIR_PIN          7
 #define ORIG_E0_ENABLE_PIN       19
 
-#define HEATER_0_PIN       21  // Extruder
-#define HEATER_1_PIN       -1
-#define HEATER_2_PIN       -1
-#define HEATER_BED_PIN     20  // Bed
+#define ORIG_HEATER_0_PIN       21  // Extruder
+#define ORIG_HEATER_1_PIN       -1
+#define ORIG_HEATER_2_PIN       -1
+#define ORIG_HEATER_BED_PIN     20  // Bed
 #define ORIG_FAN_PIN            16  // Fan   -- from Teensyduino environment.
                                     // For the fan and Teensyduino uses a different pin mapping.
 #define X_STOP_PIN              13
@@ -4504,11 +4504,11 @@
 #define Z_STOP_PIN              15
 //#define Z_STOP_PIN            36  // For inductive sensor.
 
-#define TEMP_0_PIN          7  // Extruder / Analog pin numbering
-#define TEMP_BED_PIN        6  // Bed / Analog pin numbering
+#define ORIG_TEMP_0_PIN          7  // Extruder / Analog pin numbering
+#define ORIG_TEMP_BED_PIN        6  // Bed / Analog pin numbering
 
-#define TEMP_1_PIN         -1
-#define TEMP_2_PIN         -1
+#define ORIG_TEMP_1_PIN         -1
+#define ORIG_TEMP_2_PIN         -1
 
 #define SDPOWER                 -1
 #define SDSS                    20  // PB0 - 8 in marlin env.
@@ -4635,20 +4635,20 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define ORIG_E0_DIR_PIN         35 //  7
 #define ORIG_E0_ENABLE_PIN      26 // Shared w/x
 
-#define HEATER_0_PIN       15 //  21  // Extruder
-#define HEATER_1_PIN       -1
-#define HEATER_2_PIN       -1
-#define HEATER_BED_PIN     14 // 20  // Bed
+#define ORIG_HEATER_0_PIN       15 //  21  // Extruder
+#define ORIG_HEATER_1_PIN       -1
+#define ORIG_HEATER_2_PIN       -1
+#define ORIG_HEATER_BED_PIN     14 // 20  // Bed
 #define ORIG_FAN_PIN            16 // 22  // Fan
 
 #define X_STOP_PIN          2
 #define Y_STOP_PIN          3
 #define Z_STOP_PIN          4
 
-#define TEMP_0_PIN          7 // Extruder / Analog pin numbering
-#define TEMP_BED_PIN        6 // Bed / Analog pin numbering
-#define TEMP_1_PIN         -1
-#define TEMP_2_PIN         -1
+#define ORIG_TEMP_0_PIN          7 // Extruder / Analog pin numbering
+#define ORIG_TEMP_BED_PIN        6 // Bed / Analog pin numbering
+#define ORIG_TEMP_1_PIN         -1
+#define ORIG_TEMP_2_PIN         -1
 
 #define SDPOWER            -1
 #define SD_DETECT_PIN      -1		
@@ -4719,19 +4719,19 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define ORIG_E0_DIR_PIN          7
 #define ORIG_E0_ENABLE_PIN      17
 
-#define HEATER_0_PIN       21  // Extruder
-#define HEATER_1_PIN       -1
-#define HEATER_2_PIN       -1
-#define HEATER_BED_PIN     20  // Bed
+#define ORIG_HEATER_0_PIN       21  // Extruder
+#define ORIG_HEATER_1_PIN       -1
+#define ORIG_HEATER_2_PIN       -1
+#define ORIG_HEATER_BED_PIN     20  // Bed
 // You may need to change ORIG_FAN_PIN to 16 because Marlin isn't using fastio.h
 // for the fan and Teensyduino uses a different pin mapping.
 #define ORIG_FAN_PIN            16  // Fan
 
-#define TEMP_0_PIN          1  // Extruder / Analog pin numbering
-#define TEMP_BED_PIN        0  // Bed / Analog pin numbering
+#define ORIG_TEMP_0_PIN          1  // Extruder / Analog pin numbering
+#define ORIG_TEMP_BED_PIN        0  // Bed / Analog pin numbering
 
-#define TEMP_1_PIN         -1
-#define TEMP_2_PIN         -1
+#define ORIG_TEMP_1_PIN         -1
+#define ORIG_TEMP_2_PIN         -1
 
 #define SDPOWER                 -1
 #define LED_PIN                 -1
@@ -4802,21 +4802,21 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define PS_ON_PIN         14
 #define KILL_PIN           -1
 
-#define HEATER_0_PIN       12 // (extruder)
+#define ORIG_HEATER_0_PIN       12 // (extruder)
 
-#define HEATER_BED_PIN     16 // (bed)
+#define ORIG_HEATER_BED_PIN     16 // (bed)
 #define ORIG_X_ENABLE_PIN       19
 #define ORIG_Y_ENABLE_PIN       24
 #define ORIG_Z_ENABLE_PIN       29
 #define ORIG_E0_ENABLE_PIN      13
 
-#define TEMP_0_PIN          0   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!! (pin 33 extruder)
-#define TEMP_1_PIN         -1   
-#define TEMP_2_PIN         -1
-#define TEMP_BED_PIN        5   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!! (pin 34 bed)  
+#define ORIG_TEMP_0_PIN          0   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!! (pin 33 extruder)
+#define ORIG_TEMP_1_PIN         -1   
+#define ORIG_TEMP_2_PIN         -1
+#define ORIG_TEMP_BED_PIN        5   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!! (pin 34 bed)  
 #define SDPOWER            -1
 #define SDSS               4
-#define HEATER_2_PIN       -1
+#define ORIG_HEATER_2_PIN       -1
 
 #endif // GEN3_PLUS
 /****************************************************************************************/
@@ -4897,14 +4897,14 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define PS_ON_PIN          -1
 #define KILL_PIN           -1
 
-#define HEATER_0_PIN       4
-#define HEATER_1_PIN       -1 // 12
-#define HEATER_2_PIN       -1 // 13
-#define TEMP_0_PIN          0 //D27   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
-#define TEMP_1_PIN         -1 // 1
-#define TEMP_2_PIN         -1 // 2
-#define HEATER_BED_PIN     -1 // 14/15
-#define TEMP_BED_PIN       -1 // 1,2 or I2C
+#define ORIG_HEATER_0_PIN       4
+#define ORIG_HEATER_1_PIN       -1 // 12
+#define ORIG_HEATER_2_PIN       -1 // 13
+#define ORIG_TEMP_0_PIN          0 //D27   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
+#define ORIG_TEMP_1_PIN         -1 // 1
+#define ORIG_TEMP_2_PIN         -1 // 2
+#define ORIG_HEATER_BED_PIN     -1 // 14/15
+#define ORIG_TEMP_BED_PIN       -1 // 1,2 or I2C
 /*  Unused (1) (2) (3) 4 5 6 7 8 9 10 11 12 13 (14) (15) (16) 17 (18) (19) (20) (21) (22) (23) 24 (25) (26) (27) 28 (29) (30) (31)  */
 
 #endif // OMCA_A
@@ -4959,16 +4959,14 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define PS_ON_PIN          -1
 #define KILL_PIN           -1
 
-#define HEATER_0_PIN        3 /*DONE PWM on RIGHT connector */
-#define HEATER_1_PIN       -1
-#define HEATER_2_PIN       -1
-#define HEATER_1_PIN       -1
-#define HEATER_2_PIN       -1
-#define TEMP_0_PIN          0 // ANALOG INPUT NUMBERING
-#define TEMP_1_PIN          1 // ANALOG
-#define TEMP_2_PIN         -1 // 2
-#define HEATER_BED_PIN      4
-#define TEMP_BED_PIN        2 // 1,2 or I2C
+#define ORIG_HEATER_0_PIN        3 /*DONE PWM on RIGHT connector */
+#define ORIG_HEATER_1_PIN       -1
+#define ORIG_HEATER_2_PIN       -1
+#define ORIG_TEMP_0_PIN          0 // ANALOG INPUT NUMBERING
+#define ORIG_TEMP_1_PIN          1 // ANALOG
+#define ORIG_TEMP_2_PIN         -1 // 2
+#define ORIG_HEATER_BED_PIN      4
+#define ORIG_TEMP_BED_PIN        2 // 1,2 or I2C
 
 #define I2C_SCL       16
 #define I2C_SDA       17
@@ -5035,14 +5033,14 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define SOL1_PIN                16
 #define SOL2_PIN                17
 
-#define HEATER_0_PIN        9
-#define HEATER_1_PIN        8 // 12
-#define HEATER_2_PIN       11 //-1 // 13
-#define TEMP_0_PIN         13 //D27   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
-#define TEMP_1_PIN         15 // 1
-#define TEMP_2_PIN         -1 // 2
-#define HEATER_BED_PIN     10 // 14/15
-#define TEMP_BED_PIN       14 // 1,2 or I2C
+#define ORIG_HEATER_0_PIN        9
+#define ORIG_HEATER_1_PIN        8 // 12
+#define ORIG_HEATER_2_PIN       11 //-1 // 13
+#define ORIG_TEMP_0_PIN         13 //D27   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
+#define ORIG_TEMP_1_PIN         15 // 1
+#define ORIG_TEMP_2_PIN         -1 // 2
+#define ORIG_HEATER_BED_PIN     10 // 14/15
+#define ORIG_TEMP_BED_PIN       14 // 1,2 or I2C
 /*  Unused (1) (2) (3) 4 5 6 7 8 9 10 11 12 13 (14) (15) (16) 17 (18) (19) (20) (21) (22) (23) 24 (25) (26) (27) 28 (29) (30) (31)  */
 
 #endif // LEAPFROG
@@ -5084,14 +5082,14 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define PS_ON_PIN           9
 #define KILL_PIN           -1
 
-#define HEATER_0_PIN       13
-#define HEATER_1_PIN       -1
-#define HEATER_2_PIN       -1
-#define TEMP_0_PIN          6   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
-#define TEMP_1_PIN         -1   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
-#define TEMP_2_PIN         -1   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
-#define HEATER_BED_PIN      4
-#define TEMP_BED_PIN       10
+#define ORIG_HEATER_0_PIN       13
+#define ORIG_HEATER_1_PIN       -1
+#define ORIG_HEATER_2_PIN       -1
+#define ORIG_TEMP_0_PIN          6   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
+#define ORIG_TEMP_1_PIN         -1   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
+#define ORIG_TEMP_2_PIN         -1   // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
+#define ORIG_HEATER_BED_PIN      4
+#define ORIG_TEMP_BED_PIN       10
 
 #endif // 99
 /****************************************************************************************/
@@ -5138,23 +5136,23 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
   #error Unknown MOTHERBOARD value in configuration.h
 #endif
 
-#ifndef HEATER_1_PIN
-  #define HEATER_1_PIN -1
+#ifndef ORIG_HEATER_1_PIN
+  #define ORIG_HEATER_1_PIN -1
 #endif
-#ifndef TEMP_1_PIN
-  #define TEMP_1_PIN -1
+#ifndef ORIG_TEMP_1_PIN
+  #define ORIG_TEMP_1_PIN -1
 #endif
-#ifndef HEATER_2_PIN
-  #define HEATER_2_PIN -1
+#ifndef ORIG_HEATER_2_PIN
+  #define ORIG_HEATER_2_PIN -1
 #endif
-#ifndef TEMP_2_PIN
-  #define TEMP_2_PIN -1
+#ifndef ORIG_TEMP_2_PIN
+  #define ORIG_TEMP_2_PIN -1
 #endif
-#ifndef HEATER_3_PIN
-  #define HEATER_3_PIN -1
+#ifndef ORIG_HEATER_3_PIN
+  #define ORIG_HEATER_3_PIN -1
 #endif
-#ifndef TEMP_3_PIN
-  #define TEMP_3_PIN -1
+#ifndef ORIG_TEMP_3_PIN
+  #define ORIG_TEMP_3_PIN -1
 #endif
 
 #ifdef X_STOP_PIN
@@ -5246,32 +5244,32 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 ****************************************************************************************/
 
 #if HOTENDS == 1
-  #undef HEATER_1_PIN
-  #undef HEATER_2_PIN
-  #undef HEATER_3_PIN
-  #define HEATER_1_PIN  -1
-  #define HEATER_2_PIN  -1
-  #define HEATER_3_PIN  -1
-  #undef TEMP_1_PIN
-  #undef TEMP_2_PIN
-  #undef TEMP_3_PIN
-  #define TEMP_1_PIN    -1
-  #define TEMP_2_PIN    -1
-  #define TEMP_3_PIN    -1
+  #undef ORIG_HEATER_1_PIN
+  #undef ORIG_HEATER_2_PIN
+  #undef ORIG_HEATER_3_PIN
+  #define ORIG_HEATER_1_PIN  -1
+  #define ORIG_HEATER_2_PIN  -1
+  #define ORIG_HEATER_3_PIN  -1
+  #undef ORIG_TEMP_1_PIN
+  #undef ORIG_TEMP_2_PIN
+  #undef ORIG_TEMP_3_PIN
+  #define ORIG_TEMP_1_PIN    -1
+  #define ORIG_TEMP_2_PIN    -1
+  #define ORIG_TEMP_3_PIN    -1
 #elif HOTENDS == 2
-  #undef HEATER_2_PIN
-  #undef HEATER_3_PIN
-  #define HEATER_2_PIN  -1
-  #define HEATER_3_PIN  -1
-  #undef TEMP_2_PIN
-  #undef TEMP_3_PIN
-  #define TEMP_2_PIN    -1
-  #define TEMP_3_PIN    -1
+  #undef ORIG_HEATER_2_PIN
+  #undef ORIG_HEATER_3_PIN
+  #define ORIG_HEATER_2_PIN  -1
+  #define ORIG_HEATER_3_PIN  -1
+  #undef ORIG_TEMP_2_PIN
+  #undef ORIG_TEMP_3_PIN
+  #define ORIG_TEMP_2_PIN    -1
+  #define ORIG_TEMP_3_PIN    -1
 #elif HOTENDS == 3
-  #undef HEATER_3_PIN
-  #define HEATER_3_PIN  -1
-  #undef TEMP_3_PIN
-  #define TEMP_3_PIN    -1
+  #undef ORIG_HEATER_3_PIN
+  #define ORIG_HEATER_3_PIN  -1
+  #undef ORIG_TEMP_3_PIN
+  #define ORIG_TEMP_3_PIN    -1
 #endif
 
 #ifdef MKR4
