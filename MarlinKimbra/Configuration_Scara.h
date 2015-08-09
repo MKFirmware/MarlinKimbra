@@ -34,14 +34,16 @@
 // coarse Endstop Settings
 //#define ENDSTOPPULLUPS // Comment this out (using // at the start of the line) to disable the endstop pullup resistors
 
-#ifndef ENDSTOPPULLUPS
+#if DISABLED(ENDSTOPPULLUPS)
   // fine endstop settings: Individual pullups. will be ignored if ENDSTOPPULLUPS is defined
-  // #define ENDSTOPPULLUP_XMAX
-  // #define ENDSTOPPULLUP_YMAX
-  #define ENDSTOPPULLUP_ZMAX  // open pin, inverted
   #define ENDSTOPPULLUP_XMIN  // open pin, inverted
   #define ENDSTOPPULLUP_YMIN  // open pin, inverted
-  // #define ENDSTOPPULLUP_ZMIN
+  //#define ENDSTOPPULLUP_ZMIN
+  //#define ENDSTOPPULLUP_XMAX
+  //#define ENDSTOPPULLUP_YMAX
+  #define ENDSTOPPULLUP_ZMAX  // open pin, inverted
+  //#define ENDSTOPPULLUP_ZPROBE
+  //#define ENDSTOPPULLUP_EMIN
 #endif
 
 // Mechanical endstop with COM to ground and NC to Signal uses "false" here (most common setup).
