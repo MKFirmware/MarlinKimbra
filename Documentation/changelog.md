@@ -1,4 +1,4 @@
-### Versione 4.1.4
+### Version 4.1.4
 * Improved firmare test dialog.
 * Bugfix for SDCONFIG routine. Now the configuration file will be readed and created only on the root of the SD.
 * Improved "Thermal Runaway Protection" now the system will be halted also if the thermistor is missing before the temperature is reached as suggested in Issue #35.
