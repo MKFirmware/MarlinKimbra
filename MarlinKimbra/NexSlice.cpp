@@ -80,6 +80,6 @@ void NexSlice::attachPop(NexTouchEventCb pop, void *ptr)
  */
 void NexSlice::detachPop(void)
 {
-    NexTouch::detachPop();   
+    NexTouch::detachPop();
 }
  

@@ -1,6 +1,6 @@
 <img align="right" src="Documentation/Logo/MarlinKimbra%20Logo%20GitHub.png" />
 # MarlinKimbra 3D Printer Firmware
-## Version 4.1.3 dev
+## Version 4.1.4 dev
 
   * [Configuration & Compilation](/Documentation/Compilation.md)
   * Supported
@@ -34,16 +34,16 @@ Adding commands to facilitate purging of hotend.
 Step per unit varied for each extruder as well as the feedrate.
 The addition of a different feedrate for retraction. 
 Adding Debug Dryrun used by repetier.
-Add total Power on time write in EEPROM
-
+Added total Power on time writec in SD CARD.
+Added total Power consumption writed in SD CARD.
+Added anti extruder idle oozing system.
 ## Credits
 
 The current MarlinKimbra dev team consists of:
  - MagoKimbra - Alberto Cotronei (https://github.com/MagoKimbra)
 
 More features have been added by:
-  - simone97 (https://github.com/simone97)
-  -
+ - simonepri - Simone Primarosa (https://github.com/simonepri)
 
 ## License
 

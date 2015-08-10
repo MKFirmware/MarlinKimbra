@@ -960,7 +960,7 @@ void tp_init() {
   // Use timer0 for temperature measurement
   // Interleave temperature interrupt with millies interrupt
   OCR0B = 128;
-  TIMSK0 |= BIT(OCIE0B);  
+  TIMSK0 |= BIT(OCIE0B);
 
   // Wait for temperature measurement to settle
   delay(250);
@@ -1052,7 +1052,7 @@ void tp_init() {
 #if ENABLED(THERMAL_PROTECTION_HOTENDS) || ENABLED(THERMAL_PROTECTION_BED)
 
   void thermal_runaway_protection(TRState *state, millis_t *timer, float temperature, float target_temperature, int heater_id, int period_seconds, int hysteresis_degc) {
-
+    static float tr_last_temperature = 0.0;
     static float tr_target_temperature[HOTENDS + 1] = { 0.0 };
     /*
         ECHO_SM(DB, "Thermal Thermal Runaway Running. Heater ID: ");
@@ -1070,31 +1070,49 @@ void tp_init() {
       *state = TRReset;
 
     switch (*state) {
-      case TRReset:
+      case TRReset: {
         *timer = 0;
         *state = TRInactive;
+      }
       // Inactive state waits for a target temperature to be set
-      case TRInactive:
+      case TRInactive: {
         if (target_temperature > 0) {
+          tr_last_temperature = temperature;
           tr_target_temperature[heater_index] = target_temperature;
+          *timer = millis();
           *state = TRFirstHeating;
         }
-        break;
+      }
+      break;
       // When first heating, wait for the temperature to be reached then go to Stable state
-      case TRFirstHeating:
+      // If the heater takes too long to reach the target temperature the sistem will be halt.
+      case TRFirstHeating: {
         if (temperature >= tr_target_temperature[heater_index]) *state = TRStable;
-        break;
-      // While the temperature is stable watch for a bad temperature
-      case TRStable:
-        // If the temperature is over the target (-hysteresis) restart the timer
-        if (temperature >= tr_target_temperature[heater_index] - hysteresis_degc)
+        else if (temperature == tr_last_temperature) {
+          if (millis() > *timer + period_seconds * 1000UL) {
+            *state = TRRunaway;
+          }
+        }
+        else {
           *timer = millis();
+        }
+      }
+      break;
+      // While the temperature is stable watch for a bad temperature
+      case TRStable: {
+        // If the temperature is over the target (-hysteresis) restart the timer
+        if (temperature >= tr_target_temperature[heater_index] - hysteresis_degc) {
+          *timer = millis();
+        }
           // If the timer goes too long without a reset, trigger shutdown
-        else if (millis() > *timer + period_seconds * 1000UL)
+        else if (millis() > *timer + period_seconds * 1000UL) {
           *state = TRRunaway;
-        break;
-      case TRRunaway:
+        }
+      }
+      break;
+      case TRRunaway: {
         _temp_error(heater_id, PSTR(MSG_T_THERMAL_RUNAWAY), PSTR(MSG_THERMAL_RUNAWAY));
+      }
     }
   }
 

@@ -95,7 +95,7 @@ void MarlinSerial::begin(long baud) {
 void MarlinSerial::end() {
   cbi(M_UCSRxB, M_RXENx);
   cbi(M_UCSRxB, M_TXENx);
-  cbi(M_UCSRxB, M_RXCIEx);  
+  cbi(M_UCSRxB, M_RXCIEx);
 }
 
 
@@ -178,7 +178,7 @@ void MarlinSerial::print(double n, int digits) {
 
 void MarlinSerial::println(void) {
   print('\r');
-  print('\n');  
+  print('\n');
 }
 
 void MarlinSerial::println(const String &s) {

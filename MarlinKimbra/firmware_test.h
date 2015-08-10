@@ -35,9 +35,22 @@ void FirmwareTest()
       }
       else
       {
-        ECHO_EM("X ENDSTOP ERROR");
-        ECHO_V(MSG_FWTEST_INVERT);
-        ECHO_EM("#define X_MIN_ENDSTOP_INVERTING");
+        ECHO_M("X ENDSTOP ");
+        ECHO_EM(MSG_FWTEST_ERROR);
+        ECHO_M(MSG_FWTEST_INVERT);
+        ECHO_M("#define X_MIN_ENDSTOP_LOGIC ");
+        ECHO_M(MSG_FWTEST_INTO);
+        #if ENABLED(CARTESIAN)
+          ECHO_EM("Configuration_Cartesian.h");
+        #elif ENABLED(COREXY)
+          ECHO_EM("Configuration_Core.h");
+        #elif ENABLED(COREXZ)
+          ECHO_EM("Configuration_Core.h");
+        #elif ENABLED(DELTA)
+          ECHO_EM("Configuration_Delta.h");
+        #elif ENABLED(SCARA)
+          ECHO_EM("Configuration_Scara.h");
+        #endif
         return;
       }
       ECHO_V(MSG_FWTEST_PRESS);
@@ -64,9 +77,22 @@ void FirmwareTest()
       }
       else
       {
-        ECHO_EM("X ENDSTOP ERROR");
-        ECHO_V(MSG_FWTEST_INVERT);
-        ECHO_EM("#define X_MAX_ENDSTOP_INVERTING");
+        ECHO_M("X ENDSTOP ");
+        ECHO_EM(MSG_FWTEST_ERROR);
+        ECHO_M(MSG_FWTEST_INVERT);
+        ECHO_M("#define X_MAX_ENDSTOP_LOGIC ");
+        ECHO_M(MSG_FWTEST_INTO);
+        #if ENABLED(CARTESIAN)
+          ECHO_EM("Configuration_Cartesian.h");
+        #elif ENABLED(COREXY)
+          ECHO_EM("Configuration_Core.h");
+        #elif ENABLED(COREXZ)
+          ECHO_EM("Configuration_Core.h");
+        #elif ENABLED(DELTA)
+          ECHO_EM("Configuration_Delta.h");
+        #elif ENABLED(SCARA)
+          ECHO_EM("Configuration_Scara.h");
+        #endif
         return;
       }
       ECHO_V(MSG_FWTEST_PRESS);
@@ -87,10 +113,14 @@ void FirmwareTest()
         return;
       }
     #elif X_HOME_DIR == -1
-      ECHO_EM("ERROR!!! X_MIN_PIN not defined");
+      ECHO_M(MSG_FWTEST_ERROR);
+      ECHO_M("!!! X_MIN_PIN ");
+      ECHO_EM(MSG_FWTEST_NDEF);
       return;
     #elif X_HOME_DIR == 1
-      ECHO_EM("ERROR!!! X_MAX_PIN not defined");
+      ECHO_M(MSG_FWTEST_ERROR);
+      ECHO_M("!!! X_MAX_PIN ");
+      ECHO_EM(MSG_FWTEST_NDEF);
       return;
     #endif
 
@@ -103,9 +133,22 @@ void FirmwareTest()
       }
       else
       {
-        ECHO_EM("Y ENDSTOP ERROR");
-        ECHO_V(MSG_FWTEST_INVERT);
-        ECHO_EM("#define Y_MIN_ENDSTOP_INVERTING");
+        ECHO_M("Y ENDSTOP ");
+        ECHO_EM(MSG_FWTEST_ERROR);
+        ECHO_M(MSG_FWTEST_INVERT);
+        ECHO_M("#define Y_MIN_ENDSTOP_LOGIC ");
+        ECHO_M(MSG_FWTEST_INTO);
+        #if ENABLED(CARTESIAN)
+          ECHO_EM("Configuration_Cartesian.h");
+        #elif ENABLED(COREXY)
+          ECHO_EM("Configuration_Core.h");
+        #elif ENABLED(COREXZ)
+          ECHO_EM("Configuration_Core.h");
+        #elif ENABLED(DELTA)
+          ECHO_EM("Configuration_Delta.h");
+        #elif ENABLED(SCARA)
+          ECHO_EM("Configuration_Scara.h");
+        #endif
         return;
       }
       ECHO_V(MSG_FWTEST_PRESS);
@@ -132,9 +175,22 @@ void FirmwareTest()
       }
       else
       {
-        ECHO_EM("Y ENDSTOP ERROR");
-        ECHO_V(MSG_FWTEST_INVERT);
-        ECHO_EM("#define Y_MAX_ENDSTOP_INVERTING");
+        ECHO_M("Y ENDSTOP ");
+        ECHO_EM(MSG_FWTEST_ERROR);
+        ECHO_M(MSG_FWTEST_INVERT);
+        ECHO_M("#define Y_MAX_ENDSTOP_LOGIC ");
+        ECHO_M(MSG_FWTEST_INTO);
+        #if ENABLED(CARTESIAN)
+          ECHO_EM("Configuration_Cartesian.h");
+        #elif ENABLED(COREXY)
+          ECHO_EM("Configuration_Core.h");
+        #elif ENABLED(COREXZ)
+          ECHO_EM("Configuration_Core.h");
+        #elif ENABLED(DELTA)
+          ECHO_EM("Configuration_Delta.h");
+        #elif ENABLED(SCARA)
+          ECHO_EM("Configuration_Scara.h");
+        #endif
         return;
       }
       ECHO_V(MSG_FWTEST_PRESS);
@@ -155,10 +211,14 @@ void FirmwareTest()
         return;
       }
     #elif Y_HOME_DIR == -1
-      ECHO_EM("ERROR!!! Y_MIN_PIN not defined");
+      ECHO_M(MSG_FWTEST_ERROR);
+      ECHO_M("!!! Y_MIN_PIN ");
+      ECHO_EM(MSG_FWTEST_NDEF);
       return;
     #elif Y_HOME_DIR == 1
-      ECHO_EM("ERROR!!! Y_MAX_PIN not defined");
+      ECHO_M(MSG_FWTEST_ERROR);
+      ECHO_M("!!! Y_MAX_PIN ");
+      ECHO_EM(MSG_FWTEST_NDEF);
       return;
     #endif
 
@@ -171,9 +231,22 @@ void FirmwareTest()
       }
       else
       {
-        ECHO_EM("Z ENDSTOP ERROR");
-        ECHO_V(MSG_FWTEST_INVERT);
-        ECHO_EM("#define Z_MIN_ENDSTOP_INVERTING");
+        ECHO_M("Z ENDSTOP ");
+        ECHO_EM(MSG_FWTEST_ERROR);
+        ECHO_M(MSG_FWTEST_INVERT);
+        ECHO_M("#define Z_MIN_ENDSTOP_LOGIC ");
+        ECHO_M(MSG_FWTEST_INTO);
+        #if ENABLED(CARTESIAN)
+          ECHO_EM("Configuration_Cartesian.h");
+        #elif ENABLED(COREXY)
+          ECHO_EM("Configuration_Core.h");
+        #elif ENABLED(COREXZ)
+          ECHO_EM("Configuration_Core.h");
+        #elif ENABLED(DELTA)
+          ECHO_EM("Configuration_Delta.h");
+        #elif ENABLED(SCARA)
+          ECHO_EM("Configuration_Scara.h");
+        #endif
         return;
       }
       ECHO_V(MSG_FWTEST_PRESS);
@@ -200,9 +273,22 @@ void FirmwareTest()
       }
       else
       {
-        ECHO_EM("Z ENDSTOP ERROR");
-        ECHO_V(MSG_FWTEST_INVERT);
-        ECHO_EM("#define Z_MAX_ENDSTOP_INVERTING");
+        ECHO_M("Z ENDSTOP ");
+        ECHO_EM(MSG_FWTEST_ERROR);
+        ECHO_M(MSG_FWTEST_INVERT);
+        ECHO_M("#define Z_MAX_ENDSTOP_LOGIC ");
+        ECHO_M(MSG_FWTEST_INTO);
+        #if ENABLED(CARTESIAN)
+          ECHO_EM("Configuration_Cartesian.h");
+        #elif ENABLED(COREXY)
+          ECHO_EM("Configuration_Core.h");
+        #elif ENABLED(COREXZ)
+          ECHO_EM("Configuration_Core.h");
+        #elif ENABLED(DELTA)
+          ECHO_EM("Configuration_Delta.h");
+        #elif ENABLED(SCARA)
+          ECHO_EM("Configuration_Scara.h");
+        #endif
         return;
       }
       ECHO_V(MSG_FWTEST_PRESS);
@@ -223,14 +309,19 @@ void FirmwareTest()
         return;
       }
     #elif Z_HOME_DIR == -1
-      ECHO_EM("ERROR!!! Z_MIN_PIN not defined");
+      ECHO_M(MSG_FWTEST_ERROR);
+      ECHO_M("!!! Z_MIN_PIN ");
+      ECHO_EM(MSG_FWTEST_NDEF);
       return;
     #elif Z_HOME_DIR == 1
-      ECHO_EM("ERROR!!! Z_MAX_PIN not defined");
+      ECHO_M(MSG_FWTEST_ERROR);
+      ECHO_M("!!! Z_MAX_PIN ");
+      ECHO_EM(MSG_FWTEST_NDEF);
       return;
     #endif
 
-    ECHO_EM("ENDSTOP OK");
+    ECHO_EM("ENDSTOP ");
+    ECHO_M(MSG_FWTEST_OK);
     ECHO_EM(" ");
   }
 
@@ -265,12 +356,25 @@ void FirmwareTest()
     serial_answer = MYSERIAL.read();
   }
   if(serial_answer=='y' || serial_answer=='Y'){
-    ECHO_EM("MOTOR X OK");
+    ECHO_EM("MOTOR X ");
+    ECHO_M(MSG_FWTEST_OK);
   }
   else
   {
-    ECHO_V(MSG_FWTEST_INVERT);
-    ECHO_EM("#define INVERT_X_DIR");
+    ECHO_M(MSG_FWTEST_INVERT);
+    ECHO_M("#define INVERT_X_DIR ");
+        ECHO_M(MSG_FWTEST_INTO);
+    #if ENABLED(CARTESIAN)
+      ECHO_EM("Configuration_Cartesian.h");
+    #elif ENABLED(COREXY)
+      ECHO_EM("Configuration_Core.h");
+    #elif ENABLED(COREXZ)
+      ECHO_EM("Configuration_Core.h");
+    #elif ENABLED(DELTA)
+      ECHO_EM("Configuration_Delta.h");
+    #elif ENABLED(SCARA)
+      ECHO_EM("Configuration_Scara.h");
+    #endif
     return;
   }
   ECHO_EM(" ");
@@ -285,12 +389,25 @@ void FirmwareTest()
     serial_answer = MYSERIAL.read();
   }
   if(serial_answer=='y' || serial_answer=='Y'){
-    ECHO_EM("MOTOR Y OK");
+    ECHO_EM("MOTOR Y ");
+    ECHO_M(MSG_FWTEST_OK);
   }
   else
   {
-    ECHO_V(MSG_FWTEST_INVERT);
-    ECHO_EM("#define INVERT_Y_DIR");
+    ECHO_M(MSG_FWTEST_INVERT);
+    ECHO_M("#define INVERT_Y_DIR ");
+        ECHO_M(MSG_FWTEST_INTO);
+    #if ENABLED(CARTESIAN)
+      ECHO_EM("Configuration_Cartesian.h");
+    #elif ENABLED(COREXY)
+      ECHO_EM("Configuration_Core.h");
+    #elif ENABLED(COREXZ)
+      ECHO_EM("Configuration_Core.h");
+    #elif ENABLED(DELTA)
+      ECHO_EM("Configuration_Delta.h");
+    #elif ENABLED(SCARA)
+      ECHO_EM("Configuration_Scara.h");
+    #endif
     return;
   }
   ECHO_EM(" ");
@@ -305,15 +422,29 @@ void FirmwareTest()
     serial_answer = MYSERIAL.read();
   }
   if(serial_answer=='y' || serial_answer=='Y'){
-    ECHO_EM("MOTOR Z OK");
+    ECHO_EM("MOTOR Z ");
+    ECHO_M(MSG_FWTEST_OK);
   }
   else
   {
-    ECHO_V(MSG_FWTEST_INVERT);
-    ECHO_EM("#define INVERT_Z_DIR");
+    ECHO_M(MSG_FWTEST_INVERT);
+    ECHO_M("#define INVERT_Z_DIR ");
+        ECHO_M(MSG_FWTEST_INTO);
+    #if ENABLED(CARTESIAN)
+      ECHO_EM("Configuration_Cartesian.h");
+    #elif ENABLED(COREXY)
+      ECHO_EM("Configuration_Core.h");
+    #elif ENABLED(COREXZ)
+      ECHO_EM("Configuration_Core.h");
+    #elif ENABLED(DELTA)
+      ECHO_EM("Configuration_Delta.h");
+    #elif ENABLED(SCARA)
+      ECHO_EM("Configuration_Scara.h");
+    #endif
     return;
   }
-  ECHO_EM("MOTOR OK");
+  ECHO_EM("MOTOR ");
+  ECHO_M(MSG_FWTEST_OK);
   ECHO_EM(" ");
   ECHO_V(MSG_FWTEST_END);
 }

@@ -317,5 +317,9 @@
   #ifdef SDCARDDETECTINVERTED
     #error SDCARDDETECTINVERTED is now SD_DETECT_INVERTED. Please update your configuration.
   #endif
+  
+  #if ENABLED(POWER_CONSUMPTION) && !PIN_EXISTS(POWER_CONSUMPTION)
+    #error You have to set a valid POWER_CONSUMPTION_PIN in pins.h in order to use this feature. 
+  #endif
 
 #endif //SANITYCHECK_H
