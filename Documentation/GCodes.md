@@ -12,8 +12,7 @@
 *  G28 - X0 Y0 Z0 Home all Axis. G28 M for bed manual setting with LCD.
 *  G29 - Detailed Z-Probe, probes the bed at 3 points or grid.  You must be at the home position for this to work correctly.
    G29 Fyyy Lxxx Rxxx Byyy for customer grid.
-*  G30 - Single Z Probe, probes bed at current XY location.
-   Bed Probe and Delta geometry Autocalibration G30 A
+*  G30 - Single Z Probe, probes bed at current XY location. Bed Probe and Delta geometry Autocalibration G30 A
 *  G31 - Dock Z Probe sled (if enabled)
 *  G32 - Undock Z Probe sled (if enabled)
 *  G60 - Save current position coordinates (all axes, for active extruder). S<SLOT> - specifies memory slot # (0-based) to save into (default 0).
@@ -60,7 +59,7 @@
 *  M109 - S[xxx] Wait for extruder current temp to reach target temp. Waits only when heating - R[xxx] Wait for extruder current temp to reach target temp. Waits when heating and cooling
 *  M111 - Debug Dryrun Repetier
 *  M112 - Emergency stop
-* M114 - Output current position to serial port, (V)erbose for user
+*  M114 - Output current position to serial port, (V)erbose for user
 *  M115 - Capabilities string
 *  M117 - display message
 *  M119 - Output Endstop status to serial port
@@ -100,8 +99,8 @@
 *  M405 - Turn on Filament Sensor extrusion control.  Optional D[delay in cm] to set delay in centimeters between sensor and extruder
 *  M406 - Turn off Filament Sensor extrusion control
 *  M407 - Displays measured filament diameter
-* M410 - Quickstop. Abort all the planned moves
-* M428 - Set the home_offset logically based on the current_position
+*  M410 - Quickstop. Abort all the planned moves
+*  M428 - Set the home_offset logically based on the current_position
 *  M500 - stores paramters in EEPROM
 *  M501 - reads parameters from EEPROM (if you need reset them after you changed them temporarily).
 *  M502 - reverts to the default "factory settings".  You still need to store them in EEPROM afterwards if you want to.
