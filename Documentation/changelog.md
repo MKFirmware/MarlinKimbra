@@ -1,6 +1,6 @@
 ### Version 4.1.4
 * Add Debug_info. Repetier button info for enabled or disabled, or M111 S2 for enabled and M111 S0 for disabled.
-* Add improve Topography Auto Bed Level.
+* Improved Topography Auto Bed Level.
 * Add Dryrun ABL and verbose width command G29 D or G29 V(0-4).
 * Improve Autoconfiguration for Delta printer.
 * Add support (test only) for NEXTION HMI LCD.
