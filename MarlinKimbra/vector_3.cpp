@@ -27,36 +27,36 @@ vector_3::vector_3() : x(0), y(0), z(0) { }
 vector_3::vector_3(float x_, float y_, float z_) : x(x_), y(y_), z(z_) { }
 
 vector_3 vector_3::cross(vector_3 left, vector_3 right) {
-	return vector_3(left.y * right.z - left.z * right.y,
-		left.z * right.x - left.x * right.z,
-		left.x * right.y - left.y * right.x);
+  return vector_3(left.y * right.z - left.z * right.y,
+    left.z * right.x - left.x * right.z,
+    left.x * right.y - left.y * right.x);
 }
 
 vector_3 vector_3::operator+(vector_3 v) { return vector_3((x + v.x), (y + v.y), (z + v.z)); }
 vector_3 vector_3::operator-(vector_3 v) { return vector_3((x - v.x), (y - v.y), (z - v.z)); }
 
 vector_3 vector_3::get_normal() {
-	vector_3 normalized = vector_3(x, y, z);
-	normalized.normalize();
-	return normalized;
+  vector_3 normalized = vector_3(x, y, z);
+  normalized.normalize();
+  return normalized;
 }
 
 float vector_3::get_length() { return sqrt((x * x) + (y * y) + (z * z)); }
 
 void vector_3::normalize() {
-	float length = get_length();
-	x /= length;
-	y /= length;
-	z /= length;
+  float length = get_length();
+  x /= length;
+  y /= length;
+  z /= length;
 }
 
 void vector_3::apply_rotation(matrix_3x3 matrix) {
-	float resultX = x * matrix.matrix[3*0+0] + y * matrix.matrix[3*1+0] + z * matrix.matrix[3*2+0];
-	float resultY = x * matrix.matrix[3*0+1] + y * matrix.matrix[3*1+1] + z * matrix.matrix[3*2+1];
-	float resultZ = x * matrix.matrix[3*0+2] + y * matrix.matrix[3*1+2] + z * matrix.matrix[3*2+2];
-	x = resultX;
-	y = resultY;
-	z = resultZ;
+  float resultX = x * matrix.matrix[3*0+0] + y * matrix.matrix[3*1+0] + z * matrix.matrix[3*2+0];
+  float resultY = x * matrix.matrix[3*0+1] + y * matrix.matrix[3*1+1] + z * matrix.matrix[3*2+1];
+  float resultZ = x * matrix.matrix[3*0+2] + y * matrix.matrix[3*1+2] + z * matrix.matrix[3*2+2];
+  x = resultX;
+  y = resultY;
+  z = resultZ;
 }
 
 void vector_3::debug(const char title[]) {
@@ -67,29 +67,29 @@ void vector_3::debug(const char title[]) {
 }
 
 void apply_rotation_xyz(matrix_3x3 matrix, float &x, float& y, float& z) {
-	vector_3 vector = vector_3(x, y, z);
-	vector.apply_rotation(matrix);
-	x = vector.x;
-	y = vector.y;
-	z = vector.z;
+  vector_3 vector = vector_3(x, y, z);
+  vector.apply_rotation(matrix);
+  x = vector.x;
+  y = vector.y;
+  z = vector.z;
 }
 
 matrix_3x3 matrix_3x3::create_from_rows(vector_3 row_0, vector_3 row_1, vector_3 row_2) {
   //row_0.debug("row_0");
   //row_1.debug("row_1");
   //row_2.debug("row_2");
-	matrix_3x3 new_matrix;
-	new_matrix.matrix[0] = row_0.x; new_matrix.matrix[1] = row_0.y; new_matrix.matrix[2] = row_0.z; 
-	new_matrix.matrix[3] = row_1.x; new_matrix.matrix[4] = row_1.y; new_matrix.matrix[5] = row_1.z; 
-	new_matrix.matrix[6] = row_2.x; new_matrix.matrix[7] = row_2.y; new_matrix.matrix[8] = row_2.z; 
+  matrix_3x3 new_matrix;
+  new_matrix.matrix[0] = row_0.x; new_matrix.matrix[1] = row_0.y; new_matrix.matrix[2] = row_0.z; 
+  new_matrix.matrix[3] = row_1.x; new_matrix.matrix[4] = row_1.y; new_matrix.matrix[5] = row_1.z; 
+  new_matrix.matrix[6] = row_2.x; new_matrix.matrix[7] = row_2.y; new_matrix.matrix[8] = row_2.z; 
   //new_matrix.debug("new_matrix");
-	return new_matrix;
+  return new_matrix;
 }
 
 void matrix_3x3::set_to_identity() {
-	matrix[0] = 1; matrix[1] = 0; matrix[2] = 0;
-	matrix[3] = 0; matrix[4] = 1; matrix[5] = 0;
-	matrix[6] = 0; matrix[7] = 0; matrix[8] = 1;
+  matrix[0] = 1; matrix[1] = 0; matrix[2] = 0;
+  matrix[3] = 0; matrix[4] = 1; matrix[5] = 0;
+  matrix[6] = 0; matrix[7] = 0; matrix[8] = 1;
 }
 
 matrix_3x3 matrix_3x3::create_look_at(vector_3 target) {

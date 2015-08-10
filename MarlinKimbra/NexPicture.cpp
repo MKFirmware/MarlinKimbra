@@ -80,6 +80,6 @@ void NexPicture::attachPop(NexTouchEventCb pop, void *ptr)
  */
 void NexPicture::detachPop(void)
 {
-    NexTouch::detachPop();   
+    NexTouch::detachPop();
 }
  

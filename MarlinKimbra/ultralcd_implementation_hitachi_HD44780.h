@@ -403,7 +403,7 @@ static void lcd_implementation_init(
       // required for RAMPS-FD, but does no harm for other targets
       SET_OUTPUT(LCD_PINS_RS);
       SET_OUTPUT(LCD_PINS_ENABLE);
- 	  #endif
+    #endif
     lcd.begin(LCD_WIDTH, LCD_HEIGHT);
   #endif
 

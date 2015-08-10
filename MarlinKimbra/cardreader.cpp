@@ -26,7 +26,7 @@ CardReader::CardReader() {
     OUT_WRITE(SDPOWER, HIGH);
   #endif //SDPOWER
 
-  next_autostart_ms = millis() + 5000;
+  next_autostart_ms = millis() + SPLASH_SCREEN_DURATION;
 }
 
 char *createFilename(char *buffer, const dir_t &p) { //buffer > 12characters
@@ -222,11 +222,17 @@ void CardReader::initsd() {
   */
 }
 
-void CardReader::setroot() {
+void CardReader::setroot(bool temporary) {
   /*if (!workDir.openRoot(&volume)) {
     ECHO_EM(MSG_SD_WORKDIR_FAIL);
   }*/
+  if(temporary) lastDir = workDir;
   workDir = root;
+  curDir = &workDir;
+}
+
+void CardReader::setlast() {
+  workDir = lastDir;
   curDir = &workDir;
 }
 
@@ -441,7 +447,7 @@ void CardReader::write_command(char *buf) {
 }
 
 void CardReader::checkautostart(bool force) {
-  if (!force && (!autostart_stilltocheck || next_autostart_ms < millis()))
+  if (!force && (!autostart_stilltocheck || next_autostart_ms >= millis()))
     return;
 
   autostart_stilltocheck = false;
@@ -503,7 +509,7 @@ void CardReader::parseKeyLine(char *key, char *value, int &len_k, int &len_v) {
   int ln_buf = 0;
   char ln_char;
   bool ln_space = false, ln_ignore = false, key_found = false;
-  while(!eof()) {		//READ KEY
+  while(!eof()) {    //READ KEY
     ln_char = (char)get();
     if(ln_char == '\n') {
       ln_buf = 0;
@@ -536,12 +542,12 @@ void CardReader::parseKeyLine(char *key, char *value, int &len_k, int &len_v) {
   }
   ln_buf = 0;
   ln_ignore = false;
-  while(!eof()) {		//READ VALUE
+  while(!eof()) {    //READ VALUE
     ln_char = (char)get();
-	  if(ln_char == '\n') {
+    if(ln_char == '\n') {
       value[ln_buf] = '\0';
       len_v = ln_buf;
-      break;	//new line reached, we can stop
+      break;  //new line reached, we can stop
     }
     if(ln_ignore|| ln_char == ' ' && ln_buf == 0) continue; //ignore also initial spaces of the value
     if(ln_char == ';' || ln_buf+1 >= len_v) { //comments reached or value len longer than len_v. Stop buffering and go to the next line.

@@ -29,9 +29,9 @@
 
 // The presence of the UBRRH register is used to detect a UART.
 #define UART_PRESENT(port) ((port == 0 && (defined(UBRRH) || defined(UBRR0H))) || \
-						(port == 1 && defined(UBRR1H)) || (port == 2 && defined(UBRR2H)) || \
-						(port == 3 && defined(UBRR3H)))				
-						
+            (port == 1 && defined(UBRR1H)) || (port == 2 && defined(UBRR2H)) || \
+            (port == 3 && defined(UBRR3H)))        
+            
 // These are macros to build serial port register names for the selected SERIAL_PORT (C preprocessor
 // requires two levels of indirection to expand macro values properly)
 #define SERIAL_REGNAME(registerbase,number,suffix) SERIAL_REGNAME_INTERNAL(registerbase,number,suffix)

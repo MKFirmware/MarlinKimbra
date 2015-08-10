@@ -68,7 +68,7 @@ public: /* methods */
         NexTouchEventCb pop = NULL, void *pop_ptr = NULL,
         NexTouchEventCb push = NULL, void *push_ptr = NULL);
 
-    NexPid getPid(void);    
+    NexPid getPid(void);
     NexCid getCid(void);
     const char *getObjName(void);
     void print(void);

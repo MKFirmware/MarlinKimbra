@@ -440,16 +440,12 @@ unsigned long printer_usage_seconds;
 #endif
 
 #if ENABLED(FILAMENTCHANGEENABLE)
-	bool filament_changing = false;
-#endif
-
-#if ENABLED(IDLE_OOZING_PREVENT) || ENABLED(EXTRUDER_RUNOUT_PREVENT)
-  unsigned long axis_last_activity = 0;
-  bool axis_is_moving = false;
+  bool filament_changing = false;
 #endif
 
 #if ENABLED(IDLE_OOZING_PREVENT)
-  bool idleoozing_enabled = true;
+  unsigned long axis_last_activity = 0;
+  bool IDLE_OOZING_enabled = true;
   bool IDLE_OOZING_retracted[EXTRUDERS] = ARRAY_BY_EXTRUDERS(false);
 #endif
 
@@ -740,7 +736,7 @@ void setup() {
   ECHO_SMV(DB, MSG_FREE_MEMORY, freeMemory());
   ECHO_EMV(MSG_PLANNER_BUFFER_BYTES, (int)sizeof(block_t)*BLOCK_BUFFER_SIZE);
 
-  #ifdef SDSUPPORT
+  #if ENABLED(SDSUPPORT)
     for (int8_t i = 0; i < BUFSIZE; i++) fromsd[i] = false;
   #endif
 
@@ -810,13 +806,13 @@ void setup() {
 void loop() {
   if (commands_in_queue < BUFSIZE - 1) get_command();
 
-  #ifdef SDSUPPORT
+  #if ENABLED(SDSUPPORT)
     card.checkautostart(false);
   #endif
 
   if (commands_in_queue) {
 
-    #ifdef SDSUPPORT
+    #if ENABLED(SDSUPPORT)
 
       if (card.saving) {
         char *command = command_queue[cmd_queue_index_r];
@@ -904,7 +900,7 @@ void get_command() {
       command[serial_count] = 0; // terminate string
 
       // this item in the queue is not from sd
-      #ifdef SDSUPPORT
+      #if ENABLED(SDSUPPORT)
         fromsd[cmd_queue_index_w] = false;
       #endif
 
@@ -990,7 +986,7 @@ void get_command() {
     }
   }
 
-  #ifdef SDSUPPORT
+  #if ENABLED(SDSUPPORT)
 
     if (!card.sdprinting || serial_count) return;
 
@@ -1926,11 +1922,11 @@ static void clean_up_after_endstop_move() {
     if ((t1_err == false) and (t2_err == false) and (t3_err == true)) err_tower = 3;
 
     ECHO_SM(DB, "t1:");
-    if (t1_err == true) ECHO_M("Err"); else ECHO_M("OK");  
+    if (t1_err == true) ECHO_M("Err"); else ECHO_M("OK");
     ECHO_M(" t2:");
     if (t2_err == true) ECHO_M("Err"); else ECHO_M("OK");
     ECHO_M(" t3:");
-    if (t3_err == true) ECHO_M("Err"); else ECHO_M("OK");  
+    if (t3_err == true) ECHO_M("Err"); else ECHO_M("OK");
     ECHO_E;
 
     if (err_tower == 0) {
@@ -2537,27 +2533,29 @@ static void clean_up_after_endstop_move() {
 
 #endif //DELTA
 
-#ifdef IDLE_OOZING_PREVENT
+#if ENABLED(IDLE_OOZING_PREVENT)
   void IDLE_OOZING_retract(bool retracting) {  
     if (retracting && !IDLE_OOZING_retracted[active_extruder]) {
-  	  set_destination_to_current();
-  	  current_position[E_AXIS]+=IDLE_OOZING_LENGTH/volumetric_multiplier[active_extruder];
-  	  plan_set_e_position(current_position[E_AXIS]);
-  	  float oldFeedrate = feedrate;
-  	  feedrate=IDLE_OOZING_FEEDRATE*60;
-  	  IDLE_OOZING_retracted[active_extruder]=true;
-  	  prepare_move();
-  	  feedrate = oldFeedrate;
+      float oldFeedrate = feedrate;
+      set_destination_to_current();
+      current_position[E_AXIS] += IDLE_OOZING_LENGTH / volumetric_multiplier[active_extruder];
+      feedrate = IDLE_OOZING_FEEDRATE * 60;
+      plan_set_e_position(current_position[E_AXIS]);
+      prepare_move();
+      feedrate = oldFeedrate;
+      IDLE_OOZING_retracted[active_extruder] = true;
+      //ECHO_EM("-");
     }
     else if (!retracting && IDLE_OOZING_retracted[active_extruder]) {
-  	  set_destination_to_current();
-  	  current_position[E_AXIS]-=(IDLE_OOZING_LENGTH+IDLE_OOZING_RECOVER_LENGTH)/volumetric_multiplier[active_extruder];
-  	  plan_set_e_position(current_position[E_AXIS]);
-  	  float oldFeedrate = feedrate;
-  	  feedrate=IDLE_OOZING_RECOVER_FEEDRATE * 60;
-  	  IDLE_OOZING_retracted[active_extruder] = false;
-  	  prepare_move();
+      float oldFeedrate = feedrate;
+      set_destination_to_current();
+      current_position[E_AXIS] -= (IDLE_OOZING_LENGTH+IDLE_OOZING_RECOVER_LENGTH) / volumetric_multiplier[active_extruder];
+      feedrate = IDLE_OOZING_RECOVER_FEEDRATE * 60;
+      plan_set_e_position(current_position[E_AXIS]);
+      prepare_move();
       feedrate = oldFeedrate;
+      IDLE_OOZING_retracted[active_extruder] = false;
+      //ECHO_EM("+");
     }
   }
 #endif
@@ -2740,11 +2738,16 @@ inline void wait_bed() {
  *  - Set the feedrate, if included
  */
 void gcode_get_destination() {
+  #if ENABLED(IDLE_OOZING_PREVENT)
+    if(code_seen(axis_codes[E_AXIS])) IDLE_OOZING_retract(false);
+  #endif 
   for (int i = 0; i < NUM_AXIS; i++) {
-    if (code_seen(axis_codes[i]))
+    if (code_seen(axis_codes[i])) {
       destination[i] = code_value() + (axis_relative_modes[i] || relative_mode ? current_position[i] : 0);
-    else
+    }
+    else {
       destination[i] = current_position[i];
+    }
   }
   if (code_seen('F')) {
     float next_feedrate = code_value();
@@ -2762,11 +2765,6 @@ void unknown_command_error() {
  */
 inline void gcode_G0_G1() {
   if (IsRunning()) {
-
-    #ifdef IDLE_OOZING_PREVENT
-      IDLE_OOZING_retract(false);
-    #endif
-
     gcode_get_destination(); // For X Y Z E F
 
     #ifdef FWRETRACT
@@ -3728,7 +3726,7 @@ inline void gcode_G28() {
     }
 
     if (code_seen('D')) {
-      ECHO_LM(DB, "Adjusting Diagonal Rod Length");  
+      ECHO_LM(DB, "Adjusting Diagonal Rod Length");
       adj_diagrod_length();
       ECHO_LM(DB, "Diagonal Rod Length adjustment complete");
     }
@@ -4018,7 +4016,7 @@ inline void gcode_M17() {
   enable_all_steppers();
 }
 
-#ifdef SDSUPPORT
+#if ENABLED(SDSUPPORT)
 
   /**
    * M20: List SD card to serial output
@@ -4123,7 +4121,7 @@ inline void gcode_M31() {
   autotempShutdown();
 }
 
-#ifdef SDSUPPORT
+#if ENABLED(SDSUPPORT)
 
   /**
    * M32: Select file and start SD Print
@@ -5620,7 +5618,7 @@ inline void gcode_M400() { st_synchronize(); }
    * M407: Get measured filament diameter on serial output
    */
   inline void gcode_M407() {
-    ECHO_LMV(DB, "Filament dia (measured mm):", filament_width_meas);   
+    ECHO_LMV(DB, "Filament dia (measured mm):", filament_width_meas);
   }
 
 #endif // FILAMENT_SENSOR
@@ -5971,12 +5969,12 @@ inline void gcode_M503() {
     if (code_seen('U')) {
       diagrod_adj[0] = code_value();
       set_delta_constants();
-	  }
-	  if (code_seen('V')) {
+    }
+    if (code_seen('V')) {
       diagrod_adj[1] = code_value();
       set_delta_constants();
-	  }
-	  if (code_seen('W')) {
+    }
+    if (code_seen('W')) {
       diagrod_adj[2] = code_value();
       set_delta_constants();
     }
@@ -6226,7 +6224,7 @@ inline void gcode_T(uint8_t tmp_extruder) {
                 WRITE(E1E3_CHOICE_PIN,LOW);
                 active_driver = 1;
                 delay(500); // 500 microseconds delay for relay
-                enable_e1();             
+                enable_e1();
                 break;
               case 2:
                 WRITE(E0E2_CHOICE_PIN,HIGH);
@@ -6489,7 +6487,7 @@ void process_next_command() {
       case 17: //M17 - Enable/Power all stepper motors
         gcode_M17(); break;
 
-      #ifdef SDSUPPORT
+      #if ENABLED(SDSUPPORT)
         case 20: // M20 - list SD card
           gcode_M20(); break;
         case 21: // M21 - init SD card
@@ -6829,7 +6827,7 @@ void FlushSerialRequestResend() {
 
 void ok_to_send() {
   refresh_cmd_timeout();
-  #ifdef SDSUPPORT
+  #if ENABLED(SDSUPPORT)
     if (fromsd[cmd_queue_index_r]) return;
   #endif
   ECHO_S(OK);
@@ -7026,12 +7024,7 @@ void prepare_move() {
   #if defined(CARTESIAN) || defined(COREXY) || defined(COREXZ)
     if (!prepare_move_cartesian()) return;
   #endif
-
-  #ifdef IDLE_OOZING_PREVENT || EXTRUDER_RUNOUT_PREVENT
-    axis_last_activity = millis();
-    axis_is_moving = false;
-  #endif
-
+  
   set_current_to_destination();
 }
 
@@ -7501,8 +7494,9 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
     }
   #endif
 
-  #ifdef IDLE_OOZING_PREVENT
-    if (degHotend(active_extruder) > IDLE_OOZING_MINTEMP && !(debugLevel & DEBUG_DRYRUN) && !axis_is_moving && idleoozing_enabled) {
+  #if ENABLED(IDLE_OOZING_PREVENT)
+    if (blocks_queued()) axis_last_activity = millis();
+    if (degHotend(active_extruder) > IDLE_OOZING_MINTEMP && !(debugLevel & DEBUG_DRYRUN) && IDLE_OOZING_enabled) {
       #ifdef FILAMENTCHANGEENABLE
         if (!filament_changing)
       #endif

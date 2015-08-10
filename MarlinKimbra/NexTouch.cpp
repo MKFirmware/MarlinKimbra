@@ -140,7 +140,7 @@ void NexTouch::attachPop(NexTouchEventCb pop, void *ptr) {
 }
 
 void NexTouch::detachPop(void) {
-  this->cbPop = NULL;    
+  this->cbPop = NULL;
   this->__cbpop_ptr = NULL;
 }
 
@@ -261,7 +261,7 @@ uint16_t NexTouch::recvRetString(char *buffer, uint16_t len, uint32_t timeout) {
       if (str_start_flag)
       {
         if (0xFF == c) {
-          cnt_0xff++;                    
+          cnt_0xff++;
           if (cnt_0xff >= 3) {
             break;
           }
@@ -526,7 +526,7 @@ bool recoverySerialCommand(void)
         dbSerialPrintln("recoverySerialCommand err ");
     }
 
-    return ret;	
+    return ret;
 }
 
 /**
@@ -561,7 +561,7 @@ bool setCurrentBrightness(uint8_t dimValue)
         dbSerialPrintln("setCurrentBrightness err ");
     }
 
-    return ret;    
+    return ret;
 }
 
 /**

@@ -293,7 +293,8 @@ extern int fanSpeed;
 #endif
 
 #if ENABLED(IDLE_OOZING_PREVENT)
-  extern bool idleoozing_enabled;
+  extern bool IDLE_OOZING_enabled;
+  extern void IDLE_OOZING_retract(bool retracting);
 #endif
 
 #if ENABLED(FWRETRACT)

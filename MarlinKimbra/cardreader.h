@@ -42,7 +42,8 @@ public:
   void ls();
   void chdir(const char * relpath);
   void updir();
-  void setroot();
+  void setroot(bool temporary = false);
+  void setlast();
 
 
   FORCE_INLINE bool isFileOpen() { return file.isOpen(); }
@@ -57,7 +58,7 @@ public:
   char filename[FILENAME_LENGTH], longFilename[LONG_FILENAME_LENGTH];
   int autostart_index;
 private:
-  SdFile root, *curDir, workDir, workDirParents[MAX_DIR_DEPTH];
+  SdFile root, *curDir, workDir, lastDir, workDirParents[MAX_DIR_DEPTH];
   uint16_t workDirDepth;
   Sd2Card card;
   SdVolume volume;
