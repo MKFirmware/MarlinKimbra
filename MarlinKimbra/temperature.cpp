@@ -1052,7 +1052,7 @@ void tp_init() {
 #if ENABLED(THERMAL_PROTECTION_HOTENDS) || ENABLED(THERMAL_PROTECTION_BED)
 
   void thermal_runaway_protection(TRState *state, millis_t *timer, float temperature, float target_temperature, int heater_id, int period_seconds, int hysteresis_degc) {
-    static float tr_last_temperature = 0.0
+    static float tr_last_temperature = 0.0;
     static float tr_target_temperature[HOTENDS + 1] = { 0.0 };
     /*
         ECHO_SM(DB, "Thermal Thermal Runaway Running. Heater ID: ");
