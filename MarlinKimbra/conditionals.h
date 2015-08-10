@@ -366,7 +366,7 @@
   /**
    * Auto Bed Leveling
    */
-  #if ENABLED(ENABLE_AUTO_BED_LEVELING)
+  #if ENABLED(AUTO_BED_LEVELING_FEATURE)
     // Boundaries for probing based on set limits
     #define MIN_PROBE_X (max(X_MIN_POS, X_MIN_POS + X_PROBE_OFFSET_FROM_EXTRUDER))
     #define MAX_PROBE_X (min(X_MAX_POS, X_MAX_POS + X_PROBE_OFFSET_FROM_EXTRUDER))

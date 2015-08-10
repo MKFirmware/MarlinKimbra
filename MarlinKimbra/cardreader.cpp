@@ -316,8 +316,8 @@ void CardReader::openFile(char* name, bool read, bool replace_current/*=true*/, 
         subdirname[dirname_end - dirname_start] = 0;
         ECHO_EV(subdirname);
         if (!myDir.open(curDir, subdirname, O_READ)) {
-          ECHO_MV(MSG_SD_OPEN_FILE_FAIL, subdirname);
-          ECHO_C('.');
+          ECHO_SMV(ER, MSG_SD_OPEN_FILE_FAIL, subdirname);
+          ECHO_EM(".");
           return;
         }
         else {
@@ -357,12 +357,12 @@ void CardReader::openFile(char* name, bool read, bool replace_current/*=true*/, 
   }
   else { //write
     if (!file.open(curDir, fname, O_CREAT | O_APPEND | O_WRITE | O_TRUNC)) {
-      ECHO_MV(MSG_SD_OPEN_FILE_FAIL, fname);
-      ECHO_PGM(".\n");
+      ECHO_SMV(ER, MSG_SD_OPEN_FILE_FAIL, fname);
+      ECHO_EM(".");
     }
     else {
       saving = true;
-      ECHO_EMV(MSG_SD_WRITE_TO_FILE, name);
+      ECHO_LMV(DB, MSG_SD_WRITE_TO_FILE, name);
       if(lcd_status) lcd_setstatus(fname);
     }
   }
@@ -389,8 +389,8 @@ void CardReader::removeFile(char* name) {
         subdirname[dirname_end - dirname_start] = 0;
         ECHO_EV(subdirname);
         if (!myDir.open(curDir, subdirname, O_READ)) {
-          ECHO_MV(MSG_SD_OPEN_FILE_FAIL, subdirname);
-          ECHO_C('.');
+          ECHO_SMV(DB, MSG_SD_OPEN_FILE_FAIL, subdirname);
+          ECHO_EM(".");
           return;
         }
 
@@ -509,7 +509,7 @@ void CardReader::parseKeyLine(char *key, char *value, int &len_k, int &len_v) {
   int ln_buf = 0;
   char ln_char;
   bool ln_space = false, ln_ignore = false, key_found = false;
-  while(!eof()) {    //READ KEY
+  while(!eof()) {   //READ KEY
     ln_char = (char)get();
     if(ln_char == '\n') {
       ln_buf = 0;
@@ -542,7 +542,7 @@ void CardReader::parseKeyLine(char *key, char *value, int &len_k, int &len_v) {
   }
   ln_buf = 0;
   ln_ignore = false;
-  while(!eof()) {    //READ VALUE
+  while(!eof()) {   //READ VALUE
     ln_char = (char)get();
     if(ln_char == '\n') {
       value[ln_buf] = '\0';

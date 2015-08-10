@@ -102,4 +102,3 @@ void NexText::detachPop(void)
 {
     NexTouch::detachPop();
 }
- 

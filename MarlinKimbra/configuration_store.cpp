@@ -488,7 +488,7 @@ void Config_ResetDefault() {
   max_z_jerk = DEFAULT_ZJERK;
   home_offset[X_AXIS] = home_offset[Y_AXIS] = home_offset[Z_AXIS] = 0;
 
-  #if ENABLED(ENABLE_AUTO_BED_LEVELING)
+  #if ENABLED(AUTO_BED_LEVELING_FEATURE)
     zprobe_zoffset = Z_PROBE_OFFSET_FROM_EXTRUDER;
   #elif !defined(DELTA)
     zprobe_zoffset = 0;
@@ -718,7 +718,7 @@ void Config_ResetDefault() {
         ECHO_LM(DB, "Z2 Endstop adjustement (mm):");
       }
       ECHO_LMV(DB, "  M666 Z", z_endstop_adj );
-    #elif ENABLED(ENABLE_AUTO_BED_LEVELING)
+    #elif ENABLED(AUTO_BED_LEVELING_FEATURE)
       if (!forReplay) {
         ECHO_LM(DB, "Z Probe offset (mm)");
       }

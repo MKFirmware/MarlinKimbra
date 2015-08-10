@@ -70,7 +70,7 @@
  * some filament is retracted. The filament retracted is re-added before the next extrusion
  * or when the target temperature is less than IDLE_OOZING_MINTEMP and the actual temperature
  * is greater than IDLE_OOZING_MINTEMP.
- * PS: Always remember to set your extruder target temperature to 0Â°C before shoudown the printer if you enable this feature.
+ * PS: Always remember to set your extruder target temperature to 0°C before shoudown the printer if you enable this feature.
  */
 //#define IDLE_OOZING_PREVENT
 #define IDLE_OOZING_MINTEMP           EXTRUDE_MINTEMP + 5

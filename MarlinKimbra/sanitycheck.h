@@ -124,7 +124,7 @@
   /**
    * Auto Bed Leveling
    */
-  #if ENABLED(ENABLE_AUTO_BED_LEVELING)
+  #if ENABLED(AUTO_BED_LEVELING_FEATURE)
 
     /**
      * Require a Z Min pin
@@ -134,7 +134,7 @@
         #if ENABLED(Z_PROBE_REPEATABILITY_TEST)
           #error You must have a Z_MIN or Z_PROBE endstop to enable Z_PROBE_REPEATABILITY_TEST.
         #else
-          #error ENABLE_AUTO_BED_LEVELING requires a Z_MIN or Z_PROBE endstop. Z_MIN_PIN or Z_PROBE_PIN must point to a valid hardware pin.
+          #error AUTO_BED_LEVELING_FEATURE requires a Z_MIN or Z_PROBE endstop. Z_MIN_PIN or Z_PROBE_PIN must point to a valid hardware pin.
         #endif
       #endif
     #endif
@@ -203,7 +203,7 @@
 
     #endif // !AUTO_BED_LEVELING_GRID
 
-  #endif // ENABLE_AUTO_BED_LEVELING
+  #endif // AUTO_BED_LEVELING_FEATURE
 
   /**
    * ULTIPANEL encoder
@@ -317,7 +317,7 @@
   #ifdef SDCARDDETECTINVERTED
     #error SDCARDDETECTINVERTED is now SD_DETECT_INVERTED. Please update your configuration.
   #endif
-  
+
   #if ENABLED(POWER_CONSUMPTION) && !PIN_EXISTS(POWER_CONSUMPTION)
     #error You have to set a valid POWER_CONSUMPTION_PIN in pins.h in order to use this feature. 
   #endif

@@ -425,7 +425,6 @@
 /**
  * Nextion HMI panel
  */
-// 
 //#define NEXTION
 
 // option for invert rotary switch

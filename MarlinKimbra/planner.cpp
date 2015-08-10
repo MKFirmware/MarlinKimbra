@@ -74,14 +74,14 @@ float mintravelfeedrate;
 unsigned long axis_steps_per_sqr_second[3 + EXTRUDERS];
 uint8_t last_extruder;
 
-#if ENABLED(ENABLE_AUTO_BED_LEVELING)
+#if ENABLED(AUTO_BED_LEVELING_FEATURE)
   // Transform required to compensate for bed level
   matrix_3x3 plan_bed_level_matrix = {
     1.0, 0.0, 0.0,
     0.0, 1.0, 0.0,
     0.0, 0.0, 1.0
   };
-#endif // ENABLE_AUTO_BED_LEVELING
+#endif // AUTO_BED_LEVELING_FEATURE
 
 #if ENABLED(AUTOTEMP)
   float autotemp_max = 250;
@@ -480,11 +480,11 @@ float junction_deviation = 0.1;
 // Add a new linear movement to the buffer. steps[X_AXIS], _y and _z is the absolute position in 
 // mm. Microseconds specify how many microseconds the move should take to perform. To aid acceleration
 // calculation the caller must also provide the physical length of the line in millimeters.
-#if ENABLED(ENABLE_AUTO_BED_LEVELING)
+#if ENABLED(AUTO_BED_LEVELING_FEATURE)
   void plan_buffer_line(float x, float y, float z, const float &e, float feed_rate, const uint8_t &extruder, const uint8_t &driver)
 #else
   void plan_buffer_line(const float &x, const float &y, const float &z, const float &e, float feed_rate, const uint8_t &extruder, const uint8_t &driver)
-#endif  // ENABLE_AUTO_BED_LEVELING
+#endif  // AUTO_BED_LEVELING_FEATURE
 {
   // Calculate the buffer head after we push this byte
   int next_buffer_head = next_block_index(block_buffer_head);
@@ -493,7 +493,7 @@ float junction_deviation = 0.1;
   // Rest here until there is room in the buffer.
   while (block_buffer_tail == next_buffer_head) idle();
 
-  #if ENABLED(ENABLE_AUTO_BED_LEVELING)
+  #if ENABLED(AUTO_BED_LEVELING_FEATURE)
     apply_rotation_xyz(plan_bed_level_matrix, x, y, z);
   #endif
 
@@ -1040,7 +1040,7 @@ float junction_deviation = 0.1;
 
 } // plan_buffer_line()
 
-#if ENABLED(ENABLE_AUTO_BED_LEVELING)
+#if ENABLED(AUTO_BED_LEVELING_FEATURE)
   vector_3 plan_get_position() {
     vector_3 position = vector_3(st_get_position_mm(X_AXIS), st_get_position_mm(Y_AXIS), st_get_position_mm(Z_AXIS));
 
@@ -1053,15 +1053,15 @@ float junction_deviation = 0.1;
 
     return position;
   }
-#endif // ENABLE_AUTO_BED_LEVELING
+#endif // AUTO_BED_LEVELING_FEATURE
 
-#if ENABLED(ENABLE_AUTO_BED_LEVELING)
+#if ENABLED(AUTO_BED_LEVELING_FEATURE)
   void plan_set_position(float x, float y, float z, const float &e)
 #else
   void plan_set_position(const float &x, const float &y, const float &z, const float &e)
-#endif // ENABLE_AUTO_BED_LEVELING
+#endif // AUTO_BED_LEVELING_FEATURE
   {
-    #if ENABLED(ENABLE_AUTO_BED_LEVELING)
+    #if ENABLED(AUTO_BED_LEVELING_FEATURE)
       apply_rotation_xyz(plan_bed_level_matrix, x, y, z);
     #endif
 

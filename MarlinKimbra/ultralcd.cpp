@@ -724,7 +724,7 @@ static void lcd_prepare_menu() {
   //
   // Level Bed
   //
-  #if ENABLED(ENABLE_AUTO_BED_LEVELING)
+  #if ENABLED(AUTO_BED_LEVELING_FEATURE)
     if (axis_known_position[X_AXIS] && axis_known_position[Y_AXIS])
       MENU_ITEM(gcode, MSG_LEVEL_BED, PSTR("G29"));
   #elif DISABLED(DELTA) && DISABLED(Z_SAFE_HOMING) && Z_HOME_DIR < 0
@@ -1165,7 +1165,7 @@ static void lcd_control_temperature_preheat_gum_settings_menu() {
 static void lcd_control_motion_menu() {
   START_MENU(lcd_control_menu);
   MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
-  #if ENABLED(ENABLE_AUTO_BED_LEVELING)
+  #if ENABLED(AUTO_BED_LEVELING_FEATURE)
     MENU_ITEM_EDIT(float32, MSG_ZPROBE_ZOFFSET, &zprobe_zoffset, -50, 50);
   #endif
   MENU_ITEM_EDIT(float5, MSG_ACC, &acceleration, 10, 99000);
@@ -1322,7 +1322,7 @@ static void lcd_sd_updir() {
  *
  */
 void lcd_sdcard_menu() {
-  if (lcdDrawUpdate == 0 && LCD_CLICKED == 0) return;  // nothing to do (so don't thrash the SD card)
+  if (lcdDrawUpdate == 0 && LCD_CLICKED == 0) return; // nothing to do (so don't thrash the SD card)
   uint16_t fileCnt = card.getnrfilenames();
   START_MENU(lcd_main_menu);
   MENU_ITEM(back, MSG_MAIN, lcd_main_menu);

@@ -632,7 +632,7 @@
   #define ORIG_TEMP_2_PIN         1 //ANALOG NUMBERING
   #define ORIG_TEMP_BED_PIN       0 //ANALOG NUMBERING
   
-  #define BEEPER_PIN         36
+  #define BEEPER_PIN        36
   
   #define KILL_PIN          -1
   
@@ -699,13 +699,13 @@
 
 #if MB(GEN3_MONOLITHIC)
   #define KNOWN_BOARD 1
-  
+
   #ifndef __AVR_ATmega644P__
     #error Oops!  Make sure you have 'Sanguino' selected from the 'Tools -> Boards' menu.
   #endif
-  
+
   #define DEBUG_PIN 0
-  
+
   // x axis
   #define ORIG_X_STEP_PIN 15
   #define ORIG_X_DIR_PIN 18
@@ -713,7 +713,7 @@
   //Alex Checar #define X_STOP_PIN         20
   #define ORIG_X_ENABLE_PIN 24 //actually uses ORIG_Y_DIR_PIN
   #define X_MAX_PIN -1
-  
+
   // y axes
   #define ORIG_Y_STEP_PIN 23
   #define ORIG_Y_DIR_PIN 22
@@ -721,7 +721,7 @@
   //Alex Checar #define Y_STOP_PIN         25
   #define ORIG_Y_ENABLE_PIN 24 //shared with ORIG_X_ENABLE_PIN
   #define Y_MAX_PIN -1
-  
+
   // z axes
   #define ORIG_Z_STEP_PIN 27
   #define ORIG_Z_DIR_PIN 28
@@ -729,33 +729,33 @@
   //Alex Checar #define Z_STOP_PIN         30
   #define ORIG_Z_ENABLE_PIN 29
   #define Z_MAX_PIN -1
-  
+
   //extruder pins
   #define ORIG_E0_STEP_PIN         12
   #define ORIG_E0_DIR_PIN          17
   #define ORIG_E0_ENABLE_PIN       3
-  
+
   #define ORIG_HEATER_0_PIN 16
   #define ORIG_TEMP_0_PIN 0
-  
+
   #define ORIG_FAN_PIN -1
-  
+
   //bed pins
   #define ORIG_HEATER_BED_PIN -1
   #define ORIG_TEMP_BED_PIN   -1
-  
-  #define SDSS             -1
-  #define SDPOWER          -1
-  #define LED_PIN          -1
-  
+
+  #define SDSS                -1
+  #define SDPOWER             -1
+  #define LED_PIN             -1
+
   //pin for controlling the PSU.
-  #define PS_ON_PIN       14  //Alex, Do this work on the card?
-  
+  #define PS_ON_PIN           14
+
   //Alex extras from Gen3+
-  #define KILL_PIN                -1
-  #define ORIG_TEMP_1_PIN         -1
-  #define ORIG_TEMP_2_PIN         -1
-  #define ORIG_HEATER_2_PIN       -1
+  #define KILL_PIN            -1
+  #define ORIG_TEMP_1_PIN     -1
+  #define ORIG_TEMP_2_PIN     -1
+  #define ORIG_HEATER_2_PIN   -1
 
 #endif // GEN3_MONOLITHIC
 /****************************************************************************************/
@@ -916,7 +916,7 @@
   #define ORIG_HEATER_BED_PIN     8   // BED
   #define ORIG_TEMP_BED_PIN      14   // ANALOG NUMBERING
 
-  #if ENABLED(REPRAP_DISCOUNT_SMART_CONTROLLER) || ENABLED(G3D_PANEL)
+  #if defined(REPRAP_DISCOUNT_SMART_CONTROLLER) || defined(G3D_PANEL)
     #define KILL_PIN        41
   #else
     #define KILL_PIN        -1
@@ -3548,84 +3548,82 @@
   #error Oops! Make sure you have 'Minitronics ' selected from the 'Tools -> Boards' menu.
 #endif
 
- #define LARGE_FLASH        true
+  #define LARGE_FLASH        true
 
- #define ORIG_X_STEP_PIN 48
- #define ORIG_X_DIR_PIN 47
- #define ORIG_X_ENABLE_PIN 49
- #define X_MIN_PIN 5
- #define X_MAX_PIN -1 //2 //Max endstops default to disabled "-1", set to commented value to enable.
+  #define ORIG_X_STEP_PIN 48
+  #define ORIG_X_DIR_PIN 47
+  #define ORIG_X_ENABLE_PIN 49
+  #define X_MIN_PIN 5
+  #define X_MAX_PIN -1 //2 //Max endstops default to disabled "-1", set to commented value to enable.
 
- #define ORIG_Y_STEP_PIN 39 // A6
- #define ORIG_Y_DIR_PIN 40 // A0
- #define ORIG_Y_ENABLE_PIN 38
- #define Y_MIN_PIN 2
- #define Y_MAX_PIN -1 //15
+  #define ORIG_Y_STEP_PIN 39 // A6
+  #define ORIG_Y_DIR_PIN 40 // A0
+  #define ORIG_Y_ENABLE_PIN 38
+  #define Y_MIN_PIN 2
+  #define Y_MAX_PIN -1 //15
 
- #define ORIG_Z_STEP_PIN 42 // A2
- #define ORIG_Z_DIR_PIN 43 // A6
- #define ORIG_Z_ENABLE_PIN 41 // A1
- #define Z_MIN_PIN 6
- #define Z_MAX_PIN -1
+  #define ORIG_Z_STEP_PIN 42 // A2
+  #define ORIG_Z_DIR_PIN 43 // A6
+  #define ORIG_Z_ENABLE_PIN 41 // A1
+  #define Z_MIN_PIN 6
+  #define Z_MAX_PIN -1
 
- #define ORIG_E0_STEP_PIN 45
- #define ORIG_E0_DIR_PIN 44
- #define ORIG_E0_ENABLE_PIN 27
+  #define ORIG_E0_STEP_PIN 45
+  #define ORIG_E0_DIR_PIN 44
+  #define ORIG_E0_ENABLE_PIN 27
 
- #define ORIG_E1_STEP_PIN 36
- #define ORIG_E1_DIR_PIN 35
- #define ORIG_E1_ENABLE_PIN 37
+  #define ORIG_E1_STEP_PIN 36
+  #define ORIG_E1_DIR_PIN 35
+  #define ORIG_E1_ENABLE_PIN 37
 
- #define ORIG_E2_STEP_PIN -1
- #define ORIG_E2_DIR_PIN -1
- #define ORIG_E2_ENABLE_PIN -1
- 
- #define SDPOWER -1
- #define SDSS               53
+  #define ORIG_E2_STEP_PIN -1
+  #define ORIG_E2_DIR_PIN -1
+  #define ORIG_E2_ENABLE_PIN -1
+  
+  #define SDPOWER -1
+  #define SDSS               53
 
- #define LED_PIN 46
- 
- #define ORIG_FAN_PIN 9
- #define FAN2_PIN -1
- #define PS_ON_PIN -1
- #define KILL_PIN -1
- 
- #define ORIG_HEATER_0_PIN 7 // EXTRUDER 1
- #define ORIG_HEATER_1_PIN 8 // EXTRUDER 2
- #define ORIG_HEATER_2_PIN 9 // thermo couple
- 
- #if TEMP_SENSOR_0 == -1
-   #define ORIG_TEMP_0_PIN 5 // ANALOG NUMBERING
- #else
-   #define ORIG_TEMP_0_PIN 7 // ANALOG NUMBERING
- #endif
- #define ORIG_TEMP_1_PIN 6 // ANALOG NUMBERING
- #define ORIG_TEMP_2_PIN -1 // ANALOG NUMBERING
- 
- #define ORIG_HEATER_BED_PIN 3 // BED
- #define ORIG_TEMP_BED_PIN 6 // ANALOG NUMBERING
- 
- #define BEEPER_PIN -1  
- 
- 
- #define LCD_PINS_RS -1
- #define LCD_PINS_ENABLE -1
- #define LCD_PINS_D4 -1
- #define LCD_PINS_D5 -1
- #define LCD_PINS_D6 -1
- #define LCD_PINS_D7 -1
+  #define LED_PIN 46
 
+  #define ORIG_FAN_PIN 9
+  #define FAN2_PIN -1
+  #define PS_ON_PIN -1
+  #define KILL_PIN -1
 
- //buttons are directly attached using keypad
- #define BTN_EN1 -1
- #define BTN_EN2 -1
- #define BTN_ENC -1 //the click
+  #define ORIG_HEATER_0_PIN 7 // EXTRUDER 1
+  #define ORIG_HEATER_1_PIN 8 // EXTRUDER 2
+  #define ORIG_HEATER_2_PIN 9 // thermo couple
 
- #define BLEN_C 2
- #define BLEN_B 1
- #define BLEN_A 0
+  #if TEMP_SENSOR_0 == -1
+    #define ORIG_TEMP_0_PIN 5 // ANALOG NUMBERING
+  #else
+    #define ORIG_TEMP_0_PIN 7 // ANALOG NUMBERING
+  #endif
+  #define ORIG_TEMP_1_PIN 6   // ANALOG NUMBERING
+  #define ORIG_TEMP_2_PIN -1  // ANALOG NUMBERING
 
- #define SD_DETECT_PIN -1  // Megatronics does not use this port
+  #define ORIG_HEATER_BED_PIN 3 // BED
+  #define ORIG_TEMP_BED_PIN 6   // ANALOG NUMBERING
+
+  #define BEEPER_PIN -1  
+
+  #define LCD_PINS_RS -1
+  #define LCD_PINS_ENABLE -1
+  #define LCD_PINS_D4 -1
+  #define LCD_PINS_D5 -1
+  #define LCD_PINS_D6 -1
+  #define LCD_PINS_D7 -1
+
+  //buttons are directly attached using keypad
+  #define BTN_EN1 -1
+  #define BTN_EN2 -1
+  #define BTN_ENC -1 //the click
+
+  #define BLEN_C 2
+  #define BLEN_B 1
+  #define BLEN_A 0
+
+  #define SD_DETECT_PIN -1  // Megatronics does not use this port
 
 #endif // MEGATRONICS_1
 /****************************************************************************************/
@@ -3731,7 +3729,7 @@
     #define ORIG_TEMP_BED_PIN 14 // ANALOG NUMBERING
   #endif
 
-  #define BEEPER_PIN 61  
+  #define BEEPER_PIN 61
 
   #define LCD_PINS_RS 32 
   #define LCD_PINS_ENABLE 31
@@ -4651,7 +4649,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define ORIG_TEMP_2_PIN         -1
 
 #define SDPOWER            -1
-#define SD_DETECT_PIN      -1    
+#define SD_DETECT_PIN      -1
 #define SDSS               20 // 8
 #define LED_PIN             6
 #define PS_ON_PIN          27
@@ -5296,7 +5294,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 
 #ifdef LASERBEAM
   #define LASER_PWR_PIN       41
-  #define LASER_TTL_PIN        42
+  #define LASER_TTL_PIN       42
 #endif
 
 #ifdef FILAMENT_RUNOUT_SENSOR

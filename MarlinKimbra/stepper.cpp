@@ -666,7 +666,7 @@ ISR(TIMER1_COMPA_vect) {
         STEP_START(e,E);
       #endif
 
-      #ifdef STEPPER_HIGH_LOW_DELAY
+      #if ENABLED(STEPPER_HIGH_LOW_DELAY)
         delayMicroseconds(STEPPER_HIGH_LOW_DELAY);
       #endif
 

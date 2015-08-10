@@ -19,8 +19,8 @@
 #define SCARA_offset_y -56 //mm
 #define SCARA_RAD2DEG 57.2957795  // to convert RAD to degrees
 
-#define THETA_HOMING_OFFSET 0  //calculatated from Calibration Guide and command M360 / M114 see picture in http://reprap.harleystudio.co.za/?page_id=1073
-#define PSI_HOMING_OFFSET 0  // calculatated from Calibration Guide and command M364 / M114 see picture in http://reprap.harleystudio.co.za/?page_id=1073
+#define THETA_HOMING_OFFSET 0 //calculatated from Calibration Guide and command M360 / M114 see picture in http://reprap.harleystudio.co.za/?page_id=1073
+#define PSI_HOMING_OFFSET 0   // calculatated from Calibration Guide and command M364 / M114 see picture in http://reprap.harleystudio.co.za/?page_id=1073
 
 //some helper variables to make kinematics faster
 #define L1_2 sq(Linkage_1) // do not change
@@ -118,10 +118,10 @@
   #define Z_SAFE_HOMING_Y_POINT ((Y_MIN_POS + Y_MAX_POS) / 2)    // Y point for Z homing when homing all axis (G28)
 #endif
 
-//#define ENABLE_AUTO_BED_LEVELING    // Delete the comment to enable (ABL)
-//#define Z_PROBE_REPEATABILITY_TEST  // Delete the comment to enable
+//#define AUTO_BED_LEVELING_FEATURE   // Delete the comment to enable (remove // at the start of the line)
+//#define Z_PROBE_REPEATABILITY_TEST  // If not commented out, Z-Probe Repeatability test will be included if Auto Bed Leveling is Enabled.
 
-#ifdef ENABLE_AUTO_BED_LEVELING
+#if ENABLED(AUTO_BED_LEVELING_FEATURE)
 
   // There are 2 different ways to specify probing locations
   //
@@ -138,7 +138,7 @@
   // Note: this feature generates 10KB extra code size
   #define AUTO_BED_LEVELING_GRID
 
-  #ifdef AUTO_BED_LEVELING_GRID
+  #if ENABLED(AUTO_BED_LEVELING_GRID)
 
     #define MIN_PROBE_EDGE 10 // The probe square sides can be no smaller than this
 
@@ -185,7 +185,7 @@
 
   //#define Z_PROBE_ENDSTOP
   
-#endif // ENABLE_AUTO_BED_LEVELING
+#endif // AUTO_BED_LEVELING_FEATURE
 
 
 // The position of the homing switches
@@ -221,15 +221,3 @@
 #define DEFAULT_XYJERK 5                // (mm/sec)
 #define DEFAULT_ZJERK  0.4              // (mm/sec)
 #define DEFAULT_EJERK {3.0,3.0,3.0,3.0} // (mm/sec)
-
-//===========================================================================
-//=============================Additional Features===========================
-//===========================================================================
-
-// Custom M code points
-//#define CUSTOM_M_CODES
-#ifdef CUSTOM_M_CODES
-  #define CUSTOM_M_CODE_SET_Z_PROBE_OFFSET 851
-  #define Z_PROBE_OFFSET_RANGE_MIN -20
-  #define Z_PROBE_OFFSET_RANGE_MAX 20
-#endif

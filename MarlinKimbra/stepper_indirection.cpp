@@ -57,7 +57,7 @@
 #endif
 #if ENABLED(E3_IS_TMC)
   TMC26XStepper stepperE3(200,E3_ENABLE_PIN,E3_STEP_PIN,E3_DIR_PIN,E3_MAX_CURRENT,E3_SENSE_RESISTOR);
-#endif    
+#endif
 
 #if ENABLED(HAVE_TMCDRIVER)
 void tmc_init()
@@ -142,7 +142,7 @@ void tmc_init()
   #endif
   #if ENABLED(E3_IS_L6470)
     L6470 stepperE3(E3_ENABLE_PIN);
-  #endif    
+  #endif
 
 
 // init routine
@@ -218,7 +218,6 @@ void L6470_init()
     stepperE3.setMicroSteps(E3_MICROSTEPS);
     stepperE3.setOverCurrent(E3_OVERCURRENT); //set overcurrent protection
     stepperE3.setStallCurrent(E3_STALLCURRENT);
-  #endif    
+  #endif
 }
 #endif
-

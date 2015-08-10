@@ -30,7 +30,7 @@ void ConfigSD_ResetDefault();
     "TME",
   };
 
-  enum cfgSD_ENUM {  //This need to be in the same order as cfgSD_KEY
+  enum cfgSD_ENUM {   //This need to be in the same order as cfgSD_KEY
     #if HAS_POWER_CONSUMPTION_SENSOR
       SD_CFG_PWR,
     #endif

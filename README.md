@@ -34,7 +34,7 @@ Adding commands to facilitate purging of hotend.
 Step per unit varied for each extruder as well as the feedrate.
 The addition of a different feedrate for retraction. 
 Adding Debug Dryrun used by repetier.
-Added total Power on time writec in SD CARD.
+Added total Power on time writed in SD CARD.
 Added total Power consumption writed in SD CARD.
 Added anti extruder idle oozing system.
 ## Credits
