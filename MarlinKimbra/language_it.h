@@ -196,7 +196,7 @@
   #define MSG_FWTEST_YES_NO                 "Dai il comando Y o N per andare avanti"
   #define MSG_FWTEST_ENDSTOP_ERR            "ENDSTOP ERROR! Controllare cavi e connessioni"
   #define MSG_FWTEST_PRESS                  "Premere e tenere premuto l'endstop "
-  #define MSG_FWTEST_INVERT                 "Invertire valore in "
+  #define MSG_FWTEST_INVERT                 "Invertire valore di "
   #define MSG_FWTEST_XAXIS                  "Il nozzle si e' spostato a destra?"
   #define MSG_FWTEST_YAXIS                  "Il nozzle si e' spostato in avanti?"
   #define MSG_FWTEST_ZAXIS                  "Il nozzle si e' spostato in alto?"
@@ -206,6 +206,10 @@
   #define MSG_FWTEST_04                     "Inizio controllo MOTORI"
   #define MSG_FWTEST_ATTENTION              "ATTENZIONE! Controlla che i tre assi siano a piu' di 5 mm dagli endstop!"
   #define MSG_FWTEST_END                    "Test finito. Disabilitare FIRMWARE_TEST e ricompilare."
+  #define MSG_FWTEST_INTO                    "in "
+  #define MSG_FWTEST_ERROR                   "ERRORE"
+  #define MSG_FWTEST_OK                      "OK"
+  #define MSG_FWTEST_NDEF                    "non definito"
 #endif // FIRMWARE_TEST
 
 #endif // LANGUAGE_IT_H

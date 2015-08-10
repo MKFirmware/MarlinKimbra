@@ -90,7 +90,7 @@
  *
  *  M200  T D             filament_size (x4) (T0..3)
  *
- *  M???  S               idleoozing_enabled
+ *  M???  S               IDLE_OOZING_enabled
  *
  *
  *
@@ -247,7 +247,7 @@ void Config_StoreSettings() {
   }
   
   #if ENABLED(IDLE_OOZING_PREVENT)
-    EEPROM_WRITE_VAR(i, idleoozing_enabled);
+    EEPROM_WRITE_VAR(i, IDLE_OOZING_enabled);
   #endif
 
   char ver2[4] = EEPROM_VERSION;
@@ -384,7 +384,7 @@ void Config_RetrieveSettings() {
     calculate_volumetric_multipliers();
 
     #if ENABLED(IDLE_OOZING_PREVENT)
-      EEPROM_READ_VAR(i, idleoozing_enabled);
+      EEPROM_READ_VAR(i, IDLE_OOZING_enabled);
     #endif
 
     // Call updatePID (similar to when we have processed M301)
@@ -570,7 +570,7 @@ void Config_ResetDefault() {
   calculate_volumetric_multipliers();
 
   #ifdef IDLE_OOZING_PREVENT
-    idleoozing_enabled = true;
+    IDLE_OOZING_enabled = true;
   #endif
 
   ECHO_LM(DB, "Hardcoded Default Settings Loaded");
@@ -819,11 +819,11 @@ void Config_ResetDefault() {
 
   void ConfigSD_PrintSettings(bool forReplay) {
     // Always have this function, even with SD_SETTINGS disabled, the current values will be shown
-    #ifdef POWER_CONSUMPTION
+    #if HAS_POWER_CONSUMPTION_SENSOR
       if (!forReplay) {
         ECHO_LM(DB, "Watt/h consumed:");
       }
-      ECHO_LVM(OK, power_consumption_hour," W/h");
+      ECHO_LVM(OK, power_consumption_hour," Wh");
     #endif
     if (!forReplay) {
       ECHO_LM(DB, "Power on time:");
@@ -843,7 +843,7 @@ void Config_ResetDefault() {
  *
  */
 void ConfigSD_ResetDefault() {
-  #ifdef POWER_CONSUMPTION
+  #if HAS_POWER_CONSUMPTION_SENSOR
    power_consumption_hour = 0;
   #endif
   printer_usage_seconds  = 0;
@@ -854,9 +854,10 @@ void ConfigSD_ResetDefault() {
 
   void ConfigSD_StoreSettings() {
     if(!IS_SD_INSERTED || card.isFileOpen() || card.sdprinting) return;
+    card.setroot(true);
     card.openFile(CFG_SD_FILE, false, true, false);
     char buff[CFG_SD_MAX_VALUE_LEN];
-    #ifdef POWER_CONSUMPTION
+    #if HAS_POWER_CONSUMPTION_SENSOR
       ltoa(power_consumption_hour,buff,10);
       card.unparseKeyLine(cfgSD_KEY[SD_CFG_PWR], buff);
     #endif
@@ -864,6 +865,7 @@ void ConfigSD_ResetDefault() {
     card.unparseKeyLine(cfgSD_KEY[SD_CFG_TME], buff);
     
     card.closeFile(false);
+    card.setlast();
     config_last_update = millis();
   }
 
@@ -872,7 +874,7 @@ void ConfigSD_ResetDefault() {
     char key[CFG_SD_MAX_KEY_LEN], value[CFG_SD_MAX_VALUE_LEN];
     int k_idx;
     int k_len, v_len;
-    
+    card.setroot(true);
     card.openFile(CFG_SD_FILE, true, true, false);
     while(true) {
       k_len = CFG_SD_MAX_KEY_LEN;
@@ -882,7 +884,7 @@ void ConfigSD_ResetDefault() {
       k_idx = ConfigSD_KeyIndex(key);
       if(k_idx == -1) continue;    //unknow key ignore it
       switch(k_idx) {
-        #ifdef POWER_CONSUMPTION
+        #if HAS_POWER_CONSUMPTION_SENSOR
         case SD_CFG_PWR: {
           if(addValue) power_consumption_hour += (unsigned long)atol(value);
           else power_consumption_hour = (unsigned long)atol(value);
@@ -897,6 +899,7 @@ void ConfigSD_ResetDefault() {
       }
     }
     card.closeFile(false);
+    card.setlast();
     config_readed = true;
   }
 

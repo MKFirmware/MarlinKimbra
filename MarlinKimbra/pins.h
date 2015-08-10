@@ -632,7 +632,7 @@
   #define ORIG_TEMP_2_PIN         1 //ANALOG NUMBERING
   #define ORIG_TEMP_BED_PIN       0 //ANALOG NUMBERING
   
-  #define BEEPER_PIN 		    36
+  #define BEEPER_PIN         36
   
   #define KILL_PIN          -1
   
@@ -742,14 +742,14 @@
   
   //bed pins
   #define ORIG_HEATER_BED_PIN -1
-  #define ORIG_TEMP_BED_PIN -1
+  #define ORIG_TEMP_BED_PIN   -1
   
-  #define SDSS		   -1
+  #define SDSS             -1
   #define SDPOWER          -1
   #define LED_PIN          -1
   
   //pin for controlling the PSU.
-  #define PS_ON_PIN       14	//Alex, Do this work on the card?
+  #define PS_ON_PIN       14  //Alex, Do this work on the card?
   
   //Alex extras from Gen3+
   #define KILL_PIN                -1
@@ -2142,12 +2142,12 @@
 #ifdef ULTRA_LCD
   // RADDS LCD panel
   #ifdef NEWPANEL
-    #define LCD_PINS_RS 		42
+    #define LCD_PINS_RS     42
     #define LCD_PINS_ENABLE 43
-    #define LCD_PINS_D4 		44
-    #define LCD_PINS_D5 		45
-    #define LCD_PINS_D6 		46
-    #define LCD_PINS_D7 		47
+    #define LCD_PINS_D4     44
+    #define LCD_PINS_D5     45
+    #define LCD_PINS_D6     46
+    #define LCD_PINS_D7     47
 
     #ifdef REPRAP_DISCOUNT_SMART_CONTROLLER
       #define BEEPER_PIN    41
@@ -2513,11 +2513,11 @@
 
 #define MOTOR_FAULT_PIN       22 // PB26 , motor X-Y-Z-E0 motor FAULT
 
-#define SDPOWER 	            -1
+#define SDPOWER               -1
 #define SDSS                  77 // PA28
 #define SD_DETECT_PIN         87 // PA29
 #define SD_DETECT_INVERTED  false
-#define LED_PIN 	            -1
+#define LED_PIN               -1
 
 #define ORIG_FAN_PIN          92 // PA5
 #define FAN2_PIN              31 // PA7
@@ -2668,7 +2668,7 @@
 
 #if MB(STB_11)
  #define ORIG_FAN_PIN            4
-	//  Uncomment this if you have the first generation (V1.10) of STBs board
+  //  Uncomment this if you have the first generation (V1.10) of STBs board
  #define LCD_PIN_BL         17 // LCD backlight LED
 #endif
 
@@ -2743,10 +2743,10 @@
         #define LCD_PINS_D4 17 //SCK (CLK) clock
         #define BEEPER_PIN 27 // Pin 27 is take by LED_Pin, but Melzi LED do nothing with Marlin and I take this pin for BEEPER.... See here > [github.com] , If you want use this pin with Gcode M42 instead BEEPER
       #else
-	  	  // Pins for DOGM SPI LCD Support
-	  	  #define DOGLCD_A0 30
-	  	  #define DOGLCD_CS 29
-		    #define LCD_CONTRAST 1
+        // Pins for DOGM SPI LCD Support
+        #define DOGLCD_A0 30
+        #define DOGLCD_CS 29
+        #define LCD_CONTRAST 1
       #endif
       // Uncomment screen orientation
       #define LCD_SCREEN_ROT_0
@@ -3595,9 +3595,9 @@
  #define ORIG_HEATER_2_PIN 9 // thermo couple
  
  #if TEMP_SENSOR_0 == -1
- 	#define ORIG_TEMP_0_PIN 5 // ANALOG NUMBERING
+   #define ORIG_TEMP_0_PIN 5 // ANALOG NUMBERING
  #else
- 	#define ORIG_TEMP_0_PIN 7 // ANALOG NUMBERING
+   #define ORIG_TEMP_0_PIN 7 // ANALOG NUMBERING
  #endif
  #define ORIG_TEMP_1_PIN 6 // ANALOG NUMBERING
  #define ORIG_TEMP_2_PIN -1 // ANALOG NUMBERING
@@ -3605,7 +3605,7 @@
  #define ORIG_HEATER_BED_PIN 3 // BED
  #define ORIG_TEMP_BED_PIN 6 // ANALOG NUMBERING
  
- #define BEEPER_PIN -1	
+ #define BEEPER_PIN -1  
  
  
  #define LCD_PINS_RS -1
@@ -3731,7 +3731,7 @@
     #define ORIG_TEMP_BED_PIN 14 // ANALOG NUMBERING
   #endif
 
-  #define BEEPER_PIN 61	
+  #define BEEPER_PIN 61  
 
   #define LCD_PINS_RS 32 
   #define LCD_PINS_ENABLE 31
@@ -3754,7 +3754,7 @@
   #define BLEN_B 1
   #define BLEN_A 0
 
-  #define SD_DETECT_PIN -1	// Megatronics does not use this port
+  #define SD_DETECT_PIN -1  // Megatronics does not use this port
 
 #endif  // MEGATRONICS_3
 /****************************************************************************************/
@@ -4651,7 +4651,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define ORIG_TEMP_2_PIN         -1
 
 #define SDPOWER            -1
-#define SD_DETECT_PIN      -1		
+#define SD_DETECT_PIN      -1    
 #define SDSS               20 // 8
 #define LED_PIN             6
 #define PS_ON_PIN          27
@@ -5120,9 +5120,9 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 //#define DUE_SOFTWARE_SPI
 #else
   #define DUE_SOFTWARE_SPI
-  #define MOSI_PIN		      51
-  #define MISO_PIN		      50
-  #define SCK_PIN 		      52
+  #define MOSI_PIN          51
+  #define MISO_PIN          50
+  #define SCK_PIN           52
 #endif
 /****************************************************************************************/
 
@@ -5296,7 +5296,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 
 #ifdef LASERBEAM
   #define LASER_PWR_PIN       41
-  #define LASER_TTL_PIN	      42
+  #define LASER_TTL_PIN        42
 #endif
 
 #ifdef FILAMENT_RUNOUT_SENSOR

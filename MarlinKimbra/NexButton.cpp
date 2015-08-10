@@ -58,7 +58,7 @@ bool NexButton::setText(const char *buffer)
     cmd += buffer;
     cmd += "\"";
     sendCommand(cmd.c_str());
-    return recvRetCommandFinished();    
+    return recvRetCommandFinished();
 }
 
 /**
@@ -78,7 +78,7 @@ void NexButton::attachPop(NexTouchEventCb pop, void *ptr)
  */
 void NexButton::detachPop(void)
 {
-    NexTouch::detachPop();   
+    NexTouch::detachPop();
 }
  
 

@@ -63,5 +63,5 @@ void NexPage::attachPop(NexTouchEventCb pop, void *ptr)
  */
 void NexPage::detachPop(void)
 {
-    NexTouch::detachPop();   
+    NexTouch::detachPop();
 }

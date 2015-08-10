@@ -33,8 +33,8 @@ void digipot_i2c_set_current(int channel, float current) {
   // In this case first digipot is at address A0=0, A1= 0, second one is at A0=0, A1= 1
   byte addr = 0x2C; // channel 0-3
   if (channel >= 4) {
-  	addr = 0x2E; // channel 4-7
-  	channel -= 4;
+    addr = 0x2E; // channel 4-7
+    channel -= 4;
   }
 
   // Initial setup

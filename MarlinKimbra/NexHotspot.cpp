@@ -63,5 +63,5 @@ void NexHotspot::attachPop(NexTouchEventCb pop, void *ptr)
  */
 void NexHotspot::detachPop(void)
 {
-    NexTouch::detachPop();   
+    NexTouch::detachPop();
 }

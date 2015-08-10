@@ -159,7 +159,7 @@ static void initISR(timer16_Sequence_t timer) {
       TCNT3 = 0;              // clear the timer count
       #ifdef __AVR_ATmega128__
         TIFR |= _BV(OCF3A);     // clear any pending interrupts;
-      	ETIMSK |= _BV(OCIE3A);  // enable the output compare interrupt
+        ETIMSK |= _BV(OCIE3A);  // enable the output compare interrupt
       #else
         TIFR3 = _BV(OCF3A);     // clear any pending interrupts;
         TIMSK3 =  _BV(OCIE3A) ; // enable the output compare interrupt

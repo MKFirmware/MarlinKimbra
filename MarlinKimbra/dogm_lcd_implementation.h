@@ -204,11 +204,11 @@ static void lcd_implementation_init() {
   #endif
 
   #if ENABLED(LCD_PIN_RESET)
-    pinMode(LCD_PIN_RESET, OUTPUT);           
+    pinMode(LCD_PIN_RESET, OUTPUT);
     digitalWrite(LCD_PIN_RESET, HIGH);
   #endif
   #ifndef MINIPANEL//setContrast not working for Mini Panel
-    u8g.setContrast(lcd_contrast);	
+    u8g.setContrast(lcd_contrast);
   #endif
   // FIXME: remove this workaround
   // Uncomment this if you have the first generation (V1.10) of STBs board
@@ -309,7 +309,7 @@ static void lcd_implementation_status_screen() {
         }
         else {
           lcd_print(itostr4(power_consumption_hour-startpower));
-          lcd_print('Wh');
+          lcd_print("Wh");
         }
       #else
         uint16_t time = (millis() - print_job_start_ms) / 60000;

@@ -58,7 +58,7 @@ bool NexText::setText(const char *buffer)
     cmd += buffer;
     cmd += "\"";
     sendCommand(cmd.c_str());
-    return recvRetCommandFinished();    
+    return recvRetCommandFinished();
 }
 
 /**
@@ -80,7 +80,7 @@ bool NexText::setColor(uint32_t value)
     cmd += buf;
 
     sendCommand(cmd.c_str());
-    return recvRetCommandFinished();    
+    return recvRetCommandFinished();
 }
 
 /**
@@ -100,6 +100,6 @@ void NexText::attachPop(NexTouchEventCb pop, void *ptr)
  */
 void NexText::detachPop(void)
 {
-    NexTouch::detachPop();   
+    NexTouch::detachPop();
 }
  
