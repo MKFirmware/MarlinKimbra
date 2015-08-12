@@ -289,7 +289,14 @@ void checkHitEndstops() {
   }
 }
 
-void enable_endstops(bool check) { check_endstops = check; }
+void enable_endstops(bool check) {
+  if (debugLevel & DEBUG_INFO) {
+    ECHO_SM(DB, "setup_for_endstop_move > enable_endstops");
+    if (check) ECHO_EM("(true)");
+    else ECHO_EM("(false)");
+  }
+  check_endstops = check;
+}
 
 // Check endstops
 inline void update_endstops() {
@@ -1251,7 +1258,7 @@ void digipot_init() {
   #if MB(ALLIGATOR)
     const float motor_current[] = MOTOR_CURRENT;
     unsigned int digipot_motor = 0;
-    for (uint8_t i = 0; i < 4; i++) {
+    for (uint8_t i = 0; i < 3 + DRIVER_EXTRUDERS; i++) {
       digipot_motor = 255 * (motor_current[i] / 2.5);
       ExternalDac::setValue(i, digipot_motor);
     }

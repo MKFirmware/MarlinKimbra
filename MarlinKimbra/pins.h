@@ -2488,28 +2488,26 @@
 #define Z_MS1_PIN             44  // PC19
 #define Z_PROBE_PIN           39  // PC7
 
-// E AXIS
+// E0 AXIS
 #define ORIG_E0_STEP_PIN       5  // PC25
 #define ORIG_E0_DIR_PIN        4  // PC26
 #define ORIG_E0_ENABLE_PIN    24  // PA15, motor RESET pin
 #define E0_MS1_PIN            45  // PC18
 
-/*
+// E1 AXIS
 #define ORIG_E1_STEP_PIN      28  // PD3 on piggy
 #define ORIG_E1_DIR_PIN       27  // PD2 on piggy
-#define ORIG_E1_ENABLE_PIN    -1
-#define E1_MS1_PIN            -1
+#define ORIG_E1_ENABLE_PIN    24  // PA15, motor RESET pin
 
+// E2 AXIS
 #define ORIG_E2_STEP_PIN      11 // PD7 on piggy
 #define ORIG_E2_DIR_PIN       29 // PD6 on piggy
-#define ORIG_E2_ENABLE_PIN    -1
-#define E2_MS_PIN             -1
+#define ORIG_E2_ENABLE_PIN    24 // PA15, motor RESET pin
 
+// E3 AXIS
 #define ORIG_E3_STEP_PIN      30 // PD9 on piggy
 #define ORIG_E3_DIR_PIN       12 // PD8 on piggy
-#define ORIG_E3_ENABLE_PIN    -1
-#define E3_MS_PIN             -1
-*/
+#define ORIG_E3_ENABLE_PIN    24 // PA15, motor RESET pin
 
 #define MOTOR_FAULT_PIN       22 // PB26 , motor X-Y-Z-E0 motor FAULT
 
@@ -2525,25 +2523,19 @@
 #define PS_ON_PIN             -1
 #define KILL_PIN              -1
 #define SUICIDE_PIN           -1 //PIN that has to be turned on right after start, to keep power flowing.
-#define HEAT_OFF_INT_PIN      50 // PC13 on raspberry expansion
-
 
 // Note that on the Due pin A0 on the board is channel 2 on the ARM chip
-#define ORIG_HEATER_BED_PIN        69 // PA0
-#define ORIG_HEATER_0_PIN          68 // PA1
-/*
-#define ORIG_HEATER_1_PIN           8 // PC22 on piggy
-#define ORIG_HEATER_2_PIN           9 // PC21 on piggy
-#define ORIG_HEATER_3_PIN          97 // PC20 on piggy
-*/
+#define ORIG_HEATER_BED_PIN   69 // PA0
+#define ORIG_HEATER_0_PIN     68 // PA1
+#define ORIG_HEATER_1_PIN      8 // PC22 on piggy
+#define ORIG_HEATER_2_PIN      9 // PC21 on piggy
+#define ORIG_HEATER_3_PIN     97 // PC20 on piggy
 
-#define ORIG_TEMP_BED_PIN           0 // PA16
-#define ORIG_TEMP_0_PIN             1 // PA24, analog pin
-/*
-#define ORIG_TEMP_1_PIN             5 // PA23 analog pin on piggy
-#define ORIG_TEMP_2_PIN             4 // PA22, analog pin on piggy
-#define ORIG_TEMP_3_PIN             3 // PA6, analog on piggy
-*/
+#define ORIG_TEMP_BED_PIN      0 // PA16
+#define ORIG_TEMP_0_PIN        1 // PA24, analog pin
+#define ORIG_TEMP_1_PIN        2 // PA23 analog pin on piggy
+#define ORIG_TEMP_2_PIN        3 // PA22, analog pin on piggy
+#define ORIG_TEMP_3_PIN        4 // PA6, analog on piggy
 
 #define LED_RED_PIN           40 // PC8
 #define LED_GREEN_PIN         41 // PC9
@@ -2551,7 +2543,8 @@
 
 #define EXP_VOLTAGE_LEVEL_PIN 65
 
-#define DAC_SYNC              53 // PB14
+#define DAC0_SYNC             53 // PB14
+#define DAC1_SYNC              6 // PC24
 
 //64K SPI EEPROM
 #define SPI_CHAN_EEPROM1       2
