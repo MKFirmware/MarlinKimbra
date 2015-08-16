@@ -143,7 +143,7 @@
 
 #if ENABLED(Z_DUAL_STEPPER_DRIVERS)
 
-  // Z_DUAL_ENDSTOPS is a feature to enable the use of 2 endstops for both Z steppers - Let's call them Z stepper and Z2 stepper.
+  // Z DUAL ENDSTOPS is a feature to enable the use of 2 endstops for both Z steppers - Let's call them Z stepper and Z2 stepper.
   // That way the machine is capable to align the bed during home, since both Z steppers are homed. 
   // There is also an implementation of M666 (software endstops adjustment) to this feature.
   // After Z homing, this adjustment is applied to just one of the steppers in order to align the bed.
