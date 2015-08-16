@@ -1,10 +1,11 @@
 /**
  * @file NexPage.h
  *
- * API of NexPage. 
+ * The definition of class NexPage. 
  *
- * @author  Wu Pengfei (email:<pengfei.wu@itead.cc>)
- * @date    2015/7/10
+ * @author Wu Pengfei (email:<pengfei.wu@itead.cc>)
+ * @date 2015/8/13
+ *
  * @copyright 
  * Copyright (C) 2014-2015 ITEAD Intelligent Systems Co., Ltd. \n
  * This program is free software; you can redistribute it and/or
@@ -15,23 +16,35 @@
 
 #ifndef __NEXPAGE_H__
 #define __NEXPAGE_H__
-#ifdef __cplusplus
+
 #include "NexTouch.h"
+#include "NexHardware.h"
+/**
+ * @addtogroup Component 
+ * @{ 
+ */
 
 /**
- * NexPage,subclass of NexTouch,provides simple methods to control page component. 
- *
+ * A special component , which can contain other components such as NexButton, 
+ * NexText and NexWaveform, etc. 
  */
 class NexPage: public NexTouch
 {
 public: /* methods */
-    NexPage(NexPid pid, NexCid cid, char *name, NexTouchEventCb pop = NULL, void *pop_ptr = NULL);
+    /**
+     * @copydoc NexObject::NexObject(uint8_t pid, uint8_t cid, const char *name);
+     */
+    NexPage(uint8_t pid, uint8_t cid, const char *name);
+    
+    /**
+     * Show itself. 
+     * 
+     * @return true if success, false for faileure.
+     */
     bool show(void);
-
-    void attachPop(NexTouchEventCb pop, void *ptr = NULL);
-    void detachPop(void);
-
 };
+/**
+ * @}
+ */
 
-#endif /* #ifdef __cplusplus */
 #endif /* #ifndef __NEXPAGE_H__ */

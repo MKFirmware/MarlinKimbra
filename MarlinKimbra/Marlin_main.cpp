@@ -865,7 +865,7 @@ void get_command() {
 
   if (drain_queued_commands_P()) return; // priority is given to non-serial commands
 
-  #ifdef NO_TIMEOUTS
+  #if ENABLED(NO_TIMEOUTS)
     static millis_t last_command_time = 0;
     millis_t ms = millis();
 
@@ -880,7 +880,7 @@ void get_command() {
   //
   while (MYSERIAL.available() > 0 && commands_in_queue < BUFSIZE) {
 
-    #ifdef NO_TIMEOUTS
+    #if ENABLED(NO_TIMEOUTS)
       last_command_time = ms;
     #endif
 
@@ -905,15 +905,13 @@ void get_command() {
       #endif
 
       char *npos = strchr(command, 'N');
-      if (npos == NULL) npos = strchr(command, 'n');
       char *apos = strchr(command, '*');
       if (npos) {
 
-        boolean M110 = strstr_P(command, PSTR("M110")) != NULL || strstr_P(command, PSTR("m110")) != NULL;
+        boolean M110 = strstr_P(command, PSTR("M110")) != NULL;
 
         if (M110) {
           char *n2pos = strchr(command + 4, 'N');
-          if (n2pos == NULL) n2pos = strchr(command + 4, 'n');
           if (n2pos) npos = n2pos;
         }
 
@@ -923,8 +921,6 @@ void get_command() {
           gcode_line_error(PSTR(MSG_ERR_LINE_NO));
           return;
         }
-
-        gcode_LastN = gcode_N;
 
         if (apos) {
           byte checksum = 0, count = 0;
@@ -940,6 +936,9 @@ void get_command() {
           gcode_line_error(PSTR(MSG_ERR_NO_CHECKSUM));
           return;
         }
+
+        gcode_LastN = gcode_N;
+        // if no errors, continue parsing
       }
       else if (apos) { // No '*' without 'N'
         gcode_line_error(PSTR(MSG_ERR_NO_LINENUMBER_WITH_CHECKSUM), false);
@@ -949,7 +948,6 @@ void get_command() {
       // Movement commands alert when stopped
       if (IsStopped()) {
         char *gpos = strchr(command, 'G');
-        if (gpos == NULL) gpos = strchr(command, 'g');
         if (gpos) {
           int codenum = strtol(gpos + 1, NULL, 10);
           switch (codenum) {
@@ -965,7 +963,7 @@ void get_command() {
       }
 
       // If command was e-stop process now
-      if (strcmp(command, "M112") == 0 || strcmp(command, "m112") == 0) kill(PSTR(MSG_KILLED));
+      if (strcmp(command, "M112") == 0) kill(PSTR(MSG_KILLED));
 
       cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
       commands_in_queue += 1;
@@ -1050,7 +1048,7 @@ bool code_has_value() {
 
 float code_value() {
   float ret;
-  char *e = strchr(seen_pointer, 'E'); if (e == NULL) e = strchr(seen_pointer, 'e');
+  char *e = strchr(seen_pointer, 'E');
   if (e) {
     *e = 0;
     ret = strtod(seen_pointer + 1, NULL);
@@ -1067,7 +1065,6 @@ int16_t code_value_short() { return (int16_t)strtol(seen_pointer + 1, NULL, 10);
 
 bool code_seen(char code) {
   seen_pointer = strchr(current_command_args, code); // +3 since "G0 " is the shortest prefix
-  if (seen_pointer == NULL) seen_pointer = strchr(current_command_args, code + ('a'-'A'));
   return (seen_pointer != NULL);  //Return True if a character was found
 }
 
@@ -3554,8 +3551,9 @@ inline void gcode_G28() {
       double eqnAMatrix[abl2 * 3], // "A" matrix of the linear system of equations
              eqnBVector[abl2];     // "B" vector of Z points
 
+      int8_t indexIntoAB[auto_bed_leveling_grid_points][auto_bed_leveling_grid_points];
       int probePointCounter = 0;
-      bool zig = true;
+      bool zig = (auto_bed_leveling_grid_points & 1) ? true : false; //always end at [RIGHT_PROBE_BED_POSITION, BACK_PROBE_BED_POSITION]
 
       for (int yCount = 0; yCount < auto_bed_leveling_grid_points; yCount++) {
         double yProbe = front_probe_bed_position + yGridSpacing * yCount;
@@ -3572,9 +3570,8 @@ inline void gcode_G28() {
           xInc = -1;
         }
 
-        // If do_topography_map is set then don't zig-zag. Just scan in one direction.
-        // This gets the probe points in more readable order.
-        if (!do_topography_map) zig = !zig;
+        zig = !zig;
+
         for (int xCount = xStart; xCount != xStop; xCount += xInc) {
           double xProbe = left_probe_bed_position + xGridSpacing * xCount;
 
@@ -3606,6 +3603,7 @@ inline void gcode_G28() {
           eqnAMatrix[probePointCounter + 0 * abl2] = xProbe;
           eqnAMatrix[probePointCounter + 1 * abl2] = yProbe;
           eqnAMatrix[probePointCounter + 2 * abl2] = 1;
+          indexIntoAB[xCount][yCount] = probePointCounter;
 
           probePointCounter++;
 
@@ -3661,7 +3659,7 @@ inline void gcode_G28() {
         for (int8_t yy = auto_bed_leveling_grid_points - 1; yy >= 0; yy--) {
           ECHO_S(DB);
           for (int8_t xx = 0; xx < auto_bed_leveling_grid_points; xx++) {
-            int8_t ind = yy * auto_bed_leveling_grid_points + xx;
+            int8_t ind = indexIntoAB[xx][yy];
 
             float diff = eqnBVector[ind];
 
@@ -3679,7 +3677,7 @@ inline void gcode_G28() {
         for (int8_t yy = auto_bed_leveling_grid_points - 1; yy >= 0; yy--) {
           ECHO_S(DB);
           for (int8_t xx = 0; xx < auto_bed_leveling_grid_points; xx++) {
-            int8_t ind = yy * auto_bed_leveling_grid_points + xx;
+            int8_t ind = indexIntoAB[xx][yy];
 
             float diff = eqnBVector[ind] - min_diff;
 
@@ -3697,7 +3695,7 @@ inline void gcode_G28() {
         for (int8_t yy = auto_bed_leveling_grid_points - 1; yy >= 0; yy--) {
           ECHO_S(DB);
           for (int8_t xx = 0; xx < auto_bed_leveling_grid_points; xx++) {
-            int8_t ind = yy * auto_bed_leveling_grid_points + xx;
+            int8_t ind = indexIntoAB[xx][yy];
 
             vector_3 probe_point = vector_3(eqnAMatrix[ind + 0 * abl2], eqnAMatrix[ind + 1 * abl2], eqnBVector[ind]);
             probe_point.apply_rotation(inverse_bed_level_matrix);
@@ -3718,7 +3716,7 @@ inline void gcode_G28() {
         for (int8_t yy = auto_bed_leveling_grid_points - 1; yy >= 0; yy--) {
           ECHO_S(DB);
           for (int8_t xx = 0; xx < auto_bed_leveling_grid_points; xx++) {
-            int8_t ind = yy * auto_bed_leveling_grid_points + xx;
+            int8_t ind = indexIntoAB[xx][yy];
 
             vector_3 probe_point = vector_3(eqnAMatrix[ind + 0 * abl2], eqnAMatrix[ind + 1 * abl2], eqnBVector[ind]);
             probe_point.apply_rotation(inverse_bed_level_matrix);
@@ -6321,7 +6319,7 @@ inline void gcode_M999() {
 inline void gcode_T(uint8_t tmp_extruder) {
   long csteps;
   if (tmp_extruder >= EXTRUDERS) {
-    ECHO_SMV(DB, "T", tmp_extruder);
+    ECHO_SMV(DB, "T", (int)tmp_extruder);
     ECHO_EM(" " MSG_INVALID_EXTRUDER);
   }
   else {
@@ -6524,10 +6522,10 @@ inline void gcode_T(uint8_t tmp_extruder) {
             if (csteps > 0) colorstep(csteps,true);
             old_color = active_extruder = target_extruder;
             active_driver = 0;
-            ECHO_LMV(DB, MSG_ACTIVE_COLOR, active_extruder);
+            ECHO_LMV(DB, MSG_ACTIVE_COLOR, (int)active_extruder);
           #else 
             active_driver = active_extruder = target_extruder;
-            ECHO_LMV(DB, MSG_ACTIVE_EXTRUDER, active_extruder);
+            ECHO_LMV(DB, MSG_ACTIVE_EXTRUDER, (int)active_extruder);
 
           #endif // end MKR4 || NPR2
         #endif // end no DUAL_X_CARRIAGE

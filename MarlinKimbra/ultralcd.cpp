@@ -2257,10 +2257,9 @@ char *ftostr52(const float &x) {
 #include "temperature.h"
 #include "stepper.h"
 #include "configuration_store.h"
-#include "NexText.h"
-#include "NexHotspot.h"
-#include "NexProgressBar.h"
+#include "Nextion.h"
 
+bool NextionON = false;
 char buffer[100]    = {0};
 char lcd_status_message[30] = WELCOME_MSG; // worst case is kana with up to 3*LCD_WIDTH+1
 uint8_t lcd_status_message_level = 0;
@@ -2326,7 +2325,7 @@ void homePopCallback(void *ptr) {
 }
 
 void hotPopCallback(void *ptr) {
-  NexTouch::sendCommand("page 2");
+  sendCommand("page 2");
   memset(buffer, 0, sizeof(buffer));
   if (ptr == &hot0) {
     if (degTargetHotend(0) != 0) {
@@ -2382,17 +2381,23 @@ void sethotPopCallback(void *ptr) {
   memset(buffer, 0, sizeof(buffer));
   set1.getText(buffer, sizeof(buffer));
   enqueuecommands_P(buffer);
-  NexTouch::sendCommand("page menu");
+  sendCommand("page menu");
   lcd_setstatus(lcd_status_message);
 }
 
 millis_t next_lcd_update_ms;
 
 void lcd_init() {
-  nexInit();
-  delay(SPLASH_SCREEN_DURATION);  // wait to display the splash screen
-  NexTouch::sendCommand("page menu");
-  lcd_setstatus(WELCOME_MSG);
+  NextionON = nexInit();
+  if (!NextionON) {
+    ECHO_LM(ER, "Nextion LCD not connected!");
+  }
+  else {
+    ECHO_LM(DB, "Nextion LCD connected!");
+    delay(SPLASH_SCREEN_DURATION);  // wait to display the splash screen
+    sendCommand("page menu");
+    lcd_setstatus(WELCOME_MSG);
+  }
 }
 
 static void temptoLCD(int h, int T1, int T2) {
@@ -2494,6 +2499,9 @@ static void coordtoLCD() {
 }
 
 void lcd_update() {
+
+  if (!NextionON) return;
+
   millis_t ms = millis();
 
   if (ms > next_lcd_update_ms) {
@@ -2513,13 +2521,13 @@ void lcd_update() {
 }
 
 void lcd_setstatus(const char* message, bool persist) {
-  if (lcd_status_message_level > 0) return;
+  if (lcd_status_message_level > 0 || !NextionON) return;
   strncpy(lcd_status_message, message, 30);
   LedStatus.setText(lcd_status_message);
 }
 
 void lcd_setstatuspgm(const char* message, uint8_t level) {
-  if (level >= lcd_status_message_level) {
+  if (level >= lcd_status_message_level && NextionON) {
     strncpy_P(lcd_status_message, message, 30);
     lcd_status_message_level = level;
     LedStatus.setText(lcd_status_message);

@@ -1,7 +1,7 @@
 /**
- * @file NexPage.cpp
+ * @file NexSlider.cpp
  *
- * The implementation of class NexPage. 
+ * The implementation of class NexSlider. 
  *
  * @author  Wu Pengfei (email:<pengfei.wu@itead.cc>)
  * @date    2015/8/13
@@ -12,26 +12,32 @@
  * published by the Free Software Foundation; either version 2 of
  * the License, or (at your option) any later version.
  */
+#include "NexSlider.h"
 
-#include "NexPage.h"
-
-NexPage::NexPage(uint8_t pid, uint8_t cid, const char *name)
+NexSlider::NexSlider(uint8_t pid, uint8_t cid, const char *name)
     :NexTouch(pid, cid, name)
 {
 }
 
-bool NexPage::show(void)
+bool NexSlider::getValue(uint32_t *number)
 {
-    uint8_t buffer[4] = {0};
+    String cmd = String("get ");
+    cmd += getObjName();
+    cmd += ".val";
+    sendCommand(cmd.c_str());
+    return recvRetNumber(number);
+}
 
-    const char *name = getObjName();
-    if (!name)
-    {
-        return false;
-    }
+bool NexSlider::setValue(uint32_t number)
+{
+    char buf[10] = {0};
+    String cmd;
     
-    String cmd = String("page ");
-    cmd += name;
+    utoa(number, buf, 10);
+    cmd += getObjName();
+    cmd += ".val=";
+    cmd += buf;
+
     sendCommand(cmd.c_str());
     return recvRetCommandFinished();
 }

@@ -1,10 +1,11 @@
 /**
  * @file NexText.h
  *
- * API of NexText. 
+ * The definition of class NexText. 
  *
- * @author  Wu Pengfei (email:<pengfei.wu@itead.cc>)
- * @date    2015/7/10
+ * @author Wu Pengfei (email:<pengfei.wu@itead.cc>)
+ * @date 2015/8/13
+ *
  * @copyright 
  * Copyright (C) 2014-2015 ITEAD Intelligent Systems Co., Ltd. \n
  * This program is free software; you can redistribute it and/or
@@ -15,25 +16,46 @@
  
 #ifndef __NEXTEXT_H__
 #define __NEXTEXT_H__
-#ifdef __cplusplus
+
 #include "NexTouch.h"
+#include "NexHardware.h"
+/**
+ * @addtogroup Component 
+ * @{ 
+ */
 
 /**
- * NexText,subclass of NexTouch,provides simple methods to control text component.
- *
+ * NexText component.
  */
 class NexText: public NexTouch
 {
 public: /* methods */
-    NexText(NexPid pid, NexCid cid, char *name, NexTouchEventCb pop = NULL, void *pop_ptr = NULL);
+    /**
+     * @copydoc NexObject::NexObject(uint8_t pid, uint8_t cid, const char *name);
+     */
+    NexText(uint8_t pid, uint8_t cid, const char *name);
     
-    void attachPop(NexTouchEventCb pop, void *ptr = NULL);
-    void detachPop(void);
-
+    /**
+     * Get text attribute of component.
+     *
+     * @param buffer - buffer storing text returned. 
+     * @param len - length of buffer. 
+     * @return The real length of text returned. 
+     */
     uint16_t getText(char *buffer, uint16_t len);
+    
+    /**
+     * Set text attribute of component.
+     *
+     * @param buffer - text buffer terminated with '\0'. 
+     * @return true if success, false for failure. 
+     */
     bool setText(const char *buffer);
     bool setColor(uint32_t value);
 };
 
-#endif /* #ifdef __cplusplus */
+/**
+ * @}
+ */
+
 #endif /* #ifndef __NEXTEXT_H__ */

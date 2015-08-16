@@ -1,7 +1,7 @@
 /**
- * @file NexPicture.h
+ * @file NexSlider.h
  *
- * The definition of class NexPicture. 
+ * The definition of class NexSlider. 
  *
  * @author Wu Pengfei (email:<pengfei.wu@itead.cc>)
  * @date 2015/8/13
@@ -14,8 +14,8 @@
  * the License, or (at your option) any later version.
  */
 
-#ifndef __NEXPICTURE_H__
-#define __NEXPICTURE_H__
+#ifndef __NEXSLIDER_H__
+#define __NEXSLIDER_H__
 
 #include "NexTouch.h"
 #include "NexHardware.h"
@@ -25,39 +25,39 @@
  */
 
 /**
- * NexPicture component. 
+ * NexSlider component. 
  */
-class NexPicture: public NexTouch
+class NexSlider: public NexTouch
 {
 public: /* methods */
     /**
      * @copydoc NexObject::NexObject(uint8_t pid, uint8_t cid, const char *name);
      */
-    NexPicture(uint8_t pid, uint8_t cid, const char *name);
-    
+    NexSlider(uint8_t pid, uint8_t cid, const char *name);
+
     /**
-     * Get picture's number.
+     * Get the value of slider. 
      * 
-     * @param number - an output parameter to save picture number.  
+     * @param number - an output parameter to save the value of slider.  
      * 
      * @retval true - success. 
      * @retval false - failed. 
      */
-    bool getPic(uint32_t *number);
+    bool getValue(uint32_t *number);
     
     /**
-     * Set picture's number.
-     * 
-     * @param number -the picture number.
+     * Set the value of slider.
      *
-     * @retval true - success.
+     * @param number - the value of slider.  
+     *
+     * @retval true - success. 
      * @retval false - failed. 
      */
-    bool setPic(uint32_t number);
+    bool setValue(uint32_t number);
 };
-
 /**
  * @}
  */
 
-#endif /* #ifndef __NEXPICTURE_H__ */
+
+#endif /* #ifndef __NEXSLIDER_H__ */
