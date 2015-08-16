@@ -2283,18 +2283,18 @@ NexProgressBar jp3  = NexProgressBar(1, 11, "jp3");
 NexProgressBar jp4  = NexProgressBar(1, 14, "jp4");
 
 // Touch area
-NexHotspot homex    = NexHotspot(1, 17, "homex",  homePopCallback,    &homex);
-NexHotspot homey    = NexHotspot(1, 18, "homey",  homePopCallback,    &homey);
-NexHotspot homez    = NexHotspot(1, 19, "homez",  homePopCallback,    &homez);
-NexHotspot home0    = NexHotspot(1, 20, "home0",  homePopCallback,    &home0);
-NexHotspot hot0     = NexHotspot(1, 21, "hot0",   hotPopCallback,     &hot0);
-NexHotspot hot1     = NexHotspot(1, 22, "hot1",   hotPopCallback,     &hot1);
-NexHotspot hot2     = NexHotspot(1, 23, "hot2",   hotPopCallback,     &hot2);
-NexHotspot hot3     = NexHotspot(1, 24, "hot3",   hotPopCallback,     &hot3);
-NexHotspot hot4     = NexHotspot(1, 25, "hot4",   hotPopCallback,     &hot4);
-NexHotspot m11      = NexHotspot(2, 14, "m11",    sethotPopCallback,  &m11);
-NexHotspot tup      = NexHotspot(2, 16, "tup",    settempPopCallback, &tup);
-NexHotspot tdown    = NexHotspot(2, 17, "tdown",  settempPopCallback, &tdown);
+NexHotspot homex    = NexHotspot(1, 17, "homex");
+NexHotspot homey    = NexHotspot(1, 18, "homey");
+NexHotspot homez    = NexHotspot(1, 19, "homez");
+NexHotspot home0    = NexHotspot(1, 20, "home0");
+NexHotspot hot0     = NexHotspot(1, 21, "hot0");
+NexHotspot hot1     = NexHotspot(1, 22, "hot1");
+NexHotspot hot2     = NexHotspot(1, 23, "hot2");
+NexHotspot hot3     = NexHotspot(1, 24, "hot3");
+NexHotspot hot4     = NexHotspot(1, 25, "hot4");
+NexHotspot m11      = NexHotspot(2, 14, "m11");
+NexHotspot tup      = NexHotspot(2, 16, "tup");
+NexHotspot tdown    = NexHotspot(2, 17, "tdown");
 
 NexTouch *nexListenList[] = 
 {
@@ -2394,6 +2394,18 @@ void lcd_init() {
   }
   else {
     ECHO_LM(DB, "Nextion LCD connected!");
+    homex.attachPop(homePopCallback,    &homex);
+    homey.attachPop(homePopCallback,    &homey);
+    homez.attachPop(homePopCallback,    &homez);
+    home0.attachPop(homePopCallback,    &home0);
+    hot0.attachPop(hotPopCallback,      &hot0);
+    hot1.attachPop(hotPopCallback,      &hot1);
+    hot2.attachPop(hotPopCallback,      &hot2);
+    hot3.attachPop(hotPopCallback,      &hot3);
+    hot4.attachPop(hotPopCallback,      &hot4);
+    m11.attachPop(sethotPopCallback,    &m11);
+    tup.attachPop(settempPopCallback,   &tup);
+    tdown.attachPop(settempPopCallback, &tdown);
     delay(SPLASH_SCREEN_DURATION);  // wait to display the splash screen
     sendCommand("page menu");
     lcd_setstatus(WELCOME_MSG);
