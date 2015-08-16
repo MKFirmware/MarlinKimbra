@@ -141,7 +141,7 @@ static unsigned char soft_pwm[HOTENDS];
 static int minttemp_raw[HOTENDS] = ARRAY_BY_HOTENDS( HEATER_0_RAW_LO_TEMP , HEATER_1_RAW_LO_TEMP , HEATER_2_RAW_LO_TEMP, HEATER_3_RAW_LO_TEMP);
 static int maxttemp_raw[HOTENDS] = ARRAY_BY_HOTENDS( HEATER_0_RAW_HI_TEMP , HEATER_1_RAW_HI_TEMP , HEATER_2_RAW_HI_TEMP, HEATER_3_RAW_HI_TEMP);
 static int minttemp[HOTENDS] = { 0 };
-static int maxttemp[HOTENDS] = ARRAY_BY_HOTENDS( 16383, 16383, 16383, 16383 );
+static int maxttemp[HOTENDS] = ARRAY_BY_HOTENDS1( 16383 );
 #ifdef BED_MINTEMP
   static int bed_minttemp_raw = HEATER_BED_RAW_LO_TEMP;
 #endif

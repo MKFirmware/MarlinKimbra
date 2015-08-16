@@ -298,11 +298,11 @@
     #error Thermal Runaway Protection for the bed must now be enabled with THERMAL_PROTECTION_BED.
   #endif
 
-  #ifdef PROBE_SERVO_DEACTIVATION_DELAY
+  #if ENABLED(PROBE_SERVO_DEACTIVATION_DELAY)
     #error PROBE_SERVO_DEACTIVATION_DELAY has been replaced with DEACTIVATE_SERVOS_AFTER_MOVE and SERVO_DEACTIVATION_DELAY.
   #endif
 
-  #if defined(COREXZ) && defined(Z_LATE_ENABLE)
+  #if ENABLED(COREXZ) && ENABLED(Z_LATE_ENABLE)
     #error "Z_LATE_ENABLE can't be used with COREXZ."
   #endif
 
@@ -314,7 +314,7 @@
     #error SDCARDDETECT is now SD_DETECT_PIN. Please update your pins definitions.
   #endif
 
-  #ifdef SDCARDDETECTINVERTED
+  #if ENABLED(SDCARDDETECTINVERTED)
     #error SDCARDDETECTINVERTED is now SD_DETECT_INVERTED. Please update your configuration.
   #endif
 

@@ -747,9 +747,6 @@ void setup() {
   Config_RetrieveSettings();
 
   lcd_init();
-  #if DISABLED(NEXTION)
-    delay(SPLASH_SCREEN_DURATION);  // wait to display the splash screen
-  #endif
 
   tp_init();    // Initialize temperature loop
   plan_init();  // Initialize planner;
@@ -767,7 +764,7 @@ void setup() {
     enableStepperDrivers();
   #endif
 
-  #ifdef DIGIPOT_I2C
+  #if ENABLED(DIGIPOT_I2C)
     digipot_i2c_init();
   #endif
 
@@ -1497,6 +1494,15 @@ static void clean_up_after_endstop_move() {
 
       return measured_z;
     }
+    
+    #if HAS_SERVO_ENDSTOPS && DISABLED(Z_PROBE_SLED)
+      void raise_z_for_servo() {
+        float zpos = current_position[Z_AXIS], z_dest = Z_RAISE_BEFORE_PROBING;
+        z_dest += axis_known_position[Z_AXIS] ? zprobe_zoffset : zpos;
+        if (zpos < z_dest) do_blocking_move_to_z(z_dest); // also updates current_position
+      }
+    #endif
+
   #endif //AUTO_BED_LEVELING_FEATURE
 
   static void homeaxis(AxisEnum axis) {
@@ -3778,10 +3784,17 @@ inline void gcode_G28() {
   }
 
   #if DISABLED(Z_PROBE_SLED)
+    /**
+     * G30: Do a single Z probe at the current XY
+     */
     inline void gcode_G30() {
+      #if HAS_SERVO_ENDSTOPS
+        raise_z_for_servo();
+      #endif
       deploy_z_probe(); // Engage Z Servo endstop if available
+
       st_synchronize();
-      // TODO: make sure the bed_level_rotation_matrix is identity or the planner will get set incorectly
+      // TODO: clear the leveling matrix or the planner will be set incorrectly
       setup_for_endstop_move();
 
       feedrate = homing_feedrate[Z_AXIS];
@@ -3793,6 +3806,11 @@ inline void gcode_G28() {
       ECHO_EMV(" Z: ", current_position[Z_AXIS] + 0.0001);
 
       clean_up_after_endstop_move();
+
+      #if HAS_SERVO_ENDSTOPS
+        raise_z_for_servo();
+      #endif
+
       stow_z_probe(); // Retract Z Servo endstop if available
     }
   #endif // !Z_PROBE_SLED
@@ -5756,21 +5774,13 @@ inline void gcode_M226() {
  */
 inline void gcode_M400() { st_synchronize(); }
 
-#if ENABLED(AUTO_BED_LEVELING_FEATURE) && DISABLED(Z_PROBE_SLED) && SERVO_LEVELING
-
-  #if SERVO_LEVELING
-    void raise_z_for_servo() {
-      float zpos = current_position[Z_AXIS], z_dest = Z_RAISE_BEFORE_HOMING;
-      z_dest += axis_known_position[Z_AXIS] ? zprobe_zoffset : zpos;
-      if (zpos < z_dest) do_blocking_move_to_z(z_dest); // also updates current_position
-    }
-  #endif
+#if ENABLED(AUTO_BED_LEVELING_FEATURE) && DISABLED(Z_PROBE_SLED) && HAS_SERVO_ENDSTOPS
 
   /**
    * M401: Engage Z Servo endstop if available
    */
   inline void gcode_M401() {
-    #if SERVO_LEVELING
+    #if HAS_SERVO_ENDSTOPS
       raise_z_for_servo();
     #endif
     deploy_z_probe();
@@ -5780,13 +5790,13 @@ inline void gcode_M400() { st_synchronize(); }
    * M402: Retract Z Servo endstop if enabled
    */
   inline void gcode_M402() {
-    #if SERVO_LEVELING
+    #if HAS_SERVO_ENDSTOPS
       raise_z_for_servo();
     #endif
     stow_z_probe(false);
   }
 
-#endif
+#endif // AUTO_BED_LEVELING_FEATURE && (HAS_SERVO_ENDSTOPS && !Z_PROBE_SLED)
 
 #ifdef FILAMENT_SENSOR
 

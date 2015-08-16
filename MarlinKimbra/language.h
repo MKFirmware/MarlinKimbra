@@ -29,6 +29,8 @@
   #define LANGUAGE_CHOICE 7  // Pick your language from the list above
 #endif
 
+#include "Default_Version.h"
+
 #define PROTOCOL_VERSION "1.0"
 
 #if MB(ULTIMAKER)|| MB(ULTIMAKER_OLD)|| MB(ULTIMAIN_2)
@@ -49,11 +51,6 @@
   #define SOURCE_CODE_URL "https://github.com/fmalpartida/Marlin/tree/SAV-MkI-config"
 #elif !defined(MACHINE_NAME)
   #define MACHINE_NAME "3D Printer"
-#endif
-
-#ifdef CUSTOM_MENDEL_NAME
-  #error CUSTOM_MENDEL_NAME deprecated - use CUSTOM_MACHINE_NAME
-  #define CUSTOM_MACHINE_NAME CUSTOM_MENDEL_NAME
 #endif
 
 #ifdef CUSTOM_MACHINE_NAME
@@ -109,7 +106,7 @@
 #define MSG_INVALID_EXTRUDER                "Invalid extruder"
 #define MSG_INVALID_SOLENOID                "Invalid solenoid"
 #define MSG_ERR_NO_THERMISTORS              "No thermistors - no temperature"
-#define MSG_M115_REPORT                     "FIRMWARE_NAME:MarlinKimbra " BUILD_VERSION " SOURCE_CODE_URL:" SOURCE_CODE_URL " PROTOCOL_VERSION:" PROTOCOL_VERSION " MACHINE_TYPE:" MACHINE_NAME " EXTRUDER_COUNT:" STRINGIFY(EXTRUDERS) " UUID:" MACHINE_UUID "\n"
+#define MSG_M115_REPORT                     "FIRMWARE_NAME:MarlinKimbra " SHORT_BUILD_VERSION " SOURCE_CODE_URL:" SOURCE_CODE_URL " PROTOCOL_VERSION:" PROTOCOL_VERSION " MACHINE_TYPE:" MACHINE_NAME " EXTRUDER_COUNT:" STRINGIFY(EXTRUDERS) " UUID:" MACHINE_UUID "\n"
 #define MSG_COUNT_X                         " Count X: "
 #define MSG_ERR_KILLED                      "Printer halted. kill() called!"
 #define MSG_ERR_STOPPED                     "Printer stopped due to errors. Fix the error and use M999 to restart. (Temperature is reset. Set it after restarting)"

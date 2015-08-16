@@ -223,14 +223,6 @@
       #undef HAS_LCD_CONTRAST
     #endif
   #endif
-  
-  /**
-   * SPLASH_SCREEN_DURATION for no DOGLCD display
-   */
-  #if DISABLED(DOGLCD)
-    #undef SPLASH_SCREEN_DURATION
-    #define SPLASH_SCREEN_DURATION 500
-  #endif
 
 #else // CONFIGURATION_LCD
   #define CONDITIONALS_H

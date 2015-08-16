@@ -3,6 +3,7 @@
 
 #include "boards.h"
 #include "macros.h"
+#include "Default_Version.h"
 
 //===========================================================================
 //============================= Getting Started =============================
@@ -28,11 +29,10 @@
 // User-specified version info of this build to display in [Pronterface, etc] terminal window during
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this
 // build by the user have been successfully uploaded into firmware.
-#define BUILD_VERSION "4.1.4 dev"
-#define STRING_DISTRIBUTION_DATE __DATE__ " " __TIME__    // build date and time
 #define STRING_CONFIG_H_AUTHOR "(none, default config)"   // Who made the changes.
-#define STRING_SPLASH_LINE1 "v" BUILD_VERSION             // will be shown during bootup in line 1
-#define STRING_SPLASH_LINE2 STRING_DISTRIBUTION_DATE      // will be shown during bootup in line 2
+#define SHOW_BOOTSCREEN
+#define STRING_SPLASH_LINE1 "v" SHORT_BUILD_VERSION       // will be shown during bootup in line 1
+//#define STRING_SPLASH_LINE2 STRING_DISTRIBUTION_DATE    // will be shown during bootup in line 2
 
 // SERIAL_PORT selects which serial port should be used for communication with the host.
 // This allows the connection of wireless adapters (for instance) to non-default port pins.
@@ -43,8 +43,8 @@
 // 2400,9600,19200,38400,57600,115200,250000
 #define BAUDRATE 115200
 
-// This enables the serial port associated to the Bluetooth interface on AT90USB devices
-//#define BTENABLED
+// Enable the Bluetooth serial interface on AT90USB devices
+//#define BLUETOOTH
 
 // Define this to set a unique identifier for this printer, (Used by some programs to differentiate between machines)
 // You can use an online service to generate a random UUID. (eg http://www.uuidgenerator.net/version4)
@@ -62,6 +62,13 @@
 //#define DELTA
 //#define SCARA
 /***********************************************************************\
+
+/***********************************************************************\
+ ************************ CORE X (YZ) MOLTIPLICATOR ********************
+ ***********************************************************************/
+// This define the moltiplicator axis from X to Y or Z in COREXY or 
+// COREXZ. Normally is equal 1.
+#define COREX_MOLTILICATOR 1
 
 /***********************************************************************\
  ********************** Do not touch this section **********************
