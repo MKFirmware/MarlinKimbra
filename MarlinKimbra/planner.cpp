@@ -523,7 +523,7 @@ float junction_deviation = 0.1;
         de = target[E_AXIS] - position[E_AXIS];
 
   #if ENABLED(COREXY) || ENABLED(COREXZ)
-    int MX = COREX_MOLTILICATOR;
+    int MX = COREX_MOLTIPLICATOR;
   #endif
 
   #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)

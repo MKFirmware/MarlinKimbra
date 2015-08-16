@@ -68,7 +68,7 @@
  ***********************************************************************/
 // This define the moltiplicator axis from X to Y or Z in COREXY or 
 // COREXZ. Normally is equal 1.
-#define COREX_MOLTILICATOR 1
+#define COREX_MOLTIPLICATOR 1
 
 /***********************************************************************\
  ********************** Do not touch this section **********************
