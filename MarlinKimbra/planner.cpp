@@ -521,9 +521,12 @@ float junction_deviation = 0.1;
         dy = target[Y_AXIS] - position[Y_AXIS],
         dz = target[Z_AXIS] - position[Z_AXIS],
         de = target[E_AXIS] - position[E_AXIS];
-
-  #if ENABLED(COREXY) || ENABLED(COREXZ)
-    int MX = COREX_MOLTIPLICATOR;
+  #if ENABLED(COREXY)
+    float da = dx + COREX_YZ_FACTOR * dy;
+    float db = dx - COREX_YZ_FACTOR * dy;
+  #elif ENABLED(COREXZ)
+    float da = dx + COREX_YZ_FACTOR * dz;
+    float dc = dx - COREX_YZ_FACTOR * dz;
   #endif
 
   #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
@@ -566,14 +569,14 @@ float junction_deviation = 0.1;
   #if ENABLED(COREXY)
     // corexy planning
     // these equations follow the form of the dA and dB equations on http://www.corexy.com/theory.html
-    block->steps[A_AXIS] = labs(dx + MX * dy);
-    block->steps[B_AXIS] = labs(dx - MX * dy);
+    block->steps[A_AXIS] = labs(da);
+    block->steps[B_AXIS] = labs(db);
     block->steps[Z_AXIS] = labs(dz);
   #elif ENABLED(COREXZ)
     // corexz planning
-    block->steps[A_AXIS] = labs(dx + MX * dz);
+    block->steps[A_AXIS] = labs(da);
     block->steps[Y_AXIS] = labs(dy);
-    block->steps[C_AXIS] = labs(dx - MX * dz);
+    block->steps[C_AXIS] = labs(dc);
   #else
     // default non-h-bot planning
     block->steps[X_AXIS] = labs(dx);
@@ -607,14 +610,14 @@ float junction_deviation = 0.1;
     if (dx < 0) db |= BIT(X_HEAD); // Save the real Extruder (head) direction in X Axis
     if (dy < 0) db |= BIT(Y_HEAD); // ...and Y
     if (dz < 0) db |= BIT(Z_AXIS);
-    if (dx + MX * dy < 0) db |= BIT(A_AXIS); // Motor A direction
-    if (dx - MX * dy < 0) db |= BIT(B_AXIS); // Motor B direction
+    if (da < 0) db |= BIT(A_AXIS); // Motor A direction
+    if (db < 0) db |= BIT(B_AXIS); // Motor B direction
   #elif ENABLED(COREXZ)
     if (dx < 0) db |= BIT(X_HEAD); // Save the real Extruder (head) direction in X Axis
     if (dy < 0) db |= BIT(Y_AXIS);
     if (dz < 0) db |= BIT(Z_HEAD); // ...and Z
-    if (dx + MX * dz < 0) db |= BIT(A_AXIS); // Motor A direction
-    if (dx - MX * dz < 0) db |= BIT(C_AXIS); // Motor B direction
+    if (da < 0) db |= BIT(A_AXIS); // Motor A direction
+    if (dc < 0) db |= BIT(C_AXIS); // Motor B direction
   #else
     if (dx < 0) db |= BIT(X_AXIS);
     if (dy < 0) db |= BIT(Y_AXIS); 
@@ -749,15 +752,15 @@ float junction_deviation = 0.1;
     delta_mm[X_HEAD] = dx / axis_steps_per_unit[A_AXIS];
     delta_mm[Y_HEAD] = dy / axis_steps_per_unit[B_AXIS];
     delta_mm[Z_AXIS] = dz / axis_steps_per_unit[Z_AXIS];
-    delta_mm[A_AXIS] = (dx + MX * dy) / axis_steps_per_unit[A_AXIS];
-    delta_mm[B_AXIS] = (dx - MX * dy) / axis_steps_per_unit[B_AXIS];
+    delta_mm[A_AXIS] = da / axis_steps_per_unit[A_AXIS];
+    delta_mm[B_AXIS] = db / axis_steps_per_unit[B_AXIS];
   #elif ENABLED(COREXZ)
     float delta_mm[6];
     delta_mm[X_HEAD] = dx / axis_steps_per_unit[A_AXIS];
     delta_mm[Y_AXIS] = dy / axis_steps_per_unit[Y_AXIS];
     delta_mm[Z_HEAD] = dz / axis_steps_per_unit[C_AXIS];
-    delta_mm[A_AXIS] = (dx + MX * dz) / axis_steps_per_unit[A_AXIS];
-    delta_mm[C_AXIS] = (dx - MX * dz) / axis_steps_per_unit[C_AXIS];
+    delta_mm[A_AXIS] = da / axis_steps_per_unit[A_AXIS];
+    delta_mm[C_AXIS] = dc / axis_steps_per_unit[C_AXIS];
   #else
     float delta_mm[4];
     delta_mm[X_AXIS] = dx / axis_steps_per_unit[X_AXIS];

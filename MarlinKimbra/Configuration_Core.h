@@ -6,6 +6,21 @@
 //=============================Mechanical Settings===========================
 //===========================================================================
 
+/***********************************************************************
+ ************************ CORE X (YZ) MOLTIPLICATOR ********************
+ ***********************************************************************
+ * This define the moltiplicator axis from X to Y or Z in COREXY or 
+ * COREXZ.
+ * Example:
+ * COREXY set COREX_XZ_FACTOR 1
+ * The result is:
+ * X = dX + COREX_YZ_FACTOR * dY = dX + 1 * dY = dX + dY
+ * Y = dX - COREX_YZ_FACTOR * dY = dX - 1 * dY = dX - dY
+ * Z = dZ
+ */
+#define COREX_YZ_FACTOR 1
+
+
 // coarse Endstop Settings
 #define ENDSTOPPULLUPS // Comment this out (using // at the start of the line) to disable the endstop pullup resistors
 
