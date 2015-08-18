@@ -273,9 +273,6 @@ extern int fanSpeed;
 
 #if ENABLED(FAN_SOFT_PWM)
   extern unsigned char fanSpeedSoftPwm;
-  #if HAS_AUTO_FAN_0 || HAS_AUTO_FAN_1 || HAS_AUTO_FAN_2 || HAS_AUTO_FAN_3
-    extern unsigned char fanSpeedSoftPwm_auto;
-  #endif
   #if HAS_CONTROLLERFAN
     extern unsigned char fanSpeedSoftPwm_controller;
   #endif

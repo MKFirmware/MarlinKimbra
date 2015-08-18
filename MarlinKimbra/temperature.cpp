@@ -62,7 +62,7 @@ float current_temperature_bed = 0.0;
 #if ENABLED(FAN_SOFT_PWM)
   unsigned char fanSpeedSoftPwm = 0;
   #if HAS_AUTO_FAN
-    unsigned char fanSpeedSoftPwm_Auto = EXTRUDER_AUTO_FAN_MIN_SPEED;
+    unsigned char fanSpeedSoftPwm_auto = EXTRUDER_AUTO_FAN_MIN_SPEED;
   #endif
   #if HAS_CONTROLLERFAN
     unsigned char fanSpeedSoftPwm_controller = CONTROLLERFAN_MIN_SPEED;
@@ -907,12 +907,6 @@ void tp_init() {
     #endif
     #if ENABLED(FAN_SOFT_PWM)
       soft_pwm_fan = fanSpeedSoftPwm / 2;
-      #if HAS_CONTROLLERFAN
-        soft_pwm_fan_controller = fanSpeedSoftPwm_controller / 2;
-      #endif
-      #if HAS_AUTO_FAN
-        soft_pwm_fan_auto = fanSpeedSoftPwm_auto / 2;
-      #endif
     #endif
   #endif
 
@@ -961,7 +955,7 @@ void tp_init() {
   #if HAS_FILAMENT_SENSOR
     ANALOG_SELECT(FILWIDTH_PIN);
   #endif
-
+  
   #if HAS_AUTO_FAN_0
     SET_OUTPUT(EXTRUDER_0_AUTO_FAN_PIN);
   #endif
@@ -977,6 +971,15 @@ void tp_init() {
   
   #if HAS_CONTROLLERFAN
     SET_OUTPUT(CONTROLLERFAN_PIN); //Set pin used for driver cooling fan
+  #endif
+  
+  #if ENABLED(FAN_SOFT_PWM)
+    #if HAS_CONTROLLERFAN
+      soft_pwm_fan_controller = fanSpeedSoftPwm_controller / 2;
+    #endif
+    #if HAS_AUTO_FAN
+      soft_pwm_fan_auto = fanSpeedSoftPwm_auto / 2;
+    #endif
   #endif
 
   #if HAS_POWER_CONSUMPTION_SENSOR
