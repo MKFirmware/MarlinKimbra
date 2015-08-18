@@ -2259,104 +2259,130 @@ char *ftostr52(const float &x) {
 #include "configuration_store.h"
 #include "Nextion.h"
 
-bool NextionON = false;
-char buffer[100]    = {0};
+bool NextionON    = false;
+bool PageInfo     = false;
+char buffer[100]  = {0};
 char lcd_status_message[30] = WELCOME_MSG; // worst case is kana with up to 3*LCD_WIDTH+1
 uint8_t lcd_status_message_level = 0;
 
 // Text
-NexText Hotend0     = NexText(1, 3,   "t0");
-NexText Hotend1     = NexText(1, 7,   "t1");
-NexText Hotend2     = NexText(1, 9,   "t2");
-NexText Hotend3     = NexText(1, 12,  "t3");
-NexText Bed         = NexText(1, 16,  "t4");
-NexText LedStatus   = NexText(1, 26,  "t5");
-NexText LedCoord    = NexText(1, 27,  "t6");
+NexText Hotend0     = NexText(1, 1,   "t0");
+NexText Hotend1     = NexText(1, 4,   "t1");
+NexText Hotend2     = NexText(1, 5,   "t2");
+NexText Hotend21    = NexText(1, 6,   "h2");
+NexText LedStatus   = NexText(1, 7,   "t4");
+NexText LedCoord    = NexText(1, 8,   "t5");
 NexText set0        = NexText(2, 2,   "set0");
 NexText set1        = NexText(2, 15,  "set1");
 
+// Picture
+NexPicture Menu     = NexPicture(1, 10, "p0");
+NexPicture MSD      = NexPicture(1, 11, "p1");
+NexPicture MSetup   = NexPicture(1, 12, "p2");
+NexPicture Hend0    = NexPicture(1, 13, "p3");
+NexPicture Hend1    = NexPicture(1, 14, "p4");
+NexPicture Hend2    = NexPicture(1, 15, "p5");
+NexPicture Fanpic   = NexPicture(1, 19, "p6");
+
 // Progress Bar
-NexProgressBar jp0  = NexProgressBar(1, 2, "jp0");
-NexProgressBar jp1  = NexProgressBar(1, 5, "jp1");
-NexProgressBar jp2  = NexProgressBar(1, 8, "jp2");
-NexProgressBar jp3  = NexProgressBar(1, 11, "jp3");
-NexProgressBar jp4  = NexProgressBar(1, 14, "jp4");
+
+// Wafeform
+NexWaveform Graph0  = NexWaveform(1, 9, "s0");
 
 // Touch area
-NexHotspot homex    = NexHotspot(1, 17, "homex");
-NexHotspot homey    = NexHotspot(1, 18, "homey");
-NexHotspot homez    = NexHotspot(1, 19, "homez");
-NexHotspot home0    = NexHotspot(1, 20, "home0");
-NexHotspot hot0     = NexHotspot(1, 21, "hot0");
-NexHotspot hot1     = NexHotspot(1, 22, "hot1");
-NexHotspot hot2     = NexHotspot(1, 23, "hot2");
-NexHotspot hot3     = NexHotspot(1, 24, "hot3");
-NexHotspot hot4     = NexHotspot(1, 25, "hot4");
+NexHotspot hot0     = NexHotspot(1, 14, "hot0");
+NexHotspot hot1     = NexHotspot(1, 16, "hot1");
+NexHotspot hot2     = NexHotspot(1, 18, "hot2");
 NexHotspot m11      = NexHotspot(2, 14, "m11");
 NexHotspot tup      = NexHotspot(2, 16, "tup");
 NexHotspot tdown    = NexHotspot(2, 17, "tdown");
 
-NexTouch *nexListenList[] = 
+NexTouch *nex_listen_list[] =
 {
-  &homex,
-  &homey,
-  &homez,
-  &home0,
+  &Menu,
+  &MSD,
+  &MSetup,
+  &Fanpic,
   &hot0,
   &hot1,
   &hot2,
-  &hot3,
-  &hot4,
   &m11,
   &tup,
   &tdown,
   NULL
 };
 
-void homePopCallback(void *ptr) {
-  if (ptr == &homex)
-    enqueuecommands_P(PSTR("G28 X"));
-  else if (ptr == &homey)
-    enqueuecommands_P(PSTR("G28 Y"));
-  else if (ptr == &homey)
-    enqueuecommands_P(PSTR("G28 Z"));
-  else if (ptr == &home0)
-    enqueuecommands_P(PSTR("G28"));
+void setpageInfo() {
+  sendCommand("page info");
+
+  PageInfo = true;
+
+  #if HAS_TEMP_0
+    Hend0.setPic(7);
+  #endif
+  #if HAS_TEMP_1
+    Hend1.setPic(7);
+  #endif
+  #if HAS_TEMP_1
+    Hend2.setPic(7);
+  #elif HAS_TEMP_BED
+    Hotend21.setText("BED");
+    Hend2.setPic(8);
+  #endif
+
+  #if ENABLED(SDSUPPORT)
+    MSD.setPic(4);
+  #endif
+}
+
+void setFan() {
+
+  uint32_t number = 0;
+
+  Fanpic.getPic(&number);
+
+  if (number == 9) number = 10;
+  else number = 9;
+
+  Fanpic.setPic(number);
 }
 
 void hotPopCallback(void *ptr) {
   sendCommand("page 2");
+  PageInfo = false;
   memset(buffer, 0, sizeof(buffer));
   if (ptr == &hot0) {
     if (degTargetHotend(0) != 0) {
       itoa(degTargetHotend(0), buffer, 10);
     }
     set1.setText("M104 T0 S");
+    sendCommand("page 2");
   }
   if (ptr == &hot1) {
     if (degTargetHotend(1) != 0) {
       itoa(degTargetHotend(1), buffer, 10);
     }
     set1.setText("M104 T1 S");
+    sendCommand("page 2");
   }
-  if (ptr == &hot2) {
-    if (degTargetHotend(2) != 0) {
-      itoa(degTargetHotend(2), buffer, 10);
+
+  #if HAS_TEMP_2
+    if (ptr == &hot2) {
+      if (degTargetHotend(2) != 0) {
+        itoa(degTargetHotend(2), buffer, 10);
+      }
+      set1.setText("M104 T2 S");
+      sendCommand("page 2");
     }
-    set1.setText("M104 T2 S");
-  }
-  if (ptr == &hot3) {
-    if (degTargetHotend(3) != 0) {
-      itoa(degTargetHotend(3), buffer, 10);
+  #elif HAS_TEMP_BED
+    if (ptr == &hot2) {
+      if (degTargetBed() != 0) {
+        itoa(degTargetBed(), buffer, 10);
+      }
+      set1.setText("M140 S");
     }
-    set1.setText("M104 T3 S");
-  }
-  if (ptr == &hot4) {
-    if (degTargetBed() != 0) {
-      itoa(degTargetBed(), buffer, 10);
-    }
-    set1.setText("M140 S");
-  }
+  #endif
+
   set0.setText(buffer);
 }
 
@@ -2381,8 +2407,22 @@ void sethotPopCallback(void *ptr) {
   memset(buffer, 0, sizeof(buffer));
   set1.getText(buffer, sizeof(buffer));
   enqueuecommands_P(buffer);
-  sendCommand("page menu");
+  setpageInfo();
   lcd_setstatus(lcd_status_message);
+}
+
+void setpagePopCallback(void *ptr) {
+  if (ptr == &Menu)
+    sendCommand("page menu");
+  if (ptr == &MSD)
+    sendCommand("page msd");
+  if (ptr == &MSetup)
+    sendCommand("page setup");
+}
+
+void setfanPopCallback(void *ptr) {
+  if (fanSpeed) fanSpeed = 0;
+  else fanSpeed = 255;
 }
 
 millis_t next_lcd_update_ms;
@@ -2394,20 +2434,24 @@ void lcd_init() {
   }
   else {
     ECHO_LM(DB, "Nextion LCD connected!");
-    homex.attachPop(homePopCallback,    &homex);
-    homey.attachPop(homePopCallback,    &homey);
-    homez.attachPop(homePopCallback,    &homez);
-    home0.attachPop(homePopCallback,    &home0);
-    hot0.attachPop(hotPopCallback,      &hot0);
-    hot1.attachPop(hotPopCallback,      &hot1);
-    hot2.attachPop(hotPopCallback,      &hot2);
-    hot3.attachPop(hotPopCallback,      &hot3);
-    hot4.attachPop(hotPopCallback,      &hot4);
-    m11.attachPop(sethotPopCallback,    &m11);
-    tup.attachPop(settempPopCallback,   &tup);
-    tdown.attachPop(settempPopCallback, &tdown);
+    #if HAS_TEMP_0
+      hot0.attachPop(hotPopCallback,      &hot0);
+    #endif
+    #if HAS_TEMP_1
+      hot1.attachPop(hotPopCallback,      &hot1);
+    #endif
+    #if HAS_TEMP_2 || HAS_TEMP_BED
+      hot2.attachPop(hotPopCallback,      &hot2);
+    #endif
+    Menu.attachPop(setpagePopCallback,    &Menu);
+    MSD.attachPop(setpagePopCallback,     &MSD);
+    MSetup.attachPop(setpagePopCallback,  &Menu);
+    Fanpic.attachPop(setfanPopCallback,   &Fanpic);
+    m11.attachPop(sethotPopCallback,      &m11);
+    tup.attachPop(settempPopCallback,     &tup);
+    tdown.attachPop(settempPopCallback,   &tdown);
     delay(SPLASH_SCREEN_DURATION);  // wait to display the splash screen
-    sendCommand("page menu");
+    setpageInfo();
     lcd_setstatus(WELCOME_MSG);
   }
 }
@@ -2422,8 +2466,6 @@ static void temptoLCD(int h, int T1, int T2) {
   strcat(buffer, valuetemp);
   uint32_t color = 1023;
   uint32_t prc = (T1/(T2 + 0.1)) * 100;
-  String tempprc = String(prc);
-  String bar_id  = "j" + String(h);
   
   if (prc >= 50 && prc < 75)
     color = 65519;
@@ -2437,35 +2479,21 @@ static void temptoLCD(int h, int T1, int T2) {
     {
       Hotend0.setText(buffer);
       Hotend0.setColor(color);
-      jp0.setValue(prc);
+      Graph0.addValue(0, T1);
       break;
     }
     case 1:
     {
       Hotend1.setText(buffer);
       Hotend1.setColor(color);
-      jp1.setValue(prc);
+      Graph0.addValue(1, T1);
       break;
     }
     case 2:
     {
       Hotend2.setText(buffer);
       Hotend2.setColor(color);
-      jp2.setValue(prc);
-      break;
-    }
-    case 3:
-    {
-      Hotend3.setText(buffer);
-      Hotend3.setColor(color);
-      jp3.setValue(prc);
-      break;
-    }
-    case 4:
-    {
-      Bed.setText(buffer);
-      Bed.setColor(color);
-      jp4.setValue(prc);
+      Graph0.addValue(2, T1);
       break;
     }
   }
@@ -2514,16 +2542,24 @@ void lcd_update() {
 
   if (!NextionON) return;
 
+  nexLoop(nex_listen_list);
+
   millis_t ms = millis();
 
-  if (ms > next_lcd_update_ms) {
+  if (ms > next_lcd_update_ms && PageInfo) {
 
-    nexLoop(nexListenList);
+    if (fanSpeed > 0) setFan();
 
-    for (int h = 0; h < HOTENDS; h++) temptoLCD(h, degHotend(h), degTargetHotend(h));
-
-    #if TEMP_SENSOR_BED != 0
-      temptoLCD(4, degBed(), degTargetBed());
+    #if HAS_TEMP_0
+      temptoLCD(0, degHotend(0), degTargetHotend(0));
+    #endif
+    #if HAS_TEMP_1
+      temptoLCD(1, degHotend(1), degTargetHotend(1));
+    #endif
+    #if HAS_TEMP_2
+      temptoLCD(2, degHotend(2), degTargetHotend(2));
+    #elif HAS_TEMP_BED
+      temptoLCD(2, degBed(), degTargetBed());
     #endif
 
     coordtoLCD();

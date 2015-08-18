@@ -114,12 +114,13 @@
 
 #elif ENABLED(NEXTION)
 
-  #define LCD_UPDATE_INTERVAL 1000
+  #define LCD_UPDATE_INTERVAL 100
 
-  void homePopCallback(void *ptr);
+  void setpagePopCallback(void *ptr);
   void hotPopCallback(void *ptr);
   void sethotPopCallback(void *ptr);
   void settempPopCallback(void *ptr);
+  void setfanPopCallback(void *ptr);
   void lcd_update();
   void lcd_init();
   void lcd_setstatus(const char* message, const bool persist = false);

@@ -7224,11 +7224,6 @@ void prepare_move() {
     if (!prepare_move_cartesian()) return;
   #endif
 
-  #ifdef IDLE_OOZING_PREVENT || EXTRUDER_RUNOUT_PREVENT
-    axis_last_activity = millis();
-    axis_is_moving = false;
-  #endif
-
   set_current_to_destination();
 }
 
