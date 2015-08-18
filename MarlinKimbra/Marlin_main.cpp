@@ -756,10 +756,6 @@ void setup() {
   setup_laserbeampin();   // Initialize Laserbeam pin
   servo_init();
 
-  #if HAS_CONTROLLERFAN
-    SET_OUTPUT(CONTROLLERFAN_PIN); //Set pin used for driver cooling fan
-  #endif
-
   #if HAS_STEPPER_RESET
     enableStepperDrivers();
   #endif
@@ -7391,14 +7387,18 @@ void plan_arc(
       }
       
   #ifdef INVERTED_HEATER_PINS
-      uint8_t speed = (lastMotor == 0 || ms >= lastMotor + (CONTROLLERFAN_SECS * 1000UL)) ? 255 : (255 - CONTROLLERFAN_SPEED);
+      uint8_t speed = (lastMotor == 0 || ms >= lastMotor + (CONTROLLERFAN_SECS * 1000UL)) ? 255 - CONTROLLERFAN_MIN_SPEED : (255 - CONTROLLERFAN_SPEED);
   #else
-      uint8_t speed = (lastMotor == 0 || ms >= lastMotor + (CONTROLLERFAN_SECS * 1000UL)) ? 0 : CONTROLLERFAN_SPEED;
+      uint8_t speed = (lastMotor == 0 || ms >= lastMotor + (CONTROLLERFAN_SECS * 1000UL)) ? CONTROLLERFAN_MIN_SPEED : CONTROLLERFAN_SPEED;
   #endif
 
       // allows digital or PWM fan output to be used (see M42 handling)
-      digitalWrite(CONTROLLERFAN_PIN, speed);
-      analogWrite(CONTROLLERFAN_PIN, speed);
+      #if ENABLED(FAN_SOFT_PWM)
+        fanSpeedSoftPwm_controller = speed;
+      #else
+        digitalWrite(CONTROLLERFAN_PIN, speed);
+        analogWrite(CONTROLLERFAN_PIN, speed);
+      #endif
     }
   }
 

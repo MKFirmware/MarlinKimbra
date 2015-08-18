@@ -6,7 +6,7 @@
 // #error "You must specify the following parameters related to your distribution"
 
 #if true
-  #define SHORT_BUILD_VERSION "4.1.4 dev"
+  #define SHORT_BUILD_VERSION "4.1.5 dev"
   #define STRING_DISTRIBUTION_DATE __DATE__ " " __TIME__    // build date and time
   // It might also be appropriate to define a location where additional information can be found
   #define SOURCE_CODE_URL  "https://github.com/MagoKimbra/MarlinKimbra"
