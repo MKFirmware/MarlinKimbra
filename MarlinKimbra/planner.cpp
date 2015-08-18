@@ -605,30 +605,30 @@ float junction_deviation = 0.1;
   #endif
 
   // Compute direction bits for this block 
-  uint8_t db = 0;
+  uint8_t dirb = 0;
   #if ENABLED(COREXY)
-    if (dx < 0) db |= BIT(X_HEAD); // Save the real Extruder (head) direction in X Axis
-    if (dy < 0) db |= BIT(Y_HEAD); // ...and Y
-    if (dz < 0) db |= BIT(Z_AXIS);
-    if (da < 0) db |= BIT(A_AXIS); // Motor A direction
-    if (db < 0) db |= BIT(B_AXIS); // Motor B direction
+    if (dx < 0) dirb |= BIT(X_HEAD); // Save the real Extruder (head) direction in X Axis
+    if (dy < 0) dirb |= BIT(Y_HEAD); // ...and Y
+    if (dz < 0) dirb |= BIT(Z_AXIS);
+    if (da < 0) dirb |= BIT(A_AXIS); // Motor A direction
+    if (db < 0) dirb |= BIT(B_AXIS); // Motor B direction
   #elif ENABLED(COREXZ)
-    if (dx < 0) db |= BIT(X_HEAD); // Save the real Extruder (head) direction in X Axis
-    if (dy < 0) db |= BIT(Y_AXIS);
-    if (dz < 0) db |= BIT(Z_HEAD); // ...and Z
-    if (da < 0) db |= BIT(A_AXIS); // Motor A direction
-    if (dc < 0) db |= BIT(C_AXIS); // Motor B direction
+    if (dx < 0) dirb |= BIT(X_HEAD); // Save the real Extruder (head) direction in X Axis
+    if (dy < 0) dirb |= BIT(Y_AXIS);
+    if (dz < 0) dirb |= BIT(Z_HEAD); // ...and Z
+    if (da < 0) dirb |= BIT(A_AXIS); // Motor A direction
+    if (dc < 0) dirb |= BIT(C_AXIS); // Motor B direction
   #else
-    if (dx < 0) db |= BIT(X_AXIS);
-    if (dy < 0) db |= BIT(Y_AXIS); 
-    if (dz < 0) db |= BIT(Z_AXIS);
+    if (dx < 0) dirb |= BIT(X_AXIS);
+    if (dy < 0) dirb |= BIT(Y_AXIS); 
+    if (dz < 0) dirb |= BIT(Z_AXIS);
   #endif
-  if (de < 0) db |= BIT(E_AXIS); 
-  block->direction_bits = db;
+  if (de < 0) dirb |= BIT(E_AXIS); 
+  block->direction_bits = dirb;
 
   block->active_driver = driver;
 
-  //enable active axes
+  // Enable active axes
   #if ENABLED(COREXY)
     if (block->steps[A_AXIS] || block->steps[B_AXIS]) {
       enable_x();
