@@ -181,6 +181,7 @@ static void updateTemperaturesFromRawValues();
 //================================ Functions ================================
 //===========================================================================
 
+
 void PID_autotune(float temp, int hotend, int ncycles) {
   float input = 0.0;
   int cycles = 0;
@@ -333,7 +334,7 @@ void PID_autotune(float temp, int hotend, int ncycles) {
           PID_PARAM(Ki, hotend) = scalePID_i(Ki_temp);
           PID_PARAM(Kd, hotend) = scalePID_d(Kd_temp);
           updatePID();
-  
+
           ECHO_SMV(DB, MSG_KP, PID_PARAM(Kp, hotend));
           ECHO_MV(MSG_KI, unscalePID_i(PID_PARAM(Ki, hotend)));
           ECHO_EMV(MSG_KD, unscalePID_d(PID_PARAM(Kd, hotend)));

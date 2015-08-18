@@ -42,7 +42,7 @@
 #define BOARD_ULTIMAKER         7    // Ultimaker
 #define BOARD_MEGATRONICS       70   // Megatronics
 #define BOARD_MEGATRONICS_2     701  // Megatronics v2.0
-#define BOARD_MEGATRONICS_1     702  // Minitronics v1.0
+#define BOARD_MINITRONICS       702  // Minitronics v1.0
 #define BOARD_MEGATRONICS_3     703  // Megatronics v3.0
 #define BOARD_ULTIMAKER_OLD     71   // Ultimaker (Older electronics. Pre 1.5.4. This is rare)
 #define BOARD_ULTIMAIN_2        72   // Ultimainboard 2.x (Uses TEMP_SENSOR 20)

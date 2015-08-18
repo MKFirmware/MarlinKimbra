@@ -42,9 +42,27 @@
   #define E3_ENABLE_PIN ORIG_E3_ENABLE_PIN
 #endif
 
+//HEATHER pin
+#define HEATER_0_PIN    ORIG_HEATER_0_PIN
+#define HEATER_1_PIN    ORIG_HEATER_1_PIN
+#define HEATER_2_PIN    ORIG_HEATER_2_PIN
+#define HEATER_3_PIN    ORIG_HEATER_3_PIN
+#define HEATER_BED_PIN  ORIG_HEATER_BED_PIN
+
+//TEMP pin
+#define TEMP_0_PIN      ORIG_TEMP_0_PIN
+#define TEMP_1_PIN      ORIG_TEMP_1_PIN
+#define TEMP_2_PIN      ORIG_TEMP_2_PIN
+#define TEMP_3_PIN      ORIG_TEMP_3_PIN
+#define TEMP_BED_PIN    ORIG_TEMP_BED_PIN
+
 //FAN pin
 #define FAN_PIN       ORIG_FAN_PIN
-//============================================================================
+
+//=========================== START YOUR CHANGE ==============================
+// Example for change X_MIN_PIN
+// #undef X_MIN_PIN
+// #define X_MIN_PIN newpin
 
 
 //============================================================================

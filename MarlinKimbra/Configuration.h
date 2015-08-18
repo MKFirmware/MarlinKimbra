@@ -61,7 +61,7 @@
 #if defined(CARTESIAN)
   #include "Configuration_Cartesian.h"
 #elif defined(COREXY)
-  #include "Configuration_Corexy.h"
+  #include "Configuration_Core.h"
 #elif defined(DELTA)
   #include "Configuration_Delta.h"
 #elif defined(SCARA)
