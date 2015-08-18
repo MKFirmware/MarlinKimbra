@@ -1,6 +1,7 @@
 ### Version 4.1.5
-* Implemented FAN_SOFT_PWM also for other fan that can be added in configuration_adv file.
+* Implemented FAST_PWM_FAN and FAN_SOFT_PWM also for other fan that can be added in configuration_adv file.
 * Added the ability to set a min speed to the fan that can be added in configuration_adv file.
+* General bugfix
 
 ### Version 4.1.4
 * Add support for Piggy Alligator board

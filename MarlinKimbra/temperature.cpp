@@ -956,31 +956,47 @@ void tp_init() {
     ANALOG_SELECT(FILWIDTH_PIN);
   #endif
   
+  #if HAS_CONTROLLERFAN
+    SET_OUTPUT(CONTROLLERFAN_PIN); //Set pin used for driver cooling fan
+    #if ENABLED(FAST_PWM_FAN)
+      setPwmFrequency(CONTROLLERFAN_PIN, 1); // No prescaling. Pwm frequency = F_CPU/256/8
+    #endif
+    #if ENABLED(FAN_SOFT_PWM)
+      soft_pwm_fan_controller = fanSpeedSoftPwm_controller / 2;
+    #endif
+  #endif
+  
   #if HAS_AUTO_FAN_0
     SET_OUTPUT(EXTRUDER_0_AUTO_FAN_PIN);
+    #if ENABLED(FAST_PWM_FAN)
+      setPwmFrequency(EXTRUDER_0_AUTO_FAN_PIN, 1); // No prescaling. Pwm frequency = F_CPU/256/8
+    #endif
   #endif
   #if HAS_AUTO_FAN_1 && (EXTRUDER_1_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN)
     SET_OUTPUT(EXTRUDER_1_AUTO_FAN_PIN);
+    #if ENABLED(FAST_PWM_FAN)
+      setPwmFrequency(EXTRUDER_1_AUTO_FAN_PIN, 1); // No prescaling. Pwm frequency = F_CPU/256/8
+    #endif
   #endif
   #if HAS_AUTO_FAN_2 && (EXTRUDER_2_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN) && (EXTRUDER_2_AUTO_FAN_PIN != EXTRUDER_1_AUTO_FAN_PIN)
     SET_OUTPUT(EXTRUDER_2_AUTO_FAN_PIN);
+    #if ENABLED(FAST_PWM_FAN)
+      setPwmFrequency(EXTRUDER_2_AUTO_FAN_PIN, 1); // No prescaling. Pwm frequency = F_CPU/256/8
+    #endif
   #endif
   #if HAS_AUTO_FAN_3 && (EXTRUDER_3_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN) && (EXTRUDER_3_AUTO_FAN_PIN != EXTRUDER_1_AUTO_FAN_PIN) && (EXTRUDER_3_AUTO_FAN_PIN != EXTRUDER_2_AUTO_FAN_PIN)
     SET_OUTPUT(EXTRUDER_3_AUTO_FAN_PIN);
-  #endif
-  
-  #if HAS_CONTROLLERFAN
-    SET_OUTPUT(CONTROLLERFAN_PIN); //Set pin used for driver cooling fan
+    #if ENABLED(FAST_PWM_FAN)
+      setPwmFrequency(EXTRUDER_3_AUTO_FAN_PIN, 1); // No prescaling. Pwm frequency = F_CPU/256/8
+    #endif
   #endif
   
   #if ENABLED(FAN_SOFT_PWM)
-    #if HAS_CONTROLLERFAN
-      soft_pwm_fan_controller = fanSpeedSoftPwm_controller / 2;
-    #endif
     #if HAS_AUTO_FAN
       soft_pwm_fan_auto = fanSpeedSoftPwm_auto / 2;
     #endif
   #endif
+  
 
   #if HAS_POWER_CONSUMPTION_SENSOR
     ANALOG_SELECT(POWER_CONSUMPTION_PIN);
