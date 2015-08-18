@@ -1,3 +1,7 @@
+### Version 4.1.5
+* Implemented FAN_SOFT_PWM and FAST_PWM_FAN also for other fan that can be added in configuration_adv file.
+* Added the ability to set a min speed to the fan that can be added in configuration_adv file.
+
 ### Version 4.1.4
 * Add support for Piggy Alligator board
 * Add Debug_info. Repetier button info for enabled or disabled, or M111 S2 for enabled and M111 S0 for disabled.

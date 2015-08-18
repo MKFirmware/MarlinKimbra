@@ -60,7 +60,13 @@ float current_temperature_bed = 0.0;
 #endif //PIDTEMPBED
   
 #if ENABLED(FAN_SOFT_PWM)
-  unsigned char fanSpeedSoftPwm;
+  unsigned char fanSpeedSoftPwm = 0;
+  #if HAS_AUTO_FAN
+    unsigned char fanSpeedSoftPwm_Auto = EXTRUDER_AUTO_FAN_MIN_SPEED;
+  #endif
+  #if HAS_CONTROLLERFAN
+    unsigned char fanSpeedSoftPwm_controller = CONTROLLERFAN_MIN_SPEED;
+  #endif
 #endif
 
 unsigned char soft_pwm_bed;
@@ -128,6 +134,12 @@ static unsigned char soft_pwm[HOTENDS];
 
 #if ENABLED(FAN_SOFT_PWM)
   static unsigned char soft_pwm_fan;
+  #if HAS_AUTO_FAN
+    static unsigned char soft_pwm_fan_auto;
+  #endif
+  #if HAS_CONTROLLERFAN
+    static unsigned char soft_pwm_fan_controller = 0;
+  #endif
 #endif
 #if HAS_AUTO_FAN
   static millis_t next_auto_fan_check_ms;
@@ -374,10 +386,14 @@ int getHeaterPower(int heater) {
 #if HAS_AUTO_FAN
 
 void setExtruderAutoFanState(int pin, bool state) {
-  unsigned char newFanSpeed = (state != 0) ? EXTRUDER_AUTO_FAN_SPEED : 0;
+  unsigned char newFanSpeed = (state != 0) ? EXTRUDER_AUTO_FAN_SPEED : EXTRUDER_AUTO_FAN_MIN_SPEED;
   // this idiom allows both digital and PWM fan outputs (see M42 handling).
-  digitalWrite(pin, newFanSpeed);
-  analogWrite(pin, newFanSpeed);
+  #if ENABLED(FAN_SOFT_PWM)
+    fanSpeedSoftPwm_auto = newFanSpeed;
+  #else
+    digitalWrite(pin, newFanSpeed);
+    analogWrite(pin, newFanSpeed);
+  #endif
 }
 
 void checkExtruderAutoFans() {
@@ -891,6 +907,12 @@ void tp_init() {
     #endif
     #if ENABLED(FAN_SOFT_PWM)
       soft_pwm_fan = fanSpeedSoftPwm / 2;
+      #if HAS_CONTROLLERFAN
+        soft_pwm_fan_controller = fanSpeedSoftPwm_controller / 2;
+      #endif
+      #if HAS_AUTO_FAN
+        soft_pwm_fan_auto = fanSpeedSoftPwm_auto / 2;
+      #endif
     #endif
   #endif
 
@@ -941,16 +963,20 @@ void tp_init() {
   #endif
 
   #if HAS_AUTO_FAN_0
-    pinMode(EXTRUDER_0_AUTO_FAN_PIN, OUTPUT);
+    SET_OUTPUT(EXTRUDER_0_AUTO_FAN_PIN);
   #endif
   #if HAS_AUTO_FAN_1 && (EXTRUDER_1_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN)
-    pinMode(EXTRUDER_1_AUTO_FAN_PIN, OUTPUT);
+    SET_OUTPUT(EXTRUDER_1_AUTO_FAN_PIN);
   #endif
   #if HAS_AUTO_FAN_2 && (EXTRUDER_2_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN) && (EXTRUDER_2_AUTO_FAN_PIN != EXTRUDER_1_AUTO_FAN_PIN)
-    pinMode(EXTRUDER_2_AUTO_FAN_PIN, OUTPUT);
+    SET_OUTPUT(EXTRUDER_2_AUTO_FAN_PIN);
   #endif
   #if HAS_AUTO_FAN_3 && (EXTRUDER_3_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN) && (EXTRUDER_3_AUTO_FAN_PIN != EXTRUDER_1_AUTO_FAN_PIN) && (EXTRUDER_3_AUTO_FAN_PIN != EXTRUDER_2_AUTO_FAN_PIN)
-    pinMode(EXTRUDER_3_AUTO_FAN_PIN, OUTPUT);
+    SET_OUTPUT(EXTRUDER_3_AUTO_FAN_PIN);
+  #endif
+  
+  #if HAS_CONTROLLERFAN
+    SET_OUTPUT(CONTROLLERFAN_PIN); //Set pin used for driver cooling fan
   #endif
 
   #if HAS_POWER_CONSUMPTION_SENSOR
@@ -1339,7 +1365,26 @@ ISR(TIMER0_COMPB_vect) {
       #endif
       #if ENABLED(FAN_SOFT_PWM)
         soft_pwm_fan = fanSpeedSoftPwm / 2;
+        #if HAS_CONTROLLERFAN
+          soft_pwm_fan_controller = fanSpeedSoftPwm_controller / 2;
+          WRITE(CONTROLLERFAN_PIN, soft_pwm_fan_controller > 0 ? 1 : 0);
+        #endif
         WRITE_FAN(soft_pwm_fan > 0 ? 1 : 0);
+        #if HAS_AUTO_FAN
+          soft_pwm_fan_auto = fanSpeedSoftPwm_auto / 2;
+        #endif
+        #if HAS_AUTO_FAN_0
+          WRITE(EXTRUDER_0_AUTO_FAN_PIN, soft_pwm_fan_auto > 0 ? 1 : 0);
+        #endif
+        #if HAS_AUTO_FAN_1
+          WRITE(EXTRUDER_1_AUTO_FAN_PIN, soft_pwm_fan_auto > 0 ? 1 : 0);
+        #endif
+        #if HAS_AUTO_FAN_2
+          WRITE(EXTRUDER_2_AUTO_FAN_PIN, soft_pwm_fan_auto > 0 ? 1 : 0);
+        #endif
+        #if HAS_AUTO_FAN_3
+          WRITE(EXTRUDER_3_AUTO_FAN_PIN, soft_pwm_fan_auto > 0 ? 1 : 0);
+        #endif
       #endif
     }
 
@@ -1360,6 +1405,25 @@ ISR(TIMER0_COMPB_vect) {
 
     #if ENABLED(FAN_SOFT_PWM)
       if (soft_pwm_fan < pwm_count) WRITE_FAN(0);
+      #if HAS_CONTROLLERFAN
+        if (soft_pwm_fan_controller < pwm_count) WRITE(CONTROLLERFAN_PIN, 0);
+      #endif
+      #if HAS_AUTO_FAN
+        if (soft_pwm_fan_auto < pwm_count) {
+          #if HAS_AUTO_FAN_0
+            WRITE(EXTRUDER_0_AUTO_FAN_PIN, 0);
+          #endif
+          #if HAS_AUTO_FAN_1
+            WRITE(EXTRUDER_1_AUTO_FAN_PIN, 0);
+          #endif
+          #if HAS_AUTO_FAN_2
+            WRITE(EXTRUDER_2_AUTO_FAN_PIN, 0);
+          #endif
+          #if HAS_AUTO_FAN_3
+            WRITE(EXTRUDER_3_AUTO_FAN_PIN, 0);
+          #endif
+        }
+      #endif
     #endif
     
     pwm_count += BIT(SOFT_PWM_SCALE);
@@ -1439,8 +1503,46 @@ ISR(TIMER0_COMPB_vect) {
       if (pwm_count == 0) {
         soft_pwm_fan = fanSpeedSoftPwm / 2;
         WRITE_FAN(soft_pwm_fan > 0 ? 1 : 0);
+        #if HAS_CONTROLLERFAN
+          soft_pwm_fan_controller = fanSpeedSoftPwm_controller / 2;
+          WRITE(CONTROLLERFAN_PIN, soft_pwm_fan_controller > 0 ? 1 : 0);
+        #endif
+        #if HAS_AUTO_FAN
+          soft_pwm_fan_auto = fanSpeedSoftPwm_auto / 2;
+        #endif
+        #if HAS_AUTO_FAN_0
+          WRITE(EXTRUDER_0_AUTO_FAN_PIN, soft_pwm_fan_auto > 0 ? 1 : 0);
+        #endif
+        #if HAS_AUTO_FAN_1
+          WRITE(EXTRUDER_1_AUTO_FAN_PIN, soft_pwm_fan_auto > 0 ? 1 : 0);
+        #endif
+        #if HAS_AUTO_FAN_2
+          WRITE(EXTRUDER_2_AUTO_FAN_PIN, soft_pwm_fan_auto > 0 ? 1 : 0);
+        #endif
+        #if HAS_AUTO_FAN_3
+          WRITE(EXTRUDER_3_AUTO_FAN_PIN, soft_pwm_fan_auto > 0 ? 1 : 0);
+        #endif
       }
       if (soft_pwm_fan < pwm_count) WRITE_FAN(0);
+      #if HAS_CONTROLLERFAN
+        if (soft_pwm_fan_controller < pwm_count) WRITE(CONTROLLERFAN_PIN, 0);
+      #endif
+      #if HAS_AUTO_FAN
+        if (soft_pwm_fan_auto < pwm_count) {
+          #if HAS_AUTO_FAN_0
+            WRITE(EXTRUDER_0_AUTO_FAN_PIN, 0);
+          #endif
+          #if HAS_AUTO_FAN_1
+            WRITE(EXTRUDER_1_AUTO_FAN_PIN, 0);
+          #endif
+          #if HAS_AUTO_FAN_2
+            WRITE(EXTRUDER_2_AUTO_FAN_PIN, 0);
+          #endif
+          #if HAS_AUTO_FAN_3
+            WRITE(EXTRUDER_3_AUTO_FAN_PIN, 0);
+          #endif
+        }
+      #endif
     #endif // FAN_SOFT_PWM
 
     pwm_count += BIT(SOFT_PWM_SCALE);
