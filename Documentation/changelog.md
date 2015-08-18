@@ -1,5 +1,5 @@
 ### Version 4.1.5
-* Implemented FAN_SOFT_PWM and FAST_PWM_FAN also for other fan that can be added in configuration_adv file.
+* Implemented FAN_SOFT_PWM also for other fan that can be added in configuration_adv file.
 * Added the ability to set a min speed to the fan that can be added in configuration_adv file.
 
 ### Version 4.1.4
