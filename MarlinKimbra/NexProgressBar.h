@@ -1,10 +1,11 @@
 /**
  * @file NexProgressBar.h
  *
- * API of NexProgressBar. 
+ * The definition of class NexProgressBar. 
  *
- * @author  Wu Pengfei (email:<pengfei.wu@itead.cc>)
- * @date    2015/7/10
+ * @author Wu Pengfei (email:<pengfei.wu@itead.cc>)
+ * @date 2015/8/13
+ *
  * @copyright 
  * Copyright (C) 2014-2015 ITEAD Intelligent Systems Co., Ltd. \n
  * This program is free software; you can redistribute it and/or
@@ -15,21 +16,48 @@
 
 #ifndef __NEXPROGRESSBAR_H__
 #define __NEXPROGRESSBAR_H__
-#ifdef __cplusplus
+
 #include "NexTouch.h"
+#include "NexHardware.h"
+/**
+ * @addtogroup Component 
+ * @{ 
+ */
 
 /**
- * NexProgressBar,subclass of NexTouch,provides simple methods to control progress bar component. 
- *
+ * NexProgressBar component. 
  */
-class NexProgressBar: public NexTouch
+class NexProgressBar: public NexObject
 {
 public: /* methods */
-    NexProgressBar(NexPid pid, NexCid cid, char *name);
+    /**
+     * @copydoc NexObject::NexObject(uint8_t pid, uint8_t cid, const char *name);
+     */
+    NexProgressBar(uint8_t pid, uint8_t cid, const char *name);
     
+    /**
+     * Get the value of progress bar. 
+     * 
+     * @param number - an output parameter to save the value of porgress bar.  
+     * 
+     * @retval true - success. 
+     * @retval false - failed. 
+     */
     bool getValue(uint32_t *number);
+    
+    /**
+     * Set the value of progress bar.
+     *
+     * @param number - the value of progress bar.  
+     *
+     * @retval true - success. 
+     * @retval false - failed. 
+     */
     bool setValue(uint32_t number);
 };
 
-#endif /* #ifdef __cplusplus */
+/**
+ * @}
+ */
+
 #endif /* #ifndef __NEXPROGRESSBAR_H__ */

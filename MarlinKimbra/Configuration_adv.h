@@ -70,7 +70,7 @@
  * some filament is retracted. The filament retracted is re-added before the next extrusion
  * or when the target temperature is less than IDLE_OOZING_MINTEMP and the actual temperature
  * is greater than IDLE_OOZING_MINTEMP.
- * PS: Always remember to set your extruder target temperature to 0Â°C before shoudown the printer if you enable this feature.
+ * PS: Always remember to set your extruder target temperature to 0°C before shoudown the printer if you enable this feature.
  */
 //#define IDLE_OOZING_PREVENT
 #define IDLE_OOZING_MINTEMP           EXTRUDE_MINTEMP + 5
@@ -143,7 +143,7 @@
 
 #if ENABLED(Z_DUAL_STEPPER_DRIVERS)
 
-  // Z_DUAL_ENDSTOPS is a feature to enable the use of 2 endstops for both Z steppers - Let's call them Z stepper and Z2 stepper.
+  // Z DUAL ENDSTOPS is a feature to enable the use of 2 endstops for both Z steppers - Let's call them Z stepper and Z2 stepper.
   // That way the machine is capable to align the bed during home, since both Z steppers are homed. 
   // There is also an implementation of M666 (software endstops adjustment) to this feature.
   // After Z homing, this adjustment is applied to just one of the steppers in order to align the bed.
@@ -152,17 +152,7 @@
   // Play a little bit with small adjustments (0.5mm) and check the behaviour.
   // The M119 (endstops report) will start reporting the Z2 Endstop as well.
 
-  #define Z2_STEP_PIN E2_STEP_PIN           // Stepper to be used to Z2 axis.
-  #define Z2_DIR_PIN E2_DIR_PIN
-  #define Z2_ENABLE_PIN E2_ENABLE_PIN
-
-  // #define Z_DUAL_ENDSTOPS
-
-  #if ENABLED(Z_DUAL_ENDSTOPS)
-    #define Z2_MAX_PIN 36                     //Endstop used for Z2 axis. In this case I'm using XMAX in a Rumba Board (pin 36)
-    const bool Z2_MAX_ENDSTOP_INVERTING = false;
-    #define DISABLE_XMAX_ENDSTOP              //Better to disable the XMAX to avoid conflict. Just rename "XMAX_ENDSTOP" by the endstop you are using for Z2 axis.
-  #endif
+  //#define Z_DUAL_ENDSTOPS
 
 #endif // Z_DUAL_STEPPER_DRIVERS
 
@@ -269,7 +259,7 @@
 #define MICROSTEP_MODES {16, 16, 16, 16} // X Y Z E - [1,2,4,8,16,32]
 
 // Motor Current setting (Only functional on ALLIGATOR BOARD)
-#define MOTOR_CURRENT {1, 1, 1, 1} // X Y Z E - Values 0 - 2.5 A
+#define MOTOR_CURRENT {1, 1, 1, 1, 1, 1, 1} // X Y Z E0 E1 E2 E3 - Values 0 - 2.5 A
 
 // Motor Current setting (Only functional when motor driver current ref pins are connected to a digital trimpot on supported boards)
 #define DIGIPOT_MOTOR_CURRENT {135,135,135,135,135} // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)

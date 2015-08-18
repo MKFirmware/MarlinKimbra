@@ -18,7 +18,7 @@ If jumping the arduino Vcc do RAMPS 5V rail, take care to not use a power hungry
 Instructions for Both Options
 -----------------------------
 
-Uncomment the "ENABLE_AUTO_BED_LEVELING" define (commented by default)
+Uncomment the "AUTO_BED_LEVELING_FEATURE" define (commented by default)
 
 The following options define the probing positions. These are good starting values.
 I recommend to keep a better clearance from borders in the first run and then make the probes as close as possible to borders:
@@ -52,9 +52,14 @@ In order to get the servo working, you need to enable:
 
 * \#define NUM_SERVOS 1 // Servo index starts with 0 for M280 command
 
-* \#define SERVO_ENDSTOPS {-1, -1, 0} // Servo index for X, Y, Z. Disable with -1
+* \// Define nr servo for endstop -1 not define. Servo index start 0
+* \#define X_ENDSTOP_SERVO_NR -1
+* \#define Y_ENDSTOP_SERVO_NR -1
+* \#define Z_ENDSTOP_SERVO_NR 0
 
-* \#define SERVO_ENDSTOP_ANGLES {0,0, 0,0, 165,60} // X,Y,Z Axis Extend and Retract angles
+* \#define X_ENDSTOP_SERVO_ANGLES {0,0}  // X Axis Extend and Retract angles
+* \#define Y_ENDSTOP_SERVO_ANGLES {0,0}  // Y Axis Extend and Retract angles
+* \#define Z_ENDSTOP_SERVO_ANGLES {90,0} // Z Axis Extend and Retract angles
 
 The first define tells firmware how many servos you have.
 The second tells what axis this servo will be attached to. In the example above, we have a servo in Z axis.

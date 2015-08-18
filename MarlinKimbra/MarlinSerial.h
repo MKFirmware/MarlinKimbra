@@ -30,8 +30,8 @@
 // The presence of the UBRRH register is used to detect a UART.
 #define UART_PRESENT(port) ((port == 0 && (defined(UBRRH) || defined(UBRR0H))) || \
             (port == 1 && defined(UBRR1H)) || (port == 2 && defined(UBRR2H)) || \
-            (port == 3 && defined(UBRR3H)))        
-            
+            (port == 3 && defined(UBRR3H)))
+
 // These are macros to build serial port register names for the selected SERIAL_PORT (C preprocessor
 // requires two levels of indirection to expand macro values properly)
 #define SERIAL_REGNAME(registerbase,number,suffix) SERIAL_REGNAME_INTERNAL(registerbase,number,suffix)
@@ -149,12 +149,12 @@ class MarlinSerial { //: public Stream
     void println(void);
 };
 
-extern MarlinSerial MSerial;
+extern MarlinSerial customizedSerial;
 #endif // !USBCON
 
-// Use the UART for BT in AT90USB configurations
-#if defined(USBCON) && ENABLED(BTENABLED)
-  extern HardwareSerial bt;
+// Use the UART for Bluetooth in AT90USB configurations
+#if defined(USBCON) && ENABLED(BLUETOOTH)
+  extern HardwareSerial bluetoothSerial;
 #endif
 
 #endif

@@ -1,7 +1,7 @@
 /**
- * @file NexPicture.h
+ * @file NexWaveform.h
  *
- * The definition of class NexPicture. 
+ * The definition of class NexWaveform. 
  *
  * @author Wu Pengfei (email:<pengfei.wu@itead.cc>)
  * @date 2015/8/13
@@ -13,9 +13,8 @@
  * published by the Free Software Foundation; either version 2 of
  * the License, or (at your option) any later version.
  */
-
-#ifndef __NEXPICTURE_H__
-#define __NEXPICTURE_H__
+#ifndef __NEXWAVEFORM_H__
+#define __NEXWAVEFORM_H__
 
 #include "NexTouch.h"
 #include "NexHardware.h"
@@ -25,39 +24,30 @@
  */
 
 /**
- * NexPicture component. 
+ * NexWaveform component.
  */
-class NexPicture: public NexTouch
+class NexWaveform: public NexObject
 {
 public: /* methods */
     /**
      * @copydoc NexObject::NexObject(uint8_t pid, uint8_t cid, const char *name);
      */
-    NexPicture(uint8_t pid, uint8_t cid, const char *name);
+    NexWaveform(uint8_t pid, uint8_t cid, const char *name);
     
     /**
-     * Get picture's number.
-     * 
-     * @param number - an output parameter to save picture number.  
-     * 
+     * Add value to show. 
+     *
+     * @param ch - channel of waveform(0-3). 
+     * @param number - the value of waveform.  
+     *
      * @retval true - success. 
      * @retval false - failed. 
      */
-    bool getPic(uint32_t *number);
-    
-    /**
-     * Set picture's number.
-     * 
-     * @param number -the picture number.
-     *
-     * @retval true - success.
-     * @retval false - failed. 
-     */
-    bool setPic(uint32_t number);
+    bool addValue(uint8_t ch, uint8_t number);
 };
 
 /**
  * @}
  */
 
-#endif /* #ifndef __NEXPICTURE_H__ */
+#endif /* #ifndef __NEXWAVEFORM_H__ */

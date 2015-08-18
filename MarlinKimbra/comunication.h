@@ -25,17 +25,17 @@
 
 #include "WString.h"
 
-#ifdef AT90USB
-  #ifdef BTENABLED
-    #define MYSERIAL bt
+#ifdef USBCON
+  #if ENABLED(BLUETOOTH)
+    #define MYSERIAL bluetoothSerial
   #else
     #define MYSERIAL Serial
-  #endif // BTENABLED
+  #endif // BLUETOOTH
 #else
   #ifdef __SAM3X8E__
     #define MYSERIAL Serial
   #else
-    #define MYSERIAL MSerial
+    #define MYSERIAL customizedSerial
   #endif
 #endif
 

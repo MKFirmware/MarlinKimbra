@@ -6,6 +6,21 @@
 //=============================Mechanical Settings===========================
 //===========================================================================
 
+/***********************************************************************
+ ************************ CORE X (YZ) MOLTIPLICATOR ********************
+ ***********************************************************************
+ * This define the moltiplicator axis from X to Y or Z in COREXY or 
+ * COREXZ.
+ * Example:
+ * COREXY set COREX_XZ_FACTOR 1
+ * The result is:
+ * X = dX + COREX_YZ_FACTOR * dY = dX + 1 * dY = dX + dY
+ * Y = dX - COREX_YZ_FACTOR * dY = dX - 1 * dY = dX - dY
+ * Z = dZ
+ */
+#define COREX_YZ_FACTOR 1
+
+
 // coarse Endstop Settings
 #define ENDSTOPPULLUPS // Comment this out (using // at the start of the line) to disable the endstop pullup resistors
 
@@ -14,9 +29,11 @@
   //#define ENDSTOPPULLUP_XMIN
   //#define ENDSTOPPULLUP_YMIN
   //#define ENDSTOPPULLUP_ZMIN
+  //#define ENDSTOPPULLUP_Z2MIN
   //#define ENDSTOPPULLUP_XMAX
   //#define ENDSTOPPULLUP_YMAX
   //#define ENDSTOPPULLUP_ZMAX
+  //#define ENDSTOPPULLUP_Z2MAX
   //#define ENDSTOPPULLUP_ZPROBE
   //#define ENDSTOPPULLUP_EMIN
 #endif
@@ -26,12 +43,12 @@
 #define Y_MIN_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
 #define Z_MIN_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
 #define Z2_MIN_ENDSTOP_LOGIC  false   // set to true to invert the logic of the endstop.
-#define E_MIN_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
 #define X_MAX_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
 #define Y_MAX_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
 #define Z_MAX_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
 #define Z2_MAX_ENDSTOP_LOGIC  false   // set to true to invert the logic of the endstop.
 #define Z_PROBE_ENDSTOP_LOGIC false   // set to true to invert the logic of the endstop.
+#define E_MIN_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
 
 // ENDSTOP SETTINGS:
 // Sets direction of endstop when homing; 1=MAX, -1=MIN
@@ -95,10 +112,10 @@
   #define Z_SAFE_HOMING_Y_POINT ((Y_MIN_POS + Y_MAX_POS) / 2)    // Y point for Z homing when homing all axis (G28)
 #endif
 
-//#define ENABLE_AUTO_BED_LEVELING    // Delete the comment to enable (ABL)
-//#define Z_PROBE_REPEATABILITY_TEST  // Delete the comment to enable
+//#define AUTO_BED_LEVELING_FEATURE   // Delete the comment to enable (remove // at the start of the line)
+//#define Z_PROBE_REPEATABILITY_TEST  // If not commented out, Z-Probe Repeatability test will be included if Auto Bed Leveling is Enabled.
 
-#ifdef ENABLE_AUTO_BED_LEVELING
+#if ENABLED(AUTO_BED_LEVELING_FEATURE)
 
   // There are 2 different ways to specify probing locations
   //
@@ -115,7 +132,7 @@
   // Note: this feature generates 10KB extra code size
   #define AUTO_BED_LEVELING_GRID
 
-  #ifdef AUTO_BED_LEVELING_GRID
+  #if ENABLED(AUTO_BED_LEVELING_GRID)
 
     #define MIN_PROBE_EDGE 10 // The probe square sides can be no smaller than this
 
@@ -162,7 +179,7 @@
 
   //#define Z_PROBE_ENDSTOP
   
-#endif // ENABLE_AUTO_BED_LEVELING
+#endif // AUTO_BED_LEVELING_FEATURE
 
 
 // The position of the homing switches
@@ -197,15 +214,3 @@
 #define DEFAULT_XYJERK 10.0                 // (mm/sec)
 #define DEFAULT_ZJERK   0.4                 // (mm/sec)
 #define DEFAULT_EJERK  {5.0,5.0,5.0,5.0}    // E0... (mm/sec) per extruder, max initial speed for retract moves
-
-//===========================================================================
-//=============================Additional Features===========================
-//===========================================================================
-
-// Custom M code points
-//#define CUSTOM_M_CODES
-#ifdef CUSTOM_M_CODES
-  #define CUSTOM_M_CODE_SET_Z_PROBE_OFFSET 851
-  #define Z_PROBE_OFFSET_RANGE_MIN -20
-  #define Z_PROBE_OFFSET_RANGE_MAX 20
-#endif

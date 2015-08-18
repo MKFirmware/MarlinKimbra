@@ -1,4 +1,10 @@
 ### Version 4.1.4
+* Add support for Piggy Alligator board
+* Add Debug_info. Repetier button info for enabled or disabled, or M111 S2 for enabled and M111 S0 for disabled.
+* Improved Topography Auto Bed Level.
+* Add Dryrun ABL and verbose width command G29 D or G29 V(0-4).
+* Improve Autoconfiguration for Delta printer.
+* Add support (test only) for NEXTION HMI LCD.
 * Improved firmare test dialog.
 * Bugfix for SDCONFIG routine. Now the configuration file will be readed and created only on the root of the SD.
 * Improved "Thermal Runaway Protection" now the system will be halted also if the thermistor is missing before the temperature is reached as suggested in Issue #35.

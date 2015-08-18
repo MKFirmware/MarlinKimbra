@@ -74,14 +74,14 @@ float mintravelfeedrate;
 unsigned long axis_steps_per_sqr_second[3 + EXTRUDERS];
 uint8_t last_extruder;
 
-#if ENABLED(ENABLE_AUTO_BED_LEVELING)
+#if ENABLED(AUTO_BED_LEVELING_FEATURE)
   // Transform required to compensate for bed level
   matrix_3x3 plan_bed_level_matrix = {
     1.0, 0.0, 0.0,
     0.0, 1.0, 0.0,
     0.0, 0.0, 1.0
   };
-#endif // ENABLE_AUTO_BED_LEVELING
+#endif // AUTO_BED_LEVELING_FEATURE
 
 #if ENABLED(AUTOTEMP)
   float autotemp_max = 250;
@@ -480,11 +480,11 @@ float junction_deviation = 0.1;
 // Add a new linear movement to the buffer. steps[X_AXIS], _y and _z is the absolute position in 
 // mm. Microseconds specify how many microseconds the move should take to perform. To aid acceleration
 // calculation the caller must also provide the physical length of the line in millimeters.
-#if ENABLED(ENABLE_AUTO_BED_LEVELING)
+#if ENABLED(AUTO_BED_LEVELING_FEATURE)
   void plan_buffer_line(float x, float y, float z, const float &e, float feed_rate, const uint8_t &extruder, const uint8_t &driver)
 #else
   void plan_buffer_line(const float &x, const float &y, const float &z, const float &e, float feed_rate, const uint8_t &extruder, const uint8_t &driver)
-#endif  // ENABLE_AUTO_BED_LEVELING
+#endif  // AUTO_BED_LEVELING_FEATURE
 {
   // Calculate the buffer head after we push this byte
   int next_buffer_head = next_block_index(block_buffer_head);
@@ -493,7 +493,7 @@ float junction_deviation = 0.1;
   // Rest here until there is room in the buffer.
   while (block_buffer_tail == next_buffer_head) idle();
 
-  #if ENABLED(ENABLE_AUTO_BED_LEVELING)
+  #if ENABLED(AUTO_BED_LEVELING_FEATURE)
     apply_rotation_xyz(plan_bed_level_matrix, x, y, z);
   #endif
 
@@ -521,6 +521,13 @@ float junction_deviation = 0.1;
         dy = target[Y_AXIS] - position[Y_AXIS],
         dz = target[Z_AXIS] - position[Z_AXIS],
         de = target[E_AXIS] - position[E_AXIS];
+  #if ENABLED(COREXY)
+    float da = dx + COREX_YZ_FACTOR * dy;
+    float db = dx - COREX_YZ_FACTOR * dy;
+  #elif ENABLED(COREXZ)
+    float da = dx + COREX_YZ_FACTOR * dz;
+    float dc = dx - COREX_YZ_FACTOR * dz;
+  #endif
 
   #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
     if (de) {
@@ -562,14 +569,14 @@ float junction_deviation = 0.1;
   #if ENABLED(COREXY)
     // corexy planning
     // these equations follow the form of the dA and dB equations on http://www.corexy.com/theory.html
-    block->steps[A_AXIS] = labs(dx + dy);
-    block->steps[B_AXIS] = labs(dx - dy);
+    block->steps[A_AXIS] = labs(da);
+    block->steps[B_AXIS] = labs(db);
     block->steps[Z_AXIS] = labs(dz);
   #elif ENABLED(COREXZ)
     // corexz planning
-    block->steps[A_AXIS] = labs(dx + dz);
+    block->steps[A_AXIS] = labs(da);
     block->steps[Y_AXIS] = labs(dy);
-    block->steps[C_AXIS] = labs(dx - dz);
+    block->steps[C_AXIS] = labs(dc);
   #else
     // default non-h-bot planning
     block->steps[X_AXIS] = labs(dx);
@@ -603,14 +610,14 @@ float junction_deviation = 0.1;
     if (dx < 0) db |= BIT(X_HEAD); // Save the real Extruder (head) direction in X Axis
     if (dy < 0) db |= BIT(Y_HEAD); // ...and Y
     if (dz < 0) db |= BIT(Z_AXIS);
-    if (dx + dy < 0) db |= BIT(A_AXIS); // Motor A direction
-    if (dx - dy < 0) db |= BIT(B_AXIS); // Motor B direction
+    if (da < 0) db |= BIT(A_AXIS); // Motor A direction
+    if (db < 0) db |= BIT(B_AXIS); // Motor B direction
   #elif ENABLED(COREXZ)
     if (dx < 0) db |= BIT(X_HEAD); // Save the real Extruder (head) direction in X Axis
     if (dy < 0) db |= BIT(Y_AXIS);
     if (dz < 0) db |= BIT(Z_HEAD); // ...and Z
-    if (dx + dz < 0) db |= BIT(A_AXIS); // Motor A direction
-    if (dx - dz < 0) db |= BIT(C_AXIS); // Motor B direction
+    if (da < 0) db |= BIT(A_AXIS); // Motor A direction
+    if (dc < 0) db |= BIT(C_AXIS); // Motor B direction
   #else
     if (dx < 0) db |= BIT(X_AXIS);
     if (dy < 0) db |= BIT(Y_AXIS); 
@@ -627,7 +634,7 @@ float junction_deviation = 0.1;
       enable_x();
       enable_y();
     }
-    #ifndef Z_LATE_ENABLE
+    #if DISABLED(Z_LATE_ENABLE)
       if (block->steps[Z_AXIS]) enable_z();
     #endif
   #elif ENABLED(COREXZ)
@@ -639,14 +646,14 @@ float junction_deviation = 0.1;
   #else
     if (block->steps[X_AXIS]) enable_x();
     if (block->steps[Y_AXIS]) enable_y();
-    #ifndef Z_LATE_ENABLE
+    #if DISABLED(Z_LATE_ENABLE)
       if (block->steps[Z_AXIS]) enable_z();
     #endif
   #endif
 
   // Enable extruder(s)
   if (block->steps[E_AXIS]) {
-    #if !defined(MKR4) && !defined(NPR2)
+    #if DISABLED(MKR4) && DISABLED(NPR2)
       if (DISABLE_INACTIVE_EXTRUDER) { //enable only selected extruder
 
         for (int i = 0; i < EXTRUDERS; i++)
@@ -745,15 +752,15 @@ float junction_deviation = 0.1;
     delta_mm[X_HEAD] = dx / axis_steps_per_unit[A_AXIS];
     delta_mm[Y_HEAD] = dy / axis_steps_per_unit[B_AXIS];
     delta_mm[Z_AXIS] = dz / axis_steps_per_unit[Z_AXIS];
-    delta_mm[A_AXIS] = (dx + dy) / axis_steps_per_unit[A_AXIS];
-    delta_mm[B_AXIS] = (dx - dy) / axis_steps_per_unit[B_AXIS];
+    delta_mm[A_AXIS] = da / axis_steps_per_unit[A_AXIS];
+    delta_mm[B_AXIS] = db / axis_steps_per_unit[B_AXIS];
   #elif ENABLED(COREXZ)
     float delta_mm[6];
     delta_mm[X_HEAD] = dx / axis_steps_per_unit[A_AXIS];
     delta_mm[Y_AXIS] = dy / axis_steps_per_unit[Y_AXIS];
     delta_mm[Z_HEAD] = dz / axis_steps_per_unit[C_AXIS];
-    delta_mm[A_AXIS] = (dx + dz) / axis_steps_per_unit[A_AXIS];
-    delta_mm[C_AXIS] = (dx - dz) / axis_steps_per_unit[C_AXIS];
+    delta_mm[A_AXIS] = da / axis_steps_per_unit[A_AXIS];
+    delta_mm[C_AXIS] = dc / axis_steps_per_unit[C_AXIS];
   #else
     float delta_mm[4];
     delta_mm[X_AXIS] = dx / axis_steps_per_unit[X_AXIS];
@@ -1040,7 +1047,7 @@ float junction_deviation = 0.1;
 
 } // plan_buffer_line()
 
-#if ENABLED(ENABLE_AUTO_BED_LEVELING)
+#if ENABLED(AUTO_BED_LEVELING_FEATURE)
   vector_3 plan_get_position() {
     vector_3 position = vector_3(st_get_position_mm(X_AXIS), st_get_position_mm(Y_AXIS), st_get_position_mm(Z_AXIS));
 
@@ -1053,15 +1060,15 @@ float junction_deviation = 0.1;
 
     return position;
   }
-#endif // ENABLE_AUTO_BED_LEVELING
+#endif // AUTO_BED_LEVELING_FEATURE
 
-#if ENABLED(ENABLE_AUTO_BED_LEVELING)
+#if ENABLED(AUTO_BED_LEVELING_FEATURE)
   void plan_set_position(float x, float y, float z, const float &e)
 #else
   void plan_set_position(const float &x, const float &y, const float &z, const float &e)
-#endif // ENABLE_AUTO_BED_LEVELING
+#endif // AUTO_BED_LEVELING_FEATURE
   {
-    #if ENABLED(ENABLE_AUTO_BED_LEVELING)
+    #if ENABLED(AUTO_BED_LEVELING_FEATURE)
       apply_rotation_xyz(plan_bed_level_matrix, x, y, z);
     #endif
 

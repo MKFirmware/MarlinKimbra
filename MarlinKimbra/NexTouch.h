@@ -1,10 +1,11 @@
 /**
  * @file NexTouch.h
  *
- * API of Nextion. 
+ * The definition of class NexTouch. 
  *
- * @author  Wu Pengfei (email:<pengfei.wu@itead.cc>)
- * @date    2015/7/10
+ * @author Wu Pengfei (email:<pengfei.wu@itead.cc>)
+ * @date 2015/8/13
+ *
  * @copyright 
  * Copyright (C) 2014-2015 ITEAD Intelligent Systems Co., Ltd. \n
  * This program is free software; you can redistribute it and/or
@@ -15,107 +16,101 @@
 
 #ifndef __NEXTOUCH_H__
 #define __NEXTOUCH_H__
-#ifdef __cplusplus
+
 #include <Arduino.h>
-#include "NexSerialConfig.h"
+#include "NexConfig.h"
+#include "NexObject.h"
 
-typedef uint8_t NexPid;
-typedef uint8_t NexCid;
+/**
+ * @addtogroup TouchEvent 
+ * @{ 
+ */
 
-typedef enum {
-    NEX_EVENT_POP = 0x00,
-    NEX_EVENT_PUSH = 0x01,
-    NEX_EVENT_NULL
-} NexEventType;
+/**
+ * Push touch event occuring when your finger or pen coming to Nextion touch pannel. 
+ */
+#define NEX_EVENT_PUSH  (0x01)
 
-/*The first byte of Nextoin's return value*/
-#define NEX_RET_CMD_FINISHED            (0x01)
-#define NEX_RET_EVENT_LAUNCHED          (0x88)
-#define NEX_RET_EVENT_UPGRADED          (0x89)
-#define NEX_RET_EVENT_TOUCH_HEAD            (0x65)     
-#define NEX_RET_EVENT_POSITION_HEAD         (0x67)
-#define NEX_RET_EVENT_SLEEP_POSITION_HEAD   (0x68)
-#define NEX_RET_CURRENT_PAGE_ID_HEAD        (0x66)
-#define NEX_RET_STRING_HEAD                 (0x70)
-#define NEX_RET_NUMBER_HEAD                 (0x71)
-#define NEX_RET_INVALID_CMD             (0x00)
-#define NEX_RET_INVALID_COMPONENT_ID    (0x02)
-#define NEX_RET_INVALID_PAGE_ID         (0x03)
-#define NEX_RET_INVALID_PICTURE_ID      (0x04)
-#define NEX_RET_INVALID_FONT_ID         (0x05)
-#define NEX_RET_INVALID_BAUD            (0x11)
-#define NEX_RET_INVALID_VARIABLE        (0x1A)
-#define NEX_RET_INVALID_OPERATION       (0x1B)
+/**
+ * Pop touch event occuring when your finger or pen leaving from Nextion touch pannel. 
+ */
+#define NEX_EVENT_POP   (0x00)  
 
-
+/**
+ * Type of callback funciton when an touch event occurs. 
+ * 
+ * @param ptr - user pointer for any purpose. Commonly, it is a pointer to a object. 
+ * @return none. 
+ */
 typedef void (*NexTouchEventCb)(void *ptr);
 
 /**
- * Root Class of Nextion Components. 
+ * Father class of the components with touch events.  
  *
+ * Derives from NexObject and provides methods allowing user to attach
+ * (or detach) a callback function called when push(or pop) touch event occurs.
  */
-class NexTouch 
+class NexTouch: public NexObject
 {
-public: /* static methods */ 
-    static uint8_t mainEventLoop(NexTouch **list);
-    static void sendCommand(const char *cmd); 
-    static bool recvRetCommandFinished(uint32_t timeout = 100);
-    static uint16_t recvRetString(char *buffer, uint16_t len, uint32_t timeout = 500);
-    static bool recvRetNumber(uint32_t *number, uint32_t timeout = 500);
+public: /* static methods */    
+    static void iterate(NexTouch **list, uint8_t pid, uint8_t cid, int32_t event);
 
 public: /* methods */
-    NexTouch(NexPid pid, NexCid cid, char *name, 
-        NexTouchEventCb pop = NULL, void *pop_ptr = NULL,
-        NexTouchEventCb push = NULL, void *push_ptr = NULL);
 
-    NexPid getPid(void);
-    NexCid getCid(void);
-    const char *getObjName(void);
-    void print(void);
+    /**
+     * @copydoc NexObject::NexObject(uint8_t pid, uint8_t cid, const char *name);
+     */
+    NexTouch(uint8_t pid, uint8_t cid, const char *name);
 
-protected: /* static methods */    
-    static bool setBrightness(uint32_t brightness);
-    static bool getBrightness(uint32_t *brightness);
-
-protected: /* methods */    
+    /**
+     * Attach an callback function of push touch event. 
+     *
+     * @param push - callback called with ptr when a push touch event occurs. 
+     * @param ptr - parameter passed into push[default:NULL]. 
+     * @return none. 
+     *
+     * @note If calling this method multiply, the last call is valid. 
+     */
     void attachPush(NexTouchEventCb push, void *ptr = NULL);
-    void detachPush(void);
-    void attachPop(NexTouchEventCb pop, void *ptr = NULL);
-    void detachPop(void);
 
-private: /* static methods */     
-    static void iterate(NexTouch **list, NexPid pid, NexCid cid, NexEventType event); 
+    /**
+     * Detach an callback function. 
+     * 
+     * @return none. 
+     */
+    void detachPush(void);
+
+    /**
+     * Attach an callback function of pop touch event. 
+     *
+     * @param pop - callback called with ptr when a pop touch event occurs. 
+     * @param ptr - parameter passed into pop[default:NULL]. 
+     * @return none. 
+     *
+     * @note If calling this method multiply, the last call is valid. 
+     */
+    void attachPop(NexTouchEventCb pop, void *ptr = NULL);
+
+    /**
+     * Detach an callback function. 
+     * 
+     * @return none. 
+     */
+    void detachPop(void);
     
 private: /* methods */ 
     void push(void);
     void pop(void);
     
-private: /* static data */
-    static uint8_t __buffer[256];
-
 private: /* data */ 
-    NexPid pid; /* Page ID */
-    NexCid cid; /* Component ID */
-    char *name; /* An unique name */
-    NexTouchEventCb cbPush;
+    NexTouchEventCb __cb_push;
     void *__cbpush_ptr;
-    NexTouchEventCb cbPop;
+    NexTouchEventCb __cb_pop;
     void *__cbpop_ptr;
 };
 
-bool nexInit(void);
-bool nexLoop(NexTouch **nexListenList);
-bool  sendCurrentPageId(uint8_t* pageId);
-bool touchCalibration(void);
-bool disableTouchFocus(void); 
-bool pauseSerialCommand(void); 
-bool recoverySerialCommand(void);
-bool clearSerialSurplusCommand(void);
-bool setCurrentBrightness(uint8_t dimValue);
-bool setDefaultBrightness(uint8_t dimDefaultValue);
-bool sleepMode(uint8_t mode);
-bool setCurrentBaudrate(uint32_t baudrate);
-bool setDefaultBaudrate(uint32_t baudrate);
+/**
+ * @}
+ */
 
-#endif /* #ifdef __cplusplus */
 #endif /* #ifndef __NEXTOUCH_H__ */

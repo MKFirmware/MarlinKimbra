@@ -289,12 +289,19 @@ void checkHitEndstops() {
   }
 }
 
-void enable_endstops(bool check) { check_endstops = check; }
+void enable_endstops(bool check) {
+  if (debugLevel & DEBUG_INFO) {
+    ECHO_SM(DB, "setup_for_endstop_move > enable_endstops");
+    if (check) ECHO_EM("(true)");
+    else ECHO_EM("(false)");
+  }
+  check_endstops = check;
+}
 
 // Check endstops
 inline void update_endstops() {
   
-  #ifdef Z_DUAL_ENDSTOPS
+  #if ENABLED(Z_DUAL_ENDSTOPS)
     uint16_t
   #else
     byte
@@ -322,12 +329,12 @@ inline void update_endstops() {
       step_events_completed = current_block->step_event_count; \
     }
   
-  #ifdef COREXY
+  #if ENABLED(COREXY)
     // Head direction in -X axis for CoreXY bots.
     // If DeltaX == -DeltaY, the movement is only in Y axis
     if ((current_block->steps[A_AXIS] != current_block->steps[B_AXIS]) || (TEST(out_bits, A_AXIS) == TEST(out_bits, B_AXIS))) {
       if (TEST(out_bits, X_HEAD))
-  #elif defined(COREXZ)
+  #elif ENABLED(COREXZ)
     // Head direction in -X axis for CoreXZ bots.
     // If DeltaX == -DeltaZ, the movement is only in Z axis
     if ((current_block->steps[A_AXIS] != current_block->steps[C_AXIS]) || (TEST(out_bits, A_AXIS) == TEST(out_bits, C_AXIS))) {
@@ -336,7 +343,7 @@ inline void update_endstops() {
       if (TEST(out_bits, X_AXIS))   // stepping along -X axis (regular Cartesian bot)
   #endif
       { // -direction
-        #ifdef DUAL_X_CARRIAGE
+        #if ENABLED(DUAL_X_CARRIAGE)
           // with 2 x-carriages, endstops are only checked in the homing direction for the active extruder
           if ((current_block->active_extruder == 0 && X_HOME_DIR == -1) || (current_block->active_extruder != 0 && X2_HOME_DIR == -1))
         #endif
@@ -347,7 +354,7 @@ inline void update_endstops() {
           }
       }
       else { // +direction
-        #ifdef DUAL_X_CARRIAGE
+        #if ENABLED(DUAL_X_CARRIAGE)
           // with 2 x-carriages, endstops are only checked in the homing direction for the active extruder
           if ((current_block->active_extruder == 0 && X_HOME_DIR == 1) || (current_block->active_extruder != 0 && X2_HOME_DIR == 1))
         #endif
@@ -357,11 +364,11 @@ inline void update_endstops() {
             #endif
           }
       }
-  #if defined(COREXY) || defined(COREXZ)
+  #if ENABLED(COREXY) || ENABLED(COREXZ)
     }
   #endif
 
-  #ifdef COREXY
+  #if ENABLED(COREXY)
     // Head direction in -Y axis for CoreXY bots.
     // If DeltaX == DeltaY, the movement is only in X axis
     if ((current_block->steps[A_AXIS] != current_block->steps[B_AXIS]) || (TEST(out_bits, A_AXIS) != TEST(out_bits, B_AXIS))) {
@@ -379,11 +386,11 @@ inline void update_endstops() {
           UPDATE_ENDSTOP(Y, MAX);
         #endif
       }
-  #if defined(COREXY)
+  #if ENABLED(COREXY)
     }
   #endif
 
-  #ifdef COREXZ
+  #if ENABLED(COREXZ)
     // Head direction in -Z axis for CoreXZ bots.
     // If DeltaX == DeltaZ, the movement is only in X axis
     if ((current_block->steps[A_AXIS] != current_block->steps[C_AXIS]) || (TEST(out_bits, A_AXIS) != TEST(out_bits, C_AXIS))) {
@@ -394,7 +401,7 @@ inline void update_endstops() {
       { // z -direction
         #if HAS_Z_MIN
 
-          #ifdef Z_DUAL_ENDSTOPS
+          #if ENABLED(Z_DUAL_ENDSTOPS)
             SET_ENDSTOP_BIT(Z, MIN);
               #if HAS_Z2_MIN
                 SET_ENDSTOP_BIT(Z2, MIN);
@@ -416,7 +423,7 @@ inline void update_endstops() {
           #endif // !Z_DUAL_ENDSTOPS
         #endif // Z_MIN_PIN
 
-        #ifdef Z_PROBE_ENDSTOP
+        #if ENABLED(Z_PROBE_ENDSTOP)
           UPDATE_ENDSTOP(Z, PROBE);
 
           if (TEST_ENDSTOP(Z_PROBE))
@@ -429,13 +436,13 @@ inline void update_endstops() {
       else { // z +direction
         #if HAS_Z_MAX
 
-          #ifdef Z_DUAL_ENDSTOPS
+          #if ENABLED(Z_DUAL_ENDSTOPS)
 
             SET_ENDSTOP_BIT(Z, MAX);
               #if HAS_Z2_MAX
                 SET_ENDSTOP_BIT(Z2, MAX);
               #else
-                COPY_BIT(current_endstop_bits, Z_MAX, Z2_MAX)
+                COPY_BIT(current_endstop_bits, Z_MAX, Z2_MAX);
               #endif
 
             byte z_test = TEST_ENDSTOP(Z_MAX) << 0 + TEST_ENDSTOP(Z2_MAX) << 1; // bit 0 for Z, bit 1 for Z2
@@ -454,7 +461,7 @@ inline void update_endstops() {
           #endif // !Z_DUAL_ENDSTOPS
         #endif // Z_MAX_PIN
       }
-  #if defined(COREXZ)
+  #if ENABLED(COREXZ)
     }
   #endif  
   old_endstop_bits = current_endstop_bits;
@@ -640,7 +647,7 @@ ISR(TIMER1_COMPA_vect) {
     // Take multiple steps per interrupt (For high speed moves)
     for (int8_t i = 0; i < step_loops; i++) {
       #ifndef USBCON
-        MSerial.checkRx(); // Check for serial chars.
+        customizedSerial.checkRx(); // Check for serial chars.
       #endif
 
       #if ENABLED(ADVANCE)
@@ -666,7 +673,7 @@ ISR(TIMER1_COMPA_vect) {
         STEP_START(e,E);
       #endif
 
-      #ifdef STEPPER_HIGH_LOW_DELAY
+      #if ENABLED(STEPPER_HIGH_LOW_DELAY)
         delayMicroseconds(STEPPER_HIGH_LOW_DELAY);
       #endif
 
@@ -958,6 +965,13 @@ void st_init() {
     #endif
   #endif
 
+  #if HAS_Z2_MIN
+    SET_INPUT(Z2_MIN_PIN);
+    #if ENABLED(ENDSTOPPULLUP_Z2MIN)
+      WRITE(Z2_MIN_PIN,HIGH);
+    #endif
+  #endif
+
   #if HAS_E_MIN
     SET_INPUT(E_MIN_PIN);
     #if ENABLED(ENDSTOPPULLUP_EMIN)
@@ -988,7 +1002,7 @@ void st_init() {
 
   #if HAS_Z2_MAX
     SET_INPUT(Z2_MAX_PIN);
-    #if ENABLED(ENDSTOPPULLUP_ZMAX)
+    #if ENABLED(ENDSTOPPULLUP_Z2MAX)
       WRITE(Z2_MAX_PIN,HIGH);
     #endif
   #endif
@@ -1251,7 +1265,7 @@ void digipot_init() {
   #if MB(ALLIGATOR)
     const float motor_current[] = MOTOR_CURRENT;
     unsigned int digipot_motor = 0;
-    for (uint8_t i = 0; i < 4; i++) {
+    for (uint8_t i = 0; i < 3 + DRIVER_EXTRUDERS; i++) {
       digipot_motor = 255 * (motor_current[i] / 2.5);
       ExternalDac::setValue(i, digipot_motor);
     }

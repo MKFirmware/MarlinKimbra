@@ -223,14 +223,6 @@
       #undef HAS_LCD_CONTRAST
     #endif
   #endif
-  
-  /**
-   * SPLASH_SCREEN_DURATION for no DOGLCD display
-   */
-  #if DISABLED(DOGLCD)
-    #undef SPLASH_SCREEN_DURATION
-    #define SPLASH_SCREEN_DURATION 500
-  #endif
 
 #else // CONFIGURATION_LCD
   #define CONDITIONALS_H
@@ -265,14 +257,16 @@
    * ENDSTOPPULLUPS
    */
   #if ENABLED(ENDSTOPPULLUPS)
-    #define ENDSTOPPULLUP_XMAX
-    #define ENDSTOPPULLUP_YMAX
-    #define ENDSTOPPULLUP_ZMAX
     #define ENDSTOPPULLUP_XMIN
     #define ENDSTOPPULLUP_YMIN
     #define ENDSTOPPULLUP_ZMIN
-    #define ENDSTOPPULLUP_EMIN
+    #define ENDSTOPPULLUP_Z2MIN
+    #define ENDSTOPPULLUP_XMAX
+    #define ENDSTOPPULLUP_YMAX
+    #define ENDSTOPPULLUP_ZMAX
+    #define ENDSTOPPULLUP_Z2MAX
     #define ENDSTOPPULLUP_ZPROBE
+    #define ENDSTOPPULLUP_EMIN
   #endif
 
   /**
@@ -366,7 +360,7 @@
   /**
    * Auto Bed Leveling
    */
-  #if ENABLED(ENABLE_AUTO_BED_LEVELING)
+  #if ENABLED(AUTO_BED_LEVELING_FEATURE)
     // Boundaries for probing based on set limits
     #define MIN_PROBE_X (max(X_MIN_POS, X_MIN_POS + X_PROBE_OFFSET_FROM_EXTRUDER))
     #define MAX_PROBE_X (min(X_MAX_POS, X_MAX_POS + X_PROBE_OFFSET_FROM_EXTRUDER))

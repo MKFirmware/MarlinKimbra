@@ -115,10 +115,8 @@
 // LCD selection
 #if ENABLED(U8GLIB_ST7920)
   //U8GLIB_ST7920_128X64_RRD u8g(0,0,0);
-  //U8GLIB_ST7920_128X64_RRD u8g(0);
-  U8GLIB_ST7920_128X64_1X u8g(LCD_PINS_D4, LCD_PINS_ENABLE, LCD_PINS_RS);
-#elif defined(U8GLIB_SSD1306)
-  U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_DEV_0|U8G_I2C_OPT_NO_ACK|U8G_I2C_OPT_FAST);
+  U8GLIB_ST7920_128X64_RRD u8g(0);
+  //U8GLIB_ST7920_128X64_1X u8g(LCD_PINS_D4, LCD_PINS_ENABLE, LCD_PINS_RS);
 #elif ENABLED(MAKRPANEL)
   // The MaKrPanel display, ST7565 controller as well
   U8GLIB_NHD_C12864 u8g(DOGLCD_CS, DOGLCD_A0);
@@ -128,10 +126,10 @@
 #elif ENABLED(U8GLIB_LM6059_AF)
   // Based on the Adafruit ST7565 (http://www.adafruit.com/products/250)
   U8GLIB_LM6059 u8g(DOGLCD_CS, DOGLCD_A0);
-#elif defined U8GLIB_SSD1306
+#elif ENABLED(U8GLIB_SSD1306)
   // Generic support for SSD1306 OLED I2C LCDs
   U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_NONE);
-#elif defined(MINIPANEL)
+#elif ENABLED(MINIPANEL)
   // The MINIPanel display
   U8GLIB_MINI12864 u8g(DOGLCD_CS, DOGLCD_A0);
 #else
@@ -193,7 +191,9 @@ char lcd_printPGM(const char* str) {
   return n;
 }
 
-static bool show_splashscreen = true;
+#if ENABLED(SHOW_BOOTSCREEN)
+  static bool show_bootscreen = true;
+#endif
 
 /* Warning: This function is called from interrupt context */
 static void lcd_implementation_init() {
@@ -207,7 +207,7 @@ static void lcd_implementation_init() {
     pinMode(LCD_PIN_RESET, OUTPUT);
     digitalWrite(LCD_PIN_RESET, HIGH);
   #endif
-  #ifndef MINIPANEL//setContrast not working for Mini Panel
+  #if DISABLED(MINIPANEL) // setContrast not working for Mini Panel
     u8g.setContrast(lcd_contrast);
   #endif
   // FIXME: remove this workaround
@@ -223,31 +223,36 @@ static void lcd_implementation_init() {
     u8g.setRot270();  // Rotate screen by 270°
   #endif
 
-  // Show splashscreen
-  int offx = (u8g.getWidth() - START_BMPWIDTH) / 2;
-  #if ENABLED(START_BMPHIGH)
-    int offy = 0;
-  #else
-    int offy = DOG_CHAR_HEIGHT;
-  #endif
+  #if ENABLED(SHOW_BOOTSCREEN)
+    int offx = (u8g.getWidth() - START_BMPWIDTH) / 2;
+    #if ENABLED(START_BMPHIGH)
+      int offy = 0;
+    #else
+      int offy = DOG_CHAR_HEIGHT;
+    #endif
 
-  int txt1X = (u8g.getWidth() - (sizeof(STRING_SPLASH_LINE1) - 1)*DOG_CHAR_WIDTH) / 2;
+    int txt1X = (u8g.getWidth() - (sizeof(STRING_SPLASH_LINE1) - 1)*DOG_CHAR_WIDTH) / 2;
 
-  u8g.firstPage();
-  do {
-    if (show_splashscreen) {
-      u8g.drawBitmapP(offx, offy, START_BMPBYTEWIDTH, START_BMPHEIGHT, start_bmp);
-      lcd_setFont(FONT_MENU);
-      #ifndef STRING_SPLASH_LINE2
-        u8g.drawStr(txt1X, u8g.getHeight() - DOG_CHAR_HEIGHT, STRING_SPLASH_LINE1);
-      #else
-        int txt2X = (u8g.getWidth() - (sizeof(STRING_SPLASH_LINE2) - 1)*DOG_CHAR_WIDTH) / 2;
-        u8g.drawStr(txt1X, u8g.getHeight() - DOG_CHAR_HEIGHT*3/2, STRING_SPLASH_LINE1);
-        u8g.drawStr(txt2X, u8g.getHeight() - DOG_CHAR_HEIGHT*1/2, STRING_SPLASH_LINE2);
-      #endif
+    u8g.firstPage();
+    do {
+      if (show_bootscreen) {
+        u8g.drawBitmapP(offx, offy, START_BMPBYTEWIDTH, START_BMPHEIGHT, start_bmp);
+        lcd_setFont(FONT_MENU);
+        #ifndef STRING_SPLASH_LINE2
+          u8g.drawStr(txt1X, u8g.getHeight() - DOG_CHAR_HEIGHT, STRING_SPLASH_LINE1);
+        #else
+          int txt2X = (u8g.getWidth() - (sizeof(STRING_SPLASH_LINE2) - 1)*DOG_CHAR_WIDTH) / 2;
+          u8g.drawStr(txt1X, u8g.getHeight() - DOG_CHAR_HEIGHT*3/2, STRING_SPLASH_LINE1);
+          u8g.drawStr(txt2X, u8g.getHeight() - DOG_CHAR_HEIGHT*1/2, STRING_SPLASH_LINE2);
+        #endif
+      }
+    } while (u8g.nextPage());
+
+    if (show_bootscreen) {
+      delay(SPLASH_SCREEN_DURATION);
+      show_bootscreen = false;
     }
-  } while (u8g.nextPage());
-  show_splashscreen = false;
+  #endif
 }
 
 static void lcd_implementation_clear() { } // Automatically cleared by Picture Loop
