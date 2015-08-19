@@ -64,23 +64,6 @@
 //The M105 command return, besides traditional information, the ADC value read from temperature sensors.
 //#define SHOW_TEMP_ADC_VALUES
 
-/**
- * Extruder Idle Oozing Prevention
- * If the extruder motor is idle for more than SECONDS, and the temperature is over IDLE_OOZING_MINTEMP,
- * some filament is retracted. The filament retracted is re-added before the next extrusion
- * or when the target temperature is less than IDLE_OOZING_MINTEMP and the actual temperature
- * is greater than IDLE_OOZING_MINTEMP.
- * PS: Always remember to set your extruder target temperature to 0°C before shoudown the printer if you enable this feature.
- */
-//#define IDLE_OOZING_PREVENT
-#define IDLE_OOZING_MINTEMP           EXTRUDE_MINTEMP + 5
-#define IDLE_OOZING_MAXTEMP           IDLE_OOZING_MINTEMP + 5
-#define IDLE_OOZING_FEEDRATE          50    //default feedrate for retracting (mm/s)
-#define IDLE_OOZING_SECONDS           5
-#define IDLE_OOZING_LENGTH            15    //default retract length (positive mm)
-#define IDLE_OOZING_RECOVER_LENGTH     0    //default additional recover length (mm, added to retract length when recovering)
-#define IDLE_OOZING_RECOVER_FEEDRATE  50    //default feedrate for recovering from retraction (mm/s)
-
 //  extruder run-out prevention.
 //if the machine is idle, and the temperature over MINTEMP, every couple of SECONDS some filament is extruded
 //#define EXTRUDER_RUNOUT_PREVENT
@@ -98,9 +81,10 @@
 //This is for controlling a fan to cool down the stepper drivers
 //it will turn on when any driver is enabled
 //and turn off after the set amount of seconds from last driver being disabled again
-#define CONTROLLERFAN_PIN -1 //Pin used for the fan to cool controller (-1 to disable)
-#define CONTROLLERFAN_SECS 60 //How many seconds, after all motors were disabled, the fan should run
-#define CONTROLLERFAN_SPEED 255  // == full speed
+#define CONTROLLERFAN_PIN -1      // Pin used for the fan to cool controller (-1 to disable)
+#define CONTROLLERFAN_SECS 60     // How many seconds, after all motors were disabled, the fan should run
+#define CONTROLLERFAN_SPEED 255   // 255 = full speed
+#define CONTROLLERFAN_MIN_SPEED 0
 
 // When first starting the main fan, run it at full speed for the
 // given number of milliseconds.  This gets the fan spinning reliably
@@ -122,7 +106,8 @@
 #define EXTRUDER_2_AUTO_FAN_PIN -1
 #define EXTRUDER_3_AUTO_FAN_PIN -1
 #define EXTRUDER_AUTO_FAN_TEMPERATURE 50
-#define EXTRUDER_AUTO_FAN_SPEED 255  // == full speed
+#define EXTRUDER_AUTO_FAN_SPEED 255  // 255 = full speed
+#define EXTRUDER_AUTO_FAN_MIN_SPEED 0
 
 #define LCD_MAX_TEMP_OFFSET -15
 
@@ -349,11 +334,12 @@
 // it can e.g. be used to change z-positions in the print startup phase in real-time
 // does not respect endstops!
 //#define BABYSTEPPING
+
 #if ENABLED(BABYSTEPPING)
-  #define BABYSTEP_XY  //not only z, but also XY in the menu. more clutter, more functions
-                       //not implemented for CoreXY and deltabots!
-  #define BABYSTEP_INVERT_Z false  //true for inverse movements in Z
-  #define BABYSTEP_Z_MULTIPLICATOR 2 //faster z movements
+  #define BABYSTEP_XY  // not only z, but also XY in the menu. more clutter, more functions
+                       // not implemented for CoreXY and deltabots!
+  #define BABYSTEP_INVERT_Z false     // true for inverse movements in Z
+  #define BABYSTEP_Z_MULTIPLICATOR 2  // faster z movements
 #endif
 
 // extruder advance constant (s2/mm3)

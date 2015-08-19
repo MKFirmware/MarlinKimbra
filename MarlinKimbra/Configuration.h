@@ -315,6 +315,31 @@
 //#define THERMAL_PROTECTION_BED     // Enable thermal protection for the heated bed
 
 //===========================================================================
+//======================== Extruder Idle Oozing Prevention =======================
+//===========================================================================
+
+/**
+ * Extruder Idle Oozing Prevention prevents undesired ejection of  filament while the printer
+ * is in idle with the hotend turned on.
+ * Eg. during the heating up process.
+ *
+ * If the extruder motor is idle for more than SECONDS, and the temperature is over IDLE_OOZING_MINTEMP,
+ * some filament is retracted. The filament retracted is re-added before the next extrusion
+ * or when the target temperature is less than IDLE_OOZING_MINTEMP and the actual temperature
+ * is greater than IDLE_OOZING_MINTEMP.
+ *
+ * PS: Always remember to set your extruder target temperature to 0°C before shoudown the printer if you enable this feature.
+ */
+//#define IDLE_OOZING_PREVENT
+#define IDLE_OOZING_MINTEMP           EXTRUDE_MINTEMP + 5
+#define IDLE_OOZING_MAXTEMP           IDLE_OOZING_MINTEMP + 5
+#define IDLE_OOZING_FEEDRATE          50    //default feedrate for retracting (mm/s)
+#define IDLE_OOZING_SECONDS           5
+#define IDLE_OOZING_LENGTH            15    //default retract length (positive mm)
+#define IDLE_OOZING_RECOVER_LENGTH    0     //default additional recover length (mm, added to retract length when recovering)
+#define IDLE_OOZING_RECOVER_FEEDRATE  50    //default feedrate for recovering from retraction (mm/s)
+
+//===========================================================================
 //============================ User Interfaces ==============================
 //===========================================================================
 

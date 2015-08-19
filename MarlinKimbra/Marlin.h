@@ -273,6 +273,9 @@ extern int fanSpeed;
 
 #if ENABLED(FAN_SOFT_PWM)
   extern unsigned char fanSpeedSoftPwm;
+  #if HAS_CONTROLLERFAN
+    extern unsigned char fanSpeedSoftPwm_controller;
+  #endif
 #endif
 
 #if ENABLED(FILAMENT_SENSOR)
