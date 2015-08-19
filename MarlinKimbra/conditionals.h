@@ -41,7 +41,6 @@
     #define DOGLCD  // Support for I2C LCD 128x64 (Controller SSD1306 graphic Display Family)
   #endif
 
-
   #if ENABLED(PANEL_ONE)
     #define SDSUPPORT
     #define ULTIMAKERCONTROLLER
@@ -98,7 +97,6 @@
   /**
    * I2C PANELS
    */
-
   #if ENABLED(LCD_I2C_SAINSMART_YWROBOT)
     // This uses the LiquidCrystal_I2C library ( https://bitbucket.org/fmalpartida/new-liquidcrystal/wiki/Home )
     // Make sure it is placed in the Arduino libraries directory.
@@ -368,7 +366,7 @@
     #define MAX_PROBE_Y (min(Y_MAX_POS, Y_MAX_POS + Y_PROBE_OFFSET_FROM_EXTRUDER))
 
     // Z_RAISE_AFTER_PROBING is not for all probes. Be sure that it is zero in that cases
-    #if (NUM_SERVOS == 0) && !defined(Z_PROBE_SLED)
+    #if (NUM_SERVOS == 0) && DISABLED(Z_PROBE_SLED)
       #undef Z_RAISE_AFTER_PROBING
       #define Z_RAISE_AFTER_PROBING 0
     #endif
@@ -379,11 +377,18 @@
    */
   #define SERVO_LEVELING (defined(SERVO_ENDSTOPS) && defined(DEACTIVATE_SERVOS_AFTER_MOVE))
 
-   /**
-    * Sled Options
-    */ 
+  /**
+   * Sled Options
+   */
   #if ENABLED(Z_PROBE_SLED)
     #define Z_SAFE_HOMING
+  #endif
+
+  /**
+   * Babystepping
+   */
+  #if ENABLED(CARTESIAN)
+    #define BABYSTEPPING  // On Cartesian printer this can be enabled as default as fully working
   #endif
 
   /**
@@ -431,8 +436,10 @@
     #undef SD_DETECT_INVERTED
   #endif
 
-  // Power Signal Control Definitions
-  // By default use Normal definition
+  /**
+   * Power Signal Control Definitions
+   * By default use Normal definition
+   */
   #ifndef POWER_SUPPLY
     #define POWER_SUPPLY 0
   #endif
@@ -524,7 +531,7 @@
   #else
     #define ARRAY_BY_EXTRUDER(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10) { v1 }
   #endif
-  
+
   #define ARRAY_BY_EXTRUDERS(v1) ARRAY_BY_EXTRUDER(v1, v1, v1, v1, v1, v1, v1, v1, v1, v1)
 
   /**
@@ -673,8 +680,14 @@
     #endif
   #endif
 
+  /**
+   * Buzzer
+   */
   #define HAS_BUZZER (PIN_EXISTS(BEEPER) || defined(LCD_USE_I2C_BUZZER))
 
+  /**
+   * Servos
+   */
   #if HAS_SERVOS
     #if X_ENDSTOP_SERVO_NR >= 0 || Y_ENDSTOP_SERVO_NR >= 0 || Z_ENDSTOP_SERVO_NR >= 0
       #define HAS_SERVO_ENDSTOPS true
