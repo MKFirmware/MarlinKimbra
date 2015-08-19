@@ -8,7 +8,6 @@
 ### Version 4.1.5
 * Implemented FAST_PWM_FAN and FAN_SOFT_PWM also for other fan that can be added in configuration_adv file.
 * Added the ability to set a min speed to the fan that can be added in configuration_adv file.
-* Critical stepper motor frequency bugfix
 * General bugfix
 
 ### Version 4.1.4

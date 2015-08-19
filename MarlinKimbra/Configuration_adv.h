@@ -416,10 +416,7 @@ const unsigned int dropsegments = 5; // everything with less than this number of
 
 // Add support for filament exchange support M600; requires display
 #if ENABLED(ULTIPANEL)
-  #ifdef CARTESIAN
-    #define FILAMENTCHANGEENABLE
-  #else
-    //#define FILAMENTCHANGEENABLE
+  //#define FILAMENTCHANGEENABLE
   #endif
   #if ENABLED(FILAMENTCHANGEENABLE)
     #define FILAMENTCHANGE_XPOS 3
