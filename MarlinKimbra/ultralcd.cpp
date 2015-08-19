@@ -421,8 +421,6 @@ static void lcd_return_to_status() { lcd_goto_menu(lcd_status_screen); }
 
   static void lcd_sdcard_stop() {
     quickStop();
-    disable_all_heaters();
-    fanSpeed = 0;
     card.sdprinting = false;
     card.closeFile();
     autotempShutdown();
