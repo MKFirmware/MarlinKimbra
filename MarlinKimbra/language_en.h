@@ -17,7 +17,7 @@
   #define DISPLAY_CHARSET_ISO10646_1 // use the better font on full graphic displays.
 #endif
 
-#define WELCOME_MSG                         MACHINE_NAME " ready."
+#define WELCOME_MSG                         MACHfINE_NAME " ready."
 #define MSG_SD_INSERTED                     "Card inserted"
 #define MSG_SD_REMOVED                      "Card removed"
 #define MSG_MAIN                            "Main"
@@ -105,7 +105,7 @@
 #define MSG_E3STEPS                         "E3steps/mm"
 #define MSG_TEMPERATURE                     "Temperature"
 #define MSG_MOTION                          "Motion"
-#define MSG_FILAMENT                      "Filament"
+#define MSG_FILAMENT                        "Filament"
 #define MSG_VOLUMETRIC_ENABLED              "E in mm3"
 #define MSG_FILAMENT_SIZE_EXTRUDER          "Fil. Dia."
 #define MSG_CONTRAST                        "LCD contrast"
