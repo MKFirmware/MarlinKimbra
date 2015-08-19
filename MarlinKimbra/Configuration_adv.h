@@ -81,9 +81,9 @@
 //This is for controlling a fan to cool down the stepper drivers
 //it will turn on when any driver is enabled
 //and turn off after the set amount of seconds from last driver being disabled again
-#define CONTROLLERFAN_PIN -1 //Pin used for the fan to cool controller (-1 to disable)
-#define CONTROLLERFAN_SECS 60 //How many seconds, after all motors were disabled, the fan should run
-#define CONTROLLERFAN_SPEED 255  // 255 = full speed
+#define CONTROLLERFAN_PIN -1      // Pin used for the fan to cool controller (-1 to disable)
+#define CONTROLLERFAN_SECS 60     // How many seconds, after all motors were disabled, the fan should run
+#define CONTROLLERFAN_SPEED 255   // 255 = full speed
 #define CONTROLLERFAN_MIN_SPEED 0
 
 // When first starting the main fan, run it at full speed for the
@@ -333,16 +333,13 @@
 // Babystepping enables the user to control the axis in tiny amounts, independently from the normal printing process
 // it can e.g. be used to change z-positions in the print startup phase in real-time
 // does not respect endstops!
-#ifdef CARTESIAN
-  #define BABYSTEPPING  //On cartesian printer this can be enabled as default as fully working
-#else
 //#define BABYSTEPPING
-#endif
+
 #if ENABLED(BABYSTEPPING)
-  #define BABYSTEP_XY  //not only z, but also XY in the menu. more clutter, more functions
-                       //not implemented for CoreXY and deltabots!
-  #define BABYSTEP_INVERT_Z false  //true for inverse movements in Z
-  #define BABYSTEP_Z_MULTIPLICATOR 2 //faster z movements
+  #define BABYSTEP_XY  // not only z, but also XY in the menu. more clutter, more functions
+                       // not implemented for CoreXY and deltabots!
+  #define BABYSTEP_INVERT_Z false     // true for inverse movements in Z
+  #define BABYSTEP_Z_MULTIPLICATOR 2  // faster z movements
 #endif
 
 // extruder advance constant (s2/mm3)

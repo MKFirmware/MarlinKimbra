@@ -955,7 +955,7 @@ void tp_init() {
   #if HAS_FILAMENT_SENSOR
     ANALOG_SELECT(FILWIDTH_PIN);
   #endif
-  
+
   #if HAS_CONTROLLERFAN
     SET_OUTPUT(CONTROLLERFAN_PIN); //Set pin used for driver cooling fan
     #if ENABLED(FAST_PWM_FAN)
@@ -965,7 +965,7 @@ void tp_init() {
       soft_pwm_fan_controller = fanSpeedSoftPwm_controller / 2;
     #endif
   #endif
-  
+
   #if HAS_AUTO_FAN_0
     SET_OUTPUT(EXTRUDER_0_AUTO_FAN_PIN);
     #if ENABLED(FAST_PWM_FAN)
@@ -990,13 +990,12 @@ void tp_init() {
       setPwmFrequency(EXTRUDER_3_AUTO_FAN_PIN, 1); // No prescaling. Pwm frequency = F_CPU/256/8
     #endif
   #endif
-  
+
   #if ENABLED(FAN_SOFT_PWM)
     #if HAS_AUTO_FAN
       soft_pwm_fan_auto = fanSpeedSoftPwm_auto / 2;
     #endif
   #endif
-  
 
   #if HAS_POWER_CONSUMPTION_SENSOR
     ANALOG_SELECT(POWER_CONSUMPTION_PIN);
@@ -1444,10 +1443,10 @@ ISR(TIMER0_COMPB_vect) {
         }
       #endif
     #endif
-    
+
     pwm_count += BIT(SOFT_PWM_SCALE);
     pwm_count &= 0x7f;
-  
+
   #else // SLOW_PWM_HEATERS
     /*
      * SLOW PWM HEATERS
@@ -1571,7 +1570,7 @@ ISR(TIMER0_COMPB_vect) {
     if ((pwm_count % 64) == 0) {
       slow_pwm_count++;
       slow_pwm_count &= 0x7f;
-    
+
       // HOTEND 0
       if (state_timer_heater_0 > 0) state_timer_heater_0--;
       #if HOTENDS > 1    // HOTEND 1
@@ -1587,7 +1586,7 @@ ISR(TIMER0_COMPB_vect) {
         if (state_timer_heater_BED > 0) state_timer_heater_BED--;
       #endif
     } // (pwm_count % 64) == 0
-  
+
   #endif // SLOW_PWM_HEATERS
 
   #define SET_ADMUX_ADCSRA(pin) ADMUX = BIT(REFS0) | (pin & 0x07); ADCSRA |= BIT(ADSC)
@@ -1599,6 +1598,7 @@ ISR(TIMER0_COMPB_vect) {
 
   // Prepare or measure a sensor, each one every 14th frame
   switch(temp_state) {
+
     case PrepareTemp_0:
       #if HAS_TEMP_0
         START_ADC(TEMP_0_PIN);
