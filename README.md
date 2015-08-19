@@ -1,6 +1,6 @@
 <img align="right" src="Documentation/Logo/MarlinKimbra%20Logo%20GitHub.png" />
 # MarlinKimbra 3D Printer Firmware
-## Version 4.1.5 dev
+## Version 4.1.5 RC (Release Candidate)
 
   * [Configuration & Compilation](/Documentation/Compilation.md)
   * Supported
@@ -41,9 +41,10 @@ Added anti extruder idle oozing system.
 
 The current MarlinKimbra dev team consists of:
  - MagoKimbra - Alberto Cotronei (https://github.com/MagoKimbra)
+ - simonepri - Simone Primarosa (https://github.com/simonepri)
 
 More features have been added by:
- - simonepri - Simone Primarosa (https://github.com/simonepri)
+ -
 
 ## License
 
