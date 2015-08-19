@@ -390,7 +390,7 @@
    * MAX_STEP_FREQUENCY differs for TOSHIBA OR ARDUINO DUE OR ARDUINO MEGA
    */
   #ifdef __SAM3X8E__
-    #if defined(CONFIG_STEPPERS_TOSHIBA) || !defined(ENABLE_HIGH_SPEED_STEPPING)
+    #if defined(CONFIG_STEPPERS_TOSHIBA)
       #define MAX_STEP_FREQUENCY 150000 // Max step frequency for Toshiba Stepper Controllers
       #define DOUBLE_STEP_FREQUENCY MAX_STEP_FREQUENCY
     #else
@@ -398,7 +398,7 @@
       #define DOUBLE_STEP_FREQUENCY 100000  //96kHz is close to maximum for an Arduino Due
     #endif
   #else
-    #if defined(CONFIG_STEPPERS_TOSHIBA) || !defined(ENABLE_HIGH_SPEED_STEPPING)
+    #if defined(CONFIG_STEPPERS_TOSHIBA)
       #define MAX_STEP_FREQUENCY 10000 // Max step frequency for Toshiba Stepper Controllers
       #define DOUBLE_STEP_FREQUENCY MAX_STEP_FREQUENCY
     #else
