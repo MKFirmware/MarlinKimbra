@@ -1059,8 +1059,10 @@ static void lcd_stats_menu() {
   int day = printer_usage_seconds / 60 / 60 / 24, hours = (printer_usage_seconds / 60 / 60) % 24, minutes = (printer_usage_seconds / 60) % 60;
   sprintf_P(row, PSTR(MSG_ONFOR " %id %ih %im"), day, hours, minutes);
   LCD_Printpos(0, 0); lcd_print(row);
-  sprintf_P(row, PSTR(MSG_PWRCONSUMED " %iWh"), power_consumption_hour);
-  LCD_Printpos(0, 1); lcd_print(row);
+  #if HAS_POWER_CONSUMPTION_SENSOR
+    sprintf_P(row, PSTR(MSG_PWRCONSUMED " %iWh"), power_consumption_hour);
+    LCD_Printpos(0, 1); lcd_print(row);
+  #endif
   if (LCD_CLICKED) lcd_goto_menu(lcd_main_menu);
 }
 
