@@ -39,8 +39,12 @@ void manage_heater(); //it is critical that this is called periodically.
 
 #if HAS_POWER_CONSUMPTION_SENSOR
   // For converting raw Power Consumption to watt
+  float analog2voltage();
   float analog2current();
   float analog2power();
+  float raw_analog2voltage();
+  float analog2error(float current);
+  float analog2efficiency(float watt);
 #endif
 
 // low level conversion routines

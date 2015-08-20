@@ -132,6 +132,7 @@
  * M33  - Get the longname version of a path
  * M42  - Change pin status via gcode Use M42 Px Sy to set pin x to value y, when omitting Px the onboard led will be used.
  * M48  - Measure Z_Probe repeatability. M48 [P # of points] [X position] [Y position] [V_erboseness #] [E_ngage Probe] [L # of legs of travel]
+ * M70  - Power consumption sensor calibration
  * M80  - Turn on Power Supply
  * M81  - Turn off Power Supply
  * M82  - Set E codes absolute (default)
@@ -4693,6 +4694,34 @@ inline void gcode_M42() {
 
 #endif // AUTO_BED_LEVELING_FEATURE && Z_PROBE_REPEATABILITY_TEST
 
+#if HAS_POWER_CONSUMPTION_SENSOR
+
+  /**
+   * M70 - Power consumption sensor calibration
+   *
+   * Z - Calibrate zero current offset
+   * A - Isert readed DC Current value (Ampere)
+   * W - Insert readed AC Wattage value (Watt)
+   */
+  inline void gcode_M70() {
+    if(code_seen('Z')) {
+      ECHO_EMV("Actual POWER_ZERO:", POWER_ZERO, 7);
+      ECHO_EMV("New POWER_ZERO:", raw_analog2voltage(), 7);
+      ECHO_EM("Insert new calculated values into the FW and call \"M70 A\" for the next calibration step.");
+    }
+    else if(code_seen('A')) {
+      ECHO_EMV("Actual POWER_ERROR:", POWER_ERROR, 7);
+      ECHO_EMV("New POWER_ERROR:", analog2error(code_value()), 7);
+      ECHO_EM("Insert new calculated values into the FW and call \"M70 W\" for the last calibration step.");
+    }
+    else if(code_seen('W')) {
+      ECHO_EMV("Actual POWER_EFFICIENCY:", POWER_EFFICIENCY, 7);
+      ECHO_EMV("New POWER_EFFICIENCY:", analog2efficiency(code_value()), 7);
+      ECHO_EM("Insert new calculated values into the FW and then ACS712 it should be calibrated correctly.");
+    }
+  }
+#endif
+
 #if HAS_POWER_SWITCH
 
   /**
@@ -6765,7 +6794,12 @@ void process_next_command() {
         case 48: // M48 Z-Probe repeatability
           gcode_M48(); break;
       #endif
-
+      
+      #if HAS_POWER_CONSUMPTION_SENSOR
+        case 70: // M70 - Power consumption sensor calibration
+          gcode_M70(); break;
+      #endif
+      
       #if HAS_POWER_SWITCH
         case 80: // M80 - Turn on Power Supply
           gcode_M80(); break;

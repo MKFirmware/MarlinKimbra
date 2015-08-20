@@ -293,6 +293,9 @@ extern int fanSpeed;
   extern unsigned long power_consumption_hour;  //holds the power consumption per hour as accurately measured
   extern unsigned long startpower;
   extern unsigned long stoppower;
+  extern float raw_analog2voltage();
+  extern float analog2error(float current);
+  extern float analog2efficiency(float watt);
 #endif
 
 #if ENABLED(IDLE_OOZING_PREVENT)

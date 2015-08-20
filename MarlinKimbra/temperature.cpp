@@ -804,7 +804,10 @@ static void updateTemperaturesFromRawValues() {
   #if HAS_POWER_CONSUMPTION_SENSOR
     static float watt_overflow = 0.0;
     power_consumption_meas = analog2power();
-    //MYSERIAL.println(analog2current(),3);
+    /*ECHO_MV("raw:", raw_analog2voltage(), 5);
+    ECHO_MV(" - V:", analog2voltage(), 5);
+    ECHO_MV(" - I:", analog2current(), 5);
+    ECHO_EMV(" - P:", analog2power(), 5);*/
     watt_overflow += (power_consumption_meas * from_last_update) / 3600000.0;
     if (watt_overflow >= 1.0) {
       power_consumption_hour++;
@@ -850,13 +853,33 @@ static void updateTemperaturesFromRawValues() {
 
 #if HAS_POWER_CONSUMPTION_SENSOR
   // Convert raw Power Consumption to watt
+  float raw_analog2voltage() {
+    return (5.0 * current_raw_powconsumption) / (1023 * OVERSAMPLENR);
+  }
+  
+  float analog2voltage() {
+    float power_zero_raw = (POWER_ZERO * 1023 * OVERSAMPLENR) / 5.0;
+    float rel_raw_power = (current_raw_powconsumption < power_zero_raw) ? (2 * power_zero_raw - current_raw_powconsumption) : (current_raw_powconsumption);
+    return ((5.0 * rel_raw_power) / (1023 * OVERSAMPLENR)) - POWER_ZERO;
+  }
   float analog2current() {
-    float temp = (((5.0 * current_raw_powconsumption) / (1023 * OVERSAMPLENR)) - POWER_ZERO) / POWER_SENSITIVITY;
-    temp = ((100 - POWER_ERROR) / 100) * (temp + (temp / 100)) - POWER_OFFSET;
+    float temp = analog2voltage() / POWER_SENSITIVITY;
+    temp = (((100 - POWER_ERROR) / 100) * temp) - POWER_OFFSET;
     return temp > 0 ? temp : 0;
   }
   float analog2power() {
     return (analog2current() * POWER_VOLTAGE * 100) /  POWER_EFFICIENCY;
+  }
+  
+  float analog2error(float current) {
+    float temp1 = (analog2voltage() / POWER_SENSITIVITY - POWER_OFFSET) * POWER_VOLTAGE;
+    if(temp1 <= 0) return 0.0;
+    float temp2 = (current) * POWER_VOLTAGE;
+    if(temp2 <= 0) return 0.0;
+    return ((temp2/temp1)-1)*100;
+  }
+  float analog2efficiency(float watt) {
+    return (analog2current() * POWER_VOLTAGE * 100) / watt;
   }
 #endif
 
@@ -1301,12 +1324,7 @@ static void set_current_temp_raw() {
   current_temperature_bed_raw = raw_temp_bed_value;
 
   #if HAS_POWER_CONSUMPTION_SENSOR
-    #ifdef __SAM3X8E__
-      float power_zero_raw = (POWER_ZERO * 1023 * OVERSAMPLENR) / 3.3;
-    #else
-      float power_zero_raw = (POWER_ZERO * 1023 * OVERSAMPLENR) / 5.0;
-    #endif
-    current_raw_powconsumption = (raw_powconsumption_value < power_zero_raw) ? (2 * power_zero_raw - raw_powconsumption_value) : (raw_powconsumption_value);
+    current_raw_powconsumption = raw_powconsumption_value;
   #endif
   temp_meas_ready = true;
 }
