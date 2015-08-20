@@ -3001,13 +3001,21 @@ inline void gcode_G28() {
 
   set_destination_to_current();
 
+  bool come_back = code_seen('B');
+  float lastpos[NUM_AXIS];
+  float oldfeedrate;
+  if(come_back) {
+    oldfeedrate = feedrate;
+    memcpy(lastpos, current_position, sizeof(lastpos));
+  }
+
   feedrate = 0.0;
 
   bool  homeX = code_seen(axis_codes[X_AXIS]),
         homeY = code_seen(axis_codes[Y_AXIS]),
         homeZ = code_seen(axis_codes[Z_AXIS]),
         homeE = code_seen(axis_codes[E_AXIS]);
-        
+
   home_all_axis = (!homeX && !homeY && !homeZ && !homeE) || (homeX && homeY && homeZ);
 
   #ifdef NPR2
@@ -3394,6 +3402,32 @@ inline void gcode_G28() {
   #endif
 
   clean_up_after_endstop_move();
+  
+  if(come_back) {
+    #if ENABLED(DELTA)
+      feedrate = 1.732 * homing_feedrate[X_AXIS];
+      memcpy(destination, lastpos, sizeof(destination));
+      prepare_move();
+      feedrate = oldfeedrate;
+    #else
+      if(homeX) {
+        feedrate = homing_feedrate[X_AXIS];
+        destination[X_AXIS] = lastpos[X_AXIS];
+        prepare_move();
+      }
+      if(homeY) {
+        feedrate = homing_feedrate[Y_AXIS];
+        destination[Y_AXIS] = lastpos[Y_AXIS];
+        prepare_move();
+      }
+      if(homeZ) {
+        feedrate = homing_feedrate[Z_AXIS];
+        destination[Z_AXIS] = lastpos[Z_AXIS];
+        prepare_move();
+      }
+      feedrate = oldfeedrate;
+    #endif
+  }
 }
 
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
@@ -5965,7 +5999,7 @@ inline void gcode_M503() {
   inline void gcode_M600() {
 
     if (degHotend(active_extruder) < extrude_min_temp) {
-      ECHO_LM(ER, MSG_TOO_COLD_FOR_M600);
+      ECHO_LM(ER, MSG_TOO_COLD_FOR_FILAMENTCHANGE);
       return;
     }
 
@@ -7054,7 +7088,7 @@ void clamp_to_software_endstops(float target[3]) {
   }
 }
 
-#ifdef PREVENT_DANGEROUS_EXTRUDE
+#if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
 
   FORCE_INLINE void prevent_dangerous_extrude(float &curr_e, float &dest_e) {
     float de = dest_e - curr_e;
@@ -7075,7 +7109,7 @@ void clamp_to_software_endstops(float target[3]) {
 
 #endif // PREVENT_DANGEROUS_EXTRUDE
 
-#if defined(DELTA) || defined(SCARA)
+#if ENABLED(DELTA) || ENABLED(SCARA)
 
   inline bool prepare_move_delta(float target[NUM_AXIS]) {
 
@@ -7135,11 +7169,11 @@ void clamp_to_software_endstops(float target[3]) {
 
 #endif // DELTA || SCARA
 
-#ifdef SCARA
+#if ENABLED(SCARA)
   inline bool prepare_move_scara(float target[NUM_AXIS]) { return prepare_move_delta(target); }
 #endif
 
-#ifdef DUAL_X_CARRIAGE
+#if ENABLED(DUAL_X_CARRIAGE)
 
   inline bool prepare_move_dual_x_carriage() {
     if (active_extruder_parked) {
@@ -7177,7 +7211,7 @@ void clamp_to_software_endstops(float target[3]) {
 
 #endif // DUAL_X_CARRIAGE
 
-#if defined(CARTESIAN) || defined(COREXY) || defined(COREXZ)
+#if ENABLED(CARTESIAN) || ENABLED(COREXY) || ENABLED(COREXZ)
 
   inline bool prepare_move_cartesian() {
     // Do not use feedrate_multiplier for E or Z only moves
@@ -7202,21 +7236,21 @@ void prepare_move() {
   clamp_to_software_endstops(destination);
   refresh_cmd_timeout();
 
-  #ifdef PREVENT_DANGEROUS_EXTRUDE
+  #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
     prevent_dangerous_extrude(current_position[E_AXIS], destination[E_AXIS]);
   #endif
 
-  #ifdef SCARA
+  #if ENABLED(SCARA)
     if (!prepare_move_scara(destination)) return;
-  #elif defined(DELTA)
+  #elif ENABLED(DELTA)
     if (!prepare_move_delta(destination)) return;
   #endif
 
-  #ifdef DUAL_X_CARRIAGE
+  #if ENABLED(DUAL_X_CARRIAGE)
     if (!prepare_move_dual_x_carriage()) return;
   #endif
 
-  #if defined(CARTESIAN) || defined(COREXY) || defined(COREXZ)
+  #if ENABLED(CARTESIAN) || ENABLED(COREXY) || ENABLED(COREXZ)
     if (!prepare_move_cartesian()) return;
   #endif
 
@@ -7336,7 +7370,7 @@ void plan_arc(
     arc_target[E_AXIS] += extruder_per_segment;
 
     clamp_to_software_endstops(arc_target);
-    #if defined(DELTA) || defined(SCARA)
+    #if ENABLED(DELTA) || ENABLED(SCARA)
       calculate_delta(arc_target);
       adjust_delta(arc_target);
       plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], arc_target[E_AXIS], feed_rate, active_extruder, active_driver);
@@ -7346,7 +7380,7 @@ void plan_arc(
   }
 
   // Ensure last segment arrives at target location.
-  #if defined(DELTA) || defined(SCARA)
+  #if ENABLED(DELTA) || ENABLED(SCARA)
     calculate_delta(target);
     adjust_delta(arc_target);
     plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], target[E_AXIS], feed_rate, active_extruder, active_driver);
@@ -7404,7 +7438,7 @@ void plan_arc(
 
 #endif // HAS_CONTROLLERFAN
 
-#ifdef SCARA
+#if ENABLED(SCARA)
 
   void calculate_SCARA_forward_Transform(float f_scara[3]) {
     // Perform forward kinematics, and place results in delta[3]
