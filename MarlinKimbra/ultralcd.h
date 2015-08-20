@@ -48,6 +48,11 @@
   #else
     FORCE_INLINE void lcd_buttons_update() {}
   #endif
+  
+  #if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
+    extern void set_sd_dot();
+    extern void unset_sd_dot();
+  #endif
 
   extern int plaPreheatHotendTemp;
   extern int plaPreheatHPBTemp;
