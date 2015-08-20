@@ -1,4 +1,5 @@
 ### Version 4.1.5
+* Added an overall configuration file
 * Added M70 gcode for calibrate AC721 current sensor
 * Added documentation for calibrate AC721 current sensor
 * Critical stepper motor frequency bugfix
