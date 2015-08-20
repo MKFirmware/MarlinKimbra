@@ -512,7 +512,7 @@ void lcd_set_home_offsets() {
   static void lcd_prepare_babystep_x() { _lcd_babystep(lcd_prepare_motion_babystep, X_AXIS, PSTR(MSG_BABYSTEPPING_X)); }
   static void lcd_prepare_babystep_y() { _lcd_babystep(lcd_prepare_motion_babystep, Y_AXIS, PSTR(MSG_BABYSTEPPING_Y)); }
   static void lcd_prepare_babystep_z() { _lcd_babystep(lcd_prepare_motion_babystep, Z_AXIS, PSTR(MSG_BABYSTEPPING_Z)); }
-  
+
   static void lcd_prepare_motion_babystep() {
     START_MENU(lcd_main_menu);
     MENU_ITEM(back, MSG_MOTION, lcd_prepare_motion_menu);
@@ -523,11 +523,11 @@ void lcd_set_home_offsets() {
     MENU_ITEM(submenu, MSG_BABYSTEP_Z, lcd_prepare_babystep_z);
     END_MENU();
   }
-#endif //BABYSTEPPING
+#endif // BABYSTEPPING
 
 static void lcd_tune_fixstep() {
   #if ENABLED(DELTA)
-    enqueuecommands_P(PSTR("G28 X Y Z B"));
+    enqueuecommands_P(PSTR("G28 B"));
   #else
     enqueuecommands_P(PSTR("G28 X Y B"));
   #endif
@@ -577,9 +577,9 @@ static void lcd_tune_menu() {
     #endif //BABYSTEP_XY
     MENU_ITEM(submenu, MSG_BABYSTEP_Z, lcd_tune_babystep_z);
   #endif
-  
+
   MENU_ITEM(function, MSG_FIX_LOSE_STEPS, lcd_tune_fixstep);
-  
+
   #if ENABLED(FILAMENTCHANGEENABLE)
      MENU_ITEM(gcode, MSG_FILAMENTCHANGE, PSTR("M600"));
   #endif
@@ -796,7 +796,7 @@ static void lcd_prepare_motion_menu() {
   // Move Axis
   //
   MENU_ITEM(submenu, MSG_MOVE_AXIS, lcd_move_menu);
-  
+
   //
   // Easy Load
   //
@@ -806,16 +806,16 @@ static void lcd_prepare_motion_menu() {
     MENU_ITEM(function, MSG_PURGE_XMM, lcd_purge);
     MENU_ITEM(function, MSG_RETRACT_XMM, lcd_retract);
   #endif // EASY_LOAD
-  
+
   //
   // Babystepping
   //
   #if ENABLED(BABYSTEPPING)
     MENU_ITEM(submenu, MSG_BABYSTEP, lcd_prepare_motion_babystep);
   #endif
-  
+
   MENU_ITEM(function, MSG_FIX_LOSE_STEPS, lcd_tune_fixstep);
-  
+
   //
   // Disable Steppers
   //
@@ -863,7 +863,7 @@ static void lcd_prepare_temperature_menu() {
   // Fan Speed
   //
   MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255);
-  
+
   //
   // Preheat PLA
   // Preheat ABS
@@ -885,7 +885,7 @@ static void lcd_prepare_temperature_menu() {
   // Cooldown
   //
   MENU_ITEM(function, MSG_COOLDOWN, lcd_cooldown);
-  
+
   END_MENU();
 }
 
@@ -1019,7 +1019,7 @@ static void lcd_control_menu() {
   #if ENABLED(FWRETRACT)
     MENU_ITEM(submenu, MSG_RETRACT, lcd_control_retract_menu);
   #endif
-  
+
   //
   // Switch power on/off
   //
@@ -1036,7 +1036,7 @@ static void lcd_control_menu() {
   #if ENABLED(SDSUPPORT) && ENABLED(MENU_ADDAUTOSTART)
     MENU_ITEM(function, MSG_AUTOSTART, lcd_autostart_sd);
   #endif
-  
+
   #if ENABLED(EEPROM_SETTINGS)
     MENU_ITEM(function, MSG_STORE_EPROM, Config_StoreSettings);
     MENU_ITEM(function, MSG_LOAD_EPROM, Config_RetrieveSettings);
@@ -1142,7 +1142,7 @@ static void lcd_control_temperature_menu() {
       #endif // HOTENDS > 2
     #endif // HOTENDS > 1
   #endif // PIDTEMP
-  
+
   //
   // Idle oozing
   //

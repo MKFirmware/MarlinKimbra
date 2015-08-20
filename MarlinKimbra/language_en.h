@@ -17,7 +17,7 @@
   #define DISPLAY_CHARSET_ISO10646_1 // use the better font on full graphic displays.
 #endif
 
-#define WELCOME_MSG                         MACHfINE_NAME " ready."
+#define WELCOME_MSG                         MACHINE_NAME " ready."
 #define MSG_SD_INSERTED                     "Card inserted"
 #define MSG_SD_REMOVED                      "Card removed"
 #define MSG_MAIN                            "Main"
@@ -142,10 +142,10 @@
 #define MSG_ZPROBE_OUT                      "Z probe out. bed"
 #define MSG_POSITION_UNKNOWN                "Home X/Y before Z"
 #define MSG_ZPROBE_ZOFFSET                  "Z Offset"
-#define MSG_BABYSTEP_X                      "Babystep X"
-#define MSG_BABYSTEP_Y                      "Babystep Y"
-#define MSG_BABYSTEP_Z                      "Babystep Z"
 #define MSG_BABYSTEP                        "Babystep"
+#define MSG_BABYSTEP_X                      MSG_BABYSTEP " " MSG_X
+#define MSG_BABYSTEP_Y                      MSG_BABYSTEP " " MSG_Y
+#define MSG_BABYSTEP_Z                      MSG_BABYSTEP " " MSG_Z
 #define MSG_ENDSTOP_ABORT                   "Endstop abort"
 #define MSG_HEATING_FAILED_LCD              "Heating failed"
 #define MSG_ERR_REDUNDANT_TEMP              "Err: REDUNDANT TEMP ERROR"
