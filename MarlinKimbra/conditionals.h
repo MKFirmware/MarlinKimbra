@@ -385,13 +385,6 @@
   #endif
 
   /**
-   * Babystepping
-   */
-  #if ENABLED(CARTESIAN)
-    #define BABYSTEPPING  // On Cartesian printer this can be enabled as default as fully working
-  #endif
-
-  /**
    * MAX_STEP_FREQUENCY differs for TOSHIBA OR ARDUINO DUE OR ARDUINO MEGA
    */
   #ifdef __SAM3X8E__
