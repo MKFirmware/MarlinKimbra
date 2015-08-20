@@ -3001,13 +3001,23 @@ inline void gcode_G28() {
 
   set_destination_to_current();
 
+  bool come_back = code_seen('B');
+  float lastpos[NUM_AXIS-1];
+  float oldfeedrate;
+  if(come_back) {
+    oldfeedrate = feedrate;
+    for (int i = 0; i <= NUM_AXIS-1; i++) {
+      lastpos[i] = current_position[i];
+    }
+  }
+  
   feedrate = 0.0;
 
   bool  homeX = code_seen(axis_codes[X_AXIS]),
         homeY = code_seen(axis_codes[Y_AXIS]),
         homeZ = code_seen(axis_codes[Z_AXIS]),
         homeE = code_seen(axis_codes[E_AXIS]);
-        
+  
   home_all_axis = (!homeX && !homeY && !homeZ && !homeE) || (homeX && homeY && homeZ);
 
   #ifdef NPR2
@@ -3394,6 +3404,34 @@ inline void gcode_G28() {
   #endif
 
   clean_up_after_endstop_move();
+  
+  if(come_back) {
+    #if ENABLED(DELTA)
+      feedrate = 1.732 * homing_feedrate[X_AXIS];
+      if(homeX) destination[X_AXIS] = lastpos[X_AXIS];
+      if(homeY) destination[X_AXIS] = lastpos[X_AXIS];
+      if(homeZ) destination[X_AXIS] = lastpos[X_AXIS];
+      prepare_move();
+      feedrate = oldfeedrate;
+    #else
+      if(homeX) {
+        feedrate = homing_feedrate[X_AXIS];
+        destination[X_AXIS] = lastpos[X_AXIS];
+        prepare_move();
+      }
+      if(homeY) {
+        feedrate = homing_feedrate[Y_AXIS];
+        destination[Y_AXIS] = lastpos[Y_AXIS];
+        prepare_move();
+      }
+      if(homeZ) {
+        feedrate = homing_feedrate[Z_AXIS];
+        destination[Z_AXIS] = lastpos[Z_AXIS];
+        prepare_move();
+      }
+      feedrate = oldfeedrate;
+    #endif
+  }
 }
 
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
@@ -5965,7 +6003,7 @@ inline void gcode_M503() {
   inline void gcode_M600() {
 
     if (degHotend(active_extruder) < extrude_min_temp) {
-      ECHO_LM(ER, MSG_TOO_COLD_FOR_M600);
+      ECHO_LM(ER, MSG_TOO_COLD_FOR_FILAMENTCHANGE);
       return;
     }
 

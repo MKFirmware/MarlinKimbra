@@ -385,10 +385,11 @@
   #endif
 
   /**
-   * Babystepping
+   * Babystepping and M600
    */
   #if ENABLED(CARTESIAN)
-    #define BABYSTEPPING  // On Cartesian printer this can be enabled as default as fully working
+    #define BABYSTEPPING         // On Cartesian printer this can be enabled as default as fully working
+    #define FILAMENTCHANGEENABLE // On Cartesian printer this can be enabled as default as fully working
   #endif
 
   /**

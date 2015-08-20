@@ -17,7 +17,7 @@
   #define DISPLAY_CHARSET_ISO10646_1 // use the better font on full graphic displays.
 #endif
 
-#define WELCOME_MSG                         MACHINE_NAME " ready."
+#define WELCOME_MSG                         MACHfINE_NAME " ready."
 #define MSG_SD_INSERTED                     "Card inserted"
 #define MSG_SD_REMOVED                      "Card removed"
 #define MSG_MAIN                            "Main"
@@ -47,7 +47,7 @@
 #define MSG_PREHEAT_GUM_ALL                 "Preheat GUM All"
 #define MSG_PREHEAT_GUM_BEDONLY             "Preheat GUM Bed"
 #define MSG_PREHEAT_GUM_SETTINGS            "Preheat GUM conf"
-#define MSG_TOO_COLD_FOR_M600               "M600 Hotend too cold to change filament"
+#define MSG_TOO_COLD_FOR_FILAMENTCHANGE     "Hotend too cold to change filament"
 #define MSG_COOLDOWN                        "Cooldown"
 #define MSG_SWITCH_PS_ON                    "Switch power on"
 #define MSG_SWITCH_PS_OFF                   "Switch power off"
@@ -68,6 +68,7 @@
 #define MSG_FAN_SPEED                       "Fan speed"
 #define MSG_FLOW                            "Flow"
 #define MSG_CONTROL                         "Control"
+#define MSG_FIX_LOSE_STEPS                  "Fix axis steps"
 #define MSG_MIN                             LCD_STR_THERMOMETER " Min"
 #define MSG_MAX                             LCD_STR_THERMOMETER " Max"
 #define MSG_FACTOR                          LCD_STR_THERMOMETER " Fact"
@@ -104,7 +105,7 @@
 #define MSG_E3STEPS                         "E3steps/mm"
 #define MSG_TEMPERATURE                     "Temperature"
 #define MSG_MOTION                          "Motion"
-#define MSG_VOLUMETRIC                      "Filament"
+#define MSG_FILAMENT                        "Filament"
 #define MSG_VOLUMETRIC_ENABLED              "E in mm3"
 #define MSG_FILAMENT_SIZE_EXTRUDER          "Fil. Dia."
 #define MSG_CONTRAST                        "LCD contrast"
@@ -144,6 +145,7 @@
 #define MSG_BABYSTEP_X                      "Babystep X"
 #define MSG_BABYSTEP_Y                      "Babystep Y"
 #define MSG_BABYSTEP_Z                      "Babystep Z"
+#define MSG_BABYSTEP                        "Babystep"
 #define MSG_ENDSTOP_ABORT                   "Endstop abort"
 #define MSG_HEATING_FAILED_LCD              "Heating failed"
 #define MSG_ERR_REDUNDANT_TEMP              "Err: REDUNDANT TEMP ERROR"
