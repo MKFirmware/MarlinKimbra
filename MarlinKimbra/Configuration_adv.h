@@ -12,7 +12,7 @@
 #define CONFIGURATION_ADV_H
 
 #include "conditionals.h"
-
+#include "Configuration_Overall.h"
 //===========================================================================
 //=============================Thermal Settings  ============================
 //===========================================================================
@@ -561,7 +561,13 @@ const unsigned int dropsegments = 5; // everything with less than this number of
   
 #endif
 
+#include "Configuration_Overall.h"
+#include "pins.h"
+#include "Configuration_Overall.h"
+#include "language.h"
+#include "Configuration_Overall.h"
 #include "conditionals.h"
+#include "Configuration_Overall.h"
 #include "sanitycheck.h"
 
 #endif //CONFIGURATION_ADV_H

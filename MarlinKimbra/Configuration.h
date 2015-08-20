@@ -4,6 +4,7 @@
 #include "boards.h"
 #include "macros.h"
 #include "Default_Version.h"
+#include "Configuration_Overall.h"
 
 //===========================================================================
 //============================= Getting Started =============================
@@ -61,23 +62,6 @@
 //#define COREXZ
 //#define DELTA
 //#define SCARA
-/***********************************************************************\
-
-/***********************************************************************\
- ********************** Do not touch this section **********************
- ***********************************************************************/
-#if ENABLED(CARTESIAN)
-  #include "Configuration_Cartesian.h"
-#elif ENABLED(COREXY)
-  #include "Configuration_Core.h"
-#elif ENABLED(COREXZ)
-  #include "Configuration_Core.h"
-#elif ENABLED(DELTA)
-  #include "Configuration_Delta.h"
-#elif ENABLED(SCARA)
-  #include "Configuration_Scara.h"
-#endif
-/***********************************************************************/
 
 // This defines the number of extruder real or virtual
 #define EXTRUDERS 1
@@ -720,7 +704,24 @@ const bool FILRUNOUT_PIN_INVERTING = true;  // Should be uncommented and true or
 //#define LASERBEAM
 //===========================================================================
 
-
+/***********************************************************************\
+ ********************** Do not touch this section **********************
+ ***********************************************************************/
+#include "Configuration_Overall.h"
+#if ENABLED(CARTESIAN)
+  #include "Configuration_Cartesian.h"
+#elif ENABLED(COREXY)
+  #include "Configuration_Core.h"
+#elif ENABLED(COREXZ)
+  #include "Configuration_Core.h"
+#elif ENABLED(DELTA)
+  #include "Configuration_Delta.h"
+#elif ENABLED(SCARA)
+  #include "Configuration_Scara.h"
+#endif 
+#include "Configuration_Overall.h"
 #include "Configuration_adv.h"
+#include "Configuration_Overall.h"
 #include "thermistortables.h"
+/***********************************************************************/
 #endif //__CONFIGURATION_H
