@@ -278,6 +278,10 @@
       #error HEATER_0_PIN not defined for this board
     #endif
   #endif
+  
+  #if DISABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
+    #error You have to enable SDSUPPORT to use SD_SETTINGS
+  #endif
 
   /**
    * Warnings for old configurations
