@@ -4707,12 +4707,12 @@ inline void gcode_M42() {
     if(code_seen('Z')) {
       ECHO_EMV("Actual POWER_ZERO:", POWER_ZERO, 7);
       ECHO_EMV("New POWER_ZERO:", raw_analog2voltage(), 7);
-      ECHO_EM("Insert new calculated values into the FW and call \"M70 A\ for the next calibration step.");
+      ECHO_EM("Insert new calculated values into the FW and call \"M70 A\" for the next calibration step.");
     }
     else if(code_seen('A')) {
       ECHO_EMV("Actual POWER_ERROR:", POWER_ERROR, 7);
       ECHO_EMV("New POWER_ERROR:", analog2error(code_value()), 7);
-      ECHO_EM("Insert new calculated values into the FW and call \"M70 W\ for the last calibration step.");
+      ECHO_EM("Insert new calculated values into the FW and call \"M70 W\" for the last calibration step.");
     }
     else if(code_seen('W')) {
       ECHO_EMV("Actual POWER_EFFICIENCY:", POWER_EFFICIENCY, 7);
