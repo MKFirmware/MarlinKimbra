@@ -854,6 +854,8 @@ void ConfigSD_ResetDefault() {
 
   void ConfigSD_StoreSettings() {
     if(!IS_SD_INSERTED || card.isFileOpen() || card.sdprinting) return;
+    set_sd_dot();
+    delay(500);
     card.setroot(true);
     card.openFile(CFG_SD_FILE, false, true, false);
     char buff[CFG_SD_MAX_VALUE_LEN];
@@ -867,10 +869,14 @@ void ConfigSD_ResetDefault() {
     card.closeFile(false);
     card.setlast();
     config_last_update = millis();
+    delay(500);
+    unset_sd_dot();
   }
 
   void ConfigSD_RetrieveSettings(bool addValue) {
     if(!IS_SD_INSERTED || card.isFileOpen() || card.sdprinting || !card.cardOK) return;
+    set_sd_dot();
+    delay(500);
     char key[CFG_SD_MAX_KEY_LEN], value[CFG_SD_MAX_VALUE_LEN];
     int k_idx;
     int k_len, v_len;
@@ -901,6 +907,8 @@ void ConfigSD_ResetDefault() {
     card.closeFile(false);
     card.setlast();
     config_readed = true;
+    delay(500);
+    unset_sd_dot();
   }
 
   int ConfigSD_KeyIndex(char *key) {    //At the moment a binary search algorithm is used for simplicity, if it will be necessary (Eg. tons of key), an hash search algorithm will be implemented.

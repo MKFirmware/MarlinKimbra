@@ -67,6 +67,7 @@ static void lcd_status_screen();
   static void lcd_prepare_temperature_menu();
   static void lcd_move_menu();
   static void lcd_control_menu();
+  static void lcd_stats_menu();
   static void lcd_control_temperature_menu();
   static void lcd_control_temperature_preheat_pla_settings_menu();
   static void lcd_control_temperature_preheat_abs_settings_menu();
@@ -448,7 +449,9 @@ static void lcd_main_menu() {
     #endif // DELTA
   }
   MENU_ITEM(submenu, MSG_CONTROL, lcd_control_menu);
-
+  
+  MENU_ITEM(submenu, MSG_STATS, lcd_stats_menu);
+  
   #if ENABLED(SDSUPPORT)
     if (card.cardOK) {
       if (card.isFileOpen()) {
@@ -1043,6 +1046,24 @@ static void lcd_control_menu() {
   #endif
   MENU_ITEM(function, MSG_RESTORE_FAILSAFE, Config_ResetDefault);
   END_MENU();
+}
+
+/**
+ *
+ * "Statistics" submenu
+ *
+ */
+
+static void lcd_stats_menu() {
+  char row[30];
+  int day = printer_usage_seconds / 60 / 60 / 24, hours = (printer_usage_seconds / 60 / 60) % 24, minutes = (printer_usage_seconds / 60) % 60;
+  sprintf_P(row, PSTR(MSG_ONFOR " %id %ih %im"), day, hours, minutes);
+  LCD_Printpos(0, 0); lcd_print(row);
+  #if HAS_POWER_CONSUMPTION_SENSOR
+    sprintf_P(row, PSTR(MSG_PWRCONSUMED " %iWh"), power_consumption_hour);
+    LCD_Printpos(0, 1); lcd_print(row);
+  #endif
+  if (LCD_CLICKED) lcd_goto_menu(lcd_main_menu);
 }
 
 /**
@@ -1662,6 +1683,27 @@ int lcd_strlen_P(const char *s) {
   }
   return j;
 }
+
+#if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
+  void set_sd_dot() {
+    u8g.firstPage();
+    do {
+      u8g.setColorIndex(1);
+      u8g.drawPixel(0, 0); // draw sd dot
+      u8g.setColorIndex(1); // black on white
+      (*currentMenu)();
+    } while( u8g.nextPage() );
+  }
+  void unset_sd_dot() {
+    u8g.firstPage();
+    do {
+      u8g.setColorIndex(0);
+      u8g.drawPixel(0, 0); // draw sd dot
+      u8g.setColorIndex(1); // black on white
+      (*currentMenu)();
+    } while( u8g.nextPage() );
+  }
+#endif
 
 /**
  * Update the LCD, read encoder buttons, etc.
