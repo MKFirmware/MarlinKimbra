@@ -747,7 +747,7 @@ void Config_ResetDefault() {
       if (!forReplay) {
         ECHO_LM(DB, "PID settings:");
       }
-      #ifdef PIDTEMP
+      #if ENABLED(PIDTEMP)
         for (int e = 0; e < HOTENDS; e++) {
           ECHO_SMV(DB, "  M301 E", e);
           ECHO_MV(" P", PID_PARAM(Kp, e));
@@ -755,7 +755,7 @@ void Config_ResetDefault() {
           ECHO_EMV(" D", unscalePID_d(PID_PARAM(Kd, e)));
       }
       #endif
-      #ifdef PIDTEMPBED
+      #if ENABLED(PIDTEMPBED)
         ECHO_SMV(DB, "  M304 P", bedKp); // for compatibility with hosts, only echos values for E0
         ECHO_MV(" I", unscalePID_i(bedKi));
         ECHO_EMV(" D", unscalePID_d(bedKd));

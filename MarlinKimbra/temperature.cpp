@@ -344,7 +344,7 @@ static void updateTemperaturesFromRawValues();
       }
       if (cycles > ncycles) {
         ECHO_LM(DB, MSG_PID_AUTOTUNE_FINISHED);
-        #ifdef PIDTEMP
+        #if ENABLED(PIDTEMP)
           if (hotend >= 0) {
             PID_PARAM(Kp, hotend) = Kp_temp;
             PID_PARAM(Ki, hotend) = scalePID_i(Ki_temp);

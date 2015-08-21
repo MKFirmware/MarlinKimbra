@@ -1,6 +1,6 @@
 /*
  * This file is a placeholder for a file which could be distributed in an archive
- * It takes the place of an automatically created "_Version.h" which is generated during the build process
+ * It takes the place of an automatically created "_version.h" which is generated during the build process
  */
 
 // #error "You must specify the following parameters related to your distribution"

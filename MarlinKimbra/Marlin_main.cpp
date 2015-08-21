@@ -474,7 +474,7 @@ unsigned long printer_usage_seconds;
   Servo servo[NUM_SERVOS];
 #endif
 
-#ifdef CHDK
+#if HAS_CHDK
   unsigned long chdkHigh = 0;
   boolean chdkActive = false;
 #endif
@@ -3071,7 +3071,7 @@ inline void gcode_G28() {
           print_xyz("> HOMEAXIS(Z) > current_position", current_position);
         }
 
-      #elif DISABLED(Z_SAFE_HOMING) && defined(Z_RAISE_BEFORE_HOMING) && Z_RAISE_BEFORE_HOMING > 0
+      #elif DISABLED(Z_SAFE_HOMING) && ENABLED(Z_RAISE_BEFORE_HOMING) && Z_RAISE_BEFORE_HOMING > 0
 
         // Raise Z before homing any other axes
         destination[Z_AXIS] = -Z_RAISE_BEFORE_HOMING * home_dir(Z_AXIS); // Set destination away from bed
@@ -5525,14 +5525,13 @@ inline void gcode_M226() {
   } // code_seen('P')
 }
 
-#if defined(CHDK) || HAS_PHOTOGRAPH
+#if HAS_CHDK || HAS_PHOTOGRAPH
   /**
-   * M240: Trigger a camera by emulating a Canon RC-1
-   *       See http://www.doc-diy.net/photo/rc-1_hacked/
+   * M240: Trigger a camera
    */
   inline void gcode_M240() {
-    #ifdef CHDK
-       OUT_WRITE(CHDK, HIGH);
+    #if HAS_CHDK
+       OUT_WRITE(CHDK_PIN, HIGH);
        chdkHigh = millis();
        chdkActive = true;
     #elif HAS_PHOTOGRAPH
@@ -5551,9 +5550,9 @@ inline void gcode_M226() {
         WRITE(PHOTOGRAPH_PIN, LOW);
         _delay_ms(PULSE_LENGTH);
       }
-    #endif // !CHDK && HAS_PHOTOGRAPH
+    #endif // !HAS_CHDK && HAS_PHOTOGRAPH
   }
-#endif // CHDK || PHOTOGRAPH_PIN
+#endif // HAS_CHDK || PHOTOGRAPH_PIN
 
 #ifdef HAS_LCD_CONTRAST
   /**
@@ -5613,7 +5612,7 @@ inline void gcode_M226() {
 #endif // HAS_BUZZER
 
 
-#ifdef PIDTEMP
+#if ENABLED(PIDTEMP)
   /**
    * M301: Set PID parameters P I D
    */
@@ -5653,7 +5652,7 @@ inline void gcode_M226() {
 
 #endif // PREVENT_DANGEROUS_EXTRUDE
 
-#if defined(PIDTEMP) || defined(PIDTEMPBED)
+#if ENABLED(PIDTEMP) || ENABLED(PIDTEMPBED)
   /**
    * M303: PID relay autotune
    *       S<temperature> sets the target temperature. (default target temperature = 150C)
@@ -5668,7 +5667,7 @@ inline void gcode_M226() {
   }
 #endif
 
-#ifdef PIDTEMPBED
+#if ENABLED(PIDTEMPBED)
   // M304: Set bed PID parameters P I and D
   inline void gcode_M304() {
     if (code_seen('P')) bedKp = code_value();
@@ -6355,7 +6354,7 @@ inline void gcode_M907() {
   }
 #endif // HAS_DIGIPOTSS
 
-#ifdef NPR2
+#if ENABLED(NPR2)
   /**
    * M997: Cxx Move Carter xx gradi
    */
@@ -6930,10 +6929,10 @@ void process_next_command() {
       case 226: // M226 P<pin number> S<pin state>- Wait until the specified pin reaches the state required
         gcode_M226(); break;
 
-      #if defined(CHDK) || (defined(PHOTOGRAPH_PIN) && PHOTOGRAPH_PIN > -1)
+      #if HAS_CHDK || HAS_PHOTOGRAPH
         case 240: // M240  Triggers a camera by emulating a Canon RC-1 : http://www.doc-diy.net/photo/rc-1_hacked/
           gcode_M240(); break;
-      #endif // CHDK || PHOTOGRAPH_PIN
+      #endif // HAS_CHDK || HAS_PHOTOGRAPH
 
       #if defined(DOGLCD) && LCD_CONTRAST >= 0
         case 250: // M250  Set LCD contrast value: C<value> (value 0..63)
@@ -6950,7 +6949,7 @@ void process_next_command() {
           gcode_M300(); break;
       #endif // HAS_BUZZER
 
-      #ifdef PIDTEMP
+      #if ENABLED(PIDTEMP)
         case 301: // M301
           gcode_M301(); break;
       #endif // PIDTEMP
@@ -6960,12 +6959,12 @@ void process_next_command() {
           gcode_M302(); break;
       #endif // PREVENT_DANGEROUS_EXTRUDE
 
-      #if defined(PIDTEMP) || defined(PIDTEMPBED)
+      #if ENABLED(PIDTEMP) || ENABLED(PIDTEMPBED)
         case 303: // M303 PID autotune
           gcode_M303(); break;
       #endif
 
-      #ifdef PIDTEMPBED
+      #if ENABLED(PIDTEMPBED)
         case 304: // M304
           gcode_M304(); break;
       #endif // PIDTEMPBED
@@ -7645,10 +7644,10 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
     #endif
   }
 
-  #ifdef CHDK // Check if pin should be set to LOW after M240 set it to HIGH
+  #if HAS_CHDK // Check if pin should be set to LOW after M240 set it to HIGH
     if (chdkActive && ms > chdkHigh + CHDK_DELAY) {
       chdkActive = false;
-      WRITE(CHDK, LOW);
+      WRITE(CHDK_PIN, LOW);
     }
   #endif
 
@@ -7778,7 +7777,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
     }
   #endif
 
-  #if defined(SDSUPPORT) && defined(SD_SETTINGS)
+  #if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
     if(IS_SD_INSERTED && !IS_SD_PRINTING) {
       if (!config_readed) {
         ConfigSD_RetrieveSettings(true);

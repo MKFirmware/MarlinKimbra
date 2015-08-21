@@ -544,7 +544,7 @@ float junction_deviation = 0.1;
 
       #if ENABLED(PREVENT_LENGTHY_EXTRUDE)
         if (labs(de) > axis_steps_per_unit[E_AXIS + extruder] * EXTRUDE_MAXLENGTH) {
-          #ifdef EASY_LOAD
+          #if ENABLED(EASY_LOAD)
             if (!allow_lengthy_extrude_once) {
           #endif
           position[E_AXIS] = target[E_AXIS]; // Behave as if the move really took place, but ignore E part

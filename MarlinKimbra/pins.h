@@ -5281,28 +5281,44 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
   #endif //EXTRUDERS
 #endif //MKR4
 
-#ifdef NPR2
+#if ENABLED(NPR2)
   #define E_MIN_PIN           -1
-#endif //NPR2
+#endif
 
-#ifdef LASERBEAM
+#if ENABLED(LASERBEAM)
   #define LASER_PWR_PIN       41
   #define LASER_TTL_PIN       42
 #endif
 
-#ifdef FILAMENT_RUNOUT_SENSOR
+#if ENABLED(FILAMENT_RUNOUT_SENSOR)
   #define FILRUNOUT_PIN       -1
 #endif
 
-#ifdef FILAMENT_SENSOR
-  // FMM added for Filament Extruder
-  //define analog pin for the filament width sensor input
-  //Use the RAMPS 1.4 Analog input 5 on the AUX2 connector
-  #define FILWIDTH_PIN        -1   // ANALOG NUMBERING
+#if ENABLED(FILAMENT_SENSOR)
+  #define FILWIDTH_PIN        -1     // ANALOG NUMBERING
 #endif
 
-#ifdef POWER_CONSUMPTION
+#if ENABLED(POWER_CONSUMPTION)
   #define POWER_CONSUMPTION_PIN -1   // ANALOG NUMBERING
+#endif
+
+#if ENABLED(PHOTOGRAPH)
+  #define PHOTOGRAPH_PIN -1
+#endif
+
+#if ENABLED(CHDK)
+  #define CHDK_PIN -1
+#endif
+
+#if ENABLED(CONTROLLERFAN)
+  #define CONTROLLERFAN_PIN -1
+#endif
+
+#if ENABLED(EXTRUDER_AUTO_FAN)
+  #define EXTRUDER_0_AUTO_FAN_PIN -1
+  #define EXTRUDER_1_AUTO_FAN_PIN -1
+  #define EXTRUDER_2_AUTO_FAN_PIN -1
+  #define EXTRUDER_3_AUTO_FAN_PIN -1
 #endif
 /****************************************************************************************/
 
