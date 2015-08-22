@@ -20,7 +20,7 @@
 */
 
 #include "stepper_indirection.h"
-#include "Configuration.h"
+#include "Configuration_Basic.h"
 
 #if ENABLED(HAVE_TMCDRIVER)
   #include <SPI.h>

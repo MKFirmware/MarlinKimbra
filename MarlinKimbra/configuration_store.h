@@ -1,7 +1,7 @@
 #ifndef CONFIGURATION_STORE_H
 #define CONFIGURATION_STORE_H
 
-#include "Configuration.h"
+#include "Configuration_Basic.h"
 
 void Config_ResetDefault();
 void ConfigSD_ResetDefault();

@@ -1,4 +1,4 @@
-#include "Configuration.h"
+#include "Configuration_Basic.h"
 
 #if ENABLED(DIGIPOT_I2C)
 
