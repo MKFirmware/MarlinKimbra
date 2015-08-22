@@ -1119,7 +1119,6 @@ void tp_init() {
 #if ENABLED(THERMAL_PROTECTION_HOTENDS) || ENABLED(THERMAL_PROTECTION_BED)
 
   void thermal_runaway_protection(TRState *state, millis_t *timer, float temperature, float target_temperature, int heater_id, int period_seconds, int hysteresis_degc) {
-    static float tr_last_temperature = 0.0;
     static float tr_target_temperature[HOTENDS + 1] = { 0.0 };
     /*
         ECHO_SM(DB, "Thermal Thermal Runaway Running. Heater ID: ");
@@ -1144,7 +1143,6 @@ void tp_init() {
       // Inactive state waits for a target temperature to be set
       case TRInactive: {
         if (target_temperature > 0) {
-          tr_last_temperature = temperature;
           tr_target_temperature[heater_index] = target_temperature;
           *timer = millis();
           *state = TRFirstHeating;
@@ -1155,11 +1153,6 @@ void tp_init() {
       // If the heater takes too long to reach the target temperature the sistem will be halt.
       case TRFirstHeating: {
         if (temperature >= tr_target_temperature[heater_index]) *state = TRStable;
-        else if (temperature == tr_last_temperature) {
-          if (millis() > *timer + period_seconds * 1000UL) {
-            *state = TRRunaway;
-          }
-        }
         else {
           *timer = millis();
         }
