@@ -6,7 +6,7 @@
 * When selecting the Russian language, a slightly different LCD implementation is used to handle UTF8 characters.
 **/
 
-//#ifndef REPRAPWORLD_KEYPAD
+//#if DISABLED(REPRAPWORLD_KEYPAD)
 //  extern volatile uint8_t buttons;  //the last checked buttons in a bit array.
 //#else
   extern volatile uint8_t buttons;  //an extended version of the last checked buttons in a bit array.
@@ -27,7 +27,7 @@
 #define EN_B BIT(BLEN_B) // The two encoder pins are connected through BTN_EN1 and BTN_EN2
 #define EN_A BIT(BLEN_A)
 
-#if defined(BTN_ENC) && BTN_ENC > -1
+#if ENABLED(BTN_ENC) && BTN_ENC > -1
   // encoder click is directly connected
   #define BLEN_C 2 
   #define EN_C BIT(BLEN_C) 
@@ -51,7 +51,7 @@
   #define B_DW (BUTTON_DOWN<<B_I2C_BTN_OFFSET)
   #define B_RI (BUTTON_RIGHT<<B_I2C_BTN_OFFSET)
 
-  #if defined(BTN_ENC) && BTN_ENC > -1
+  #if ENABLED(BTN_ENC) && BTN_ENC > -1
     // the pause/stop/restart button is connected to BTN_ENC when used
     #define B_ST (EN_C)                            // Map the pause/stop/resume button into its normalized functional name
     #define LCD_CLICKED (buttons&(B_MI|B_RI|B_ST)) // pause/stop button also acts as click until we implement proper pause/stop.
@@ -380,7 +380,7 @@ static void lcd_implementation_init(
 
   #if ENABLED(LCD_I2C_TYPE_PCF8575)
     lcd.begin(LCD_WIDTH, LCD_HEIGHT);
-    #ifdef LCD_I2C_PIN_BL
+    #if ENABLED(LCD_I2C_PIN_BL)
       lcd.setBacklightPin(LCD_I2C_PIN_BL, POSITIVE);
       lcd.setBacklight(HIGH);
     #endif
@@ -554,7 +554,7 @@ static void lcd_implementation_status_screen() {
 
         lcd.print('X');
         if (axis_known_position[X_AXIS])
-          #ifdef DELTA
+          #if MECH(DELTA)
             lcd.print(ftostr30(current_position[X_AXIS]));
           #else
             lcd.print(ftostr3(current_position[X_AXIS]));
@@ -562,7 +562,7 @@ static void lcd_implementation_status_screen() {
         else
           lcd_printPGM(PSTR("---"));
 
-        #ifdef DELTA
+        #if MECH(DELTA)
           lcd_printPGM(PSTR(" Y"));
           if (axis_known_position[Y_AXIS])
             lcd.print(ftostr30(current_position[Y_AXIS]));

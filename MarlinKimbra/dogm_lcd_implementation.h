@@ -33,7 +33,7 @@
 
 #include "ultralcd.h"
 #include "ultralcd_st7920_u8glib_rrd.h"
-#include "Configuration.h"
+#include "Configuration_Basic.h"
 
 #if DISABLED(MAPPER_C2C3) && DISABLED(MAPPER_NON) && ENABLED(USE_BIG_EDIT_FONT)
    #undef USE_BIG_EDIT_FONT
@@ -106,7 +106,7 @@
   #define LCD_WIDTH_EDIT       22
 #endif
 
-#ifndef TALL_FONT_CORRECTION
+#if DISABLED(TALL_FONT_CORRECTION)
   #define TALL_FONT_CORRECTION 0
 #endif
 
@@ -137,10 +137,10 @@
   U8GLIB_DOGM128 u8g(DOGLCD_CS, DOGLCD_A0);  // HW-SPI Com: CS, A0
 #endif
 
-#ifndef LCD_PIXEL_WIDTH
+#if DISABLED(LCD_PIXEL_WIDTH)
   #define LCD_PIXEL_WIDTH 128
 #endif
-#ifndef LCD_PIXEL_HEIGHT
+#if DISABLED(LCD_PIXEL_HEIGHT)
   #define LCD_PIXEL_HEIGHT 64
 #endif
 
@@ -238,7 +238,7 @@ static void lcd_implementation_init() {
       if (show_bootscreen) {
         u8g.drawBitmapP(offx, offy, START_BMPBYTEWIDTH, START_BMPHEIGHT, start_bmp);
         lcd_setFont(FONT_MENU);
-        #ifndef STRING_SPLASH_LINE2
+        #if DISABLED(STRING_SPLASH_LINE2)
           u8g.drawStr(txt1X, u8g.getHeight() - DOG_CHAR_HEIGHT, STRING_SPLASH_LINE1);
         #else
           int txt2X = (u8g.getWidth() - (sizeof(STRING_SPLASH_LINE2) - 1)*DOG_CHAR_WIDTH) / 2;

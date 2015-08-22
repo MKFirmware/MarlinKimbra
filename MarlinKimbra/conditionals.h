@@ -48,7 +48,7 @@
   #define REPRAP_DISCOUNT_SMART_CONTROLLER
 #endif
 
-#ifdef SPARK_FULL_GRAPHICS
+#if ENABLED(SPARK_FULL_GRAPHICS)
   #define ENCODER_PULSES_PER_STEP 2
   #define ENCODER_STEPS_PER_MENU_ITEM 1
 
@@ -62,7 +62,7 @@
   #define NEWPANEL
 #endif
 
-#ifdef RADDS_DISPLAY
+#if ENABLED(RADDS_DISPLAY)
   #define ENCODER_PULSES_PER_STEP 2
   #define ENCODER_STEPS_PER_MENU_ITEM 1
 
@@ -108,11 +108,11 @@
   #define LCD_I2C_ADDRESS 0x20 // I2C Address of the port expander
   #define LCD_USE_I2C_BUZZER //comment out to disable buzzer on LCD
 
-  #ifndef ENCODER_PULSES_PER_STEP
+  #if DISABLED(ENCODER_PULSES_PER_STEP)
     #define ENCODER_PULSES_PER_STEP 4
   #endif
 
-  #ifndef ENCODER_STEPS_PER_MENU_ITEM
+  #if DISABLED(ENCODER_STEPS_PER_MENU_ITEM)
     #define ENCODER_STEPS_PER_MENU_ITEM 1
   #endif
 
@@ -232,7 +232,7 @@
 /**
  * DRIVER_EXTRUDERS
  */
-#if !defined(MKR4) && !defined(NPR2)
+#if DISABLED(MKR4) && DISABLED(NPR2)
   #define DRIVER_EXTRUDERS EXTRUDERS // This defines the number of Driver extruder
 #endif
 
@@ -369,7 +369,7 @@
 /**
  * Servo Leveling
  */
-#define SERVO_LEVELING (defined(SERVO_ENDSTOPS) && defined(DEACTIVATE_SERVOS_AFTER_MOVE))
+#define SERVO_LEVELING (ENABLED(SERVO_ENDSTOPS) && ENABLED(DEACTIVATE_SERVOS_AFTER_MOVE))
 
 /**
  * Sled Options
@@ -427,7 +427,7 @@
  * Power Signal Control Definitions
  * By default use Normal definition
  */
-#ifndef POWER_SUPPLY
+#if DISABLED(POWER_SUPPLY)
   #define POWER_SUPPLY 0
 #endif
 #if (POWER_SUPPLY == 1)     // 1 = ATX
@@ -556,7 +556,7 @@
 #define HAS_AUTO_FAN (HAS_AUTO_FAN_0 || HAS_AUTO_FAN_1 || HAS_AUTO_FAN_2 || HAS_AUTO_FAN_3)
 #define HAS_FAN (PIN_EXISTS(FAN))
 #define HAS_CONTROLLERFAN (ENABLED(CONTROLLERFAN) && PIN_EXISTS(CONTROLLERFAN))
-#define HAS_SERVOS (defined(NUM_SERVOS) && NUM_SERVOS > 0)
+#define HAS_SERVOS (ENABLED(NUM_SERVOS) && NUM_SERVOS > 0)
 #define HAS_SERVO_0 (PIN_EXISTS(SERVO0))
 #define HAS_SERVO_1 (PIN_EXISTS(SERVO1))
 #define HAS_SERVO_2 (PIN_EXISTS(SERVO2))
@@ -630,8 +630,8 @@
 /**
  * Shorthand for filament sensor and power sensor for ultralcd.cpp, dogm_lcd_implementation.h, ultralcd_implementation_hitachi_HD44780.h
  */
-#define HAS_LCD_FILAMENT_SENSOR (HAS_FILAMENT_SENSOR && defined(FILAMENT_LCD_DISPLAY))
-#define HAS_LCD_POWER_SENSOR (HAS_POWER_CONSUMPTION_SENSOR && defined(POWER_CONSUMPTION_LCD_DISPLAY))
+#define HAS_LCD_FILAMENT_SENSOR (HAS_FILAMENT_SENSOR && ENABLED(FILAMENT_LCD_DISPLAY))
+#define HAS_LCD_POWER_SENSOR (HAS_POWER_CONSUMPTION_SENSOR && ENABLED(POWER_CONSUMPTION_LCD_DISPLAY))
 
 /**
  * Helper Macros for heaters and extruder fan
@@ -642,7 +642,7 @@
   #define WRITE_HEATER(pin,value) WRITE(pin,value)
 #endif
 #define WRITE_HEATER_0P(v) WRITE_HEATER(HEATER_0_PIN, v)
-#if HOTENDS > 1 || defined(HEATERS_PARALLEL)
+#if HOTENDS > 1 || ENABLED(HEATERS_PARALLEL)
   #define WRITE_HEATER_1(v) WRITE_HEATER(HEATER_1_PIN, v)
   #if HOTENDS > 2
     #define WRITE_HEATER_2(v) WRITE_HEATER(HEATER_2_PIN, v)
@@ -657,14 +657,14 @@
   #define WRITE_HEATER_0(v) WRITE_HEATER_0P(v)
 #endif
 #if HAS_HEATER_BED
-  #ifdef INVERTED_BED_PINS
+  #if ENABLED(INVERTED_BED_PINS)
     #define WRITE_HEATER_BED(v) WRITE(HEATER_BED_PIN,!v)
   #else
     #define WRITE_HEATER_BED(v) WRITE(HEATER_BED_PIN,v)
   #endif
 #endif
 #if HAS_FAN
-  #ifdef INVERTED_HEATER_PINS
+  #if ENABLED(INVERTED_HEATER_PINS)
     #define WRITE_FAN(v) WRITE(FAN_PIN, !v)
   #else
     #define WRITE_FAN(v) WRITE(FAN_PIN, v)
@@ -674,7 +674,7 @@
 /**
  * Buzzer
  */
-#define HAS_BUZZER (PIN_EXISTS(BEEPER) || defined(LCD_USE_I2C_BUZZER))
+#define HAS_BUZZER (PIN_EXISTS(BEEPER) || ENABLED(LCD_USE_I2C_BUZZER))
 
 /**
  * Servos

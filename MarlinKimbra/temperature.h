@@ -97,7 +97,7 @@ extern float current_temperature_bed;
 FORCE_INLINE float degHotend(uint8_t hotend) { return current_temperature[HOTEND_ARG]; }
 FORCE_INLINE float degBed() { return current_temperature_bed; }
 
-#ifdef SHOW_TEMP_ADC_VALUES
+#if ENABLED(SHOW_TEMP_ADC_VALUES)
   FORCE_INLINE float rawHotendTemp(uint8_t hotend) { return current_temperature_raw[HOTEND_ARG]; }
   FORCE_INLINE float rawBedTemp() { return current_temperature_bed_raw; }
 #endif
@@ -105,7 +105,7 @@ FORCE_INLINE float degBed() { return current_temperature_bed; }
 FORCE_INLINE float degTargetHotend(uint8_t hotend) { return target_temperature[HOTEND_ARG]; }
 FORCE_INLINE float degTargetBed() { return target_temperature_bed; }
 
-#ifdef THERMAL_PROTECTION_HOTENDS
+#if ENABLED(THERMAL_PROTECTION_HOTENDS)
   void start_watching_heater(int e=0);
 #endif
 

@@ -1,5 +1,6 @@
 #ifndef CONFIGURATION_MECHANISM
 #define CONFIGURATION_MECHANISM
+#define KNOWN_MECH 1
 
 /*
  * This configuration file contains mechanism settings for cartesian printer.
@@ -22,8 +23,8 @@
  * - Homing feedrate
  * - Hotend offset
  *
- * Basic-settings can be found in configuration_basic.h
- * Feature-settings can be found in configuration_feature.h
+ * Basic-settings can be found in Configuration_Basic.h
+ * Feature-settings can be found in Configuration_Feature.h
  */
  
 /*****************************************************************************************

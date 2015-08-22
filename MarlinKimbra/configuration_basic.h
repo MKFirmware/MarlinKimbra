@@ -2,7 +2,7 @@
 #define CONFIGURATION_H
 
 #include "macros.h"
-#include "default_version.h"
+#include "Default_Version.h"
 
 /*
  * This configuration file contains basic settings.
@@ -15,8 +15,8 @@
  * - Extruders number
  * - UI Language
  *
- * Mechanisms-settings can be found in configuration_xxxxxx.h (where xxxxxx can be: cartesian - delta - core - scara)
- * Feature-settings can be found in configuration_feature.h
+ * Mechanisms-settings can be found in Configuration_Xxxxxx.h (where Xxxxxx can be: Cartesian - Delta - Core - Scara)
+ * Feature-settings can be found in Configuration_Feature.h
  */
 
 /***********************************************************************
@@ -241,19 +241,19 @@
  ********************** Do not touch this section **********************
  ***********************************************************************/
 #if MECH(CARTESIAN)
-  #include "configuration_cartesian.h"
+  #include "Configuration_Cartesian.h"
 #elif MECH(COREXY)
-  #include "configuration_core.h"
+  #include "Configuration_Core.h"
 #elif MECH(COREXZ)
-  #include "configuration_core.h"
+  #include "Configuration_Core.h"
 #elif MECH(DELTA)
-  #include "configuration_delta.h"
+  #include "Configuration_Delta.h"
 #elif MECH(SCARA)
-  #include "configuration_scara.h"
+  #include "Configuration_Scara.h"
 #endif 
 
-#include "configuration_feature.h"
-#include "configuration_overall.h"
+#include "Configuration_Feature.h"
+#include "Configuration_Overall.h"
 
 #include "thermistortables.h"
 #include "conditionals.h"

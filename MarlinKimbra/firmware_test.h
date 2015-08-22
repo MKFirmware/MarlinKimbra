@@ -28,7 +28,7 @@ void FirmwareTest()
 
     ECHO_EM(" ");
     ECHO_EM("***** ENDSTOP X *****");
-    #if defined(X_MIN_PIN) && X_MIN_PIN > -1 && X_HOME_DIR == -1
+    #if ENABLED(X_MIN_PIN) && X_MIN_PIN > -1 && X_HOME_DIR == -1
       if (!READ(X_MIN_PIN)^X_MIN_ENDSTOP_INVERTING) {
         ECHO_M("MIN ENDSTOP X: ");
         ECHO_EV(MSG_ENDSTOP_OPEN);
@@ -70,7 +70,7 @@ void FirmwareTest()
         ECHO_EV(MSG_FWTEST_ENDSTOP_ERR);
         return;
       }
-    #elif defined(X_MAX_PIN) && X_MAX_PIN > -1 && X_HOME_DIR == 1
+    #elif ENABLED(X_MAX_PIN) && X_MAX_PIN > -1 && X_HOME_DIR == 1
       if (!READ(X_MAX_PIN)^X_MAX_ENDSTOP_INVERTING) {
         ECHO_M("MAX ENDSTOP X: ");
         ECHO_EV(MSG_ENDSTOP_OPEN);
@@ -126,7 +126,7 @@ void FirmwareTest()
 
     ECHO_EM(" ");
     ECHO_EM("***** ENDSTOP Y *****");
-    #if defined(Y_MIN_PIN) && Y_MIN_PIN > -1 && Y_HOME_DIR == -1
+    #if ENABLED(Y_MIN_PIN) && Y_MIN_PIN > -1 && Y_HOME_DIR == -1
       if (!READ(Y_MIN_PIN)^Y_MIN_ENDSTOP_INVERTING){
         ECHO_M("MIN ENDSTOP Y: ");
         ECHO_EV(MSG_ENDSTOP_OPEN);
@@ -168,7 +168,7 @@ void FirmwareTest()
         ECHO_EV(MSG_FWTEST_ENDSTOP_ERR);
         return;
       }
-    #elif defined(Y_MAX_PIN) && Y_MAX_PIN > -1 && Y_HOME_DIR == 1
+    #elif ENABLED(Y_MAX_PIN) && Y_MAX_PIN > -1 && Y_HOME_DIR == 1
       if (!READ(Y_MAX_PIN)^Y_MAX_ENDSTOP_INVERTING){
         ECHO_M("MAX ENDSTOP Y: ");
         ECHO_EV(MSG_ENDSTOP_OPEN);
@@ -224,7 +224,7 @@ void FirmwareTest()
 
     ECHO_EM(" ");
     ECHO_EM("***** ENDSTOP Z *****");
-    #if defined(Z_MIN_PIN) && Z_MIN_PIN > -1 && Z_HOME_DIR == -1
+    #if ENABLED(Z_MIN_PIN) && Z_MIN_PIN > -1 && Z_HOME_DIR == -1
       if (!READ(Z_MIN_PIN)^Z_MIN_ENDSTOP_INVERTING){
         ECHO_M("MIN ENDSTOP Z: ");
         ECHO_EV(MSG_ENDSTOP_OPEN);
@@ -266,7 +266,7 @@ void FirmwareTest()
         ECHO_EV(MSG_FWTEST_ENDSTOP_ERR);
         return;
       }
-    #elif defined(Z_MAX_PIN) && Z_MAX_PIN > -1 && Z_HOME_DIR == 1
+    #elif ENABLED(Z_MAX_PIN) && Z_MAX_PIN > -1 && Z_HOME_DIR == 1
       if (!READ(Z_MAX_PIN)^Z_MAX_ENDSTOP_INVERTING){
         ECHO_M("MAX ENDSTOP Z: ");
         ECHO_EV(MSG_ENDSTOP_OPEN);

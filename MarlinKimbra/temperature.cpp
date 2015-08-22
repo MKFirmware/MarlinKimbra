@@ -30,7 +30,7 @@
 //================================== macros =================================
 //===========================================================================
 
-#ifdef K1 // Defined in Configuration.h in the PID settings
+#if ENABLED(K1) // Defined in Configuration.h in the PID settings
   #define K2 (1.0 - K1)
 #endif
 
@@ -154,10 +154,10 @@ static int minttemp_raw[HOTENDS] = ARRAY_BY_HOTENDS( HEATER_0_RAW_LO_TEMP , HEAT
 static int maxttemp_raw[HOTENDS] = ARRAY_BY_HOTENDS( HEATER_0_RAW_HI_TEMP , HEATER_1_RAW_HI_TEMP , HEATER_2_RAW_HI_TEMP, HEATER_3_RAW_HI_TEMP);
 static int minttemp[HOTENDS] = { 0 };
 static int maxttemp[HOTENDS] = ARRAY_BY_HOTENDS1( 16383 );
-#ifdef BED_MINTEMP
+#if ENABLED(BED_MINTEMP)
   static int bed_minttemp_raw = HEATER_BED_RAW_LO_TEMP;
 #endif
-#ifdef BED_MAXTEMP
+#if ENABLED(BED_MAXTEMP)
   static int bed_maxttemp_raw = HEATER_BED_RAW_HI_TEMP;
 #endif
 
@@ -173,12 +173,12 @@ static float analog2temp(int raw, uint8_t e);
 static float analog2tempBed(int raw);
 static void updateTemperaturesFromRawValues();
 
-#ifdef THERMAL_PROTECTION_HOTENDS
+#if ENABLED(THERMAL_PROTECTION_HOTENDS)
   int watch_target_temp[HOTENDS] = { 0 };
   millis_t watch_heater_next_ms[HOTENDS] = { 0 };
 #endif
 
-#ifndef SOFT_PWM_SCALE
+#if DISABLED(SOFT_PWM_SCALE)
   #define SOFT_PWM_SCALE 0
 #endif
 
@@ -471,7 +471,7 @@ inline void _temp_error(int e, const char *serial_msg, const char *lcd_msg) {
     PS_PGM(serial_msg);
     ECHO_M(MSG_STOPPED_HEATER);
     if (e >= 0) ECHO_EV((int)e); else ECHO_EM(MSG_HEATER_BED);
-    #ifdef ULTRA_LCD
+    #if ENABLED(ULTRA_LCD)
       lcd_setalertstatuspgm(lcd_msg);
     #endif
   }
@@ -775,7 +775,7 @@ static float analog2tempBed(int raw) {
     if (i == BEDTEMPTABLE_LEN) celsius = PGM_RD_W(BEDTEMPTABLE[i-1][1]);
 
     return celsius;
-  #elif defined BED_USES_AD595
+  #elif ENABLED(BED_USES_AD595)
     return ((raw * ((5.0 * 100.0) / 1024.0) / OVERSAMPLENR) * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET;
   #else
     return 0;
@@ -1049,38 +1049,38 @@ void tp_init() {
         maxttemp_raw[NR] += OVERSAMPLENR; \
     }
 
-  #ifdef HEATER_0_MINTEMP
+  #if ENABLED(HEATER_0_MINTEMP)
     TEMP_MIN_ROUTINE(0);
   #endif
-  #ifdef HEATER_0_MAXTEMP
+  #if ENABLED(HEATER_0_MAXTEMP)
     TEMP_MAX_ROUTINE(0);
   #endif
   #if HOTENDS > 1
-    #ifdef HEATER_1_MINTEMP
+    #if ENABLED(HEATER_1_MINTEMP)
       TEMP_MIN_ROUTINE(1);
     #endif
-    #ifdef HEATER_1_MAXTEMP
+    #if ENABLED(HEATER_1_MAXTEMP)
       TEMP_MAX_ROUTINE(1);
     #endif
     #if HOTENDS > 2
-      #ifdef HEATER_2_MINTEMP
+      #if ENABLED(HEATER_2_MINTEMP)
         TEMP_MIN_ROUTINE(2);
       #endif
-      #ifdef HEATER_2_MAXTEMP
+      #if ENABLED(HEATER_2_MAXTEMP)
         TEMP_MAX_ROUTINE(2);
       #endif
       #if HOTENDS > 3
-        #ifdef HEATER_3_MINTEMP
+        #if ENABLED(HEATER_3_MINTEMP)
           TEMP_MIN_ROUTINE(3);
         #endif
-        #ifdef HEATER_3_MAXTEMP
+        #if ENABLED(HEATER_3_MAXTEMP)
           TEMP_MAX_ROUTINE(3);
         #endif
       #endif // HOTENDS > 3
     #endif // HOTENDS > 2
   #endif // HOTENDS > 1
 
-  #ifdef BED_MINTEMP
+  #if ENABLED(BED_MINTEMP)
     while(analog2tempBed(bed_minttemp_raw) < BED_MINTEMP) {
       #if HEATER_BED_RAW_LO_TEMP < HEATER_BED_RAW_HI_TEMP
         bed_minttemp_raw += OVERSAMPLENR;
@@ -1089,7 +1089,7 @@ void tp_init() {
       #endif
     }
   #endif //BED_MINTEMP
-  #ifdef BED_MAXTEMP
+  #if ENABLED(BED_MAXTEMP)
     while(analog2tempBed(bed_maxttemp_raw) > BED_MAXTEMP) {
       #if HEATER_BED_RAW_LO_TEMP < HEATER_BED_RAW_HI_TEMP
         bed_maxttemp_raw -= OVERSAMPLENR;
@@ -1471,7 +1471,7 @@ ISR(TIMER0_COMPB_vect) {
      *
      * for heaters drived by relay
      */
-    #ifndef MIN_STATE_TIME
+    #if DISABLED(MIN_STATE_TIME)
       #define MIN_STATE_TIME 16 // MIN_STATE_TIME * 65.5 = time in milliseconds
     #endif
 

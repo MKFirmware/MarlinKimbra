@@ -37,7 +37,7 @@
   #define NORM_E_DIR() { if(current_block->active_driver == 2) { E2_DIR_WRITE(!INVERT_E2_DIR); } else { if(current_block->active_driver == 1) { E1_DIR_WRITE(!INVERT_E1_DIR); } else { E0_DIR_WRITE(!INVERT_E0_DIR); }}}
   #define REV_E_DIR() { if(current_block->active_driver == 2) { E2_DIR_WRITE(INVERT_E2_DIR); } else { if(current_block->active_driver == 1) { E1_DIR_WRITE(INVERT_E1_DIR); } else { E0_DIR_WRITE(INVERT_E0_DIR); }}}
 #elif DRIVER_EXTRUDERS > 1
-  #ifndef DUAL_X_CARRIAGE
+  #if DISABLED(DUAL_X_CARRIAGE)
     #define E_STEP_WRITE(v) { if(current_block->active_driver == 1) { E1_STEP_WRITE(v); } else { E0_STEP_WRITE(v); }}
     #define NORM_E_DIR() { if(current_block->active_driver == 1) { E1_DIR_WRITE(!INVERT_E1_DIR); } else { E0_DIR_WRITE(!INVERT_E0_DIR); }}
     #define REV_E_DIR() { if(current_block->active_driver == 1) { E1_DIR_WRITE(INVERT_E1_DIR); } else { E0_DIR_WRITE(INVERT_E0_DIR); }}

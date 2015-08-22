@@ -118,17 +118,17 @@ static void lcd_status_screen();
   #define ENCODER_FEEDRATE_DEADZONE 10
 
   #if DISABLED(LCD_I2C_VIKI)
-    #ifndef ENCODER_STEPS_PER_MENU_ITEM
+    #if DISABLED(ENCODER_STEPS_PER_MENU_ITEM)
       #define ENCODER_STEPS_PER_MENU_ITEM 5
     #endif
-    #ifndef ENCODER_PULSES_PER_STEP
+    #if DISABLED(ENCODER_PULSES_PER_STEP)
       #define ENCODER_PULSES_PER_STEP 1
     #endif
   #else
-    #ifndef ENCODER_STEPS_PER_MENU_ITEM
+    #if DISABLED(ENCODER_STEPS_PER_MENU_ITEM)
       #define ENCODER_STEPS_PER_MENU_ITEM 2 // VIKI LCD rotary encoder uses a different number of steps per rotation
     #endif
-    #ifndef ENCODER_PULSES_PER_STEP
+    #if DISABLED(ENCODER_PULSES_PER_STEP)
       #define ENCODER_PULSES_PER_STEP 1
     #endif
   #endif
@@ -139,7 +139,7 @@ static void lcd_status_screen();
   /**
    * START_MENU generates the init code for a menu function
    */
-#if defined(BTN_BACK) && BTN_BACK > 0
+#if ENABLED(BTN_BACK) && BTN_BACK > 0
   #define START_MENU(last_menu) do { \
     encoderRateMultiplierEnabled = false; \
     if (encoderPosition > 0x8000) encoderPosition = 0; \
@@ -308,7 +308,7 @@ static void lcd_status_screen() {
 
   #if ENABLED(LCD_PROGRESS_BAR)
     millis_t ms = millis();
-    #ifndef PROGRESS_MSG_ONCE
+    #if DISABLED(ROGRESS_MSG_ONCE)
       if (ms > progress_bar_ms + PROGRESS_BAR_MSG_TIME + PROGRESS_BAR_BAR_TIME) {
         progress_bar_ms = ms;
       }
@@ -1560,23 +1560,23 @@ void lcd_quick_feedback() {
   next_button_update_ms = millis() + 500;
     
   #if ENABLED(LCD_USE_I2C_BUZZER)
-    #ifndef LCD_FEEDBACK_FREQUENCY_HZ
+    #if DISABLED(LCD_FEEDBACK_FREQUENCY_HZ)
       #define LCD_FEEDBACK_FREQUENCY_HZ 100
     #endif
-    #ifndef LCD_FEEDBACK_FREQUENCY_DURATION_MS
+    #if DISABLED(LCD_FEEDBACK_FREQUENCY_DURATION_MS)
       #define LCD_FEEDBACK_FREQUENCY_DURATION_MS (1000/6)
     #endif    
     lcd.buzz(LCD_FEEDBACK_FREQUENCY_DURATION_MS, LCD_FEEDBACK_FREQUENCY_HZ);
   #elif PIN_EXISTS(BEEPER)
-    #ifndef LCD_FEEDBACK_FREQUENCY_HZ
+    #if DISABLED(LCD_FEEDBACK_FREQUENCY_HZ)
       #define LCD_FEEDBACK_FREQUENCY_HZ 5000
     #endif
-    #ifndef LCD_FEEDBACK_FREQUENCY_DURATION_MS
+    #if DISABLED(LCD_FEEDBACK_FREQUENCY_DURATION_MS)
       #define LCD_FEEDBACK_FREQUENCY_DURATION_MS 2
     #endif
     buzz(LCD_FEEDBACK_FREQUENCY_DURATION_MS, LCD_FEEDBACK_FREQUENCY_HZ);
   #else
-    #ifndef LCD_FEEDBACK_FREQUENCY_DURATION_MS
+    #if DISABLED(LCD_FEEDBACK_FREQUENCY_DURATION_MS)
       #define LCD_FEEDBACK_FREQUENCY_DURATION_MS 2
     #endif
     delay(LCD_FEEDBACK_FREQUENCY_DURATION_MS);
@@ -1638,7 +1638,7 @@ void lcd_init() {
   #if ENABLED(SR_LCD_2W_NL) // Non latching 2 wire shift register
      pinMode (SR_DATA_PIN, OUTPUT);
      pinMode (SR_CLK_PIN, OUTPUT);
-  #elif defined(SHIFT_CLK)
+  #elif ENABLED(SHIFT_CLK)
      pinMode(SHIFT_CLK,OUTPUT);
      pinMode(SHIFT_LD,OUTPUT);
      pinMode(SHIFT_EN,OUTPUT);
@@ -1928,7 +1928,7 @@ void lcd_reset_alert_level() { lcd_status_message_level = 0; }
    * These values are independent of which pins are used for EN_A and EN_B indications
    * The rotary encoder part is also independent to the chipset used for the LCD
    */
-  #if defined(EN_A) && defined(EN_B)
+  #if ENABLED(EN_A) && ENABLED(EN_B)
     #define encrot0 0
     #define encrot1 2
     #define encrot2 3
@@ -1952,7 +1952,7 @@ void lcd_reset_alert_level() { lcd_status_message_level = 0; }
       #if BTN_ENC > 0
         millis_t ms = millis();
         if (ms > next_button_update_ms && READ(BTN_ENC) == 0) newbutton |= EN_C;
-        #if defined(BTN_BACK) && BTN_BACK > 0
+        #if ENABLED(BTN_BACK) && BTN_BACK > 0
           if (ms > next_button_update_ms && READ(BTN_BACK) == 0) newbutton |= EN_D;
         #endif
       #endif
@@ -2620,7 +2620,7 @@ static void coordtoLCD() {
   memset(buffer, 0, sizeof(buffer));
   strcat(buffer, "X");
   if (axis_known_position[X_AXIS]) {
-    #ifdef DELTA
+    #if MECH(DELTA)
       valuetemp = ftostr30(current_position[X_AXIS]);
     #else
       valuetemp = ftostr3(current_position[X_AXIS]);
@@ -2632,7 +2632,7 @@ static void coordtoLCD() {
 
   strcat(buffer, " Y");
   if (axis_known_position[Y_AXIS]) {
-    #ifdef DELTA
+    #if MECH(DELTA)
       valuetemp = ftostr30(current_position[Y_AXIS]);
     #else
       valuetemp = ftostr3(current_position[Y_AXIS]);

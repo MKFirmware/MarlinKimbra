@@ -22,7 +22,7 @@
 
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
-#include "Configuration.h"
+#include "Configuration_Basic.h"
 #include "pins.h"
 
 #ifndef SANITYCHECK_H
@@ -225,7 +225,7 @@ extern float home_offset[3];
 
 // Hotend offset
 #if HOTENDS > 1
-  #ifndef DUAL_X_CARRIAGE
+  #if DISABLED(DUAL_X_CARRIAGE)
     #define NUM_HOTEND_OFFSETS 2 // only in XY plane
   #else
     #define NUM_HOTEND_OFFSETS 3 // supports offsets in XYZ plane

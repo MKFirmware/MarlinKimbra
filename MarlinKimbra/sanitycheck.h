@@ -95,7 +95,7 @@
   #if NUM_SERVOS > 4
     #error The maximum number of SERVOS in Marlin is 4.
   #endif
-  #if defined(NUM_SERVOS) && NUM_SERVOS > 0
+  #if ENABLED(NUM_SERVOS) && NUM_SERVOS > 0
     #if X_ENDSTOP_SERVO_NR >= 0 || Y_ENDSTOP_SERVO_NR >= 0 || Z_ENDSTOP_SERVO_NR >= 0
       #if X_ENDSTOP_SERVO_NR >= NUM_SERVOS
         #error X_ENDSTOP_SERVO_NR must be smaller than NUM_SERVOS.
@@ -143,23 +143,24 @@
      * Require a Z Probe Pin if Z_PROBE_ENDSTOP is enabled.
      */
     #if ENABLED(Z_PROBE_ENDSTOP)
-      #ifndef Z_PROBE_PIN
+      #if DISABLED(Z_PROBE_PIN)
         #error You must have a Z_PROBE_PIN defined in pins2tool.h file if you enable Z_PROBE_ENDSTOP.
+        #erro sistema pins2tool.h
       #endif
       #if Z_PROBE_PIN == -1
         #error You must set Z_PROBE_PIN to a valid pin if you enable Z_PROBE_ENDSTOP.
       #endif
 // Forcing Servo definitions can break some hall effect sensor setups. Leaving these here for further comment.
-//      #ifndef NUM_SERVOS
+//      #if DISABLED(NUM_SERVOS)
 //        #error You must have NUM_SERVOS defined and there must be at least 1 configured to use Z_PROBE_ENDSTOP.
 //      #endif
-//      #if defined(NUM_SERVOS) && NUM_SERVOS < 1
+//      #if ENABLED(NUM_SERVOS) && NUM_SERVOS < 1
 //        #error You must have at least 1 servo defined for NUM_SERVOS to use Z_PROBE_ENDSTOP.
 //      #endif
 //      #if Z_ENDSTOP_SERVO_NR < 0
 //        #error You must have Z_ENDSTOP_SERVO_NR set to at least 0 or above to use Z_PROBE_ENDSTOP.
 //      #endif
-//      #ifndef SERVO_ENDSTOP_ANGLES
+//      #if DISABLED(ERVO_ENDSTOP_ANGLES)
 //        #error You must have SERVO_ENDSTOP_ANGLES defined for Z Extend and Retract to use Z_PROBE_ENDSTOP.
 //      #endif
     #endif
@@ -208,7 +209,7 @@
   /**
    * ULTIPANEL encoder
    */
-  #if ENABLED(ULTIPANEL) && DISABLED(NEWPANEL) && DISABLED(SR_LCD_2W_NL) && !defined(SHIFT_CLK)
+  #if ENABLED(ULTIPANEL) && DISABLED(NEWPANEL) && DISABLED(SR_LCD_2W_NL) && DISABLED(SHIFT_CLK)
     #error ULTIPANEL requires some kind of encoder.
   #endif
 
@@ -216,7 +217,7 @@
    * Delta & Z_PROBE_ENDSTOP
    */
   #if MECH(DELTA) && ENABLED(Z_PROBE_ENDSTOP)
-    #ifndef Z_PROBE_PIN
+    #if DISABLED(Z_PROBE_PIN)
       #error You must have a Z_PROBE_PIN defined in your pins2tool.h file if you enable Z_PROBE_ENDSTOP
     #endif
     #if Z_PROBE_PIN == -1
@@ -230,7 +231,7 @@
   #if ENABLED(DUAL_X_CARRIAGE)
     #if EXTRUDERS == 1 || MECH(COREXY) \
         || HASNT(X2_ENABLE) || HASNT(X2_STEP) || HASNT(X2_DIR) \
-        || !defined(X2_HOME_POS) || !defined(X2_MIN_POS) || !defined(X2_MAX_POS) \
+        || DISABLED(X2_HOME_POS) || DISABLED(X2_MIN_POS) || DISABLED(X2_MAX_POS) \
         || HASNT(X_MAX)
       #error Missing or invalid definitions for DUAL_X_CARRIAGE mode.
     #endif
@@ -269,7 +270,7 @@
     #if HASNT(HEATER_2)
       #error HEATER_2_PIN not defined for this board
     #endif
-  #elif HOTENDS > 1 || defined(HEATERS_PARALLEL)
+  #elif HOTENDS > 1 || ENABLED(HEATERS_PARALLEL)
     #if HASNT(HEATER_1)
       #error HEATER_1_PIN not defined for this board
     #endif
@@ -286,7 +287,7 @@
   /**
    * Warnings for old configurations
    */
-  #ifdef X_HOME_RETRACT_MM
+  #if ENABLED(X_HOME_RETRACT_MM)
     #error [XYZ]_HOME_RETRACT_MM settings have been renamed [XYZ]_HOME_BUMP_MM.
   #endif
 
@@ -294,11 +295,11 @@
     #error WATCH_TEMP_PERIOD now uses seconds instead of milliseconds.
   #endif
 
-  #if DISABLED(THERMAL_PROTECTION_HOTENDS) && (defined(WATCH_TEMP_PERIOD) || defined(THERMAL_PROTECTION_PERIOD))
+  #if DISABLED(THERMAL_PROTECTION_HOTENDS) && (ENABLED(WATCH_TEMP_PERIOD) || ENABLED(THERMAL_PROTECTION_PERIOD))
     #error Thermal Runaway Protection for hotends must now be enabled with THERMAL_PROTECTION_HOTENDS.
   #endif
 
-  #if DISABLED(THERMAL_PROTECTION_BED) && defined(THERMAL_PROTECTION_BED_PERIOD)
+  #if DISABLED(THERMAL_PROTECTION_BED) && ENABLED(THERMAL_PROTECTION_BED_PERIOD)
     #error Thermal Runaway Protection for the bed must now be enabled with THERMAL_PROTECTION_BED.
   #endif
 
@@ -310,11 +311,11 @@
     #error "Z_LATE_ENABLE can't be used with COREXZ."
   #endif
 
-  #ifdef BEEPER
+  #if ENABLED(BEEPER)
     #error BEEPER has been replaced with BEEPER_PIN. Please update your pins definitions.
   #endif
 
-  #ifdef SDCARDDETECT
+  #if ENABLED(SDCARDDETECT)
     #error SDCARDDETECT is now SD_DETECT_PIN. Please update your pins definitions.
   #endif
 

@@ -364,7 +364,7 @@ class SdBaseFile {
     uint8_t width, bool printSlash);
 //------------------------------------------------------------------------------
 // Deprecated functions  - suppress cpplint warnings with NOLINT comment
-#if ALLOW_DEPRECATED_FUNCTIONS && !defined(DOXYGEN)
+#if ALLOW_DEPRECATED_FUNCTIONS && DISABLED(DOXYGEN)
  public:
   /** \deprecated Use:
    * bool contiguousRange(uint32_t* bgnBlock, uint32_t* endBlock);

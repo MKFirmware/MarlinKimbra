@@ -1,5 +1,5 @@
-#ifndef CONFIGURATION_FEATURE_H
-#define CONFIGURATION_FEATURE_H
+#ifndef Configuration_Feature_H
+#define Configuration_Feature_H
 
 /*
  * This configuration file contains all features that can be enabled.
@@ -68,8 +68,8 @@
  * - Buffer stuff
  * - Whatchdog
  *
- * Basic-settings can be found in configuration_basic.h
- * Mechanisms-settings can be found in configuration_xxxxxx.h (where xxxxxx can be: cartesian - delta - core - scara)
+ * Basic-settings can be found in Configuration_Basic.h
+ * Mechanisms-settings can be found in Configuration_Xxxxxx.h (where Xxxxxx can be: Cartesian - Delta - Core - Scara)
  * 
  */
 

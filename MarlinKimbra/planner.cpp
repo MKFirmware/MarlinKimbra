@@ -109,7 +109,7 @@ static float previous_nominal_speed;   // Nominal speed of previous path line se
 
 unsigned char g_uc_extruder_last_move[4] = {0,0,0,0};
 
-#ifdef XY_FREQUENCY_LIMIT
+#if ENABLED(XY_FREQUENCY_LIMIT)
   // Used for the frequency limit
   #define MAX_FREQ_TIME (1000000.0/XY_FREQUENCY_LIMIT)
   // Old direction bits. Used for speed calculations
@@ -429,7 +429,7 @@ void check_axes_activity() {
   }
 
   #if HAS(FAN)
-    #ifdef FAN_KICKSTART_TIME
+    #if ENABLED(FAN_KICKSTART_TIME)
       static millis_t fan_kick_end;
       if (tail_fan_speed) {
         millis_t ms = millis();
@@ -803,7 +803,7 @@ float junction_deviation = 0.1;
         if (segment_time < minsegmenttime) {
           // buffer is draining, add extra time.  The amount of time added increases if the buffer is still emptied more.
           inverse_second = 1000000.0 / (segment_time + lround(2 * (minsegmenttime - segment_time) / moves_queued));
-          #ifdef XY_FREQUENCY_LIMIT
+          #if ENABLED(XY_FREQUENCY_LIMIT)
             segment_time = lround(1000000.0 / inverse_second);
           #endif
         }
@@ -850,7 +850,7 @@ float junction_deviation = 0.1;
   }
 
   // Max segement time in us.
-  #ifdef XY_FREQUENCY_LIMIT
+  #if ENABLED(XY_FREQUENCY_LIMIT)
     #define MAX_FREQ_TIME (1000000.0 / XY_FREQUENCY_LIMIT)
 
     // Check and limit the xy direction change frequency

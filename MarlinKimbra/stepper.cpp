@@ -262,7 +262,7 @@ void checkHitEndstops() {
       ECHO_MV(MSG_ENDSTOP_Z, (float)endstops_trigsteps[Z_AXIS] / axis_steps_per_unit[Z_AXIS]);
       LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_ZS);
     }
-    #ifdef Z_PROBE_ENDSTOP
+    #if ENABLED(Z_PROBE_ENDSTOP)
     if (endstop_hit_bits & BIT(Z_PROBE)) {
       ECHO_MV(MSG_ENDSTOP_ZPS, (float)endstops_trigsteps[Z_AXIS] / axis_steps_per_unit[Z_AXIS]);
       LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_ZPS);
@@ -603,7 +603,7 @@ ISR(TIMER1_COMPA_vect) {
   if (cleaning_buffer_counter) {
     current_block = NULL;
     plan_discard_current_block();
-    #ifdef SD_FINISHED_RELEASECOMMAND
+    #if ENABLED(SD_FINISHED_RELEASECOMMAND)
       if ((cleaning_buffer_counter == 1) && (SD_FINISHED_STEPPERRELEASE)) enqueuecommands_P(PSTR(SD_FINISHED_RELEASECOMMAND));
     #endif
     cleaning_buffer_counter--;
@@ -669,7 +669,7 @@ ISR(TIMER1_COMPA_vect) {
       STEP_START(x,X);
       STEP_START(y,Y);
       STEP_START(z,Z);
-      #ifndef ADVANCE
+      #if DISABLED(ADVANCE)
         STEP_START(e,E);
       #endif
 
@@ -1251,7 +1251,7 @@ void digipot_init() {
       digipot_current(i,digipot_motor_current[i]);
     }
   #endif
-  #ifdef MOTOR_CURRENT_PWM_XY_PIN
+  #if ENABLED(MOTOR_CURRENT_PWM_XY_PIN)
     pinMode(MOTOR_CURRENT_PWM_XY_PIN, OUTPUT);
     pinMode(MOTOR_CURRENT_PWM_Z_PIN, OUTPUT);
     pinMode(MOTOR_CURRENT_PWM_E_PIN, OUTPUT);
@@ -1277,7 +1277,7 @@ void digipot_current(uint8_t driver, int current) {
     const uint8_t digipot_ch[] = DIGIPOT_CHANNELS;
     digitalPotWrite(digipot_ch[driver], current);
   #endif
-  #ifdef MOTOR_CURRENT_PWM_XY_PIN
+  #if ENABLED(MOTOR_CURRENT_PWM_XY_PIN)
     switch(driver) {
       case 0: analogWrite(MOTOR_CURRENT_PWM_XY_PIN, 255L * current / MOTOR_CURRENT_PWM_RANGE); break;
       case 1: analogWrite(MOTOR_CURRENT_PWM_Z_PIN, 255L * current / MOTOR_CURRENT_PWM_RANGE); break;

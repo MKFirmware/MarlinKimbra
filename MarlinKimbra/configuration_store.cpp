@@ -418,7 +418,7 @@ void Config_ResetDefault() {
     float tmp8[] = DEFAULT_Kd;
   #endif // PIDTEMP
 
-  #if defined(HOTEND_OFFSET_X) && defined(HOTEND_OFFSET_Y)
+  #if ENABLED(HOTEND_OFFSET_X) && ENABLED(HOTEND_OFFSET_Y)
     float tmp9[] = HOTEND_OFFSET_X;
     float tmp10[] = HOTEND_OFFSET_Y;
   #else
@@ -569,14 +569,14 @@ void Config_ResetDefault() {
 
   calculate_volumetric_multipliers();
 
-  #ifdef IDLE_OOZING_PREVENT
+  #if ENABLED(IDLE_OOZING_PREVENT)
     IDLE_OOZING_enabled = true;
   #endif
 
   ECHO_LM(DB, "Hardcoded Default Settings Loaded");
 }
 
-#if !defined(DISABLE_M503)
+#if DISABLED(DISABLE_M503)
 
   /**
    * Print Configuration Settings - M503

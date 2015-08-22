@@ -193,7 +193,7 @@ class SdVolume {
   }
 //------------------------------------------------------------------------------
   // Deprecated functions  - suppress cpplint warnings with NOLINT comment
-#if ALLOW_DEPRECATED_FUNCTIONS && !defined(DOXYGEN)
+#if ALLOW_DEPRECATED_FUNCTIONS && DISABLED(DOXYGEN)
  public:
   /** \deprecated Use: bool SdVolume::init(Sd2Card* dev);
    * \param[in] dev The SD card where the volume is located.
