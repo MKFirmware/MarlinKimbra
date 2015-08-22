@@ -257,6 +257,8 @@
 
 #include "thermistortables.h"
 #include "conditionals.h"
-#include "sanitycheck.h"
+#include "pins.h"
+#include "dependencies.h"
+#include "conflicts.h"
 /***********************************************************************/
 #endif //__CONFIGURATION_H

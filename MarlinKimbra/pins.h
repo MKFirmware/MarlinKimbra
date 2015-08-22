@@ -5217,12 +5217,6 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #endif
 /****************************************************************************************/
 
-
-
-/****************************************************************************************
-************************************* FEATURE *******************************************
-****************************************************************************************/
-
 #if HOTENDS == 1
   #undef ORIG_HEATER_1_PIN
   #undef ORIG_HEATER_2_PIN
@@ -5252,67 +5246,9 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
   #define ORIG_TEMP_3_PIN    -1
 #endif
 
-#if ENABLED(MKR4)
-  #if (EXTRUDERS == 2) && (DRIVER_EXTRUDERS == 1)    // Use this for one driver and two extruder
-    #define E0E1_CHOICE_PIN    5
-  #elif (EXTRUDERS == 3) && (DRIVER_EXTRUDERS == 1)  // Use this for one driver and 3 extruder
-    #define E0E1_CHOICE_PIN    5
-    #define E0E2_CHOICE_PIN    6
-  #elif (EXTRUDERS == 4) && (DRIVER_EXTRUDERS == 1)  // Use this for one driver and 4 extruder
-    #define E0E1_CHOICE_PIN    4
-    #define E0E2_CHOICE_PIN    5
-    #define E0E3_CHOICE_PIN    6
-  #elif (EXTRUDERS == 3) && (DRIVER_EXTRUDERS == 2)  // Use this for two driver and 3 extruder
-    #define E0E2_CHOICE_PIN    5
-  #elif (EXTRUDERS == 4) && (DRIVER_EXTRUDERS == 2)  // Use this for two driver and 4 extruder
-    #define E0E2_CHOICE_PIN    5
-    #define E1E3_CHOICE_PIN    6
-  #endif //EXTRUDERS
-#endif //MKR4
-
-#if ENABLED(NPR2)
-  #define E_MIN_PIN           -1
-#endif
-
-#if ENABLED(LASERBEAM)
-  #define LASER_PWR_PIN       41
-  #define LASER_TTL_PIN       42
-#endif
-
-#if ENABLED(FILAMENT_RUNOUT_SENSOR)
-  #define FILRUNOUT_PIN       -1
-#endif
-
-#if ENABLED(FILAMENT_SENSOR)
-  #define FILWIDTH_PIN        -1     // ANALOG NUMBERING
-#endif
-
-#if ENABLED(POWER_CONSUMPTION)
-  #define POWER_CONSUMPTION_PIN -1   // ANALOG NUMBERING
-#endif
-
-#if ENABLED(PHOTOGRAPH)
-  #define PHOTOGRAPH_PIN -1
-#endif
-
-#if ENABLED(CHDK)
-  #define CHDK_PIN -1
-#endif
-
-#if ENABLED(CONTROLLERFAN)
-  #define CONTROLLERFAN_PIN -1
-#endif
-
-#if ENABLED(EXTRUDER_AUTO_FAN)
-  #define EXTRUDER_0_AUTO_FAN_PIN -1
-  #define EXTRUDER_1_AUTO_FAN_PIN -1
-  #define EXTRUDER_2_AUTO_FAN_PIN -1
-  #define EXTRUDER_3_AUTO_FAN_PIN -1
-#endif
 /****************************************************************************************/
-
-
-#include "pins2tool.h"
+#include "Configuration_Pins.h"
+/****************************************************************************************/
 
 //List of pins which to ignore when asked to change by gcode, 0 and 1 are RX and TX, do not mess with those!
 #define _E0_PINS E0_STEP_PIN, E0_DIR_PIN, E0_ENABLE_PIN, HEATER_0_PIN, analogInputToDigitalPin(TEMP_0_PIN),

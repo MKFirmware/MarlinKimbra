@@ -38,22 +38,18 @@
 // Uncomment to use Morgan scara mode
 #define SCARA_SEGMENTS_PER_SECOND 200 // If movement is choppy try lowering this value
 // Length of inner support arm
-#define Linkage_1 150 //mm      Preprocessor cannot handle decimal point...
+#define LINKAGE_1 150 //mm      Preprocessor cannot handle decimal point...
 // Length of outer support arm     Measure arm lengths precisely and enter 
-#define Linkage_2 150 //mm    
+#define LINKAGE_2 150 //mm    
 
 // SCARA tower offset (position of Tower relative to bed zero position) 
 // This needs to be reasonably accurate as it defines the printbed position in the SCARA space.
-#define SCARA_offset_x 100 //mm   
-#define SCARA_offset_y -56 //mm
+#define SCARA_OFFSET_X 100 //mm   
+#define SCARA_OFFSET_Y -56 //mm
 #define SCARA_RAD2DEG 57.2957795  // to convert RAD to degrees
 
 #define THETA_HOMING_OFFSET 0 //calculatated from Calibration Guide and command M360 / M114 see picture in http://reprap.harleystudio.co.za/?page_id=1073
 #define PSI_HOMING_OFFSET 0   // calculatated from Calibration Guide and command M364 / M114 see picture in http://reprap.harleystudio.co.za/?page_id=1073
-
-//some helper variables to make kinematics faster
-#define L1_2 sq(Linkage_1) // do not change
-#define L2_2 sq(Linkage_2) // do not change
 /*****************************************************************************************/
 
 

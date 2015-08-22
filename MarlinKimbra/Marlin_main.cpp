@@ -7498,18 +7498,18 @@ void plan_arc(
       //ECHO_SMV(DB, "f_delta x=", f_scara[X_AXIS]);
       //ECHO_MV(" y=", f_scara[Y_AXIS]);
 
-      x_sin = sin(f_scara[X_AXIS]/SCARA_RAD2DEG) * Linkage_1;
-      x_cos = cos(f_scara[X_AXIS]/SCARA_RAD2DEG) * Linkage_1;
-      y_sin = sin(f_scara[Y_AXIS]/SCARA_RAD2DEG) * Linkage_2;
-      y_cos = cos(f_scara[Y_AXIS]/SCARA_RAD2DEG) * Linkage_2;
+      x_sin = sin(f_scara[X_AXIS]/SCARA_RAD2DEG) * LINKAGE_1;
+      x_cos = cos(f_scara[X_AXIS]/SCARA_RAD2DEG) * LINKAGE_1;
+      y_sin = sin(f_scara[Y_AXIS]/SCARA_RAD2DEG) * LINKAGE_2;
+      y_cos = cos(f_scara[Y_AXIS]/SCARA_RAD2DEG) * LINKAGE_2;
 
       //ECHO_MV(" x_sin=", x_sin);
       //ECHO_MV(" x_cos=", x_cos);
       //ECHO_MV(" y_sin=", y_sin);
       //ECHO_MV(" y_cos=", y_cos);
 
-      delta[X_AXIS] = x_cos + y_cos + SCARA_offset_x;  //theta
-      delta[Y_AXIS] = x_sin + y_sin + SCARA_offset_y;  //theta+phi
+      delta[X_AXIS] = x_cos + y_cos + SCARA_OFFSET_X;  //theta
+      delta[Y_AXIS] = x_sin + y_sin + SCARA_OFFSET_Y;  //theta+phi
 
       //ECHO_MV(" delta[X_AXIS]=", delta[X_AXIS]);
       //ECHO_EMV(" delta[Y_AXIS]=", delta[Y_AXIS]);
@@ -7523,19 +7523,19 @@ void plan_arc(
     float SCARA_pos[2];
     static float SCARA_C2, SCARA_S2, SCARA_K1, SCARA_K2, SCARA_theta, SCARA_psi; 
 
-    SCARA_pos[X_AXIS] = cartesian[X_AXIS] * axis_scaling[X_AXIS] - SCARA_offset_x;  //Translate SCARA to standard X Y
-    SCARA_pos[Y_AXIS] = cartesian[Y_AXIS] * axis_scaling[Y_AXIS] - SCARA_offset_y;  // With scaling factor.
+    SCARA_pos[X_AXIS] = cartesian[X_AXIS] * axis_scaling[X_AXIS] - SCARA_OFFSET_X;  //Translate SCARA to standard X Y
+    SCARA_pos[Y_AXIS] = cartesian[Y_AXIS] * axis_scaling[Y_AXIS] - SCARA_OFFSET_Y;  // With scaling factor.
 
-    #if (Linkage_1 == Linkage_2)
-      SCARA_C2 = ( ( sq(SCARA_pos[X_AXIS]) + sq(SCARA_pos[Y_AXIS]) ) / (2 * (float)L1_2) ) - 1;
+    #if (LINKAGE_1 == LINKAGE_2)
+      SCARA_C2 = ( ( sq(SCARA_pos[X_AXIS]) + sq(SCARA_pos[Y_AXIS]) ) / (2 * (float)sq(LINKAGE_1)) ) - 1;
     #else
-      SCARA_C2 =   ( sq(SCARA_pos[X_AXIS]) + sq(SCARA_pos[Y_AXIS]) - (float)L1_2 - (float)L2_2 ) / 45000; 
+      SCARA_C2 =   ( sq(SCARA_pos[X_AXIS]) + sq(SCARA_pos[Y_AXIS]) - (float)sq(LINKAGE_1) - (float)sq(LINKAGE_2) ) / 45000; 
     #endif
 
     SCARA_S2 = sqrt( 1 - sq(SCARA_C2) );
 
-    SCARA_K1 = Linkage_1 + Linkage_2 * SCARA_C2;
-    SCARA_K2 = Linkage_2 * SCARA_S2;
+    SCARA_K1 = LINKAGE_1 + LINKAGE_2 * SCARA_C2;
+    SCARA_K2 = LINKAGE_2 * SCARA_S2;
 
     SCARA_theta = ( atan2(SCARA_pos[X_AXIS],SCARA_pos[Y_AXIS])-atan2(SCARA_K1, SCARA_K2) ) * -1;
     SCARA_psi   =   atan2(SCARA_S2,SCARA_C2);
