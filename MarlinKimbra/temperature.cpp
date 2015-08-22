@@ -178,10 +178,6 @@ static void updateTemperaturesFromRawValues();
   millis_t watch_heater_next_ms[HOTENDS] = { 0 };
 #endif
 
-#if DISABLED(SOFT_PWM_SCALE)
-  #define SOFT_PWM_SCALE 0
-#endif
-
 #if ENABLED(FILAMENT_SENSOR)
   static int meas_shift_index;  //used to point to a delayed sample in buffer for filament width sensor
 #endif
@@ -751,7 +747,24 @@ static float analog2temp(int raw, uint8_t e) {
 
     return celsius;
   }
-  return ((raw * ((5.0 * 100.0) / 1024.0) / OVERSAMPLENR) * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET;
+  switch(e) {
+    #if TEMP_SENSOR_BED
+      case -1: return ((raw * ((5.0 * 100.0) / 1024.0) / OVERSAMPLENR) * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET;
+    #endif
+    #if HEATER_0_USES_AD595
+      case 0: return ((raw * ((5.0 * 100.0) / 1024.0) / OVERSAMPLENR) * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET;
+    #endif
+    #if HEATER_1_USES_AD595
+      case 1: return ((raw * ((5.0 * 100.0) / 1024.0) / OVERSAMPLENR) * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET;
+    #endif
+    #if HEATER_2_USES_AD595
+      case 2: return ((raw * ((5.0 * 100.0) / 1024.0) / OVERSAMPLENR) * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET;
+    #endif
+    #if HEATER_3_USES_AD595
+      case 3: return ((raw * ((5.0 * 100.0) / 1024.0) / OVERSAMPLENR) * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET;
+    #endif
+  }
+  return (raw * ((5.0 * 100.0) / 1024.0) / OVERSAMPLENR);
 }
 
 // Derived from RepRap FiveD extruder::getTemperature()

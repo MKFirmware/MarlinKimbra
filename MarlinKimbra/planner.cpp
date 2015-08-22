@@ -591,7 +591,7 @@ float junction_deviation = 0.1;
   block->step_event_count = max(block->steps[X_AXIS], max(block->steps[Y_AXIS], max(block->steps[Z_AXIS], block->steps[E_AXIS])));
 
   // Bail if this is a zero-length block
-  if (block->step_event_count <= dropsegments) return;
+  if (block->step_event_count <= DROP_SEGMENTS) return;
 
   block->fan_speed = fanSpeed;
   #if ENABLED(BARICUDA)
@@ -769,7 +769,7 @@ float junction_deviation = 0.1;
   #endif
   delta_mm[E_AXIS] = (de / axis_steps_per_unit[E_AXIS + extruder]) * volumetric_multiplier[extruder] * extruder_multiplier[extruder] / 100.0;
 
-  if (block->steps[X_AXIS] <= dropsegments && block->steps[Y_AXIS] <= dropsegments && block->steps[Z_AXIS] <= dropsegments) {
+  if (block->steps[X_AXIS] <= DROP_SEGMENTS && block->steps[Y_AXIS] <= DROP_SEGMENTS && block->steps[Z_AXIS] <= DROP_SEGMENTS) {
     block->millimeters = fabs(delta_mm[E_AXIS]);
   }
   else {

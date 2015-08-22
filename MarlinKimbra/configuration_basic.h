@@ -151,7 +151,7 @@
 
 // Use it for Testing or Development purposes. NEVER for production machine.
 //#define DUMMY_THERMISTOR_998_VALUE 25
-//#define DUMMY_THERMISTOR_999_VALUE 100
+//#define DUMMY_THERMISTOR_999_VALUE 25
 
 //Show Temperature ADC value
 //The M105 command return, besides traditional information, the ADC value read from temperature sensors.
@@ -233,7 +233,7 @@
  * 14 Portuguese (Brazil)                                              * 
  *                                                                     * 
  ***********************************************************************/
-#define LANGUAGE_CHOICE 7
+#define LANGUAGE_CHOICE 1
 /***********************************************************************/
 
 

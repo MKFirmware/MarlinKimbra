@@ -313,7 +313,7 @@
 // Multiple extruders can be assigned to the same pin in which case
 // the fan will turn on when any selected extruder is above the threshold.
 // You need to set _AUTO_FAN_PIN in pins.h
-//#define EXTRUDER_AUTO_TEMPERATURE
+//#define EXTRUDER_AUTO_FAN
 #define EXTRUDER_AUTO_FAN_TEMPERATURE 50
 #define EXTRUDER_AUTO_FAN_SPEED 255  // 255 = full speed
 #define EXTRUDER_AUTO_FAN_MIN_SPEED 0
@@ -419,8 +419,7 @@
  *                                                                     *
  ***********************************************************************/
 //#define IDLE_OOZING_PREVENT
-#define IDLE_OOZING_MINTEMP           EXTRUDE_MINTEMP + 5
-#define IDLE_OOZING_MAXTEMP           IDLE_OOZING_MINTEMP + 5
+#define IDLE_OOZING_MINTEMP           190
 #define IDLE_OOZING_FEEDRATE          50    //default feedrate for retracting (mm/s)
 #define IDLE_OOZING_SECONDS           5
 #define IDLE_OOZING_LENGTH            15    //default retract length (positive mm)
@@ -476,6 +475,8 @@
  * Hooke's law says:    force = k * distance                                             *
  * Bernoulli's principle says:  v ^ 2 / 2 + g . h + pressure / density = constant        *
  * so: v ^ 2 is proportional to number of steps we advance the extruder                  *
+ *                                                                                       *
+ * This feature is obsolate needs update                                                 *
  * Uncomment ADVANCE to enable this feature                                              *
  *                                                                                       *
  *****************************************************************************************/
@@ -515,8 +516,8 @@
 /**************************************************************************
  *************************** Software endstops ****************************
  **************************************************************************/
-#define min_software_endstops true  // If true, axis won't move to coordinates less than HOME_POS.
-#define max_software_endstops true  // If true, axis won't move to coordinates greater than the defined lengths below.
+#define SOFTWARE_MIN_ENDSTOPS true  // If true, axis won't move to coordinates less than HOME_POS.
+#define SOFTWARE_MAX_ENDSTOPS true  // If true, axis won't move to coordinates greater than the defined lengths below.
 /***********************************************************************/
 
 
@@ -752,8 +753,8 @@
  *                                                                        *
  **************************************************************************/
 //#define BABYSTEPPING
-#define BABYSTEP_XY  // not only z, but also XY in the menu. more clutter, more functions
-                     // not implemented for CoreXY and deltabots!
+//#define BABYSTEP_XY  // not only z, but also XY in the menu. more clutter, more functions
+                       // not implemented for CoreXY and deltabots!
 #define BABYSTEP_INVERT_Z false     // true for inverse movements in Z
 #define BABYSTEP_Z_MULTIPLICATOR 2  // faster z movements
 /**************************************************************************/
@@ -810,11 +811,6 @@
 // without modifying the firmware (through the "M218 T1 X???" command).
 // Remember: you should set the second extruder x-offset to 0 in your slicer.
 
-// Pins for second x-carriage stepper driver (defined here to avoid further complicating pins.h)
-#define X2_ENABLE_PIN 29
-#define X2_STEP_PIN 25
-#define X2_DIR_PIN 23
-
 // There are a few selectable movement modes for dual x-carriages using M605 S<mode>
 //    Mode 0: Full control. The slicer has full control over both x-carriages and can achieve optimal travel results
 //                           as long as it supports dual x-carriages. (M605 S0)
@@ -849,7 +845,7 @@
  * On a RAMPS (or other 5 driver) motherboard, using this feature will limit you         *
  * to using 1 extruder.                                                                  *
  *                                                                                       *
- * Uncomment DUAL_X_CARRIAGE to enable this feature                                      *
+ * Uncomment Y_DUAL_STEPPER_DRIVERS to enable this feature                               *
  *                                                                                       *
  *****************************************************************************************/
 //#define Y_DUAL_STEPPER_DRIVERS
@@ -872,7 +868,7 @@
  * On a RAMPS (or other 5 driver) motherboard, using this feature will limit you         *
  * to using 1 extruder.                                                                  *
  *                                                                                       *
- * Uncomment DUAL_X_CARRIAGE to enable this feature                                      *
+ * Uncomment Z_DUAL_STEPPER_DRIVERS to enable this feature                               *
  *                                                                                       *
  *****************************************************************************************/
 //#define Z_DUAL_STEPPER_DRIVERS
@@ -1115,7 +1111,6 @@
 //#define STRING_SPLASH_LINE2 STRING_DISTRIBUTION_DATE    // will be shown during bootup in line 2
 #define SPLASH_SCREEN_DURATION 5000                       // SPLASH SCREEN duration in millisecond
 
-#define LCD_SCREEN_ROT_0       //No screen rotation for graphics display
 //#define LCD_SCREEN_ROT_90    //Rotate screen orientation for graphics display by 90 degree clockwise
 //#define LCD_SCREEN_ROT_180   //Rotate screen orientation for graphics display by 180 degree clockwise
 //#define LCD_SCREEN_ROT_270   //Rotate screen orientation for graphics display by 270 degree clockwise
@@ -1383,8 +1378,6 @@
  ***********************************************************************/
 //#define HAVE_TMCDRIVER
 
-#if ENABLED(HAVE_TMCDRIVER)
-
 //#define X_IS_TMC
 #define X_MAX_CURRENT 1000  //in mA
 #define X_SENSE_RESISTOR 91 //in mOhms
@@ -1492,21 +1485,18 @@
 #define E0_STALLCURRENT 1500 //current in mA where the driver will detect a stall
 
 //#define E1_IS_L6470
-#define E1_MICROSTEPS 16     //number of microsteps 
 #define E1_MICROSTEPS 16     //number of microsteps
 #define E1_K_VAL 50          // 0 - 255, Higher values, are higher power. Be carefull not to go too high    
 #define E1_OVERCURRENT 2000  //maxc current in mA. If the current goes over this value, the driver will switch off
 #define E1_STALLCURRENT 1500 //current in mA where the driver will detect a stall
 
 //#define E2_IS_L6470
-#define E2_MICROSTEPS 16     //number of microsteps 
 #define E2_MICROSTEPS 16     //number of microsteps
 #define E2_K_VAL 50          // 0 - 255, Higher values, are higher power. Be carefull not to go too high    
 #define E2_OVERCURRENT 2000  //maxc current in mA. If the current goes over this value, the driver will switch off
 #define E2_STALLCURRENT 1500 //current in mA where the driver will detect a stall
 
 //#define E3_IS_L6470
-#define E3_MICROSTEPS 16     //number of microsteps   
 #define E3_MICROSTEPS 16     //number of microsteps
 #define E3_K_VAL 50          // 0 - 255, Higher values, are higher power. Be carefull not to go too high    
 #define E3_OVERCURRENT 2000  //maxc current in mA. If the current goes over this value, the driver will switch off
@@ -1533,7 +1523,7 @@
 // The values should not be less than 1
 #define NUM_POSITON_SLOTS 2
 
-#define dropsegments 5                      // everything with less than this number of steps will be ignored as move and joined with the next movement
+#define DROP_SEGMENTS 5                      // everything with less than this number of steps will be ignored as move and joined with the next movement
 #define DEFAULT_MINSEGMENTTIME        20000 // minimum time in microseconds that a movement needs to take if the buffer is emptied.
 
 // Arc interpretation settings:

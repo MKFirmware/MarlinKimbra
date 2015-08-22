@@ -290,7 +290,11 @@ const int sensitive_pins[] = SENSITIVE_PINS; ///< Sensitive pin list for M42
 // Inactivity shutdown
 millis_t previous_cmd_ms = 0;
 static millis_t max_inactive_time = 0;
-static millis_t stepper_inactive_time = DEFAULT_STEPPER_DEACTIVE_TIME * 1000L;
+#if ENABLED(DEFAULT_STEPPER_DEACTIVE_TIME)
+  static millis_t stepper_inactive_time = DEFAULT_STEPPER_DEACTIVE_TIME * 1000L;
+#else
+  static millis_t stepper_inactive_time = 0;
+#endif
 millis_t print_job_start_ms = 0; ///< Print job start time
 millis_t print_job_stop_ms = 0;  ///< Print job stop time
 static uint8_t target_extruder;
@@ -5151,7 +5155,11 @@ inline void gcode_M140() {
         case 0:
           if (code_seen('H')) {
             v = code_value_short();
-            plaPreheatHotendTemp = constrain(v, EXTRUDE_MINTEMP, HEATER_0_MAXTEMP - 15);
+            #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
+              plaPreheatHotendTemp = constrain(v, EXTRUDE_MINTEMP, HEATER_0_MAXTEMP - 15);
+            #else
+              plaPreheatHotendTemp = constrain(v, HEATER_0_MINTEMP, HEATER_0_MAXTEMP - 15);
+            #endif
           }
           if (code_seen('F')) {
             v = code_value_short();
@@ -5167,7 +5175,11 @@ inline void gcode_M140() {
         case 1:
           if (code_seen('H')) {
             v = code_value_short();
-            absPreheatHotendTemp = constrain(v, EXTRUDE_MINTEMP, HEATER_0_MAXTEMP - 15);
+            #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
+              absPreheatHotendTemp = constrain(v, EXTRUDE_MINTEMP, HEATER_0_MAXTEMP - 15);
+            #else
+              absPreheatHotendTemp = constrain(v, HEATER_0_MINTEMP, HEATER_0_MAXTEMP - 15);
+            #endif
           }
           if (code_seen('F')) {
             v = code_value_short();
@@ -5183,7 +5195,11 @@ inline void gcode_M140() {
         case 2:
           if (code_seen('H')) {
             v = code_value_short();
-            gumPreheatHotendTemp = constrain(v, EXTRUDE_MINTEMP, HEATER_0_MAXTEMP - 15);
+            #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
+              gumPreheatHotendTemp = constrain(v, EXTRUDE_MINTEMP, HEATER_0_MAXTEMP - 15);
+            #else
+              gumPreheatHotendTemp = constrain(v, HEATER_0_MINTEMP, HEATER_0_MAXTEMP - 15);
+            #endif
           }
           if (code_seen('F')) {
             v = code_value_short();
@@ -7102,7 +7118,7 @@ void ok_to_send() {
 }
 
 void clamp_to_software_endstops(float target[3]) {
-  if (min_software_endstops) {
+  if (SOFTWARE_MIN_ENDSTOPS) {
     NOLESS(target[X_AXIS], min_pos[X_AXIS]);
     NOLESS(target[Y_AXIS], min_pos[Y_AXIS]);
     
@@ -7114,7 +7130,7 @@ void clamp_to_software_endstops(float target[3]) {
     NOLESS(target[Z_AXIS], min_pos[Z_AXIS] + negative_z_offset);
   }
 
-  if (max_software_endstops) {
+  if (SOFTWARE_MAX_ENDSTOPS) {
     NOMORE(target[X_AXIS], max_pos[X_AXIS]);
     NOMORE(target[Y_AXIS], max_pos[Y_AXIS]);
     NOMORE(target[Z_AXIS], max_pos[Z_AXIS]);

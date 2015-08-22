@@ -66,10 +66,6 @@
   #define BUILD_VERSION "V4; MarlinKimbra for 4 extruder"
 #endif
 
-#if DISABLED(MACHINE_UUID)
-  #define MACHINE_UUID "00000000-0000-0000-0000-000000000000"
-#endif
-
 
 #define STRINGIFY_(n) #n
 #define STRINGIFY(n) STRINGIFY_(n)

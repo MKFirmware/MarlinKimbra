@@ -2514,7 +2514,6 @@
 #define SDPOWER               -1
 #define SDSS                  77 // PA28
 #define SD_DETECT_PIN         87 // PA29
-#define SD_DETECT_INVERTED  false
 #define LED_PIN               -1
 
 #define ORIG_FAN_PIN          92 // PA5
@@ -2741,11 +2740,6 @@
         #define DOGLCD_CS 29
         #define LCD_CONTRAST 1
       #endif
-      // Uncomment screen orientation
-      #define LCD_SCREEN_ROT_0
-      // #define LCD_SCREEN_ROT_90
-      // #define LCD_SCREEN_ROT_180
-      // #define LCD_SCREEN_ROT_270
     #else // standard Hitachi LCD controller
       #define LCD_PINS_RS        4
       #define LCD_PINS_ENABLE    17
@@ -2782,11 +2776,6 @@
   #define LCD_PIN_BL 28  // backlight LED on PA3
   // GLCD features
   #define LCD_CONTRAST 1
-  // Uncomment screen orientation
-  #define LCD_SCREEN_ROT_0
-  // #define LCD_SCREEN_ROT_90
-  // #define LCD_SCREEN_ROT_180
-  // #define LCD_SCREEN_ROT_270
   //The encoder and click button
   #define BTN_EN1 11
   #define BTN_EN2 10

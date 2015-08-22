@@ -23,10 +23,6 @@
 #define MarlinSerial_h
 #include "Marlin.h"
 
-#ifndef SERIAL_PORT
-  #define SERIAL_PORT 0
-#endif
-
 // The presence of the UBRRH register is used to detect a UART.
 #define UART_PRESENT(port) ((port == 0 && (defined(UBRRH) || defined(UBRR0H))) || \
             (port == 1 && defined(UBRR1H)) || (port == 2 && defined(UBRR2H)) || \

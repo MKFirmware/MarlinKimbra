@@ -929,8 +929,8 @@ static void _lcd_move(const char *name, AxisEnum axis, int min, int max) {
   if (encoderPosition != 0) {
     refresh_cmd_timeout();
     current_position[axis] += float((int)encoderPosition) * move_menu_scale;
-    if (min_software_endstops && current_position[axis] < min) current_position[axis] = min;
-    if (max_software_endstops && current_position[axis] > max) current_position[axis] = max;
+    if (SOFTWARE_MIN_ENDSTOPS && current_position[axis] < min) current_position[axis] = min;
+    if (SOFTWARE_MAX_ENDSTOPS && current_position[axis] > max) current_position[axis] = max;
     encoderPosition = 0;
     line_to_current(manual_feedrate[axis]);
     lcdDrawUpdate = 1;
