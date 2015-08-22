@@ -40,15 +40,15 @@ void FirmwareTest()
         ECHO_M(MSG_FWTEST_INVERT);
         ECHO_M("#define X_MIN_ENDSTOP_LOGIC ");
         ECHO_M(MSG_FWTEST_INTO);
-        #if ENABLED(CARTESIAN)
+        #if MECH(CARTESIAN)
           ECHO_EM("Configuration_Cartesian.h");
-        #elif ENABLED(COREXY)
+        #elif MECH(COREXY)
           ECHO_EM("Configuration_Core.h");
-        #elif ENABLED(COREXZ)
+        #elif MECH(COREXZ)
           ECHO_EM("Configuration_Core.h");
-        #elif ENABLED(DELTA)
+        #elif MECH(DELTA)
           ECHO_EM("Configuration_Delta.h");
-        #elif ENABLED(SCARA)
+        #elif MECH(SCARA)
           ECHO_EM("Configuration_Scara.h");
         #endif
         return;
@@ -82,15 +82,15 @@ void FirmwareTest()
         ECHO_M(MSG_FWTEST_INVERT);
         ECHO_M("#define X_MAX_ENDSTOP_LOGIC ");
         ECHO_M(MSG_FWTEST_INTO);
-        #if ENABLED(CARTESIAN)
+        #if MECH(CARTESIAN)
           ECHO_EM("Configuration_Cartesian.h");
-        #elif ENABLED(COREXY)
+        #elif MECH(COREXY)
           ECHO_EM("Configuration_Core.h");
-        #elif ENABLED(COREXZ)
+        #elif MECH(COREXZ)
           ECHO_EM("Configuration_Core.h");
-        #elif ENABLED(DELTA)
+        #elif MECH(DELTA)
           ECHO_EM("Configuration_Delta.h");
-        #elif ENABLED(SCARA)
+        #elif MECH(SCARA)
           ECHO_EM("Configuration_Scara.h");
         #endif
         return;
@@ -138,15 +138,15 @@ void FirmwareTest()
         ECHO_M(MSG_FWTEST_INVERT);
         ECHO_M("#define Y_MIN_ENDSTOP_LOGIC ");
         ECHO_M(MSG_FWTEST_INTO);
-        #if ENABLED(CARTESIAN)
+        #if MECH(CARTESIAN)
           ECHO_EM("Configuration_Cartesian.h");
-        #elif ENABLED(COREXY)
+        #elif MECH(COREXY)
           ECHO_EM("Configuration_Core.h");
-        #elif ENABLED(COREXZ)
+        #elif MECH(COREXZ)
           ECHO_EM("Configuration_Core.h");
-        #elif ENABLED(DELTA)
+        #elif MECH(DELTA)
           ECHO_EM("Configuration_Delta.h");
-        #elif ENABLED(SCARA)
+        #elif MECH(SCARA)
           ECHO_EM("Configuration_Scara.h");
         #endif
         return;
@@ -180,15 +180,15 @@ void FirmwareTest()
         ECHO_M(MSG_FWTEST_INVERT);
         ECHO_M("#define Y_MAX_ENDSTOP_LOGIC ");
         ECHO_M(MSG_FWTEST_INTO);
-        #if ENABLED(CARTESIAN)
+        #if MECH(CARTESIAN)
           ECHO_EM("Configuration_Cartesian.h");
-        #elif ENABLED(COREXY)
+        #elif MECH(COREXY)
           ECHO_EM("Configuration_Core.h");
-        #elif ENABLED(COREXZ)
+        #elif MECH(COREXZ)
           ECHO_EM("Configuration_Core.h");
-        #elif ENABLED(DELTA)
+        #elif MECH(DELTA)
           ECHO_EM("Configuration_Delta.h");
-        #elif ENABLED(SCARA)
+        #elif MECH(SCARA)
           ECHO_EM("Configuration_Scara.h");
         #endif
         return;
@@ -236,15 +236,15 @@ void FirmwareTest()
         ECHO_M(MSG_FWTEST_INVERT);
         ECHO_M("#define Z_MIN_ENDSTOP_LOGIC ");
         ECHO_M(MSG_FWTEST_INTO);
-        #if ENABLED(CARTESIAN)
+        #if MECH(CARTESIAN)
           ECHO_EM("Configuration_Cartesian.h");
-        #elif ENABLED(COREXY)
+        #elif MECH(COREXY)
           ECHO_EM("Configuration_Core.h");
-        #elif ENABLED(COREXZ)
+        #elif MECH(COREXZ)
           ECHO_EM("Configuration_Core.h");
-        #elif ENABLED(DELTA)
+        #elif MECH(DELTA)
           ECHO_EM("Configuration_Delta.h");
-        #elif ENABLED(SCARA)
+        #elif MECH(SCARA)
           ECHO_EM("Configuration_Scara.h");
         #endif
         return;
@@ -278,15 +278,15 @@ void FirmwareTest()
         ECHO_M(MSG_FWTEST_INVERT);
         ECHO_M("#define Z_MAX_ENDSTOP_LOGIC ");
         ECHO_M(MSG_FWTEST_INTO);
-        #if ENABLED(CARTESIAN)
+        #if MECH(CARTESIAN)
           ECHO_EM("Configuration_Cartesian.h");
-        #elif ENABLED(COREXY)
+        #elif MECH(COREXY)
           ECHO_EM("Configuration_Core.h");
-        #elif ENABLED(COREXZ)
+        #elif MECH(COREXZ)
           ECHO_EM("Configuration_Core.h");
-        #elif ENABLED(DELTA)
+        #elif MECH(DELTA)
           ECHO_EM("Configuration_Delta.h");
-        #elif ENABLED(SCARA)
+        #elif MECH(SCARA)
           ECHO_EM("Configuration_Scara.h");
         #endif
         return;
@@ -325,7 +325,7 @@ void FirmwareTest()
     ECHO_EM(" ");
   }
 
-  #if HAS_POWER_SWITCH
+  #if HAS(POWER_SWITCH)
     SET_OUTPUT(PS_ON_PIN);
     WRITE(PS_ON_PIN, PS_ON_AWAKE);
   #endif
@@ -364,15 +364,15 @@ void FirmwareTest()
     ECHO_M(MSG_FWTEST_INVERT);
     ECHO_M("#define INVERT_X_DIR ");
         ECHO_M(MSG_FWTEST_INTO);
-    #if ENABLED(CARTESIAN)
+    #if MECH(CARTESIAN)
       ECHO_EM("Configuration_Cartesian.h");
-    #elif ENABLED(COREXY)
+    #elif MECH(COREXY)
       ECHO_EM("Configuration_Core.h");
-    #elif ENABLED(COREXZ)
+    #elif MECH(COREXZ)
       ECHO_EM("Configuration_Core.h");
-    #elif ENABLED(DELTA)
+    #elif MECH(DELTA)
       ECHO_EM("Configuration_Delta.h");
-    #elif ENABLED(SCARA)
+    #elif MECH(SCARA)
       ECHO_EM("Configuration_Scara.h");
     #endif
     return;
@@ -397,15 +397,15 @@ void FirmwareTest()
     ECHO_M(MSG_FWTEST_INVERT);
     ECHO_M("#define INVERT_Y_DIR ");
         ECHO_M(MSG_FWTEST_INTO);
-    #if ENABLED(CARTESIAN)
+    #if MECH(CARTESIAN)
       ECHO_EM("Configuration_Cartesian.h");
-    #elif ENABLED(COREXY)
+    #elif MECH(COREXY)
       ECHO_EM("Configuration_Core.h");
-    #elif ENABLED(COREXZ)
+    #elif MECH(COREXZ)
       ECHO_EM("Configuration_Core.h");
-    #elif ENABLED(DELTA)
+    #elif MECH(DELTA)
       ECHO_EM("Configuration_Delta.h");
-    #elif ENABLED(SCARA)
+    #elif MECH(SCARA)
       ECHO_EM("Configuration_Scara.h");
     #endif
     return;
@@ -430,15 +430,15 @@ void FirmwareTest()
     ECHO_M(MSG_FWTEST_INVERT);
     ECHO_M("#define INVERT_Z_DIR ");
         ECHO_M(MSG_FWTEST_INTO);
-    #if ENABLED(CARTESIAN)
+    #if MECH(CARTESIAN)
       ECHO_EM("Configuration_Cartesian.h");
-    #elif ENABLED(COREXY)
+    #elif MECH(COREXY)
       ECHO_EM("Configuration_Core.h");
-    #elif ENABLED(COREXZ)
+    #elif MECH(COREXZ)
       ECHO_EM("Configuration_Core.h");
-    #elif ENABLED(DELTA)
+    #elif MECH(DELTA)
       ECHO_EM("Configuration_Delta.h");
-    #elif ENABLED(SCARA)
+    #elif MECH(SCARA)
       ECHO_EM("Configuration_Scara.h");
     #endif
     return;

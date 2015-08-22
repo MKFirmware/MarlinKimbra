@@ -2,7 +2,7 @@
 #include "buzzer.h"
 #include "ultralcd.h"
 
-#if HAS_BUZZER
+#if HAS(BUZZER)
   void buzz(long duration, uint16_t freq) {
     if (freq > 0) {
       #if ENABLED(LCD_USE_I2C_BUZZER)

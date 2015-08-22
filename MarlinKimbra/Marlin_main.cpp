@@ -54,11 +54,11 @@
   #include "Wire.h"
 #endif
 
-#if HAS_SERVOS
+#if HAS(SERVOS)
   #include "servo.h"
 #endif
 
-#if HAS_DIGIPOTSS
+#if HAS(DIGIPOTSS)
   #include <SPI.h>
 #endif
 
@@ -322,7 +322,7 @@ unsigned long printer_usage_seconds;
   int old_color = 99;
 #endif
 
-#if HAS_SERVO_ENDSTOPS
+#if HAS(SERVO_ENDSTOPS)
   const int servo_endstop_id[] = SERVO_ENDSTOP_IDS;
   const int servo_endstop_angle[][2] = {X_ENDSTOP_SERVO_ANGLES, Y_ENDSTOP_SERVO_ANGLES, Z_ENDSTOP_SERVO_ANGLES};
 #endif
@@ -348,7 +348,7 @@ unsigned long printer_usage_seconds;
 
 #endif // FWRETRACT
 
-#if ENABLED(ULTIPANEL) && HAS_POWER_SWITCH
+#if ENABLED(ULTIPANEL) && HAS(POWER_SWITCH)
   bool powersupply = 
     #if ENABLED(PS_DEFAULT_OFF)
       false
@@ -358,7 +358,7 @@ unsigned long printer_usage_seconds;
   ;
 #endif
 
-#if ENABLED(DELTA)
+#if MECH(DELTA)
   float delta[3] = { 0.0 };
   float delta_tmp[3] = { 0.0 };
   float endstop_adj[3] = { 0 };
@@ -409,7 +409,7 @@ unsigned long printer_usage_seconds;
   static bool home_all_axis = true;
 #endif
 
-#if ENABLED(SCARA)
+#if MECH(SCARA)
   float delta_segments_per_second = SCARA_SEGMENTS_PER_SECOND;
   static float delta[3] = { 0 };
   float axis_scaling[3] = { 1, 1, 1 };    // Build size scaling, default to 1
@@ -427,7 +427,7 @@ unsigned long printer_usage_seconds;
   int meas_delay_cm = MEASUREMENT_DELAY_CM;                     //distance delay setting
 #endif
 
-#if HAS_FILRUNOUT
+#if HAS(FILRUNOUT)
   static bool filrunoutEnqueued = false;
   bool printing = false;
 #endif
@@ -450,7 +450,7 @@ unsigned long printer_usage_seconds;
   bool IDLE_OOZING_retracted[EXTRUDERS] = ARRAY_BY_EXTRUDERS(false);
 #endif
 
-#if HAS_POWER_CONSUMPTION_SENSOR
+#if HAS(POWER_CONSUMPTION_SENSOR)
   float power_consumption_meas = 0.0;
   unsigned long power_consumption_hour;
   unsigned long startpower = 0;
@@ -470,11 +470,11 @@ unsigned long printer_usage_seconds;
   bool allow_lengthy_extrude_once; // for load/unload
 #endif
 
-#if HAS_SERVOS
+#if HAS(SERVOS)
   Servo servo[NUM_SERVOS];
 #endif
 
-#if HAS_CHDK
+#if HAS(CHDK)
   unsigned long chdkHigh = 0;
   boolean chdkActive = false;
 #endif
@@ -579,21 +579,21 @@ bool enqueuecommand(const char *cmd) {
     SET_OUTPUT(EXP_VOLTAGE_LEVEL_PIN);
     WRITE(EXP_VOLTAGE_LEVEL_PIN, UI_VOLTAGE_LEVEL);
     ExternalDac::begin(); //initialize ExternalDac
-    #if HAS_BUZZER
+    #if HAS(BUZZER)
       buzz(10,10);
     #endif
   }
 #endif
 
 void setup_killpin() {
-  #if HAS_KILL
+  #if HAS(KILL)
     SET_INPUT(KILL_PIN);
     WRITE(KILL_PIN, HIGH);
   #endif
 }
 
 void setup_filrunoutpin() {
-  #if HAS_FILRUNOUT
+  #if HAS(FILRUNOUT)
     pinMode(FILRUNOUT_PIN, INPUT);
     #if ENABLED(ENDSTOPPULLUP_FIL_RUNOUT)
       WRITE(FILRUNOUT_PIN, HIGH);
@@ -603,7 +603,7 @@ void setup_filrunoutpin() {
 
 // Set home pin
 void setup_homepin(void) {
-  #if HAS_HOME
+  #if HAS(HOME)
     SET_INPUT(HOME_PIN);
     WRITE(HOME_PIN, HIGH);
   #endif
@@ -611,7 +611,7 @@ void setup_homepin(void) {
 
 
 void setup_photpin() {
-  #if HAS_PHOTOGRAPH
+  #if HAS(PHOTOGRAPH)
     OUT_WRITE(PHOTOGRAPH_PIN, LOW);
   #endif
 }
@@ -624,10 +624,10 @@ void setup_laserbeampin() {
 }
 
 void setup_powerhold() {
-  #if HAS_SUICIDE
+  #if HAS(SUICIDE)
     OUT_WRITE(SUICIDE_PIN, HIGH);
   #endif
-  #if HAS_POWER_SWITCH
+  #if HAS(POWER_SWITCH)
     #if ENABLED(PS_DEFAULT_OFF)
       OUT_WRITE(PS_ON_PIN, PS_ON_ASLEEP);
     #else
@@ -637,31 +637,31 @@ void setup_powerhold() {
 }
 
 void suicide() {
-  #if HAS_SUICIDE
+  #if HAS(SUICIDE)
     OUT_WRITE(SUICIDE_PIN, LOW);
   #endif
 }
 
 void servo_init() {
-  #if NUM_SERVOS >= 1 && HAS_SERVO_0
+  #if NUM_SERVOS >= 1 && HAS(SERVO_0)
     servo[0].attach(SERVO0_PIN);
     servo[0].detach(); // Just set up the pin. We don't have a position yet. Don't move to a random position.
   #endif
-  #if NUM_SERVOS >= 2 && HAS_SERVO_1
+  #if NUM_SERVOS >= 2 && HAS(SERVO_1)
     servo[1].attach(SERVO1_PIN);
     servo[1].detach();
   #endif
-  #if NUM_SERVOS >= 3 && HAS_SERVO_2
+  #if NUM_SERVOS >= 3 && HAS(SERVO_2)
     servo[2].attach(SERVO2_PIN);
     servo[2].detach();
   #endif
-  #if NUM_SERVOS >= 4 && HAS_SERVO_3
+  #if NUM_SERVOS >= 4 && HAS(SERVO_3)
     servo[3].attach(SERVO3_PIN);
     servo[3].detach();
   #endif
 
   // Set position of Servo Endstops that are defined
-  #if HAS_SERVO_ENDSTOPS
+  #if HAS(SERVO_ENDSTOPS)
     for (int i = 0; i < 3; i++)
       if (servo_endstop_id[i] >= 0)
         servo[servo_endstop_id[i]].move(servo_endstop_angle[i][1]);
@@ -672,7 +672,7 @@ void servo_init() {
 /**
  * Stepper Reset (RigidBoard, et.al.)
  */
-#if HAS_STEPPER_RESET
+#if HAS(STEPPER_RESET)
   void disableStepperDrivers() {
     pinMode(STEPPER_RESET_PIN, OUTPUT);
     digitalWrite(STEPPER_RESET_PIN, LOW);  // drive it down to hold in reset motor driver chips
@@ -708,7 +708,7 @@ void setup() {
   setup_filrunoutpin();
   setup_powerhold();
 
-  #if HAS_STEPPER_RESET
+  #if HAS(STEPPER_RESET)
     disableStepperDrivers();
   #endif
 
@@ -757,7 +757,7 @@ void setup() {
   setup_laserbeampin();   // Initialize Laserbeam pin
   servo_init();
 
-  #if HAS_STEPPER_RESET
+  #if HAS(STEPPER_RESET)
     enableStepperDrivers();
   #endif
 
@@ -1075,7 +1075,7 @@ static const PROGMEM type array##_P[3] =        \
 static inline type array(int axis)          \
     { return pgm_read_any(&array##_P[axis]); }
 
-#if defined(CARTESIAN) || defined(COREXY) || defined(COREXZ) || defined(SCARA)
+#if MECH(CARTESIAN) || MECH(COREXY) || MECH(COREXZ) || MECH(SCARA)
   XYZ_CONSTS_FROM_CONFIG(float, base_max_pos,  MAX_POS);
   XYZ_CONSTS_FROM_CONFIG(float, base_home_pos, HOME_POS);
   XYZ_CONSTS_FROM_CONFIG(float, max_length,    MAX_LENGTH);
@@ -1149,7 +1149,7 @@ static void set_axis_is_at_home(AxisEnum axis) {
     }
   #endif
 
-  #if ENABLED(SCARA)
+  #if MECH(SCARA)
 
     if (axis == X_AXIS || axis == Y_AXIS) {
 
@@ -1189,7 +1189,7 @@ static void set_axis_is_at_home(AxisEnum axis) {
                min_pos[axis] = base_min_pos(axis)  + home_offset[axis];
                max_pos[axis] = base_max_pos(axis)  + home_offset[axis];
     }
-  #elif ENABLED(DELTA)
+  #elif MECH(DELTA)
     current_position[axis] = base_home_pos[axis] + home_offset[axis];
              min_pos[axis] = base_min_pos(axis)  + home_offset[axis];
              max_pos[axis] = base_max_pos[axis]  + home_offset[axis];
@@ -1242,7 +1242,7 @@ inline void line_to_destination() {
 inline void sync_plan_position() {
   plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 }
-#if defined(DELTA) || defined(SCARA)
+#if MECH(DELTA) || MECH(SCARA)
   inline void sync_plan_position_delta() {
     calculate_delta(current_position);
     plan_set_position(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS]);
@@ -1269,7 +1269,7 @@ static void clean_up_after_endstop_move() {
   refresh_cmd_timeout();
 }
 
-#if ENABLED(CARTESIAN) || ENABLED(COREXY) || ENABLED(COREXZ) || ENABLED(SCARA)
+#if MECH(CARTESIAN) || MECH(COREXY) || MECH(COREXZ) || MECH(SCARA)
 
   /**
    *  Plan a move to (X, Y, Z) and set the current_position
@@ -1404,7 +1404,7 @@ static void clean_up_after_endstop_move() {
         ECHO_S(DB);
         print_xyz("deploy_z_probe > current_position", current_position);
       }
-      #if HAS_SERVO_ENDSTOPS
+      #if HAS(SERVO_ENDSTOPS)
         // Engage Z Servo endstop if enabled
         if (servo_endstop_id[Z_AXIS] >= 0) servo[servo_endstop_id[Z_AXIS]].move(servo_endstop_angle[Z_AXIS][0]);
       #endif
@@ -1415,7 +1415,7 @@ static void clean_up_after_endstop_move() {
         ECHO_S(DB);
         print_xyz("stow_z_probe > current_position", current_position);
       }
-      #if HAS_SERVO_ENDSTOPS
+      #if HAS(SERVO_ENDSTOPS)
         // Retract Z Servo endstop if enabled
         if (servo_endstop_id[Z_AXIS] >= 0) {
 
@@ -1492,7 +1492,7 @@ static void clean_up_after_endstop_move() {
       return measured_z;
     }
     
-    #if HAS_SERVO_ENDSTOPS && DISABLED(Z_PROBE_SLED)
+    #if HAS(SERVO_ENDSTOPS) && DISABLED(Z_PROBE_SLED)
       void raise_z_for_servo() {
         float zpos = current_position[Z_AXIS], z_dest = Z_RAISE_BEFORE_PROBING;
         z_dest += axis_known_position[Z_AXIS] ? zprobe_zoffset : zpos;
@@ -1537,7 +1537,7 @@ static void clean_up_after_endstop_move() {
         }
       #endif
 
-      #if HAS_SERVO_ENDSTOPS
+      #if HAS(SERVO_ENDSTOPS)
         // Engage Servo endstop if enabled
         if (axis != Z_AXIS && servo_endstop_id[axis] >= 0)
           servo[servo_endstop_id[axis]].move(servo_endstop_angle[axis][0]);
@@ -1637,7 +1637,7 @@ static void clean_up_after_endstop_move() {
         else
       #endif
       {
-        #if HAS_SERVO_ENDSTOPS
+        #if HAS(SERVO_ENDSTOPS)
           // Retract Servo endstop if enabled
           if (servo_endstop_id[axis] >= 0) {
             if (debugLevel & DEBUG_INFO) ECHO_LM(DB, "> SERVO_ENDSTOPS > Stow with servo.move()");
@@ -1654,7 +1654,7 @@ static void clean_up_after_endstop_move() {
   #define HOMEAXIS(LETTER) homeaxis(LETTER##_AXIS)
 #endif // CARTESIAN || COREXY || COREXZ || SCARA
 
-#if ENABLED(DELTA)
+#if MECH(DELTA)
 
   static void homeaxis(AxisEnum axis) {
     #define HOMEAXIS_DO(LETTER) \
@@ -1805,7 +1805,7 @@ static void clean_up_after_endstop_move() {
 
   void deploy_z_probe() {
 
-    #if HAS_SERVO_ENDSTOPS
+    #if HAS(SERVO_ENDSTOPS)
       // Engage Z Servo endstop if enabled
       if (servo_endstop_id[Z_AXIS] >= 0) servo[servo_endstop_id[Z_AXIS]].move(servo_endstop_angle[Z_AXIS][0]);
     #endif
@@ -1854,7 +1854,7 @@ static void clean_up_after_endstop_move() {
     prepare_move_raw();
     st_synchronize();
 
-     #if HAS_SERVO_ENDSTOPS
+     #if HAS(SERVO_ENDSTOPS)
       // Retract Z Servo endstop if enabled
       if (servo_endstop_id[Z_AXIS] >= 0)
         // Change the Z servo angle
@@ -2691,7 +2691,7 @@ static void clean_up_after_endstop_move() {
 
       if (retract_zlift > 0.01) {
         current_position[Z_AXIS] -= retract_zlift;
-        #if defined(DELTA) || defined(SCARA)
+        #if MECH(DELTA) || MECH(SCARA)
           sync_plan_position_delta();
         #else
           sync_plan_position();
@@ -2703,7 +2703,7 @@ static void clean_up_after_endstop_move() {
 
       if (retract_zlift > 0.01) {
         current_position[Z_AXIS] += retract_zlift;
-        #if defined(DELTA) || defined(SCARA)
+        #if MECH(DELTA) || MECH(SCARA)
           sync_plan_position_delta();
         #else
           sync_plan_position();
@@ -2994,7 +2994,7 @@ inline void gcode_G28() {
   // For auto bed leveling, clear the level matrix
   #if ENABLED(AUTO_BED_LEVELING_FEATURE)
     plan_bed_level_matrix.set_to_identity();
-  #elif defined(DELTA)
+  #elif MECH(DELTA)
     reset_bed_level();
   #endif
 
@@ -3029,7 +3029,7 @@ inline void gcode_G28() {
     }
   #endif
 
-  #if ENABLED(DELTA)
+  #if MECH(DELTA)
     // A delta can only safely home all axis at the same time
     // all axis have to home at the same time
 
@@ -3398,14 +3398,14 @@ inline void gcode_G28() {
 
   #endif // !DELTA
 
-  #if ENABLED(SCARA)
+  #if MECH(SCARA)
     sync_plan_position_delta();
   #endif
 
   clean_up_after_endstop_move();
   
   if(come_back) {
-    #if ENABLED(DELTA)
+    #if MECH(DELTA)
       feedrate = 1.732 * homing_feedrate[X_AXIS];
       memcpy(destination, lastpos, sizeof(destination));
       prepare_move();
@@ -3798,7 +3798,7 @@ inline void gcode_G28() {
       vector_3 probe_point = vector_3(eqnAMatrix[ind + 0 * abl2], eqnAMatrix[ind + 1 * abl2], eqnBVector[ind]);
       probe_point.apply_rotation(inverse_bed_level_matrix);
       current_position[Z_AXIS] = -zprobe_zoffset + (probe_point.z - rot_max_diff)
-      #if HAS_SERVO_ENDSTOPS || ENABLED(Z_PROBE_SLED)
+      #if HAS(SERVO_ENDSTOPS) || ENABLED(Z_PROBE_SLED)
         + Z_RAISE_AFTER_PROBING
       #endif
       ;
@@ -3819,7 +3819,7 @@ inline void gcode_G28() {
      * G30: Do a single Z probe at the current XY
      */
     inline void gcode_G30() {
-      #if HAS_SERVO_ENDSTOPS
+      #if HAS(SERVO_ENDSTOPS)
         raise_z_for_servo();
       #endif
       deploy_z_probe(); // Engage Z Servo endstop if available
@@ -3838,7 +3838,7 @@ inline void gcode_G28() {
 
       clean_up_after_endstop_move();
 
-      #if HAS_SERVO_ENDSTOPS
+      #if HAS(SERVO_ENDSTOPS)
         raise_z_for_servo();
       #endif
 
@@ -3847,7 +3847,7 @@ inline void gcode_G28() {
   #endif // !Z_PROBE_SLED
 #endif // AUTO_BED_LEVELING_FEATURE
 
-#if ENABLED(DELTA) && ENABLED(Z_PROBE_ENDSTOP)
+#if MECH(DELTA) && ENABLED(Z_PROBE_ENDSTOP)
 
   /**
    * G29: Delta Z-Probe, probes the bed at more points.
@@ -4167,7 +4167,7 @@ inline void gcode_G92() {
     }
   }
   if (didXYZ) {
-    #if defined(DELTA) || defined(SCARA)
+    #if MECH(DELTA) || MECH(SCARA)
       sync_plan_position_delta();
     #else
       sync_plan_position();
@@ -4253,7 +4253,7 @@ inline void gcode_G92() {
   }
 #endif //LASERBEAM
 
-#if HAS_FILRUNOUT
+#if HAS(FILRUNOUT)
   /**
    * M11: Start printing
    */
@@ -4263,7 +4263,7 @@ inline void gcode_G92() {
     ECHO_LM(DB, "Start Printing, pause pin active.");
     ECHO_S(RESUME);
     ECHO_E;
-    #if HAS_POWER_CONSUMPTION_SENSOR
+    #if HAS(POWER_CONSUMPTION_SENSOR)
       startpower = power_consumption_hour;
     #endif
   }
@@ -4315,7 +4315,7 @@ inline void gcode_M17() {
   inline void gcode_M24() {
     card.startFileprint();
     print_job_start_ms = millis();
-    #if HAS_POWER_CONSUMPTION_SENSOR
+    #if HAS(POWER_CONSUMPTION_SENSOR)
       startpower = power_consumption_hour;
     #endif
   }
@@ -4457,7 +4457,7 @@ inline void gcode_M42() {
       }
     }
 
-    #if HAS_FAN
+    #if HAS(FAN)
       if (pin_number == FAN_PIN) fanSpeed = pin_status;
     #endif
 
@@ -4694,7 +4694,7 @@ inline void gcode_M42() {
 
 #endif // AUTO_BED_LEVELING_FEATURE && Z_PROBE_REPEATABILITY_TEST
 
-#if HAS_POWER_CONSUMPTION_SENSOR
+#if HAS(POWER_CONSUMPTION_SENSOR)
 
   /**
    * M70 - Power consumption sensor calibration
@@ -4722,7 +4722,7 @@ inline void gcode_M42() {
   }
 #endif
 
-#if HAS_POWER_SWITCH
+#if HAS(POWER_SWITCH)
 
   /**
    * M80: Turn on Power Supply
@@ -4733,7 +4733,7 @@ inline void gcode_M42() {
     // If you have a switch on suicide pin, this is useful
     // if you want to start another print with suicide feature after
     // a print without suicide...
-    #if HAS_SUICIDE
+    #if HAS(SUICIDE)
       OUT_WRITE(SUICIDE_PIN, HIGH);
     #endif
 
@@ -4743,7 +4743,7 @@ inline void gcode_M42() {
       lcd_update();
     #endif
   }
-#endif // HAS_POWER_SWITCH
+#endif // HAS(POWER_SWITCH)
 
 /**
  * M81: Turn off Power, including Power Supply, if there is one.
@@ -4757,14 +4757,14 @@ inline void gcode_M81() {
   finishAndDisableSteppers();
   fanSpeed = 0;
   delay(1000); // Wait 1 second before switching off
-  #if HAS_SUICIDE
+  #if HAS(SUICIDE)
     st_synchronize();
     suicide();
-  #elif HAS_POWER_SWITCH
+  #elif HAS(POWER_SWITCH)
     OUT_WRITE(PS_ON_PIN, PS_ON_ASLEEP);
   #endif
   #ifdef ULTIPANEL
-    #if HAS_POWER_SWITCH
+    #if HAS(POWER_SWITCH)
       powersupply = false;
     #endif
     LCD_MESSAGEPGM(MACHINE_NAME " " MSG_OFF ".");
@@ -4863,13 +4863,13 @@ inline void gcode_M104() {
 inline void gcode_M105() {
   if (setTargetedHotend(105)) return;
 
-  #if HAS_TEMP_0 || HAS_TEMP_BED || defined(HEATER_0_USES_MAX6675)
+  #if HAS(TEMP_0) || HAS(TEMP_BED) || defined(HEATER_0_USES_MAX6675)
     ECHO_S(OK);
-    #if HAS_TEMP_0
+    #if HAS(TEMP_0)
       ECHO_MV(MSG_T, degHotend(target_extruder), 1);
       ECHO_MV(" /", degTargetHotend(target_extruder), 1);
     #endif
-    #if HAS_TEMP_BED
+    #if HAS(TEMP_BED)
       ECHO_MV(" " MSG_B, degBed(), 1);
       ECHO_MV(" /", degTargetBed(), 1);
     #endif
@@ -4878,7 +4878,7 @@ inline void gcode_M105() {
       ECHO_MV(":", degHotend(e), 1);
       ECHO_MV(" /", degTargetHotend(e), 1);
     }
-  #else // !HAS_TEMP_0 && !HAS_TEMP_BED
+  #else // HASNT(TEMP_0) && HASNT(TEMP_BED)
     ECHO_LM(ER, MSG_ERR_NO_THERMISTORS);
   #endif
 
@@ -4897,7 +4897,7 @@ inline void gcode_M105() {
   #endif
 
   #ifdef SHOW_TEMP_ADC_VALUES
-    #if HAS_TEMP_BED
+    #if HAS(TEMP_BED)
       ECHO_MV("    ADC B:", degBed(), 1);
       ECHO_MV("C->", rawBedTemp()/OVERSAMPLENR, 0);
     #endif
@@ -4910,7 +4910,7 @@ inline void gcode_M105() {
   ECHO_E;
 }
 
-#if HAS_FAN
+#if HAS(FAN)
   /**
    * M106: Set Fan Speed
    */
@@ -4921,7 +4921,7 @@ inline void gcode_M105() {
    */
   inline void gcode_M107() { fanSpeed = 0; }
 
-#endif // HAS_FAN
+#endif // HAS(FAN)
 
 /**
  * M109: Wait for extruder(s) to reach temperature
@@ -5055,34 +5055,34 @@ inline void gcode_M115() {
  */
 inline void gcode_M119() {
   ECHO_LV(DB, MSG_M119_REPORT);
-  #if HAS_X_MIN
+  #if HAS(X_MIN)
     ECHO_EMV(MSG_X_MIN, ((READ(X_MIN_PIN)^X_MIN_ENDSTOP_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
   #endif
-  #if HAS_X_MAX
+  #if HAS(X_MAX)
     ECHO_EMV(MSG_X_MAX, ((READ(X_MAX_PIN)^X_MAX_ENDSTOP_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
   #endif
-  #if HAS_Y_MIN
+  #if HAS(Y_MIN)
     ECHO_EMV(MSG_Y_MIN, ((READ(Y_MIN_PIN)^Y_MIN_ENDSTOP_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
   #endif
-  #if HAS_Y_MAX
+  #if HAS(Y_MAX)
     ECHO_EMV(MSG_Y_MAX, ((READ(Y_MAX_PIN)^Y_MAX_ENDSTOP_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
   #endif
-  #if HAS_Z_MIN
+  #if HAS(Z_MIN)
     ECHO_EMV(MSG_Z_MIN, ((READ(Z_MIN_PIN)^Z_MIN_ENDSTOP_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
   #endif
-  #if HAS_Z_MAX
+  #if HAS(Z_MAX)
     ECHO_EMV(MSG_Z_MAX, ((READ(Z_MAX_PIN)^Z_MAX_ENDSTOP_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
   #endif
-  #if HAS_Z2_MAX
+  #if HAS(Z2_MAX)
     ECHO_EMV(MSG_Z2_MAX, ((READ(Z2_MAX_PIN)^Z2_MAX_ENDSTOP_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
   #endif
-  #if HAS_Z_PROBE
+  #if HAS(Z_PROBE)
     ECHO_EMV(MSG_Z_PROBE, ((READ(Z_PROBE_PIN)^Z_PROBE_ENDSTOP_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
   #endif
-  #if HAS_E_MIN
+  #if HAS(E_MIN)
     ECHO_EMV(MSG_E_MIN, ((READ(E_MIN_PIN)^E_MIN_ENDSTOP_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
   #endif
-  #if HAS_FILRUNOUT
+  #if HAS(FILRUNOUT)
     ECHO_EMV(MSG_FILRUNOUT_PIN, ((READ(FILRUNOUT_PIN)^FILRUNOUT_PIN_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
   #endif
   ECHO_E;
@@ -5099,7 +5099,7 @@ inline void gcode_M120() { enable_endstops(true); }
 inline void gcode_M121() { enable_endstops(false); }
 
 #ifdef BARICUDA
-  #if HAS_HEATER_1
+  #if HAS(HEATER_1)
     /**
      * M126: Heater 1 valve open
      */
@@ -5110,7 +5110,7 @@ inline void gcode_M121() { enable_endstops(false); }
     inline void gcode_M127() { ValvePressure = 0; }
   #endif
 
-  #if HAS_HEATER_2
+  #if HAS(HEATER_2)
     /**
      * M128: Heater 2 valve open
      */
@@ -5216,7 +5216,7 @@ inline void gcode_M140() {
 
 #endif // BLINKM
 
-#if HAS_TEMP_BED
+#if HAS(TEMP_BED)
   /**
    * M190: Sxxx Wait for bed current temp to reach target temp. Waits only when heating
    *       Rxxx Wait for bed current temp to reach target temp. Waits when heating and cooling
@@ -5231,7 +5231,7 @@ inline void gcode_M140() {
 
     wait_bed();
   }
-#endif // HAS_TEMP_BED
+#endif // HAS(TEMP_BED)
 
 /**
  * M200: Set filament diameter and set E axis units to cubic millimetres
@@ -5525,16 +5525,16 @@ inline void gcode_M226() {
   } // code_seen('P')
 }
 
-#if HAS_CHDK || HAS_PHOTOGRAPH
+#if HAS(CHDK) || HAS(PHOTOGRAPH)
   /**
    * M240: Trigger a camera
    */
   inline void gcode_M240() {
-    #if HAS_CHDK
+    #if HAS(CHDK)
        OUT_WRITE(CHDK_PIN, HIGH);
        chdkHigh = millis();
        chdkActive = true;
-    #elif HAS_PHOTOGRAPH
+    #elif HAS(PHOTOGRAPH)
       const uint8_t NUM_PULSES = 16;
       const float PULSE_LENGTH = 0.01524;
       for (int i = 0; i < NUM_PULSES; i++) {
@@ -5550,11 +5550,11 @@ inline void gcode_M226() {
         WRITE(PHOTOGRAPH_PIN, LOW);
         _delay_ms(PULSE_LENGTH);
       }
-    #endif // !HAS_CHDK && HAS_PHOTOGRAPH
+    #endif // HASNT(CHDK) && HAS(PHOTOGRAPH)
   }
-#endif // HAS_CHDK || PHOTOGRAPH_PIN
+#endif // HAS(CHDK) || PHOTOGRAPH_PIN
 
-#ifdef HAS_LCD_CONTRAST
+#ifdef HAS(LCD_CONTRAST)
   /**
    * M250: Read and optionally set the LCD contrast
    */
@@ -5597,7 +5597,7 @@ inline void gcode_M226() {
   }
 #endif // NUM_SERVOS > 0
 
-#if HAS_BUZZER
+#if HAS(BUZZER)
 
   /**
    * M300: Play beep sound S<frequency Hz> P<duration ms>
@@ -5609,7 +5609,7 @@ inline void gcode_M226() {
     buzz(beepP, beepS);
   }
 
-#endif // HAS_BUZZER
+#endif // HAS(BUZZER)
 
 
 #if ENABLED(PIDTEMP)
@@ -5681,7 +5681,7 @@ inline void gcode_M226() {
   }
 #endif // PIDTEMPBED
 
-#if HAS_MICROSTEPS
+#if HAS(MICROSTEPS)
   // M350 Set microstepping mode. Warning: Steps per unit remains unchanged. S code sets stepping mode for all drivers.
   inline void gcode_M350() {
     if(code_seen('S')) for(int i = 0; i <= 4; i++) microstep_mode(i, code_value());
@@ -5707,7 +5707,7 @@ inline void gcode_M226() {
     }
     microstep_readings();
   }
-#endif // HAS_MICROSTEPS
+#endif // HAS(MICROSTEPS)
 
 #ifdef SCARA
   bool SCARA_move_to_cal(uint8_t delta_x, uint8_t delta_y) {
@@ -5785,17 +5785,17 @@ inline void gcode_M226() {
       case 0:
         OUT_WRITE(SOL0_PIN, HIGH);
         break;
-        #if HAS_SOLENOID_1
+        #if HAS(SOLENOID_1)
           case 1:
             OUT_WRITE(SOL1_PIN, HIGH);
             break;
         #endif
-        #if HAS_SOLENOID_2
+        #if HAS(SOLENOID_2)
           case 2:
             OUT_WRITE(SOL2_PIN, HIGH);
             break;
         #endif
-        #if HAS_SOLENOID_3
+        #if HAS(SOLENOID_3)
           case 3:
             OUT_WRITE(SOL3_PIN, HIGH);
             break;
@@ -5832,13 +5832,13 @@ inline void gcode_M226() {
  */
 inline void gcode_M400() { st_synchronize(); }
 
-#if ENABLED(AUTO_BED_LEVELING_FEATURE) && DISABLED(Z_PROBE_SLED) && HAS_SERVO_ENDSTOPS
+#if ENABLED(AUTO_BED_LEVELING_FEATURE) && DISABLED(Z_PROBE_SLED) && HAS(SERVO_ENDSTOPS)
 
   /**
    * M401: Engage Z Servo endstop if available
    */
   inline void gcode_M401() {
-    #if HAS_SERVO_ENDSTOPS
+    #if HAS(SERVO_ENDSTOPS)
       raise_z_for_servo();
     #endif
     deploy_z_probe();
@@ -5848,13 +5848,13 @@ inline void gcode_M400() { st_synchronize(); }
    * M402: Retract Z Servo endstop if enabled
    */
   inline void gcode_M402() {
-    #if HAS_SERVO_ENDSTOPS
+    #if HAS(SERVO_ENDSTOPS)
       raise_z_for_servo();
     #endif
     stow_z_probe(false);
   }
 
-#endif // AUTO_BED_LEVELING_FEATURE && (HAS_SERVO_ENDSTOPS && !Z_PROBE_SLED)
+#endif // AUTO_BED_LEVELING_FEATURE && (HAS(SERVO_ENDSTOPS) && !Z_PROBE_SLED)
 
 #ifdef FILAMENT_SENSOR
 
@@ -5862,7 +5862,7 @@ inline void gcode_M400() { st_synchronize(); }
    * M404: Display or set the nominal filament width (3mm, 1.75mm ) W<3.0>
    */
   inline void gcode_M404() {
-    #if HAS_FILWIDTH
+    #if HAS(FILWIDTH)
       if (code_seen('D')) {
         filament_width_nominal = code_value();
       }
@@ -5947,7 +5947,7 @@ inline void gcode_M428() {
       else {
         ECHO_LM(ER, MSG_ERR_M428_TOO_FAR);
         LCD_ALERTMESSAGEPGM("Err: Too far!");
-        #if HAS_BUZZER
+        #if HAS(BUZZER)
           enqueuecommands_P(PSTR("M300 S40 P200"));
         #endif
         err = true;
@@ -5959,14 +5959,14 @@ inline void gcode_M428() {
   if (!err) {
     memcpy(current_position, new_pos, sizeof(new_pos));
     memcpy(home_offset, new_offs, sizeof(new_offs));
-    #if defined(DELTA) || defined(SCARA)
+    #if MECH(DELTA) || MECH(SCARA)
       sync_plan_position_delta();
     #else
       sync_plan_position();
     #endif
     ECHO_LM(DB, "Offset applied.");
     LCD_ALERTMESSAGEPGM("Offset applied.");
-    #if HAS_BUZZER
+    #if HAS(BUZZER)
       enqueuecommands_P(PSTR("M300 S659 P200\nM300 S698 P200"));
     #endif
   }
@@ -6164,7 +6164,7 @@ inline void gcode_M503() {
       line_to_destination();
     #endif
 
-    #if HAS_FILRUNOUT
+    #if HAS(FILRUNOUT)
       filrunoutEnqueued = false;
     #endif
 
@@ -6224,7 +6224,7 @@ inline void gcode_M503() {
   }
 #endif
 
-#if ENABLED(DELTA)
+#if MECH(DELTA)
   //M666: Set delta endstop and geometry adjustment
   inline void gcode_M666() {
     if (code_seen('A')) {
@@ -6319,7 +6319,7 @@ inline void gcode_M503() {
  * M907: Set digital trimpot motor current using axis codes X, Y, Z, E, B, S
  */
 inline void gcode_M907() {
-  #if HAS_DIGIPOTSS
+  #if HAS(DIGIPOTSS)
     for (int i=0;i<NUM_AXIS;i++)
       if (code_seen(axis_codes[i])) digipot_current(i, code_value());
     if (code_seen('B')) digipot_current(4, code_value());
@@ -6342,7 +6342,7 @@ inline void gcode_M907() {
   #endif
 }
 
-#if HAS_DIGIPOTSS
+#if HAS(DIGIPOTSS)
   /**
    * M908: Control digital trimpot directly (M908 P<pin> S<current>)
    */
@@ -6352,7 +6352,7 @@ inline void gcode_M907() {
       code_seen('S') ? code_value() : 0
     );
   }
-#endif // HAS_DIGIPOTSS
+#endif // HAS(DIGIPOTSS)
 
 #if ENABLED(NPR2)
   /**
@@ -6598,7 +6598,7 @@ inline void gcode_T(uint8_t tmp_extruder) {
           #endif // end MKR4 || NPR2
         #endif // end no DUAL_X_CARRIAGE
 
-        #if defined(DELTA) || defined(SCARA)
+        #if MECH(DELTA) || MECH(SCARA)
           sync_plan_position_delta();
         #else // NO DELTA
           sync_plan_position();
@@ -6704,7 +6704,7 @@ void process_next_command() {
         #endif // Z_PROBE_SLED
       #endif // AUTO_BED_LEVELING_FEATURE
 
-      #if defined(DELTA) && defined(Z_PROBE_ENDSTOP)
+      #if MECH(DELTA) && defined(Z_PROBE_ENDSTOP)
         case 29: // G29 Detailed Z-Probe, probes the bed at more points.
           gcode_G29(); gcode_M114(); break;
         case 30:  // G30 Delta AutoCalibration
@@ -6741,7 +6741,7 @@ void process_next_command() {
           gcode_M5(); break;
       #endif //LASERBEAM
 
-      #if HAS_FILRUNOUT
+      #if HAS(FILRUNOUT)
         case 11: //M11 - Start printing
           gcode_M11(); break;
       #endif
@@ -6794,12 +6794,12 @@ void process_next_command() {
           gcode_M48(); break;
       #endif
       
-      #if HAS_POWER_CONSUMPTION_SENSOR
+      #if HAS(POWER_CONSUMPTION_SENSOR)
         case 70: // M70 - Power consumption sensor calibration
           gcode_M70(); break;
       #endif
       
-      #if HAS_POWER_SWITCH
+      #if HAS(POWER_SWITCH)
         case 80: // M80 - Turn on Power Supply
           gcode_M80(); break;
       #endif
@@ -6822,12 +6822,12 @@ void process_next_command() {
       case 105: // M105 Read current temperature
         gcode_M105(); return; // "ok" already printed
 
-      #if HAS_FAN
+      #if HAS(FAN)
         case 106: //M106 Fan On
           gcode_M106(); break;
         case 107: //M107 Fan Off
           gcode_M107(); break;
-      #endif // HAS_FAN
+      #endif // HAS(FAN)
 
       case 109: // M109 Wait for temperature
         gcode_M109(); break;
@@ -6861,20 +6861,20 @@ void process_next_command() {
 
       #ifdef BARICUDA
         // PWM for HEATER_1_PIN
-        #if HAS_HEATER_1
+        #if HAS(HEATER_1)
           case 126: // M126 valve open
             gcode_M126(); break;
           case 127: // M127 valve closed
             gcode_M127(); break;
-        #endif // HAS_HEATER_1
+        #endif // HAS(HEATER_1)
 
         // PWM for HEATER_2_PIN
-        #if HAS_HEATER_2
+        #if HAS(HEATER_2)
           case 128: // M128 valve open
             gcode_M128(); break;
           case 129: // M129 valve closed
             gcode_M129(); break;
-        #endif // HAS_HEATER_2
+        #endif // HAS(HEATER_2)
       #endif // BARICUDA
 
       case 140: // M140 Set bed temp
@@ -6885,7 +6885,7 @@ void process_next_command() {
           gcode_M150(); break;
       #endif //BLINKM
 
-      #if HAS_TEMP_BED
+      #if HAS(TEMP_BED)
         case 190: // M190 - Wait for bed heater to reach target.
           gcode_M190(); break;
       #endif //TEMP_BED_PIN
@@ -6929,10 +6929,10 @@ void process_next_command() {
       case 226: // M226 P<pin number> S<pin state>- Wait until the specified pin reaches the state required
         gcode_M226(); break;
 
-      #if HAS_CHDK || HAS_PHOTOGRAPH
+      #if HAS(CHDK) || HAS(PHOTOGRAPH)
         case 240: // M240  Triggers a camera by emulating a Canon RC-1 : http://www.doc-diy.net/photo/rc-1_hacked/
           gcode_M240(); break;
-      #endif // HAS_CHDK || HAS_PHOTOGRAPH
+      #endif // HAS(CHDK) || HAS(PHOTOGRAPH)
 
       #if defined(DOGLCD) && LCD_CONTRAST >= 0
         case 250: // M250  Set LCD contrast value: C<value> (value 0..63)
@@ -6944,10 +6944,10 @@ void process_next_command() {
           gcode_M280(); break;
       #endif // NUM_SERVOS > 0
 
-      #if HAS_BUZZER
+      #if HAS(BUZZER)
         case 300: // M300 - Play beep tone
           gcode_M300(); break;
-      #endif // HAS_BUZZER
+      #endif // HAS(BUZZER)
 
       #if ENABLED(PIDTEMP)
         case 301: // M301
@@ -6969,12 +6969,12 @@ void process_next_command() {
           gcode_M304(); break;
       #endif // PIDTEMPBED
 
-      #if HAS_MICROSTEPS
+      #if HAS(MICROSTEPS)
         case 350: // M350 Set microstepping mode. Warning: Steps per unit remains unchanged. S code sets stepping mode for all drivers.
           gcode_M350(); break;
         case 351: // M351 Toggle MS1 MS2 pins directly, S# determines MS1 or MS2, X# sets the pin high/low.
           gcode_M351(); break;
-      #endif // HAS_MICROSTEPS
+      #endif // HAS(MICROSTEPS)
 
       #ifdef SCARA
         case 360:  // M360 SCARA Theta pos1
@@ -7042,7 +7042,7 @@ void process_next_command() {
           gcode_M605(); break;
       #endif
 
-      #if ENABLED(AUTO_BED_LEVELING_FEATURE) || ENABLED(DELTA)
+      #if ENABLED(AUTO_BED_LEVELING_FEATURE) || MECH(DELTA)
         case 666: // M666 Set Z probe offset or set delta endstop and geometry adjustment
           gcode_M666(); break;
       #endif
@@ -7050,10 +7050,10 @@ void process_next_command() {
       case 907: // M907 Set digital trimpot motor current using axis codes.
         gcode_M907(); break;
 
-      #if HAS_DIGIPOTSS
+      #if HAS(DIGIPOTSS)
         case 908: // M908 Control digital trimpot directly.
           gcode_M908(); break;
-      #endif // HAS_DIGIPOTSS
+      #endif // HAS(DIGIPOTSS)
 
       #ifdef NPR2
         case 997: // M997 Cxx Move Carter xx gradi
@@ -7142,7 +7142,7 @@ void clamp_to_software_endstops(float target[3]) {
 
 #endif // PREVENT_DANGEROUS_EXTRUDE
 
-#if ENABLED(DELTA) || ENABLED(SCARA)
+#if MECH(DELTA) || MECH(SCARA)
 
   inline bool prepare_move_delta(float target[NUM_AXIS]) {
 
@@ -7202,7 +7202,7 @@ void clamp_to_software_endstops(float target[3]) {
 
 #endif // DELTA || SCARA
 
-#if ENABLED(SCARA)
+#if MECH(SCARA)
   inline bool prepare_move_scara(float target[NUM_AXIS]) { return prepare_move_delta(target); }
 #endif
 
@@ -7244,7 +7244,7 @@ void clamp_to_software_endstops(float target[3]) {
 
 #endif // DUAL_X_CARRIAGE
 
-#if ENABLED(CARTESIAN) || ENABLED(COREXY) || ENABLED(COREXZ)
+#if MECH(CARTESIAN) || MECH(COREXY) || MECH(COREXZ)
 
   inline bool prepare_move_cartesian() {
     // Do not use feedrate_multiplier for E or Z only moves
@@ -7273,9 +7273,9 @@ void prepare_move() {
     prevent_dangerous_extrude(current_position[E_AXIS], destination[E_AXIS]);
   #endif
 
-  #if ENABLED(SCARA)
+  #if MECH(SCARA)
     if (!prepare_move_scara(destination)) return;
-  #elif ENABLED(DELTA)
+  #elif MECH(DELTA)
     if (!prepare_move_delta(destination)) return;
   #endif
 
@@ -7283,7 +7283,7 @@ void prepare_move() {
     if (!prepare_move_dual_x_carriage()) return;
   #endif
 
-  #if ENABLED(CARTESIAN) || ENABLED(COREXY) || ENABLED(COREXZ)
+  #if MECH(CARTESIAN) || MECH(COREXY) || MECH(COREXZ)
     if (!prepare_move_cartesian()) return;
   #endif
 
@@ -7403,7 +7403,7 @@ void plan_arc(
     arc_target[E_AXIS] += extruder_per_segment;
 
     clamp_to_software_endstops(arc_target);
-    #if ENABLED(DELTA) || ENABLED(SCARA)
+    #if MECH(DELTA) || MECH(SCARA)
       calculate_delta(arc_target);
       adjust_delta(arc_target);
       plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], arc_target[E_AXIS], feed_rate, active_extruder, active_driver);
@@ -7413,7 +7413,7 @@ void plan_arc(
   }
 
   // Ensure last segment arrives at target location.
-  #if ENABLED(DELTA) || ENABLED(SCARA)
+  #if MECH(DELTA) || MECH(SCARA)
     calculate_delta(target);
     adjust_delta(arc_target);
     plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], target[E_AXIS], feed_rate, active_extruder, active_driver);
@@ -7427,7 +7427,7 @@ void plan_arc(
   set_current_to_destination();
 }
 
-#if HAS_CONTROLLERFAN
+#if HAS(CONTROLLERFAN)
 
   void controllerFan() {
     static millis_t lastMotor = 0;      // Last time a motor was turned on
@@ -7439,7 +7439,7 @@ void plan_arc(
         || E0_ENABLE_READ == E_ENABLE_ON // If any of the drivers are enabled...
         #if EXTRUDERS > 1
           || E1_ENABLE_READ == E_ENABLE_ON
-          #if HAS_X2_ENABLE
+          #if HAS(X2_ENABLE)
             || X2_ENABLE_READ == X_ENABLE_ON
           #endif
           #if EXTRUDERS > 2
@@ -7469,9 +7469,9 @@ void plan_arc(
     }
   }
 
-#endif // HAS_CONTROLLERFAN
+#endif // HAS(CONTROLLERFAN)
 
-#if ENABLED(SCARA)
+#if MECH(SCARA)
 
   void calculate_SCARA_forward_Transform(float f_scara[3]) {
     // Perform forward kinematics, and place results in delta[3]
@@ -7560,7 +7560,7 @@ void plan_arc(
       next_status_led_update_ms += 500; // Update every 0.5s
       for (int8_t cur_hotend = 0; cur_hotend < HOTENDS; ++cur_hotend)
          max_temp = max(max(max_temp, degHotend(cur_hotend)), degTargetHotend(cur_hotend));
-      #if HAS_TEMP_BED
+      #if HAS(TEMP_BED)
         max_temp = max(max(max_temp, degTargetBed()), degBed());
       #endif
       bool new_led = (max_temp > 55.0) ? true : (max_temp < 54.0) ? false : red_led;
@@ -7618,7 +7618,7 @@ void idle(bool ignore_stepper_queue/*=false*/) {
  */
 void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
 
-  #if HAS_FILRUNOUT
+  #if HAS(FILRUNOUT)
     if ((printing || IS_SD_PRINTING ) && (READ(FILRUNOUT_PIN) ^ FILRUNOUT_PIN_INVERTING))
       filrunout();
   #endif
@@ -7644,14 +7644,14 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
     #endif
   }
 
-  #if HAS_CHDK // Check if pin should be set to LOW after M240 set it to HIGH
+  #if HAS(CHDK) // Check if pin should be set to LOW after M240 set it to HIGH
     if (chdkActive && ms > chdkHigh + CHDK_DELAY) {
       chdkActive = false;
       WRITE(CHDK_PIN, LOW);
     }
   #endif
 
-  #if HAS_KILL
+  #if HAS(KILL)
     
     // Check if the kill button was pressed and wait just in case it was an accidental
     // key kill key press
@@ -7669,7 +7669,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
     if (killCount >= KILL_DELAY) kill(PSTR(MSG_KILLED));
   #endif
 
-  #if HAS_HOME
+  #if HAS(HOME)
     // Check to see if we have to home, use poor man's debouncer
     // ---------------------------------------------------------
     static int homeDebounceCount = 0;   // poor man's debouncing count
@@ -7686,7 +7686,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
     }
   #endif
     
-  #if HAS_CONTROLLERFAN
+  #if HAS(CONTROLLERFAN)
     controllerFan(); // Check if fan should be turned on to cool stepper drivers down
   #endif
 
@@ -7809,7 +7809,7 @@ void kill(const char *lcd_msg) {
   disable_all_heaters();
   disable_all_steppers();
 
-  #if HAS_POWER_SWITCH
+  #if HAS(POWER_SWITCH)
     SET_INPUT(PS_ON_PIN);
   #endif
 
@@ -7823,7 +7823,7 @@ void kill(const char *lcd_msg) {
   while(1) { /* Intentionally left empty */ } // Wait for reset
 }
 
-#if HAS_FILRUNOUT
+#if HAS(FILRUNOUT)
   void filrunout() {
     if (!filrunoutEnqueued) {
       filrunoutEnqueued = true;

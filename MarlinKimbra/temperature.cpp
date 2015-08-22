@@ -61,10 +61,10 @@ float current_temperature_bed = 0.0;
   
 #if ENABLED(FAN_SOFT_PWM)
   unsigned char fanSpeedSoftPwm = 0;
-  #if HAS_AUTO_FAN
+  #if HAS(AUTO_FAN)
     unsigned char fanSpeedSoftPwm_auto = EXTRUDER_AUTO_FAN_MIN_SPEED;
   #endif
-  #if HAS_CONTROLLERFAN
+  #if HAS(CONTROLLERFAN)
     unsigned char fanSpeedSoftPwm_controller = CONTROLLERFAN_MIN_SPEED;
   #endif
 #endif
@@ -91,7 +91,7 @@ unsigned char soft_pwm_bed;
     static millis_t thermal_runaway_bed_timer;
   #endif
 #endif
-#if HAS_POWER_CONSUMPTION_SENSOR
+#if HAS(POWER_CONSUMPTION_SENSOR)
   int current_raw_powconsumption = 0;  //Holds measured power consumption
   static unsigned long raw_powconsumption_value = 0;
 #endif
@@ -134,14 +134,14 @@ static unsigned char soft_pwm[HOTENDS];
 
 #if ENABLED(FAN_SOFT_PWM)
   static unsigned char soft_pwm_fan;
-  #if HAS_AUTO_FAN
+  #if HAS(AUTO_FAN)
     static unsigned char soft_pwm_fan_auto;
   #endif
-  #if HAS_CONTROLLERFAN
+  #if HAS(CONTROLLERFAN)
     static unsigned char soft_pwm_fan_controller = 0;
   #endif
 #endif
-#if HAS_AUTO_FAN
+#if HAS(AUTO_FAN)
   static millis_t next_auto_fan_check_ms;
 #endif  
 
@@ -208,12 +208,12 @@ static void updateTemperaturesFromRawValues();
     float Kp_temp, Ki_temp, Kd_temp;
     float max = 0, min = 10000;
 
-    #if HAS_AUTO_FAN
+    #if HAS(AUTO_FAN)
       millis_t next_auto_fan_check_ms = temp_ms + 2500;
     #endif
 
     if (hotend >= HOTENDS
-      #if !HAS_TEMP_BED
+      #if HASNT(TEMP_BED)
          || hotend < 0
       #endif
     ) {
@@ -251,7 +251,7 @@ static void updateTemperaturesFromRawValues();
         max = max(max, input);
         min = min(min, input);
 
-        #if HAS_AUTO_FAN
+        #if HAS(AUTO_FAN)
           if (ms > next_auto_fan_check_ms) {
             checkExtruderAutoFans();
             next_auto_fan_check_ms = ms + 2500;
@@ -383,7 +383,7 @@ int getHeaterPower(int heater) {
   return heater < 0 ? soft_pwm_bed : soft_pwm[heater];
 }
 
-#if HAS_AUTO_FAN
+#if HAS(AUTO_FAN)
 
 void setExtruderAutoFanState(int pin, bool state) {
   unsigned char newFanSpeed = (state != 0) ? EXTRUDER_AUTO_FAN_SPEED : EXTRUDER_AUTO_FAN_MIN_SPEED;
@@ -400,11 +400,11 @@ void checkExtruderAutoFans() {
   uint8_t fanState = 0;
 
   // which fan pins need to be turned on?      
-  #if HAS_AUTO_FAN_0
+  #if HAS(AUTO_FAN_0)
     if (current_temperature[0] > EXTRUDER_AUTO_FAN_TEMPERATURE) 
       fanState |= 1;
   #endif
-  #if HAS_AUTO_FAN_1
+  #if HAS(AUTO_FAN_1)
     if (current_temperature[1] > EXTRUDER_AUTO_FAN_TEMPERATURE) 
     {
       if (EXTRUDER_1_AUTO_FAN_PIN == EXTRUDER_0_AUTO_FAN_PIN)
@@ -413,7 +413,7 @@ void checkExtruderAutoFans() {
         fanState |= 2;
     }
   #endif
-  #if HAS_AUTO_FAN_2
+  #if HAS(AUTO_FAN_2)
     if (current_temperature[2] > EXTRUDER_AUTO_FAN_TEMPERATURE) 
     {
       if (EXTRUDER_2_AUTO_FAN_PIN == EXTRUDER_0_AUTO_FAN_PIN) 
@@ -424,7 +424,7 @@ void checkExtruderAutoFans() {
         fanState |= 4;
     }
   #endif
-  #if HAS_AUTO_FAN_3
+  #if HAS(AUTO_FAN_3)
     if (current_temperature[3] > EXTRUDER_AUTO_FAN_TEMPERATURE) 
     {
       if (EXTRUDER_3_AUTO_FAN_PIN == EXTRUDER_0_AUTO_FAN_PIN) 
@@ -439,19 +439,19 @@ void checkExtruderAutoFans() {
   #endif
 
   // update extruder auto fan states
-  #if HAS_AUTO_FAN_0
+  #if HAS(AUTO_FAN_0)
     setExtruderAutoFanState(EXTRUDER_0_AUTO_FAN_PIN, (fanState & 1) != 0);
   #endif
-  #if HAS_AUTO_FAN_1
+  #if HAS(AUTO_FAN_1)
     if (EXTRUDER_1_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN)
       setExtruderAutoFanState(EXTRUDER_1_AUTO_FAN_PIN, (fanState & 2) != 0);
   #endif
-  #if HAS_AUTO_FAN_2
+  #if HAS(AUTO_FAN_2)
     if (EXTRUDER_2_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN
         && EXTRUDER_2_AUTO_FAN_PIN != EXTRUDER_1_AUTO_FAN_PIN)
       setExtruderAutoFanState(EXTRUDER_2_AUTO_FAN_PIN, (fanState & 4) != 0);
   #endif
-  #if HAS_AUTO_FAN_3
+  #if HAS(AUTO_FAN_3)
     if (EXTRUDER_3_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN
         && EXTRUDER_3_AUTO_FAN_PIN != EXTRUDER_1_AUTO_FAN_PIN
         && EXTRUDER_3_AUTO_FAN_PIN != EXTRUDER_2_AUTO_FAN_PIN)
@@ -459,7 +459,7 @@ void checkExtruderAutoFans() {
   #endif
 }
 
-#endif // HAS_AUTO_FAN
+#endif // HAS(AUTO_FAN)
 
 //
 // Temperature Error Handlers
@@ -607,7 +607,7 @@ void manage_heater() {
     if (ct < max(HEATER_0_MINTEMP, 0.01)) min_temp_error(0);
   #endif
 
-  #if ENABLED(THERMAL_PROTECTION_HOTENDS) || DISABLED(PIDTEMPBED) || HAS_AUTO_FAN
+  #if ENABLED(THERMAL_PROTECTION_HOTENDS) || DISABLED(PIDTEMPBED) || HAS(AUTO_FAN)
     millis_t ms = millis();
   #endif
 
@@ -649,7 +649,7 @@ void manage_heater() {
 
   } // Hotends Loop
 
-  #if HAS_AUTO_FAN
+  #if HAS(AUTO_FAN)
     if (ms > next_auto_fan_check_ms) { // only need to check fan state very infrequently
       checkExtruderAutoFans();
       next_auto_fan_check_ms = ms + 2500;
@@ -798,10 +798,10 @@ static void updateTemperaturesFromRawValues() {
   #if ENABLED(TEMP_SENSOR_1_AS_REDUNDANT)
     redundant_temperature = analog2temp(redundant_temperature_raw, 1);
   #endif
-  #if HAS_FILAMENT_SENSOR
+  #if HAS(FILAMENT_SENSOR)
     filament_width_meas = analog2widthFil();
   #endif
-  #if HAS_POWER_CONSUMPTION_SENSOR
+  #if HAS(POWER_CONSUMPTION_SENSOR)
     static float watt_overflow = 0.0;
     power_consumption_meas = analog2power();
     /*ECHO_MV("raw:", raw_analog2voltage(), 5);
@@ -833,7 +833,7 @@ static void updateTemperaturesFromRawValues() {
 }
 
 
-#if HAS_FILAMENT_SENSOR
+#if HAS(FILAMENT_SENSOR)
 
   // Convert raw Filament Width to millimeters
   float analog2widthFil() {
@@ -851,7 +851,7 @@ static void updateTemperaturesFromRawValues() {
 
 #endif
 
-#if HAS_POWER_CONSUMPTION_SENSOR
+#if HAS(POWER_CONSUMPTION_SENSOR)
   // Convert raw Power Consumption to watt
   float raw_analog2voltage() {
     return (5.0 * current_raw_powconsumption) / (1023 * OVERSAMPLENR);
@@ -908,22 +908,22 @@ void tp_init() {
     #endif // PIDTEMPBED
   }
 
-  #if HAS_HEATER_0
+  #if HAS(HEATER_0)
     SET_OUTPUT(HEATER_0_PIN);
   #endif
-  #if HAS_HEATER_1
+  #if HAS(HEATER_1)
     SET_OUTPUT(HEATER_1_PIN);
   #endif
-  #if HAS_HEATER_2
+  #if HAS(HEATER_2)
     SET_OUTPUT(HEATER_2_PIN);
   #endif
-  #if HAS_HEATER_3
+  #if HAS(HEATER_3)
     SET_OUTPUT(HEATER_3_PIN);
   #endif
-  #if HAS_HEATER_BED
+  #if HAS(HEATER_BED)
     SET_OUTPUT(HEATER_BED_PIN);
   #endif
-  #if HAS_FAN
+  #if HAS(FAN)
     SET_OUTPUT(FAN_PIN);
     #if ENABLED(FAST_PWM_FAN)
       setPwmFrequency(FAN_PIN, 1); // No prescaling. Pwm frequency = F_CPU/256/8
@@ -960,26 +960,26 @@ void tp_init() {
   #ifdef DIDR2
     DIDR2 = 0;
   #endif
-  #if HAS_TEMP_0
+  #if HAS(TEMP_0)
     ANALOG_SELECT(TEMP_0_PIN);
   #endif
-  #if HAS_TEMP_1
+  #if HAS(TEMP_1)
     ANALOG_SELECT(TEMP_1_PIN);
   #endif
-  #if HAS_TEMP_2
+  #if HAS(TEMP_2)
     ANALOG_SELECT(TEMP_2_PIN);
   #endif
-  #if HAS_TEMP_3
+  #if HAS(TEMP_3)
     ANALOG_SELECT(TEMP_3_PIN);
   #endif
-  #if HAS_TEMP_BED
+  #if HAS(TEMP_BED)
     ANALOG_SELECT(TEMP_BED_PIN);
   #endif
-  #if HAS_FILAMENT_SENSOR
+  #if HAS(FILAMENT_SENSOR)
     ANALOG_SELECT(FILWIDTH_PIN);
   #endif
 
-  #if HAS_CONTROLLERFAN
+  #if HAS(CONTROLLERFAN)
     SET_OUTPUT(CONTROLLERFAN_PIN); //Set pin used for driver cooling fan
     #if ENABLED(FAST_PWM_FAN)
       setPwmFrequency(CONTROLLERFAN_PIN, 1); // No prescaling. Pwm frequency = F_CPU/256/8
@@ -989,25 +989,25 @@ void tp_init() {
     #endif
   #endif
 
-  #if HAS_AUTO_FAN_0
+  #if HAS(AUTO_FAN_0)
     SET_OUTPUT(EXTRUDER_0_AUTO_FAN_PIN);
     #if ENABLED(FAST_PWM_FAN)
       setPwmFrequency(EXTRUDER_0_AUTO_FAN_PIN, 1); // No prescaling. Pwm frequency = F_CPU/256/8
     #endif
   #endif
-  #if HAS_AUTO_FAN_1 && (EXTRUDER_1_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN)
+  #if HAS(AUTO_FAN_1) && (EXTRUDER_1_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN)
     SET_OUTPUT(EXTRUDER_1_AUTO_FAN_PIN);
     #if ENABLED(FAST_PWM_FAN)
       setPwmFrequency(EXTRUDER_1_AUTO_FAN_PIN, 1); // No prescaling. Pwm frequency = F_CPU/256/8
     #endif
   #endif
-  #if HAS_AUTO_FAN_2 && (EXTRUDER_2_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN) && (EXTRUDER_2_AUTO_FAN_PIN != EXTRUDER_1_AUTO_FAN_PIN)
+  #if HAS(AUTO_FAN_2) && (EXTRUDER_2_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN) && (EXTRUDER_2_AUTO_FAN_PIN != EXTRUDER_1_AUTO_FAN_PIN)
     SET_OUTPUT(EXTRUDER_2_AUTO_FAN_PIN);
     #if ENABLED(FAST_PWM_FAN)
       setPwmFrequency(EXTRUDER_2_AUTO_FAN_PIN, 1); // No prescaling. Pwm frequency = F_CPU/256/8
     #endif
   #endif
-  #if HAS_AUTO_FAN_3 && (EXTRUDER_3_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN) && (EXTRUDER_3_AUTO_FAN_PIN != EXTRUDER_1_AUTO_FAN_PIN) && (EXTRUDER_3_AUTO_FAN_PIN != EXTRUDER_2_AUTO_FAN_PIN)
+  #if HAS(AUTO_FAN_3) && (EXTRUDER_3_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN) && (EXTRUDER_3_AUTO_FAN_PIN != EXTRUDER_1_AUTO_FAN_PIN) && (EXTRUDER_3_AUTO_FAN_PIN != EXTRUDER_2_AUTO_FAN_PIN)
     SET_OUTPUT(EXTRUDER_3_AUTO_FAN_PIN);
     #if ENABLED(FAST_PWM_FAN)
       setPwmFrequency(EXTRUDER_3_AUTO_FAN_PIN, 1); // No prescaling. Pwm frequency = F_CPU/256/8
@@ -1015,12 +1015,12 @@ void tp_init() {
   #endif
 
   #if ENABLED(FAN_SOFT_PWM)
-    #if HAS_AUTO_FAN
+    #if HAS(AUTO_FAN)
       soft_pwm_fan_auto = fanSpeedSoftPwm_auto / 2;
     #endif
   #endif
 
-  #if HAS_POWER_CONSUMPTION_SENSOR
+  #if HAS(POWER_CONSUMPTION_SENSOR)
     ANALOG_SELECT(POWER_CONSUMPTION_PIN);
   #endif
   
@@ -1195,28 +1195,28 @@ void disable_all_heaters() {
     WRITE_HEATER_ ## NR (LOW); \
   }
 
-  #if HAS_TEMP_0
+  #if HAS(TEMP_0)
     target_temperature[0] = 0;
     soft_pwm[0] = 0;
     WRITE_HEATER_0P(LOW); // Should HEATERS_PARALLEL apply here? Then change to DISABLE_HEATER(0)
   #endif
 
-  #if HOTENDS > 1 && HAS_TEMP_1
+  #if HOTENDS > 1 && HAS(TEMP_1)
     DISABLE_HEATER(1);
   #endif
 
-  #if HOTENDS > 2 && HAS_TEMP_2
+  #if HOTENDS > 2 && HAS(TEMP_2)
     DISABLE_HEATER(2);
   #endif
 
-  #if HOTENDS > 3 && HAS_TEMP_3
+  #if HOTENDS > 3 && HAS(TEMP_3)
     DISABLE_HEATER(3);
   #endif
 
-  #if HAS_TEMP_BED
+  #if HAS(TEMP_BED)
     target_temperature_bed = 0;
     soft_pwm_bed = 0;
-    #if HAS_HEATER_BED
+    #if HAS(HEATER_BED)
       WRITE_HEATER_BED(LOW);
     #endif
   #endif
@@ -1305,25 +1305,25 @@ static unsigned long raw_temp_value[4] = { 0 };
 static unsigned long raw_temp_bed_value = 0;
 
 static void set_current_temp_raw() {
-  #if HAS_TEMP_0 && DISABLED(HEATER_0_USES_MAX6675)
+  #if HAS(TEMP_0) && DISABLED(HEATER_0_USES_MAX6675)
     current_temperature_raw[0] = raw_temp_value[0];
   #endif
-  #if HAS_TEMP_1
+  #if HAS(TEMP_1)
     #if ENABLED(TEMP_SENSOR_1_AS_REDUNDANT)
       redundant_temperature_raw = raw_temp_value[1];
     #else
       current_temperature_raw[1] = raw_temp_value[1];
     #endif
-    #if HAS_TEMP_2
+    #if HAS(TEMP_2)
       current_temperature_raw[2] = raw_temp_value[2];
-      #if HAS_TEMP_3
+      #if HAS(TEMP_3)
         current_temperature_raw[3] = raw_temp_value[3];
       #endif
     #endif
   #endif
   current_temperature_bed_raw = raw_temp_bed_value;
 
-  #if HAS_POWER_CONSUMPTION_SENSOR
+  #if HAS(POWER_CONSUMPTION_SENSOR)
     current_raw_powconsumption = raw_powconsumption_value;
   #endif
   temp_meas_ready = true;
@@ -1363,11 +1363,11 @@ ISR(TIMER0_COMPB_vect) {
       #endif
     #endif
   #endif
-  #if HAS_HEATER_BED
+  #if HAS(HEATER_BED)
     ISR_STATICS(BED);
   #endif
 
-  #if HAS_FILAMENT_SENSOR
+  #if HAS(FILAMENT_SENSOR)
     static unsigned long raw_filwidth_value = 0;
   #endif
 
@@ -1395,30 +1395,30 @@ ISR(TIMER0_COMPB_vect) {
         #endif
       #endif
 
-      #if HAS_HEATER_BED
+      #if HAS(HEATER_BED)
         soft_pwm_BED = soft_pwm_bed;
         WRITE_HEATER_BED(soft_pwm_BED > 0 ? 1 : 0);
       #endif
       #if ENABLED(FAN_SOFT_PWM)
         soft_pwm_fan = fanSpeedSoftPwm / 2;
-        #if HAS_CONTROLLERFAN
+        #if HAS(CONTROLLERFAN)
           soft_pwm_fan_controller = fanSpeedSoftPwm_controller / 2;
           WRITE(CONTROLLERFAN_PIN, soft_pwm_fan_controller > 0 ? 1 : 0);
         #endif
         WRITE_FAN(soft_pwm_fan > 0 ? 1 : 0);
-        #if HAS_AUTO_FAN
+        #if HAS(AUTO_FAN)
           soft_pwm_fan_auto = fanSpeedSoftPwm_auto / 2;
         #endif
-        #if HAS_AUTO_FAN_0
+        #if HAS(AUTO_FAN_0)
           WRITE(EXTRUDER_0_AUTO_FAN_PIN, soft_pwm_fan_auto > 0 ? 1 : 0);
         #endif
-        #if HAS_AUTO_FAN_1
+        #if HAS(AUTO_FAN_1)
           WRITE(EXTRUDER_1_AUTO_FAN_PIN, soft_pwm_fan_auto > 0 ? 1 : 0);
         #endif
-        #if HAS_AUTO_FAN_2
+        #if HAS(AUTO_FAN_2)
           WRITE(EXTRUDER_2_AUTO_FAN_PIN, soft_pwm_fan_auto > 0 ? 1 : 0);
         #endif
-        #if HAS_AUTO_FAN_3
+        #if HAS(AUTO_FAN_3)
           WRITE(EXTRUDER_3_AUTO_FAN_PIN, soft_pwm_fan_auto > 0 ? 1 : 0);
         #endif
       #endif
@@ -1435,27 +1435,27 @@ ISR(TIMER0_COMPB_vect) {
       #endif
     #endif
 
-    #if HAS_HEATER_BED
+    #if HAS(HEATER_BED)
       if (soft_pwm_BED < pwm_count) WRITE_HEATER_BED(0);
     #endif
 
     #if ENABLED(FAN_SOFT_PWM)
       if (soft_pwm_fan < pwm_count) WRITE_FAN(0);
-      #if HAS_CONTROLLERFAN
+      #if HAS(CONTROLLERFAN)
         if (soft_pwm_fan_controller < pwm_count) WRITE(CONTROLLERFAN_PIN, 0);
       #endif
-      #if HAS_AUTO_FAN
+      #if HAS(AUTO_FAN)
         if (soft_pwm_fan_auto < pwm_count) {
-          #if HAS_AUTO_FAN_0
+          #if HAS(AUTO_FAN_0)
             WRITE(EXTRUDER_0_AUTO_FAN_PIN, 0);
           #endif
-          #if HAS_AUTO_FAN_1
+          #if HAS(AUTO_FAN_1)
             WRITE(EXTRUDER_1_AUTO_FAN_PIN, 0);
           #endif
-          #if HAS_AUTO_FAN_2
+          #if HAS(AUTO_FAN_2)
             WRITE(EXTRUDER_2_AUTO_FAN_PIN, 0);
           #endif
-          #if HAS_AUTO_FAN_3
+          #if HAS(AUTO_FAN_3)
             WRITE(EXTRUDER_3_AUTO_FAN_PIN, 0);
           #endif
         }
@@ -1515,7 +1515,7 @@ ISR(TIMER0_COMPB_vect) {
           #endif
         #endif
       #endif
-      #if HAS_HEATER_BED
+      #if HAS(HEATER_BED)
         _SLOW_PWM_ROUTINE(BED, soft_pwm_bed); // BED
       #endif
 
@@ -1531,7 +1531,7 @@ ISR(TIMER0_COMPB_vect) {
         #endif
       #endif
     #endif
-    #if HAS_HEATER_BED
+    #if HAS(HEATER_BED)
       PWM_OFF_ROUTINE(BED); // BED
     #endif
 
@@ -1539,42 +1539,42 @@ ISR(TIMER0_COMPB_vect) {
       if (pwm_count == 0) {
         soft_pwm_fan = fanSpeedSoftPwm / 2;
         WRITE_FAN(soft_pwm_fan > 0 ? 1 : 0);
-        #if HAS_CONTROLLERFAN
+        #if HAS(CONTROLLERFAN)
           soft_pwm_fan_controller = fanSpeedSoftPwm_controller / 2;
           WRITE(CONTROLLERFAN_PIN, soft_pwm_fan_controller > 0 ? 1 : 0);
         #endif
-        #if HAS_AUTO_FAN
+        #if HAS(AUTO_FAN)
           soft_pwm_fan_auto = fanSpeedSoftPwm_auto / 2;
         #endif
-        #if HAS_AUTO_FAN_0
+        #if HAS(AUTO_FAN_0)
           WRITE(EXTRUDER_0_AUTO_FAN_PIN, soft_pwm_fan_auto > 0 ? 1 : 0);
         #endif
-        #if HAS_AUTO_FAN_1
+        #if HAS(AUTO_FAN_1)
           WRITE(EXTRUDER_1_AUTO_FAN_PIN, soft_pwm_fan_auto > 0 ? 1 : 0);
         #endif
-        #if HAS_AUTO_FAN_2
+        #if HAS(AUTO_FAN_2)
           WRITE(EXTRUDER_2_AUTO_FAN_PIN, soft_pwm_fan_auto > 0 ? 1 : 0);
         #endif
-        #if HAS_AUTO_FAN_3
+        #if HAS(AUTO_FAN_3)
           WRITE(EXTRUDER_3_AUTO_FAN_PIN, soft_pwm_fan_auto > 0 ? 1 : 0);
         #endif
       }
       if (soft_pwm_fan < pwm_count) WRITE_FAN(0);
-      #if HAS_CONTROLLERFAN
+      #if HAS(CONTROLLERFAN)
         if (soft_pwm_fan_controller < pwm_count) WRITE(CONTROLLERFAN_PIN, 0);
       #endif
-      #if HAS_AUTO_FAN
+      #if HAS(AUTO_FAN)
         if (soft_pwm_fan_auto < pwm_count) {
-          #if HAS_AUTO_FAN_0
+          #if HAS(AUTO_FAN_0)
             WRITE(EXTRUDER_0_AUTO_FAN_PIN, 0);
           #endif
-          #if HAS_AUTO_FAN_1
+          #if HAS(AUTO_FAN_1)
             WRITE(EXTRUDER_1_AUTO_FAN_PIN, 0);
           #endif
-          #if HAS_AUTO_FAN_2
+          #if HAS(AUTO_FAN_2)
             WRITE(EXTRUDER_2_AUTO_FAN_PIN, 0);
           #endif
-          #if HAS_AUTO_FAN_3
+          #if HAS(AUTO_FAN_3)
             WRITE(EXTRUDER_3_AUTO_FAN_PIN, 0);
           #endif
         }
@@ -1600,7 +1600,7 @@ ISR(TIMER0_COMPB_vect) {
           #endif
         #endif
       #endif
-      #if HAS_HEATER_BED
+      #if HAS(HEATER_BED)
         if (state_timer_heater_BED > 0) state_timer_heater_BED--;
       #endif
     } // (pwm_count % 64) == 0
@@ -1618,84 +1618,84 @@ ISR(TIMER0_COMPB_vect) {
   switch(temp_state) {
 
     case PrepareTemp_0:
-      #if HAS_TEMP_0
+      #if HAS(TEMP_0)
         START_ADC(TEMP_0_PIN);
       #endif
       lcd_buttons_update();
       temp_state = MeasureTemp_0;
       break;
     case MeasureTemp_0:
-      #if HAS_TEMP_0
+      #if HAS(TEMP_0)
         raw_temp_value[0] += ADC;
       #endif
       temp_state = PrepareTemp_BED;
       break;
 
     case PrepareTemp_BED:
-      #if HAS_TEMP_BED
+      #if HAS(TEMP_BED)
         START_ADC(TEMP_BED_PIN);
       #endif
       lcd_buttons_update();
       temp_state = MeasureTemp_BED;
       break;
     case MeasureTemp_BED:
-      #if HAS_TEMP_BED
+      #if HAS(TEMP_BED)
         raw_temp_bed_value += ADC;
       #endif
       temp_state = PrepareTemp_1;
       break;
 
     case PrepareTemp_1:
-      #if HAS_TEMP_1
+      #if HAS(TEMP_1)
         START_ADC(TEMP_1_PIN);
       #endif
       lcd_buttons_update();
       temp_state = MeasureTemp_1;
       break;
     case MeasureTemp_1:
-      #if HAS_TEMP_1
+      #if HAS(TEMP_1)
         raw_temp_value[1] += ADC;
       #endif
       temp_state = PrepareTemp_2;
       break;
 
     case PrepareTemp_2:
-      #if HAS_TEMP_2
+      #if HAS(TEMP_2)
         START_ADC(TEMP_2_PIN);
       #endif
       lcd_buttons_update();
       temp_state = MeasureTemp_2;
       break;
     case MeasureTemp_2:
-      #if HAS_TEMP_2
+      #if HAS(TEMP_2)
         raw_temp_value[2] += ADC;
       #endif
       temp_state = PrepareTemp_3;
       break;
 
     case PrepareTemp_3:
-      #if HAS_TEMP_3
+      #if HAS(TEMP_3)
         START_ADC(TEMP_3_PIN);
       #endif
       lcd_buttons_update();
       temp_state = MeasureTemp_3;
       break;
     case MeasureTemp_3:
-      #if HAS_TEMP_3
+      #if HAS(TEMP_3)
         raw_temp_value[3] += ADC;
       #endif
       temp_state = Prepare_FILWIDTH;
       break;
 
     case Prepare_FILWIDTH:
-      #if HAS_FILAMENT_SENSOR
+      #if HAS(FILAMENT_SENSOR)
         START_ADC(FILWIDTH_PIN);
       #endif
       lcd_buttons_update();
       temp_state = Measure_FILWIDTH;
       break;
     case Measure_FILWIDTH:
-      #if HAS_FILAMENT_SENSOR
+      #if HAS(FILAMENT_SENSOR)
         // raw_filwidth_value += ADC;  //remove to use an IIR filter approach
         if (ADC > 102) { //check that ADC is reading a voltage > 0.5 volts, otherwise don't take in the data.
           raw_filwidth_value -= (raw_filwidth_value>>7);  //multiply raw_filwidth_value by 127/128
@@ -1706,14 +1706,14 @@ ISR(TIMER0_COMPB_vect) {
       break;
 
     case Prepare_POWCONSUMPTION:
-      #if HAS_POWER_CONSUMPTION_SENSOR
+      #if HAS(POWER_CONSUMPTION_SENSOR)
         START_ADC(POWER_CONSUMPTION_PIN);
       #endif
       lcd_buttons_update();
       temp_state = Measure_POWCONSUMPTION;
       break;
     case Measure_POWCONSUMPTION:
-      #if HAS_POWER_CONSUMPTION_SENSOR
+      #if HAS(POWER_CONSUMPTION_SENSOR)
         raw_powconsumption_value += ADC;
       #endif
       temp_state = PrepareTemp_0;
@@ -1734,7 +1734,7 @@ ISR(TIMER0_COMPB_vect) {
     if (!temp_meas_ready) set_current_temp_raw();
 
     // Filament Sensor - can be read any time since IIR filtering is used
-    #if HAS_FILAMENT_SENSOR
+    #if HAS(FILAMENT_SENSOR)
       current_raw_filwidth = raw_filwidth_value >> 10;  // Divide to get to 0-16384 range since we used 1/128 IIR filter approach
     #endif
 
@@ -1742,11 +1742,11 @@ ISR(TIMER0_COMPB_vect) {
     for (int i = 0; i < 4; i++) raw_temp_value[i] = 0;
     raw_temp_bed_value = 0;
 
-    #if HAS_POWER_CONSUMPTION_SENSOR
+    #if HAS(POWER_CONSUMPTION_SENSOR)
       raw_powconsumption_value = 0;
     #endif
 
-    #if HAS_TEMP_0 && DISABLED(HEATER_0_USES_MAX6675)
+    #if HAS(TEMP_0) && DISABLED(HEATER_0_USES_MAX6675)
       #if HEATER_0_RAW_LO_TEMP > HEATER_0_RAW_HI_TEMP
         #define GE0 <=
       #else
@@ -1756,7 +1756,7 @@ ISR(TIMER0_COMPB_vect) {
       if (minttemp_raw[0] GE0 current_temperature_raw[0]) min_temp_error(0);
     #endif
 
-    #if HAS_TEMP_1 && HOTENDS > 1
+    #if HAS(TEMP_1) && HOTENDS > 1
       #if HEATER_1_RAW_LO_TEMP > HEATER_1_RAW_HI_TEMP
         #define GE1 <=
       #else
@@ -1766,7 +1766,7 @@ ISR(TIMER0_COMPB_vect) {
       if (minttemp_raw[1] GE1 current_temperature_raw[1]) min_temp_error(1);
     #endif // TEMP_SENSOR_1
 
-    #if HAS_TEMP_2 && HOTENDS > 2
+    #if HAS(TEMP_2) && HOTENDS > 2
       #if HEATER_2_RAW_LO_TEMP > HEATER_2_RAW_HI_TEMP
         #define GE2 <=
       #else
@@ -1776,7 +1776,7 @@ ISR(TIMER0_COMPB_vect) {
       if (minttemp_raw[2] GE2 current_temperature_raw[2]) min_temp_error(2);
     #endif // TEMP_SENSOR_2
 
-    #if HAS_TEMP_3 && HOTENDS > 3
+    #if HAS(TEMP_3) && HOTENDS > 3
       #if HEATER_3_RAW_LO_TEMP > HEATER_3_RAW_HI_TEMP
         #define GE3 <=
       #else
@@ -1786,7 +1786,7 @@ ISR(TIMER0_COMPB_vect) {
       if (minttemp_raw[3] GE3 current_temperature_raw[3]) min_temp_error(3);
     #endif // TEMP_SENSOR_3
 
-    #if HAS_TEMP_BED
+    #if HAS(TEMP_BED)
       #if HEATER_BED_RAW_LO_TEMP > HEATER_BED_RAW_HI_TEMP
         #define GEBED <=
       #else

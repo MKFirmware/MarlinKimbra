@@ -33,7 +33,7 @@
   #define EN_C BIT(BLEN_C) 
 #endif 
 
-#if HAS_BTN_BACK
+#if HAS(BTN_BACK)
   #define BLEN_D 3
   #define EN_D BIT(BLEN_D)
 #endif
@@ -106,7 +106,7 @@
 
 #elif ENABLED(NEWPANEL)
   #define LCD_CLICKED (buttons&EN_C)
-  #if HAS_BTN_BACK
+  #if HAS(BTN_BACK)
     #define LCD_BACK_CLICKED (buttons&EN_D)
   #endif
 
@@ -214,7 +214,7 @@ static void lcd_set_custom_characters(
     bool progress_bar_set=true
   #endif
 ) {
-  #if ENABLED(DELTA)
+  #if MECH(DELTA)
     byte bedTemp[8] =
     {
         B00000,
@@ -613,7 +613,7 @@ static void lcd_implementation_status_screen() {
 
     lcd.setCursor(LCD_WIDTH - 6, 2);
     if(print_job_start_ms != 0) {
-      #if HAS_LCD_POWER_SENSOR
+      #if HAS(LCD_POWER_SENSOR)
         if (millis() < print_millis + 1000) {
           lcd.print(LCD_STR_CLOCK[0]);
           uint16_t time = millis()/60000 - print_job_start_ms/60000;
@@ -671,12 +671,12 @@ static void lcd_implementation_status_screen() {
   #endif // ENABLED(LCD_PROGRESS_BAR)
 
   //Display both Status message line and Filament display on the last line
-  #if HAS_LCD_FILAMENT_SENSOR || HAS_LCD_POWER_SENSOR
+  #if HAS(LCD_FILAMENT_SENSOR) || HAS(LCD_POWER_SENSOR)
     if (millis() >= previous_lcd_status_ms + 5000) {
       lcd_print(lcd_status_message);
     }
-    #if HAS_LCD_POWER_SENSOR
-      #if HAS_LCD_FILAMENT_SENSOR
+    #if HAS(LCD_POWER_SENSOR)
+      #if HAS(LCD_FILAMENT_SENSOR)
         else if (millis() < message_millis + 10000)
       #else
         else
@@ -689,7 +689,7 @@ static void lcd_implementation_status_screen() {
         lcd_printPGM(PSTR("Wh"));
       }
     #endif
-    #if HAS_LCD_FILAMENT_SENSOR
+    #if HAS(LCD_FILAMENT_SENSOR)
       else {
         lcd_printPGM(PSTR("Dia "));
         lcd.print(ftostr12ns(filament_width_meas));

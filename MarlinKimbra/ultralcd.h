@@ -66,7 +66,7 @@
 
   extern bool cancel_heatup;
   
-  #if HAS_LCD_FILAMENT_SENSOR || HAS_LCD_POWER_SENSOR
+  #if HAS(LCD_FILAMENT_SENSOR) || HAS(LCD_POWER_SENSOR)
     extern millis_t previous_lcd_status_ms;
   #endif
   void lcd_quick_feedback(); // Audible feedback for a button click - could also be visual

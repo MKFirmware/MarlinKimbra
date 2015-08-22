@@ -35,13 +35,13 @@
    * Babystepping
    */
   #if ENABLED(BABYSTEPPING)
-    #if ENABLED(COREXY) && ENABLED(BABYSTEP_XY)
+    #if MECH(COREXY) && ENABLED(BABYSTEP_XY)
       #error BABYSTEPPING only implemented for Z axis on CoreXY.
     #endif
-    #if ENABLED(SCARA)
+    #if MECH(SCARA)
       #error BABYSTEPPING is not implemented for SCARA yet.
     #endif
-    #if ENABLED(DELTA) && ENABLED(BABYSTEP_XY)
+    #if MECH(DELTA) && ENABLED(BABYSTEP_XY)
       #error BABYSTEPPING only implemented for Z axis on deltabots.
     #endif
   #endif
@@ -110,7 +110,7 @@
   /**
    * Servo deactivation depends on servo endstops
    */
-  #if ENABLED(DEACTIVATE_SERVOS_AFTER_MOVE) && !HAS_SERVO_ENDSTOPS
+  #if ENABLED(DEACTIVATE_SERVOS_AFTER_MOVE) && HASNT(SERVO_ENDSTOPS)
     #error At least one of the ?_ENDSTOP_SERVO_NR is required for DEACTIVATE_SERVOS_AFTER_MOVE.
   #endif
 
@@ -215,7 +215,7 @@
   /**
    * Delta & Z_PROBE_ENDSTOP
    */
-  #if ENABLED(DELTA) && ENABLED(Z_PROBE_ENDSTOP)
+  #if MECH(DELTA) && ENABLED(Z_PROBE_ENDSTOP)
     #ifndef Z_PROBE_PIN
       #error You must have a Z_PROBE_PIN defined in your pins2tool.h file if you enable Z_PROBE_ENDSTOP
     #endif
@@ -228,10 +228,10 @@
    * Dual X Carriage requirements
    */
   #if ENABLED(DUAL_X_CARRIAGE)
-    #if EXTRUDERS == 1 || ENABLED(COREXY) \
-        || !HAS_X2_ENABLE || !HAS_X2_STEP || !HAS_X2_DIR \
+    #if EXTRUDERS == 1 || MECH(COREXY) \
+        || HASNT(X2_ENABLE) || HASNT(X2_STEP) || HASNT(X2_DIR) \
         || !defined(X2_HOME_POS) || !defined(X2_MIN_POS) || !defined(X2_MAX_POS) \
-        || !HAS_X_MAX
+        || HASNT(X_MAX)
       #error Missing or invalid definitions for DUAL_X_CARRIAGE mode.
     #endif
     #if X_HOME_DIR != -1 || X2_HOME_DIR != 1
@@ -242,7 +242,7 @@
   /**
    * Make sure auto fan pins don't conflict with the fan pin
    */
-  #if HAS_AUTO_FAN && HAS_FAN
+  #if HAS(AUTO_FAN) && HAS(FAN)
     #if EXTRUDER_0_AUTO_FAN_PIN == FAN_PIN
       #error You cannot set EXTRUDER_0_AUTO_FAN_PIN equal to FAN_PIN.
     #elif EXTRUDER_1_AUTO_FAN_PIN == FAN_PIN
@@ -254,7 +254,7 @@
     #endif
   #endif
 
-  #if HAS_FAN && CONTROLLERFAN_PIN == FAN_PIN
+  #if HAS(FAN) && CONTROLLERFAN_PIN == FAN_PIN
     #error You cannot set CONTROLLERFAN_PIN equal to FAN_PIN.
   #endif
 
@@ -262,19 +262,19 @@
    * Test required HEATER defines
    */
   #if HOTENDS > 3
-    #if !HAS_HEATER_3
+    #if HASNT(HEATER_3)
       #error HEATER_3_PIN not defined for this board
     #endif
   #elif HOTENDS > 2
-    #if !HAS_HEATER_2
+    #if HASNT(HEATER_2)
       #error HEATER_2_PIN not defined for this board
     #endif
   #elif HOTENDS > 1 || defined(HEATERS_PARALLEL)
-    #if !HAS_HEATER_1
+    #if HASNT(HEATER_1)
       #error HEATER_1_PIN not defined for this board
     #endif
   #elif HOTENDS > 0
-    #if !HAS_HEATER_0
+    #if HASNT(HEATER_0)
       #error HEATER_0_PIN not defined for this board
     #endif
   #endif
@@ -306,7 +306,7 @@
     #error PROBE_SERVO_DEACTIVATION_DELAY has been replaced with DEACTIVATE_SERVOS_AFTER_MOVE and SERVO_DEACTIVATION_DELAY.
   #endif
 
-  #if ENABLED(COREXZ) && ENABLED(Z_LATE_ENABLE)
+  #if MECH(COREXZ) && ENABLED(Z_LATE_ENABLE)
     #error "Z_LATE_ENABLE can't be used with COREXZ."
   #endif
 

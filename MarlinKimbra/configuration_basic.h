@@ -1,11 +1,8 @@
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
-#include "boards.h"
-#include "mechanism.h"
 #include "macros.h"
 #include "default_version.h"
-#include "configuration_overall.h"
 
 /*
  * This configuration file contains basic settings.
@@ -243,15 +240,15 @@
 /***********************************************************************
  ********************** Do not touch this section **********************
  ***********************************************************************/
-#if MECHANISM(MECH_CARTESIAN)
+#if MECH(CARTESIAN)
   #include "configuration_cartesian.h"
-#elif MECHANISM(MECH_COREXY)
+#elif MECH(COREXY)
   #include "configuration_core.h"
-#elif MECHANISM(MECH_COREXZ)
+#elif MECH(COREXZ)
   #include "configuration_core.h"
-#elif MECHANISM(MECH_DELTA)
+#elif MECH(DELTA)
   #include "configuration_delta.h"
-#elif MECHANISM(MECH_SCARA)
+#elif MECH(SCARA)
   #include "configuration_scara.h"
 #endif 
 

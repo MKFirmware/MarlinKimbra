@@ -46,10 +46,10 @@ void idle(bool ignore_stepper_queue = false);
 
 void manage_inactivity(bool ignore_stepper_queue=false);
 
-#if ENABLED(DUAL_X_CARRIAGE) && HAS_X_ENABLE && HAS_X2_ENABLE
+#if ENABLED(DUAL_X_CARRIAGE) && HAS(X_ENABLE) && HAS(X2_ENABLE)
   #define  enable_x() do { X_ENABLE_WRITE( X_ENABLE_ON); X2_ENABLE_WRITE( X_ENABLE_ON); } while (0)
   #define disable_x() do { X_ENABLE_WRITE(!X_ENABLE_ON); X2_ENABLE_WRITE(!X_ENABLE_ON); axis_known_position[X_AXIS] = false; } while (0)
-#elif HAS_X_ENABLE
+#elif HAS(X_ENABLE)
   #define  enable_x() X_ENABLE_WRITE( X_ENABLE_ON)
   #define disable_x() { X_ENABLE_WRITE(!X_ENABLE_ON); axis_known_position[X_AXIS] = false; }
 #else
@@ -57,7 +57,7 @@ void manage_inactivity(bool ignore_stepper_queue=false);
   #define disable_x() ;
 #endif
 
-#if HAS_Y_ENABLE
+#if HAS(Y_ENABLE)
   #if ENABLED(Y_DUAL_STEPPER_DRIVERS)
     #define  enable_y() { Y_ENABLE_WRITE( Y_ENABLE_ON); Y2_ENABLE_WRITE(Y_ENABLE_ON); }
     #define disable_y() { Y_ENABLE_WRITE(!Y_ENABLE_ON); Y2_ENABLE_WRITE(!Y_ENABLE_ON); axis_known_position[Y_AXIS] = false; }
@@ -70,7 +70,7 @@ void manage_inactivity(bool ignore_stepper_queue=false);
   #define disable_y() ;
 #endif
 
-#if HAS_Z_ENABLE
+#if HAS(Z_ENABLE)
   #if ENABLED(Z_DUAL_STEPPER_DRIVERS)
     #define  enable_z() { Z_ENABLE_WRITE( Z_ENABLE_ON); Z2_ENABLE_WRITE(Z_ENABLE_ON); }
     #define disable_z() { Z_ENABLE_WRITE(!Z_ENABLE_ON); Z2_ENABLE_WRITE(!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }
@@ -83,7 +83,7 @@ void manage_inactivity(bool ignore_stepper_queue=false);
   #define disable_z() ;
 #endif
 
-#if HAS_E0_ENABLE
+#if HAS(E0_ENABLE)
   #define enable_e0()  E0_ENABLE_WRITE( E_ENABLE_ON)
   #define disable_e0() E0_ENABLE_WRITE(!E_ENABLE_ON)
 #else
@@ -91,7 +91,7 @@ void manage_inactivity(bool ignore_stepper_queue=false);
   #define disable_e0() /* nothing */
 #endif
 
-#if (DRIVER_EXTRUDERS > 1) && HAS_E1_ENABLE
+#if (DRIVER_EXTRUDERS > 1) && HAS(E1_ENABLE)
   #define enable_e1()  E1_ENABLE_WRITE( E_ENABLE_ON)
   #define disable_e1() E1_ENABLE_WRITE(!E_ENABLE_ON)
 #else
@@ -99,7 +99,7 @@ void manage_inactivity(bool ignore_stepper_queue=false);
   #define disable_e1() /* nothing */
 #endif
 
-#if (DRIVER_EXTRUDERS > 2) && HAS_E2_ENABLE
+#if (DRIVER_EXTRUDERS > 2) && HAS(E2_ENABLE)
   #define enable_e2()  E2_ENABLE_WRITE( E_ENABLE_ON)
   #define disable_e2() E2_ENABLE_WRITE(!E_ENABLE_ON)
 #else
@@ -107,7 +107,7 @@ void manage_inactivity(bool ignore_stepper_queue=false);
   #define disable_e2() /* nothing */
 #endif
 
-#if (DRIVER_EXTRUDERS > 3) && HAS_E3_ENABLE
+#if (DRIVER_EXTRUDERS > 3) && HAS(E3_ENABLE)
   #define enable_e3()  E3_ENABLE_WRITE( E_ENABLE_ON)
   #define disable_e3() E3_ENABLE_WRITE(!E_ENABLE_ON)
 #else
@@ -138,7 +138,7 @@ void disable_all_steppers();
 void FlushSerialRequestResend();
 void ok_to_send();
 
-#if ENABLED(DELTA)
+#if MECH(DELTA)
   float probe_bed(float x, float y);
   void set_delta_constants();
   void adj_tower_delta(int tower);
@@ -166,7 +166,7 @@ void ok_to_send();
   extern float delta_radius;
   extern float delta_diagonal_rod;
 #endif
-#if ENABLED(SCARA)
+#if MECH(SCARA)
   void calculate_delta(float cartesian[3]);
   void calculate_SCARA_forward_Transform(float f_scara[3]);
 #endif
@@ -237,7 +237,7 @@ extern float home_offset[3];
   extern int old_color; // old color for system NPR2
 #endif
 
-#if ENABLED(DELTA)
+#if MECH(DELTA)
   extern float z_probe_offset[3];
   extern float endstop_adj[3];
   extern float tower_adj[6];
@@ -248,7 +248,7 @@ extern float home_offset[3];
   extern float z_endstop_adj;
 #endif
 
-#if ENABLED(SCARA)
+#if MECH(SCARA)
   extern float axis_scaling[3];  // Build size scaling
 #endif
 
@@ -273,7 +273,7 @@ extern int fanSpeed;
 
 #if ENABLED(FAN_SOFT_PWM)
   extern unsigned char fanSpeedSoftPwm;
-  #if HAS_CONTROLLERFAN
+  #if HAS(CONTROLLERFAN)
     extern unsigned char fanSpeedSoftPwm_controller;
   #endif
 #endif
@@ -288,7 +288,7 @@ extern int fanSpeed;
   extern int meas_delay_cm;               //delay distance
 #endif
 
-#if HAS_POWER_CONSUMPTION_SENSOR
+#if HAS(POWER_CONSUMPTION_SENSOR)
   extern float power_consumption_meas;          //holds the power consumption as accurately measured
   extern unsigned long power_consumption_hour;  //holds the power consumption per hour as accurately measured
   extern unsigned long startpower;

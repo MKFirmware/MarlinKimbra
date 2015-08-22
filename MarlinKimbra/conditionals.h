@@ -4,7 +4,6 @@
  */
 #ifndef CONDITIONALS_H
 #define CONDITIONALS_H
-#define PIN_EXISTS(PN) (defined(PN##_PIN) && PN##_PIN >= 0)
 
 #if ENABLED(MAKRPANEL)
   #define DOGLCD
@@ -307,7 +306,7 @@
 /**
  * SCARA
  */
-#if ENABLED(SCARA)
+#if MECH(SCARA)
   #undef SLOWDOWN
   #define QUICK_HOME //SCARA needs Quickhome
 #endif
@@ -315,7 +314,7 @@
 /**
  * DELTA
  */
-#if ENABLED(DELTA)
+#if MECH(DELTA)
   #undef SLOWDOWN //DELTA not needs SLOWDOWN
   #define AUTOLEVEL_GRID_MULTI 1/AUTOLEVEL_GRID
   // DELTA must have same valour for 3 axis endstop hits
@@ -624,6 +623,9 @@
 #define HAS_E0E4 (PIN_EXISTS(E0E4_CHOICE))
 #define HAS_E1E3 (PIN_EXISTS(E1E3_CHOICE))
 #define HAS_BTN_BACK (PIN_EXISTS(BTN_BACK))
+
+
+#define HAS_DIGIPOTSS (DIGIPOTSS_PIN >= 0)
 
 /**
  * Shorthand for filament sensor and power sensor for ultralcd.cpp, dogm_lcd_implementation.h, ultralcd_implementation_hitachi_HD44780.h

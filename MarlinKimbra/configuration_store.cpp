@@ -166,7 +166,7 @@ void Config_StoreSettings() {
     EEPROM_WRITE_VAR(i, hotend_offset);
   #endif
 
-  #if ENABLED(DELTA)
+  #if MECH(DELTA)
     EEPROM_WRITE_VAR(i, endstop_adj);
     EEPROM_WRITE_VAR(i, delta_radius);
     EEPROM_WRITE_VAR(i, delta_diagonal_rod);
@@ -208,12 +208,12 @@ void Config_StoreSettings() {
     EEPROM_WRITE_VAR(i, bedKd);
   #endif
 
-  #if DISABLED(HAS_LCD_CONTRAST)
+  #if HASNT(LCD_CONTRAST)
     const int lcd_contrast = 32;
   #endif
   EEPROM_WRITE_VAR(i, lcd_contrast);
 
-  #if ENABLED(SCARA)
+  #if MECH(SCARA)
     EEPROM_WRITE_VAR(i, axis_scaling); // 3 floats
   #endif
 
@@ -303,7 +303,7 @@ void Config_RetrieveSettings() {
       EEPROM_READ_VAR(i, hotend_offset);
     #endif
 
-    #if ENABLED(DELTA)
+    #if MECH(DELTA)
       EEPROM_READ_VAR(i, endstop_adj);
       EEPROM_READ_VAR(i, delta_radius);
       EEPROM_READ_VAR(i, delta_diagonal_rod);
@@ -345,13 +345,13 @@ void Config_RetrieveSettings() {
       EEPROM_READ_VAR(i, bedKd);
     #endif
 
-    #if DISABLED(HAS_LCD_CONTRAST)
+    #if HASNT(LCD_CONTRAST)
       int lcd_contrast;
     #endif
 
     EEPROM_READ_VAR(i, lcd_contrast);
 
-    #if ENABLED(SCARA)
+    #if MECH(SCARA)
       EEPROM_READ_VAR(i, axis_scaling);  // 3 floats
     #endif
 
@@ -469,7 +469,7 @@ void Config_ResetDefault() {
     }
   }
 
-  #if ENABLED(SCARA)
+  #if MECH(SCARA)
     for (int8_t i = 0; i < NUM_AXIS; i++) {
       if (i < COUNT(axis_scaling))
         axis_scaling[i] = 1;
@@ -490,11 +490,11 @@ void Config_ResetDefault() {
 
   #if ENABLED(AUTO_BED_LEVELING_FEATURE)
     zprobe_zoffset = Z_PROBE_OFFSET_FROM_EXTRUDER;
-  #elif !defined(DELTA)
+  #elif !MECH(DELTA)
     zprobe_zoffset = 0;
   #endif
 
-  #if ENABLED(DELTA)
+  #if MECH(DELTA)
     delta_radius = DEFAULT_DELTA_RADIUS;
     delta_diagonal_rod = DEFAULT_DELTA_DIAGONAL_ROD;
     endstop_adj[0] = TOWER_A_ENDSTOP_ADJ;
@@ -526,7 +526,7 @@ void Config_ResetDefault() {
     gumPreheatFanSpeed = GUM_PREHEAT_FAN_SPEED;
   #endif
 
-  #if ENABLED(HAS_LCD_CONTRAST)
+  #if HAS(LCD_CONTRAST)
     lcd_contrast = DEFAULT_LCD_CONTRAST;
   #endif
 
@@ -598,7 +598,7 @@ void Config_ResetDefault() {
       }
     #endif //EXTRUDERS > 1
 
-    #if ENABLED(SCARA)
+    #if MECH(SCARA)
       if (!forReplay) {
         ECHO_LM(DB, "Scaling factors:");
       }
@@ -682,7 +682,7 @@ void Config_ResetDefault() {
       }
     #endif //HOTENDS > 1
     
-    #if ENABLED(DELTA)
+    #if MECH(DELTA)
       if (!forReplay) {
         ECHO_LM(DB, "Delta Geometry adjustment:");
       }
@@ -819,7 +819,7 @@ void Config_ResetDefault() {
 
   void ConfigSD_PrintSettings(bool forReplay) {
     // Always have this function, even with SD_SETTINGS disabled, the current values will be shown
-    #if HAS_POWER_CONSUMPTION_SENSOR
+    #if HAS(POWER_CONSUMPTION_SENSOR)
       if (!forReplay) {
         ECHO_LM(DB, "Watt/h consumed:");
       }
@@ -843,7 +843,7 @@ void Config_ResetDefault() {
  *
  */
 void ConfigSD_ResetDefault() {
-  #if HAS_POWER_CONSUMPTION_SENSOR
+  #if HAS(POWER_CONSUMPTION_SENSOR)
    power_consumption_hour = 0;
   #endif
   printer_usage_seconds  = 0;
@@ -859,7 +859,7 @@ void ConfigSD_ResetDefault() {
     card.setroot(true);
     card.openFile(CFG_SD_FILE, false, true, false);
     char buff[CFG_SD_MAX_VALUE_LEN];
-    #if HAS_POWER_CONSUMPTION_SENSOR
+    #if HAS(POWER_CONSUMPTION_SENSOR)
       ltoa(power_consumption_hour,buff,10);
       card.unparseKeyLine(cfgSD_KEY[SD_CFG_PWR], buff);
     #endif
@@ -890,7 +890,7 @@ void ConfigSD_ResetDefault() {
       k_idx = ConfigSD_KeyIndex(key);
       if(k_idx == -1) continue;    //unknow key ignore it
       switch(k_idx) {
-        #if HAS_POWER_CONSUMPTION_SENSOR
+        #if HAS(POWER_CONSUMPTION_SENSOR)
         case SD_CFG_PWR: {
           if(addValue) power_consumption_hour += (unsigned long)atol(value);
           else power_consumption_hour = (unsigned long)atol(value);

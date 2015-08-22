@@ -5353,6 +5353,4 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
                         analogInputToDigitalPin(TEMP_BED_PIN) \
                        }
 
-#define HAS_DIGIPOTSS (DIGIPOTSS_PIN >= 0)
-
 #endif //__PINS_H

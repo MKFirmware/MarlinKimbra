@@ -29,11 +29,11 @@ int gumPreheatHotendTemp;
 int gumPreheatHPBTemp;
 int gumPreheatFanSpeed;
 
-#if HAS_LCD_FILAMENT_SENSOR || HAS_LCD_POWER_SENSOR
+#if HAS(LCD_FILAMENT_SENSOR) || HAS(LCD_POWER_SENSOR)
   millis_t previous_lcd_status_ms = 0;
 #endif
 
-#if HAS_LCD_POWER_SENSOR
+#if HAS(LCD_POWER_SENSOR)
   millis_t print_millis = 0;
 #endif
 
@@ -56,7 +56,7 @@ static void lcd_status_screen();
 
 #if ENABLED(ULTIPANEL)
 
-  #if HAS_POWER_SWITCH
+  #if HAS(POWER_SWITCH)
     extern bool powersupply;
   #endif
   static float manual_feedrate[] = MANUAL_FEEDRATE;
@@ -74,7 +74,7 @@ static void lcd_status_screen();
   static void lcd_control_temperature_preheat_gum_settings_menu();
   static void lcd_control_motion_menu();
   static void lcd_control_volumetric_menu();
-  #if ENABLED(HAS_LCD_CONTRAST)
+  #if HAS(LCD_CONTRAST)
     static void lcd_set_contrast();
   #endif
   #if ENABLED(FWRETRACT)
@@ -82,7 +82,7 @@ static void lcd_status_screen();
   #endif
   static void lcd_sdcard_menu();
   
-  #if ENABLED(DELTA)
+  #if MECH(DELTA)
     static void lcd_delta_calibrate_menu();
   #elif DISABLED(DELTA) && DISABLED(Z_SAFE_HOMING) && Z_HOME_DIR < 0
     static void lcd_level_bed();
@@ -338,12 +338,12 @@ static void lcd_status_screen() {
 
   lcd_implementation_status_screen();
 
-  #if HAS_LCD_POWER_SENSOR
+  #if HAS(LCD_POWER_SENSOR)
     if (millis() > print_millis + 2000) print_millis = millis();
   #endif
   
-  #if HAS_LCD_FILAMENT_SENSOR || HAS_LCD_POWER_SENSOR
-    #if HAS_LCD_FILAMENT_SENSOR && HAS_LCD_POWER_SENSOR
+  #if HAS(LCD_FILAMENT_SENSOR) || HAS(LCD_POWER_SENSOR)
+    #if HAS(LCD_FILAMENT_SENSOR) && HAS(LCD_POWER_SENSOR)
       if (millis() > previous_lcd_status_ms + 15000)
     #else
       if (millis() > previous_lcd_status_ms + 10000)
@@ -378,7 +378,7 @@ static void lcd_status_screen() {
           currentMenu == lcd_status_screen
         #endif
       );
-      #if HAS_LCD_FILAMENT_SENSOR || HAS_LCD_POWER_SENSOR
+      #if HAS(LCD_FILAMENT_SENSOR) || HAS(LCD_POWER_SENSOR)
         previous_lcd_status_ms = millis();  // get status message to show up for a while
       #endif
     }
@@ -444,7 +444,7 @@ static void lcd_main_menu() {
   }
   else {
     MENU_ITEM(submenu, MSG_PREPARE, lcd_prepare_menu);
-    #if ENABLED(DELTA)
+    #if MECH(DELTA)
       MENU_ITEM(submenu, MSG_DELTA_CALIBRATE, lcd_delta_calibrate_menu);
     #endif // DELTA
   }
@@ -529,7 +529,7 @@ void lcd_set_home_offsets() {
 #endif // BABYSTEPPING
 
 static void lcd_tune_fixstep() {
-  #if ENABLED(DELTA)
+  #if MECH(DELTA)
     enqueuecommands_P(PSTR("G28 B"));
   #else
     enqueuecommands_P(PSTR("G28 X Y B"));
@@ -592,7 +592,7 @@ static void lcd_tune_menu() {
 #if ENABLED(EASY_LOAD)
   static void lcd_extrude(float length, float feedrate) {
     current_position[E_AXIS] += length;
-    #if ENABLED(DELTA)
+    #if MECH(DELTA)
       calculate_delta(current_position);
       plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS], feedrate, active_extruder, active_driver);
     #else
@@ -892,7 +892,7 @@ static void lcd_prepare_temperature_menu() {
   END_MENU();
 }
 
-#if ENABLED(DELTA)
+#if MECH(DELTA)
 
   static void lcd_delta_calibrate_menu() {
     START_MENU(lcd_main_menu);
@@ -908,7 +908,7 @@ static void lcd_prepare_temperature_menu() {
 #endif // DELTA
 
 inline void line_to_current(float feedrate) {
-  #if ENABLED(DELTA)
+  #if MECH(DELTA)
     calculate_delta(current_position);
     plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS], feedrate/60, active_extruder, active_driver);
   #else
@@ -1015,7 +1015,7 @@ static void lcd_control_menu() {
   MENU_ITEM(submenu, MSG_MOTION, lcd_control_motion_menu);
   MENU_ITEM(submenu, MSG_FILAMENT, lcd_control_volumetric_menu);
 
-  #if ENABLED(HAS_LCD_CONTRAST)
+  #if HAS(LCD_CONTRAST)
     //MENU_ITEM_EDIT(int3, MSG_CONTRAST, &lcd_contrast, 0, 63);
     MENU_ITEM(submenu, MSG_CONTRAST, lcd_set_contrast);
   #endif
@@ -1026,7 +1026,7 @@ static void lcd_control_menu() {
   //
   // Switch power on/off
   //
-  #if HAS_POWER_SWITCH
+  #if HAS(POWER_SWITCH)
     if (powersupply)
       MENU_ITEM(gcode, MSG_SWITCH_PS_OFF, PSTR("M81"));
     else
@@ -1059,7 +1059,7 @@ static void lcd_stats_menu() {
   int day = printer_usage_seconds / 60 / 60 / 24, hours = (printer_usage_seconds / 60 / 60) % 24, minutes = (printer_usage_seconds / 60) % 60;
   sprintf_P(row, PSTR(MSG_ONFOR " %id %ih %im"), day, hours, minutes);
   LCD_Printpos(0, 0); lcd_print(row);
-  #if HAS_POWER_CONSUMPTION_SENSOR
+  #if HAS(POWER_CONSUMPTION_SENSOR)
     sprintf_P(row, PSTR(MSG_PWRCONSUMED " %iWh"), power_consumption_hour);
     LCD_Printpos(0, 1); lcd_print(row);
   #endif
@@ -1309,7 +1309,7 @@ static void lcd_control_motion_menu() {
   #if ENABLED(ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED)
     MENU_ITEM_EDIT(bool, MSG_ENDSTOP_ABORT, &abort_on_endstop_hit);
   #endif
-  #if ENABLED(SCARA)
+  #if MECH(SCARA)
     MENU_ITEM_EDIT(float74, MSG_XSCALE, &axis_scaling[X_AXIS],0.5,2);
     MENU_ITEM_EDIT(float74, MSG_YSCALE, &axis_scaling[Y_AXIS],0.5,2);
   #endif
@@ -1348,7 +1348,7 @@ static void lcd_control_volumetric_menu() {
  * "Control" > "Contrast" submenu
  *
  */
-#if ENABLED(HAS_LCD_CONTRAST)
+#if HAS(LCD_CONTRAST)
   static void lcd_set_contrast() {
     if (encoderPosition != 0) {
       #if ENABLED(U8GLIB_LM6059_AF)
@@ -1371,7 +1371,7 @@ static void lcd_control_volumetric_menu() {
     }
     if (LCD_CLICKED) lcd_goto_menu(lcd_control_menu);
   }
-#endif // HAS_LCD_CONTRAST
+#endif // HAS(LCD_CONTRAST)
 
 /**
  *
@@ -1829,7 +1829,7 @@ void lcd_update() {
       (*currentMenu)();
     #endif
 
-    #if ENABLED(LCD_HAS_STATUS_INDICATORS)
+    #if ENABLED(LCD_HAS_STATUS_INDICATORS))
       lcd_implementation_update_indicators();
     #endif
 
@@ -1868,7 +1868,7 @@ void lcd_finishstatus(bool persist=false) {
   #endif
   lcdDrawUpdate = 2;
 
-  #if HAS_LCD_FILAMENT_SENSOR || HAS_LCD_POWER_SENSOR
+  #if HAS(LCD_FILAMENT_SENSOR) || HAS(LCD_POWER_SENSOR)
     previous_lcd_status_ms = millis();  //get status message to show up for a while
   #endif
 }
@@ -1914,7 +1914,7 @@ void lcd_setalertstatuspgm(const char* message) {
 
 void lcd_reset_alert_level() { lcd_status_message_level = 0; }
 
-#if ENABLED(HAS_LCD_CONTRAST)
+#if HAS(LCD_CONTRAST)
   void lcd_setcontrast(uint8_t value) {
     lcd_contrast = value & 0x3F;
     u8g.setContrast(lcd_contrast);
@@ -2432,15 +2432,15 @@ void setpageInfo() {
 
   PageInfo = true;
 
-  #if HAS_TEMP_0
+  #if HAS(TEMP_0)
     Hend0.setPic(7);
   #endif
-  #if HAS_TEMP_1
+  #if HAS(TEMP_1)
     Hend1.setPic(7);
   #endif
-  #if HAS_TEMP_1
+  #if HAS(TEMP_1)
     Hend2.setPic(7);
-  #elif HAS_TEMP_BED
+  #elif HAS(TEMP_BED)
     Hotend21.setText("BED");
     Hend2.setPic(8);
   #endif
@@ -2481,7 +2481,7 @@ void hotPopCallback(void *ptr) {
     sendCommand("page 2");
   }
 
-  #if HAS_TEMP_2
+  #if HAS(TEMP_2)
     if (ptr == &hot2) {
       if (degTargetHotend(2) != 0) {
         itoa(degTargetHotend(2), buffer, 10);
@@ -2489,7 +2489,7 @@ void hotPopCallback(void *ptr) {
       set1.setText("M104 T2 S");
       sendCommand("page 2");
     }
-  #elif HAS_TEMP_BED
+  #elif HAS(TEMP_BED)
     if (ptr == &hot2) {
       if (degTargetBed() != 0) {
         itoa(degTargetBed(), buffer, 10);
@@ -2549,13 +2549,13 @@ void lcd_init() {
   }
   else {
     ECHO_LM(DB, "Nextion LCD connected!");
-    #if HAS_TEMP_0
+    #if HAS(TEMP_0)
       hot0.attachPop(hotPopCallback,      &hot0);
     #endif
-    #if HAS_TEMP_1
+    #if HAS(TEMP_1)
       hot1.attachPop(hotPopCallback,      &hot1);
     #endif
-    #if HAS_TEMP_2 || HAS_TEMP_BED
+    #if HAS(TEMP_2) || HAS(TEMP_BED)
       hot2.attachPop(hotPopCallback,      &hot2);
     #endif
     Menu.attachPop(setpagePopCallback,    &Menu);
@@ -2665,15 +2665,15 @@ void lcd_update() {
 
     if (fanSpeed > 0) setFan();
 
-    #if HAS_TEMP_0
+    #if HAS(TEMP_0)
       temptoLCD(0, degHotend(0), degTargetHotend(0));
     #endif
-    #if HAS_TEMP_1
+    #if HAS(TEMP_1)
       temptoLCD(1, degHotend(1), degTargetHotend(1));
     #endif
-    #if HAS_TEMP_2
+    #if HAS(TEMP_2)
       temptoLCD(2, degHotend(2), degTargetHotend(2));
-    #elif HAS_TEMP_BED
+    #elif HAS(TEMP_BED)
       temptoLCD(2, degBed(), degTargetBed());
     #endif
 
