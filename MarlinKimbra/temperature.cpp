@@ -154,10 +154,10 @@ static int minttemp_raw[HOTENDS] = ARRAY_BY_HOTENDS( HEATER_0_RAW_LO_TEMP , HEAT
 static int maxttemp_raw[HOTENDS] = ARRAY_BY_HOTENDS( HEATER_0_RAW_HI_TEMP , HEATER_1_RAW_HI_TEMP , HEATER_2_RAW_HI_TEMP, HEATER_3_RAW_HI_TEMP);
 static int minttemp[HOTENDS] = { 0 };
 static int maxttemp[HOTENDS] = ARRAY_BY_HOTENDS1( 16383 );
-#if ENABLED(BED_MINTEMP)
+#if EXIST(BED_MINTEMP)
   static int bed_minttemp_raw = HEATER_BED_RAW_LO_TEMP;
 #endif
-#if ENABLED(BED_MAXTEMP)
+#if EXIST(BED_MAXTEMP)
   static int bed_maxttemp_raw = HEATER_BED_RAW_HI_TEMP;
 #endif
 

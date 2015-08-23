@@ -1,8 +1,6 @@
 #ifndef LANGUAGE_H
 #define LANGUAGE_H
 
-#include "Configuration_Basic.h"
-
 // NOTE: IF YOU CHANGE LANGUAGE FILES OR MERGE A FILE WITH CHANGES
 //
 //   ==> ALWAYS TRY TO COMPILE MARLIN WITH/WITHOUT "ULTIPANEL" / "ULTRALCD" / "SDSUPPORT" #define IN "Configuration_Basic.h"
@@ -25,11 +23,11 @@
 // 13 Basque-Euskera
 // 14 Portuguese (Brazil)
 
-#if DISABLED(LANGUAGE_CHOICE)
+#if NOTEXIST(LANGUAGE_CHOICE)
   #define LANGUAGE_CHOICE 7  // Pick your language from the list above
 #endif
 
-#include "Default_Version.h"
+#include "default_version.h"
 
 #define PROTOCOL_VERSION "1.0"
 
@@ -49,20 +47,20 @@
 #elif MB(SAV_MKI)
   #define MACHINE_NAME "SAV MkI"
   #define SOURCE_CODE_URL "https://github.com/fmalpartida/Marlin/tree/SAV-MkI-config"
-#elif DISABLED(MACHINE_NAME)
+#elif NOTEXIST(MACHINE_NAME)
   #define MACHINE_NAME "3D Printer"
 #endif
 
-#if ENABLED(CUSTOM_MACHINE_NAME)
+#if EXIST(CUSTOM_MACHINE_NAME)
   #undef MACHINE_NAME
   #define MACHINE_NAME CUSTOM_MACHINE_NAME
 #endif
 
-#if DISABLED(SOURCE_CODE_URL)
+#if NOTEXIST(SOURCE_CODE_URL)
   #define SOURCE_CODE_URL "https://github.com/MagoKimbra/MarlinKimbra"
 #endif
 
-#if DISABLED(BUILD_VERSION)
+#if NOTEXIST(BUILD_VERSION)
   #define BUILD_VERSION "V4; MarlinKimbra for 4 extruder"
 #endif
 

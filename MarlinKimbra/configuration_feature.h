@@ -412,7 +412,7 @@
  * when the target temperature is less than IDLE_OOZING_MINTEMP and    *
  * the actual temperature is greater than IDLE_OOZING_MINTEMP.         *
  *                                                                     *
- * PS: Always remember to set your extruder target temperature to 0°C  *
+ * PS: Always remember to set your extruder target temperature to 0Â°C  *
  * before shoudown the printer if you enable this feature.             *
  *                                                                     *
  * Uncomment IDLE_OOZING_PREVENT to enable this feature                *
@@ -648,6 +648,7 @@
 /***********************************************************************
  **************************** R/C Servo ********************************
  **********************************************************************/
+//#define ENABLE_SERVOS
 // Number of servos
 // If you select a configuration below, this will receive a default value and does not need to be set manually
 // set it manually if you have more servos than extruders and wish to manually control some
@@ -1131,7 +1132,6 @@
 //#define LCD_FEEDBACK_FREQUENCY_DURATION_MS 100 // the duration the buzzer plays the UI feedback sound. ie Screen Click
 //#define LCD_FEEDBACK_FREQUENCY_HZ 1000         // this is the tone frequency the buzzer plays when on UI feedback. ie Screen Click
                                                  // 0 to disable buzzer feedback. Test with M300 S<frequency Hz> P<duration ms>
-#define LCD_MAX_TEMP_OFFSET -15
 
 //Display Voltage Logic Selector on Alligator Board
 //#define UI_VOLTAGE_LEVEL 0 // 3.3 V

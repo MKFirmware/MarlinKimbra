@@ -88,7 +88,7 @@
   #if NUM_SERVOS > 4
     #error CONFLICT ERROR: The maximum number of SERVOS in Marlin is 4.
   #endif
-  #if ENABLED(NUM_SERVOS) && NUM_SERVOS > 0
+  #if NUM_SERVOS > 0
     #if X_ENDSTOP_SERVO_NR >= 0 || Y_ENDSTOP_SERVO_NR >= 0 || Z_ENDSTOP_SERVO_NR >= 0
       #if X_ENDSTOP_SERVO_NR >= NUM_SERVOS
         #error CONFLICT ERROR: X_ENDSTOP_SERVO_NR must be smaller than NUM_SERVOS.
@@ -136,26 +136,26 @@
      * Require a Z Probe Pin if Z_PROBE_ENDSTOP is enabled.
      */
     #if ENABLED(Z_PROBE_ENDSTOP)
-      #if DISABLED(Z_PROBE_PIN)
+      #if NOTEXIST(Z_PROBE_PIN)
         #error CONFLICT ERROR: You must have a Z_PROBE_PIN defined in pins2tool.h file if you enable Z_PROBE_ENDSTOP.
         #erro sistema pins2tool.h
       #endif
       #if Z_PROBE_PIN == -1
         #error CONFLICT ERROR: You must set Z_PROBE_PIN to a valid pin if you enable Z_PROBE_ENDSTOP.
       #endif
-// Forcing Servo definitions can break some hall effect sensor setups. Leaving these here for further comment.
-//      #if DISABLED(NUM_SERVOS)
-//        #error CONFLICT ERROR: You must have NUM_SERVOS defined and there must be at least 1 configured to use Z_PROBE_ENDSTOP.
-//      #endif
-//      #if ENABLED(NUM_SERVOS) && NUM_SERVOS < 1
-//        #error CONFLICT ERROR: You must have at least 1 servo defined for NUM_SERVOS to use Z_PROBE_ENDSTOP.
-//      #endif
-//      #if Z_ENDSTOP_SERVO_NR < 0
-//        #error CONFLICT ERROR: You must have Z_ENDSTOP_SERVO_NR set to at least 0 or above to use Z_PROBE_ENDSTOP.
-//      #endif
-//      #if DISABLED(ERVO_ENDSTOP_ANGLES)
-//        #error CONFLICT ERROR: You must have SERVO_ENDSTOP_ANGLES defined for Z Extend and Retract to use Z_PROBE_ENDSTOP.
-//      #endif
+
+        #if DISABLED(ENABLE_SERVOS)
+          #error CONFLICT ERROR: You must enable ENABLE_SERVOS and must have NUM_SERVOS defined and there must be at least 1 configured to use Z_PROBE_ENDSTOP.
+        #endif
+        #if NUM_SERVOS < 1
+          #error CONFLICT ERROR: You must have at least 1 servo defined for NUM_SERVOS to use Z_PROBE_ENDSTOP.
+        #endif
+        #if Z_ENDSTOP_SERVO_NR < 0
+          #error CONFLICT ERROR: You must have Z_ENDSTOP_SERVO_NR set to at least 0 or above to use Z_PROBE_ENDSTOP.
+        #endif
+        #if NOTEXIST(SERVO_ENDSTOP_ANGLES)
+          #error CONFLICT ERROR: You must have SERVO_ENDSTOP_ANGLES defined for Z Extend and Retract to use Z_PROBE_ENDSTOP.
+        #endif
     #endif
     /**
      * Check if Probe_Offset * Grid Points is greater than Probing Range
@@ -210,7 +210,7 @@
    * Delta & Z_PROBE_ENDSTOP
    */
   #if MECH(DELTA) && ENABLED(Z_PROBE_ENDSTOP)
-    #if DISABLED(Z_PROBE_PIN)
+    #if NOTEXIST(Z_PROBE_PIN)
       #error CONFLICT ERROR: You must have a Z_PROBE_PIN defined in your pins2tool.h file if you enable Z_PROBE_ENDSTOP
     #endif
     #if Z_PROBE_PIN == -1
@@ -224,7 +224,7 @@
   #if ENABLED(DUAL_X_CARRIAGE)
     #if EXTRUDERS == 1 || MECH(COREXY) \
         || HASNT(X2_ENABLE) || HASNT(X2_STEP) || HASNT(X2_DIR) \
-        || DISABLED(X2_HOME_POS) || DISABLED(X2_MIN_POS) || DISABLED(X2_MAX_POS) \
+        || NOTEXIST(X2_HOME_POS) || NOTEXIST(X2_MIN_POS) || NOTEXIST(X2_MAX_POS) \
         || HASNT(X_MAX)
       #error CONFLICT ERROR: Missing or invalid definitions for DUAL_X_CARRIAGE mode.
     #endif

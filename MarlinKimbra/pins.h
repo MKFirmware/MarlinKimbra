@@ -73,8 +73,6 @@
 #ifndef PINS_H
 #define PINS_H
 
-#include "boards.h"
-
 // Preset optional pins
 #define X_MS1_PIN     -1
 #define X_MS2_PIN     -1
@@ -188,7 +186,7 @@
     #error Oops! Make sure you have 'Gen7' selected from the 'Tools -> Boards' menu.
   #endif
   
-  #if DISABLED(GEN7_VERSION)
+  #if NOTEXIST(GEN7_VERSION)
     #define GEN7_VERSION   12  // v1.x
   #endif
   
@@ -263,7 +261,7 @@
     #error Oops! Make sure you have 'Gen7' selected from the 'Tools -> Boards' menu.
   #endif
   
-  #if DISABLED(GEN7_VERSION)
+  #if NOTEXIST(GEN7_VERSION)
     #define GEN7_VERSION   13  // v1.x
   #endif
   
@@ -504,7 +502,7 @@
     #error Oops! Make sure you have 'Sethi 3D' selected from the 'Tools -> Boards' menu.
   #endif
   
-  #if DISABLED(GEN7_VERSION)
+  #if NOTEXIST(GEN7_VERSION)
   #define GEN7_VERSION 12 // v1.x
   #endif
   
@@ -1126,13 +1124,13 @@
   #define ORIG_TEMP_BED_PIN      14   // ANALOG NUMBERING
 
   #if NUM_SERVOS > 0
-    #define SERVO0_PIN      11
+    #define SERVO0_PIN           11
     #if NUM_SERVOS > 1
-      #define SERVO1_PIN     6
+      #define SERVO1_PIN          6
       #if NUM_SERVOS > 2
-        #define SERVO2_PIN   5
+        #define SERVO2_PIN        5
         #if NUM_SERVOS > 3
-          #define SERVO3_PIN 4
+          #define SERVO3_PIN      4
         #endif
       #endif
     #endif
@@ -1329,13 +1327,13 @@
   #define ORIG_TEMP_BED_PIN          14   // ANALOG NUMBERING
 
   #if NUM_SERVOS > 0
-    #define SERVO0_PIN          11
+    #define SERVO0_PIN               11
     #if NUM_SERVOS > 1
-      #define SERVO1_PIN         6
+      #define SERVO1_PIN              6
       #if NUM_SERVOS > 2
-        #define SERVO2_PIN       5
+        #define SERVO2_PIN            5
         #if NUM_SERVOS > 3
-          #define SERVO3_PIN     4
+          #define SERVO3_PIN          4
         #endif
       #endif
     #endif
@@ -1532,13 +1530,13 @@
   #define ORIG_TEMP_BED_PIN       14   // ANALOG NUMBERING
 
   #if NUM_SERVOS > 0
-    #define SERVO0_PIN      11
+    #define SERVO0_PIN            11
     #if NUM_SERVOS > 1
-      #define SERVO1_PIN     6
+      #define SERVO1_PIN           6
       #if NUM_SERVOS > 2
-        #define SERVO2_PIN   5
+        #define SERVO2_PIN         5
         #if NUM_SERVOS > 3
-          #define SERVO3_PIN 4
+          #define SERVO3_PIN       4
         #endif
       #endif
     #endif
@@ -1735,13 +1733,13 @@
   #define ORIG_TEMP_BED_PIN       -1   // ANALOG NUMBERING
 
   #if NUM_SERVOS > 0
-    #define SERVO0_PIN      11
+    #define SERVO0_PIN            11
     #if NUM_SERVOS > 1
-      #define SERVO1_PIN     6
+      #define SERVO1_PIN           6
       #if NUM_SERVOS > 2
-        #define SERVO2_PIN   5
+        #define SERVO2_PIN         5
         #if NUM_SERVOS > 3
-          #define SERVO3_PIN 4
+          #define SERVO3_PIN       4
         #endif
       #endif
     #endif
@@ -2122,19 +2120,16 @@
 
 
 
-  #if ENABLED(NUM_SERVOS)
-    #define SERVO0_PIN         5
-
+  #if NUM_SERVOS > 0
+    #define SERVO0_PIN           5
     #if NUM_SERVOS > 1
       #define SERVO1_PIN         6
-    #endif
-
-    #if NUM_SERVOS > 2
-      #define SERVO2_PIN         39
-    #endif
-
-    #if NUM_SERVOS > 3
-      #define SERVO3_PIN         40
+      #if NUM_SERVOS > 2
+        #define SERVO2_PIN      39
+        #if NUM_SERVOS > 3
+          #define SERVO3_PIN    40
+        #endif
+      #endif
     #endif
   #endif
 
@@ -2260,23 +2255,18 @@
 #define ORIG_TEMP_2_PIN               4   // 3     // ANALOG NUMBERING
 
 #define ORIG_TEMP_3_PIN              -1   // ANALOG NUMBERING
-#define TEMP_4_PIN              -1   // ANALOG NUMBERING
+#define TEMP_4_PIN                   -1   // ANALOG NUMBERING
 
-
-
-#if ENABLED(NUM_SERVOS)
-  #define SERVO0_PIN            11
-
+#if NUM_SERVOS > 0
+  #define SERVO0_PIN                 11
   #if NUM_SERVOS > 1
-    #define SERVO1_PIN           6
-  #endif
-
-  #if NUM_SERVOS > 2
-    #define SERVO2_PIN           5
-  #endif
-
-  #if NUM_SERVOS > 3
-    #define SERVO3_PIN           4
+    #define SERVO1_PIN                6
+    #if NUM_SERVOS > 2
+      #define SERVO2_PIN              5
+      #if NUM_SERVOS > 3
+        #define SERVO3_PIN            4
+      #endif
+    #endif
   #endif
 #endif
 
@@ -2572,26 +2562,23 @@
   
   #if UI_VOLTAGE_LEVEL != 1
     #undef UI_VOLTAGE_LEVEL
-    #define UI_VOLTAGE_LEVEL 1
+    #define UI_VOLTAGE_LEVEL  1
   #endif
      
 #endif //REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
 
-  #if ENABLED(NUM_SERVOS)
-    #define SERVO0_PIN        36
-
-    #if NUM_SERVOS > 1
-      #define SERVO1_PIN      40
-    #endif
-
+#if NUM_SERVOS > 0
+  #define SERVO0_PIN          36
+  #if NUM_SERVOS > 1
+    #define SERVO1_PIN        40
     #if NUM_SERVOS > 2
       #define SERVO2_PIN      41
-    #endif
-
-    #if NUM_SERVOS > 3
-      #define SERVO3_PIN      -1
+      #if NUM_SERVOS > 3
+        #define SERVO3_PIN    -1
+      #endif
     #endif
   #endif
+#endif
 
 #endif //ALLIGATOR
 /****************************************************************************************/
@@ -2669,19 +2656,16 @@
 #endif
 
 #if NUM_SERVOS > 0
-  #define SERVO0_PIN        -1
-#endif
-
-#if NUM_SERVOS > 1
-  #define SERVO1_PIN        -1
-#endif
-
-#if NUM_SERVOS > 2
-  #define SERVO2_PIN        -1
-#endif
-
-#if NUM_SERVOS > 3
-  #define SERVO3_PIN        -1
+  #define SERVO0_PIN            -1
+  #if NUM_SERVOS > 1
+    #define SERVO1_PIN          -1
+    #if NUM_SERVOS > 2
+      #define SERVO2_PIN        -1
+      #if NUM_SERVOS > 3
+        #define SERVO3_PIN      -1
+      #endif
+    #endif
+  #endif
 #endif
 
 #define PS_ON_PIN          -1
@@ -2864,21 +2848,22 @@
 #define ORIG_TEMP_BED_PIN       14   // ANALOG NUMBERING
 
 #if NUM_SERVOS > 0
-  #define SERVO0_PIN              11
+  #define SERVO0_PIN            11
 #endif
 
-#if NUM_SERVOS > 1
-  #define SERVO1_PIN               6
+#if NUM_SERVOS > 0
+  #define SERVO0_PIN            11
+  #if NUM_SERVOS > 1
+    #define SERVO1_PIN           6
+    #if NUM_SERVOS > 2
+      #define SERVO2_PIN         5
+      #if NUM_SERVOS > 3
+        #define SERVO3_PIN       4
+      #endif
+    #endif
+  #endif
 #endif
 
-#if NUM_SERVOS > 2
-  #define SERVO2_PIN               5
-#endif
-
-#if NUM_SERVOS > 3
-  #define SERVO3_PIN               4
-#endif
-  
 #if ENABLED(TEMP_STAT_LEDS)
   #define STAT_LED_RED       6
   #define STAT_LED_BLUE     11
@@ -3069,17 +3054,17 @@
 
 #define ORIG_TEMP_BED_PIN       14   // ANALOG NUMBERING
 
-#if ENABLED(NUM_SERVOS)
-   #define SERVO0_PIN       47
-   #if NUM_SERVOS > 1
-     #define SERVO1_PIN     -1
-     #if NUM_SERVOS > 2
-       #define SERVO2_PIN   -1
-       #if NUM_SERVOS > 3
-         #define SERVO3_PIN -1
-       #endif
-     #endif
-   #endif
+#if NUM_SERVOS > 0
+  #define SERVO0_PIN            47
+  #if NUM_SERVOS > 1
+    #define SERVO1_PIN          -1
+    #if NUM_SERVOS > 2
+      #define SERVO2_PIN        -1
+      #if NUM_SERVOS > 3
+        #define SERVO3_PIN      -1
+      #endif
+    #endif
+  #endif
 #endif
   
 #if ENABLED(TEMP_STAT_LEDS)
@@ -3665,13 +3650,13 @@
   #define LED_PIN 13
 
   #if NUM_SERVOS > 0
-    #define SERVO0_PIN       46 //AUX3-6
+    #define SERVO0_PIN            46 //AUX3-6
     #if NUM_SERVOS > 1
-      #define SERVO1_PIN     47 //AUX3-5
+      #define SERVO1_PIN          47 //AUX3-5
       #if NUM_SERVOS > 2
-        #define SERVO2_PIN   48 //AUX3-4
+        #define SERVO2_PIN        48 //AUX3-4
         #if NUM_SERVOS > 3
-          #define SERVO2_PIN 49 //AUX3-3
+          #define SERVO2_PIN      49 //AUX3-3
         #endif
       #endif
     #endif
@@ -3983,18 +3968,15 @@
 
 #if NUM_SERVOS > 0
   #define SERVO0_PIN             11
-#endif
-
-#if NUM_SERVOS > 1
-  #define SERVO1_PIN              6
-#endif
-
-#if NUM_SERVOS > 2
-  #define SERVO2_PIN              5
-#endif
-
-#if NUM_SERVOS > 3
-  #define SERVO3_PIN              4
+  #if NUM_SERVOS > 1
+    #define SERVO1_PIN            6
+    #if NUM_SERVOS > 2
+      #define SERVO2_PIN          5
+      #if NUM_SERVOS > 3
+        #define SERVO3_PIN        4
+      #endif
+    #endif
+  #endif
 #endif
 
 #define BEEPER_PIN               33
@@ -4109,18 +4091,15 @@
 
 #if NUM_SERVOS > 0
   #define SERVO0_PIN             11
-#endif
-
-#if NUM_SERVOS > 1
-  #define SERVO1_PIN              6
-#endif
-
-#if NUM_SERVOS > 2
-  #define SERVO2_PIN              5
-#endif
-
-#if NUM_SERVOS > 3
-  #define SERVO3_PIN              4
+  #if NUM_SERVOS > 1
+    #define SERVO1_PIN            6
+    #if NUM_SERVOS > 2
+      #define SERVO2_PIN          5
+      #if NUM_SERVOS > 3
+        #define SERVO3_PIN        4
+      #endif
+    #endif
+  #endif
 #endif
 
 #define BEEPER_PIN                   33
@@ -4525,7 +4504,7 @@
 #define KILL_PIN           42 // A2 = 42 - teensy = 40
 #define HOME_PIN          -1 // A4 = marlin 44 - teensy = 42
 
-#if ENABLED(NUM_SERVOS)
+#if NUM_SERVOS > 0
   #define SERVO0_PIN       41 // In teensy's pin definition for pinMode (in Servo.cpp)
 #endif
 
@@ -5112,9 +5091,6 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 ********************************* END MOTHERBOARD ***************************************
 /****************************************************************************************/
 
-#if DISABLED(KNOWN_BOARD)
-  #error Unknown MOTHERBOARD value in configuration.h
-#endif
 
 #ifndef ORIG_HEATER_1_PIN
   #define ORIG_HEATER_1_PIN -1

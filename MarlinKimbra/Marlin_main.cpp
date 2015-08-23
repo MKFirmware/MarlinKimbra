@@ -303,12 +303,12 @@ bool target_direction;
 
 unsigned long printer_usage_seconds;
 
-#if DISABLED(DELTA)
+#if !MECH(DELTA)
   int xy_travel_speed = XY_TRAVEL_SPEED;
   float zprobe_zoffset = 0;
 #endif
 
-#if ENABLED(Z_DUAL_ENDSTOPS) && DISABLED(DELTA)
+#if ENABLED(Z_DUAL_ENDSTOPS) && !MECH(DELTA)
   float z_endstop_adj = 0;
 #endif
 
@@ -863,7 +863,7 @@ void get_command() {
 
   if (drain_queued_commands_P()) return; // priority is given to non-serial commands
 
-  #if ENABLED(NO_TIMEOUTS)
+  #if EXIST(NO_TIMEOUTS)
     static millis_t last_command_time = 0;
     millis_t ms = millis();
 
@@ -878,7 +878,7 @@ void get_command() {
   //
   while (MYSERIAL.available() > 0 && commands_in_queue < BUFSIZE) {
 
-    #if ENABLED(NO_TIMEOUTS)
+    #if EXIST(NO_TIMEOUTS)
       last_command_time = ms;
     #endif
 
@@ -3133,7 +3133,7 @@ inline void gcode_G28() {
 
         current_position[X_AXIS] = destination[X_AXIS];
         current_position[Y_AXIS] = destination[Y_AXIS];
-        #if DISABLED(SCARA)
+        #if !MECH(SCARA)
           current_position[Z_AXIS] = destination[Z_AXIS];
         #endif
 
@@ -4887,14 +4887,14 @@ inline void gcode_M105() {
   #endif
 
   ECHO_M(" " MSG_AT);
-  #if ENABLED(HOTEND_WATTS)
+  #if EXIST(HOTEND_WATTS)
     ECHO_VM((HOTEND_WATTS * getHeaterPower(target_extruder))/127, "W");
   #else
     ECHO_V(getHeaterPower(target_extruder));
   #endif
 
   ECHO_M(" " MSG_BAT);
-  #if ENABLED(BED_WATTS)
+  #if EXIST(BED_WATTS)
     ECHO_VM((BED_WATTS * getHeaterPower(-1))/127, "W");
   #else
     ECHO_V(getHeaterPower(-1));
@@ -5156,9 +5156,9 @@ inline void gcode_M140() {
           if (code_seen('H')) {
             v = code_value_short();
             #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
-              plaPreheatHotendTemp = constrain(v, EXTRUDE_MINTEMP, HEATER_0_MAXTEMP - 15);
+              plaPreheatHotendTemp = constrain(v, EXTRUDE_MINTEMP, HEATER_0_MAXTEMP);
             #else
-              plaPreheatHotendTemp = constrain(v, HEATER_0_MINTEMP, HEATER_0_MAXTEMP - 15);
+              plaPreheatHotendTemp = constrain(v, HEATER_0_MINTEMP, HEATER_0_MAXTEMP);
             #endif
           }
           if (code_seen('F')) {
@@ -5168,7 +5168,7 @@ inline void gcode_M140() {
           #if TEMP_SENSOR_BED != 0
             if (code_seen('B')) {
               v = code_value_short();
-              plaPreheatHPBTemp = constrain(v, BED_MINTEMP, BED_MAXTEMP - 15);
+              plaPreheatHPBTemp = constrain(v, BED_MINTEMP, BED_MAXTEMP);
             }
           #endif
           break;
@@ -5176,9 +5176,9 @@ inline void gcode_M140() {
           if (code_seen('H')) {
             v = code_value_short();
             #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
-              absPreheatHotendTemp = constrain(v, EXTRUDE_MINTEMP, HEATER_0_MAXTEMP - 15);
+              absPreheatHotendTemp = constrain(v, EXTRUDE_MINTEMP, HEATER_0_MAXTEMP);
             #else
-              absPreheatHotendTemp = constrain(v, HEATER_0_MINTEMP, HEATER_0_MAXTEMP - 15);
+              absPreheatHotendTemp = constrain(v, HEATER_0_MINTEMP, HEATER_0_MAXTEMP);
             #endif
           }
           if (code_seen('F')) {
@@ -5188,7 +5188,7 @@ inline void gcode_M140() {
           #if TEMP_SENSOR_BED != 0
             if (code_seen('B')) {
               v = code_value_short();
-              absPreheatHPBTemp = constrain(v, BED_MINTEMP, BED_MAXTEMP - 15);
+              absPreheatHPBTemp = constrain(v, BED_MINTEMP, BED_MAXTEMP);
             }
           #endif
           break;
@@ -5196,9 +5196,9 @@ inline void gcode_M140() {
           if (code_seen('H')) {
             v = code_value_short();
             #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
-              gumPreheatHotendTemp = constrain(v, EXTRUDE_MINTEMP, HEATER_0_MAXTEMP - 15);
+              gumPreheatHotendTemp = constrain(v, EXTRUDE_MINTEMP, HEATER_0_MAXTEMP);
             #else
-              gumPreheatHotendTemp = constrain(v, HEATER_0_MINTEMP, HEATER_0_MAXTEMP - 15);
+              gumPreheatHotendTemp = constrain(v, HEATER_0_MINTEMP, HEATER_0_MAXTEMP);
             #endif
           }
           if (code_seen('F')) {
@@ -5208,7 +5208,7 @@ inline void gcode_M140() {
           #if TEMP_SENSOR_BED != 0
             if (code_seen('B')) {
               v = code_value_short();
-              gumPreheatHPBTemp = constrain(v, BED_MINTEMP, BED_MAXTEMP - 15);
+              gumPreheatHPBTemp = constrain(v, BED_MINTEMP, BED_MAXTEMP);
             }
           #endif
           break;
@@ -6062,7 +6062,7 @@ inline void gcode_M503() {
 
     //retract by E
     if (code_seen('E')) destination[E_AXIS] += code_value();
-    #if ENABLED(FILAMENTCHANGE_FIRSTRETRACT)
+    #if EXIST(FILAMENTCHANGE_FIRSTRETRACT)
       else destination[E_AXIS] += FILAMENTCHANGE_FIRSTRETRACT;
     #endif
 
@@ -6070,7 +6070,7 @@ inline void gcode_M503() {
 
     //lift Z
     if (code_seen('Z')) destination[Z_AXIS] += code_value();
-    #if ENABLED(FILAMENTCHANGE_ZADD)
+    #if EXIST(FILAMENTCHANGE_ZADD)
       else destination[Z_AXIS] += FILAMENTCHANGE_ZADD;
     #endif
 
@@ -6078,19 +6078,19 @@ inline void gcode_M503() {
 
     //move xy
     if (code_seen('X')) destination[X_AXIS] = code_value();
-    #if ENABLED(FILAMENTCHANGE_XPOS)
+    #if EXIST(FILAMENTCHANGE_XPOS)
       else destination[X_AXIS] = FILAMENTCHANGE_XPOS;
     #endif
 
     if (code_seen('Y')) destination[Y_AXIS] = code_value();
-    #if ENABLED(FILAMENTCHANGE_YPOS)
+    #if EXIST(FILAMENTCHANGE_YPOS)
       else destination[Y_AXIS] = FILAMENTCHANGE_YPOS;
     #endif
 
     RUNPLAN
 
     if (code_seen('L')) destination[E_AXIS] += code_value();
-    #if ENABLED(FILAMENTCHANGE_FINALRETRACT)
+    #if EXIST(FILAMENTCHANGE_FINALRETRACT)
       else destination[E_AXIS] += FILAMENTCHANGE_FINALRETRACT;
     #endif
 
@@ -6341,13 +6341,13 @@ inline void gcode_M907() {
     if (code_seen('B')) digipot_current(4, code_value());
     if (code_seen('S')) for (int i=0; i<=4; i++) digipot_current(i, code_value());
   #endif
-  #if ENABLED(MOTOR_CURRENT_PWM_XY_PIN)
+  #if EXIST(MOTOR_CURRENT_PWM_XY_PIN)
     if (code_seen('X')) digipot_current(0, code_value());
   #endif
-  #if ENABLED(MOTOR_CURRENT_PWM_Z_PIN)
+  #if EXIST(MOTOR_CURRENT_PWM_Z_PIN)
     if (code_seen('Z')) digipot_current(1, code_value());
   #endif
-  #if ENABLED(MOTOR_CURRENT_PWM_E_PIN)
+  #if EXIST(MOTOR_CURRENT_PWM_E_PIN)
     if (code_seen('E')) digipot_current(2, code_value());
   #endif
   #if ENABLED(DIGIPOT_I2C)

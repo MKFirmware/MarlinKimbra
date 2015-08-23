@@ -24,6 +24,8 @@
 #define SWITCH_ENABLED_  1
 #define ENABLED(b) _CAT(SWITCH_ENABLED_, b)
 #define DISABLED(b) (!_CAT(SWITCH_ENABLED_, b))
+#define EXIST(b) defined(EXIST)
+#define NOTEXIST(b) (!defined(EXIST))
 
 #define COUNT(a) (sizeof(a)/sizeof(*a))
 

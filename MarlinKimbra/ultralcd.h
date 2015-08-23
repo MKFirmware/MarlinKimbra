@@ -29,7 +29,7 @@
     void lcd_setcontrast(uint8_t value);
   #endif
 
-  #if DISABLED(DELTA) && DISABLED(Z_SAFE_HOMING) && Z_HOME_DIR < 0
+  #if !MECH(DELTA) && DISABLED(Z_SAFE_HOMING) && Z_HOME_DIR < 0
     void set_pageShowInfo(int value);
   #endif
 

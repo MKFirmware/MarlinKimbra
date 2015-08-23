@@ -12,7 +12,7 @@ int8_t encoderDiff; // updated from interrupt context and added to encoderPositi
 bool encoderRateMultiplierEnabled;
 int32_t lastEncoderMovementMillis;
 
-#if DISABLED(DELTA) && DISABLED(Z_SAFE_HOMING) && Z_HOME_DIR < 0
+#if !MECH(DELTA) && DISABLED(Z_SAFE_HOMING) && Z_HOME_DIR < 0
   int  pageShowInfo = 0;
   void set_pageShowInfo(int value){ pageShowInfo = value; }
 #endif
@@ -84,7 +84,7 @@ static void lcd_status_screen();
   
   #if MECH(DELTA)
     static void lcd_delta_calibrate_menu();
-  #elif DISABLED(DELTA) && DISABLED(Z_SAFE_HOMING) && Z_HOME_DIR < 0
+  #elif !MECH(DELTA) && DISABLED(Z_SAFE_HOMING) && Z_HOME_DIR < 0
     static void lcd_level_bed();
     static void config_lcd_level_bed();
   #endif // DELTA
@@ -118,17 +118,17 @@ static void lcd_status_screen();
   #define ENCODER_FEEDRATE_DEADZONE 10
 
   #if DISABLED(LCD_I2C_VIKI)
-    #if DISABLED(ENCODER_STEPS_PER_MENU_ITEM)
+    #if NOTEXIST(ENCODER_STEPS_PER_MENU_ITEM)
       #define ENCODER_STEPS_PER_MENU_ITEM 5
     #endif
-    #if DISABLED(ENCODER_PULSES_PER_STEP)
+    #if NOTEXIST(ENCODER_PULSES_PER_STEP)
       #define ENCODER_PULSES_PER_STEP 1
     #endif
   #else
-    #if DISABLED(ENCODER_STEPS_PER_MENU_ITEM)
+    #if NOTEXIST(ENCODER_STEPS_PER_MENU_ITEM)
       #define ENCODER_STEPS_PER_MENU_ITEM 2 // VIKI LCD rotary encoder uses a different number of steps per rotation
     #endif
-    #if DISABLED(ENCODER_PULSES_PER_STEP)
+    #if NOTEXIST(ENCODER_PULSES_PER_STEP)
       #define ENCODER_PULSES_PER_STEP 1
     #endif
   #endif
@@ -547,19 +547,19 @@ static void lcd_tune_menu() {
   MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
   MENU_ITEM_EDIT(int3, MSG_SPEED, &feedrate_multiplier, 10, 999);
   #if TEMP_SENSOR_0 != 0
-    MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 0", &target_temperature[0], 0, HEATER_0_MAXTEMP + LCD_MAX_TEMP_OFFSET);
+    MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 0", &target_temperature[0], 0, HEATER_0_MAXTEMP);
   #endif
   #if TEMP_SENSOR_1 != 0
-    MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 1", &target_temperature[1], 0, HEATER_1_MAXTEMP + LCD_MAX_TEMP_OFFSET);
+    MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 1", &target_temperature[1], 0, HEATER_1_MAXTEMP);
   #endif
   #if TEMP_SENSOR_2 != 0
-    MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 2", &target_temperature[2], 0, HEATER_2_MAXTEMP + LCD_MAX_TEMP_OFFSET);
+    MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 2", &target_temperature[2], 0, HEATER_2_MAXTEMP);
   #endif
   #if TEMP_SENSOR_3 != 0
-    MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 3", &target_temperature[3], 0, HEATER_3_MAXTEMP + LCD_MAX_TEMP_OFFSET);
+    MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 3", &target_temperature[3], 0, HEATER_3_MAXTEMP);
   #endif
   #if TEMP_SENSOR_BED != 0
-    MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP + LCD_MAX_TEMP_OFFSET);
+    MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP);
   #endif
   MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255);
   MENU_ITEM_EDIT(int3, MSG_FLOW " 0", &extruder_multiplier[0], 10, 999);
@@ -775,7 +775,7 @@ static void lcd_prepare_motion_menu() {
   #if ENABLED(AUTO_BED_LEVELING_FEATURE)
     if (axis_known_position[X_AXIS] && axis_known_position[Y_AXIS])
       MENU_ITEM(gcode, MSG_LEVEL_BED, PSTR("G29"));
-  #elif DISABLED(DELTA) && DISABLED(Z_SAFE_HOMING) && Z_HOME_DIR < 0
+  #elif !MECH(DELTA) && DISABLED(Z_SAFE_HOMING) && Z_HOME_DIR < 0
     MENU_ITEM(submenu, MSG_MBL_SETTING, config_lcd_level_bed);
   #endif
 
@@ -843,14 +843,14 @@ static void lcd_prepare_temperature_menu() {
   // Nozzle, Nozzle 2, Nozzle 3, Nozzle 4
   //
   #if TEMP_SENSOR_0 != 0
-    MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 0", &target_temperature[0], 0, HEATER_0_MAXTEMP + LCD_MAX_TEMP_OFFSET);
+    MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 0", &target_temperature[0], 0, HEATER_0_MAXTEMP);
   #endif
   #if HOTENDS > 1 && TEMP_SENSOR_1 != 0
-    MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 1", &target_temperature[1], 0, HEATER_1_MAXTEMP + LCD_MAX_TEMP_OFFSET);
+    MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 1", &target_temperature[1], 0, HEATER_1_MAXTEMP);
     #if HOTENDS > 2 && TEMP_SENSOR_2 != 0
-      MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 2", &target_temperature[2], 0, HEATER_2_MAXTEMP + LCD_MAX_TEMP_OFFSET);
+      MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 2", &target_temperature[2], 0, HEATER_2_MAXTEMP);
       #if HOTENDS > 3 && TEMP_SENSOR_3 != 0
-        MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 3", &target_temperature[3], 0, HEATER_3_MAXTEMP + LCD_MAX_TEMP_OFFSET);
+        MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_NOZZLE " 3", &target_temperature[3], 0, HEATER_3_MAXTEMP);
       #endif // HOTENDS > 3
     #endif // HOTENDS > 2
   #endif // HOTENDS > 1
@@ -859,7 +859,7 @@ static void lcd_prepare_temperature_menu() {
   // Bed
   //
   #if TEMP_SENSOR_BED != 0
-    MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP + LCD_MAX_TEMP_OFFSET);
+    MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP);
   #endif
 
   //
@@ -1119,8 +1119,8 @@ static void lcd_control_temperature_menu() {
   //
   #if ENABLED(AUTOTEMP) && (TEMP_SENSOR_0 != 0)
     MENU_ITEM_EDIT(bool, MSG_AUTOTEMP, &autotemp_enabled);
-    MENU_ITEM_EDIT(float3, MSG_MIN, &autotemp_min, 0, HEATER_0_MAXTEMP + LCD_MAX_TEMP_OFFSET);
-    MENU_ITEM_EDIT(float3, MSG_MAX, &autotemp_max, 0, HEATER_0_MAXTEMP + LCD_MAX_TEMP_OFFSET);
+    MENU_ITEM_EDIT(float3, MSG_MIN, &autotemp_min, 0, HEATER_0_MAXTEMP);
+    MENU_ITEM_EDIT(float3, MSG_MAX, &autotemp_max, 0, HEATER_0_MAXTEMP);
     MENU_ITEM_EDIT(float32, MSG_FACTOR, &autotemp_factor, 0.0, 1.0);
   #endif
 
@@ -1198,10 +1198,10 @@ static void lcd_control_temperature_preheat_pla_settings_menu() {
   MENU_ITEM(back, MSG_TEMPERATURE, lcd_control_temperature_menu);
   MENU_ITEM_EDIT(int3, MSG_FAN_SPEED, &plaPreheatFanSpeed, 0, 255);
   #if TEMP_SENSOR_0 != 0
-    MENU_ITEM_EDIT(int3, MSG_NOZZLE, &plaPreheatHotendTemp, HEATER_0_MINTEMP, HEATER_0_MAXTEMP + LCD_MAX_TEMP_OFFSET);
+    MENU_ITEM_EDIT(int3, MSG_NOZZLE, &plaPreheatHotendTemp, HEATER_0_MINTEMP, HEATER_0_MAXTEMP);
   #endif
   #if TEMP_SENSOR_BED != 0
-    MENU_ITEM_EDIT(int3, MSG_BED, &plaPreheatHPBTemp, BED_MINTEMP, BED_MAXTEMP + LCD_MAX_TEMP_OFFSET);
+    MENU_ITEM_EDIT(int3, MSG_BED, &plaPreheatHPBTemp, BED_MINTEMP, BED_MAXTEMP);
   #endif
   #if ENABLED(EEPROM_SETTINGS)
     MENU_ITEM(function, MSG_STORE_EPROM, Config_StoreSettings);
@@ -1219,10 +1219,10 @@ static void lcd_control_temperature_preheat_abs_settings_menu() {
   MENU_ITEM(back, MSG_TEMPERATURE, lcd_control_temperature_menu);
   MENU_ITEM_EDIT(int3, MSG_FAN_SPEED, &absPreheatFanSpeed, 0, 255);
   #if TEMP_SENSOR_0 != 0
-    MENU_ITEM_EDIT(int3, MSG_NOZZLE, &absPreheatHotendTemp, HEATER_0_MINTEMP, HEATER_0_MAXTEMP + LCD_MAX_TEMP_OFFSET);
+    MENU_ITEM_EDIT(int3, MSG_NOZZLE, &absPreheatHotendTemp, HEATER_0_MINTEMP, HEATER_0_MAXTEMP);
   #endif
   #if TEMP_SENSOR_BED != 0
-    MENU_ITEM_EDIT(int3, MSG_BED, &absPreheatHPBTemp, BED_MINTEMP, BED_MAXTEMP + LCD_MAX_TEMP_OFFSET);
+    MENU_ITEM_EDIT(int3, MSG_BED, &absPreheatHPBTemp, BED_MINTEMP, BED_MAXTEMP);
   #endif
   #if ENABLED(EEPROM_SETTINGS)
     MENU_ITEM(function, MSG_STORE_EPROM, Config_StoreSettings);
@@ -1240,10 +1240,10 @@ static void lcd_control_temperature_preheat_gum_settings_menu() {
   MENU_ITEM(back, MSG_TEMPERATURE, lcd_control_temperature_menu);
   MENU_ITEM_EDIT(int3, MSG_FAN_SPEED, &gumPreheatFanSpeed, 0, 255);
   #if TEMP_SENSOR_0 != 0
-    MENU_ITEM_EDIT(int3, MSG_NOZZLE, &gumPreheatHotendTemp, HEATER_0_MINTEMP, HEATER_0_MAXTEMP + LCD_MAX_TEMP_OFFSET);
+    MENU_ITEM_EDIT(int3, MSG_NOZZLE, &gumPreheatHotendTemp, HEATER_0_MINTEMP, HEATER_0_MAXTEMP);
   #endif
   #if TEMP_SENSOR_BED != 0
-    MENU_ITEM_EDIT(int3, MSG_BED, &gumPreheatHPBTemp, BED_MINTEMP, BED_MAXTEMP + LCD_MAX_TEMP_OFFSET);
+    MENU_ITEM_EDIT(int3, MSG_BED, &gumPreheatHPBTemp, BED_MINTEMP, BED_MAXTEMP);
   #endif
   #if ENABLED(EEPROM_SETTINGS)
     MENU_ITEM(function, MSG_STORE_EPROM, Config_StoreSettings);
@@ -1837,7 +1837,7 @@ void lcd_update() {
 
       // Return to Status Screen after a timeout
       if (currentMenu != lcd_status_screen &&
-        #if DISABLED(DELTA) && DISABLED(Z_SAFE_HOMING) && Z_HOME_DIR < 0
+        #if !MECH(DELTA) && DISABLED(Z_SAFE_HOMING) && Z_HOME_DIR < 0
           currentMenu != lcd_level_bed &&
         #endif
         millis() > return_to_status_ms
@@ -2303,7 +2303,7 @@ char *ftostr52(const float &x) {
   return conv;
 }
 
-#if DISABLED(DELTA) && DISABLED(Z_SAFE_HOMING) && Z_HOME_DIR < 0
+#if !MECH(DELTA) && DISABLED(Z_SAFE_HOMING) && Z_HOME_DIR < 0
 
   static void lcd_level_bed() {
 

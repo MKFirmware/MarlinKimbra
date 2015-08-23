@@ -673,7 +673,7 @@ ISR(TIMER1_COMPA_vect) {
         STEP_START(e,E);
       #endif
 
-      #if ENABLED(STEPPER_HIGH_LOW_DELAY) && STEPPER_HIGH_LOW_DELAY > 0
+      #if EXIST(STEPPER_HIGH_LOW_DELAY) && STEPPER_HIGH_LOW_DELAY > 0
         delayMicroseconds(STEPPER_HIGH_LOW_DELAY);
       #endif
 
@@ -1187,7 +1187,7 @@ void quickStop() {
 
       case Z_AXIS: {
 
-        #if DISABLED(DELTA)
+        #if !MECH(DELTA)
 
           BABYSTEP_AXIS(z, Z, BABYSTEP_INVERT_Z);
 

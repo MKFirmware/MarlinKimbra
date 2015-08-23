@@ -25,10 +25,6 @@
 #include "Configuration_Basic.h"
 #include "pins.h"
 
-#ifndef SANITYCHECK_H
-  #error Your Configuration.h and Configuration_adv.h files are outdated!
-#endif
-
 #include "Arduino.h"
 
 typedef unsigned long millis_t;

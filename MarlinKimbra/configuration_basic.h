@@ -2,7 +2,7 @@
 #define CONFIGURATION_H
 
 #include "macros.h"
-#include "Default_Version.h"
+#include "default_version.h"
 
 /*
  * This configuration file contains basic settings.
@@ -250,13 +250,14 @@
   #include "Configuration_Delta.h"
 #elif MECH(SCARA)
   #include "Configuration_Scara.h"
-#endif 
+#endif
 
 #include "Configuration_Feature.h"
 #include "Configuration_Overall.h"
 
-#include "thermistortables.h"
 #include "conditionals.h"
+#include "thermistortables.h"
+#include "language.h"
 #include "pins.h"
 #include "dependencies.h"
 #include "conflicts.h"

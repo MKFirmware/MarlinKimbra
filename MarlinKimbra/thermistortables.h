@@ -1080,7 +1080,7 @@ const short temptable_1047[][2] PROGMEM = {
 #endif
 
 
-#define _TT_NAME(_N) temptable_ # #_N
+#define _TT_NAME(_N) temptable_ ## _N
 #define TT_NAME(_N) _TT_NAME(_N)
 
 #if ENABLED(THERMISTORHEATER_0)

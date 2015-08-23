@@ -158,7 +158,7 @@ void Config_StoreSettings() {
   EEPROM_WRITE_VAR(i, max_e_jerk);
   EEPROM_WRITE_VAR(i, home_offset);
 
-  #if DISABLED(DELTA)
+  #if !MECH(DELTA)
     EEPROM_WRITE_VAR(i, zprobe_zoffset);
   #endif
 
@@ -295,7 +295,7 @@ void Config_RetrieveSettings() {
     EEPROM_READ_VAR(i, max_e_jerk);
     EEPROM_READ_VAR(i, home_offset);
 
-    #if DISABLED(DELTA)
+    #if !MECH(DELTA)
       EEPROM_READ_VAR(i, zprobe_zoffset);
     #endif
 
