@@ -18,9 +18,10 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "Marlin.h"
+#include "elements.h"
 #if ENABLED(SDSUPPORT)
-
+#include "Marlin_main.h"
+#include <stdint.h>
 #include "SdBaseFile.h"
 //------------------------------------------------------------------------------
 // pointer to cwd directory

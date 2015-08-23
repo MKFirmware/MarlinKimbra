@@ -19,9 +19,15 @@
   Modified 28 September 2010 by Mark Sproul
 */
 
-#ifndef MarlinSerial_h
-#define MarlinSerial_h
-#include "Marlin.h"
+#ifndef MARLINSERIAL_H
+#define MARLINSERIAL_H
+
+#ifndef cbi
+  #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
+#endif
+#ifndef sbi
+  #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
+#endif
 
 // The presence of the UBRRH register is used to detect a UART.
 #define UART_PRESENT(port) ((port == 0 && (defined(UBRRH) || defined(UBRR0H))) || \

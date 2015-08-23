@@ -1,11 +1,23 @@
-#include "ultralcd.h"
+
+#include "elements.h"
+
 #if ENABLED(ULTRA_LCD)
-#include "Marlin.h"
-#include "language.h"
-#include "cardreader.h"
+#include "Marlin_main.h"
+#if ENABLED(SDSUPPORT)
+  #include "cardreader.h"
+#endif
 #include "temperature.h"
+#if ENABLED(AUTO_BED_LEVELING_FEATURE)
+  #include "vector_3.h"
+#endif
+#include "planner.h"
+#include "stepper_indirection.h"
 #include "stepper.h"
 #include "configuration_store.h"
+#include "ultralcd.h"
+#if HAS(BUZZER)
+  #include "buzzer.h"
+#endif
 
 int8_t encoderDiff; // updated from interrupt context and added to encoderPosition every LCD update
 
@@ -139,7 +151,7 @@ static void lcd_status_screen();
   /**
    * START_MENU generates the init code for a menu function
    */
-#if ENABLED(BTN_BACK) && BTN_BACK > 0
+#if EXIST(BTN_BACK) && BTN_BACK > 0
   #define START_MENU(last_menu) do { \
     encoderRateMultiplierEnabled = false; \
     if (encoderPosition > 0x8000) encoderPosition = 0; \
@@ -1566,8 +1578,9 @@ void lcd_quick_feedback() {
     #if DISABLED(LCD_FEEDBACK_FREQUENCY_DURATION_MS)
       #define LCD_FEEDBACK_FREQUENCY_DURATION_MS (1000/6)
     #endif    
+     
     lcd.buzz(LCD_FEEDBACK_FREQUENCY_DURATION_MS, LCD_FEEDBACK_FREQUENCY_HZ);
-  #elif PIN_EXISTS(BEEPER)
+  #elif HAS(BUZZER)
     #if DISABLED(LCD_FEEDBACK_FREQUENCY_HZ)
       #define LCD_FEEDBACK_FREQUENCY_HZ 5000
     #endif
@@ -1829,7 +1842,7 @@ void lcd_update() {
       (*currentMenu)();
     #endif
 
-    #if ENABLED(LCD_HAS_STATUS_INDICATORS))
+    #if ENABLED(LCD_HAS_STATUS_INDICATORS)
       lcd_implementation_update_indicators();
     #endif
 
@@ -1928,7 +1941,7 @@ void lcd_reset_alert_level() { lcd_status_message_level = 0; }
    * These values are independent of which pins are used for EN_A and EN_B indications
    * The rotary encoder part is also independent to the chipset used for the LCD
    */
-  #if ENABLED(EN_A) && ENABLED(EN_B)
+  #if EXIST(EN_A) && EXIST(EN_B)
     #define encrot0 0
     #define encrot1 2
     #define encrot2 3
@@ -1952,7 +1965,7 @@ void lcd_reset_alert_level() { lcd_status_message_level = 0; }
       #if BTN_ENC > 0
         millis_t ms = millis();
         if (ms > next_button_update_ms && READ(BTN_ENC) == 0) newbutton |= EN_C;
-        #if ENABLED(BTN_BACK) && BTN_BACK > 0
+        #if EXIST(BTN_BACK) && BTN_BACK > 0
           if (ms > next_button_update_ms && READ(BTN_BACK) == 0) newbutton |= EN_D;
         #endif
       #endif
@@ -2366,10 +2379,16 @@ char *ftostr52(const float &x) {
 
 #elif ENABLED(NEXTION)
 
-#include "Marlin.h"
-#include "language.h"
-#include "cardreader.h"
+#include "Marlin_main.h"
+#if ENABLED(SDSUPPORT)
+  #include "cardreader.h"
+#endif
 #include "temperature.h"
+#if ENABLED(AUTO_BED_LEVELING_FEATURE)
+  #include "vector_3.h"
+#endif
+#include "planner.h"
+#include "stepper_indirection.h"
 #include "stepper.h"
 #include "configuration_store.h"
 #include "Nextion.h"

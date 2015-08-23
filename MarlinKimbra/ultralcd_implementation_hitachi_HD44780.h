@@ -1,6 +1,5 @@
 #ifndef ULTRALCD_IMPLEMENTATION_HITACHI_HD44780_H
 #define ULTRALCD_IMPLEMENTATION_HITACHI_HD44780_H
-
 /**
 * Implementation of the LCD display routines for a Hitachi HD44780 display. These are common LCD character displays.
 * When selecting the Russian language, a slightly different LCD implementation is used to handle UTF8 characters.
@@ -27,7 +26,7 @@
 #define EN_B BIT(BLEN_B) // The two encoder pins are connected through BTN_EN1 and BTN_EN2
 #define EN_A BIT(BLEN_A)
 
-#if ENABLED(BTN_ENC) && BTN_ENC > -1
+#if EXIST(BTN_ENC) && BTN_ENC > -1
   // encoder click is directly connected
   #define BLEN_C 2 
   #define EN_C BIT(BLEN_C) 
@@ -51,7 +50,7 @@
   #define B_DW (BUTTON_DOWN<<B_I2C_BTN_OFFSET)
   #define B_RI (BUTTON_RIGHT<<B_I2C_BTN_OFFSET)
 
-  #if ENABLED(BTN_ENC) && BTN_ENC > -1
+  #if EXIST(BTN_ENC) && BTN_ENC > -1
     // the pause/stop/restart button is connected to BTN_ENC when used
     #define B_ST (EN_C)                            // Map the pause/stop/resume button into its normalized functional name
     #define LCD_CLICKED (buttons&(B_MI|B_RI|B_ST)) // pause/stop button also acts as click until we implement proper pause/stop.

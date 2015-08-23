@@ -1,3 +1,16 @@
+#include "elements.h"
+#include "Marlin_main.h"
+#if ENABLED(AUTO_BED_LEVELING_FEATURE)
+  #include "vector_3.h"
+#endif
+#include "planner.h"
+#include "temperature.h"
+#include "ultralcd.h"
+#include "configuration_store.h"
+
+#if ENABLED(SDSUPPORT)
+  #include "cardreader.h"
+#endif
 /**
  * configuration_store.cpp
  *
@@ -95,17 +108,6 @@
  *
  *
  */
-
-#include "Marlin.h"
-#include "language.h"
-#include "planner.h"
-#include "temperature.h"
-#include "ultralcd.h"
-#include "configuration_store.h"
-
-#if ENABLED(SDSUPPORT)
-  #include "cardreader.h"
-#endif
 
 void _EEPROM_writeData(int &pos, uint8_t* value, uint8_t size) {
   uint8_t c;
@@ -812,8 +814,6 @@ void Config_ResetDefault() {
         ECHO_LM(DB, "Filament settings: Disabled");
       }
     }
-
-    ConfigSD_PrintSettings(forReplay);
 
   }
 

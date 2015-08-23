@@ -43,13 +43,10 @@
  detach()    - Stops an attached servos from pulsing its i/o pin.
 
 */
-#include "Configuration_Basic.h"
+
+#include "elements.h"
 
 #if HAS(SERVOS)
-
-#include <avr/interrupt.h>
-#include <Arduino.h>
-
 #include "servo.h"
 
 #define usToTicks(_us)    (( clockCyclesPerMicrosecond()* _us) / 8)     // converts microseconds to tick (assumes prescale of 8)  // 12 Aug 2009

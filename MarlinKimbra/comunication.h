@@ -16,13 +16,6 @@
   #include "MarlinSerial.h"
 #endif
 
-#ifndef cbi
-  #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
-#endif
-#ifndef sbi
-  #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
-#endif
-
 #include "WString.h"
 
 #ifdef USBCON
@@ -57,7 +50,7 @@
 FORCE_INLINE void PS_PGM(const char *str) {
   char ch;
   while ((ch = pgm_read_byte(str))) {
-    MYSERIAL.write(ch);
+    SERIAL_WRITE(ch);
     str++;
   }
 }

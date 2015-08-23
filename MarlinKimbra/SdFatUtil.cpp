@@ -17,9 +17,6 @@
  * along with the Arduino SdFat Library.  If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#include "Marlin.h"
-
-#if ENABLED(SDSUPPORT)
 #include "SdFatUtil.h"
 
 //------------------------------------------------------------------------------
@@ -79,4 +76,3 @@ void SdFatUtil::SerialPrint_P(PGM_P str) {
 void SdFatUtil::SerialPrintln_P(PGM_P str) {
   println_P( str);
 }
-#endif

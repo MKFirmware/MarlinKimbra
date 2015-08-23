@@ -218,6 +218,7 @@
   #endif
 #endif
 
+#include "pins.h"
 
 /**
  * SINGLENOZZLE
@@ -241,9 +242,6 @@
     #define HardwareSerial_h // trick to disable the standard HWserial
   #endif
 #endif
-
-#include "Arduino.h"
-#include "pins.h"
 
 /**
  * ENDSTOPPULLUPS
@@ -656,14 +654,14 @@
 #else
   #define WRITE_HEATER_0(v) WRITE_HEATER_0P(v)
 #endif
-#if HAS_HEATER_BED
+#if HAS(HEATER_BED)
   #if ENABLED(INVERTED_BED_PINS)
     #define WRITE_HEATER_BED(v) WRITE(HEATER_BED_PIN,!v)
   #else
     #define WRITE_HEATER_BED(v) WRITE(HEATER_BED_PIN,v)
   #endif
 #endif
-#if HAS_FAN
+#if HAS(FAN)
   #if ENABLED(INVERTED_HEATER_PINS)
     #define WRITE_FAN(v) WRITE(FAN_PIN, !v)
   #else
@@ -679,11 +677,26 @@
 /**
  * Servos
  */
-#if HAS_SERVOS
+#if HAS(SERVOS)
   #if X_ENDSTOP_SERVO_NR >= 0 || Y_ENDSTOP_SERVO_NR >= 0 || Z_ENDSTOP_SERVO_NR >= 0
     #define HAS_SERVO_ENDSTOPS true
     #define SERVO_ENDSTOP_IDS { X_ENDSTOP_SERVO_NR, Y_ENDSTOP_SERVO_NR, Z_ENDSTOP_SERVO_NR }
   #endif
 #endif
+
+
+/**
+ * The axis order in all axis related arrays is X, Y, Z, E
+ */
+#define NUM_AXIS 4
+
+// Hotend offset
+#if HOTENDS > 1
+  #if DISABLED(DUAL_X_CARRIAGE)
+    #define NUM_HOTEND_OFFSETS 2 // only in XY plane
+  #else
+    #define NUM_HOTEND_OFFSETS 3 // supports offsets in XYZ plane
+  #endif
+#endif // HOTENDS > 1
 
 #endif //CONDITIONALS_H

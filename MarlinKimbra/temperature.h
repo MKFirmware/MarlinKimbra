@@ -21,10 +21,6 @@
 #ifndef TEMPERATURE_H
 #define TEMPERATURE_H 
 
-#include "Marlin.h"
-#include "planner.h"
-#include "stepper.h"
-
 // public functions
 void tp_init();  //initialize the heating
 void manage_heater(); //it is critical that this is called periodically.
@@ -154,15 +150,7 @@ void PID_autotune(float temp, int hotend, int ncycles);
 
 void setExtruderAutoFanState(int pin, bool state);
 void checkExtruderAutoFans();
+extern void autotempShutdown();
 
-FORCE_INLINE void autotempShutdown() {
-  #if ENABLED(AUTOTEMP)
-    if (autotemp_enabled) {
-      autotemp_enabled = false;
-      if (degTargetHotend(active_extruder) > autotemp_min)
-        setTargetHotend(0, active_extruder);
-    }
-  #endif
-}
 
 #endif // TEMPERATURE_H

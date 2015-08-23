@@ -1,9 +1,5 @@
-#ifndef CONFIGURATION_H
-#define CONFIGURATION_H
-
-#include "macros.h"
-#include "default_version.h"
-
+#ifndef CONFIGURATION_BASIC_H
+#define CONFIGURATION_BASIC_H
 /*
  * This configuration file contains basic settings.
  *
@@ -41,7 +37,7 @@
 
 // Define this to set a unique identifier for this printer, (Used by some programs to differentiate between machines)
 // You can use an online service to generate a random UUID. (eg http://www.uuidgenerator.net/version4)
-//#define MACHINE_UUID "00000000-0000-0000-0000-000000000000"
+#define MACHINE_UUID "00000000-0000-0000-0000-000000000000"
 
 // If you want test the firmware uncomment below. Use Serial arduino monitor...
 //#define FIRMWARE_TEST // ONLY BAUDRATE 115200
@@ -235,31 +231,4 @@
  ***********************************************************************/
 #define LANGUAGE_CHOICE 1
 /***********************************************************************/
-
-
-/***********************************************************************
- ********************** Do not touch this section **********************
- ***********************************************************************/
-#if MECH(CARTESIAN)
-  #include "Configuration_Cartesian.h"
-#elif MECH(COREXY)
-  #include "Configuration_Core.h"
-#elif MECH(COREXZ)
-  #include "Configuration_Core.h"
-#elif MECH(DELTA)
-  #include "Configuration_Delta.h"
-#elif MECH(SCARA)
-  #include "Configuration_Scara.h"
 #endif
-
-#include "Configuration_Feature.h"
-#include "Configuration_Overall.h"
-
-#include "conditionals.h"
-#include "thermistortables.h"
-#include "language.h"
-#include "pins.h"
-#include "dependencies.h"
-#include "conflicts.h"
-/***********************************************************************/
-#endif //__CONFIGURATION_H

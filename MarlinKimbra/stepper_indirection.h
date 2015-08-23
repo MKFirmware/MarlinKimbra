@@ -22,8 +22,6 @@
 #ifndef STEPPER_INDIRECTION_H
 #define STEPPER_INDIRECTION_H
 
-#include "macros.h"
-
 // X motor
 #define X_STEP_INIT SET_OUTPUT(X_STEP_PIN)
 #define X_STEP_WRITE(STATE) WRITE(X_STEP_PIN,STATE)

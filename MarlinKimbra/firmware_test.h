@@ -3,12 +3,16 @@
   Tools for firmware test
   By MagoKimbra
  */
-
-#include "Marlin.h"
-#include "stepper.h"
+ 
+#include "elements.h"
+#include "Marlin_main.h"
+#if ENABLED(AUTO_BED_LEVELING_FEATURE)
+  #include "vector_3.h"
+#endif
 #include "planner.h"
+#include "stepper_indirection.h"
+#include "stepper.h"
 #include "temperature.h"
-#include "language.h"
 
 static char serial_answer;
 

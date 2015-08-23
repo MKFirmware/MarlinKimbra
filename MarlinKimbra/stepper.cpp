@@ -22,18 +22,28 @@
 /* The timer calculations of this module informed by the 'RepRap cartesian firmware' by Zack Smith
    and Philipp Tiefenbacher. */
 
-#include "Marlin.h"
-#include "stepper.h"
+#include "elements.h"
+#include "Marlin_main.h"
+
+#if ENABLED(AUTO_BED_LEVELING_FEATURE)
+  #include "vector_3.h"
+#endif
 #include "planner.h"
+#include "stepper_indirection.h"
+#if MB(ALLIGATOR)
+  #include "external_dac.h"
+#endif
+#include "stepper.h"
 #include "temperature.h"
 #include "ultralcd.h"
 #include "language.h"
-#include "cardreader.h"
+#if ENABLED(SDSUPPORT)
+  #include "cardreader.h"
+#endif
 #include "speed_lookuptable.h"
 #if HAS(DIGIPOTSS)
   #include <SPI.h>
 #endif
-
 //===========================================================================
 //============================= public variables ============================
 //===========================================================================
@@ -603,7 +613,7 @@ ISR(TIMER1_COMPA_vect) {
   if (cleaning_buffer_counter) {
     current_block = NULL;
     plan_discard_current_block();
-    #if ENABLED(SD_FINISHED_RELEASECOMMAND)
+    #if EXIST(SD_FINISHED_RELEASECOMMAND)
       if ((cleaning_buffer_counter == 1) && (SD_FINISHED_STEPPERRELEASE)) enqueuecommands_P(PSTR(SD_FINISHED_RELEASECOMMAND));
     #endif
     cleaning_buffer_counter--;

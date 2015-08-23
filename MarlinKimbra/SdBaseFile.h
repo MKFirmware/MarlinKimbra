@@ -17,16 +17,12 @@
  * along with the Arduino SdFat Library.  If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#include "Marlin.h"
-#if ENABLED(SDSUPPORT)
-
 #ifndef SdBaseFile_h
 #define SdBaseFile_h
 /**
  * \file
  * \brief SdBaseFile class
  */
-#include "Marlin.h"
 #include "SdFatConfig.h"
 #include "SdVolume.h"
 //------------------------------------------------------------------------------
@@ -479,5 +475,4 @@ class SdBaseFile {
 #endif  // ALLOW_DEPRECATED_FUNCTIONS
 };
 
-#endif  // SdBaseFile_h
 #endif

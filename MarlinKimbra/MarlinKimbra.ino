@@ -30,9 +30,11 @@
 /* All the implementation is done in *.cpp files to get better compatibility with avr-gcc without the Arduino IDE */
 /* Use this file to help the Arduino IDE find which Arduino libraries are needed and to keep documentation on GCode */
 
-#include "Configuration_Basic.h"
-#include "pins.h"
+#include "elements.h"
 
+#if ENABLED(DIGIPOT_I2C) || ENABLED(BLINKM)
+  #include <Wire.h>
+#endif
 #if ENABLED(ULTRA_LCD)
   #if ENABLED(LCD_I2C_TYPE_PCF8575)
     #include <Wire.h>
@@ -46,11 +48,6 @@
     #include <LiquidCrystal.h> // library for character LCD
   #endif
 #endif
-
-#if ENABLED(DIGIPOTSS_PIN) && DIGIPOTSS_PIN > -1
-#include <SPI.h>
-#endif
-
-#if ENABLED(DIGIPOT_I2C)
-  #include <Wire.h>
+#if HAS(DIGIPOTSS)
+  #include <SPI.h>
 #endif

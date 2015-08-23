@@ -18,19 +18,30 @@
  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "Marlin.h"
+#include "elements.h"
+#include "Marlin_main.h"
 #include "ultralcd.h"
+#include "planner.h"
+#include "stepper_indirection.h"
+#if MB(ALLIGATOR)
+  #include "external_dac.h"
+#endif
+#include "stepper.h"
 #include "temperature.h"
-#include "watchdog.h"
-#include "language.h"
-
-#include "Sd2PinMap.h"
+#if ENABLED(USE_WATCHDOG)
+  #include "watchdog.h"
+#endif
+#if ENABLED(SDSUPPORT)
+  #include "Sd2PinMap.h"
+#endif
+#include "temperature.h"
+#include "thermistortables.h"
 
 //===========================================================================
 //================================== macros =================================
 //===========================================================================
 
-#if ENABLED(K1) // Defined in Configuration.h in the PID settings
+#if EXIST(K1) // Defined in Configuration.h in the PID settings
   #define K2 (1.0 - K1)
 #endif
 
@@ -189,6 +200,16 @@ static void updateTemperaturesFromRawValues();
 //===========================================================================
 //================================ Functions ================================
 //===========================================================================
+
+void autotempShutdown() {
+  #if ENABLED(AUTOTEMP)
+    if (autotemp_enabled) {
+      autotemp_enabled = false;
+      if (degTargetHotend(active_extruder) > autotemp_min)
+        setTargetHotend(0, active_extruder);
+    }
+  #endif
+}
 
 #if ENABLED(PIDTEMP) || ENABLED(PIDTEMPBED)
   void PID_autotune(float temp, int hotend, int ncycles) {
@@ -836,10 +857,10 @@ static void updateTemperaturesFromRawValues() {
     second_overflow -= 1000;
   }
   last_update = temp_last_update;
-
-  // Reset the watchdog after we know we have a temperature measurement.
-  watchdog_reset();
-
+  #if ENABLED(USE_WATCHDOG)
+    // Reset the watchdog after we know we have a temperature measurement.
+    watchdog_reset();
+  #endif
   CRITICAL_SECTION_START;
   temp_meas_ready = false;
   CRITICAL_SECTION_END;

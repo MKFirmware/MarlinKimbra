@@ -4,37 +4,7 @@
 #ifndef MARLIN_H
 #define MARLIN_H
 
-#define  FORCE_INLINE __attribute__((always_inline)) inline
-
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <inttypes.h>
-
-#ifdef __SAM3X8E__
-  #include "HAL.h"
-#else
-  #include <util/delay.h>
-  #include <avr/eeprom.h>
-  #include "fastio.h"
-#endif
-
-#include <avr/pgmspace.h>
-#include <avr/interrupt.h>
-#include "Configuration_Basic.h"
-#include "pins.h"
-
-#include "Arduino.h"
-
 typedef unsigned long millis_t;
-
-// Arduino < 1.0.0 does not define this, so we need to do it ourselves
-#ifndef analogInputToDigitalPin
-  #define analogInputToDigitalPin(p) ((p) + 0xA0)
-#endif
-
-#include "comunication.h"
 
 void get_command();
 
@@ -112,11 +82,6 @@ void manage_inactivity(bool ignore_stepper_queue=false);
 #endif
 
 #define disable_e() {disable_e0(); disable_e1(); disable_e2(); disable_e3();}
-
-/**
- * The axis order in all axis related arrays is X, Y, Z, E
- */
-#define NUM_AXIS 4
 
 /**
  * Axis indices as enumerated constants
@@ -203,11 +168,6 @@ inline void refresh_cmd_timeout() { previous_cmd_ms = millis(); }
   void setPwmFrequency(uint8_t pin, int val);
 #endif
 
-#ifndef CRITICAL_SECTION_START
-  #define CRITICAL_SECTION_START  unsigned char _sreg = SREG; cli();
-  #define CRITICAL_SECTION_END    SREG = _sreg;
-#endif
-
 extern float homing_feedrate[];
 extern bool axis_relative_modes[];
 extern int feedrate_multiplier;
@@ -221,11 +181,6 @@ extern float home_offset[3];
 
 // Hotend offset
 #if HOTENDS > 1
-  #if DISABLED(DUAL_X_CARRIAGE)
-    #define NUM_HOTEND_OFFSETS 2 // only in XY plane
-  #else
-    #define NUM_HOTEND_OFFSETS 3 // supports offsets in XYZ plane
-  #endif
   extern float hotend_offset[NUM_HOTEND_OFFSETS][HOTENDS];
 #endif // HOTENDS > 1
 

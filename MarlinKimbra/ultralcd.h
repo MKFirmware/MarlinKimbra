@@ -1,9 +1,6 @@
 #ifndef ULTRALCD_H
 #define ULTRALCD_H
 
-#include "Marlin.h"
-#include "buzzer.h"
-
 #if ENABLED(ULTRA_LCD)
   int lcd_strlen(char *s);
   int lcd_strlen_P(const char *s);
@@ -80,7 +77,7 @@
     #define EN_A BIT(BLEN_A)
 
     #define LCD_CLICKED (buttons&EN_C)
-    #if ENABLED(BTN_BACK) && BTN_BACK > 0
+    #if EXIST(BTN_BACK) && BTN_BACK > 0
       #define EN_D BIT(BLEN_D)
       #define LCD_BACK_CLICKED (buttons&EN_D)
     #endif

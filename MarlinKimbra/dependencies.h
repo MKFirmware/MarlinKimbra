@@ -23,7 +23,7 @@
 #endif
 
 //Mechanism
-#if NOTEXIST(MEACHANISM)
+#if NOTEXIST(MECHANISM)
   #error DEPENDENCY ERROR: Missing setting MECHANISM
 #endif
 
@@ -162,7 +162,7 @@
   #endif
 #endif
 #if defined(PIDTEMP)
-  #if NOTEXIST(PID_OPENLOOP)
+  #if NOTEXIST(PID_OPENLOOP) && NOTEXIST(PID_FUNCTIONAL_RANGE) 
     #error DEPENDENCY ERROR: Missing setting PID_FUNCTIONAL_RANGE
   #endif
   #if NOTEXIST(PID_INTEGRAL_DRIVE_MAX)

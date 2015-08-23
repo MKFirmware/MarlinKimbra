@@ -21,9 +21,6 @@
  * \file
  * \brief configuration definitions
  */
-#include "Marlin.h"
-#if ENABLED(SDSUPPORT)
-
 #ifndef SdFatConfig_h
 #define SdFatConfig_h
 #include <stdint.h>
@@ -120,6 +117,3 @@ uint8_t const SOFT_SPI_SCK_PIN = 13;
 /** Total size of the buffer used to store the long filenames */
 #define LONG_FILENAME_LENGTH (FILENAME_LENGTH*MAX_VFAT_ENTRIES+1)
 #endif  // SdFatConfig_h
-
-
-#endif

@@ -27,8 +27,6 @@
   #define LANGUAGE_CHOICE 7  // Pick your language from the list above
 #endif
 
-#include "default_version.h"
-
 #define PROTOCOL_VERSION "1.0"
 
 #if MB(ULTIMAKER)|| MB(ULTIMAKER_OLD)|| MB(ULTIMAIN_2)

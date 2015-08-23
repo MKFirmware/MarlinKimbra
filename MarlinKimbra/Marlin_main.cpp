@@ -27,27 +27,36 @@
  *  - http://reprap.org/pipermail/reprap-dev/2011-May/003323.html
  */
 
-#include "Marlin.h"
+#include "elements.h"
 
+#include "Marlin_main.h"
+#include "ultralcd.h"
+#include "elements.h"
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
   #include "vector_3.h"
   #if ENABLED(AUTO_BED_LEVELING_GRID)
     #include "qr_solve.h"
   #endif
 #endif // AUTO_BED_LEVELING_FEATURE
-
-
-#include "ultralcd.h"
 #include "planner.h"
+#include "stepper_indirection.h"
+#if MB(ALLIGATOR)
+  #include "external_dac.h"
+#endif
 #include "stepper.h"
 #include "temperature.h"
-#include "cardreader.h"
-#include "watchdog.h"
+#if ENABLED(SDSUPPORT)
+  #include "cardreader.h"
+#endif
 #include "configuration_store.h"
-#include "language.h"
-#include "pins_arduino.h"
-#include "math.h"
-#include "buzzer.h"
+
+#if ENABLED(USE_WATCHDOG)
+  #include "watchdog.h"
+#endif
+
+#if HAS(BUZZER)
+  #include "buzzer.h"
+#endif
 
 #if ENABLED(BLINKM)
   #include "blinkm.h"
@@ -59,8 +68,9 @@
 #endif
 
 #if HAS(DIGIPOTSS)
-  #include <SPI.h>
+  #include "SPI.h"
 #endif
+
 
 #if ENABLED(FIRMWARE_TEST)
   #include "firmware_test.h"
@@ -755,7 +765,9 @@ void setup() {
 
   tp_init();    // Initialize temperature loop
   plan_init();  // Initialize planner;
-  watchdog_init();
+  #if ENABLED(USE_WATCHDOG)
+    watchdog_init();
+  #endif
   st_init();    // Initialize stepper, this enables interrupts!
   setup_photpin();
   setup_laserbeampin();   // Initialize Laserbeam pin
@@ -6125,7 +6137,9 @@ inline void gcode_M503() {
         LCD_ALERTMESSAGEPGM("Zzzz Zzzz Zzzz");
       }
       if (beep) {
-        for(int8_t i = 0; i < 3; i++) buzz(100, 1000);
+        #if HAS(BUZZER)
+          for(int8_t i = 0; i < 3; i++) buzz(100, 1000);
+        #endif
         last_set = millis();
         beep = false;
         ++cnt;
@@ -6153,7 +6167,7 @@ inline void gcode_M503() {
 
     //return to normal
     if (code_seen('L')) destination[E_AXIS] -= code_value();
-    #if ENABLED(FILAMENTCHANGE_FINALRETRACT)
+    #if EXIST(FILAMENTCHANGE_FINALRETRACT)
       else destination[E_AXIS] -= FILAMENTCHANGE_FINALRETRACT;
     #endif
 

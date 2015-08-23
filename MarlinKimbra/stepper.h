@@ -18,15 +18,8 @@
   along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef stepper_h
-#define stepper_h 
-
-#include "planner.h"
-#include "stepper_indirection.h"
-
-#if MB(ALLIGATOR)
-  #include "external_dac.h"
-#endif
+#ifndef STEPPER_H
+#define STEPPER_H 
 
 #if DRIVER_EXTRUDERS > 3
   #define E_STEP_WRITE(v) { if(current_block->active_driver == 3) { E3_STEP_WRITE(v); } else { if(current_block->active_driver == 2) { E2_STEP_WRITE(v); } else { if(current_block->active_driver == 1) { E1_STEP_WRITE(v); } else { E0_STEP_WRITE(v); }}}}
@@ -112,4 +105,4 @@ void microstep_readings();
   void colorstep(long csteps,const bool direction);
 #endif
 
-#endif // stepper_h
+#endif // STEPPER_H
