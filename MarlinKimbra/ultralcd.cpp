@@ -1699,22 +1699,26 @@ int lcd_strlen_P(const char *s) {
 
 #if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
   void set_sd_dot() {
-    u8g.firstPage();
-    do {
-      u8g.setColorIndex(1);
-      u8g.drawPixel(0, 0); // draw sd dot
-      u8g.setColorIndex(1); // black on white
-      (*currentMenu)();
-    } while( u8g.nextPage() );
+    #if ENABLED(DOGLCD)
+      u8g.firstPage();
+      do {
+        u8g.setColorIndex(1);
+        u8g.drawPixel(0, 0); // draw sd dot
+        u8g.setColorIndex(1); // black on white
+        (*currentMenu)();
+      } while( u8g.nextPage() );
+    #endif
   }
   void unset_sd_dot() {
-    u8g.firstPage();
-    do {
-      u8g.setColorIndex(0);
-      u8g.drawPixel(0, 0); // draw sd dot
-      u8g.setColorIndex(1); // black on white
-      (*currentMenu)();
-    } while( u8g.nextPage() );
+    #if ENABLED(DOGLCD)
+      u8g.firstPage();
+      do {
+        u8g.setColorIndex(0);
+        u8g.drawPixel(0, 0); // draw sd dot
+        u8g.setColorIndex(1); // black on white
+        (*currentMenu)();
+      } while( u8g.nextPage() );
+    #endif
   }
 #endif
 
