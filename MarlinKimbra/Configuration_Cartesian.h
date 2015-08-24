@@ -24,6 +24,7 @@
  *
  * Basic-settings can be found in Configuration_Basic.h
  * Feature-settings can be found in Configuration_Feature.h
+ * Pins-settings can be found in "Configuration_Pins.h"
  */
  
 /*****************************************************************************************

@@ -3028,7 +3028,6 @@
 
 #define ORIG_FAN_PIN            6
 #define BEEPER_PIN              33
-#define CONTROLLERFAN_PIN       4
 #define PS_ON_PIN               12
 
 #if ENABLED(REPRAP_DISCOUNT_SMART_CONTROLLER) || ENABLED(G3D_PANEL)

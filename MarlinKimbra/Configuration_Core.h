@@ -1,4 +1,3 @@
-#ifndef CONFIGURATION_MECHANISM
 #define CONFIGURATION_MECHANISM
 #define KNOWN_MECH 1
 
@@ -26,6 +25,7 @@
  *
  * Basic-settings can be found in Configuration_Basic.h
  * Feature-settings can be found in Configuration_Feature.h
+ * Pins-settings can be found in "Configuration_Pins.h"
  */
  
 /*****************************************************************************************

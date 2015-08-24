@@ -13,6 +13,7 @@
  *
  * Mechanisms-settings can be found in Configuration_Xxxxxx.h (where Xxxxxx can be: Cartesian - Delta - Core - Scara)
  * Feature-settings can be found in Configuration_Feature.h
+ * Pins-settings can be found in "Configuration_Pins.h"
  */
 
 /***********************************************************************

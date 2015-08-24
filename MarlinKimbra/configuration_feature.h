@@ -70,6 +70,7 @@
  *
  * Basic-settings can be found in Configuration_Basic.h
  * Mechanisms-settings can be found in Configuration_Xxxxxx.h (where Xxxxxx can be: Cartesian - Delta - Core - Scara)
+ * Pins-settings can be found in "Configuration_Pins.h"
  * 
  */
 
@@ -301,7 +302,7 @@
 // This is for controlling a fan to cool down the stepper drivers
 // it will turn on when any driver is enabled
 // and turn off after the set amount of seconds from last driver being disabled again
-// You need to set CONTROLLERFAN_PIN in pins.h
+// You need to set CONTROLLERFAN_PIN in Configuration_pins.h
 //#define CONTROLLERFAN
 #define CONTROLLERFAN_SECS 60     // How many seconds, after all motors were disabled, the fan should run
 #define CONTROLLERFAN_SPEED 255   // 255 = full speed
@@ -312,7 +313,7 @@
 // extruder temperature is above/below EXTRUDER_AUTO_FAN_TEMPERATURE.
 // Multiple extruders can be assigned to the same pin in which case
 // the fan will turn on when any selected extruder is above the threshold.
-// You need to set _AUTO_FAN_PIN in pins.h
+// You need to set _AUTO_FAN_PIN in Configuration_pins.h
 //#define EXTRUDER_AUTO_FAN
 #define EXTRUDER_AUTO_FAN_TEMPERATURE 50
 #define EXTRUDER_AUTO_FAN_SPEED 255  // 255 = full speed
@@ -368,7 +369,7 @@
  ***********************************************************************
  *                                                                     *
  * Setting for more extruder width relay system                        *
- * See pins.h for pin command relay                                    *
+ * See Configuration_pins.h for pin command relay                      *
  *                                                                     *
  * Uncomment MKR4 to enable this feature                               *
  *                                                                     *
@@ -385,7 +386,7 @@
  * Find angle setting by g-Code "M997 Cxxx"                            *
  *                                                                     *
  * Uncomment NPR2 to enable this feature                               *
- * You also need to set E_MIN_PIN in pins.h                            *
+ * You also need to set E_MIN_PIN in Configuration_pins.h              *
  *                                                                     *
  ***********************************************************************/
 //#define NPR2
@@ -926,7 +927,7 @@
  * Single extruder only at this point (extruder 0)                                *
  *                                                                                *
  * Uncomment FILAMENT_SENSOR to enable this feature                               *
- * You also need to set FILWIDTH_PIN in pins.h                                    *
+ * You also need to set FILWIDTH_PIN in Configuration_pins.h                      *
  *                                                                                *
  **********************************************************************************/
 //#define FILAMENT_SENSOR
@@ -958,7 +959,7 @@
  * Single extruder only at this point (extruder 0)                                *
  *                                                                                *
  * Uncomment FILAMENT_RUNOUT_SENSOR to enable this feature                        *
- * You also need to set FILRUNOUT_PIN in pins.h                                   *
+ * You also need to set FILRUNOUT_PIN in Configuration_pins.h                     *
  *                                                                                *
  **********************************************************************************/
 //#define FILAMENT_RUNOUT_SENSOR
@@ -1239,7 +1240,7 @@
  * Data from: http://www.doc-diy.net/photo/rc-1_hacked/                   *
  *                                                                        *
  * Uncomment PHOTOGRAPH to enable this feature                            *
- * You also need to set PHOTOGRAPH_PIN in pins.h                          *
+ * You also need to set PHOTOGRAPH_PIN in Configuration_pins.h            *
  *                                                                        *
  **************************************************************************/
 //#define PHOTOGRAPH
@@ -1253,7 +1254,7 @@
  * http://captain-slow.dk/2014/03/09/3d-printing-timelapses/              *
  *                                                                        *
  * Uncomment CHDK to enable this feature                                  *
- * You also need to set CHDK_PIN in pins.h                                *
+ * You also need to set CHDK_PIN in Configuration_pins.h                  *
  *                                                                        *
  **************************************************************************/
 //#define CHDK
@@ -1278,7 +1279,8 @@
  **************************************************************************
  *                                                                        *
  * Support for laser beam                                                 *
- * Check also LASER_PWR_PIN and LASER_TTL_PIN in pins.h                   *
+ * Check also LASER_PWR_PIN and LASER_TTL_PIN in Configuration_pins.h     *
+ * Check also LASER_PWR_PIN and LASER_TTL_PIN in Configuration_pins.h     *
  *                                                                        *
  **************************************************************************/
 //#define LASERBEAM
