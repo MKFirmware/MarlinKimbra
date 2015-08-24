@@ -65,21 +65,10 @@
 //=========================== FEATURE ==============================
 
 #if ENABLED(MKR4)
-  #if (EXTRUDERS == 2) && (DRIVER_EXTRUDERS == 1)    // Use this for one driver and two extruder
-    #define E0E1_CHOICE_PIN    5
-  #elif (EXTRUDERS == 3) && (DRIVER_EXTRUDERS == 1)  // Use this for one driver and 3 extruder
-    #define E0E1_CHOICE_PIN    5
-    #define E0E2_CHOICE_PIN    6
-  #elif (EXTRUDERS == 4) && (DRIVER_EXTRUDERS == 1)  // Use this for one driver and 4 extruder
-    #define E0E1_CHOICE_PIN    4
-    #define E0E2_CHOICE_PIN    5
-    #define E0E3_CHOICE_PIN    6
-  #elif (EXTRUDERS == 3) && (DRIVER_EXTRUDERS == 2)  // Use this for two driver and 3 extruder
-    #define E0E2_CHOICE_PIN    5
-  #elif (EXTRUDERS == 4) && (DRIVER_EXTRUDERS == 2)  // Use this for two driver and 4 extruder
-    #define E0E2_CHOICE_PIN    5
-    #define E1E3_CHOICE_PIN    6
-  #endif //EXTRUDERS
+  #define E0E1_CHOICE_PIN    -1
+  #define E0E2_CHOICE_PIN    -1
+  #define E0E3_CHOICE_PIN    -1
+  #define E1E3_CHOICE_PIN    -1
 #endif //MKR4
 
 #if ENABLED(NPR2)
@@ -87,8 +76,8 @@
 #endif
 
 #if ENABLED(LASERBEAM)
-  #define LASER_PWR_PIN       41
-  #define LASER_TTL_PIN       42
+  #define LASER_PWR_PIN       -1
+  #define LASER_TTL_PIN       -1
 #endif
 
 #if ENABLED(FILAMENT_RUNOUT_SENSOR)
@@ -126,6 +115,10 @@
   #define X2_ENABLE_PIN -1
   #define X2_STEP_PIN -1
   #define X2_DIR_PIN -1
+#endif
+
+#if ENABLED(Z_PROBE_SLED)
+  #define SLED_PIN -1
 #endif
 
 //============================================================================

@@ -49,8 +49,7 @@
 
 #include "language.h"
 #include "conditionals.h"
-#include "dependencies.h"
-#include "conflicts.h"
+#include "sanitycheck.h"
 
 #include "comunication.h"
 

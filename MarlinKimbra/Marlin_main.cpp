@@ -300,11 +300,7 @@ const int sensitive_pins[] = SENSITIVE_PINS; ///< Sensitive pin list for M42
 // Inactivity shutdown
 millis_t previous_cmd_ms = 0;
 static millis_t max_inactive_time = 0;
-#if ENABLED(DEFAULT_STEPPER_DEACTIVE_TIME)
-  static millis_t stepper_inactive_time = DEFAULT_STEPPER_DEACTIVE_TIME * 1000L;
-#else
-  static millis_t stepper_inactive_time = 0;
-#endif
+static millis_t stepper_inactive_time = DEFAULT_STEPPER_DEACTIVE_TIME * 1000L;
 millis_t print_job_start_ms = 0; ///< Print job start time
 millis_t print_job_stop_ms = 0;  ///< Print job stop time
 static uint8_t target_extruder;
@@ -647,90 +643,116 @@ bool enqueuecommand(const char *cmd) {
   }
 #endif
 
-void setup_killpin() {
-  #if HAS(KILL)
+#if HAS(KILL)
+  void setup_killpin() {
     SET_INPUT(KILL_PIN);
     WRITE(KILL_PIN, HIGH);
-  #endif
-}
+  }
+#endif
 
-void setup_filrunoutpin() {
-  #if HAS(FILRUNOUT)
+#if HAS(FILRUNOUT)
+  void setup_filrunoutpin() {
     pinMode(FILRUNOUT_PIN, INPUT);
     #if ENABLED(ENDSTOPPULLUP_FIL_RUNOUT)
       WRITE(FILRUNOUT_PIN, HIGH);
     #endif
-  #endif
-}
+  }
+#endif
 
 // Set home pin
-void setup_homepin(void) {
-  #if HAS(HOME)
+#if HAS(HOME)
+  void setup_homepin(void) {
     SET_INPUT(HOME_PIN);
     WRITE(HOME_PIN, HIGH);
-  #endif
-}
+  }
+#endif
 
 
-void setup_photpin() {
-  #if HAS(PHOTOGRAPH)
+#if HAS(PHOTOGRAPH)
+  void setup_photpin() {
     OUT_WRITE(PHOTOGRAPH_PIN, LOW);
-  #endif
-}
+  }
+#endif
 
-void setup_laserbeampin() {
-  #if ENABLED(LASERBEAM)
+#if ENABLED(LASERBEAM)
+  void setup_laserbeampin() {
     OUT_WRITE(LASER_PWR_PIN, LOW);
     OUT_WRITE(LASER_TTL_PIN, LOW);
-  #endif
-}
+  }
+#endif
 
-void setup_powerhold() {
-  #if HAS(SUICIDE)
-    OUT_WRITE(SUICIDE_PIN, HIGH);
-  #endif
-  #if HAS(POWER_SWITCH)
+#if HAS(POWER_SWITCH)
+  void setup_powerhold() {
+    #if HAS(SUICIDE)
+      OUT_WRITE(SUICIDE_PIN, HIGH);
+    #endif
     #if ENABLED(PS_DEFAULT_OFF)
       OUT_WRITE(PS_ON_PIN, PS_ON_ASLEEP);
     #else
       OUT_WRITE(PS_ON_PIN, PS_ON_AWAKE);
     #endif
-  #endif
-}
+  }
+#endif
 
-void suicide() {
-  #if HAS(SUICIDE)
+#if HAS(SUICIDE)
+  void suicide() {
     OUT_WRITE(SUICIDE_PIN, LOW);
-  #endif
-}
+  }
+#endif
 
-void servo_init() {
-  #if NUM_SERVOS >= 1 && HAS(SERVO_0)
-    servo[0].attach(SERVO0_PIN);
-    servo[0].detach(); // Just set up the pin. We don't have a position yet. Don't move to a random position.
-  #endif
-  #if NUM_SERVOS >= 2 && HAS(SERVO_1)
-    servo[1].attach(SERVO1_PIN);
-    servo[1].detach();
-  #endif
-  #if NUM_SERVOS >= 3 && HAS(SERVO_2)
-    servo[2].attach(SERVO2_PIN);
-    servo[2].detach();
-  #endif
-  #if NUM_SERVOS >= 4 && HAS(SERVO_3)
-    servo[3].attach(SERVO3_PIN);
-    servo[3].detach();
-  #endif
+#if HAS(SERVO)
+  void servo_init() {
+    #if HAS(SERVO_0)
+      servo[0].attach(SERVO0_PIN);
+      servo[0].detach(); // Just set up the pin. We don't have a position yet. Don't move to a random position.
+    #endif
+    #if HAS(SERVO_1)
+      servo[1].attach(SERVO1_PIN);
+      servo[1].detach();
+    #endif
+    #if HAS(SERVO_2)
+      servo[2].attach(SERVO2_PIN);
+      servo[2].detach();
+    #endif
+    #if HAS(SERVO_3)
+      servo[3].attach(SERVO3_PIN);
+      servo[3].detach();
+    #endif
 
-  // Set position of Servo Endstops that are defined
-  #if HAS(SERVO_ENDSTOPS)
-    for (int i = 0; i < 3; i++)
-      if (servo_endstop_id[i] >= 0)
-        servo[servo_endstop_id[i]].move(servo_endstop_angle[i][1]);
-  #endif
+    // Set position of Servo Endstops that are defined
+    #if HAS(SERVO_ENDSTOPS)
+      for (int i = 0; i < 3; i++)
+        if (servo_endstop_id[i] >= 0)
+          servo[servo_endstop_id[i]].move(servo_endstop_angle[i][1]);
+    #endif
 
-}
+  }
+#endif
+/**
+ * Led init
+ */
+#if ENABLED(TEMP_STAT_LEDS)
+  void setup_statled() {
+    #if ENABLED(STAT_LED_RED)
+      pinMode(STAT_LED_RED, OUTPUT);
+      digitalWrite(STAT_LED_RED, LOW); // turn it off
+    #endif
 
+    #if ENABLED(STAT_LED_BLUE)
+      pinMode(STAT_LED_BLUE, OUTPUT);
+      digitalWrite(STAT_LED_BLUE, LOW); // turn it off
+    #endif
+  }
+#endif
+/**
+ * Led init
+ */
+#if HAS(Z_PROBE_SLED)
+  void setup_zprobesled() {
+    pinMode(SLED_PIN, OUTPUT);
+    digitalWrite(SLED_PIN, LOW); // turn it off
+  }
+#endif
 /**
  * Stepper Reset (RigidBoard, et.al.)
  */
@@ -766,10 +788,15 @@ void setup() {
   #if MB(ALLIGATOR)
     setup_alligator_board();// Initialize Alligator Board
   #endif
-  setup_killpin();
-  setup_filrunoutpin();
-  setup_powerhold();
-
+  #if HAS(KILL)
+    setup_killpin();
+  #endif
+  #if HAS(FILRUNOUT)
+    setup_filrunoutpin();
+  #endif
+  #if HAS(POWER_SWITCH)
+    setup_powerhold();
+  #endif
   #if HAS(STEPPER_RESET)
     disableStepperDrivers();
   #endif
@@ -789,11 +816,9 @@ void setup() {
 
   ECHO_LM(DB, MSG_MARLIN " " BUILD_VERSION);
 
-  #ifdef STRING_DISTRIBUTION_DATE
-    #ifdef STRING_CONFIG_H_AUTHOR
-      ECHO_LM(DB, MSG_CONFIGURATION_VER STRING_DISTRIBUTION_DATE MSG_AUTHOR STRING_CONFIG_H_AUTHOR);
-      ECHO_LM(DB, MSG_COMPILED __DATE__);
-    #endif // STRING_CONFIG_H_AUTHOR
+  #if EXIST(STRING_DISTRIBUTION_DATE) && EXIST(STRING_CONFIG_H_AUTHOR)
+    ECHO_LM(DB, MSG_CONFIGURATION_VER STRING_DISTRIBUTION_DATE MSG_AUTHOR STRING_CONFIG_H_AUTHOR);
+    ECHO_LM(DB, MSG_COMPILED __DATE__);
   #endif // STRING_DISTRIBUTION_DATE
 
   ECHO_SMV(DB, MSG_FREE_MEMORY, freeMemory());
@@ -817,10 +842,15 @@ void setup() {
     watchdog_init();
   #endif
   st_init();    // Initialize stepper, this enables interrupts!
-  setup_photpin();
-  setup_laserbeampin();   // Initialize Laserbeam pin
-  servo_init();
-
+  #if HAS(PHOTOGRAPH)
+    setup_photpin();
+  #endif
+  #if ENABLED(LASERBEAM)
+    setup_laserbeampin();   // Initialize Laserbeam pin
+  #endif
+  #if HAS(SERVO)
+    servo_init();
+  #endif
   #if HAS(STEPPER_RESET)
     enableStepperDrivers();
   #endif
@@ -829,23 +859,16 @@ void setup() {
     digipot_i2c_init();
   #endif
 
-  #if ENABLED(Z_PROBE_SLED)
-    pinMode(SLED_PIN, OUTPUT);
-    digitalWrite(SLED_PIN, LOW); // turn it off
+  #if HAS(Z_PROBE_SLED)
+    setup_zprobesled();
   #endif // Z_PROBE_SLED
 
-  setup_homepin();
-
-  #if ENABLED(STAT_LED_RED)
-    pinMode(STAT_LED_RED, OUTPUT);
-    digitalWrite(STAT_LED_RED, LOW); // turn it off
+  #if HAS(HOME)
+    setup_homepin();
   #endif
-
-  #if ENABLED(STAT_LED_BLUE)
-    pinMode(STAT_LED_BLUE, OUTPUT);
-    digitalWrite(STAT_LED_BLUE, LOW); // turn it off
+  #if ENABLED(TEMP_STAT_LEDS)
+    setup_statled();
   #endif
-
   #if ENABLED(FIRMWARE_TEST)
     FirmwareTest();
   #endif // FIRMWARE_TEST
@@ -1527,7 +1550,7 @@ static void clean_up_after_endstop_move() {
 
       do_blocking_move_to_xy(x - X_PROBE_OFFSET_FROM_EXTRUDER, y - Y_PROBE_OFFSET_FROM_EXTRUDER); // this also updates current_position
 
-      #if DISABLED(Z_PROBE_SLED)
+      #if HASNT(Z_PROBE_SLED)
         if (probe_action & ProbeDeploy) {
           if (debugLevel & DEBUG_INFO) ECHO_LM(DB, "> ProbeDeploy");
           deploy_z_probe();
@@ -1537,7 +1560,7 @@ static void clean_up_after_endstop_move() {
       run_z_probe();
       float measured_z = current_position[Z_AXIS];
 
-      #if DISABLED(Z_PROBE_SLED)
+      #if HASNT(Z_PROBE_SLED)
         if (probe_action & ProbeStow) {
           if (debugLevel & DEBUG_INFO) ECHO_LM(DB, "> ProbeStow (stow_z_probe will do Z Raise)");
           stow_z_probe();
@@ -1556,7 +1579,7 @@ static void clean_up_after_endstop_move() {
       return measured_z;
     }
     
-    #if HAS(SERVO_ENDSTOPS) && DISABLED(Z_PROBE_SLED)
+    #if HAS(SERVO_ENDSTOPS) && HASNT(Z_PROBE_SLED)
       void raise_z_for_servo() {
         float zpos = current_position[Z_AXIS], z_dest = Z_RAISE_BEFORE_PROBING;
         z_dest += axis_known_position[Z_AXIS] ? zprobe_zoffset : zpos;
@@ -1587,14 +1610,14 @@ static void clean_up_after_endstop_move() {
       current_position[axis] = 0;
       sync_plan_position();
 
-      #if ENABLED(Z_PROBE_SLED)
+      #if HAS(Z_PROBE_SLED)
         // Get Probe
         if (axis == Z_AXIS) {
           if (axis_home_dir < 0) dock_sled(false);
         }
       #endif
 
-      #if SERVO_LEVELING && DISABLED(Z_PROBE_SLED)
+      #if SERVO_LEVELING && HASNT(Z_PROBE_SLED)
         // Deploy a probe if there is one, and homing towards the bed
         if (axis == Z_AXIS) {
           if (axis_home_dir < 0) deploy_z_probe();
@@ -1690,7 +1713,7 @@ static void clean_up_after_endstop_move() {
           }
       #endif
 
-      #if SERVO_LEVELING && DISABLED(Z_PROBE_SLED)
+      #if SERVO_LEVELING && HASNT(Z_PROBE_SLED)
         // Deploy a probe if there is one, and homing towards the bed
         if (axis == Z_AXIS) {
           if (axis_home_dir < 0) {
@@ -2788,7 +2811,7 @@ static void clean_up_after_endstop_move() {
   } // retract()
 #endif //FWRETRACT
 
-#if ENABLED(Z_PROBE_SLED)
+#if HAS(Z_PROBE_SLED)
 
   #if DISABLED(SLED_DOCKING_OFFSET)
     #define SLED_DOCKING_OFFSET 0
@@ -3612,7 +3635,7 @@ inline void gcode_G28() {
 
     #endif // AUTO_BED_LEVELING_GRID
 
-    #if ENABLED(Z_PROBE_SLED)
+    #if HAS(Z_PROBE_SLED)
       dock_sled(false); // engage (un-dock) the probe
     #endif
 
@@ -3862,7 +3885,7 @@ inline void gcode_G28() {
       vector_3 probe_point = vector_3(eqnAMatrix[ind + 0 * abl2], eqnAMatrix[ind + 1 * abl2], eqnBVector[ind]);
       probe_point.apply_rotation(inverse_bed_level_matrix);
       current_position[Z_AXIS] = -zprobe_zoffset + (probe_point.z - rot_max_diff)
-      #if HAS(SERVO_ENDSTOPS) || ENABLED(Z_PROBE_SLED)
+      #if HAS(SERVO_ENDSTOPS) || HAS(Z_PROBE_SLED)
         + Z_RAISE_AFTER_PROBING
       #endif
       ;
@@ -3871,14 +3894,14 @@ inline void gcode_G28() {
       if (debugLevel & DEBUG_INFO) ECHO_LMV(DB, "> AFTER apply_rotation_xyz > current_position[Z_AXIS]= ", current_position[Z_AXIS], 5);
     }
 
-    #if ENABLED(Z_PROBE_SLED)
+    #if HAS(Z_PROBE_SLED)
       dock_sled(true); // dock the probe
     #endif
 
     if (debugLevel & DEBUG_INFO) ECHO_LM(DB, "<<< gcode_G29");
   }
 
-  #if DISABLED(Z_PROBE_SLED)
+  #if HASNT(Z_PROBE_SLED)
     /**
      * G30: Do a single Z probe at the current XY
      */
@@ -4259,7 +4282,7 @@ inline void gcode_G92() {
       hasS = codenum > 0;
     }
 
-    if (!hasP && !hasS && *args != '\0')
+    if (HASNTP && HASNTS && *args != '\0')
       lcd_setstatus(args, true);
     else {
       LCD_MESSAGEPGM(MSG_USERWAIT);
@@ -5828,7 +5851,7 @@ inline void gcode_M226() {
 
 #endif // DOGLCD
 
-#if NUM_SERVOS > 0
+#if HAS(SERVO)
   /**
    * M280: Get or set servo position. P<index> S<angle>
    */
@@ -6095,7 +6118,7 @@ inline void gcode_M226() {
  */
 inline void gcode_M400() { st_synchronize(); }
 
-#if ENABLED(AUTO_BED_LEVELING_FEATURE) && DISABLED(Z_PROBE_SLED) && HAS(SERVO_ENDSTOPS)
+#if ENABLED(AUTO_BED_LEVELING_FEATURE) && HASNT(Z_PROBE_SLED) && HAS(SERVO_ENDSTOPS)
 
   /**
    * M401: Engage Z Servo endstop if available
@@ -6959,7 +6982,7 @@ void process_next_command() {
       #if ENABLED(AUTO_BED_LEVELING_FEATURE)
         case 29: // G29 Detailed Z-Probe, probes the bed at 3 or more points.
           gcode_G29(); gcode_M114(); break;
-        #if DISABLED(Z_PROBE_SLED)
+        #if HASNT(Z_PROBE_SLED)
           case 30: // G30 Single Z Probe
             gcode_G30(); break;
         #else // Z_PROBE_SLED
@@ -7204,7 +7227,7 @@ void process_next_command() {
           gcode_M250(); break;
       #endif // DOGLCD
 
-      #if NUM_SERVOS > 0
+      #if HAS(SERVO)
         case 280: // M280 - set servo position absolute. P: servo index, S: angle or microseconds
           gcode_M280(); break;
       #endif // NUM_SERVOS > 0

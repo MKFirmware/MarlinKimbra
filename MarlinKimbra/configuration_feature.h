@@ -1310,6 +1310,7 @@
  * Alligator Board support 16 or 32 only value                         *
  *                                                                     *
  ***********************************************************************/
+//#define USE_MICROSTEPS
 #define MICROSTEP_MODES {16, 16, 16, 16} // X Y Z E - [1,2,4,8,16,32]
 /***********************************************************************/
 
@@ -1320,9 +1321,10 @@
  *                                                                     *
  * Use it if you have low speed stepper driver                         *
  *                                                                     *
- * Uncomment STEPPER_HIGH_LOW_DELAY to enable this feature             *
+ * Uncomment STEPPER_HIGH_LOW to enable this feature                   *
  *                                                                     *
  ***********************************************************************/
+//#define STEPPER_HIGH_LOW
 //#define STEPPER_HIGH_LOW_DELAY 1u  // Delay in microseconds
 /***********************************************************************/
 

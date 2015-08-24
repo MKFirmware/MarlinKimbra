@@ -683,7 +683,7 @@ ISR(TIMER1_COMPA_vect) {
         STEP_START(e,E);
       #endif
 
-      #if EXIST(STEPPER_HIGH_LOW_DELAY) && STEPPER_HIGH_LOW_DELAY > 0
+      #if ENABLED(STEPPER_HIGH_LOW) && STEPPER_HIGH_LOW_DELAY > 0
         delayMicroseconds(STEPPER_HIGH_LOW_DELAY);
       #endif
 
