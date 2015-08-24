@@ -4,7 +4,7 @@
   By MagoKimbra
  */
  
-#include "elements.h"
+#include "base.h"
 #if ENABLED(FIRMWARE_TEST)
 #include "Marlin_main.h"
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)

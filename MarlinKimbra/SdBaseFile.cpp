@@ -18,7 +18,7 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "elements.h"
+#include "base.h"
 #if ENABLED(SDSUPPORT)
 #include "Marlin_main.h"
 #include <stdint.h>

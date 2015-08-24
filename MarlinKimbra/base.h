@@ -1,5 +1,5 @@
-#ifndef ELEMENTS_H
-#define ELEMENTS_H
+#ifndef BASE_H
+#define BASE_H
 
 #include "Arduino.h"
 #include "pins_arduino.h"

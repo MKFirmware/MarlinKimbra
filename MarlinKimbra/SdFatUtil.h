@@ -24,7 +24,7 @@
  * \file
  * \brief Useful utility functions.
  */
- #include "elements.h"
+ #include "base.h"
 #include "MarlinSerial.h"
 /** Store and print a string in flash memory.*/
 #define PgmPrint(x) SerialPrint_P(PSTR(x))

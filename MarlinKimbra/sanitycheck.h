@@ -1594,56 +1594,56 @@
   
   
   #if ENABLED(MKR4)
-    #if (EXTRUDERS == 2) && (DRIVER_EXTRUDERS == 1) && !PIN_EXIST(E0E1_CHOICE_PIN)
+    #if (EXTRUDERS == 2) && (DRIVER_EXTRUDERS == 1) && !PIN_EXISTS(E0E1_CHOICE_PIN)
       #error DEPENDENCY ERROR: You have to set E0E1_CHOICE_PIN to a valid pin if you enable MKR4 with 2 extruder and 1 driver
-    #elif (EXTRUDERS == 3) && (DRIVER_EXTRUDERS == 1) && (!PIN_EXIST(E0E1_CHOICE_PIN) || !PIN_EXIST(E0E2_CHOICE_PIN))
+    #elif (EXTRUDERS == 3) && (DRIVER_EXTRUDERS == 1) && (!PIN_EXISTS(E0E1_CHOICE_PIN) || !PIN_EXISTS(E0E2_CHOICE_PIN))
       #error DEPENDENCY ERROR: You have to set E0E1_CHOICE_PIN and E0E2_CHOICE_PIN to a valid pin if you enable MKR4 with 3 extruder and 1 driver
-    #elif (EXTRUDERS == 4) && (DRIVER_EXTRUDERS == 1) && (!PIN_EXIST(E0E1_CHOICE_PIN) || !PIN_EXIST(E0E2_CHOICE_PIN) || !PIN_EXIST(E0E3_CHOICE_PIN))
+    #elif (EXTRUDERS == 4) && (DRIVER_EXTRUDERS == 1) && (!PIN_EXISTS(E0E1_CHOICE_PIN) || !PIN_EXISTS(E0E2_CHOICE_PIN) || !PIN_EXISTS(E0E3_CHOICE_PIN))
       #error DEPENDENCY ERROR: You have to set E0E1_CHOICE_PIN, E0E2_CHOICE_PIN and E0E3_CHOICE_PIN to a valid pin if you enable MKR4 with 4 extruder and 1 driver
-    #elif (EXTRUDERS == 3) && (DRIVER_EXTRUDERS == 2) && !PIN_EXIST(E0E2_CHOICE_PIN)
+    #elif (EXTRUDERS == 3) && (DRIVER_EXTRUDERS == 2) && !PIN_EXISTS(E0E2_CHOICE_PIN)
       #error DEPENDENCY ERROR: You have to set E0E2_CHOICE_PIN to a valid pin if you enable MKR4 with 3 extruder and 2 driver
-    #elif (EXTRUDERS == 4) && (DRIVER_EXTRUDERS == 2) && (!PIN_EXIST(E0E1_CHOICE_PIN) || !PIN_EXIST(E1E3_CHOICE_PIN))
+    #elif (EXTRUDERS == 4) && (DRIVER_EXTRUDERS == 2) && (!PIN_EXISTS(E0E1_CHOICE_PIN) || !PIN_EXISTS(E1E3_CHOICE_PIN))
       #error DEPENDENCY ERROR: You have to set E0E2_CHOICE_PIN and E1E3_CHOICE_PIN to a valid pin if you enable MKR4 with 4 extruder and 2 driver
     #endif 
   #endif
 
-  #if ENABLED(NPR2) && !PIN_EXIST(E_MIN_PIN)
+  #if ENABLED(NPR2) && !PIN_EXISTS(E_MIN_PIN)
     #error DEPENDENCY ERROR: You have to set E_MIN_PIN to a valid pin if you enable NPR2
   #endif
 
-  #if ENABLED(LASERBEAM) && (!PIN_EXIST(LASER_PWR_PIN) ||  !PIN_EXIST(LASER_TTL_PIN)) 
+  #if ENABLED(LASERBEAM) && (!PIN_EXISTS(LASER_PWR_PIN) ||  !PIN_EXISTS(LASER_TTL_PIN)) 
     #error DEPENDENCY ERROR: You have to set LASER_PWR_PIN and LASER_TTL_PIN to a valid pin if you enable LASERBEAM
   #endif
 
-  #if ENABLED(FILAMENT_RUNOUT_SENSOR) && !PIN_EXIST(FILRUNOUT_PIN)
+  #if ENABLED(FILAMENT_RUNOUT_SENSOR) && !PIN_EXISTS(FILRUNOUT_PIN)
     #error DEPENDENCY ERROR: You have to set FILRUNOUT_PIN to a valid pin if you enable FILAMENT_RUNOUT_SENSOR
   #endif
 
-  #if ENABLED(FILAMENT_SENSOR) && !PIN_EXIST(FILWIDTH_PIN)
+  #if ENABLED(FILAMENT_SENSOR) && !PIN_EXISTS(FILWIDTH_PIN)
     #error DEPENDENCY ERROR: You have to set FILWIDTH_PIN to a valid pin if you enable FILAMENT_SENSOR
   #endif
 
-  #if ENABLED(POWER_CONSUMPTION) && !PIN_EXIST(POWER_CONSUMPTION_PIN)
+  #if ENABLED(POWER_CONSUMPTION) && !PIN_EXISTS(POWER_CONSUMPTION_PIN)
     #error DEPENDENCY ERROR: You have to set POWER_CONSUMPTION_PIN to a valid pin if you enable POWER_CONSUMPTION
   #endif
 
-  #if ENABLED(PHOTOGRAPH) && !PIN_EXIST(PHOTOGRAPH_PIN)
+  #if ENABLED(PHOTOGRAPH) && !PIN_EXISTS(PHOTOGRAPH_PIN)
     #error DEPENDENCY ERROR: You have to set PHOTOGRAPH_PIN to a valid pin if you enable PHOTOGRAPH
   #endif
 
-  #if ENABLED(CHDK) && !PIN_EXIST(CHDK_PIN)
+  #if ENABLED(CHDK) && !PIN_EXISTS(CHDK_PIN)
     #error DEPENDENCY ERROR: You have to set CHDK_PIN to a valid pin if you enable CHDK
   #endif
 
-  #if ENABLED(CONTROLLERFAN) && !PIN_EXIST(CONTROLLERFAN_PIN)
+  #if ENABLED(CONTROLLERFAN) && !PIN_EXISTS(CONTROLLERFAN_PIN)
     #error DEPENDENCY ERROR: You have to set CONTROLLERFAN_PIN to a valid pin if you enable CONTROLLERFAN
   #endif
 
-  #if ENABLED(EXTRUDER_AUTO_FAN) && !PIN_EXIST(EXTRUDER_0_AUTO_FAN_PIN) && !PIN_EXIST(EXTRUDER_1_AUTO_FAN_PIN) && !PIN_EXIST(EXTRUDER_2_AUTO_FAN_PIN) && !PIN_EXIST(EXTRUDER_3_AUTO_FAN_PIN)
+  #if ENABLED(EXTRUDER_AUTO_FAN) && !PIN_EXISTS(EXTRUDER_0_AUTO_FAN_PIN) && !PIN_EXISTS(EXTRUDER_1_AUTO_FAN_PIN) && !PIN_EXISTS(EXTRUDER_2_AUTO_FAN_PIN) && !PIN_EXISTS(EXTRUDER_3_AUTO_FAN_PIN)
     #error DEPENDENCY ERROR: You have to set at least one EXTRUDER_?_AUTO_FAN_PIN to a valid pin if you enable EXTRUDER_AUTO_FAN
   #endif
 
-  #if ENABLED(X2_IS_TMC) && (!PIN_EXIST(X2_ENABLE_PIN) || !PIN_EXIST(X2_STEP_PIN) || !PIN_EXIST(X2_DIR_PIN))
+  #if ENABLED(X2_IS_TMC) && (!PIN_EXISTS(X2_ENABLE_PIN) || !PIN_EXISTS(X2_STEP_PIN) || !PIN_EXISTS(X2_DIR_PIN))
     #error DEPENDENCY ERROR: You have to set X2_ENABLE_PIN, X2_STEP_PIN and X2_DIR_PIN to a valid pin if you enable X2_IS_TMC
   #endif
     
@@ -1651,7 +1651,7 @@
     #error DEPENDENCY ERROR: You have to set at least one SERVO?_PIN to a valid pin if you enable ENABLE_SERVOS
   #endif
   
-  #if ENABLED(Z_PROBE_SLED) !PIN_EXIST(SLED_PIN)
+  #if ENABLED(Z_PROBE_SLED) && !PIN_EXISTS(SLED_PIN)
     #error DEPENDENCY ERROR: You have to set SLED_PIN to a valid pin if you enable Z_PROBE_SLED
   #endif
 

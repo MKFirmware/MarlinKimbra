@@ -22,7 +22,7 @@
 /* The timer calculations of this module informed by the 'RepRap cartesian firmware' by Zack Smith
    and Philipp Tiefenbacher. */
 
-#include "elements.h"
+#include "base.h"
 #include "Marlin_main.h"
 
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)

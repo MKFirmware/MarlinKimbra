@@ -27,11 +27,11 @@
  *  - http://reprap.org/pipermail/reprap-dev/2011-May/003323.html
  */
 
-#include "elements.h"
+#include "base.h"
 
 #include "Marlin_main.h"
 #include "ultralcd.h"
-#include "elements.h"
+#include "base.h"
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
   #include "vector_3.h"
   #if ENABLED(AUTO_BED_LEVELING_GRID)
@@ -4282,7 +4282,7 @@ inline void gcode_G92() {
       hasS = codenum > 0;
     }
 
-    if (HASNTP && HASNTS && *args != '\0')
+    if (!hasP && !hasS && *args != '\0')
       lcd_setstatus(args, true);
     else {
       LCD_MESSAGEPGM(MSG_USERWAIT);
@@ -8087,7 +8087,9 @@ void kill(const char *lcd_msg) {
   sei();   // enable interrupts
   for (int i = 5; i--; lcd_update()) delay(200); // Wait a short time
   cli();   // disable interrupts
-  suicide();
+  #if HAS(SUICIDE)
+    suicide();
+  #endif
   while(1) { /* Intentionally left empty */ } // Wait for reset
 }
 

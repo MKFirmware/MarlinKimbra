@@ -20,7 +20,7 @@
 
 #ifndef Sd2Card_h
 #define Sd2Card_h
-#include "elements.h"
+#include "base.h"
 #if ENABLED(SDSUPPORT)
 
 /**

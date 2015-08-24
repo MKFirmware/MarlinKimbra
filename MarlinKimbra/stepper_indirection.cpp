@@ -19,7 +19,7 @@
   along with Marlin.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "elements.h"
+#include "base.h"
 
 #include "stepper_indirection.h"
 #if ENABLED(HAVE_TMCDRIVER)
