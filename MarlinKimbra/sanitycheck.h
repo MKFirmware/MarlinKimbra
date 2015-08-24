@@ -1592,6 +1592,78 @@
     #error CONFLICT ERROR: CHDK and PHOTOGRAPH are incompatible.
   #endif
   
+  #if !PIN_EXISTS(X_STEP)
+    #error DEPENDENCY ERROR: X_STEP_PIN is not defined for your board. You have to define it yourself.
+  #endif
+  #if !PIN_EXISTS(X_DIR)
+    #error DEPENDENCY ERROR: X_DIR_PIN is not defined for your board. You have to define it yourself.
+  #endif
+  #if !PIN_EXISTS(X_ENABLE)
+    #error DEPENDENCY ERROR: X_ENABLE_PIN is not defined for your board. You have to define it yourself.
+  #endif
+  #if !PIN_EXISTS(Y_STEP)
+    #error DEPENDENCY ERROR: Y_STEP_PIN is not defined for your board. You have to define it yourself.
+  #endif
+  #if !PIN_EXISTS(Y_DIR)
+    #error DEPENDENCY ERROR: Y_DIR_PIN is not defined for your board. You have to define it yourself.
+  #endif
+  #if !PIN_EXISTS(Y_ENABLE)
+    #error DEPENDENCY ERROR: Y_ENABLE_PIN is not defined for your board. You have to define it yourself.
+  #endif
+  #if !PIN_EXISTS(Z_STEP)
+    #error DEPENDENCY ERROR: Z_STEP_PIN is not defined for your board. You have to define it yourself.
+  #endif
+  #if !PIN_EXISTS(Z_DIR)
+    #error DEPENDENCY ERROR: Z_DIR_PIN is not defined for your board. You have to define it yourself.
+  #endif
+  #if !PIN_EXISTS(Z_ENABLE)
+    #error DEPENDENCY ERROR: Z_ENABLE_PIN is not defined for your board. You have to define it yourself.
+  #endif
+  
+  #if DRIVER_EXTRUDERS > 0
+    #if !PIN_EXISTS(E0_STEP)
+      #error DEPENDENCY ERROR: E0_STEP_PIN is not defined for your board. You have to define it yourself.
+    #endif
+    #if !PIN_EXISTS(E0_DIR)
+      #error DEPENDENCY ERROR: E0_DIR_PIN is not defined for your board. You have to define it yourself.
+    #endif
+    #if !PIN_EXISTS(E0_ENABLE)
+      #error DEPENDENCY ERROR: E0_ENABLE_PIN is not defined for your board. You have to define it yourself.
+    #endif
+    #if DRIVER_EXTRUDERS > 1
+      #if !PIN_EXISTS(E1_STEP)
+        #error DEPENDENCY ERROR: E1_STEP_PIN is not defined for your board. You have to define it yourself.
+      #endif
+      #if !PIN_EXISTS(E1_DIR)
+        #error DEPENDENCY ERROR: E1_DIR_PIN is not defined for your board. You have to define it yourself.
+      #endif
+      #if !PIN_EXISTS(E1_ENABLE)
+        #error DEPENDENCY ERROR: E1_ENABLE_PIN is not defined for your board. You have to define it yourself.
+      #endif
+      #if DRIVER_EXTRUDERS > 2
+        #if !PIN_EXISTS(E2_STEP)
+          #error DEPENDENCY ERROR: E2_STEP_PIN is not defined for your board. You have to define it yourself.
+        #endif
+        #if !PIN_EXISTS(E2_DIR)
+          #error DEPENDENCY ERROR: E2_DIR_PIN is not defined for your board. You have to define it yourself.
+        #endif
+        #if !PIN_EXISTS(E2_ENABLE)
+          #error DEPENDENCY ERROR: E2_ENABLE_PIN is not defined for your board. You have to define it yourself.
+        #endif
+        #if DRIVER_EXTRUDERS > 3
+          #if !PIN_EXISTS(E3_STEP)
+            #error DEPENDENCY ERROR: E3_STEP_PIN is not defined for your board. You have to define it yourself.
+          #endif
+          #if !PIN_EXISTS(E3_DIR)
+            #error DEPENDENCY ERROR: E3_DIR_PIN is not defined for your board. You have to define it yourself.
+          #endif
+          #if !PIN_EXISTS(E3_ENABLE)
+            #error DEPENDENCY ERROR: E3_ENABLE_PIN is not defined for your board. You have to define it yourself.
+          #endif
+        #endif
+      #endif
+    #endif
+  #endif
   
   #if ENABLED(MKR4)
     #if (EXTRUDERS == 2) && (DRIVER_EXTRUDERS == 1) && !PIN_EXISTS(E0E1_CHOICE)

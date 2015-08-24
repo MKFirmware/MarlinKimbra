@@ -1,4 +1,4 @@
-### Version 5.0.0
+### Version 4.2.0
 * New configuration systems (Now you can create a separate file with all configuration and use it in you FW update)
 * New namings for file
 * Added more documentation inside configuration file
