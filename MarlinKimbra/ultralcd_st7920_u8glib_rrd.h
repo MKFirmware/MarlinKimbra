@@ -1,8 +1,6 @@
 #ifndef ULCDST7920_H
 #define ULCDST7920_H
 
-#include "Marlin.h"
-
 #if ENABLED(U8GLIB_ST7920)
 
 //set optimization so ARDUINO optimizes this file

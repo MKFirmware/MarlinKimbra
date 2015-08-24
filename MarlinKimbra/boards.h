@@ -1,6 +1,7 @@
-#ifndef BOARDS_H
-#define BOARDS_H
+#ifndef BOARD_H
+#define BOARD_H
 
+// Macros for board type
 #define BOARD_UNKNOWN -1
 
 #define BOARD_GEN7_CUSTOM       10   // Gen7 custom (Alfons3 Version) "https://github.com/Alfons3/Generation_7_Electronics"
@@ -68,4 +69,4 @@
 
 #define MB(board) (MOTHERBOARD==BOARD_##board)
 
-#endif //__BOARDS_H
+#endif

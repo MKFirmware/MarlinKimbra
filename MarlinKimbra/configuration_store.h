@@ -1,7 +1,7 @@
 #ifndef CONFIGURATION_STORE_H
 #define CONFIGURATION_STORE_H
 
-#include "Configuration.h"
+#include "base.h"
 
 void Config_ResetDefault();
 void ConfigSD_ResetDefault();
@@ -24,14 +24,14 @@ void ConfigSD_ResetDefault();
 
 #if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
   static const char *cfgSD_KEY[] = { //Keep this in lexicographical order for better search performance(O(Nlog2(N)) insted of O(N*N)) (if you don't keep this sorted, the algorithm for find the key index won't work, keep attention.)
-    #if HAS_POWER_CONSUMPTION_SENSOR
+    #if HAS(POWER_CONSUMPTION_SENSOR)
       "PWR",
     #endif
     "TME",
   };
 
   enum cfgSD_ENUM {   //This need to be in the same order as cfgSD_KEY
-    #if HAS_POWER_CONSUMPTION_SENSOR
+    #if HAS(POWER_CONSUMPTION_SENSOR)
       SD_CFG_PWR,
     #endif
     SD_CFG_TME,

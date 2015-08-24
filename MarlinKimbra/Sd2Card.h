@@ -18,11 +18,11 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "Marlin.h"
-#if ENABLED(SDSUPPORT)
-
 #ifndef Sd2Card_h
 #define Sd2Card_h
+#include "base.h"
+#if ENABLED(SDSUPPORT)
+
 /**
  * \file
  * \brief Sd2Card class for V2 SD/SDHC cards

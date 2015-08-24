@@ -1,4 +1,5 @@
-#include "Configuration.h"
+
+#include "base.h"
 
 #if ENABLED(DIGIPOT_I2C)
 
@@ -6,14 +7,7 @@
 #include "utility/twi.h"
 #include "Wire.h"
 
-// Settings for the I2C based DIGIPOT (MCP4451) on Azteeg X3 Pro
-#if MB(5DPRINT)
-  #define DIGIPOT_I2C_FACTOR 117.96
-  #define DIGIPOT_I2C_MAX_CURRENT 1.736
-#else
-  #define DIGIPOT_I2C_FACTOR 106.7
-  #define DIGIPOT_I2C_MAX_CURRENT 2.5
-#endif
+#include "digipot_mcp4451.h"
 
 static byte current_to_wiper(float current) {
   return byte(ceil(float((DIGIPOT_I2C_FACTOR*current))));

@@ -16,8 +16,8 @@
   License along with this library; if not, write to the Free Software
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
-#include <math.h>
-#include "Marlin.h"
+
+#include "base.h"
 
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
 #include "vector_3.h"
@@ -130,5 +130,4 @@ void matrix_3x3::debug(const char title[]) {
     ECHO_E;
   }
 }
-
-#endif // AUTO_BED_LEVELING_FEATURE
+#endif

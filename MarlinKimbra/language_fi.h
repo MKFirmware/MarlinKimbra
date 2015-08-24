@@ -61,9 +61,9 @@
 #define MSG_FAN_SPEED                       "Tuul. nopeus"
 #define MSG_FLOW                            "Virtaus"
 #define MSG_CONTROL                         "Kontrolli"
-#define MSG_MIN                             STR_THERMOMETER " Min"
-#define MSG_MAX                             STR_THERMOMETER " Max"
-#define MSG_FACTOR                          STR_THERMOMETER " Kerr"
+#define MSG_MIN                             LCD_STR_THERMOMETER " Min"
+#define MSG_MAX                             LCD_STR_THERMOMETER " Max"
+#define MSG_FACTOR                          LCD_STR_THERMOMETER " Kerr"
 #define MSG_IDLEOOZING                      "Anti oozing"
 #define MSG_AUTOTEMP                        "Autotemp"
 #define MSG_ON                              "On "
@@ -143,7 +143,7 @@
 #define MSG_ERR_MINTEMP                     "Err: MINTEMP"
 #define MSG_ERR_MAXTEMP_BED                 "Err: MAXTEMP BED"
 
-#ifdef DELTA
+#if MECH(DELTA)
   #define MSG_DELTA_CALIBRATE               "Delta Kalibrointi"
   #define MSG_DELTA_CALIBRATE_X             "Kalibroi X"
   #define MSG_DELTA_CALIBRATE_Y             "Kalibroi Y"
@@ -151,7 +151,7 @@
   #define MSG_DELTA_CALIBRATE_CENTER        "Kalibroi Center"
 #endif // DELTA
 
-#ifdef SCARA
+#if MECH(SCARA)
   #define MSG_XSCALE                        "X Scale"
   #define MSG_YSCALE                        "Y Scale"
 #endif
@@ -164,7 +164,7 @@
 #define MSG_PURGE_XMM                       "Purge " STRINGIFY(LCD_PURGE_LENGTH) "mm"
 #define MSG_RETRACT_XMM                     "Retract " STRINGIFY(LCD_RETRACT_LENGTH) "mm"
 
-#ifdef FIRMWARE_TEST
+#if ENABLED(FIRMWARE_TEST)
   #define MSG_FWTEST_YES                    "Put the Y command to go next"
   #define MSG_FWTEST_NO                     "Put the N command to go next"
   #define MSG_FWTEST_YES_NO                 "Put the Y or N command to go next"

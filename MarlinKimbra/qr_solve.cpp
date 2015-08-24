@@ -1,10 +1,8 @@
+
+#include "base.h"
+
+#if ENABLED(AUTO_BED_LEVELING_FEATURE) && ENABLED(AUTO_BED_LEVELING_GRID)
 #include "qr_solve.h"
-
-#if ENABLED(AUTO_BED_LEVELING_GRID)
-
-#include <stdlib.h>
-#include <math.h>
-
 //# include "r8lib.h"
 
 int i4_min ( int i1, int i2 )

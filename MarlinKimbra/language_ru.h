@@ -61,9 +61,9 @@
 #define MSG_FAN_SPEED                       "Куллер:"
 #define MSG_FLOW                            "Поток:"
 #define MSG_CONTROL                         "Настройки"
-#define MSG_MIN                             " " STR_THERMOMETER "Минимум"
-#define MSG_MAX                             " " STR_THERMOMETER "Максимум"
-#define MSG_FACTOR                          " " STR_THERMOMETER "Фактор"
+#define MSG_MIN                             " " LCD_STR_THERMOMETER "Минимум"
+#define MSG_MAX                             " " LCD_STR_THERMOMETER "Максимум"
+#define MSG_FACTOR                          " " LCD_STR_THERMOMETER "Фактор"
 #define MSG_IDLEOOZING                      "Anti oozing"
 #define MSG_AUTOTEMP                        "Autotemp"
 #define MSG_ON                              "Вкл."
@@ -143,7 +143,7 @@
 #define MSG_ERR_MINTEMP                     "Err: MINTEMP"
 #define MSG_ERR_MAXTEMP_BED                 "Err: MAXTEMP BED"
 
-#ifdef DELTA
+#if MECH(DELTA)
   #define MSG_DELTA_CALIBRATE               "Delta Calibration"
   #define MSG_DELTA_CALIBRATE_X             "Calibrate X"
   #define MSG_DELTA_CALIBRATE_Y             "Calibrate Y"
@@ -151,7 +151,7 @@
   #define MSG_DELTA_CALIBRATE_CENTER        "Calibrate Center"
 #endif // DELTA
 
-#ifdef SCARA
+#if MECH(SCARA)
   #define MSG_XSCALE                        "X Scale"
   #define MSG_YSCALE                        "Y Scale"
 #endif
@@ -164,7 +164,7 @@
 #define MSG_PURGE_XMM                       "Purge " STRINGIFY(LCD_PURGE_LENGTH) "mm"
 #define MSG_RETRACT_XMM                     "Retract " STRINGIFY(LCD_RETRACT_LENGTH) "mm"
 
-#ifdef FIRMWARE_TEST
+#if ENABLED(FIRMWARE_TEST)
   #define MSG_FWTEST_YES                    "Put the Y command to go next"
   #define MSG_FWTEST_NO                     "Put the N command to go next"
   #define MSG_FWTEST_YES_NO                 "Put the Y or N command to go next"

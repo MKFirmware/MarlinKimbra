@@ -1,6 +1,5 @@
-#include "Configuration.h"
-
-#if ENABLED(AUTO_BED_LEVELING_GRID)
+#ifndef QR_SOLVE_H
+#define QR_SOLVE_H
 
 void daxpy ( int n, double da, double dx[], int incx, double dy[], int incy );
 double ddot ( int n, double dx[], int incx, double dy[], int incy );

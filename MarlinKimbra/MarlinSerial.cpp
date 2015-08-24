@@ -20,7 +20,8 @@
   Modified 28 September 2010 by Mark Sproul
 */
 
-#include "Marlin.h"
+#include "base.h"
+
 #include "MarlinSerial.h"
 
 #ifndef USBCON
@@ -279,7 +280,6 @@ void MarlinSerial::printFloat(double number, uint8_t digits) {
   } 
 }
 // Preinstantiate Objects //////////////////////////////////////////////////////
-
 
 MarlinSerial customizedSerial;
 

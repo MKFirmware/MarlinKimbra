@@ -1,11 +1,9 @@
 #ifndef LANGUAGE_H
 #define LANGUAGE_H
 
-#include "Configuration.h"
-
 // NOTE: IF YOU CHANGE LANGUAGE FILES OR MERGE A FILE WITH CHANGES
 //
-//   ==> ALWAYS TRY TO COMPILE MARLIN WITH/WITHOUT "ULTIPANEL" / "ULTRALCD" / "SDSUPPORT" #define IN "Configuration.h"
+//   ==> ALWAYS TRY TO COMPILE MARLIN WITH/WITHOUT "ULTIPANEL" / "ULTRALCD" / "SDSUPPORT" #define IN "Configuration_Basic.h"
 //   ==> ALSO TRY ALL AVAILABLE "LANGUAGE_CHOICE" OPTIONS
 // See also documentation/LCDLanguageFont.md
 
@@ -25,11 +23,9 @@
 // 13 Basque-Euskera
 // 14 Portuguese (Brazil)
 
-#ifndef LANGUAGE_CHOICE
+#if NOTEXIST(LANGUAGE_CHOICE)
   #define LANGUAGE_CHOICE 7  // Pick your language from the list above
 #endif
-
-#include "Default_Version.h"
 
 #define PROTOCOL_VERSION "1.0"
 
@@ -49,25 +45,21 @@
 #elif MB(SAV_MKI)
   #define MACHINE_NAME "SAV MkI"
   #define SOURCE_CODE_URL "https://github.com/fmalpartida/Marlin/tree/SAV-MkI-config"
-#elif !defined(MACHINE_NAME)
+#elif NOTEXIST(MACHINE_NAME)
   #define MACHINE_NAME "3D Printer"
 #endif
 
-#ifdef CUSTOM_MACHINE_NAME
+#if EXIST(CUSTOM_MACHINE_NAME)
   #undef MACHINE_NAME
   #define MACHINE_NAME CUSTOM_MACHINE_NAME
 #endif
 
-#ifndef SOURCE_CODE_URL
+#if NOTEXIST(SOURCE_CODE_URL)
   #define SOURCE_CODE_URL "https://github.com/MagoKimbra/MarlinKimbra"
 #endif
 
-#ifndef BUILD_VERSION
+#if NOTEXIST(BUILD_VERSION)
   #define BUILD_VERSION "V4; MarlinKimbra for 4 extruder"
-#endif
-
-#ifndef MACHINE_UUID
-  #define MACHINE_UUID "00000000-0000-0000-0000-000000000000"
 #endif
 
 
@@ -235,7 +227,7 @@
 #define MSG_BED_LEVELLING_Z                 " Z: "
 
 // LCD Menu Messages
-#if !(defined( DISPLAY_CHARSET_HD44780_JAPAN ) || defined( DISPLAY_CHARSET_HD44780_WESTERN ) || defined( DISPLAY_CHARSET_HD44780_CYRILLIC ))
+#if !(ENABLED( DISPLAY_CHARSET_HD44780_JAPAN ) || ENABLED( DISPLAY_CHARSET_HD44780_WESTERN ) || ENABLED( DISPLAY_CHARSET_HD44780_CYRILLIC ))
   #define DISPLAY_CHARSET_HD44780_JAPAN
 #endif
 

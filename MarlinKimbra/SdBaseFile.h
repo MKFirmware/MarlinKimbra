@@ -17,16 +17,12 @@
  * along with the Arduino SdFat Library.  If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#include "Marlin.h"
-#if ENABLED(SDSUPPORT)
-
 #ifndef SdBaseFile_h
 #define SdBaseFile_h
 /**
  * \file
  * \brief SdBaseFile class
  */
-#include "Marlin.h"
 #include "SdFatConfig.h"
 #include "SdVolume.h"
 //------------------------------------------------------------------------------
@@ -364,7 +360,7 @@ class SdBaseFile {
     uint8_t width, bool printSlash);
 //------------------------------------------------------------------------------
 // Deprecated functions  - suppress cpplint warnings with NOLINT comment
-#if ALLOW_DEPRECATED_FUNCTIONS && !defined(DOXYGEN)
+#if ALLOW_DEPRECATED_FUNCTIONS && DISABLED(DOXYGEN)
  public:
   /** \deprecated Use:
    * bool contiguousRange(uint32_t* bgnBlock, uint32_t* endBlock);
@@ -479,5 +475,4 @@ class SdBaseFile {
 #endif  // ALLOW_DEPRECATED_FUNCTIONS
 };
 
-#endif  // SdBaseFile_h
 #endif

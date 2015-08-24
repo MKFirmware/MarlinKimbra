@@ -1,10 +1,7 @@
-#include "Marlin.h"
-
+#include "base.h"
 #if ENABLED(USE_WATCHDOG)
 #include <avr/wdt.h>
-
-#include "watchdog.h"
-#include "ultralcd.h"
+#include "whatchdog.h"
 
 //===========================================================================
 //============================ private variables ============================
@@ -48,4 +45,4 @@ ISR(WDT_vect) {
 }
 #endif // RESET_MANUAL
 
-#endif // USE_WATCHDOG
+#endif

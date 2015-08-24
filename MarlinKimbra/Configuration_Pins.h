@@ -1,6 +1,7 @@
-//============================================================================
-//==================== Change PIN width Configurator Tool ====================
-//============================================================================
+#ifndef CONFIGURATION_PINS_H
+#define CONFIGURATION_PINS_H
+
+//=========================== BASIC ==============================
 
 //X axis pins
 #define X_STEP_PIN    ORIG_X_STEP_PIN
@@ -59,10 +60,66 @@
 //FAN pin
 #define FAN_PIN       ORIG_FAN_PIN
 
-//=========================== START YOUR CHANGE ==============================
-// Example for change X_MIN_PIN
-// #undef X_MIN_PIN
-// #define X_MIN_PIN newpin
+//============================================================================
 
+//=========================== FEATURE ==============================
+
+#if ENABLED(MKR4)
+  #define E0E1_CHOICE_PIN    -1
+  #define E0E2_CHOICE_PIN    -1
+  #define E0E3_CHOICE_PIN    -1
+  #define E1E3_CHOICE_PIN    -1
+#endif //MKR4
+
+#if ENABLED(NPR2)
+  #define E_MIN_PIN           -1
+#endif
+
+#if ENABLED(LASERBEAM)
+  #define LASER_PWR_PIN       -1
+  #define LASER_TTL_PIN       -1
+#endif
+
+#if ENABLED(FILAMENT_RUNOUT_SENSOR)
+  #define FILRUNOUT_PIN       -1
+#endif
+
+#if ENABLED(FILAMENT_SENSOR)
+  #define FILWIDTH_PIN        -1     // ANALOG NUMBERING
+#endif
+
+#if ENABLED(POWER_CONSUMPTION)
+  #define POWER_CONSUMPTION_PIN -1   // ANALOG NUMBERING
+#endif
+
+#if ENABLED(PHOTOGRAPH)
+  #define PHOTOGRAPH_PIN -1
+#endif
+
+#if ENABLED(CHDK)
+  #define CHDK_PIN -1
+#endif
+
+#if ENABLED(CONTROLLERFAN)
+  #define CONTROLLERFAN_PIN -1
+#endif
+
+#if ENABLED(EXTRUDER_AUTO_FAN)
+  #define EXTRUDER_0_AUTO_FAN_PIN -1
+  #define EXTRUDER_1_AUTO_FAN_PIN -1
+  #define EXTRUDER_2_AUTO_FAN_PIN -1
+  #define EXTRUDER_3_AUTO_FAN_PIN -1
+#endif
+
+#if ENABLED(X2_IS_TMC)
+  #define X2_ENABLE_PIN -1
+  #define X2_STEP_PIN -1
+  #define X2_DIR_PIN -1
+#endif
+
+#if ENABLED(Z_PROBE_SLED)
+  #define SLED_PIN -1
+#endif
 
 //============================================================================
+#endif

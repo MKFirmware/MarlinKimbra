@@ -163,7 +163,7 @@
 #define MSG_DEBUG_DRYRUN                    "DEBUG STAMPA A VUOTO"
 
 // Calibrate Delta
-#ifdef DELTA
+#if MECH(DELTA)
   #define MSG_DELTA_CALIBRATE               "Calibraz. Delta"
   #define MSG_DELTA_CALIBRATE_X             "Calibra X"
   #define MSG_DELTA_CALIBRATE_Y             "Calibra Y"
@@ -172,7 +172,7 @@
 #endif // DELTA
 
 // Scara
-#ifdef SCARA
+#if MECH(SCARA)
   #define MSG_XSCALE                        "X Scale"
   #define MSG_YSCALE                        "Y Scale"
 #endif
@@ -194,7 +194,7 @@
 #define MSG_INVALID_POS_SLOT                "Slot invalido, slot totali: "
 
 // Firmware Test
-#ifdef FIRMWARE_TEST
+#if ENABLED(FIRMWARE_TEST)
   #define MSG_FWTEST_YES                    "Dai il comando Y per andare avanti"
   #define MSG_FWTEST_NO                     "Dai il comando N per andare avanti"
   #define MSG_FWTEST_YES_NO                 "Dai il comando Y o N per andare avanti"
