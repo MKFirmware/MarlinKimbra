@@ -1136,6 +1136,27 @@ long st_get_position(uint8_t axis) {
 
 float st_get_position_mm(AxisEnum axis) { return st_get_position(axis) / axis_steps_per_unit[axis]; }
 
+
+void enable_all_steppers() {
+  enable_x();
+  enable_y();
+  enable_z();
+  enable_e0();
+  enable_e1();
+  enable_e2();
+  enable_e3();
+}
+
+void disable_all_steppers() {
+  disable_x();
+  disable_y();
+  disable_z();
+  disable_e0();
+  disable_e1();
+  disable_e2();
+  disable_e3();
+}
+
 void finishAndDisableSteppers() {
   st_synchronize();
   disable_all_steppers();

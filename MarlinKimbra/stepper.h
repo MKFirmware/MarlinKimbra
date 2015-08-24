@@ -21,6 +21,17 @@
 #ifndef STEPPER_H
 #define STEPPER_H 
 
+
+/**
+ * Axis indices as enumerated constants
+ *
+ * A_AXIS and B_AXIS are used by COREXY printers
+ * X_HEAD and Y_HEAD is used for systems that don't have a 1:1 relationship between X_AXIS and X Head movement, like CoreXY bots.
+ */
+enum AxisEnum {X_AXIS=0, A_AXIS=0, Y_AXIS=1, B_AXIS=1, Z_AXIS=2, C_AXIS=2, E_AXIS=3, X_HEAD=4, Y_HEAD=5, Z_HEAD=5};
+
+enum EndstopEnum {X_MIN=0, Y_MIN=1, Z_MIN=2, Z_PROBE=3, X_MAX=4, Y_MAX=5, Z_MAX=6, Z2_MIN=7, Z2_MAX=8};
+
 #if DRIVER_EXTRUDERS > 3
   #define E_STEP_WRITE(v) { if(current_block->active_driver == 3) { E3_STEP_WRITE(v); } else { if(current_block->active_driver == 2) { E2_STEP_WRITE(v); } else { if(current_block->active_driver == 1) { E1_STEP_WRITE(v); } else { E0_STEP_WRITE(v); }}}}
   #define NORM_E_DIR() { if(current_block->active_driver == 3) { E3_DIR_WRITE( !INVERT_E3_DIR); } else { if(current_block->active_driver == 2) { E2_DIR_WRITE(!INVERT_E2_DIR); } else { if(current_block->active_driver == 1) { E1_DIR_WRITE(!INVERT_E1_DIR); } else { E0_DIR_WRITE(!INVERT_E0_DIR); }}}}
@@ -77,6 +88,8 @@ void enable_endstops(bool check); // Enable/disable endstop checking
 
 void checkStepperErrors(); //Print errors detected by the stepper
 
+void enable_all_steppers();
+void disable_all_steppers();
 void finishAndDisableSteppers();
 
 extern block_t *current_block;  // A pointer to the block currently being traced

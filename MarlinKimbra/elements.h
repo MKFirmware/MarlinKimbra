@@ -1,6 +1,6 @@
 #ifndef ELEMENTS_H
 #define ELEMENTS_H
-#warning called
+
 #include "Arduino.h"
 #include "pins_arduino.h"
 
@@ -27,10 +27,29 @@
 #include "macros.h"
 #include "boards.h"
 #include "mechanics.h"
-#include "configurations.h"
+
+#include "Configuration_Version.h"
+#include "Configuration_Basic.h"
+#include "Configuration_Overall.h"
+
+#if MECH(CARTESIAN)
+  #include "Configuration_Cartesian.h"
+#elif MECH(COREXY)
+  #include "Configuration_Core.h"
+#elif MECH(COREXZ)
+  #include "Configuration_Core.h"
+#elif MECH(DELTA)
+  #include "Configuration_Delta.h"
+#elif MECH(SCARA)
+  #include "Configuration_Scara.h"
+#endif
+
+#include "Configuration_Feature.h"
+#include "Configuration_Overall.h"
+
 #include "language.h"
-#include "dependencies.h"
 #include "conditionals.h"
+#include "dependencies.h"
 #include "conflicts.h"
 
 #include "comunication.h"

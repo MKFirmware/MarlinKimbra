@@ -4,6 +4,8 @@
   #include "vector_3.h"
 #endif
 #include "planner.h"
+#include "stepper_indirection.h"
+#include "stepper.h"
 #include "temperature.h"
 #include "ultralcd.h"
 #include "configuration_store.h"

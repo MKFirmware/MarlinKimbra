@@ -52,12 +52,6 @@
 // Bed Printer radius
 #define PRINTER_RADIUS 75                   // mm
 
-// Radius for probe
-#define DELTA_PROBABLE_RADIUS (PRINTER_RADIUS)
-
-// Effective horizontal distance bridged by diagonal push rods.
-#define DEFAULT_DELTA_RADIUS (DELTA_SMOOTH_ROD_OFFSET-DELTA_EFFECTOR_OFFSET-DELTA_CARRIAGE_OFFSET)
-
 // Uncomment to enable autocalibration debug messages
 #define DEBUG_MESSAGES
 

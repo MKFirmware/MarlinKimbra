@@ -1531,6 +1531,8 @@
 #define N_ARC_CORRECTION 25
 
 //#define M100_FREE_MEMORY_WATCHER // Uncomment to add the M100 Free Memory Watcher for debug purpose
+#define M100_FREE_MEMORY_DUMPER       // Comment out to remove Dump sub-command
+#define M100_FREE_MEMORY_CORRUPTOR    // Comment out to remove Corrupt sub-command
 /****************************************************************************************/
 
 

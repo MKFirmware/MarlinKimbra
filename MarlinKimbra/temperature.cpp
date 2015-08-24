@@ -20,6 +20,9 @@
 
 #include "elements.h"
 #include "Marlin_main.h"
+#if ENABLED(AUTO_BED_LEVELING_FEATURE)
+  #include "vector_3.h"
+#endif
 #include "ultralcd.h"
 #include "planner.h"
 #include "stepper_indirection.h"
@@ -867,7 +870,7 @@ static void updateTemperaturesFromRawValues() {
 }
 
 
-#if HAS(FILAMENT_SENSOR)
+#if ENABLED(FILAMENT_SENSOR)
 
   // Convert raw Filament Width to millimeters
   float analog2widthFil() {

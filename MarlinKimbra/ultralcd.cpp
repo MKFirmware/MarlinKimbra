@@ -2391,6 +2391,7 @@ char *ftostr52(const float &x) {
 #include "stepper_indirection.h"
 #include "stepper.h"
 #include "configuration_store.h"
+#include "ultralcd.h"
 #include "Nextion.h"
 
 bool NextionON    = false;
