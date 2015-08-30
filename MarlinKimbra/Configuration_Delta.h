@@ -1,13 +1,12 @@
-
- * Pins-settings can be found in "Configuration_Pins.h"#ifndef CONFIGURATION_MECHANISM
+#ifndef CONFIGURATION_MECHANISM
 #define CONFIGURATION_MECHANISM
 #define KNOWN_MECH 1
 
 /*
  * This configuration file contains mechanism settings for cartesian printer.
  *
- * - Delta settings
  * - Machine name
+ * - Delta settings
  * - Endstop pullup resistors
  * - Endstops logic
  * - Endstops min or max
@@ -29,6 +28,18 @@
  * Pins-settings can be found in "Configuration_Pins.h"
  */
  
+/*****************************************************************************************
+ ************************************* Machine name **************************************
+ *****************************************************************************************
+ *                                                                                       *
+ * This to set a custom name for your generic Mendel.                                    *
+ * Displayed in the LCD "Ready" message.                                                 *
+ *                                                                                       *
+ *****************************************************************************************/
+#define CUSTOM_MACHINE_NAME "Prusa"
+/*****************************************************************************************/
+
+
 /*****************************************************************************************
  ******************************** Delta configuration ************************************
  ****************************************************************************************/
@@ -93,18 +104,6 @@
 #define Z_PROBE_RETRACT_END_LOCATION {0, 0, 20}    // X, Y, Z, E end location for z-probe retract sequence
 #define Z_RAISE_BETWEEN_PROBINGS 5                 // How much the nozzle will be raised when travelling from between next probing points
 #define AUTO_BED_LEVELING_GRID_POINTS 9            // Works best with ACCURATE_BED_LEVELING_POINTS 5 or higher.
-/*****************************************************************************************/
-
-
-/*****************************************************************************************
- ************************************* Machine name **************************************
- *****************************************************************************************
- *                                                                                       *
- * This to set a custom name for your generic Mendel.                                    *
- * Displayed in the LCD "Ready" message.                                                 *
- *                                                                                       *
- *****************************************************************************************/
-#define CUSTOM_MACHINE_NAME "Prusa"
 /*****************************************************************************************/
 
 
@@ -229,6 +228,25 @@
 
 
 /*****************************************************************************************
+ ******************************** Manual home positions **********************************
+/*****************************************************************************************
+ *                                                                                       *
+ * Manual Bed Leveling (MBL) or Auto Bed Leveling (ABL) settings                         *
+ * Set the rectangle in which to probe in MBL or ABL.                                    *
+ *                                                                                       *
+ *****************************************************************************************/
+// The position of the homing switches
+#define MANUAL_HOME_POSITIONS   // If defined, MANUAL_*_HOME_POS below will be used
+#define BED_CENTER_AT_0_0       // If defined, the center of the bed is at (X=0, Y=0)
+
+//Manual homing switch locations:
+#define MANUAL_X_HOME_POS 0
+#define MANUAL_Y_HOME_POS 0
+#define MANUAL_Z_HOME_POS 200      // Distance between nozzle and print surface after homing.
+/*****************************************************************************************/
+
+
+/*****************************************************************************************
  ************************************ Travel limits **************************************
  *****************************************************************************************
  *                                                                                       *
@@ -249,25 +267,6 @@
  ********************************** Axis relative mode ***********************************
  *****************************************************************************************/
 #define AXIS_RELATIVE_MODES {false, false, false, false}
-/*****************************************************************************************/
-
-
-/*****************************************************************************************
- ******************************** Manual home positions **********************************
-/*****************************************************************************************
- *                                                                                       *
- * Manual Bed Leveling (MBL) or Auto Bed Leveling (ABL) settings                         *
- * Set the rectangle in which to probe in MBL or ABL.                                    *
- *                                                                                       *
- *****************************************************************************************/
-// The position of the homing switches
-#define MANUAL_HOME_POSITIONS   // If defined, MANUAL_*_HOME_POS below will be used
-#define BED_CENTER_AT_0_0       // If defined, the center of the bed is at (X=0, Y=0)
-
-//Manual homing switch locations:
-#define MANUAL_X_HOME_POS 0
-#define MANUAL_Y_HOME_POS 0
-#define MANUAL_Z_HOME_POS 200      // Distance between nozzle and print surface after homing.
 /*****************************************************************************************/
 
 

@@ -816,7 +816,7 @@ void setup() {
 
   ECHO_LM(DB, MSG_MARLIN " " BUILD_VERSION);
 
-  #if EXIST(STRING_DISTRIBUTION_DATE) && EXIST(STRING_CONFIG_H_AUTHOR)
+  #if ENABLED(STRING_DISTRIBUTION_DATE) && ENABLED(STRING_CONFIG_H_AUTHOR)
     ECHO_LM(DB, MSG_CONFIGURATION_VER STRING_DISTRIBUTION_DATE MSG_AUTHOR STRING_CONFIG_H_AUTHOR);
     ECHO_LM(DB, MSG_COMPILED __DATE__);
   #endif // STRING_DISTRIBUTION_DATE
@@ -946,7 +946,7 @@ void get_command() {
 
   if (drain_queued_commands_P()) return; // priority is given to non-serial commands
 
-  #if EXIST(NO_TIMEOUTS)
+  #if ENABLED(NO_TIMEOUTS)
     static millis_t last_command_time = 0;
     millis_t ms = millis();
 
@@ -961,7 +961,7 @@ void get_command() {
   //
   while (MYSERIAL.available() > 0 && commands_in_queue < BUFSIZE) {
 
-    #if EXIST(NO_TIMEOUTS)
+    #if ENABLED(NO_TIMEOUTS)
       last_command_time = ms;
     #endif
 
@@ -3744,7 +3744,8 @@ inline void gcode_G28() {
       clean_up_after_endstop_move();
 
       // solve lsq problem
-      double *plane_equation_coefficients = qr_solve(abl2, 3, eqnAMatrix, eqnBVector);
+      double plane_equation_coefficients[3];
+      qr_solve(plane_equation_coefficients, abl2, 3, eqnAMatrix, eqnBVector);
 
       if (verbose_level) {
         ECHO_SMV(DB, "Eqn coefficients: a: ", plane_equation_coefficients[0], 8);
@@ -3753,7 +3754,6 @@ inline void gcode_G28() {
       }
 
       if (!dryrun) set_bed_level_equation_lsq(plane_equation_coefficients);
-      free(plane_equation_coefficients);
       matrix_3x3 inverse_bed_level_matrix = matrix_3x3::transpose(plan_bed_level_matrix); // inverse bed level matrix
       // In the special case of an rotation matrix "the inverse" = "the transposed" matrix.
 
@@ -5157,14 +5157,14 @@ inline void gcode_M105() {
   #endif
 
   ECHO_M(" " MSG_AT);
-  #if EXIST(HOTEND_WATTS)
+  #if ENABLED(HOTEND_WATTS)
     ECHO_VM((HOTEND_WATTS * getHeaterPower(target_extruder))/127, "W");
   #else
     ECHO_V(getHeaterPower(target_extruder));
   #endif
 
   ECHO_M(" " MSG_BAT);
-  #if EXIST(BED_WATTS)
+  #if ENABLED(BED_WATTS)
     ECHO_VM((BED_WATTS * getHeaterPower(-1))/127, "W");
   #else
     ECHO_V(getHeaterPower(-1));
@@ -6332,7 +6332,7 @@ inline void gcode_M503() {
 
     //retract by E
     if (code_seen('E')) destination[E_AXIS] += code_value();
-    #if EXIST(FILAMENTCHANGE_FIRSTRETRACT)
+    #if ENABLED(FILAMENTCHANGE_FIRSTRETRACT)
       else destination[E_AXIS] += FILAMENTCHANGE_FIRSTRETRACT;
     #endif
 
@@ -6340,7 +6340,7 @@ inline void gcode_M503() {
 
     //lift Z
     if (code_seen('Z')) destination[Z_AXIS] += code_value();
-    #if EXIST(FILAMENTCHANGE_ZADD)
+    #if ENABLED(FILAMENTCHANGE_ZADD)
       else destination[Z_AXIS] += FILAMENTCHANGE_ZADD;
     #endif
 
@@ -6348,19 +6348,19 @@ inline void gcode_M503() {
 
     //move xy
     if (code_seen('X')) destination[X_AXIS] = code_value();
-    #if EXIST(FILAMENTCHANGE_XPOS)
+    #if ENABLED(FILAMENTCHANGE_XPOS)
       else destination[X_AXIS] = FILAMENTCHANGE_XPOS;
     #endif
 
     if (code_seen('Y')) destination[Y_AXIS] = code_value();
-    #if EXIST(FILAMENTCHANGE_YPOS)
+    #if ENABLED(FILAMENTCHANGE_YPOS)
       else destination[Y_AXIS] = FILAMENTCHANGE_YPOS;
     #endif
 
     RUNPLAN
 
     if (code_seen('L')) destination[E_AXIS] += code_value();
-    #if EXIST(FILAMENTCHANGE_FINALRETRACT)
+    #if ENABLED(FILAMENTCHANGE_FINALRETRACT)
       else destination[E_AXIS] += FILAMENTCHANGE_FINALRETRACT;
     #endif
 
@@ -6425,7 +6425,7 @@ inline void gcode_M503() {
 
     //return to normal
     if (code_seen('L')) destination[E_AXIS] -= code_value();
-    #if EXIST(FILAMENTCHANGE_FINALRETRACT)
+    #if ENABLED(FILAMENTCHANGE_FINALRETRACT)
       else destination[E_AXIS] -= FILAMENTCHANGE_FINALRETRACT;
     #endif
 
@@ -6613,13 +6613,13 @@ inline void gcode_M907() {
     if (code_seen('B')) digipot_current(4, code_value());
     if (code_seen('S')) for (int i=0; i<=4; i++) digipot_current(i, code_value());
   #endif
-  #if EXIST(MOTOR_CURRENT_PWM_XY_PIN)
+  #if ENABLED(MOTOR_CURRENT_PWM_XY_PIN)
     if (code_seen('X')) digipot_current(0, code_value());
   #endif
-  #if EXIST(MOTOR_CURRENT_PWM_Z_PIN)
+  #if ENABLED(MOTOR_CURRENT_PWM_Z_PIN)
     if (code_seen('Z')) digipot_current(1, code_value());
   #endif
-  #if EXIST(MOTOR_CURRENT_PWM_E_PIN)
+  #if ENABLED(MOTOR_CURRENT_PWM_E_PIN)
     if (code_seen('E')) digipot_current(2, code_value());
   #endif
   #if ENABLED(DIGIPOT_I2C)

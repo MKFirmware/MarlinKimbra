@@ -1080,7 +1080,7 @@ const short temptable_1047[][2] PROGMEM = {
 #define _TT_NAME(_N) temptable_ ## _N
 #define TT_NAME(_N) _TT_NAME(_N)
 
-#if EXIST(THERMISTORHEATER_0)
+#if ENABLED(THERMISTORHEATER_0)
  #define HEATER_0_TEMPTABLE TT_NAME(THERMISTORHEATER_0)
  #define HEATER_0_TEMPTABLE_LEN COUNT(HEATER_0_TEMPTABLE)
 #else
@@ -1093,7 +1093,7 @@ const short temptable_1047[][2] PROGMEM = {
 #endif
 
 //Set the high and low raw values for the heater,this indicates which raw value is a high or low temperature
-#if NOTEXIST(HEATER_0_RAW_HI_TEMP)
+#if DISABLED(HEATER_0_RAW_HI_TEMP)
   #if ENABLED(HEATER_0_USES_THERMISTOR)   //In case of a thermistor the highest temperature results in the lowest ADC value
     #define HEATER_0_RAW_HI_TEMP 0
     #define HEATER_0_RAW_LO_TEMP 16383
@@ -1103,7 +1103,7 @@ const short temptable_1047[][2] PROGMEM = {
   #endif
 #endif
 
-#if EXIST(THERMISTORHEATER_1)
+#if ENABLED(THERMISTORHEATER_1)
  #define HEATER_1_TEMPTABLE TT_NAME(THERMISTORHEATER_1)
  #define HEATER_1_TEMPTABLE_LEN COUNT(HEATER_1_TEMPTABLE)
 #else
@@ -1116,7 +1116,7 @@ const short temptable_1047[][2] PROGMEM = {
 #endif
 
 //Set the high and low raw values for the heater,this indicates which raw value is a high or low temperature
-#if NOTEXIST(HEATER_1_RAW_HI_TEMP)
+#if DISABLED(HEATER_1_RAW_HI_TEMP)
   #if ENABLED(HEATER_1_USES_THERMISTOR)   //In case of a thermistor the highest temperature results in the lowest ADC value
     #define HEATER_1_RAW_HI_TEMP 0
     #define HEATER_1_RAW_LO_TEMP 16383
@@ -1126,7 +1126,7 @@ const short temptable_1047[][2] PROGMEM = {
   #endif
 #endif
 
-#if EXIST(THERMISTORHEATER_2)
+#if ENABLED(THERMISTORHEATER_2)
  #define HEATER_2_TEMPTABLE TT_NAME(THERMISTORHEATER_2)
  #define HEATER_2_TEMPTABLE_LEN COUNT(HEATER_2_TEMPTABLE)
 #else
@@ -1139,7 +1139,7 @@ const short temptable_1047[][2] PROGMEM = {
 #endif
 
 //Set the high and low raw values for the heater,this indicates which raw value is a high or low temperature
-#if NOTEXIST(HEATER_2_RAW_HI_TEMP)
+#if DISABLED(HEATER_2_RAW_HI_TEMP)
   #if ENABLED(HEATER_2_USES_THERMISTOR)   //In case of a thermistor the highest temperature results in the lowest ADC value
     #define HEATER_2_RAW_HI_TEMP 0
     #define HEATER_2_RAW_LO_TEMP 16383
@@ -1149,7 +1149,7 @@ const short temptable_1047[][2] PROGMEM = {
   #endif
 #endif
 
-#if EXIST(THERMISTORHEATER_3)
+#if ENABLED(THERMISTORHEATER_3)
  #define HEATER_3_TEMPTABLE TT_NAME(THERMISTORHEATER_3)
  #define HEATER_3_TEMPTABLE_LEN COUNT(HEATER_3_TEMPTABLE)
 #else
@@ -1162,7 +1162,7 @@ const short temptable_1047[][2] PROGMEM = {
 #endif
 
 //Set the high and low raw values for the heater,this indicates which raw value is a high or low temperature
-#if NOTEXIST(HEATER_3_RAW_HI_TEMP)
+#if DISABLED(HEATER_3_RAW_HI_TEMP)
   #if ENABLED(HEATER_3_USES_THERMISTOR)   //In case of a thermistor the highest temperature results in the lowest ADC value
     #define HEATER_3_RAW_HI_TEMP 0
     #define HEATER_3_RAW_LO_TEMP 16383
@@ -1172,7 +1172,7 @@ const short temptable_1047[][2] PROGMEM = {
   #endif
 #endif
 
-#if EXIST(THERMISTORBED)
+#if ENABLED(THERMISTORBED)
  #define BEDTEMPTABLE TT_NAME(THERMISTORBED)
  #define BEDTEMPTABLE_LEN COUNT(BEDTEMPTABLE)
 #else
@@ -1182,7 +1182,7 @@ const short temptable_1047[][2] PROGMEM = {
 #endif
 
 //Set the high and low raw values for the heater,this indicates which raw value is a high or low temperature
-#if NOTEXIST(HEATER_BED_RAW_HI_TEMP)
+#if DISABLED(HEATER_BED_RAW_HI_TEMP)
   #if ENABLED(BED_USES_THERMISTOR)   //In case of a thermistor the highest temperature results in the lowest ADC value
     #define HEATER_BED_RAW_HI_TEMP 0
     #define HEATER_BED_RAW_LO_TEMP 16383

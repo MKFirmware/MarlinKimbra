@@ -1,4 +1,5 @@
 #include "base.h"
+
 #if ENABLED(USE_WATCHDOG)
 #include <avr/wdt.h>
 #include "whatchdog.h"
@@ -45,4 +46,4 @@ ISR(WDT_vect) {
 }
 #endif // RESET_MANUAL
 
-#endif
+#endif // USE_WATCHDOG

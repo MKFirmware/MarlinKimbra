@@ -1327,7 +1327,7 @@
  *                                                                     *
  ***********************************************************************/
 //#define STEPPER_HIGH_LOW
-//#define STEPPER_HIGH_LOW_DELAY 1u  // Delay in microseconds
+#define STEPPER_HIGH_LOW_DELAY 1u  // Delay in microseconds
 /***********************************************************************/
 
 

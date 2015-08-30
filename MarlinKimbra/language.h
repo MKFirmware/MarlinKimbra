@@ -23,7 +23,7 @@
 // 13 Basque-Euskera
 // 14 Portuguese (Brazil)
 
-#if NOTEXIST(LANGUAGE_CHOICE)
+#if DISABLED(LANGUAGE_CHOICE)
   #define LANGUAGE_CHOICE 7  // Pick your language from the list above
 #endif
 
@@ -45,20 +45,20 @@
 #elif MB(SAV_MKI)
   #define MACHINE_NAME "SAV MkI"
   #define SOURCE_CODE_URL "https://github.com/fmalpartida/Marlin/tree/SAV-MkI-config"
-#elif NOTEXIST(MACHINE_NAME)
+#elif DISABLED(MACHINE_NAME)
   #define MACHINE_NAME "3D Printer"
 #endif
 
-#if EXIST(CUSTOM_MACHINE_NAME)
+#if ENABLED(CUSTOM_MACHINE_NAME)
   #undef MACHINE_NAME
   #define MACHINE_NAME CUSTOM_MACHINE_NAME
 #endif
 
-#if NOTEXIST(SOURCE_CODE_URL)
+#if DISABLED(SOURCE_CODE_URL)
   #define SOURCE_CODE_URL "https://github.com/MagoKimbra/MarlinKimbra"
 #endif
 
-#if NOTEXIST(BUILD_VERSION)
+#if DISABLED(BUILD_VERSION)
   #define BUILD_VERSION "V4; MarlinKimbra for 4 extruder"
 #endif
 

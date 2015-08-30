@@ -2,19 +2,25 @@
 #include "base.h"
 
 #if ENABLED(ULTRA_LCD)
+
 #include "Marlin_main.h"
+
 #if ENABLED(SDSUPPORT)
   #include "cardreader.h"
 #endif
+
 #include "temperature.h"
+
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
   #include "vector_3.h"
 #endif
+
 #include "planner.h"
 #include "stepper_indirection.h"
 #include "stepper.h"
 #include "configuration_store.h"
 #include "ultralcd.h"
+
 #if HAS(BUZZER)
   #include "buzzer.h"
 #endif
@@ -130,17 +136,17 @@ static void lcd_status_screen();
   #define ENCODER_FEEDRATE_DEADZONE 10
 
   #if DISABLED(LCD_I2C_VIKI)
-    #if NOTEXIST(ENCODER_STEPS_PER_MENU_ITEM)
+    #if DISABLED(ENCODER_STEPS_PER_MENU_ITEM)
       #define ENCODER_STEPS_PER_MENU_ITEM 5
     #endif
-    #if NOTEXIST(ENCODER_PULSES_PER_STEP)
+    #if DISABLED(ENCODER_PULSES_PER_STEP)
       #define ENCODER_PULSES_PER_STEP 1
     #endif
   #else
-    #if NOTEXIST(ENCODER_STEPS_PER_MENU_ITEM)
+    #if DISABLED(ENCODER_STEPS_PER_MENU_ITEM)
       #define ENCODER_STEPS_PER_MENU_ITEM 2 // VIKI LCD rotary encoder uses a different number of steps per rotation
     #endif
-    #if NOTEXIST(ENCODER_PULSES_PER_STEP)
+    #if DISABLED(ENCODER_PULSES_PER_STEP)
       #define ENCODER_PULSES_PER_STEP 1
     #endif
   #endif
@@ -151,7 +157,7 @@ static void lcd_status_screen();
   /**
    * START_MENU generates the init code for a menu function
    */
-#if EXIST(BTN_BACK) && BTN_BACK > 0
+#if ENABLED(BTN_BACK) && BTN_BACK > 0
   #define START_MENU(last_menu) do { \
     encoderRateMultiplierEnabled = false; \
     if (encoderPosition > 0x8000) encoderPosition = 0; \
@@ -1945,7 +1951,7 @@ void lcd_reset_alert_level() { lcd_status_message_level = 0; }
    * These values are independent of which pins are used for EN_A and EN_B indications
    * The rotary encoder part is also independent to the chipset used for the LCD
    */
-  #if EXIST(EN_A) && EXIST(EN_B)
+  #if ENABLED(EN_A) && ENABLED(EN_B)
     #define encrot0 0
     #define encrot1 2
     #define encrot2 3
@@ -1969,7 +1975,7 @@ void lcd_reset_alert_level() { lcd_status_message_level = 0; }
       #if BTN_ENC > 0
         millis_t ms = millis();
         if (ms > next_button_update_ms && READ(BTN_ENC) == 0) newbutton |= EN_C;
-        #if EXIST(BTN_BACK) && BTN_BACK > 0
+        #if ENABLED(BTN_BACK) && BTN_BACK > 0
           if (ms > next_button_update_ms && READ(BTN_BACK) == 0) newbutton |= EN_D;
         #endif
       #endif

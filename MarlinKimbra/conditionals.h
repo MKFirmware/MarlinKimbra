@@ -108,11 +108,11 @@
   #define LCD_I2C_ADDRESS 0x20 // I2C Address of the port expander
   #define LCD_USE_I2C_BUZZER //comment out to disable buzzer on LCD
 
-  #if NOTEXIST(ENCODER_PULSES_PER_STEP)
+  #if DISABLED(ENCODER_PULSES_PER_STEP)
     #define ENCODER_PULSES_PER_STEP 4
   #endif
 
-  #if NOTEXIST(ENCODER_STEPS_PER_MENU_ITEM)
+  #if DISABLED(ENCODER_STEPS_PER_MENU_ITEM)
     #define ENCODER_STEPS_PER_MENU_ITEM 1
   #endif
 
@@ -204,7 +204,7 @@
 /**
  * Default LCD contrast for dogm-like LCD displays
  */
-#if ENABLED(DOGLCD) && NOTEXIST(DEFAULT_LCD_CONTRAST)
+#if ENABLED(DOGLCD) && DISABLED(DEFAULT_LCD_CONTRAST)
   #define DEFAULT_LCD_CONTRAST 32
 #endif
 
@@ -429,7 +429,7 @@
  * Power Signal Control Definitions
  * By default use Normal definition
  */
-#if NOTEXIST(POWER_SUPPLY)
+#if DISABLED(POWER_SUPPLY)
   #define POWER_SUPPLY 0
 #endif
 #if (POWER_SUPPLY == 1)     // 1 = ATX
@@ -580,7 +580,7 @@
 #define HAS_Z_MAX (PIN_EXISTS(Z_MAX))
 #define HAS_Z2_MIN (PIN_EXISTS(Z2_MIN))
 #define HAS_Z2_MAX (PIN_EXISTS(Z2_MAX))
-#define HAS_Z_PROBE (PIN_EXISTS(Z_PROBE))
+#define HAS_Z_PROBE (ENABLED(Z_PROBE_ENDSTOP) && PIN_EXISTS(Z_PROBE))
 #define HAS_E_MIN (PIN_EXISTS(E_MIN))
 #define HAS_SOLENOID_1 (PIN_EXISTS(SOL1))
 #define HAS_SOLENOID_2 (PIN_EXISTS(SOL2))
@@ -627,6 +627,7 @@
 #define HAS_E1E3 (PIN_EXISTS(E1E3_CHOICE))
 #define HAS_BTN_BACK (PIN_EXISTS(BTN_BACK))
 #define HAS_POWER_SWITCH (POWER_SUPPLY > 0 && PIN_EXISTS(PS_ON))
+#define HAS_MOTOR_CURRENT_PWM_XY (PIN_EXISTS(MOTOR_CURRENT_PWM_XY))
 
 #define HAS_DIGIPOTSS (DIGIPOTSS_PIN >= 0)
 

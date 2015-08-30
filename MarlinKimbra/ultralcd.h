@@ -45,7 +45,7 @@
   #else
     FORCE_INLINE void lcd_buttons_update() {}
   #endif
-  
+
   #if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
     extern void set_sd_dot();
     extern void unset_sd_dot();
@@ -62,7 +62,7 @@
   extern int gumPreheatFanSpeed;
 
   extern bool cancel_heatup;
-  
+
   #if HAS(LCD_FILAMENT_SENSOR) || HAS(LCD_POWER_SENSOR)
     extern millis_t previous_lcd_status_ms;
   #endif
@@ -77,7 +77,7 @@
     #define EN_A BIT(BLEN_A)
 
     #define LCD_CLICKED (buttons&EN_C)
-    #if EXIST(BTN_BACK) && BTN_BACK > 0
+    #if ENABLED(BTN_BACK) && BTN_BACK > 0
       #define EN_D BIT(BLEN_D)
       #define LCD_BACK_CLICKED (buttons&EN_D)
     #endif

@@ -44,7 +44,7 @@
 //================================== macros =================================
 //===========================================================================
 
-#if EXIST(K1) // Defined in Configuration.h in the PID settings
+#if ENABLED(K1) // Defined in Configuration.h in the PID settings
   #define K2 (1.0 - K1)
 #endif
 
@@ -168,10 +168,10 @@ static int minttemp_raw[HOTENDS] = ARRAY_BY_HOTENDS( HEATER_0_RAW_LO_TEMP , HEAT
 static int maxttemp_raw[HOTENDS] = ARRAY_BY_HOTENDS( HEATER_0_RAW_HI_TEMP , HEATER_1_RAW_HI_TEMP , HEATER_2_RAW_HI_TEMP, HEATER_3_RAW_HI_TEMP);
 static int minttemp[HOTENDS] = { 0 };
 static int maxttemp[HOTENDS] = ARRAY_BY_HOTENDS1( 16383 );
-#if EXIST(BED_MINTEMP)
+#if ENABLED(BED_MINTEMP)
   static int bed_minttemp_raw = HEATER_BED_RAW_LO_TEMP;
 #endif
-#if EXIST(BED_MAXTEMP)
+#if ENABLED(BED_MAXTEMP)
   static int bed_maxttemp_raw = HEATER_BED_RAW_HI_TEMP;
 #endif
 
@@ -893,7 +893,7 @@ static void updateTemperaturesFromRawValues() {
   float raw_analog2voltage() {
     return (5.0 * current_raw_powconsumption) / (1023 * OVERSAMPLENR);
   }
-  
+
   float analog2voltage() {
     float power_zero_raw = (POWER_ZERO * 1023 * OVERSAMPLENR) / 5.0;
     float rel_raw_power = (current_raw_powconsumption < power_zero_raw) ? (2 * power_zero_raw - current_raw_powconsumption) : (current_raw_powconsumption);
@@ -907,7 +907,7 @@ static void updateTemperaturesFromRawValues() {
   float analog2power() {
     return (analog2current() * POWER_VOLTAGE * 100) /  POWER_EFFICIENCY;
   }
-  
+
   float analog2error(float current) {
     float temp1 = (analog2voltage() / POWER_SENSITIVITY - POWER_OFFSET) * POWER_VOLTAGE;
     if(temp1 <= 0) return 0.0;
@@ -1156,6 +1156,7 @@ void tp_init() {
 #if ENABLED(THERMAL_PROTECTION_HOTENDS) || ENABLED(THERMAL_PROTECTION_BED)
 
   void thermal_runaway_protection(TRState *state, millis_t *timer, float temperature, float target_temperature, int heater_id, int period_seconds, int hysteresis_degc) {
+    static float tr_last_temperature = 0.0;
     static float tr_target_temperature[HOTENDS + 1] = { 0.0 };
     /*
         ECHO_SM(DB, "Thermal Thermal Runaway Running. Heater ID: ");
@@ -1180,6 +1181,7 @@ void tp_init() {
       // Inactive state waits for a target temperature to be set
       case TRInactive: {
         if (target_temperature > 0) {
+          tr_last_temperature = temperature;
           tr_target_temperature[heater_index] = target_temperature;
           *timer = millis();
           *state = TRFirstHeating;
@@ -1190,6 +1192,11 @@ void tp_init() {
       // If the heater takes too long to reach the target temperature the sistem will be halt.
       case TRFirstHeating: {
         if (temperature >= tr_target_temperature[heater_index]) *state = TRStable;
+        else if (temperature == tr_last_temperature) {
+          if (millis() > *timer + period_seconds * 1000UL) {
+            *state = TRRunaway;
+          }
+        }
         else {
           *timer = millis();
         }

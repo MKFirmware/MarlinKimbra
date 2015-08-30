@@ -5,8 +5,8 @@
 /*
  * This configuration file contains mechanism settings for cartesian printer.
  *
- * - Scara settings
  * - Machine name
+ * - Scara settings
  * - Endstop pullup resistors
  * - Endstops logic
  * - Endstops min or max
@@ -30,6 +30,18 @@
  */
  
 /*****************************************************************************************
+ ************************************* Machine name **************************************
+ *****************************************************************************************
+ *                                                                                       *
+ * This to set a custom name for your generic Mendel.                                    *
+ * Displayed in the LCD "Ready" message.                                                 *
+ *                                                                                       *
+ *****************************************************************************************/
+#define CUSTOM_MACHINE_NAME "Scara"
+/*****************************************************************************************/
+
+
+/*****************************************************************************************
  ************************************* Scara settings *************************************
 /****************************************************************************************/
 // SCARA-mode for Marlin has been developed by QHARLEY in ZA in 2012/2013. Implemented
@@ -51,18 +63,6 @@
 
 #define THETA_HOMING_OFFSET 0 //calculatated from Calibration Guide and command M360 / M114 see picture in http://reprap.harleystudio.co.za/?page_id=1073
 #define PSI_HOMING_OFFSET 0   // calculatated from Calibration Guide and command M364 / M114 see picture in http://reprap.harleystudio.co.za/?page_id=1073
-/*****************************************************************************************/
-
-
-/*****************************************************************************************
- ************************************* Machine name **************************************
- *****************************************************************************************
- *                                                                                       *
- * This to set a custom name for your generic Mendel.                                    *
- * Displayed in the LCD "Ready" message.                                                 *
- *                                                                                       *
- *****************************************************************************************/
-#define CUSTOM_MACHINE_NAME "Scara"
 /*****************************************************************************************/
 
 

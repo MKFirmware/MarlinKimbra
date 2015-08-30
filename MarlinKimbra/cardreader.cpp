@@ -1,4 +1,3 @@
-
 #include "base.h"
 
 #if ENABLED(SDSUPPORT)

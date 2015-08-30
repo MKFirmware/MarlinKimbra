@@ -58,17 +58,17 @@
 #define TEMP_BED_PIN    ORIG_TEMP_BED_PIN
 
 //FAN pin
-#define FAN_PIN       ORIG_FAN_PIN
+#define FAN_PIN         ORIG_FAN_PIN
 
-//============================================================================
+//==================================================================
 
 //=========================== FEATURE ==============================
 
 #if ENABLED(MKR4)
-  #define E0E1_CHOICE_PIN    -1
-  #define E0E2_CHOICE_PIN    -1
-  #define E0E3_CHOICE_PIN    -1
-  #define E1E3_CHOICE_PIN    -1
+  #define E0E1_CHOICE_PIN     -1
+  #define E0E2_CHOICE_PIN     -1
+  #define E0E3_CHOICE_PIN     -1
+  #define E1E3_CHOICE_PIN     -1
 #endif //MKR4
 
 #if ENABLED(NPR2)
@@ -113,13 +113,17 @@
 
 #if ENABLED(X2_IS_TMC)
   #define X2_ENABLE_PIN -1
-  #define X2_STEP_PIN -1
-  #define X2_DIR_PIN -1
+  #define X2_STEP_PIN   -1
+  #define X2_DIR_PIN    -1
 #endif
 
 #if ENABLED(Z_PROBE_SLED)
-  #define SLED_PIN -1
+  #define SLED_PIN      -1
 #endif
 
-//============================================================================
+#if ENABLED(Z_PROBE_ENDSTOP)
+  #define Z_PROBE_PIN   -1
+#endif
+
+//====================================================================
 #endif

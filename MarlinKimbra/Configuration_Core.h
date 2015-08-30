@@ -4,8 +4,8 @@
 /*
  * This configuration file contains mechanism settings for cartesian printer.
  *
- * - Core settings
  * - Machine name
+ * - Core settings
  * - Endstop pullup resistors
  * - Endstops logic
  * - Endstops min or max
@@ -29,20 +29,6 @@
  */
  
 /*****************************************************************************************
- ************************************* Core settings *************************************
-/****************************************************************************************/
-//This define the moltiplicator axis from X to Y or Z in COREXY or COREXZ.
-//Example:
-//COREXY set COREX_XZ_FACTOR 1
-//The result is:
-//X = dX + COREX_YZ_FACTOR * dY = dX + 1 * dY = dX + dY
-//Y = dX - COREX_YZ_FACTOR * dY = dX - 1 * dY = dX - dY
-//Z = dZ
-#define COREX_YZ_FACTOR 1
-/*****************************************************************************************/
-
-
-/*****************************************************************************************
  ************************************* Machine name **************************************
  *****************************************************************************************
  *                                                                                       *
@@ -51,6 +37,27 @@
  *                                                                                       *
  *****************************************************************************************/
 #define CUSTOM_MACHINE_NAME "Core"
+/*****************************************************************************************/
+
+
+/*****************************************************************************************
+ ************************************* Core settings *************************************
+ *****************************************************************************************
+ * This define the moltiplicator axis from X to Y or Z in COREXY or COREXZ.              *
+ * Example:                                                                              *
+ * COREXY set COREX_XZ_FACTOR 1                                                          *
+ * The result is:                                                                        *
+ * X = dX + COREX_YZ_FACTOR * dY = dX + 1 * dY = dX + dY                                 *
+ * Y = dX - COREX_YZ_FACTOR * dY = dX - 1 * dY = dX - dY                                 *
+ * Z = dZ                                                                                *
+ *                                                                                       *
+ * COREXZ set COREX_XZ_FACTOR -3                                                         *
+ * The result is:                                                                        *
+ * X = dX + COREX_YZ_FACTOR * dZ = dX + -3 * dZ = dX - 3dZ                               *
+ * Y = dY                                                                                *
+ * Z = dX - COREX_YZ_FACTOR * dZ = dX - -3 * dZ = dX + 3dZ                               *
+******************************************************************************************/
+#define COREX_YZ_FACTOR 1
 /*****************************************************************************************/
 
 

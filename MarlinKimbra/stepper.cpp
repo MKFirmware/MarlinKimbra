@@ -613,7 +613,7 @@ ISR(TIMER1_COMPA_vect) {
   if (cleaning_buffer_counter) {
     current_block = NULL;
     plan_discard_current_block();
-    #if EXIST(SD_FINISHED_RELEASECOMMAND)
+    #if ENABLED(SD_FINISHED_RELEASECOMMAND)
       if ((cleaning_buffer_counter == 1) && (SD_FINISHED_STEPPERRELEASE)) enqueuecommands_P(PSTR(SD_FINISHED_RELEASECOMMAND));
     #endif
     cleaning_buffer_counter--;
@@ -1017,7 +1017,7 @@ void st_init() {
     #endif
   #endif
 
-  #if HAS(Z_PROBE) && ENABLED(Z_PROBE_ENDSTOP) // Check for Z_PROBE_ENDSTOP so we don't pull a pin high unless it's to be used.
+  #if HAS(Z_PROBE) // Check for Z_PROBE_ENDSTOP so we don't pull a pin high unless it's to be used.
     SET_INPUT(Z_PROBE_PIN);
     #if ENABLED(ENDSTOPPULLUP_ZPROBE)
       WRITE(Z_PROBE_PIN,HIGH);
@@ -1282,7 +1282,7 @@ void digipot_init() {
       digipot_current(i,digipot_motor_current[i]);
     }
   #endif
-  #if ENABLED(MOTOR_CURRENT_PWM_XY_PIN)
+  #if HAS(MOTOR_CURRENT_PWM_XY)
     pinMode(MOTOR_CURRENT_PWM_XY_PIN, OUTPUT);
     pinMode(MOTOR_CURRENT_PWM_Z_PIN, OUTPUT);
     pinMode(MOTOR_CURRENT_PWM_E_PIN, OUTPUT);
@@ -1308,7 +1308,7 @@ void digipot_current(uint8_t driver, int current) {
     const uint8_t digipot_ch[] = DIGIPOT_CHANNELS;
     digitalPotWrite(digipot_ch[driver], current);
   #endif
-  #if ENABLED(MOTOR_CURRENT_PWM_XY_PIN)
+  #if HAS(MOTOR_CURRENT_PWM_XY)
     switch(driver) {
       case 0: analogWrite(MOTOR_CURRENT_PWM_XY_PIN, 255L * current / MOTOR_CURRENT_PWM_RANGE); break;
       case 1: analogWrite(MOTOR_CURRENT_PWM_Z_PIN, 255L * current / MOTOR_CURRENT_PWM_RANGE); break;
