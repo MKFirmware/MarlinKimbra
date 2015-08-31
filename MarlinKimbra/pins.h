@@ -14,11 +14,11 @@
 * 22 BOARD_GEN3_MONOLITHIC - Gen3 Monolithic Electronics
 *
 *  3 BOARD_RAMPS_OLD - MEGA/RAMPS up to 1.2
-* 33 BOARD_RAMPS_13_EFB - RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Fan, Bed)
-* 34 BOARD_RAMPS_13_EEB - RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Bed)
-* 35 BOARD_RAMPS_13_EFF - RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Fan, Fan)
-* 36 BOARD_RAMPS_13_EEF - RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Fan)
-* 37 BOARD_RAMPS_13_EEE - RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Hotend2)
+* 33 BOARD_RAMPS_13_HFB - RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Fan, Bed)
+* 34 BOARD_RAMPS_13_HHB - RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Bed)
+* 35 BOARD_RAMPS_13_HFF - RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Fan, Fan)
+* 36 BOARD_RAMPS_13_HHF - RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Fan)
+* 37 BOARD_RAMPS_13_HHH - RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Hotend2)
 *
 *301 BOARD_RAMBO - Rambo
 *302 BOARD_MINIRAMBO - Mini Rambo
@@ -186,7 +186,7 @@
     #error Oops! Make sure you have 'Gen7' selected from the 'Tools -> Boards' menu.
   #endif
   
-  #if NOTEXIST(GEN7_VERSION)
+  #if DISABLED(GEN7_VERSION)
     #define GEN7_VERSION   12  // v1.x
   #endif
   
@@ -261,7 +261,7 @@
     #error Oops! Make sure you have 'Gen7' selected from the 'Tools -> Boards' menu.
   #endif
   
-  #if NOTEXIST(GEN7_VERSION)
+  #if DISABLED(GEN7_VERSION)
     #define GEN7_VERSION   13  // v1.x
   #endif
   
@@ -502,7 +502,7 @@
     #error Oops! Make sure you have 'Sethi 3D' selected from the 'Tools -> Boards' menu.
   #endif
   
-  #if NOTEXIST(GEN7_VERSION)
+  #if DISABLED(GEN7_VERSION)
   #define GEN7_VERSION 12 // v1.x
   #endif
   
@@ -843,10 +843,10 @@
 /****************************************************************************************
 * 33
 * RAMPS 1.3 / 1.4
-* RAMPS_13_EFB (Extruder, Fan, Bed)
+* RAMPS_13_HFB (Hotend0, Fan, Bed)
 ****************************************************************************************/
 
-#if MB(RAMPS_13_EFB)
+#if MB(RAMPS_13_HFB)
   #define KNOWN_BOARD 1
   
   #if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__)
@@ -1044,7 +1044,7 @@
     #define MAX6675_SS            66// Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
   #endif
 
-#endif // RAMPS_13_EFB
+#endif // RAMPS_13_HFB
 /****************************************************************************************/
 
 
@@ -1052,10 +1052,10 @@
 /****************************************************************************************
 * 34
 * RAMPS 1.3 / 1.4
-* RAMPS_13_EEB (Extruder, Extruder, Bed)
+* RAMPS_13_HHB (Hotend0, Hotend1, Bed)
 ****************************************************************************************/
 
-#if MB(RAMPS_13_EEB)
+#if MB(RAMPS_13_HHB)
   #define KNOWN_BOARD 1
 
   #if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__)
@@ -1255,10 +1255,10 @@
 /****************************************************************************************
 * 35
 * RAMPS 1.3 / 1.4
-* RAMPS_13_EFF (Extruder, Fan, Fan)
+* RAMPS_13_HFF (Hotend0, Fan, Fan)
 ****************************************************************************************/
 
-#if MB(RAMPS_13_EFF)
+#if MB(RAMPS_13_HFF)
   #define KNOWN_BOARD 1
 
   #if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__)
@@ -1450,7 +1450,7 @@
     #define MAX6675_SS            66  // Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
   #endif
 
-#endif // RAMPS_13_EFF
+#endif // RAMPS_13_HFF
 /****************************************************************************************/
 
 
@@ -1458,10 +1458,10 @@
 /****************************************************************************************
 * 36
 * RAMPS 1.3 / 1.4
-* RAMPS_13_EEF (Extruder, Extruder, Fan)
+* RAMPS_13_HHF (Hotend0, Hotend1, Fan)
 ****************************************************************************************/
 
-#if MB(RAMPS_13_EEF)
+#if MB(RAMPS_13_HHF)
   #define KNOWN_BOARD 1
 
   #if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__)
@@ -1653,7 +1653,7 @@
     #define MAX6675_SS            66  // Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
   #endif
 
-#endif // RAMPS_13_EEF
+#endif // RAMPS_13_HHF
 /****************************************************************************************/
 
 
@@ -1661,10 +1661,10 @@
 /****************************************************************************************
 * 37
 * RAMPS 1.3 / 1.4
-* RAMPS_13_EEF (Hotend0, Hotend1, Hotend2)
+* RAMPS_13_HHH (Hotend0, Hotend1, Hotend2)
 ****************************************************************************************/
 
-#if MB(RAMPS_13_EEE)
+#if MB(RAMPS_13_HHH)
   #define KNOWN_BOARD 1
 
   #if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__)
@@ -1856,7 +1856,7 @@
     #define MAX6675_SS            66  // Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
   #endif
 
-#endif // RAMPS_13_EEE
+#endif // RAMPS_13_HHH
 /****************************************************************************************/
 
 

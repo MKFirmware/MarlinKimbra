@@ -46,11 +46,6 @@
     FORCE_INLINE void lcd_buttons_update() {}
   #endif
 
-  #if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
-    extern void set_sd_dot();
-    extern void unset_sd_dot();
-  #endif
-
   extern int plaPreheatHotendTemp;
   extern int plaPreheatHPBTemp;
   extern int plaPreheatFanSpeed;
@@ -116,7 +111,7 @@
 
 #elif ENABLED(NEXTION)
 
-  #define LCD_UPDATE_INTERVAL 100
+  #define LCD_UPDATE_INTERVAL 200
 
   void setpagePopCallback(void *ptr);
   void hotPopCallback(void *ptr);
@@ -151,6 +146,11 @@
   #define LCD_ALERTMESSAGEPGM(x) do{}while(0)
 
 #endif //ULTRA_LCD
+
+#if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
+  extern void set_sd_dot();
+  extern void unset_sd_dot();
+#endif
 
 char *itostr2(const uint8_t &x);
 char *itostr31(const int &xx);

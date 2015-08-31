@@ -152,5 +152,4 @@ void setExtruderAutoFanState(int pin, bool state);
 void checkExtruderAutoFans();
 extern void autotempShutdown();
 
-
 #endif // TEMPERATURE_H

@@ -82,6 +82,8 @@ FORCE_INLINE uint8_t movesplanned() { return BLOCK_MOD(block_buffer_head - block
 
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
 
+  #include "vector_3.h"
+
   // Transform required to compensate for bed level
   extern matrix_3x3 plan_bed_level_matrix;
 

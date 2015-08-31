@@ -1450,17 +1450,16 @@
       #if !PIN_EXISTS(Z_PROBE)
         #error DEPENDENCY ERROR: You must set Z_PROBE_PIN to a valid pin if you enable Z_PROBE_ENDSTOP
       #endif
-      #if DISABLED(ENABLE_SERVOS)
-        #error DEPENDENCY ERROR: You must enable ENABLE_SERVOS and must have NUM_SERVOS EXIST and there must be at least 1 configured to use Z_PROBE_ENDSTOP.
-      #endif
-      #if NUM_SERVOS < 1
-        #error DEPENDENCY ERROR: You must have at least 1 servo EXIST for NUM_SERVOS to use Z_PROBE_ENDSTOP.
-      #endif
-      #if Z_ENDSTOP_SERVO_NR < 0
-        #error DEPENDENCY ERROR: You must have Z_ENDSTOP_SERVO_NR set to at least 0 or above to use Z_PROBE_ENDSTOP.
-      #endif
-      #if DISABLED(SERVO_ENDSTOP_ANGLES)
-        #error DEPENDENCY ERROR: You must have SERVO_ENDSTOP_ANGLES EXIST for Z Extend and Retract to use Z_PROBE_ENDSTOP.
+      #if ENABLED(ENABLE_SERVOS)
+        #if NUM_SERVOS < 1
+          #error DEPENDENCY ERROR: You must have at least 1 servo EXIST for NUM_SERVOS to use Z_PROBE_ENDSTOP.
+        #endif
+        #if Z_ENDSTOP_SERVO_NR < 0
+          #error DEPENDENCY ERROR: You must have Z_ENDSTOP_SERVO_NR set to at least 0 or above to use Z_PROBE_ENDSTOP.
+        #endif
+        #if DISABLED(SERVO_ENDSTOP_ANGLES)
+          #error DEPENDENCY ERROR: You must have SERVO_ENDSTOP_ANGLES EXIST for Z Extend and Retract to use Z_PROBE_ENDSTOP.
+        #endif
       #endif
     #endif
     /**

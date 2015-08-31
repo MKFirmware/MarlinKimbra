@@ -28,6 +28,9 @@
 // Function macro
 #define  FORCE_INLINE __attribute__((always_inline)) inline
 
-#define CRITICAL_SECTION_START  unsigned char _sreg = SREG; cli();
-#define CRITICAL_SECTION_END    SREG = _sreg;
+#if DISABLED(CRITICAL_SECTION_START)
+  #define CRITICAL_SECTION_START  unsigned char _sreg = SREG; cli();
+  #define CRITICAL_SECTION_END    SREG = _sreg;
+#endif
+
 #endif //__MACROS_H

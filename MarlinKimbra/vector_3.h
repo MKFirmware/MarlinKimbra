@@ -57,4 +57,4 @@ struct matrix_3x3
 
 void apply_rotation_xyz(matrix_3x3 rotationMatrix, float &x, float& y, float& z);
 
-#endif // AUTO_BED_LEVELING_FEATURE
+#endif // VECTOR_3_H

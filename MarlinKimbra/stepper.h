@@ -21,6 +21,8 @@
 #ifndef STEPPER_H
 #define STEPPER_H 
 
+#include "planner.h"
+#include "stepper_indirection.h"
 
 /**
  * Axis indices as enumerated constants

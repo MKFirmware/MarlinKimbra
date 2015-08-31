@@ -1,12 +1,12 @@
 #ifndef CONFIGURATION_MECHANISM
 #define CONFIGURATION_MECHANISM
 #define KNOWN_MECH 1
-
 /*
  * This configuration file contains mechanism settings for cartesian printer.
  *
  * - Machine name
  * - Delta settings
+ * - Z probe endstop
  * - Endstop pullup resistors
  * - Endstops logic
  * - Endstops min or max
@@ -29,7 +29,7 @@
  */
  
 /*****************************************************************************************
- ************************************* Machine name **************************************
+ *********************************** Machine name ****************************************
  *****************************************************************************************
  *                                                                                       *
  * This to set a custom name for your generic Mendel.                                    *
@@ -65,16 +65,6 @@
 // Bed Printer radius
 #define PRINTER_RADIUS 75                   // mm
 
-// Uncomment to enable autocalibration debug messages
-#define DEBUG_MESSAGES
-
-// Speed for autocalibration travel and probing moves
-#define AUTOCAL_TRAVELRATE 100  // mm/sec
-#define AUTOCAL_PROBERATE   50  // mm/sec
-
-// Precision for G30 delta autocalibration function
-#define AUTOCALIBRATION_PRECISION 0.1 // mm
-
 //Endstop Offset Adjustment - All values are in mm and must be negative (to move down away from endstop switches) 
 #define TOWER_A_ENDSTOP_ADJ 0 // Front Left Tower
 #define TOWER_B_ENDSTOP_ADJ 0 // Front Right Tower
@@ -94,23 +84,67 @@
 #define TOWER_A_DIAGROD_ADJ 0 //Front Left Tower
 #define TOWER_B_DIAGROD_ADJ 0 //Front Right Tower
 #define TOWER_C_DIAGROD_ADJ 0 //Rear Tower
-
-// Z-Probe variables
-// Start and end location values are used to deploy/retract the probe (will move from start to end and back again)
-#define Z_PROBE_OFFSET {0, 0, -1}                  // X, Y, Z, E distance between hotend nozzle and deployed bed leveling probe.
-#define Z_PROBE_DEPLOY_START_LOCATION {0, 0, 20}   // X, Y, Z, E start location for z-probe deployment sequence
-#define Z_PROBE_DEPLOY_END_LOCATION {0, 0, 20}     // X, Y, Z, E end location for z-probe deployment sequence
-#define Z_PROBE_RETRACT_START_LOCATION {0, 0, 20}  // X, Y, Z, E start location for z-probe retract sequence
-#define Z_PROBE_RETRACT_END_LOCATION {0, 0, 20}    // X, Y, Z, E end location for z-probe retract sequence
-#define Z_RAISE_BETWEEN_PROBINGS 5                 // How much the nozzle will be raised when travelling from between next probing points
-#define AUTO_BED_LEVELING_GRID_POINTS 9            // Works best with ACCURATE_BED_LEVELING_POINTS 5 or higher.
 /*****************************************************************************************/
 
 
 /*****************************************************************************************
- ****************************** Endstop pullup resistors *********************************
+ ******************************* Z probe endstop *****************************************
+ *****************************************************************************************
+ *                                                                                       *
+ * If you enabled Z_PROBE_ENDSTOP this add the support for autocalibration               *
+ * and auto bed level                                                                    *
+ * To use Z PROBE endstop, you must have a Z_PROBE_PIN                                   *
+ * defined in the Configuration_pins.h file for your control board.                      *
+ * If you are using a servo based Z PROBE, you will need to enable                       *
+ * NUM_SERVOS, SERVO_ENDSTOPS and SERVO_ENDSTOPS_ANGLES in                               *
+ * Configuration_Feature R/C Servo section.                                              *
+ *                                                                                       *
+ * WARNING: Setting the wrong pin may have unexpected and potentially                    *
+ * disastrous outcomes. Use with caution and do your homework.                           *
+ *                                                                                       *
+ * Uncomment Z_PROBE_ENDSTOP to enable.                                                  *
+ *                                                                                       *
  *****************************************************************************************/
-#define ENDSTOPPULLUPS // Comment this out (using // at the start of the line) to disable the endstop pullup resistors
+//#define Z_PROBE_ENDSTOP
+
+// Uncomment to enable autocalibration debug messages
+#define DEBUG_MESSAGES
+
+// Speed for autocalibration travel and probing moves
+#define AUTOCAL_TRAVELRATE 100  // mm/sec
+#define AUTOCAL_PROBERATE   50  // mm/sec
+
+// Precision for G30 delta autocalibration function
+#define AUTOCALIBRATION_PRECISION 0.1 // mm
+
+// Z-Probe variables
+// X, Y, Z, E distance between hotend nozzle and deployed bed leveling probe.
+#define Z_PROBE_OFFSET {0, 0, -1}
+
+// Start and end location values are used to deploy/retract the probe (will move from start to end and back again)
+#define Z_PROBE_DEPLOY_START_LOCATION {0, 0, 20}   // X, Y, Z, E start location for z-probe deployment sequence
+#define Z_PROBE_DEPLOY_END_LOCATION {0, 0, 20}     // X, Y, Z, E end location for z-probe deployment sequence
+#define Z_PROBE_RETRACT_START_LOCATION {0, 0, 20}  // X, Y, Z, E start location for z-probe retract sequence
+#define Z_PROBE_RETRACT_END_LOCATION {0, 0, 20}    // X, Y, Z, E end location for z-probe retract sequence
+
+// How much the nozzle will be raised when travelling from between next probing points
+#define Z_RAISE_BETWEEN_PROBINGS 5
+
+// Works best with ACCURATE_BED_LEVELING_POINTS 5 or higher.
+#define AUTO_BED_LEVELING_GRID_POINTS 9
+
+/*****************************************************************************************/
+
+
+/*****************************************************************************************
+ ************************* Endstop pullup resistors **************************************
+ *****************************************************************************************
+ *                                                                                       *
+ * Comment this out (using // at the start of the line) to                               *
+ * disable the endstop pullup resistors                                                  *
+ *                                                                                       *
+ *****************************************************************************************/
+#define ENDSTOPPULLUPS
 
 #if DISABLED(ENDSTOPPULLUPS)
   // fine endstop settings: Individual pullups. will be ignored if ENDSTOPPULLUPS is defined
@@ -223,26 +257,8 @@
 #define DISABLE_Y false
 #define DISABLE_Z false
 #define DISABLE_E false      // For all extruder
-#define DISABLE_INACTIVE_EXTRUDER false //disable only inactive extruder and keep active extruder enabled
-/*****************************************************************************************/
-
-
-/*****************************************************************************************
- ******************************** Manual home positions **********************************
-/*****************************************************************************************
- *                                                                                       *
- * Manual Bed Leveling (MBL) or Auto Bed Leveling (ABL) settings                         *
- * Set the rectangle in which to probe in MBL or ABL.                                    *
- *                                                                                       *
- *****************************************************************************************/
-// The position of the homing switches
-#define MANUAL_HOME_POSITIONS   // If defined, MANUAL_*_HOME_POS below will be used
-#define BED_CENTER_AT_0_0       // If defined, the center of the bed is at (X=0, Y=0)
-
-//Manual homing switch locations:
-#define MANUAL_X_HOME_POS 0
-#define MANUAL_Y_HOME_POS 0
-#define MANUAL_Z_HOME_POS 200      // Distance between nozzle and print surface after homing.
+// Disable only inactive extruder and keep active extruder enabled
+#define DISABLE_INACTIVE_EXTRUDER false
 /*****************************************************************************************/
 
 
@@ -271,33 +287,53 @@
 
 
 /*****************************************************************************************
+ ******************************** Manual home positions **********************************
+ *****************************************************************************************/
+// The position of the homing switches
+#define MANUAL_HOME_POSITIONS   // If defined, MANUAL_*_HOME_POS below will be used
+#define BED_CENTER_AT_0_0       // If defined, the center of the bed is at (X=0, Y=0)
+
+//Manual homing switch locations:
+#define MANUAL_X_HOME_POS 0
+#define MANUAL_Y_HOME_POS 0
+#define MANUAL_Z_HOME_POS 200      // Distance between nozzle and print surface after homing.
+/*****************************************************************************************/
+
+
+/*****************************************************************************************
  ******************************* Axis steps per unit *************************************
  *****************************************************************************************/
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {80,80,80,625,625,625,625}          // X, Y, Z, E0...(per extruder). Default steps per unit
+// Default steps per unit               X,  Y,  Z,  E0...(per extruder)
+#define DEFAULT_AXIS_STEPS_PER_UNIT   {80, 80, 80, 625, 625, 625, 625}
 /*****************************************************************************************/
 
 
 /*****************************************************************************************
  ********************************** Axis feedrate ****************************************
  *****************************************************************************************/
-#define DEFAULT_MAX_FEEDRATE          {500,500,500,45,45,45,45}             // X, Y, Z, E0...(per extruder). (mm/sec)
-#define MANUAL_FEEDRATE               {50*60, 50*60, 50*60, 60}              // Feedrates for manual moves along X, Y, Z, E from panel
-#define DEFAULT_MINIMUMFEEDRATE       0.0                                   // minimum feedrate
+//                                       X,   Y,   Z, E0...(per extruder). (mm/sec)
+#define DEFAULT_MAX_FEEDRATE          {500, 500, 500, 100, 100, 100, 100}
+#define MANUAL_FEEDRATE               {50*60, 50*60, 50*60, 60} // Feedrates for manual moves along X, Y, Z, E from panel
+#define DEFAULT_MINIMUMFEEDRATE       0.0                       // minimum feedrate
 #define DEFAULT_MINTRAVELFEEDRATE     0.0
 // Minimum planner junction speed. Sets the default minimum speed the planner plans for at the end
 // of the buffer and all stops. This should not be much greater than zero and should only be changed
 // if unwanted behavior is observed on a user's machine when running at very slow speeds.
-#define MINIMUM_PLANNER_SPEED         0.05                                  // (mm/sec)
+#define MINIMUM_PLANNER_SPEED         0.05                      // (mm/sec)
 /*****************************************************************************************/
 
 
 /*****************************************************************************************
  ******************************** Axis accelleration *************************************
  *****************************************************************************************/
-#define DEFAULT_MAX_ACCELERATION      {5000,5000,5000,1000,1000,1000,1000}  // X, Y, Z, E0...(per extruder). Maximum start speed for accelerated moves.
-#define DEFAULT_RETRACT_ACCELERATION  {10000,10000,10000,10000}             // E0... (per extruder) max acceleration in mm/s^2 for retracts
-#define DEFAULT_ACCELERATION          3000                                  // X, Y, Z and E* max acceleration in mm/s^2 for printing moves
-#define DEFAULT_TRAVEL_ACCELERATION   3000                                  // X, Y, Z acceleration in mm/s^2 for travel (non printing) moves
+//  Maximum start speed for accelerated moves.    X,    Y,    Z,   E0...(per extruder)
+#define DEFAULT_MAX_ACCELERATION              {5000, 5000, 5000, 1000, 1000, 1000, 1000}
+//  Maximum acceleration in mm/s^2 for retracts   E0... (per extruder)
+#define DEFAULT_RETRACT_ACCELERATION          {10000, 10000, 10000, 10000}
+//  X, Y, Z and E* maximum acceleration in mm/s^2 for printing moves
+#define DEFAULT_ACCELERATION          3000
+//  X, Y, Z acceleration in mm/s^2 for travel (non printing) moves
+#define DEFAULT_TRAVEL_ACCELERATION   3000
 /*****************************************************************************************/
 
 
@@ -311,16 +347,17 @@
  *****************************************************************************************/
 #define DEFAULT_XYJERK 10.0                 // (mm/sec)
 #define DEFAULT_ZJERK   0.4                 // (mm/sec)
-#define DEFAULT_EJERK  {5.0,5.0,5.0,5.0}    // E0... (mm/sec) per extruder, max initial speed for retract moves
+//  max initial speed for retract moves   E0... (mm/sec) per extruder
+#define DEFAULT_EJERK                   {5.0, 5.0, 5.0, 5.0}
 /*****************************************************************************************/
 
 
 /*****************************************************************************************
  ************************************ Homing feedrate ************************************
  *****************************************************************************************/
-#define HOMING_FEEDRATE               {100*60, 100*60, 100*60, 0}      // set the homing speeds (mm/min)
+#define HOMING_FEEDRATE {100*60, 100*60, 100*60, 0} // set the homing speeds (mm/min)
 
-//homing hits the endstop, then retracts by this distance, before it tries to slowly bump again:
+// homing hits the endstop, then retracts by this distance, before it tries to slowly bump again:
 #define X_HOME_BUMP_MM 5
 #define Y_HOME_BUMP_MM 5
 #define Z_HOME_BUMP_MM 2

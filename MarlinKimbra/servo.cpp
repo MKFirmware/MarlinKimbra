@@ -227,7 +227,7 @@ static boolean isTimerActive(timer16_Sequence_t timer) {
 /****************** end of static functions ******************************/
 
 Servo::Servo() {
-  if ( ServoCount < MAX_SERVOS) {
+  if (ServoCount < MAX_SERVOS) {
     this->servoIndex = ServoCount++;                    // assign a servo index to this instance
     servo_info[this->servoIndex].ticks = usToTicks(DEFAULT_PULSE_WIDTH);   // store default values  - 12 Aug 2009
   }
@@ -265,7 +265,8 @@ void Servo::detach() {
 }
 
 void Servo::write(int value) {
-  if (value < MIN_PULSE_WIDTH) { // treat values less than 544 as angles in degrees (valid values in microseconds are handled as microseconds)
+  // treat values less than 544 as angles in degrees (valid values in microseconds are handled as microseconds)
+  if (value < MIN_PULSE_WIDTH) {
     if (value < 0) value = 0;
     if (value > 180) value = 180;
     value = map(value, 0, 180, SERVO_MIN(), SERVO_MAX());
