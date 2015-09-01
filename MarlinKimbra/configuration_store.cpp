@@ -817,6 +817,8 @@ void Config_ResetDefault() {
       }
     }
 
+    ConfigSD_PrintSettings(forReplay);
+
   }
 
   void ConfigSD_PrintSettings(bool forReplay) {
