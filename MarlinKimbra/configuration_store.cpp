@@ -29,10 +29,10 @@
  *
  */
 
-#define EEPROM_VERSION "V24"
+#define EEPROM_VERSION "V25"
 
 /**
- * V24 EEPROM Layout:
+ * V25 EEPROM Layout:
  *
  *  ver
  *  M92   XYZ E0 ...      axis_steps_per_unit X,Y,Z,E0 ... (per extruder)
@@ -77,10 +77,11 @@
  *  M145  S2  F           gumPreheatFanSpeed
  *
  * PIDTEMP:
- *  M301  E0  PID         Kp[0], Ki[0], Kd[0]
- *  M301  E1  PID         Kp[1], Ki[1], Kd[1]
- *  M301  E2  PID         Kp[2], Ki[2], Kd[2]
- *  M301  E3  PID         Kp[3], Ki[3], Kd[3]
+ *  M301  E0  PIDC        Kp[0], Ki[0], Kd[0], Kc[0]
+ *  M301  E1  PIDC        Kp[1], Ki[1], Kd[1], Kc[1]
+ *  M301  E2  PIDC        Kp[2], Ki[2], Kd[2], Kc[2]
+ *  M301  E3  PIDC        Kp[3], Ki[3], Kd[3], Kc[3]
+ *  M301  L               lpq_len
  *
  * PIDTEMPBED:
  *  M304      PID         bedKp, bedKi, bedKd
@@ -199,13 +200,19 @@ void Config_StoreSettings() {
   EEPROM_WRITE_VAR(i, gumPreheatFanSpeed);
 
   #if ENABLED(PIDTEMP)
-    for (int e = 0; e < HOTENDS; e++) {
-      EEPROM_WRITE_VAR(i, PID_PARAM(Kp, e));
-      EEPROM_WRITE_VAR(i, PID_PARAM(Ki, e));
-      EEPROM_WRITE_VAR(i, PID_PARAM(Kd, e));
+    for (int h = 0; h < HOTENDS; h++) {
+      EEPROM_WRITE_VAR(i, PID_PARAM(Kp, h));
+      EEPROM_WRITE_VAR(i, PID_PARAM(Ki, h));
+      EEPROM_WRITE_VAR(i, PID_PARAM(Kd, h));
+      EEPROM_WRITE_VAR(i, PID_PARAM(Kc, h));
     }
   #endif
 
+  #if DISABLED(PID_ADD_EXTRUSION_RATE)
+    int lpq_len = 20;
+  #endif
+  EEPROM_WRITE_VAR(i, lpq_len);
+  
   #if ENABLED(PIDTEMPBED)
     EEPROM_WRITE_VAR(i, bedKp);
     EEPROM_WRITE_VAR(i, bedKi);
@@ -336,12 +343,18 @@ void Config_RetrieveSettings() {
     EEPROM_READ_VAR(i, gumPreheatFanSpeed);
 
     #if ENABLED(PIDTEMP)
-      for (int8_t e = 0; e < HOTENDS; e++) {
-        EEPROM_READ_VAR(i, PID_PARAM(Kp, e));
-        EEPROM_READ_VAR(i, PID_PARAM(Ki, e));
-        EEPROM_READ_VAR(i, PID_PARAM(Kd, e));
+      for (int8_t h = 0; h < HOTENDS; h++) {
+        EEPROM_READ_VAR(i, PID_PARAM(Kp, h));
+        EEPROM_READ_VAR(i, PID_PARAM(Ki, h));
+        EEPROM_READ_VAR(i, PID_PARAM(Kd, h));
+        EEPROM_READ_VAR(i, PID_PARAM(Kc, h));
       }
     #endif // PIDTEMP
+
+    #if DISABLED(PID_ADD_EXTRUSION_RATE)
+      int lpq_len;
+    #endif
+    EEPROM_READ_VAR(i, lpq_len);
 
     #if ENABLED(PIDTEMPBED)
       EEPROM_READ_VAR(i, bedKp);
@@ -420,14 +433,15 @@ void Config_ResetDefault() {
     float tmp6[] = DEFAULT_Kp;
     float tmp7[] = DEFAULT_Ki;
     float tmp8[] = DEFAULT_Kd;
+    float tmp9[] = DEFAULT_Kc;
   #endif // PIDTEMP
 
   #if ENABLED(HOTEND_OFFSET_X) && ENABLED(HOTEND_OFFSET_Y)
-    float tmp9[] = HOTEND_OFFSET_X;
-    float tmp10[] = HOTEND_OFFSET_Y;
+    float tmp10[] = HOTEND_OFFSET_X;
+    float tmp11[] = HOTEND_OFFSET_Y;
   #else
-    float tmp9[] = {0};
     float tmp10[] = {0};
+    float tmp11[] = {0};
   #endif
 
   for (int8_t i = 0; i < 3 + EXTRUDERS; i++) {
@@ -459,14 +473,14 @@ void Config_ResetDefault() {
       else
         max_e_jerk[i] = tmp5[max_i - 1];
       #if HOTENDS > 1
-        max_i = sizeof(tmp9) / sizeof(*tmp9);
-        if(i < max_i)
-          hotend_offset[X_AXIS][i] = tmp9[i];
-        else
-          hotend_offset[X_AXIS][i] = 0;
         max_i = sizeof(tmp10) / sizeof(*tmp10);
         if(i < max_i)
-          hotend_offset[Y_AXIS][i] = tmp10[i];
+          hotend_offset[X_AXIS][i] = tmp10[i];
+        else
+          hotend_offset[X_AXIS][i] = 0;
+        max_i = sizeof(tmp11) / sizeof(*tmp11);
+        if(i < max_i)
+          hotend_offset[Y_AXIS][i] = tmp11[i];
         else
           hotend_offset[Y_AXIS][i] = 0;
       #endif // HOTENDS > 1
@@ -535,11 +549,15 @@ void Config_ResetDefault() {
   #endif
 
   #if ENABLED(PIDTEMP)
-    for (int8_t e = 0; e < HOTENDS; e++) {
-      Kp[e] = tmp6[e];
-      Ki[e] = scalePID_i(tmp7[e]);
-      Kd[e] = scalePID_d(tmp8[e]);
+    for (int8_t h = 0; h < HOTENDS; h++) {
+      Kp[h] = tmp6[h];
+      Ki[h] = scalePID_i(tmp7[h]);
+      Kd[h] = scalePID_d(tmp8[h]);
+      Kc[h] = tmp9[h];
     }
+    #if ENABLED(PID_ADD_EXTRUSION_RATE)
+      lpq_len = 20; // default last-position-queue size
+    #endif
     // call updatePID (similar to when we have processed M301)
     updatePID();
   #endif // PIDTEMP
@@ -752,12 +770,19 @@ void Config_ResetDefault() {
         ECHO_LM(DB, "PID settings:");
       }
       #if ENABLED(PIDTEMP)
-        for (int e = 0; e < HOTENDS; e++) {
-          ECHO_SMV(DB, "  M301 E", e);
-          ECHO_MV(" P", PID_PARAM(Kp, e));
-          ECHO_MV(" I", unscalePID_i(PID_PARAM(Ki, e)));
-          ECHO_EMV(" D", unscalePID_d(PID_PARAM(Kd, e)));
-      }
+        for (int h = 0; h < HOTENDS; h++) {
+          ECHO_SMV(DB, "  M301 H", h);
+          ECHO_MV(" P", PID_PARAM(Kp, h));
+          ECHO_MV(" I", unscalePID_i(PID_PARAM(Ki, h)));
+          ECHO_MV(" D", unscalePID_d(PID_PARAM(Kd, h)));
+          #if ENABLED(PID_ADD_EXTRUSION_RATE)
+            ECHO_MV(" C", PID_PARAM(Kc, h));
+          #endif
+          ECHO_E;
+        }
+        #if ENABLED(PID_ADD_EXTRUSION_RATE)
+          ECHO_SMV(DB, "  M301 L", lpq_len);
+        #endif
       #endif
       #if ENABLED(PIDTEMPBED)
         ECHO_SMV(DB, "  M304 P", bedKp); // for compatibility with hosts, only echos values for E0

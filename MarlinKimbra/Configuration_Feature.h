@@ -169,11 +169,16 @@
 // is more then PID_FUNCTIONAL_RANGE then the PID will be shut off and the heater will be set to min/max.
 #define PID_FUNCTIONAL_RANGE 10         // degC
 #define PID_INTEGRAL_DRIVE_MAX PID_MAX  // Limit for the integral term
+// this adds an experimental additional term to the heating power, proportional to the extrusion speed.
+// if Kc is chosen well, the additional required power due to increased melting should be compensated.
+//#define PID_ADD_EXTRUSION_RATE
+#define LPQ_MAX_LEN 50
 
 //           HotEnd{HE0,HE1,HE2,HE3}
 #define DEFAULT_Kp {40, 40, 40, 40}     // Kp for E0, E1, E2, E3
 #define DEFAULT_Ki {07, 07, 07, 07}     // Ki for E0, E1, E2, E3
 #define DEFAULT_Kd {60, 60, 60, 60}     // Kd for E0, E1, E2, E3
+#define DEFAULT_Kc {100, 100, 100, 100} // heating power = Kc * (e_speed)
 /***********************************************************************/
 
 

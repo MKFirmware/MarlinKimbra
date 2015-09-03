@@ -62,12 +62,12 @@ extern float current_temperature_bed;
 #endif
 
 #if ENABLED(PIDTEMP)
-  extern float Kp[HOTENDS], Ki[HOTENDS], Kd[HOTENDS];
+  extern float Kp[HOTENDS], Ki[HOTENDS], Kd[HOTENDS], Kc[HOTENDS];
   #define PID_PARAM(param, e) param[e] // use macro to point to array value
 #endif
 
 #if ENABLED(PIDTEMPBED)
-  extern float bedKp,bedKi,bedKd;
+  extern float bedKp, bedKi, bedKd;
 #endif
 
 #if ENABLED(PIDTEMP) || ENABLED(PIDTEMPBED)

@@ -10,7 +10,6 @@ void idle(bool ignore_stepper_queue = false);
 
 void manage_inactivity(bool ignore_stepper_queue=false);
 
-
 void FlushSerialRequestResend();
 void ok_to_send();
 
@@ -170,6 +169,10 @@ extern int fanSpeed;
 #if ENABLED(IDLE_OOZING_PREVENT)
   extern bool IDLE_OOZING_enabled;
   extern void IDLE_OOZING_retract(bool retracting);
+#endif
+
+#if ENABLED(PIDTEMP) && ENABLED(PID_ADD_EXTRUSION_RATE)
+  extern int lpq_len;
 #endif
 
 #if ENABLED(FWRETRACT)

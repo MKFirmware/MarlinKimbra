@@ -195,7 +195,7 @@
  * M250 - Set LCD contrast C<contrast value> (value 0..63)
  * M280 - Set servo position absolute. P: servo index, S: angle or microseconds
  * M300 - Play beep sound S<frequency Hz> P<duration ms>
- * M301 - Set PID parameters P I and D
+ * M301 - Set PID parameters P I D and C
  * M302 - Allow cold extrudes, or set the minimum extrude S<temperature>.
  * M303 - PID relay autotune S<temperature> sets the target temperature. (default target temperature = 150C)
  * M304 - Set bed PID parameters P I and D
@@ -487,6 +487,10 @@ unsigned long printer_usage_seconds;
 #if HAS(CHDK)
   unsigned long chdkHigh = 0;
   boolean chdkActive = false;
+#endif
+
+#if ENABLED(PIDTEMP) && ENABLED(PID_ADD_EXTRUSION_RATE)
+  int lpq_len = 20;
 #endif
 
 //===========================================================================
@@ -5899,25 +5903,44 @@ inline void gcode_M226() {
 
 
 #if ENABLED(PIDTEMP)
+
   /**
-   * M301: Set PID parameters P I D
+   * M301: Set PID parameters P I D (and optionally C, L)
+   *
+   *   P[float] Kp term
+   *   I[float] Ki term (unscaled)
+   *   D[float] Kd term (unscaled)
+   *
+   * With PID_ADD_EXTRUSION_RATE:
+   *
+   *   C[float] Kc term
+   *   L[float] LPQ length
    */
   inline void gcode_M301() {
 
     // multi-hotend PID patch: M301 updates or prints a single hotend's PID values
     // default behaviour (omitting E parameter) is to update for hotend 0 only
-    int e = code_seen('E') ? code_value() : 0; // hotend being updated
+    int e = code_seen('H') ? code_value() : 0; // hotend being updated
 
     if (e < HOTENDS) { // catch bad input value
       if (code_seen('P')) PID_PARAM(Kp, e) = code_value();
       if (code_seen('I')) PID_PARAM(Ki, e) = scalePID_i(code_value());
       if (code_seen('D')) PID_PARAM(Kd, e) = scalePID_d(code_value());
+      #if ENABLED(PID_ADD_EXTRUSION_RATE)
+        if (code_seen('C')) PID_PARAM(Kc, e) = code_value();
+        if (code_seen('L')) lpq_len = code_value();
+        NOMORE(lpq_len, LPQ_MAX_LEN);
+      #endif
 
       updatePID();
       ECHO_SMV(OK, "e:", e);
       ECHO_MV(" p:", PID_PARAM(Kp, e));
       ECHO_MV(" i:", unscalePID_i(PID_PARAM(Ki, e)));
-      ECHO_EMV(" d:", unscalePID_d(PID_PARAM(Kd, e)));
+      ECHO_MV(" d:", unscalePID_d(PID_PARAM(Kd, e)));
+      #if ENABLED(PID_ADD_EXTRUSION_RATE)
+        ECHO_MV(" c:", PID_PARAM(Kc, e));
+      #endif
+      ECHO_E;
     }
     else {
       ECHO_LM(ER, MSG_INVALID_EXTRUDER);
