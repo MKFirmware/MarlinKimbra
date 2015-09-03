@@ -111,8 +111,9 @@
 
 #elif ENABLED(NEXTION)
 
-  #define LCD_UPDATE_INTERVAL 200
+  #define LCD_UPDATE_INTERVAL 100
 
+  void page0PopCallback(void *ptr);
   void setpagePopCallback(void *ptr);
   void hotPopCallback(void *ptr);
   void sethotPopCallback(void *ptr);

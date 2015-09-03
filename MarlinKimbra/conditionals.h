@@ -629,7 +629,7 @@
 #define HAS_POWER_SWITCH (POWER_SUPPLY > 0 && PIN_EXISTS(PS_ON))
 #define HAS_MOTOR_CURRENT_PWM_XY (PIN_EXISTS(MOTOR_CURRENT_PWM_XY))
 
-#define HAS_DIGIPOTSS (DIGIPOTSS_PIN >= 0)
+#define HAS_DIGIPOTSS (PIN_EXISTS(DIGIPOTSS))
 
 /**
  * Shorthand for filament sensor and power sensor for ultralcd.cpp, dogm_lcd_implementation.h, ultralcd_implementation_hitachi_HD44780.h

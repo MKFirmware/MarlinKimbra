@@ -68,7 +68,7 @@
 #endif
 
 #if HAS(DIGIPOTSS)
-  #include "SPI.h"
+  #include <SPI.h>
 #endif
 
 
