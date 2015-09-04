@@ -1,4 +1,19 @@
+### Version 4.2.0
+* Add PID Extrusion Rate Kc in percent.
+* New configuration systems (Now you can create a separate file with all configuration and use it in you FW update)
+* New namings for file
+* Added more documentation inside configuration file
+* More checks for feature incompatibility during compilation
+* Codeclean
+* General bugfix
+* Removed legacy support for old configuration (Do not use your old configuration files, namings and position for configuration has changed)
+
 ### Version 4.1.5
+* Added dot for SD write operation
+* Added statistics menu
+* Added an overall configuration file
+* Added M70 gcode for calibrate AC721 current sensor
+* Added documentation for calibrate AC721 current sensor
 * Critical stepper motor frequency bugfix
 * Introduced more intuitive menu tree.
 * Added a menu option to fix loose steps from LCD

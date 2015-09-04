@@ -21,15 +21,11 @@
 #ifndef TEMPERATURE_H
 #define TEMPERATURE_H 
 
-#include "Marlin.h"
-#include "planner.h"
-#include "stepper.h"
-
 // public functions
 void tp_init();  //initialize the heating
 void manage_heater(); //it is critical that this is called periodically.
 
-#if HAS_FILAMENT_SENSOR
+#if ENABLED(FILAMENT_SENSOR)
   // For converting raw Filament Width to milimeters 
   float analog2widthFil(); 
 
@@ -37,10 +33,14 @@ void manage_heater(); //it is critical that this is called periodically.
   int widthFil_to_size_ratio();
 #endif
 
-#if HAS_POWER_CONSUMPTION_SENSOR
+#if HAS(POWER_CONSUMPTION_SENSOR)
   // For converting raw Power Consumption to watt
+  float analog2voltage();
   float analog2current();
   float analog2power();
+  float raw_analog2voltage();
+  float analog2error(float current);
+  float analog2efficiency(float watt);
 #endif
 
 // low level conversion routines
@@ -57,17 +57,17 @@ extern float current_temperature_bed;
   extern float redundant_temperature;
 #endif
 
-#if HAS_CONTROLLERFAN
+#if HAS(CONTROLLERFAN)
   extern unsigned char soft_pwm_bed;
 #endif
 
 #if ENABLED(PIDTEMP)
-  extern float Kp[HOTENDS], Ki[HOTENDS], Kd[HOTENDS];
+  extern float Kp[HOTENDS], Ki[HOTENDS], Kd[HOTENDS], Kc[HOTENDS];
   #define PID_PARAM(param, e) param[e] // use macro to point to array value
 #endif
 
 #if ENABLED(PIDTEMPBED)
-  extern float bedKp,bedKi,bedKd;
+  extern float bedKp, bedKi, bedKd;
 #endif
 
 #if ENABLED(PIDTEMP) || ENABLED(PIDTEMPBED)
@@ -93,7 +93,7 @@ extern float current_temperature_bed;
 FORCE_INLINE float degHotend(uint8_t hotend) { return current_temperature[HOTEND_ARG]; }
 FORCE_INLINE float degBed() { return current_temperature_bed; }
 
-#ifdef SHOW_TEMP_ADC_VALUES
+#if ENABLED(SHOW_TEMP_ADC_VALUES)
   FORCE_INLINE float rawHotendTemp(uint8_t hotend) { return current_temperature_raw[HOTEND_ARG]; }
   FORCE_INLINE float rawBedTemp() { return current_temperature_bed_raw; }
 #endif
@@ -101,7 +101,7 @@ FORCE_INLINE float degBed() { return current_temperature_bed; }
 FORCE_INLINE float degTargetHotend(uint8_t hotend) { return target_temperature[HOTEND_ARG]; }
 FORCE_INLINE float degTargetBed() { return target_temperature_bed; }
 
-#ifdef THERMAL_PROTECTION_HOTENDS
+#if ENABLED(THERMAL_PROTECTION_HOTENDS)
   void start_watching_heater(int e=0);
 #endif
 
@@ -150,15 +150,6 @@ void PID_autotune(float temp, int hotend, int ncycles);
 
 void setExtruderAutoFanState(int pin, bool state);
 void checkExtruderAutoFans();
-
-FORCE_INLINE void autotempShutdown() {
-  #if ENABLED(AUTOTEMP)
-    if (autotemp_enabled) {
-      autotemp_enabled = false;
-      if (degTargetHotend(active_extruder) > autotemp_min)
-        setTargetHotend(0, active_extruder);
-    }
-  #endif
-}
+extern void autotempShutdown();
 
 #endif // TEMPERATURE_H

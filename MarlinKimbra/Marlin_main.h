@@ -4,141 +4,16 @@
 #ifndef MARLIN_H
 #define MARLIN_H
 
-#define  FORCE_INLINE __attribute__((always_inline)) inline
-
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <inttypes.h>
-
-#ifdef __SAM3X8E__
-  #include "HAL.h"
-#else
-  #include <util/delay.h>
-  #include <avr/eeprom.h>
-  #include "fastio.h"
-#endif
-
-#include <avr/pgmspace.h>
-#include <avr/interrupt.h>
-#include "Configuration.h"
-#include "pins.h"
-
-#ifndef SANITYCHECK_H
-  #error Your Configuration.h and Configuration_adv.h files are outdated!
-#endif
-
-#include "Arduino.h"
-
-typedef unsigned long millis_t;
-
-// Arduino < 1.0.0 does not define this, so we need to do it ourselves
-#ifndef analogInputToDigitalPin
-  #define analogInputToDigitalPin(p) ((p) + 0xA0)
-#endif
-
-#include "comunication.h"
-
 void get_command();
 
 void idle(bool ignore_stepper_queue = false);
 
 void manage_inactivity(bool ignore_stepper_queue=false);
 
-#if ENABLED(DUAL_X_CARRIAGE) && HAS_X_ENABLE && HAS_X2_ENABLE
-  #define  enable_x() do { X_ENABLE_WRITE( X_ENABLE_ON); X2_ENABLE_WRITE( X_ENABLE_ON); } while (0)
-  #define disable_x() do { X_ENABLE_WRITE(!X_ENABLE_ON); X2_ENABLE_WRITE(!X_ENABLE_ON); axis_known_position[X_AXIS] = false; } while (0)
-#elif HAS_X_ENABLE
-  #define  enable_x() X_ENABLE_WRITE( X_ENABLE_ON)
-  #define disable_x() { X_ENABLE_WRITE(!X_ENABLE_ON); axis_known_position[X_AXIS] = false; }
-#else
-  #define enable_x() ;
-  #define disable_x() ;
-#endif
-
-#if HAS_Y_ENABLE
-  #if ENABLED(Y_DUAL_STEPPER_DRIVERS)
-    #define  enable_y() { Y_ENABLE_WRITE( Y_ENABLE_ON); Y2_ENABLE_WRITE(Y_ENABLE_ON); }
-    #define disable_y() { Y_ENABLE_WRITE(!Y_ENABLE_ON); Y2_ENABLE_WRITE(!Y_ENABLE_ON); axis_known_position[Y_AXIS] = false; }
-  #else
-    #define  enable_y() Y_ENABLE_WRITE( Y_ENABLE_ON)
-    #define disable_y() { Y_ENABLE_WRITE(!Y_ENABLE_ON); axis_known_position[Y_AXIS] = false; }
-  #endif
-#else
-  #define enable_y() ;
-  #define disable_y() ;
-#endif
-
-#if HAS_Z_ENABLE
-  #if ENABLED(Z_DUAL_STEPPER_DRIVERS)
-    #define  enable_z() { Z_ENABLE_WRITE( Z_ENABLE_ON); Z2_ENABLE_WRITE(Z_ENABLE_ON); }
-    #define disable_z() { Z_ENABLE_WRITE(!Z_ENABLE_ON); Z2_ENABLE_WRITE(!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }
-  #else
-    #define  enable_z() Z_ENABLE_WRITE( Z_ENABLE_ON)
-    #define disable_z() { Z_ENABLE_WRITE(!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }
-  #endif
-#else
-  #define enable_z() ;
-  #define disable_z() ;
-#endif
-
-#if HAS_E0_ENABLE
-  #define enable_e0()  E0_ENABLE_WRITE( E_ENABLE_ON)
-  #define disable_e0() E0_ENABLE_WRITE(!E_ENABLE_ON)
-#else
-  #define enable_e0()  /* nothing */
-  #define disable_e0() /* nothing */
-#endif
-
-#if (DRIVER_EXTRUDERS > 1) && HAS_E1_ENABLE
-  #define enable_e1()  E1_ENABLE_WRITE( E_ENABLE_ON)
-  #define disable_e1() E1_ENABLE_WRITE(!E_ENABLE_ON)
-#else
-  #define enable_e1()  /* nothing */
-  #define disable_e1() /* nothing */
-#endif
-
-#if (DRIVER_EXTRUDERS > 2) && HAS_E2_ENABLE
-  #define enable_e2()  E2_ENABLE_WRITE( E_ENABLE_ON)
-  #define disable_e2() E2_ENABLE_WRITE(!E_ENABLE_ON)
-#else
-  #define enable_e2()  /* nothing */
-  #define disable_e2() /* nothing */
-#endif
-
-#if (DRIVER_EXTRUDERS > 3) && HAS_E3_ENABLE
-  #define enable_e3()  E3_ENABLE_WRITE( E_ENABLE_ON)
-  #define disable_e3() E3_ENABLE_WRITE(!E_ENABLE_ON)
-#else
-  #define enable_e3()  /* nothing */
-  #define disable_e3() /* nothing */
-#endif
-
-#define disable_e() {disable_e0(); disable_e1(); disable_e2(); disable_e3();}
-
-/**
- * The axis order in all axis related arrays is X, Y, Z, E
- */
-#define NUM_AXIS 4
-
-/**
- * Axis indices as enumerated constants
- *
- * A_AXIS and B_AXIS are used by COREXY printers
- * X_HEAD and Y_HEAD is used for systems that don't have a 1:1 relationship between X_AXIS and X Head movement, like CoreXY bots.
- */
-enum AxisEnum {X_AXIS=0, A_AXIS=0, Y_AXIS=1, B_AXIS=1, Z_AXIS=2, C_AXIS=2, E_AXIS=3, X_HEAD=4, Y_HEAD=5, Z_HEAD=5};
-
-enum EndstopEnum {X_MIN=0, Y_MIN=1, Z_MIN=2, Z_PROBE=3, X_MAX=4, Y_MAX=5, Z_MAX=6, Z2_MIN=7, Z2_MAX=8};
-
-void enable_all_steppers();
-void disable_all_steppers();
-
 void FlushSerialRequestResend();
 void ok_to_send();
 
-#if ENABLED(DELTA)
+#if MECH(DELTA)
   float probe_bed(float x, float y);
   void set_delta_constants();
   void adj_tower_delta(int tower);
@@ -166,7 +41,7 @@ void ok_to_send();
   extern float delta_radius;
   extern float delta_diagonal_rod;
 #endif
-#if ENABLED(SCARA)
+#if MECH(SCARA)
   void calculate_delta(float cartesian[3]);
   void calculate_SCARA_forward_Transform(float f_scara[3]);
 #endif
@@ -188,6 +63,9 @@ enum DebugFlags {
   DEBUG_DRYRUN        = BIT(3),
   DEBUG_COMMUNICATION = BIT(4)
 };
+
+void clamp_to_software_endstops(float target[3]);
+
 extern uint8_t debugLevel;
 
 extern bool Running;
@@ -201,15 +79,10 @@ void prepare_arc_move(char isclockwise);
 void clamp_to_software_endstops(float target[3]);
 
 extern millis_t previous_cmd_ms;
-inline void refresh_cmd_timeout() { previous_cmd_ms = millis(); }
+inline void refresh_cmd_timeout();
 
 #if ENABLED(FAST_PWM_FAN)
   void setPwmFrequency(uint8_t pin, int val);
-#endif
-
-#ifndef CRITICAL_SECTION_START
-  #define CRITICAL_SECTION_START  unsigned char _sreg = SREG; cli();
-  #define CRITICAL_SECTION_END    SREG = _sreg;
 #endif
 
 extern float homing_feedrate[];
@@ -225,11 +98,6 @@ extern float home_offset[3];
 
 // Hotend offset
 #if HOTENDS > 1
-  #ifndef DUAL_X_CARRIAGE
-    #define NUM_HOTEND_OFFSETS 2 // only in XY plane
-  #else
-    #define NUM_HOTEND_OFFSETS 3 // supports offsets in XYZ plane
-  #endif
   extern float hotend_offset[NUM_HOTEND_OFFSETS][HOTENDS];
 #endif // HOTENDS > 1
 
@@ -237,7 +105,7 @@ extern float home_offset[3];
   extern int old_color; // old color for system NPR2
 #endif
 
-#if ENABLED(DELTA)
+#if MECH(DELTA)
   extern float z_probe_offset[3];
   extern float endstop_adj[3];
   extern float tower_adj[6];
@@ -248,7 +116,7 @@ extern float home_offset[3];
   extern float z_endstop_adj;
 #endif
 
-#if ENABLED(SCARA)
+#if MECH(SCARA)
   extern float axis_scaling[3];  // Build size scaling
 #endif
 
@@ -273,7 +141,7 @@ extern int fanSpeed;
 
 #if ENABLED(FAN_SOFT_PWM)
   extern unsigned char fanSpeedSoftPwm;
-  #if HAS_CONTROLLERFAN
+  #if HAS(CONTROLLERFAN)
     extern unsigned char fanSpeedSoftPwm_controller;
   #endif
 #endif
@@ -288,16 +156,23 @@ extern int fanSpeed;
   extern int meas_delay_cm;               //delay distance
 #endif
 
-#if HAS_POWER_CONSUMPTION_SENSOR
+#if HAS(POWER_CONSUMPTION_SENSOR)
   extern float power_consumption_meas;          //holds the power consumption as accurately measured
   extern unsigned long power_consumption_hour;  //holds the power consumption per hour as accurately measured
   extern unsigned long startpower;
   extern unsigned long stoppower;
+  extern float raw_analog2voltage();
+  extern float analog2error(float current);
+  extern float analog2efficiency(float watt);
 #endif
 
 #if ENABLED(IDLE_OOZING_PREVENT)
   extern bool IDLE_OOZING_enabled;
   extern void IDLE_OOZING_retract(bool retracting);
+#endif
+
+#if ENABLED(PIDTEMP) && ENABLED(PID_ADD_EXTRUSION_RATE)
+  extern int lpq_len;
 #endif
 
 #if ENABLED(FWRETRACT)
@@ -338,4 +213,26 @@ extern uint8_t active_driver;
 
 extern void calculate_volumetric_multipliers();
 
+#if ENABLED(M100_FREE_MEMORY_WATCHER)
+  extern void *__brkval;
+  extern size_t  __heap_start, __heap_end, __flp;
+
+  //
+  // Declare all the functions we need from Marlin_Main.cpp to do the work!
+  //
+  float code_value();
+  long code_value_long();
+  bool code_seen(char );
+
+
+  //
+  // Utility functions used by M100 to get its work done.
+  //
+  unsigned char *top_of_stack();
+  void prt_hex_nibble( unsigned int );
+  void prt_hex_byte(unsigned int );
+  void prt_hex_word(unsigned int );
+  int how_many_E5s_are_here( unsigned char *);
+
+#endif
 #endif //MARLIN_H

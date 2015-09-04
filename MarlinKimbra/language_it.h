@@ -31,6 +31,8 @@
 #define MSG_MBL_6                           " Piatto livellato!       "
 #define MSG_SET_HOME_OFFSETS                "Setta offset home"
 #define MSG_SET_ORIGIN                      "Imposta Origine"
+#define MSG_ONFOR                           "On x:"
+#define MSG_PWRCONSUMED                     "P.za:"
 #define MSG_PREHEAT_PLA                     "Preriscalda PLA"
 #define MSG_PREHEAT_PLA_ALL                 "Prer. PLA Tutto"
 #define MSG_PREHEAT_PLA_BEDONLY             "Prer. PLA Piatto"
@@ -64,6 +66,7 @@
 #define MSG_FAN_SPEED                       "Ventola"
 #define MSG_FLOW                            "Flusso"
 #define MSG_CONTROL                         "Controllo"
+#define MSG_STATS                           "Statistiche"
 #define MSG_MIN                             LCD_STR_THERMOMETER " Min"
 #define MSG_MAX                             LCD_STR_THERMOMETER " Max"
 #define MSG_FACTOR                          LCD_STR_THERMOMETER " Fact"
@@ -160,7 +163,7 @@
 #define MSG_DEBUG_DRYRUN                    "DEBUG STAMPA A VUOTO"
 
 // Calibrate Delta
-#ifdef DELTA
+#if MECH(DELTA)
   #define MSG_DELTA_CALIBRATE               "Calibraz. Delta"
   #define MSG_DELTA_CALIBRATE_X             "Calibra X"
   #define MSG_DELTA_CALIBRATE_Y             "Calibra Y"
@@ -169,7 +172,7 @@
 #endif // DELTA
 
 // Scara
-#ifdef SCARA
+#if MECH(SCARA)
   #define MSG_XSCALE                        "X Scale"
   #define MSG_YSCALE                        "Y Scale"
 #endif
@@ -191,7 +194,7 @@
 #define MSG_INVALID_POS_SLOT                "Slot invalido, slot totali: "
 
 // Firmware Test
-#ifdef FIRMWARE_TEST
+#if ENABLED(FIRMWARE_TEST)
   #define MSG_FWTEST_YES                    "Dai il comando Y per andare avanti"
   #define MSG_FWTEST_NO                     "Dai il comando N per andare avanti"
   #define MSG_FWTEST_YES_NO                 "Dai il comando Y o N per andare avanti"

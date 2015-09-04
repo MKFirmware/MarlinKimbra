@@ -48,8 +48,11 @@
  *
  */
 
-#include "Marlin.h"
+#include "base.h"
+#include "Marlin_main.h"
+
 #include "planner.h"
+#include "stepper_indirection.h"
 #include "stepper.h"
 #include "temperature.h"
 #include "ultralcd.h"
@@ -109,7 +112,7 @@ static float previous_nominal_speed;   // Nominal speed of previous path line se
 
 unsigned char g_uc_extruder_last_move[4] = {0,0,0,0};
 
-#ifdef XY_FREQUENCY_LIMIT
+#if ENABLED(XY_FREQUENCY_LIMIT)
   // Used for the frequency limit
   #define MAX_FREQ_TIME (1000000.0/XY_FREQUENCY_LIMIT)
   // Old direction bits. Used for speed calculations
@@ -428,8 +431,8 @@ void check_axes_activity() {
     disable_e3();
   }
 
-  #if HAS_FAN
-    #ifdef FAN_KICKSTART_TIME
+  #if HAS(FAN)
+    #if ENABLED(FAN_KICKSTART_TIME)
       static millis_t fan_kick_end;
       if (tail_fan_speed) {
         millis_t ms = millis();
@@ -454,17 +457,17 @@ void check_axes_activity() {
     #else
       analogWrite(FAN_PIN, CALC_FAN_SPEED);
     #endif // FAN_SOFT_PWM
-  #endif // HAS_FAN
+  #endif // HAS(FAN)
 
   #if ENABLED(AUTOTEMP)
     getHighESpeed();
   #endif
 
   #if ENABLED(BARICUDA)
-    #if HAS_HEATER_1
+    #if HAS(HEATER_1)
       analogWrite(HEATER_1_PIN,tail_valve_pressure);
     #endif
-    #if HAS_HEATER_2
+    #if HAS(HEATER_2)
       analogWrite(HEATER_2_PIN,tail_e_to_p_pressure);
     #endif
   #endif
@@ -521,10 +524,10 @@ float junction_deviation = 0.1;
         dy = target[Y_AXIS] - position[Y_AXIS],
         dz = target[Z_AXIS] - position[Z_AXIS],
         de = target[E_AXIS] - position[E_AXIS];
-  #if ENABLED(COREXY)
+  #if MECH(COREXY)
     float da = dx + COREX_YZ_FACTOR * dy;
     float db = dx - COREX_YZ_FACTOR * dy;
-  #elif ENABLED(COREXZ)
+  #elif MECH(COREXZ)
     float da = dx + COREX_YZ_FACTOR * dz;
     float dc = dx - COREX_YZ_FACTOR * dz;
   #endif
@@ -544,7 +547,7 @@ float junction_deviation = 0.1;
 
       #if ENABLED(PREVENT_LENGTHY_EXTRUDE)
         if (labs(de) > axis_steps_per_unit[E_AXIS + extruder] * EXTRUDE_MAXLENGTH) {
-          #ifdef EASY_LOAD
+          #if ENABLED(EASY_LOAD)
             if (!allow_lengthy_extrude_once) {
           #endif
           position[E_AXIS] = target[E_AXIS]; // Behave as if the move really took place, but ignore E part
@@ -566,13 +569,13 @@ float junction_deviation = 0.1;
   block->busy = false;
 
   // Number of steps for each axis
-  #if ENABLED(COREXY)
+  #if MECH(COREXY)
     // corexy planning
     // these equations follow the form of the dA and dB equations on http://www.corexy.com/theory.html
     block->steps[A_AXIS] = labs(da);
     block->steps[B_AXIS] = labs(db);
     block->steps[Z_AXIS] = labs(dz);
-  #elif ENABLED(COREXZ)
+  #elif MECH(COREXZ)
     // corexz planning
     block->steps[A_AXIS] = labs(da);
     block->steps[Y_AXIS] = labs(dy);
@@ -591,7 +594,7 @@ float junction_deviation = 0.1;
   block->step_event_count = max(block->steps[X_AXIS], max(block->steps[Y_AXIS], max(block->steps[Z_AXIS], block->steps[E_AXIS])));
 
   // Bail if this is a zero-length block
-  if (block->step_event_count <= dropsegments) return;
+  if (block->step_event_count <= DROP_SEGMENTS) return;
 
   block->fan_speed = fanSpeed;
   #if ENABLED(BARICUDA)
@@ -606,13 +609,13 @@ float junction_deviation = 0.1;
 
   // Compute direction bits for this block 
   uint8_t dirb = 0;
-  #if ENABLED(COREXY)
+  #if MECH(COREXY)
     if (dx < 0) dirb |= BIT(X_HEAD); // Save the real Extruder (head) direction in X Axis
     if (dy < 0) dirb |= BIT(Y_HEAD); // ...and Y
     if (dz < 0) dirb |= BIT(Z_AXIS);
     if (da < 0) dirb |= BIT(A_AXIS); // Motor A direction
     if (db < 0) dirb |= BIT(B_AXIS); // Motor B direction
-  #elif ENABLED(COREXZ)
+  #elif MECH(COREXZ)
     if (dx < 0) dirb |= BIT(X_HEAD); // Save the real Extruder (head) direction in X Axis
     if (dy < 0) dirb |= BIT(Y_AXIS);
     if (dz < 0) dirb |= BIT(Z_HEAD); // ...and Z
@@ -629,7 +632,7 @@ float junction_deviation = 0.1;
   block->active_driver = driver;
 
   // Enable active axes
-  #if ENABLED(COREXY)
+  #if MECH(COREXY)
     if (block->steps[A_AXIS] || block->steps[B_AXIS]) {
       enable_x();
       enable_y();
@@ -637,7 +640,7 @@ float junction_deviation = 0.1;
     #if DISABLED(Z_LATE_ENABLE)
       if (block->steps[Z_AXIS]) enable_z();
     #endif
-  #elif ENABLED(COREXZ)
+  #elif MECH(COREXZ)
     if (block->steps[A_AXIS] || block->steps[C_AXIS]) {
       enable_x();
       enable_z();
@@ -747,14 +750,14 @@ float junction_deviation = 0.1;
    * So we need to create other 2 "AXIS", named X_HEAD and Y_HEAD, meaning the real displacement of the Head. 
    * Having the real displacement of the head, we can calculate the total movement length and apply the desired speed.
    */ 
-  #if ENABLED(COREXY)
+  #if MECH(COREXY)
     float delta_mm[6];
     delta_mm[X_HEAD] = dx / axis_steps_per_unit[A_AXIS];
     delta_mm[Y_HEAD] = dy / axis_steps_per_unit[B_AXIS];
     delta_mm[Z_AXIS] = dz / axis_steps_per_unit[Z_AXIS];
     delta_mm[A_AXIS] = da / axis_steps_per_unit[A_AXIS];
     delta_mm[B_AXIS] = db / axis_steps_per_unit[B_AXIS];
-  #elif ENABLED(COREXZ)
+  #elif MECH(COREXZ)
     float delta_mm[6];
     delta_mm[X_HEAD] = dx / axis_steps_per_unit[A_AXIS];
     delta_mm[Y_AXIS] = dy / axis_steps_per_unit[Y_AXIS];
@@ -769,14 +772,14 @@ float junction_deviation = 0.1;
   #endif
   delta_mm[E_AXIS] = (de / axis_steps_per_unit[E_AXIS + extruder]) * volumetric_multiplier[extruder] * extruder_multiplier[extruder] / 100.0;
 
-  if (block->steps[X_AXIS] <= dropsegments && block->steps[Y_AXIS] <= dropsegments && block->steps[Z_AXIS] <= dropsegments) {
+  if (block->steps[X_AXIS] <= DROP_SEGMENTS && block->steps[Y_AXIS] <= DROP_SEGMENTS && block->steps[Z_AXIS] <= DROP_SEGMENTS) {
     block->millimeters = fabs(delta_mm[E_AXIS]);
   }
   else {
     block->millimeters = sqrt(
-      #if ENABLED(COREXY)
+      #if MECH(COREXY)
         square(delta_mm[X_HEAD]) + square(delta_mm[Y_HEAD]) + square(delta_mm[Z_AXIS])
-      #elif ENABLED(COREXZ)
+      #elif MECH(COREXZ)
         square(delta_mm[X_HEAD]) + square(delta_mm[Y_AXIS]) + square(delta_mm[Z_HEAD])
       #else
         square(delta_mm[X_AXIS]) + square(delta_mm[Y_AXIS]) + square(delta_mm[Z_AXIS])
@@ -803,7 +806,7 @@ float junction_deviation = 0.1;
         if (segment_time < minsegmenttime) {
           // buffer is draining, add extra time.  The amount of time added increases if the buffer is still emptied more.
           inverse_second = 1000000.0 / (segment_time + lround(2 * (minsegmenttime - segment_time) / moves_queued));
-          #ifdef XY_FREQUENCY_LIMIT
+          #if ENABLED(XY_FREQUENCY_LIMIT)
             segment_time = lround(1000000.0 / inverse_second);
           #endif
         }
@@ -850,7 +853,7 @@ float junction_deviation = 0.1;
   }
 
   // Max segement time in us.
-  #ifdef XY_FREQUENCY_LIMIT
+  #if ENABLED(XY_FREQUENCY_LIMIT)
     #define MAX_FREQ_TIME (1000000.0 / XY_FREQUENCY_LIMIT)
 
     // Check and limit the xy direction change frequency

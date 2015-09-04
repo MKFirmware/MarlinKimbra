@@ -16,13 +16,6 @@
   #include "MarlinSerial.h"
 #endif
 
-#ifndef cbi
-  #define cbi(sfr, bit) (_SFR_BYTE(sfr) &= ~_BV(bit))
-#endif
-#ifndef sbi
-  #define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
-#endif
-
 #include "WString.h"
 
 #ifdef USBCON
@@ -39,15 +32,15 @@
   #endif
 #endif
 
-#define START       "start"               //start for host
-#define OK          "ok "                 //ok answer for host
-#define ER          "Error: "             //error for host
-#define WT          "wait"                //wait for host
-#define DB          "echo: "              //message for user
-#define RS          "Resend: "            //resend for host
-#define PAUSE       "//action:pause"      //command for host that support action
-#define RESUME      "//action:resume"     //command for host that support action
-#define DISCONNECT  "//action:disconnect" //command for host that support action
+#define START       "start"               // start for host
+#define OK          "ok "                 // ok answer for host
+#define ER          "error: "             // error for host
+#define WT          "wait"                // wait for host
+#define DB          "echo: "              // message for user
+#define RS          "resend: "            // resend for host
+#define PAUSE       "//action:pause"      // command for host that support action
+#define RESUME      "//action:resume"     // command for host that support action
+#define DISCONNECT  "//action:disconnect" // command for host that support action
 
 #define SERIAL_INIT(baud) MYSERIAL.begin(baud), delay(1)
 #define SERIAL_WRITE(x) MYSERIAL.write(x)
@@ -57,7 +50,7 @@
 FORCE_INLINE void PS_PGM(const char *str) {
   char ch;
   while ((ch = pgm_read_byte(str))) {
-    MYSERIAL.write(ch);
+    SERIAL_WRITE(ch);
     str++;
   }
 }

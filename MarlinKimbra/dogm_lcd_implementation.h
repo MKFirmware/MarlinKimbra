@@ -33,7 +33,7 @@
 
 #include "ultralcd.h"
 #include "ultralcd_st7920_u8glib_rrd.h"
-#include "Configuration.h"
+#include "Configuration_Basic.h"
 
 #if DISABLED(MAPPER_C2C3) && DISABLED(MAPPER_NON) && ENABLED(USE_BIG_EDIT_FONT)
    #undef USE_BIG_EDIT_FONT
@@ -106,7 +106,7 @@
   #define LCD_WIDTH_EDIT       22
 #endif
 
-#ifndef TALL_FONT_CORRECTION
+#if DISABLED(TALL_FONT_CORRECTION)
   #define TALL_FONT_CORRECTION 0
 #endif
 
@@ -137,10 +137,10 @@
   U8GLIB_DOGM128 u8g(DOGLCD_CS, DOGLCD_A0);  // HW-SPI Com: CS, A0
 #endif
 
-#ifndef LCD_PIXEL_WIDTH
+#if DISABLED(LCD_PIXEL_WIDTH)
   #define LCD_PIXEL_WIDTH 128
 #endif
-#ifndef LCD_PIXEL_HEIGHT
+#if DISABLED(LCD_PIXEL_HEIGHT)
   #define LCD_PIXEL_HEIGHT 64
 #endif
 
@@ -238,7 +238,7 @@ static void lcd_implementation_init() {
       if (show_bootscreen) {
         u8g.drawBitmapP(offx, offy, START_BMPBYTEWIDTH, START_BMPHEIGHT, start_bmp);
         lcd_setFont(FONT_MENU);
-        #ifndef STRING_SPLASH_LINE2
+        #if DISABLED(STRING_SPLASH_LINE2)
           u8g.drawStr(txt1X, u8g.getHeight() - DOG_CHAR_HEIGHT, STRING_SPLASH_LINE1);
         #else
           int txt2X = (u8g.getWidth() - (sizeof(STRING_SPLASH_LINE2) - 1)*DOG_CHAR_WIDTH) / 2;
@@ -305,7 +305,7 @@ static void lcd_implementation_status_screen() {
 
     u8g.setPrintPos(80,48);
     if (print_job_start_ms != 0) {
-      #if HAS_LCD_POWER_SENSOR
+      #if HAS(LCD_POWER_SENSOR)
         if (millis() < print_millis + 1000) {
           uint16_t time = (millis() - print_job_start_ms) / 60000;
           lcd_print(itostr2(time/60));
@@ -337,7 +337,7 @@ static void lcd_implementation_status_screen() {
   // Fan
   lcd_setFont(FONT_STATUSMENU);
   u8g.setPrintPos(104,27);
-  #if HAS_FAN
+  #if HAS(FAN)
     int per = ((fanSpeed + 1) * 100) / 256;
     if (per) {
       lcd_print(itostr3(per));
@@ -405,12 +405,12 @@ static void lcd_implementation_status_screen() {
     u8g.setPrintPos(0,63);
   #endif
 
-  #if HAS_LCD_FILAMENT_SENSOR || HAS_LCD_POWER_SENSOR
+  #if HAS(LCD_FILAMENT_SENSOR) || HAS(LCD_POWER_SENSOR)
     if (millis() < previous_lcd_status_ms + 5000) {  //Display both Status message line and Filament display on the last line
       lcd_print(lcd_status_message);
     }
-    #if HAS_LCD_POWER_SENSOR
-      #if HAS_LCD_FILAMENT_SENSOR
+    #if HAS(LCD_POWER_SENSOR)
+      #if HAS(LCD_FILAMENT_SENSOR)
         else if (millis() < previous_lcd_status_ms + 10000)
       #else
         else
@@ -423,7 +423,7 @@ static void lcd_implementation_status_screen() {
         lcd_printPGM(PSTR("Wh"));
       }
     #endif
-    #if HAS_LCD_FILAMENT_SENSOR
+    #if HAS(LCD_FILAMENT_SENSOR)
       else {
         lcd_printPGM(PSTR("dia:"));
         lcd_print(ftostr12ns(filament_width_meas));

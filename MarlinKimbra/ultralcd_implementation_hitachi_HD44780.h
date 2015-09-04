@@ -1,12 +1,11 @@
 #ifndef ULTRALCD_IMPLEMENTATION_HITACHI_HD44780_H
 #define ULTRALCD_IMPLEMENTATION_HITACHI_HD44780_H
-
 /**
 * Implementation of the LCD display routines for a Hitachi HD44780 display. These are common LCD character displays.
 * When selecting the Russian language, a slightly different LCD implementation is used to handle UTF8 characters.
 **/
 
-//#ifndef REPRAPWORLD_KEYPAD
+//#if DISABLED(REPRAPWORLD_KEYPAD)
 //  extern volatile uint8_t buttons;  //the last checked buttons in a bit array.
 //#else
   extern volatile uint8_t buttons;  //an extended version of the last checked buttons in a bit array.
@@ -27,13 +26,13 @@
 #define EN_B BIT(BLEN_B) // The two encoder pins are connected through BTN_EN1 and BTN_EN2
 #define EN_A BIT(BLEN_A)
 
-#if defined(BTN_ENC) && BTN_ENC > -1
+#if ENABLED(BTN_ENC) && BTN_ENC > -1
   // encoder click is directly connected
   #define BLEN_C 2 
   #define EN_C BIT(BLEN_C) 
 #endif 
 
-#if HAS_BTN_BACK
+#if HAS(BTN_BACK)
   #define BLEN_D 3
   #define EN_D BIT(BLEN_D)
 #endif
@@ -51,7 +50,7 @@
   #define B_DW (BUTTON_DOWN<<B_I2C_BTN_OFFSET)
   #define B_RI (BUTTON_RIGHT<<B_I2C_BTN_OFFSET)
 
-  #if defined(BTN_ENC) && BTN_ENC > -1
+  #if ENABLED(BTN_ENC) && BTN_ENC > -1
     // the pause/stop/restart button is connected to BTN_ENC when used
     #define B_ST (EN_C)                            // Map the pause/stop/resume button into its normalized functional name
     #define LCD_CLICKED (buttons&(B_MI|B_RI|B_ST)) // pause/stop button also acts as click until we implement proper pause/stop.
@@ -106,7 +105,7 @@
 
 #elif ENABLED(NEWPANEL)
   #define LCD_CLICKED (buttons&EN_C)
-  #if HAS_BTN_BACK
+  #if HAS(BTN_BACK)
     #define LCD_BACK_CLICKED (buttons&EN_D)
   #endif
 
@@ -214,7 +213,7 @@ static void lcd_set_custom_characters(
     bool progress_bar_set=true
   #endif
 ) {
-  #if ENABLED(DELTA)
+  #if MECH(DELTA)
     byte bedTemp[8] =
     {
         B00000,
@@ -380,7 +379,7 @@ static void lcd_implementation_init(
 
   #if ENABLED(LCD_I2C_TYPE_PCF8575)
     lcd.begin(LCD_WIDTH, LCD_HEIGHT);
-    #ifdef LCD_I2C_PIN_BL
+    #if ENABLED(LCD_I2C_PIN_BL)
       lcd.setBacklightPin(LCD_I2C_PIN_BL, POSITIVE);
       lcd.setBacklight(HIGH);
     #endif
@@ -554,7 +553,7 @@ static void lcd_implementation_status_screen() {
 
         lcd.print('X');
         if (axis_known_position[X_AXIS])
-          #ifdef DELTA
+          #if MECH(DELTA)
             lcd.print(ftostr30(current_position[X_AXIS]));
           #else
             lcd.print(ftostr3(current_position[X_AXIS]));
@@ -562,7 +561,7 @@ static void lcd_implementation_status_screen() {
         else
           lcd_printPGM(PSTR("---"));
 
-        #ifdef DELTA
+        #if MECH(DELTA)
           lcd_printPGM(PSTR(" Y"));
           if (axis_known_position[Y_AXIS])
             lcd.print(ftostr30(current_position[Y_AXIS]));
@@ -613,7 +612,7 @@ static void lcd_implementation_status_screen() {
 
     lcd.setCursor(LCD_WIDTH - 6, 2);
     if(print_job_start_ms != 0) {
-      #if HAS_LCD_POWER_SENSOR
+      #if HAS(LCD_POWER_SENSOR)
         if (millis() < print_millis + 1000) {
           lcd.print(LCD_STR_CLOCK[0]);
           uint16_t time = millis()/60000 - print_job_start_ms/60000;
@@ -671,12 +670,12 @@ static void lcd_implementation_status_screen() {
   #endif // ENABLED(LCD_PROGRESS_BAR)
 
   //Display both Status message line and Filament display on the last line
-  #if HAS_LCD_FILAMENT_SENSOR || HAS_LCD_POWER_SENSOR
+  #if HAS(LCD_FILAMENT_SENSOR) || HAS(LCD_POWER_SENSOR)
     if (millis() >= previous_lcd_status_ms + 5000) {
       lcd_print(lcd_status_message);
     }
-    #if HAS_LCD_POWER_SENSOR
-      #if HAS_LCD_FILAMENT_SENSOR
+    #if HAS(LCD_POWER_SENSOR)
+      #if HAS(LCD_FILAMENT_SENSOR)
         else if (millis() < message_millis + 10000)
       #else
         else
@@ -689,7 +688,7 @@ static void lcd_implementation_status_screen() {
         lcd_printPGM(PSTR("Wh"));
       }
     #endif
-    #if HAS_LCD_FILAMENT_SENSOR
+    #if HAS(LCD_FILAMENT_SENSOR)
       else {
         lcd_printPGM(PSTR("Dia "));
         lcd.print(ftostr12ns(filament_width_meas));

@@ -24,11 +24,9 @@
 #ifndef PLANNER_H
 #define PLANNER_H
 
-#include "Marlin.h"
-
 // This struct is used when buffering the setup for each linear movement "nominal" values are as specified in 
 // the source g-code and may never actually be reached if acceleration management is active.
-typedef struct {
+struct beffering{
   // Fields used by the bresenham algorithm for tracing the line
   long steps[NUM_AXIS];                     // Step count along each axis
   unsigned long step_event_count;           // The number of step events required to complete this block
@@ -68,8 +66,8 @@ typedef struct {
     unsigned long laser_ttlmodulation;
   #endif
   volatile char busy;
-} block_t;
-
+};
+typedef struct beffering block_t;
 #define BLOCK_MOD(n) ((n)&(BLOCK_BUFFER_SIZE-1))
 
 // Initialize the motion plan subsystem      

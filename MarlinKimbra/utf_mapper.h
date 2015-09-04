@@ -1,8 +1,6 @@
 #ifndef UTF_MAPPER_H
 #define UTF_MAPPER_H
 
-#include  "language.h"
-
 #if ENABLED(DOGLCD)
   #define HARDWARE_CHAR_OUT u8g.print
 #else
@@ -141,7 +139,7 @@
       }
       else if (seen_c2){
         d &= 0x3f;
-        #ifndef MAPPER_ONE_TO_ONE
+        #if DISABLED(MAPPER_ONE_TO_ONE)
           HARDWARE_CHAR_OUT( (char) pgm_read_byte_near( utf_recode + d + ( utf_hi_char << 6 ) - 0x20 ) );
         #else
           HARDWARE_CHAR_OUT( (char) (0x80 + ( utf_hi_char << 6 ) + d) ) ;
@@ -200,7 +198,7 @@
         return 0;
       } else if (seen_d5) {
           d &= 0x3fu;
-        #ifndef MAPPER_ONE_TO_ONE
+        #if DISABLED(MAPPER_ONE_TO_ONE)
           HARDWARE_CHAR_OUT( (char) pgm_read_byte_near( utf_recode + d + ( utf_hi_char << 6 ) - 0x20 ) );
         #else
           HARDWARE_CHAR_OUT( (char) (0xa0u + ( utf_hi_char << 6 ) + d ) ) ;
@@ -230,7 +228,7 @@
         return 0;
       } else if ((seen_e3 == true) && (seen_82_83 == true)){
         d &= 0x3f;
-        #ifndef MAPPER_ONE_TO_ONE
+        #if DISABLED(MAPPER_ONE_TO_ONE)
           HARDWARE_CHAR_OUT( (char) pgm_read_byte_near( utf_recode + d + ( utf_hi_char << 6 ) - 0x20 ) );
         #else
           HARDWARE_CHAR_OUT( (char) (0x80 + ( utf_hi_char << 6 ) + d ) ) ;

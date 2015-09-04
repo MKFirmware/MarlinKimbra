@@ -1,11 +1,17 @@
-#include "Marlin.h"
-#include "cardreader.h"
-#include "ultralcd.h"
-#include "stepper.h"
-#include "temperature.h"
-#include "language.h"
+#include "base.h"
 
 #if ENABLED(SDSUPPORT)
+
+#include "Marlin_main.h"
+#if ENABLED(AUTO_BED_LEVELING_FEATURE)
+  #include "vector_3.h"
+#endif
+#include "planner.h"
+#include "stepper_indirection.h"
+#include "stepper.h"
+#include "temperature.h"
+#include "ultralcd.h"
+#include "cardreader.h"
 
 CardReader::CardReader() {
   filesize = 0;
@@ -657,5 +663,4 @@ void CardReader::printingHasFinished() {
     autotempShutdown();
   }
 }
-
-#endif //SDSUPPORT
+#endif

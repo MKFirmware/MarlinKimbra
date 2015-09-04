@@ -22,8 +22,6 @@
 #ifndef STEPPER_INDIRECTION_H
 #define STEPPER_INDIRECTION_H
 
-#include "macros.h"
-
 // X motor
 #define X_STEP_INIT SET_OUTPUT(X_STEP_PIN)
 #define X_STEP_WRITE(STATE) WRITE(X_STEP_PIN,STATE)
@@ -153,6 +151,77 @@
 #define E3_ENABLE_INIT SET_OUTPUT(E3_ENABLE_PIN)
 #define E3_ENABLE_WRITE(STATE) WRITE(E3_ENABLE_PIN,STATE)
 #define E3_ENABLE_READ READ(E3_ENABLE_PIN)
+
+#if ENABLED(DUAL_X_CARRIAGE) && HAS(X_ENABLE) && HAS(X2_ENABLE)
+  #define  enable_x() do { X_ENABLE_WRITE( X_ENABLE_ON); X2_ENABLE_WRITE( X_ENABLE_ON); } while (0)
+  #define disable_x() do { X_ENABLE_WRITE(!X_ENABLE_ON); X2_ENABLE_WRITE(!X_ENABLE_ON); axis_known_position[X_AXIS] = false; } while (0)
+#elif HAS(X_ENABLE)
+  #define  enable_x() X_ENABLE_WRITE( X_ENABLE_ON)
+  #define disable_x() { X_ENABLE_WRITE(!X_ENABLE_ON); axis_known_position[X_AXIS] = false; }
+#else
+  #define enable_x() ;
+  #define disable_x() ;
+#endif
+
+#if HAS(Y_ENABLE)
+  #if ENABLED(Y_DUAL_STEPPER_DRIVERS)
+    #define  enable_y() { Y_ENABLE_WRITE( Y_ENABLE_ON); Y2_ENABLE_WRITE(Y_ENABLE_ON); }
+    #define disable_y() { Y_ENABLE_WRITE(!Y_ENABLE_ON); Y2_ENABLE_WRITE(!Y_ENABLE_ON); axis_known_position[Y_AXIS] = false; }
+  #else
+    #define  enable_y() Y_ENABLE_WRITE( Y_ENABLE_ON)
+    #define disable_y() { Y_ENABLE_WRITE(!Y_ENABLE_ON); axis_known_position[Y_AXIS] = false; }
+  #endif
+#else
+  #define enable_y() ;
+  #define disable_y() ;
+#endif
+
+#if HAS(Z_ENABLE)
+  #if ENABLED(Z_DUAL_STEPPER_DRIVERS)
+    #define  enable_z() { Z_ENABLE_WRITE( Z_ENABLE_ON); Z2_ENABLE_WRITE(Z_ENABLE_ON); }
+    #define disable_z() { Z_ENABLE_WRITE(!Z_ENABLE_ON); Z2_ENABLE_WRITE(!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }
+  #else
+    #define  enable_z() Z_ENABLE_WRITE( Z_ENABLE_ON)
+    #define disable_z() { Z_ENABLE_WRITE(!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }
+  #endif
+#else
+  #define enable_z() ;
+  #define disable_z() ;
+#endif
+
+#if HAS(E0_ENABLE)
+  #define enable_e0()  E0_ENABLE_WRITE( E_ENABLE_ON)
+  #define disable_e0() E0_ENABLE_WRITE(!E_ENABLE_ON)
+#else
+  #define enable_e0()  /* nothing */
+  #define disable_e0() /* nothing */
+#endif
+
+#if (DRIVER_EXTRUDERS > 1) && HAS(E1_ENABLE)
+  #define enable_e1()  E1_ENABLE_WRITE( E_ENABLE_ON)
+  #define disable_e1() E1_ENABLE_WRITE(!E_ENABLE_ON)
+#else
+  #define enable_e1()  /* nothing */
+  #define disable_e1() /* nothing */
+#endif
+
+#if (DRIVER_EXTRUDERS > 2) && HAS(E2_ENABLE)
+  #define enable_e2()  E2_ENABLE_WRITE( E_ENABLE_ON)
+  #define disable_e2() E2_ENABLE_WRITE(!E_ENABLE_ON)
+#else
+  #define enable_e2()  /* nothing */
+  #define disable_e2() /* nothing */
+#endif
+
+#if (DRIVER_EXTRUDERS > 3) && HAS(E3_ENABLE)
+  #define enable_e3()  E3_ENABLE_WRITE( E_ENABLE_ON)
+  #define disable_e3() E3_ENABLE_WRITE(!E_ENABLE_ON)
+#else
+  #define enable_e3()  /* nothing */
+  #define disable_e3() /* nothing */
+#endif
+
+#define disable_e() {disable_e0(); disable_e1(); disable_e2(); disable_e3();}
 
 //////////////////////////////////
 // Pin redefines for TMC drivers. 

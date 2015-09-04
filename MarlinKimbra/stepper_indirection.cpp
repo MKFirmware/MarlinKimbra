@@ -19,14 +19,13 @@
   along with Marlin.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "stepper_indirection.h"
-#include "Configuration.h"
+#include "base.h"
 
+#include "stepper_indirection.h"
 #if ENABLED(HAVE_TMCDRIVER)
   #include <SPI.h>
   #include <TMC26XStepper.h>
 #endif
-
 // Stepper objects of TMC steppers used
 #if ENABLED(X_IS_TMC)
   TMC26XStepper stepperX(200,X_ENABLE_PIN,X_STEP_PIN,X_DIR_PIN,X_MAX_CURRENT,X_SENSE_RESISTOR);

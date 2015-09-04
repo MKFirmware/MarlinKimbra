@@ -1,7 +1,12 @@
 <img align="right" src="Documentation/Logo/MarlinKimbra%20Logo%20GitHub.png" />
 # MarlinKimbra 3D Printer Firmware
-## Version 4.1.5 dev
+## Version 4.2.0 dev
 
+### Special thanks
+* all Marlin8bit-developers.
+
+---
+# MarlinKimbra 3D Printer Firmware
   * [Configuration & Compilation](/Documentation/Compilation.md)
   * Supported
     * [Features](/Documentation/Features.md)
@@ -37,6 +42,7 @@ Adding Debug Dryrun used by repetier.
 Added total Power on time writed in SD CARD.
 Added total Power consumption writed in SD CARD.
 Added anti extruder idle oozing system.
+
 ## Credits
 
 The current MarlinKimbra dev team consists of:

@@ -44,10 +44,8 @@
                    With DEACTIVATE_SERVOS_AFTER_MOVE wait SERVO_DEACTIVATION_DELAY and detach.
  */
 
-#ifndef servo_h
-#define servo_h
-
-#include <inttypes.h>
+#ifndef SERVO_H
+#define SERVO_H
 
 /*
  * Defines for 16 bit timers used with  Servo library

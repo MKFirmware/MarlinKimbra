@@ -8,12 +8,12 @@
 #ifndef LANGUAGE_EN_H
 #define LANGUAGE_EN_H
 
-#if !( defined(MAPPER_NON)|| defined(MAPPER_C2C3)|| defined(MAPPER_D0D1)|| defined(MAPPER_D0D1_MOD)|| defined(MAPPER_E382E383) )
+#if !( ENABLED(MAPPER_NON)|| ENABLED(MAPPER_C2C3)|| ENABLED(MAPPER_D0D1)|| ENABLED(MAPPER_D0D1_MOD)|| ENABLED(MAPPER_E382E383) )
   #define MAPPER_NON         // For direct asci codes
 #endif
 
 //#define SIMULATE_ROMFONT //Comment in to see what is seen on the character based displays
-#if !( defined(SIMULATE_ROMFONT)|| defined(DISPLAY_CHARSET_ISO10646_1)|| defined(DISPLAY_CHARSET_ISO10646_5)|| defined(DISPLAY_CHARSET_ISO10646_KANA)|| defined(DISPLAY_CHARSET_ISO10646_CN) )
+#if !( ENABLED(SIMULATE_ROMFONT)|| ENABLED(DISPLAY_CHARSET_ISO10646_1)|| ENABLED(DISPLAY_CHARSET_ISO10646_5)|| ENABLED(DISPLAY_CHARSET_ISO10646_KANA)|| ENABLED(DISPLAY_CHARSET_ISO10646_CN) )
   #define DISPLAY_CHARSET_ISO10646_1 // use the better font on full graphic displays.
 #endif
 
@@ -35,6 +35,8 @@
 #define MSG_MBL_6                           " BED leveled!       "
 #define MSG_SET_HOME_OFFSETS                "Set home offsets"
 #define MSG_SET_ORIGIN                      "Set origin"
+#define MSG_ONFOR                           "On x:"
+#define MSG_PWRCONSUMED                     "P.er:"
 #define MSG_PREHEAT_PLA                     "Preheat PLA"
 #define MSG_PREHEAT_PLA_ALL                 "Preheat PLA All"
 #define MSG_PREHEAT_PLA_BEDONLY             "Preheat PLA Bed"
@@ -68,6 +70,7 @@
 #define MSG_FAN_SPEED                       "Fan speed"
 #define MSG_FLOW                            "Flow"
 #define MSG_CONTROL                         "Control"
+#define MSG_STATS                           "Statistics"
 #define MSG_FIX_LOSE_STEPS                  "Fix axis steps"
 #define MSG_MIN                             LCD_STR_THERMOMETER " Min"
 #define MSG_MAX                             LCD_STR_THERMOMETER " Max"
@@ -165,7 +168,7 @@
 #define MSG_DEBUG_DRYRUN                    "DEBUG DRYRUN ENABLED"
 
 // Calibrate Delta
-#ifdef DELTA
+#if MECH(DELTA)
   #define MSG_DELTA_CALIBRATE               "Delta Calibration"
   #define MSG_DELTA_CALIBRATE_X             "Calibrate X"
   #define MSG_DELTA_CALIBRATE_Y             "Calibrate Y"
@@ -174,7 +177,7 @@
 #endif // DELTA
 
 // Scara
-#ifdef SCARA
+#if MECH(SCARA)
   #define MSG_XSCALE                        "X Scale"
   #define MSG_YSCALE                        "Y Scale"
 #endif
@@ -196,7 +199,7 @@
 #define MSG_INVALID_POS_SLOT                "Invalid slot, total slots: "
 
 // Firmware Test
-#ifdef FIRMWARE_TEST
+#if ENABLED(FIRMWARE_TEST)
   #define MSG_FWTEST_YES                    "Put the Y command to go next"
   #define MSG_FWTEST_NO                     "Put the N command to go next"
   #define MSG_FWTEST_YES_NO                 "Put the Y or N command to go next"

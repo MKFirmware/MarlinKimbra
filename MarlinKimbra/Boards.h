@@ -1,6 +1,7 @@
-#ifndef BOARDS_H
-#define BOARDS_H
+#ifndef BOARD_H
+#define BOARD_H
 
+// Macros for board type
 #define BOARD_UNKNOWN -1
 
 #define BOARD_GEN7_CUSTOM       10   // Gen7 custom (Alfons3 Version) "https://github.com/Alfons3/Generation_7_Electronics"
@@ -14,19 +15,20 @@
 #define BOARD_GEN3_MONOLITHIC   22   // Gen3 Monolithic Electronics
 
 #define BOARD_RAMPS_OLD         3    // MEGA/RAMPS up to 1.2
-#define BOARD_RAMPS_13_EFB      33   // RAMPS 1.3 / 1.4 (Power outputs: Hotend, Fan, Bed)
-#define BOARD_RAMPS_13_EEB      34   // RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Bed)
-#define BOARD_RAMPS_13_EFF      35   // RAMPS 1.3 / 1.4 (Power outputs: Hotend, Fan, Fan)
-#define BOARD_RAMPS_13_EEF      36   // RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Fan)
-#define BOARD_RAMPS_13_EEE      37   // RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Hotend2)
+#define BOARD_RAMPS_13_HFB      33   // RAMPS 1.3 / 1.4 (Power outputs: Hotend, Fan, Bed)
+#define BOARD_RAMPS_13_HHB      34   // RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Bed)
+#define BOARD_RAMPS_13_HFF      35   // RAMPS 1.3 / 1.4 (Power outputs: Hotend, Fan, Fan)
+#define BOARD_RAMPS_13_HHF      36   // RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Fan)
+#define BOARD_RAMPS_13_HHH      37   // RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Hotend2)
 #define BOARD_RAMBO             301  // Rambo
 #define BOARD_MINIRAMBO         302  // Mini-Rambo
 
 #define BOARD_DUEMILANOVE_328P  4    // Duemilanove w/ ATMega328P pin assignments
-#define BOARD_RADDS             402  // RADDS
-#define BOARD_RAMPS_FDV1        403  // RAMPS-FD V1
-#define BOARD_RAMPS_FDV2        404  // RAMPS-FD V2
-#define BOARD_RAMPS4DUE         433  // RAMPS4DUE with AndrewBCN's RAMPS mods (http://forums.reprap.org/read.php?219,479626,page=1)
+#define BOARD_RADDS             402  // RADDS ARM 32
+#define BOARD_RAMPS_FDV1        403  // RAMPS-FD V1 ARM 32
+#define BOARD_RAMPS_FDV2        404  // RAMPS-FD V2 ARM 32
+#define BOARD_SMART_RAMPS       408  // SMART RAMPS ARM 32
+#define BOARD_RAMPS4DUE         433  // RAMPS4DUE with AndrewBCN's RAMPS mods (http://forums.reprap.org/read.php?219,479626,page=1) ARM 32
 
 #define BOARD_GEN6              5    // Gen6
 #define BOARD_GEN6_DELUXE       51   // Gen6 deluxe
@@ -68,4 +70,4 @@
 
 #define MB(board) (MOTHERBOARD==BOARD_##board)
 
-#endif //__BOARDS_H
+#endif

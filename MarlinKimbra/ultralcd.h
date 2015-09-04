@@ -1,9 +1,6 @@
 #ifndef ULTRALCD_H
 #define ULTRALCD_H
 
-#include "Marlin.h"
-#include "buzzer.h"
-
 #if ENABLED(ULTRA_LCD)
   int lcd_strlen(char *s);
   int lcd_strlen_P(const char *s);
@@ -29,7 +26,7 @@
     void lcd_setcontrast(uint8_t value);
   #endif
 
-  #if DISABLED(DELTA) && DISABLED(Z_SAFE_HOMING) && Z_HOME_DIR < 0
+  #if !MECH(DELTA) && DISABLED(Z_SAFE_HOMING) && Z_HOME_DIR < 0
     void set_pageShowInfo(int value);
   #endif
 
@@ -60,8 +57,8 @@
   extern int gumPreheatFanSpeed;
 
   extern bool cancel_heatup;
-  
-  #if HAS_LCD_FILAMENT_SENSOR || HAS_LCD_POWER_SENSOR
+
+  #if HAS(LCD_FILAMENT_SENSOR) || HAS(LCD_POWER_SENSOR)
     extern millis_t previous_lcd_status_ms;
   #endif
   void lcd_quick_feedback(); // Audible feedback for a button click - could also be visual
@@ -75,7 +72,7 @@
     #define EN_A BIT(BLEN_A)
 
     #define LCD_CLICKED (buttons&EN_C)
-    #if defined(BTN_BACK) && BTN_BACK > 0
+    #if ENABLED(BTN_BACK) && BTN_BACK > 0
       #define EN_D BIT(BLEN_D)
       #define LCD_BACK_CLICKED (buttons&EN_D)
     #endif
@@ -116,6 +113,7 @@
 
   #define LCD_UPDATE_INTERVAL 100
 
+  void page0PopCallback(void *ptr);
   void setpagePopCallback(void *ptr);
   void hotPopCallback(void *ptr);
   void sethotPopCallback(void *ptr);
@@ -149,6 +147,11 @@
   #define LCD_ALERTMESSAGEPGM(x) do{}while(0)
 
 #endif //ULTRA_LCD
+
+#if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
+  extern void set_sd_dot();
+  extern void unset_sd_dot();
+#endif
 
 char *itostr2(const uint8_t &x);
 char *itostr31(const int &xx);
