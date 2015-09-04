@@ -6,9 +6,9 @@
  * - Serial comunication type
  * - Board type
  * - Mechanism type
+ * - Extruders number
  * - Thermistor type
  * - Temperature limits
- * - Extruders number
  * - UI Language
  *
  * Mechanisms-settings can be found in Configuration_Xxxxxx.h (where Xxxxxx can be: Cartesian - Delta - Core - Scara)
@@ -89,8 +89,19 @@
 /*************************************************************************************/
 
 
+/***********************************************************************
+ ************************** Extruders number ***************************
+ ***********************************************************************/
+// This defines the number of extruder real or virtual
+#define EXTRUDERS 1
+
+// This defines the number of Driver extruder you have and use
+#define DRIVER_EXTRUDERS 1
+/***********************************************************************/
+
+
 /*****************************************************************************************************
- ************************************ Thermistor type *************************************
+ ************************************** Thermistor type **********************************************
  *****************************************************************************************************
  *                                                                                                   *
  * 4.7kohm PULLUP!                                                                                   *
@@ -195,17 +206,6 @@
 #define GUM_PREHEAT_HPB_TEMP 60
 #define GUM_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
 /*****************************************************************************************************/
-
-
-/***********************************************************************
- ************************** Extruders number ***************************
- ***********************************************************************/
-// This defines the number of extruder real or virtual
-#define EXTRUDERS 1
-
-// This defines the number of Driver extruder you have and use
-#define DRIVER_EXTRUDERS 1
-/***********************************************************************/
 
 
 /***********************************************************************

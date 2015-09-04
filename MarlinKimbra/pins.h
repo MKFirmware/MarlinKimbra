@@ -27,6 +27,7 @@
 *401 BOARD_RADDS       - Radds Arduino DUE
 *403 BOARD_RAMPS_FD_V1 - Ramps FD version 1 Arduino DUE
 *404 BOARD_RAMPS_FD_V2 - Ramps FD version 2 Arduino DUE
+*408 BOARD_SMART_RAMPS - Smart Ramps for Arduino DUE
 *433 BOARD_RAMPS4DUE   - Ramps for Arduino DUE
 *
 *  5 BOARD_GEN6 - Gen6
@@ -2310,12 +2311,68 @@
 
 
 /****************************************************************************************
+* 408
+* Arduino Due pin assignment
+* for SMART_RAMPS
+****************************************************************************************/
+#if MB(SMART_RAMPS)
+#define KNOWN_BOARD
+
+#ifndef __SAM3X8E__
+  #error Oops!  Make sure you have 'Arduino Due' selected from the 'Tools -> Boards' menu.
+#endif
+
+#define ORIG_X_STEP_PIN     54
+#define ORIG_X_DIR_PIN      55
+#define ORIG_X_MIN_PIN      3
+#define ORIG_X_MAX_PIN      2
+#define ORIG_X_ENABLE_PIN   38
+
+#define ORIG_Y_STEP_PIN     60  
+#define ORIG_Y_DIR_PIN      61
+#define ORIG_Y_MIN_PIN      14
+#define ORIG_Y_MAX_PIN      15
+#define ORIG_Y_ENABLE_PIN   56
+
+#define ORIG_Z_STEP_PIN     46
+#define ORIG_Z_DIR_PIN      48
+#define ORIG_Z_MIN_PIN      18
+#define ORIG_Z_MAX_PIN      19
+#define ORIG_Z_ENABLE_PIN   62
+
+// Note that on the Due pin A0 on the board is channel 2 on the ARM chip
+#define ORIG_HEATER_0_PIN   10
+#define ORIG_TEMP_0_PIN     11  // Due analog pin #
+#define ORIG_HEATER_1_PIN   8
+#define ORIG_TEMP_1_PIN     12  // Due analog pin #
+#define ORIG_HEATER_BED_PIN 9
+#define ORIG_TEMP_BED_PIN   13  // Due analog pin #
+
+#define ORIG_E0_STEP_PIN    26
+#define ORIG_E0_DIR_PIN     28
+#define ORIG_E0_ENABLE_PIN  24
+
+#define ORIG_E1_STEP_PIN    36
+#define ORIG_E1_DIR_PIN     34
+#define ORIG_E1_ENABLE_PIN  30
+
+#define SDPOWER             -1
+#define SDSS                53  // 10 if using HW SPI. 53 if using SW SPI
+#define LED_PIN             13
+#define ORIG_FAN_PIN        9
+#define PS_ON_PIN           12
+#define KILL_PIN            -1
+#define SUICIDE_PIN         -1  // PIN that has to be turned on right after start, to keep power flowing
+/****************************************************************************************/
+
+
+/****************************************************************************************
 * 433
 * Arduino Due pin assignment
 * for RAMPS4DUE (http://forums.reprap.org/read.php?219,479626,page=1)
 ****************************************************************************************/
 #if MB(RAMPS4DUE)
-#define KNOWN_BOARD 1
+#define KNOWN_BOARD
 
 #ifndef __SAM3X8E__
   #error Oops!  Make sure you have 'Arduino Due' selected from the 'Tools -> Boards' menu.

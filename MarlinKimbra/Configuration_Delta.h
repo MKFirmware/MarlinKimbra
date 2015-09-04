@@ -63,7 +63,7 @@
 #define DELTA_CARRIAGE_OFFSET 20.0          // mm
 
 // Bed Printer radius
-#define PRINTER_RADIUS 75                   // mm
+#define BED_PRINTER_RADIUS 75               // mm
 
 //Endstop Offset Adjustment - All values are in mm and must be negative (to move down away from endstop switches) 
 #define TOWER_A_ENDSTOP_ADJ 0 // Front Left Tower
@@ -269,10 +269,10 @@
  * Travel limits after homing (units are in mm)                                          *
  *                                                                                       *
  *****************************************************************************************/
-#define X_MAX_POS PRINTER_RADIUS
-#define X_MIN_POS -PRINTER_RADIUS
-#define Y_MAX_POS PRINTER_RADIUS
-#define Y_MIN_POS -PRINTER_RADIUS
+#define X_MAX_POS BED_PRINTER_RADIUS
+#define X_MIN_POS -BED_PRINTER_RADIUS
+#define Y_MAX_POS BED_PRINTER_RADIUS
+#define Y_MIN_POS -BED_PRINTER_RADIUS
 #define Z_MAX_POS MANUAL_Z_HOME_POS
 #define Z_MIN_POS 0
 #define E_MIN_POS 0
