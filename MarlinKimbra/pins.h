@@ -2363,6 +2363,8 @@
 #define PS_ON_PIN           12
 #define KILL_PIN            -1
 #define SUICIDE_PIN         -1  // PIN that has to be turned on right after start, to keep power flowing
+
+#endif
 /****************************************************************************************/
 
 
