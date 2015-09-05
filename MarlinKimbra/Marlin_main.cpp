@@ -6780,104 +6780,104 @@ inline void gcode_T(uint8_t tmp_extruder) {
           #endif // HOTENDS > 1
 
           #if ENABLED(MKR4) && (EXTRUDERS > 1)
-            #if (EXTRUDERS == 4) && (E0E2_CHOICE_PIN >1) && (E1E3_CHOICE_PIN > 1) && (DRIVER_EXTRUDERS == 2)
+            #if (EXTRUDERS == 4) && HAS(E0E2) && HAS(E1E3) && (DRIVER_EXTRUDERS == 2)
               st_synchronize(); // Finish all movement
               disable_e();
               switch(target_extruder)
               {
               case 0:
-                WRITE(E0E2_CHOICE_PIN,LOW);
-                WRITE(E1E3_CHOICE_PIN,LOW);
+                WRITE_RELE(E0E2_CHOICE_PIN, LOW);
+                WRITE_RELE(E1E3_CHOICE_PIN, LOW);
                 active_driver = 0;
                 delay(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               case 1:
-                WRITE(E0E2_CHOICE_PIN,LOW);
-                WRITE(E1E3_CHOICE_PIN,LOW);
+                WRITE_RELE(E0E2_CHOICE_PIN, LOW);
+                WRITE_RELE(E1E3_CHOICE_PIN, LOW);
                 active_driver = 1;
                 delay(500); // 500 microseconds delay for relay
                 enable_e1();
                 break;
               case 2:
-                WRITE(E0E2_CHOICE_PIN,HIGH);
-                WRITE(E1E3_CHOICE_PIN,LOW);
+                WRITE_RELE(E0E2_CHOICE_PIN, HIGH);
+                WRITE_RELE(E1E3_CHOICE_PIN, LOW);
                 active_driver = 0;
                 delay(500); // 500 microseconds delay for relay
                 enable_e2();
                 break;
               case 3:
-                WRITE(E0E2_CHOICE_PIN,LOW);
-                WRITE(E1E3_CHOICE_PIN,HIGH);
+                WRITE_RELE(E0E2_CHOICE_PIN, LOW);
+                WRITE_RELE(E1E3_CHOICE_PIN, HIGH);
                 active_driver = 1;
                 delay(500); // 500 microseconds delay for relay
                 enable_e3();
                 break;
               }            
-            #elif (EXTRUDERS == 3) && (E0E2_CHOICE_PIN >1) && (DRIVER_EXTRUDERS == 2)
+            #elif (EXTRUDERS == 3) && HAS(E0E2) && (DRIVER_EXTRUDERS == 2)
               st_synchronize(); // Finish all movement
               disable_e();
               switch(target_extruder)
               {
               case 0:
-                WRITE(E0E2_CHOICE_PIN,LOW);
+                WRITE_RELE(E0E2_CHOICE_PIN, LOW);
                 active_driver = 0;
                 delay(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               case 1:
-                WRITE(E0E2_CHOICE_PIN,LOW);
+                WRITE_RELE(E0E2_CHOICE_PIN, LOW);
                 active_driver = 1;
                 delay(500); // 500 microseconds delay for relay
                 enable_e1();
                 break;
               case 2:
-                WRITE(E0E2_CHOICE_PIN,HIGH);
+                WRITE_RELE(E0E2_CHOICE_PIN, HIGH);
                 active_driver = 0;
                 delay(500); // 500 microseconds delay for relay
                 enable_e2();
                 break;
               }
-            #elif (EXTRUDERS == 3) && (E0E1_CHOICE_PIN >1) && (E0E2_CHOICE_PIN >1) && (DRIVER_EXTRUDERS == 1)
+            #elif (EXTRUDERS == 3) && HAS(E0E1) && HAS(E0E2) && (DRIVER_EXTRUDERS == 1)
               st_synchronize(); // Finish all movement
               disable_e();
               switch(target_extruder)
               {
               case 0:
-                WRITE(E0E1_CHOICE_PIN,LOW);
-                WRITE(E0E2_CHOICE_PIN,LOW);
+                WRITE_RELE(E0E1_CHOICE_PIN, LOW);
+                WRITE_RELE(E0E2_CHOICE_PIN, LOW);
                 active_driver = 0;
                 delay(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               case 1:
-                WRITE(E0E1_CHOICE_PIN,HIGH);
-                WRITE(E0E2_CHOICE_PIN,LOW);
+                WRITE_RELE(E0E1_CHOICE_PIN, HIGH);
+                WRITE_RELE(E0E2_CHOICE_PIN, LOW);
                 active_driver = 0;
                 delay(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               case 2:
-                WRITE(E0E1_CHOICE_PIN,HIGH);
-                WRITE(E0E2_CHOICE_PIN,HIGH);
+                WRITE_RELE(E0E1_CHOICE_PIN, HIGH);
+                WRITE_RELE(E0E2_CHOICE_PIN, HIGH);
                 active_driver = 0;
                 delay(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               }
-            #elif (EXTRUDERS == 2) && (E0E1_CHOICE_PIN >1) && (DRIVER_EXTRUDERS == 1)
+            #elif (EXTRUDERS == 2) && HAS(E0E1) && (DRIVER_EXTRUDERS == 1)
               st_synchronize(); // Finish all movement
               disable_e();
               switch(target_extruder)
               {
               case 0:
-                WRITE(E0E1_CHOICE_PIN,LOW);
+                WRITE_RELE(E0E1_CHOICE_PIN, LOW);
                 active_driver = 0;
                 delay(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               case 1:
-                WRITE(E0E1_CHOICE_PIN,HIGH);
+                WRITE_RELE(E0E1_CHOICE_PIN, HIGH);
                 active_driver = 0;
                 delay(500); // 500 microseconds delay for relay
                 enable_e0();

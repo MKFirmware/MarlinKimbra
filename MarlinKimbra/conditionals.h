@@ -638,12 +638,12 @@
 #define HAS_LCD_POWER_SENSOR (HAS_POWER_CONSUMPTION_SENSOR && ENABLED(POWER_CONSUMPTION_LCD_DISPLAY))
 
 /**
- * Helper Macros for heaters and extruder fan
+ * Helper Macros for heaters and extruder fan and rele
  */
 #if ENABLED(INVERTED_HEATER_PINS)
-  #define WRITE_HEATER(pin,value) WRITE(pin,!value)
+  #define WRITE_HEATER(pin, value) WRITE(pin, !value)
 #else
-  #define WRITE_HEATER(pin,value) WRITE(pin,value)
+  #define WRITE_HEATER(pin, value) WRITE(pin, value)
 #endif
 #define WRITE_HEATER_0P(v) WRITE_HEATER(HEATER_0_PIN, v)
 #if HOTENDS > 1 || ENABLED(HEATERS_PARALLEL)
@@ -672,6 +672,13 @@
     #define WRITE_FAN(v) WRITE(FAN_PIN, !v)
   #else
     #define WRITE_FAN(v) WRITE(FAN_PIN, v)
+  #endif
+#endif
+#if ENABLED(MKR4)
+  #if ENABLED(INVERTED_RELE_PINS)
+    #define WRITE_RELE(pin, value) WRITE(pin, !value)
+  #else
+    #define WRITE_RELE(pin, value) WRITE(pin, value)
   #endif
 #endif
 

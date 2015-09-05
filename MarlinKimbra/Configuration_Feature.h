@@ -387,8 +387,10 @@
  *                                                                     *
  * Uncomment MKR4 to enable this feature                               *
  *                                                                     *
+ * Uncomment INVERTED_RELE_PINS if your relay switches with GND        *
  ***********************************************************************/
 //#define MKR4
+//#define INVERTED_RELE_PINS
 /***********************************************************************/
 
 
