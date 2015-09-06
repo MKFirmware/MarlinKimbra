@@ -7,7 +7,6 @@
 
 #if ENABLED(MAKRPANEL)
   #define DOGLCD
-  #define SDSUPPORT
   #define DEFAULT_LCD_CONTRAST 17
   #define ULTIPANEL
   #define NEWPANEL
@@ -38,7 +37,6 @@
 #endif
 
 #if ENABLED(PANEL_ONE)
-  #define SDSUPPORT
   #define ULTIMAKERCONTROLLER
 #endif
 
@@ -84,7 +82,6 @@
 
 #if ENABLED(MINIPANEL)
  #define DOGLCD
- #define SDSUPPORT
  #define ULTIPANEL
  #define NEWPANEL
  #define DEFAULT_LCD_CONTRAST 17
@@ -151,7 +148,6 @@
 
 #if ENABLED(ULTIPANEL)
   #define NEWPANEL  //enable this if you have a click-encoder panel
-  #define SDSUPPORT
   #define ULTRA_LCD
   #if ENABLED(DOGLCD) // Change number of lines to match the DOG graphic display
     #define LCD_WIDTH 22
