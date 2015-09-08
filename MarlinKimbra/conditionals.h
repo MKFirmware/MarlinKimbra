@@ -672,8 +672,10 @@
 #if ENABLED(MKR4)
   #if ENABLED(INVERTED_RELE_PINS)
     #define WRITE_RELE(pin, value) WRITE(pin, !value)
+    #define OUT_WRITE_RELE(pin, value) OUT_WRITE(pin, !value)
   #else
     #define WRITE_RELE(pin, value) WRITE(pin, value)
+    #define OUT_WRITE_RELE(pin, value) OUT_WRITE(pin, value)
   #endif
 #endif
 

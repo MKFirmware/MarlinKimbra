@@ -1248,7 +1248,7 @@
     #define MAX6675_SS            66  // Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
   #endif
 
-#endif // RAMPS_13_EEB
+#endif // RAMPS_13_HHB
 /****************************************************************************************/
 
 
@@ -2533,7 +2533,6 @@
 #define Z_MIN_PIN             38  // PC6
 #define Z_MAX_PIN             39  // PC7
 #define Z_MS1_PIN             44  // PC19
-#define Z_PROBE_PIN           39  // PC7
 
 // E0 AXIS
 #define ORIG_E0_STEP_PIN       5  // PC25
