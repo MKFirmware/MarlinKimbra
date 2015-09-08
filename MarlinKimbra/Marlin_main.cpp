@@ -6786,29 +6786,29 @@ inline void gcode_T(uint8_t tmp_extruder) {
               switch(target_extruder)
               {
               case 0:
-                WRITE_RELE(E0E2_CHOICE_PIN, 0);
-                WRITE_RELE(E1E3_CHOICE_PIN, 0);
+                WRITE_RELE(E0E2_CHOICE_PIN, LOW);
+                WRITE_RELE(E1E3_CHOICE_PIN, LOW);
                 active_driver = 0;
                 delay(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               case 1:
-                WRITE_RELE(E0E2_CHOICE_PIN, 0);
-                WRITE_RELE(E1E3_CHOICE_PIN, 0);
+                WRITE_RELE(E0E2_CHOICE_PIN, LOW);
+                WRITE_RELE(E1E3_CHOICE_PIN, LOW);
                 active_driver = 1;
                 delay(500); // 500 microseconds delay for relay
                 enable_e1();
                 break;
               case 2:
-                WRITE_RELE(E0E2_CHOICE_PIN, 1);
-                WRITE_RELE(E1E3_CHOICE_PIN, 0);
+                WRITE_RELE(E0E2_CHOICE_PIN, HIGH);
+                WRITE_RELE(E1E3_CHOICE_PIN, LOW);
                 active_driver = 0;
                 delay(500); // 500 microseconds delay for relay
                 enable_e2();
                 break;
               case 3:
-                WRITE_RELE(E0E2_CHOICE_PIN, 0);
-                WRITE_RELE(E1E3_CHOICE_PIN, 1);
+                WRITE_RELE(E0E2_CHOICE_PIN, LOW);
+                WRITE_RELE(E1E3_CHOICE_PIN, HIGH);
                 active_driver = 1;
                 delay(500); // 500 microseconds delay for relay
                 enable_e3();
@@ -6820,33 +6820,33 @@ inline void gcode_T(uint8_t tmp_extruder) {
               switch(target_extruder)
               {
               case 0:
-                WRITE_RELE(E0E1_CHOICE_PIN, 0);
-                WRITE_RELE(E0E2_CHOICE_PIN, 0);
-                WRITE_RELE(E0E3_CHOICE_PIN, 0);
+                WRITE_RELE(E0E1_CHOICE_PIN, LOW);
+                WRITE_RELE(E0E2_CHOICE_PIN, LOW);
+                WRITE_RELE(E0E3_CHOICE_PIN, LOW);
                 active_driver = 0;
                 delay(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               case 1:
-                WRITE_RELE(E0E1_CHOICE_PIN, 1);
-                WRITE_RELE(E0E2_CHOICE_PIN, 0);
-                WRITE_RELE(E0E3_CHOICE_PIN, 0);
+                WRITE_RELE(E0E1_CHOICE_PIN, HIGH);
+                WRITE_RELE(E0E2_CHOICE_PIN, LOW);
+                WRITE_RELE(E0E3_CHOICE_PIN, LOW);
                 active_driver = 0;
                 delay(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               case 2:
-                WRITE_RELE(E0E1_CHOICE_PIN, 1);
-                WRITE_RELE(E0E2_CHOICE_PIN, 1);
-                WRITE_RELE(E0E3_CHOICE_PIN, 0);
+                WRITE_RELE(E0E1_CHOICE_PIN, HIGH);
+                WRITE_RELE(E0E2_CHOICE_PIN, HIGH);
+                WRITE_RELE(E0E3_CHOICE_PIN, LOW);
                 active_driver = 0;
                 delay(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               case 3:
-                WRITE_RELE(E0E1_CHOICE_PIN, 1);
-                WRITE_RELE(E0E2_CHOICE_PIN, 1);
-                WRITE_RELE(E0E3_CHOICE_PIN, 1);
+                WRITE_RELE(E0E1_CHOICE_PIN, HIGH);
+                WRITE_RELE(E0E2_CHOICE_PIN, HIGH);
+                WRITE_RELE(E0E3_CHOICE_PIN, HIGH);
                 active_driver = 0;
                 delay(500); // 500 microseconds delay for relay
                 enable_e0();
@@ -6858,22 +6858,22 @@ inline void gcode_T(uint8_t tmp_extruder) {
               switch(target_extruder)
               {
               case 0:
-                WRITE_RELE(E0E2_CHOICE_PIN, 0);
+                WRITE_RELE(E0E2_CHOICE_PIN, LOW);
                 active_driver = 0;
                 delay(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               case 1:
-                WRITE_RELE(E0E2_CHOICE_PIN, 0);
+                WRITE_RELE(E0E2_CHOICE_PIN, LOW);
                 active_driver = 1;
                 delay(500); // 500 microseconds delay for relay
                 enable_e1();
                 break;
               case 2:
-                WRITE_RELE(E0E2_CHOICE_PIN, 1);
+                WRITE_RELE(E0E2_CHOICE_PIN, HIGH);
                 active_driver = 0;
                 delay(500); // 500 microseconds delay for relay
-                enable_e2();
+                enable_e0();
                 break;
               }
             #elif (EXTRUDERS == 3) && HAS(E0E1) && HAS(E0E2) && (DRIVER_EXTRUDERS == 1)
@@ -6882,22 +6882,22 @@ inline void gcode_T(uint8_t tmp_extruder) {
               switch(target_extruder)
               {
               case 0:
-                WRITE_RELE(E0E1_CHOICE_PIN, 0);
-                WRITE_RELE(E0E2_CHOICE_PIN, 0);
+                WRITE_RELE(E0E1_CHOICE_PIN, LOW);
+                WRITE_RELE(E0E2_CHOICE_PIN, LOW);
                 active_driver = 0;
                 delay(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               case 1:
-                WRITE_RELE(E0E1_CHOICE_PIN, 1);
-                WRITE_RELE(E0E2_CHOICE_PIN, 0);
+                WRITE_RELE(E0E1_CHOICE_PIN, HIGH);
+                WRITE_RELE(E0E2_CHOICE_PIN, LOW);
                 active_driver = 0;
                 delay(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               case 2:
-                WRITE_RELE(E0E1_CHOICE_PIN, 1);
-                WRITE_RELE(E0E2_CHOICE_PIN, 1);
+                WRITE_RELE(E0E1_CHOICE_PIN, HIGH);
+                WRITE_RELE(E0E2_CHOICE_PIN, HIGH);
                 active_driver = 0;
                 delay(500); // 500 microseconds delay for relay
                 enable_e0();
@@ -6909,13 +6909,13 @@ inline void gcode_T(uint8_t tmp_extruder) {
               switch(target_extruder)
               {
               case 0:
-                WRITE_RELE(E0E1_CHOICE_PIN, 0);
+                WRITE_RELE(E0E1_CHOICE_PIN, LOW);
                 active_driver = 0;
                 delay(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               case 1:
-                WRITE_RELE(E0E1_CHOICE_PIN, 1);
+                WRITE_RELE(E0E1_CHOICE_PIN, HIGH);
                 active_driver = 0;
                 delay(500); // 500 microseconds delay for relay
                 enable_e0();
