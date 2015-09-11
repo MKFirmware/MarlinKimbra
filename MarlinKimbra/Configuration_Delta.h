@@ -360,7 +360,7 @@
 // homing hits the endstop, then retracts by this distance, before it tries to slowly bump again:
 #define X_HOME_BUMP_MM 5
 #define Y_HOME_BUMP_MM 5
-#define Z_HOME_BUMP_MM 2
+#define Z_HOME_BUMP_MM 5
 #define HOMING_BUMP_DIVISOR {5, 5, 5}  // Re-Bump Speed Divisor (Divides the Homing Feedrate)
 /*****************************************************************************************/
 
