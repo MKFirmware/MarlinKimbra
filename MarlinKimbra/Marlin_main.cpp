@@ -1356,8 +1356,8 @@ static void clean_up_after_endstop_move() {
   #endif
   feedrate = saved_feedrate;
   feedrate_multiplier = saved_feedrate_multiplier;
-  endstops_hit_on_purpose(); // clear endstop hit flags
   refresh_cmd_timeout();
+  endstops_hit_on_purpose(); // clear endstop hit flags
 }
 
 #if MECH(CARTESIAN) || MECH(COREXY) || MECH(COREXZ) || MECH(SCARA)
@@ -3162,7 +3162,7 @@ inline void gcode_G28() {
           print_xyz("> HOMEAXIS(Z) > current_position", current_position);
         }
 
-      #elif DISABLED(Z_SAFE_HOMING) && ENABLED(Z_RAISE_BEFORE_HOMING) && Z_RAISE_BEFORE_HOMING > 0
+      #elif DISABLED(Z_SAFE_HOMING) && ENABLED(AUTO_BED_LEVELING_FEATURE) && Z_RAISE_BEFORE_HOMING > 0
 
         // Raise Z before homing any other axes
         destination[Z_AXIS] = -Z_RAISE_BEFORE_HOMING * home_dir(Z_AXIS); // Set destination away from bed
@@ -3439,12 +3439,12 @@ inline void gcode_G28() {
             }
             else {
               LCD_MESSAGEPGM(MSG_ZPROBE_OUT);
-              ECHO_LM(ER, MSG_ZPROBE_OUT);
+              ECHO_LM(DB, MSG_ZPROBE_OUT);
             }
           }
           else {
             LCD_MESSAGEPGM(MSG_POSITION_UNKNOWN);
-            ECHO_LM(ER, MSG_POSITION_UNKNOWN);
+            ECHO_LM(DB, MSG_POSITION_UNKNOWN);
           }
         }
         if (debugLevel & DEBUG_INFO) ECHO_LM(DB, "<<< Z_SAFE_HOMING");
@@ -3494,7 +3494,7 @@ inline void gcode_G28() {
   #endif
 
   clean_up_after_endstop_move();
-  
+
   if(come_back) {
     #if MECH(DELTA)
       feedrate = 1.732 * homing_feedrate[X_AXIS];
@@ -3520,6 +3520,8 @@ inline void gcode_G28() {
       feedrate = oldfeedrate;
     #endif
   }
+
+  if (debugLevel & DEBUG_INFO) ECHO_LM(DB, "<<< gcode_G28");
 }
 
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
