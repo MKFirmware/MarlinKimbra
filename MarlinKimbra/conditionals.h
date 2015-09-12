@@ -313,10 +313,10 @@
   #undef SLOWDOWN //DELTA not needs SLOWDOWN
   #define AUTOLEVEL_GRID_MULTI 1/AUTOLEVEL_GRID
   // DELTA must have same valour for 3 axis endstop hits
-  #undef Y_HOME_BUMP_MM
-  #undef Z_HOME_BUMP_MM
-  #define Y_HOME_BUMP_MM X_HOME_BUMP_MM
-  #define Z_HOME_BUMP_MM X_HOME_BUMP_MM
+  #define X_HOME_BUMP_MM XYZ_HOME_BUMP_MM
+  #define Y_HOME_BUMP_MM XYZ_HOME_BUMP_MM
+  #define Z_HOME_BUMP_MM XYZ_HOME_BUMP_MM
+  #define HOMING_BUMP_DIVISOR {XYZ_BUMP_DIVISOR, XYZ_BUMP_DIVISOR, XYZ_BUMP_DIVISOR}
 
   // Effective horizontal distance bridged by diagonal push rods.
   #define DEFAULT_DELTA_RADIUS (DELTA_SMOOTH_ROD_OFFSET-DELTA_EFFECTOR_OFFSET-DELTA_CARRIAGE_OFFSET)
