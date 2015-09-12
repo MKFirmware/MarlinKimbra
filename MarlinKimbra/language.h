@@ -19,9 +19,14 @@
 // 9  Finnish
 // 10 Aragonese
 // 11 Dutch
-// 12 Catalan
-// 13 Basque-Euskera
-// 14 Portuguese (Brazil)
+// 12 Danish
+// 13 Catalan
+// 14 Basque-Euskera
+// 15 Portuguese (Brazil)
+// 16 Bulgarian
+// 17 Japanese
+// 18 Japanese utf
+// 19 Chinese
 
 #if DISABLED(LANGUAGE_CHOICE)
   #define LANGUAGE_CHOICE 7  // Pick your language from the list above
@@ -255,12 +260,22 @@
   #include "language_an.h"
 #elif LANGUAGE_CHOICE == 11 // Dutch
   #include "language_nl.h"
-#elif LANGUAGE_CHOICE == 12 // Catalan
+#elif LANGUAGE_CHOICE == 12 // Danish
+  #include "language_da.h"
+#elif LANGUAGE_CHOICE == 13 // Catalan
   #include "language_ca.h"
-#elif LANGUAGE_CHOICE == 13 // Basque-Euskera
+#elif LANGUAGE_CHOICE == 14 // Basque-Euskera
   #include "language_eu.h"
-#elif LANGUAGE_CHOICE == 14 // Portuguese - Brasil
+#elif LANGUAGE_CHOICE == 15 // Portuguese - Brasil
   #include "language_pt-br.h"
+#elif LANGUAGE_CHOICE == 16 // Bulgarian
+  #include "language_bg.h"
+#elif LANGUAGE_CHOICE == 17 // Japanese
+  #include "language_kana.h"
+#elif LANGUAGE_CHOICE == 18 // Japanese utf
+  #include "language_kana_utf8.h"
+#elif LANGUAGE_CHOICE == 19 // Chinese
+  #include "language_cn.h"
 #endif
 
 #endif //__LANGUAGE_H
