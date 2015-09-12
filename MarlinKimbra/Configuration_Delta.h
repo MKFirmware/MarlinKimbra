@@ -303,17 +303,21 @@
 /*****************************************************************************************
  ******************************* Axis steps per unit *************************************
  *****************************************************************************************/
-// Default steps per unit               X,  Y,  Z,  E0...(per extruder)
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {80, 80, 80, 625, 625, 625, 625}
+#define XYZ_STEPS_PER_UNIT 80
+ // Default steps per unit                              X,                  Y,                  Z,  E0...(per extruder)
+#define DEFAULT_AXIS_STEPS_PER_UNIT   {XYZ_STEPS_PER_UNIT, XYZ_STEPS_PER_UNIT, XYZ_STEPS_PER_UNIT, 625, 625, 625, 625}
 /*****************************************************************************************/
 
 
 /*****************************************************************************************
  ********************************** Axis feedrate ****************************************
  *****************************************************************************************/
-//                                       X,   Y,   Z, E0...(per extruder). (mm/sec)
-#define DEFAULT_MAX_FEEDRATE          {500, 500, 500, 100, 100, 100, 100}
-#define MANUAL_FEEDRATE               {50*60, 50*60, 50*60, 60} // Feedrates for manual moves along X, Y, Z, E from panel
+#define XYZ_MAX_FEEDRATE              500   // (mm/sec)
+#define XYZ_MANUAL_FEEDRATE           50    // (mm/min)
+//                                                    X,                Y,                Z, E0...(per extruder). (mm/sec)
+#define DEFAULT_MAX_FEEDRATE          {XYZ_MAX_FEEDRATE, XYZ_MAX_FEEDRATE, XYZ_MAX_FEEDRATE, 100, 100, 100, 100}
+// Feedrates for manual moves along                      X,                   Y,                   Z, E from panel
+#define MANUAL_FEEDRATE               {XYZ_MANUAL_FEEDRATE*60, XYZ_MANUAL_FEEDRATE*60, XYZ_MANUAL_FEEDRATE*60, 60}
 #define DEFAULT_MINIMUMFEEDRATE       0.0                       // minimum feedrate
 #define DEFAULT_MINTRAVELFEEDRATE     0.0
 // Minimum planner junction speed. Sets the default minimum speed the planner plans for at the end
@@ -326,10 +330,11 @@
 /*****************************************************************************************
  ******************************** Axis accelleration *************************************
  *****************************************************************************************/
-//  Maximum start speed for accelerated moves.    X,    Y,    Z,   E0...(per extruder)
-#define DEFAULT_MAX_ACCELERATION              {5000, 5000, 5000, 1000, 1000, 1000, 1000}
+#define XYZ_MAX_ACCELERATION          5000 // (mm/s^2)
+//  Maximum start speed for accelerated moves.            X,                    Y,                    Z,   E0...(per extruder)
+#define DEFAULT_MAX_ACCELERATION      {XYZ_MAX_ACCELERATION, XYZ_MAX_ACCELERATION, XYZ_MAX_ACCELERATION, 1000, 1000, 1000, 1000}
 //  Maximum acceleration in mm/s^2 for retracts   E0... (per extruder)
-#define DEFAULT_RETRACT_ACCELERATION          {10000, 10000, 10000, 10000}
+#define DEFAULT_RETRACT_ACCELERATION  {10000, 10000, 10000, 10000}
 //  X, Y, Z and E* maximum acceleration in mm/s^2 for printing moves
 #define DEFAULT_ACCELERATION          3000
 //  X, Y, Z acceleration in mm/s^2 for travel (non printing) moves
@@ -355,13 +360,14 @@
 /*****************************************************************************************
  ************************************ Homing feedrate ************************************
  *****************************************************************************************/
-#define HOMING_FEEDRATE {100*60, 100*60, 100*60, 0} // set the homing speeds (mm/min)
+// set the homing speeds (mm/min)
+#define HOMING_XYZ_FEEDRATE 100
+#define HOMING_FEEDRATE {HOMING_XYZ_FEEDRATE*60, HOMING_XYZ_FEEDRATE*60, HOMING_XYZ_FEEDRATE*60, 0}
 
 // homing hits the endstop, then retracts by this distance, before it tries to slowly bump again:
-#define X_HOME_BUMP_MM 5
-#define Y_HOME_BUMP_MM 5
-#define Z_HOME_BUMP_MM 5
-#define HOMING_BUMP_DIVISOR {5, 5, 5}  // Re-Bump Speed Divisor (Divides the Homing Feedrate)
+#define XYZ_HOME_BUMP_MM 5
+// Re-Bump Speed Divisor (Divides the Homing Feedrate)
+#define XYZ_BUMP_DIVISOR 10
 /*****************************************************************************************/
 
 
