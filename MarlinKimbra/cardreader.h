@@ -1,6 +1,8 @@
 #ifndef CARDREADER_H
 #define CARDREADER_H
 
+#if ENABLED(SDSUPPORT)
+
 #define MAX_DIR_DEPTH 10          // Maximum folder depth
 
 #include "SdFile.h"
@@ -96,5 +98,7 @@ extern CardReader card;
 #else
 
 #define IS_SD_PRINTING (false)
+
+#endif //SDSUPPORT
 
 #endif //__CARDREADER_H
