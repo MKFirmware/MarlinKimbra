@@ -1682,6 +1682,10 @@
     #error DEPENDENCY ERROR: You have to set E_MIN_PIN to a valid pin if you enable NPR2
   #endif
 
+  #if ENABLED(DONDOLO) && NUM_SERVOS < 1
+    #error DEPENDENCY ERROR: You must set NUM_SERVOS > 0 for DONDOLO
+  #endif
+
   #if ENABLED(LASERBEAM) && (!PIN_EXISTS(LASER_PWR) ||  !PIN_EXISTS(LASER_TTL)) 
     #error DEPENDENCY ERROR: You have to set LASER_PWR_PIN and LASER_TTL_PIN to a valid pin if you enable LASERBEAM
   #endif

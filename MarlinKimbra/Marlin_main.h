@@ -98,7 +98,7 @@ extern float home_offset[3];
 
 // Hotend offset
 #if HOTENDS > 1
-  extern float hotend_offset[NUM_HOTEND_OFFSETS][HOTENDS];
+  extern float hotend_offset[3][HOTENDS];
 #endif // HOTENDS > 1
 
 #if ENABLED(NPR2)

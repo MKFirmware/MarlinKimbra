@@ -33,8 +33,9 @@ The new features are:
 A single Firmware for all types of printers; Cartesian, Delta, SCARA, CoreXY & CoreXZ.
 The possibility of having only one hotend independently from the extruders that you have.
 The addition of the 4th extruder.
-System Management MKr4 for 4 extruders with just two drivers or two extruders with a driver only.
+System Management MKr4 for 4 extruders with just two drivers or only driver.
 Management Multyextruder NPr2, 4/6 extruders with only two engines.
+Management Dual Extruder DONDOLO.
 Adding commands to facilitate purging of hotend. 
 Step per unit varied for each extruder as well as the feedrate.
 The addition of a different feedrate for retraction. 

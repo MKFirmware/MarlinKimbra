@@ -568,7 +568,21 @@ void set_stepper_direction() {
     count_direction[Z_AXIS] = 1;
   }
   
-  #if DISABLED(ADVANCE)
+  #if DISABLED(ADVANCE) && ENABLED(DONDOLO)
+    if (TEST(out_bits, E_AXIS)) {
+      if (active_extruder == 0)
+        REV_E_DIR();
+      else
+        NORM_E_DIR();
+      count_direction[E_AXIS] = -1;
+    else {
+      if (active_extruder == 0)
+        NORM_E_DIR();
+      else
+        REV_E_DIR();
+      count_direction[E_AXIS] = 1;
+    }
+  #elif DISABLED(ADVANCE)
     if (TEST(out_bits, E_AXIS)) {
       REV_E_DIR();
       count_direction[E_AXIS] = -1;
@@ -790,12 +804,26 @@ ISR(TIMER1_COMPA_vect) {
       if (e_steps[0] != 0) {
         E0_STEP_WRITE(INVERT_E_STEP_PIN);
         if (e_steps[0] < 0) {
-          E0_DIR_WRITE(INVERT_E0_DIR);
+          #if ENABLED(DONDOLO)
+            if (active_extruder == 0)
+              E0_DIR_WRITE(INVERT_E0_DIR);
+            else
+              E0_DIR_WRITE(!INVERT_E0_DIR);
+          #else
+            E0_DIR_WRITE(INVERT_E0_DIR);
+          #endif
           e_steps[0]++;
           E0_STEP_WRITE(!INVERT_E_STEP_PIN);
         }
         else if (e_steps[0] > 0) {
-          E0_DIR_WRITE(!INVERT_E0_DIR);
+          #if ENABLED(DONDOLO)
+            if (active_extruder == 0)
+              E0_DIR_WRITE(!INVERT_E0_DIR);
+            else
+              E0_DIR_WRITE(INVERT_E0_DIR);
+          #else
+            E0_DIR_WRITE(!INVERT_E0_DIR);
+          #endif
           e_steps[0]--;
           E0_STEP_WRITE(!INVERT_E_STEP_PIN);
         }
