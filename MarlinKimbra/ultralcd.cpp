@@ -4,11 +4,7 @@
 #if ENABLED(ULTRA_LCD)
 
 #include "Marlin_main.h"
-
-#if ENABLED(SDSUPPORT)
-  #include "cardreader.h"
-#endif
-
+#include "cardreader.h"
 #include "temperature.h"
 
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
@@ -2382,11 +2378,7 @@ char *ftostr52(const float &x) {
 #elif ENABLED(NEXTION)
 
 #include "Marlin_main.h"
-
-#if ENABLED(SDSUPPORT)
-  #include "cardreader.h"
-#endif
-
+#include "cardreader.h"
 #include "temperature.h"
 
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
