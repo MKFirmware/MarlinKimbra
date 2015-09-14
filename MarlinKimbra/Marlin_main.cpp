@@ -45,9 +45,7 @@
 #endif
 #include "stepper.h"
 #include "temperature.h"
-#if ENABLED(SDSUPPORT)
-  #include "cardreader.h"
-#endif
+#include "cardreader.h"
 #include "configuration_store.h"
 
 #if ENABLED(USE_WATCHDOG)
