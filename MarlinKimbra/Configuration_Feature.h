@@ -980,6 +980,7 @@
  ****************************************************************************************/
 //#define SDSUPPORT                              // Enable SD Card Support in Hardware Console
 //#define SDSLOW                                 // Use slower SD transfer mode (not normally needed - uncomment if you're getting volume init error)
+//#define SDEXTRASLOW                            // Use even slower SD transfer mode (not normally needed - uncomment if you're getting volume init error)
 //#define SD_CHECK_AND_RETRY                     // Use CRC checks and retries on the SD communication
 
 // Some RAMPS and other boards don't detect when an SD card is inserted. You can work
