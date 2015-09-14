@@ -21,6 +21,7 @@
  * - BariCUDA paste extruder
  * - Multiextruder MKR4
  * - Multiextruder NPr2
+ * - Multiextruder DONDOLO
  * - Extruder idle oozing prevention
  * - Extruder run-out prevention
  * - Bowden Filament management
@@ -398,7 +399,7 @@
  *********************** Multiextruder NPr2 ****************************
  ***********************************************************************
  *                                                                     *
- * Setting fot color meccanism NPr2 by NicolaP (www.3dmakerlab.it)     *
+ * Setting for color meccanism NPr2 by NicolaP (www.3dmakerlab.it)     *
  * Find angle setting by g-Code "M997 Cxxx"                            *
  *                                                                     *
  * Uncomment NPR2 to enable this feature                               *
@@ -412,6 +413,26 @@
 #define MOTOR_ANGLE 1.8              // Nema angle for single step 
 #define DRIVER_MICROSTEP 4           // Microstep moltiplicator driver (set jumper MS1-2-3) off-on-off 1/4 microstepping.
 #define CARTER_MOLTIPLICATOR 14.22   // CARTER MOLTIPLICATOR (gear ratio 13/31-10/31)
+/***********************************************************************/
+
+
+/***********************************************************************
+ ********************* Dual Extruder DONDOLO ***************************
+ ***********************************************************************
+ *                                                                     *
+ * Setting for multiextruder DONDOLO 1.0b by Gianni Franci             *
+ * http://www.thingiverse.com/thing:673816                             *
+ * For function set NUM_SERVOS +1 if you use for endstop or probe      *
+ * Set DONDOLO SERVO INDEX for servo you use for DONDOLO               *
+ * Set DONDOLO SERVOPOS E0 angle for E0 extruder                       *
+ * Set DONDOLO SERVOPOS E1 angle for E1 extruder                       *
+ * Remember set HOTEND OFFSET X Y Z                                    *
+ ***********************************************************************/
+//#define DONDOLO
+#define DONDOLO_SERVO_INDEX 0
+#define DONDOLO_SERVOPOS_E0 120
+#define DONDOLO_SERVOPOS_E1 10
+#define DONDOLO_SERVO_DELAY 1000
 /***********************************************************************/
 
 

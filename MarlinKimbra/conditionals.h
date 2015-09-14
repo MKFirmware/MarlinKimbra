@@ -218,6 +218,14 @@
 #include "Configuration_Overall.h"
 
 /**
+ * DONDOLO
+ */
+#if ENABLED(DONDOLO)
+  #undef SINGLENOZZLE
+  #define DRIVER_EXTRUDERS 0
+#endif
+
+/**
  * SINGLENOZZLE
  */
 #if ENABLED(SINGLENOZZLE)
@@ -699,14 +707,5 @@
  * The axis order in all axis related arrays is X, Y, Z, E
  */
 #define NUM_AXIS 4
-
-// Hotend offset
-#if HOTENDS > 1
-  #if DISABLED(DUAL_X_CARRIAGE)
-    #define NUM_HOTEND_OFFSETS 2 // only in XY plane
-  #else
-    #define NUM_HOTEND_OFFSETS 3 // supports offsets in XYZ plane
-  #endif
-#endif // HOTENDS > 1
 
 #endif //CONDITIONALS_H

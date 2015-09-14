@@ -436,12 +436,14 @@ void Config_ResetDefault() {
     float tmp9[] = DEFAULT_Kc;
   #endif // PIDTEMP
 
-  #if ENABLED(HOTEND_OFFSET_X) && ENABLED(HOTEND_OFFSET_Y)
+  #if ENABLED(HOTEND_OFFSET_X) && ENABLED(HOTEND_OFFSET_Y) && ENABLED(HOTEND_OFFSET_Z)
     float tmp10[] = HOTEND_OFFSET_X;
     float tmp11[] = HOTEND_OFFSET_Y;
+    float tmp12[] = HOTEND_OFFSET_Z;
   #else
     float tmp10[] = {0};
     float tmp11[] = {0};
+    float tmp12[] = {0};
   #endif
 
   for (int8_t i = 0; i < 3 + EXTRUDERS; i++) {
@@ -483,6 +485,11 @@ void Config_ResetDefault() {
           hotend_offset[Y_AXIS][i] = tmp11[i];
         else
           hotend_offset[Y_AXIS][i] = 0;
+        max_i = sizeof(tmp12) / sizeof(*tmp12);
+        if(i < max_i)
+          hotend_offset[Z_AXIS][i] = tmp12[i];
+        else
+          hotend_offset[Z_AXIS][i] = 0;
       #endif // HOTENDS > 1
     }
   }
@@ -697,10 +704,11 @@ void Config_ResetDefault() {
       if (!forReplay) {
         ECHO_LM(DB, "Hotend offset (mm):");
       }
-      for (int e = 0; e < HOTENDS; e++) {
-        ECHO_SMV(DB, "  M218 T", e);
-        ECHO_MV(" X", hotend_offset[X_AXIS][e]);
-        ECHO_EMV(" Y" ,hotend_offset[Y_AXIS][e]);
+      for (int h = 0; h < HOTENDS; h++) {
+        ECHO_SMV(DB, "  M218 T", h);
+        ECHO_MV(" X", hotend_offset[X_AXIS][h]);
+        ECHO_MV(" Y", hotend_offset[Y_AXIS][h]);
+        ECHO_EMV(" Z", hotend_offset[Z_AXIS][h]);
       }
     #endif //HOTENDS > 1
     

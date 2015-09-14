@@ -1,4 +1,5 @@
 ### Version 4.2.0
+* Add Dual Extruder DONDOLO
 * Add PID Extrusion Rate Kc in percent.
 * New configuration systems (Now you can create a separate file with all configuration and use it in you FW update)
 * New namings for file

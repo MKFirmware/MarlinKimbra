@@ -320,12 +320,7 @@ unsigned long printer_usage_seconds;
 
 // Hotend offset
 #if HOTENDS > 1
-  #if DISABLED(DUAL_X_CARRIAGE)
-    #define NUM_HOTEND_OFFSETS 2 // only in XY plane
-  #else
-    #define NUM_HOTEND_OFFSETS 3 // supports offsets in XYZ plane
-  #endif
-  float hotend_offset[NUM_HOTEND_OFFSETS][HOTENDS];
+  float hotend_offset[3][HOTENDS];
 #endif
 
 #if ENABLED(NPR2)
@@ -723,13 +718,25 @@ bool enqueuecommand(const char *cmd) {
       servo[3].detach();
     #endif
 
+    #if ENABLED(DONDOLO)
+  		servo[DONDOLO_SERVO_INDEX].write(DONDOLO_SERVOPOS_E0);
+  		delay(DONDOLO_SERVO_DELAY);
+  	#endif
+
     // Set position of Servo Endstops that are defined
     #if HAS(SERVO_ENDSTOPS)
-      for (int i = 0; i < 3; i++)
-        if (servo_endstop_id[i] >= 0)
-          servo[servo_endstop_id[i]].move(servo_endstop_angle[i][1]);
+      #if ENABLED(DONDOLO)
+        for (int i = 0; i < 3; i++) {
+          if (servo_endstops[i] >= 0 && servo_endstops[i] != DONDOLO_SERVO_INDEX)
+            servo[servo_endstops[i]].write(servo_endstop_angles[i * 2 + 1]);
+        }
+      #else
+        for (int i = 0; i < 3; i++) {
+          if (servo_endstops[i] >= 0)
+          servo[servo_endstops[i]].write(servo_endstop_angles[i * 2 + 1]);
+        }
+      #endif
     #endif
-
   }
 #endif
 /**
@@ -5731,18 +5738,13 @@ inline void gcode_M206() {
 
     if (code_seen('X')) hotend_offset[X_AXIS][target_extruder] = code_value();
     if (code_seen('Y')) hotend_offset[Y_AXIS][target_extruder] = code_value();
-
-    #if ENABLED(DUAL_X_CARRIAGE)
-      if (code_seen('Z')) hotend_offset[Z_AXIS][target_extruder] = code_value();
-    #endif
+    if (code_seen('Z')) hotend_offset[Z_AXIS][target_extruder] = code_value();
 
     ECHO_SM(DB, MSG_HOTEND_OFFSET);
     for (int e = 0; e < HOTENDS; e++) {
       ECHO_MV(" ", hotend_offset[X_AXIS][e]);
       ECHO_MV(",", hotend_offset[Y_AXIS][e]);
-      #if ENABLED(DUAL_X_CARRIAGE)
-        ECHO_MV(",", hotend_offset[Z_AXIS][e]);
-      #endif
+      ECHO_MV(",", hotend_offset[Z_AXIS][e]);
     }
     ECHO_E;
   }
@@ -5864,28 +5866,54 @@ inline void gcode_M226() {
   inline void gcode_M280() {
     int servo_index = code_seen('P') ? code_value_short() : -1;
     int servo_position = 0;
-    if (code_seen('S')) {
-      servo_position = code_value_short();
-      if (servo_index >= 0 && servo_index < NUM_SERVOS) {
-        Servo *srv = &servo[servo_index];
-        #if SERVO_LEVELING
-          srv->attach(0);
-        #endif
-        srv->write(servo_position);
-        #if SERVO_LEVELING
-          delay(SERVO_DEACTIVATION_DELAY);
-          srv->detach();
-        #endif
+    #if ENABLED(DONDOLO)
+      if (code_seen('S')) {
+        servo_position = code_value_short();
+        if (servo_index >= 0 && servo_index < NUM_SERVOS && servo_index != DONDOLO_SERVO_INDEX) {
+          Servo *srv = &servo[servo_index];
+          #if SERVO_LEVELING
+            srv->attach(0);
+          #endif
+            srv->write(servo_position);
+          #if SERVO_LEVELING
+            delay(PROBE_SERVO_DEACTIVATION_DELAY);
+            srv->detach();
+          #endif
+        }
+        else if(servo_index == DONDOLO_SERVO_INDEX) {
+          Servo *srv = &servo[servo_index];
+          srv->write(servo_position);
+          delay (DONDOLO_SERVO_DELAY);
+        }
+        else {
+          ECHO_SM(ER, "Servo ");
+          ECHO_EVM(servo_index, " out of range");
+        }
       }
-      else {
-        ECHO_SM(ER, "Servo ");
-        ECHO_EVM(servo_index, " out of range");
+    #else
+      if (code_seen('S')) {
+        servo_position = code_value_short();
+        if (servo_index >= 0 && servo_index < NUM_SERVOS) {
+          Servo *srv = &servo[servo_index];
+          #if SERVO_LEVELING
+            srv->attach(0);
+          #endif
+          srv->write(servo_position);
+          #if SERVO_LEVELING
+            delay(SERVO_DEACTIVATION_DELAY);
+            srv->detach();
+          #endif
+        }
+        else {
+          ECHO_SM(ER, "Servo ");
+          ECHO_EVM(servo_index, " out of range");
+        }
       }
-    }
-    else if (servo_index >= 0) {
-      ECHO_SMV(OK, " Servo ", servo_index);
-      ECHO_EMV(": ", servo[servo_index].read());
-    }
+      else if (servo_index >= 0) {
+        ECHO_SMV(OK, " Servo ", servo_index);
+        ECHO_EMV(": ", servo[servo_index].read());
+      }
+    #endif
   }
 #endif // NUM_SERVOS > 0
 
@@ -6706,13 +6734,17 @@ inline void gcode_T(uint8_t tmp_extruder) {
   else {
     target_extruder = tmp_extruder;
 
-    #if EXTRUDERS > 1
-      bool make_move = false;
+    #if HOTENDS > 1
+      #if ENABLED(DONDOLO)
+        bool make_move = true;
+      #else
+        bool make_move = false;
+      #endif
     #endif
 
     if (code_seen('F')) {
 
-      #if EXTRUDERS > 1
+      #if HOTENDS > 1
         make_move = true;
       #endif
 
@@ -6775,13 +6807,13 @@ inline void gcode_T(uint8_t tmp_extruder) {
             delayed_move_time = 0;
           }
         #else // !DUAL_X_CARRIAGE
-          // Offset hotend (only by XY)
+          // Offset hotend (XYZ)
           #if HOTENDS > 1
-            for (int i = X_AXIS; i <= Y_AXIS; i++)
+            for (int i = X_AXIS; i <= Z_AXIS; i++)
               current_position[i] += hotend_offset[i][target_extruder] - hotend_offset[i][active_extruder];
           #endif // HOTENDS > 1
 
-          #if ENABLED(MKR4) && (EXTRUDERS > 1)
+          #if ENABLED(MKR4)
             #if (EXTRUDERS == 4) && HAS(E0E2) && HAS(E1E3) && (DRIVER_EXTRUDERS == 2)
               st_synchronize(); // Finish all movement
               disable_e();
@@ -6942,11 +6974,25 @@ inline void gcode_T(uint8_t tmp_extruder) {
             old_color = active_extruder = target_extruder;
             active_driver = 0;
             ECHO_LMV(DB, MSG_ACTIVE_COLOR, (int)active_extruder);
+          #elif ENABLED(DONDOLO)
+            active_extruder = target_extruder;
+            active_driver = 0;
+            if (active_extruder == 0) {
+              st_synchronize();
+              servo[DONDOLO_SERVO_INDEX].write(DONDOLO_SERVOPOS_E0);
+              delay (DONDOLO_SERVO_DELAY);
+            }
+            else if (active_extruder == 1) {
+              st_synchronize();
+              servo[DONDOLO_SERVO_INDEX].write(DONDOLO_SERVOPOS_E1);
+              delay(DONDOLO_SERVO_DELAY);
+            }
+            ECHO_LMV(DB, MSG_ACTIVE_DRIVER, active_driver);
+            ECHO_LMV(DB, MSG_ACTIVE_EXTRUDER, active_extruder);
           #else 
             active_driver = active_extruder = target_extruder;
-            ECHO_LMV(DB, MSG_ACTIVE_EXTRUDER, (int)active_extruder);
-
-          #endif // end MKR4 || NPR2
+            ECHO_LMV(DB, MSG_ACTIVE_EXTRUDER, active_extruder);
+          #endif // end MKR4 || NPR2 || DONDOLO
         #endif // end no DUAL_X_CARRIAGE
 
         #if MECH(DELTA) || MECH(SCARA)
