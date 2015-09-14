@@ -407,14 +407,15 @@
  *********************************** Hotend offset ***************************************
  *****************************************************************************************
  *                                                                                       *
- * Offset of the extruders (uncomment if using more than one and relying on firmware     *
+ * Offset of the hotends (uncomment if using more than one and relying on firmware       *
  * to position when changing).                                                           *
- * The offset has to be X=0, Y=0 for the hotend 0 (default hotend).                      *
+ * The offset has to be X=0, Y=0, Z=0 for the hotend 0 (default hotend).                 *
  * For the other hotends it is their distance from the hotend 0.                         *
  *                                                                                       *
  *****************************************************************************************/
-//#define HOTEND_OFFSET_X {0.0, 5.00, 0.0, 0.0} // (in mm) for each hotend, offset of the hotend on the X axis
-//#define HOTEND_OFFSET_Y {0.0, 5.00, 0.0, 0.0} // (in mm) for each hotend, offset of the hotend on the Y axis
+//#define HOTEND_OFFSET_X {0.0, 5.0, 0.0, 0.0} // (in mm) for each hotend, offset of the hotend on the X axis
+//#define HOTEND_OFFSET_Y {0.0, 5.0, 0.0, 0.0} // (in mm) for each hotend, offset of the hotend on the Y axis
+//#define HOTEND_OFFSET_Z {0.0, 0.0, 0.0, 0.0} // (in mm) for each hotend, offset of the hotend on the Z axis
 /*****************************************************************************************/
 
 #endif
