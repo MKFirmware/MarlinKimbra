@@ -6732,17 +6732,15 @@ inline void gcode_T(uint8_t tmp_extruder) {
   else {
     target_extruder = tmp_extruder;
 
-    #if HOTENDS > 1
-      #if ENABLED(DONDOLO)
-        bool make_move = true;
-      #else
-        bool make_move = false;
-      #endif
+    #if ENABLED(DONDOLO)
+      bool make_move = true;
+    #else
+      bool make_move = false;
     #endif
 
     if (code_seen('F')) {
 
-      #if HOTENDS > 1
+      #if EXTRUDERS > 1
         make_move = true;
       #endif
 
