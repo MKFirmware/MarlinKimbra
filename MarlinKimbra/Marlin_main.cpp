@@ -697,7 +697,7 @@ bool enqueuecommand(const char *cmd) {
   }
 #endif
 
-#if HAS(SERVO)
+#if HAS(SERVOS)
   void servo_init() {
     #if HAS(SERVO_0)
       servo[0].attach(SERVO0_PIN);
@@ -717,21 +717,23 @@ bool enqueuecommand(const char *cmd) {
     #endif
 
     #if ENABLED(DONDOLO)
+      servo[DONDOLO_SERVO_INDEX].attach(0);
   		servo[DONDOLO_SERVO_INDEX].write(DONDOLO_SERVOPOS_E0);
   		delay(DONDOLO_SERVO_DELAY);
+      servo[DONDOLO_SERVO_INDEX].detach();
   	#endif
 
     // Set position of Servo Endstops that are defined
     #if HAS(SERVO_ENDSTOPS)
       #if ENABLED(DONDOLO)
         for (int i = 0; i < 3; i++) {
-          if (servo_endstops[i] >= 0 && servo_endstops[i] != DONDOLO_SERVO_INDEX)
-            servo[servo_endstops[i]].write(servo_endstop_angles[i * 2 + 1]);
+          if (servo_endstop_id[i] >= 0 && servo_endstop_id[i] != DONDOLO_SERVO_INDEX)
+            servo[servo_endstop_id[i]].write(servo_endstop_angle[i][1]);
         }
       #else
         for (int i = 0; i < 3; i++) {
-          if (servo_endstops[i] >= 0)
-          servo[servo_endstops[i]].write(servo_endstop_angles[i * 2 + 1]);
+          if (servo_endstop_id[i] >= 0)
+          servo[servo_endstop_id[i]].write(servo_endstop_angle[i][1]);
         }
       #endif
     #endif
@@ -857,7 +859,7 @@ void setup() {
   #if ENABLED(LASERBEAM)
     setup_laserbeampin();   // Initialize Laserbeam pin
   #endif
-  #if HAS(SERVO)
+  #if HAS(SERVOS)
     servo_init();
   #endif
   #if HAS(STEPPER_RESET)
@@ -5857,7 +5859,7 @@ inline void gcode_M226() {
 
 #endif // DOGLCD
 
-#if HAS(SERVO)
+#if HAS(SERVOS)
   /**
    * M280: Get or set servo position. P<index> S<angle>
    */
@@ -5880,8 +5882,10 @@ inline void gcode_M226() {
         }
         else if(servo_index == DONDOLO_SERVO_INDEX) {
           Servo *srv = &servo[servo_index];
+          srv->attach(0);
           srv->write(servo_position);
           delay (DONDOLO_SERVO_DELAY);
+          srv->detach();
         }
         else {
           ECHO_SM(ER, "Servo ");
@@ -6975,13 +6979,17 @@ inline void gcode_T(uint8_t tmp_extruder) {
             active_driver = 0;
             if (active_extruder == 0) {
               st_synchronize();
+              servo[DONDOLO_SERVO_INDEX].attach(0);
               servo[DONDOLO_SERVO_INDEX].write(DONDOLO_SERVOPOS_E0);
               delay (DONDOLO_SERVO_DELAY);
+              servo[DONDOLO_SERVO_INDEX].detach();
             }
             else if (active_extruder == 1) {
               st_synchronize();
+              servo[DONDOLO_SERVO_INDEX].attach(0);
               servo[DONDOLO_SERVO_INDEX].write(DONDOLO_SERVOPOS_E1);
               delay(DONDOLO_SERVO_DELAY);
+              servo[DONDOLO_SERVO_INDEX].detach();
             }
             ECHO_LMV(DB, MSG_ACTIVE_DRIVER, active_driver);
             ECHO_LMV(DB, MSG_ACTIVE_EXTRUDER, active_extruder);
@@ -7332,7 +7340,7 @@ void process_next_command() {
           gcode_M250(); break;
       #endif // DOGLCD
 
-      #if HAS(SERVO)
+      #if HAS(SERVOS)
         case 280: // M280 - set servo position absolute. P: servo index, S: angle or microseconds
           gcode_M280(); break;
       #endif // NUM_SERVOS > 0
