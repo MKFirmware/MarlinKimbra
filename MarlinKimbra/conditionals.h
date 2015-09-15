@@ -222,7 +222,7 @@
  */
 #if ENABLED(DONDOLO)
   #undef SINGLENOZZLE
-  #define DRIVER_EXTRUDERS 0
+  #define DRIVER_EXTRUDERS 1
 #endif
 
 /**
@@ -238,7 +238,7 @@
 /**
  * DRIVER_EXTRUDERS
  */
-#if DISABLED(MKR4) && DISABLED(NPR2)
+#if DISABLED(MKR4) && DISABLED(NPR2) && DISABLED(DONDOLO)
   #define DRIVER_EXTRUDERS EXTRUDERS // This defines the number of Driver extruder
 #endif
 
