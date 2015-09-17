@@ -6991,6 +6991,7 @@ inline void gcode_T(uint8_t tmp_extruder) {
               delay(DONDOLO_SERVO_DELAY);
               servo[DONDOLO_SERVO_INDEX].detach();
             }
+            set_stepper_direction(true);
             ECHO_LMV(DB, MSG_ACTIVE_DRIVER, active_driver);
             ECHO_LMV(DB, MSG_ACTIVE_EXTRUDER, active_extruder);
           #else 
