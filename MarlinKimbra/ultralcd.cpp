@@ -2392,9 +2392,11 @@ char *ftostr52(const float &x) {
 #include "ultralcd.h"
 #include "Nextion.h"
 
-bool NextionON    = false;
-bool PageInfo     = false;
-char buffer[100]  = {0};
+const float MaxWave = 0.2;
+bool NextionON      = false;
+bool PageInfo       = false;
+char buffer[100]    = {0};
+int slidermaxval    = 20;
 char lcd_status_message[30] = WELCOME_MSG; // worst case is kana with up to 3*LCD_WIDTH+1
 uint8_t lcd_status_message_level = 0;
 
@@ -2402,6 +2404,9 @@ uint8_t lcd_status_message_level = 0;
 NexPage page0    = NexPage(0, 0, "start");
 NexPage page1    = NexPage(1, 0, "info");
 NexPage page2    = NexPage(2, 0, "settemp");
+NexPage page3    = NexPage(3, 0, "menu");
+NexPage page4    = NexPage(4, 0, "sdcard");
+NexPage page5    = NexPage(5, 0, "setup");
 
 // Text
 NexText Hotend0     = NexText(1, 1,   "t0");
@@ -2412,6 +2417,12 @@ NexText LedStatus   = NexText(1, 7,   "t4");
 NexText LedCoord    = NexText(1, 8,   "t5");
 NexText set0        = NexText(2, 2,   "set0");
 NexText set1        = NexText(2, 15,  "set1");
+NexText sdrow0      = NexText(4, 3,   "t1");
+NexText sdrow1      = NexText(4, 4,   "t2");
+NexText sdrow2      = NexText(4, 5,   "t3");
+NexText sdrow3      = NexText(4, 6,   "t4");
+NexText sdrow4      = NexText(4, 7,   "t5");
+NexText sdrow5      = NexText(4, 8,   "t6");
 
 // Picture
 NexPicture Menu     = NexPicture(1, 10, "p0");
@@ -2421,11 +2432,22 @@ NexPicture Hend0    = NexPicture(1, 13, "p3");
 NexPicture Hend1    = NexPicture(1, 14, "p4");
 NexPicture Hend2    = NexPicture(1, 15, "p5");
 NexPicture Fanpic   = NexPicture(1, 19, "p6");
+NexPicture Folder0  = NexPicture(4,  9, "p0");
+NexPicture Folder1  = NexPicture(4, 10, "p1");
+NexPicture Folder2  = NexPicture(4, 11, "p2");
+NexPicture Folder3  = NexPicture(4, 12, "p3");
+NexPicture Folder4  = NexPicture(4, 13, "p4");
+NexPicture Folder5  = NexPicture(4, 14, "p5");
 
 // Progress Bar
 
+// Slider
+NexSlider sdlist    = NexSlider(4, 1,   "h0");
+
 // Wafeform
-NexWaveform Graph0  = NexWaveform(1, 9, "s0");
+NexWaveform Graph0  = NexWaveform(1,  9, "s0");
+NexWaveform Graph1  = NexWaveform(1, 24, "s1");
+NexWaveform Graph2  = NexWaveform(1, 25, "s2");
 
 // Touch area
 NexHotspot hot0     = NexHotspot(1, 14, "hot0");
@@ -2452,6 +2474,7 @@ NexTouch *nex_listen_list[] =
   &m11,
   &tup,
   &tdown,
+  &sdlist,
   NULL
 };
 
@@ -2478,6 +2501,114 @@ void setpageInfo() {
   #endif
 
   lcd_setstatus(lcd_status_message);
+}
+
+void setrowsdcard(uint32_t number = 0) {
+  uint16_t fileCnt = card.getnrfilenames();
+  uint32_t ii = 0;
+
+  ECHO_EMV("FILE CONT = ", fileCnt);
+  card.getWorkDirName();
+  for (uint8_t i = 0; i < 6; i++) {
+    ii = i + number;
+    if (ii <= fileCnt) {
+      card.getfilename(ii);
+      switch (i) {
+        case 0:
+        {
+          if (card.filenameIsDir) {
+            Folder0.setPic(18);
+            sdrow0.setText(card.filename);
+          }
+          else {
+            Folder0.setPic(17);
+            sdrow0.setText(card.longFilename);
+          }
+          break;
+        }
+        case 1:
+        {
+          if (card.filenameIsDir) {
+            Folder1.setPic(18);
+            sdrow1.setText(card.filename);
+          }
+          else {
+            Folder1.setPic(17);
+            sdrow1.setText(card.longFilename);
+          }
+          break;
+        }
+        case 2:
+        {
+          if (card.filenameIsDir) {
+            Folder2.setPic(18);
+            sdrow2.setText(card.filename);
+          }
+          else {
+            Folder2.setPic(17);
+            sdrow2.setText(card.longFilename);
+          }
+          break;
+        }
+        case 3:
+        {
+          if (card.filenameIsDir) {
+            Folder3.setPic(18);
+            sdrow3.setText(card.filename);
+          }
+          else {
+            Folder3.setPic(17);
+            sdrow3.setText(card.longFilename);
+          }
+          break;
+        }
+        case 4:
+        {
+          if (card.filenameIsDir) {
+            Folder4.setPic(18);
+            sdrow4.setText(card.filename);
+          }
+          else {
+            Folder4.setPic(17);
+            sdrow4.setText(card.longFilename);
+          }
+          break;
+        }
+        case 5:
+        {
+          if (card.filenameIsDir) {
+            Folder5.setPic(18);
+            sdrow5.setText(card.filename);
+          }
+          else {
+            Folder5.setPic(17);
+            sdrow5.setText(card.longFilename);
+          }
+          break;
+        }
+      }
+    }
+  }
+  sendCommand("ref 0");
+}
+
+void setpagesdcard() {
+  PageInfo = false;
+  page4.show();
+  uint16_t fileCnt = card.getnrfilenames();
+
+  if (fileCnt <= 6)
+    slidermaxval = 1;
+  else
+    slidermaxval  = (fileCnt / 6) + 1;
+
+  const int sliderhig     = 230 / slidermaxval;
+
+  sdlist.setMaxValue(slidermaxval);
+  sdlist.setValue(slidermaxval);
+  sdlist.setHigValue(sliderhig);
+
+  setrowsdcard();
 }
 
 void page0PopCallback(void *ptr) {
@@ -2548,7 +2679,7 @@ void setpagePopCallback(void *ptr) {
   if (ptr == &Menu)
     sendCommand("page menu");
   if (ptr == &MSD)
-    sendCommand("page msd");
+    setpagesdcard();
   if (ptr == &MSetup)
     sendCommand("page setup");
 }
@@ -2556,6 +2687,13 @@ void setpagePopCallback(void *ptr) {
 void setfanPopCallback(void *ptr) {
   if (fanSpeed) fanSpeed = 0;
   else fanSpeed = 255;
+}
+
+void sdlistPopCallback(void *ptr) {
+    uint32_t number = 0;
+    sdlist.getValue(&number);
+    number = slidermaxval - number;
+    setrowsdcard(number);
 }
 
 millis_t next_lcd_update_ms;
@@ -2569,6 +2707,7 @@ void lcd_init() {
     ECHO_LM(DB, "Nextion LCD connected!");
 
     page0.attachPop(page0PopCallback);
+    sdlist.attachPop(sdlistPopCallback);
 
     #if HAS_TEMP_0
       hot0.attachPop(hotPopCallback,      &hot0);
@@ -2587,6 +2726,7 @@ void lcd_init() {
     m11.attachPop(sethotPopCallback,      &m11);
     tup.attachPop(settempPopCallback,     &tup);
     tdown.attachPop(settempPopCallback,   &tdown);
+
     startimer.enable();
   }
 }
@@ -2614,21 +2754,24 @@ static void temptoLCD(int h, int T1, int T2) {
     {
       Hotend0.setText(buffer);
       Hotend0.setColor(color);
-      Graph0.addValue(0, T1);
+      Graph0.addValue(0, (int)(T1 * MaxWave));
+      Graph0.addValue(1, (int)(T2 * MaxWave));
       break;
     }
     case 1:
     {
       Hotend1.setText(buffer);
       Hotend1.setColor(color);
-      Graph0.addValue(1, T1);
+      Graph1.addValue(0, (int)(T1 * MaxWave));
+      Graph1.addValue(1, (int)(T2 * MaxWave));
       break;
     }
     case 2:
     {
       Hotend2.setText(buffer);
       Hotend2.setColor(color);
-      Graph0.addValue(2, T1);
+      Graph2.addValue(0, (int)(T1 * MaxWave));
+      Graph2.addValue(1, (int)(T2 * MaxWave));
       break;
     }
   }

@@ -539,35 +539,37 @@ FORCE_INLINE unsigned short calc_timer(unsigned short step_rate) {
  *   X_AXIS=A_AXIS and Y_AXIS=B_AXIS for COREXY
  *   X_AXIS=A_AXIS and Z_AXIS=C_AXIS for COREXZ
  */
-void set_stepper_direction() {
+void set_stepper_direction(bool onlye) {
 
-  if (TEST(out_bits, X_AXIS)) { // A_AXIS
-    X_APPLY_DIR(INVERT_X_DIR, 0);
-    count_direction[X_AXIS] = -1;
-  }
-  else {
-    X_APPLY_DIR(!INVERT_X_DIR, 0);
-    count_direction[X_AXIS] = 1;
+  if (!onlye) {
+    if (TEST(out_bits, X_AXIS)) { // A_AXIS
+      X_APPLY_DIR(INVERT_X_DIR, 0);
+      count_direction[X_AXIS] = -1;
+    }
+    else {
+      X_APPLY_DIR(!INVERT_X_DIR, 0);
+      count_direction[X_AXIS] = 1;
+    }
+
+    if (TEST(out_bits, Y_AXIS)) { // B_AXIS
+      Y_APPLY_DIR(INVERT_Y_DIR, 0);
+      count_direction[Y_AXIS] = -1;
+    }
+    else {
+      Y_APPLY_DIR(!INVERT_Y_DIR, 0);
+      count_direction[Y_AXIS] = 1;
+    }
+
+    if (TEST(out_bits, Z_AXIS)) { // C_AXIS
+      Z_APPLY_DIR(INVERT_Z_DIR, 0);
+      count_direction[Z_AXIS] = -1;
+    }
+    else {
+      Z_APPLY_DIR(!INVERT_Z_DIR, 0);
+      count_direction[Z_AXIS] = 1;
+    }
   }
 
-  if (TEST(out_bits, Y_AXIS)) { // B_AXIS
-    Y_APPLY_DIR(INVERT_Y_DIR, 0);
-    count_direction[Y_AXIS] = -1;
-  }
-  else {
-    Y_APPLY_DIR(!INVERT_Y_DIR, 0);
-    count_direction[Y_AXIS] = 1;
-  }
-  
-  if (TEST(out_bits, Z_AXIS)) { // C_AXIS
-    Z_APPLY_DIR(INVERT_Z_DIR, 0);
-    count_direction[Z_AXIS] = -1;
-  }
-  else {
-    Z_APPLY_DIR(!INVERT_Z_DIR, 0);
-    count_direction[Z_AXIS] = 1;
-  }
-  
   #if DISABLED(ADVANCE) && ENABLED(DONDOLO)
     if (TEST(out_bits, E_AXIS)) {
       if (active_extruder == 0) {
