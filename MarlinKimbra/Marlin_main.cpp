@@ -262,7 +262,7 @@ float stored_position[NUM_POSITON_SLOTS][NUM_AXIS];
 
 static long gcode_N, gcode_LastN, Stopped_gcode_LastN = 0;
 
-static char *current_command, *current_command_args;
+static char* current_command, *current_command_args;
 static int cmd_queue_index_r = 0;
 static int cmd_queue_index_w = 0;
 static int commands_in_queue = 0;
@@ -292,7 +292,7 @@ static bool relative_mode = false;  //Determines Absolute or Relative Coordinate
 static char serial_char;
 static int serial_count = 0;
 static boolean comment_mode = false;
-static char *seen_pointer; // < A pointer to find chars in the command string (X, Y, Z, E, etc.)
+static char* seen_pointer; // < A pointer to find chars in the command string (X, Y, Z, E, etc.)
 const char* queued_commands_P = NULL; /* pointer to the current line in the active sequence of commands, or NULL when none */
 const int sensitive_pins[] = SENSITIVE_PINS; ///< Sensitive pin list for M42
 // Inactivity shutdown
@@ -493,7 +493,7 @@ inline void refresh_cmd_timeout() { previous_cmd_ms = millis(); }
 
 void process_next_command();
 
-void plan_arc(float target[NUM_AXIS], float *offset, uint8_t clockwise);
+void plan_arc(float target[NUM_AXIS], float* offset, uint8_t clockwise);
 
 bool setTargetedHotend(int code);
 
@@ -531,7 +531,7 @@ bool setTargetedHotend(int code);
   // top_of_stack() returns the location of a variable on its stack frame.  The value returned is above
   // the stack once the function returns to the caller.
 
-  unsigned char *top_of_stack() {
+  unsigned char* top_of_stack() {
     unsigned char x;
     return &x + 1; // x is pulled on return;
   }
@@ -560,7 +560,7 @@ bool setTargetedHotend(int code);
   // how_many_E5s_are_here() is a utility function to easily find out how many 0xE5's are
   // at the specified location.  Having this logic as a function simplifies the search code.
   //
-  int how_many_E5s_are_here( unsigned char *p) {
+  int how_many_E5s_are_here( unsigned char* p) {
     int n;
 
     for(n = 0; n < 32000; n++) {
@@ -614,12 +614,12 @@ void enqueuecommands_P(const char* pgcode) {
  * This is done in a non-safe way and needs a rework someday.
  * Returns false if it doesn't add any command
  */
-bool enqueuecommand(const char *cmd) {
+bool enqueuecommand(const char* cmd) {
 
   if (*cmd == ';' || commands_in_queue >= BUFSIZE) return false;
 
   // This is dangerous if a mixing of serial and this happens
-  char *command = command_queue[cmd_queue_index_w];
+  char* command = command_queue[cmd_queue_index_w];
   strcpy(command, cmd);
   ECHO_SMV(DB, MSG_ENQUEUEING, command);
   ECHO_EM("\"");
@@ -907,7 +907,7 @@ void loop() {
     #if ENABLED(SDSUPPORT)
 
       if (card.saving) {
-        char *command = command_queue[cmd_queue_index_r];
+        char* command = command_queue[cmd_queue_index_r];
         if (strstr_P(command, PSTR("M29"))) {
           // M29 closes the file
           card.closeFile();
@@ -938,7 +938,7 @@ void loop() {
   idle();
 }
 
-void gcode_line_error(const char *err, bool doFlush = true) {
+void gcode_line_error(const char* err, bool doFlush = true) {
   ECHO_S(ER);
   PS_PGM(err);
   ECHO_EV(gcode_LastN);
@@ -988,146 +988,122 @@ void get_command() {
 
       if (!serial_count) return; // empty lines just exit
 
-      char *command = command_queue[cmd_queue_index_w];
+      char* command = command_queue[cmd_queue_index_w];
       command[serial_count] = 0; // terminate string
 
       // this item in the queue is not from sd
-      #if ENABLED(SDSUPPORT)
-        fromsd[cmd_queue_index_w] = false;
-      #endif
-
-      char *npos = strchr(command, 'N');
-      char *apos = strchr(command, '*');
+#if ENABLED(SDSUPPORT)
+      fromsd[cmd_queue_index_w] = false;
+#endif
+      char* npos = strchr(command, 'N');
+      char* apos = strchr(command, '*');
       if (npos) {
-
         boolean M110 = strstr_P(command, PSTR("M110")) != NULL;
-
         if (M110) {
-          char *n2pos = strchr(command + 4, 'N');
+          char* n2pos = strchr(command + 4, 'N');
           if (n2pos) npos = n2pos;
         }
-
         gcode_N = strtol(npos + 1, NULL, 10);
-
         if (gcode_N != gcode_LastN + 1 && !M110) {
           gcode_line_error(PSTR(MSG_ERR_LINE_NO));
           return;
         }
-
         if (apos) {
           byte checksum = 0, count = 0;
           while (command[count] != '*') checksum ^= command[count++];
-
           if (strtol(apos + 1, NULL, 10) != checksum) {
             gcode_line_error(PSTR(MSG_ERR_CHECKSUM_MISMATCH));
             return;
           }
           // if no errors, continue parsing
-        }
-        else if (npos == command) {
+        } else if (npos == command) {
           gcode_line_error(PSTR(MSG_ERR_NO_CHECKSUM));
           return;
         }
-
         gcode_LastN = gcode_N;
         // if no errors, continue parsing
-      }
-      else if (apos) { // No '*' without 'N'
+      } else if (apos) { // No '*' without 'N'
         gcode_line_error(PSTR(MSG_ERR_NO_LINENUMBER_WITH_CHECKSUM), false);
         return;
       }
-
       // Movement commands alert when stopped
       if (IsStopped()) {
-        char *gpos = strchr(command, 'G');
+        char* gpos = strchr(command, 'G');
         if (gpos) {
           int codenum = strtol(gpos + 1, NULL, 10);
           switch (codenum) {
-            case 0:
-            case 1:
-            case 2:
-            case 3:
-              ECHO_LM(ER, MSG_ERR_STOPPED);
-              LCD_MESSAGEPGM(MSG_STOPPED);
-              break;
+          case 0:
+          case 1:
+          case 2:
+          case 3:
+            ECHO_LM(ER, MSG_ERR_STOPPED);
+            LCD_MESSAGEPGM(MSG_STOPPED);
+            break;
           }
         }
       }
-
       // If command was e-stop process now
       if (strcmp(command, "M112") == 0) kill(PSTR(MSG_KILLED));
-
       cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
       commands_in_queue += 1;
-
       serial_count = 0; //clear buffer
-    }
-    else if (serial_char == '\\') {  // Handle escapes
+    } else if (serial_char == '\\') { // Handle escapes
       if (MYSERIAL.available() > 0 && commands_in_queue < BUFSIZE) {
         // if we have one more character, copy it over
         serial_char = MYSERIAL.read();
         command_queue[cmd_queue_index_w][serial_count++] = serial_char;
       }
       // otherwise do nothing
-    }
-    else { // its not a newline, carriage return or escape char
+    } else { // its not a newline, carriage return or escape char
       if (serial_char == ';') comment_mode = true;
       if (!comment_mode) command_queue[cmd_queue_index_w][serial_count++] = serial_char;
     }
   }
-
-  #if ENABLED(SDSUPPORT)
-
-    if (!card.sdprinting || serial_count) return;
-
-    // '#' stops reading from SD to the buffer prematurely, so procedural macro calls are possible
-    // if it occurs, stop_buffering is triggered and the buffer is ran dry.
-    // this character _can_ occur in serial com, due to checksums. however, no checksums are used in SD printing
-
-    static bool stop_buffering = false;
-    if (commands_in_queue == 0) stop_buffering = false;
-
-    while (!card.eof() && commands_in_queue < BUFSIZE && !stop_buffering) {
-      int16_t n = card.get();
-      serial_char = (char)n;
-      if (serial_char == '\n' || serial_char == '\r' ||
-          ((serial_char == '#' || serial_char == ':') && !comment_mode) ||
-          serial_count >= (MAX_CMD_SIZE - 1) || n == -1
-      ) {
-        if (card.eof()) {
-          ECHO_EM(MSG_FILE_PRINTED);
-          print_job_stop_ms = millis();
-          char time[30];
-          millis_t t = (print_job_stop_ms - print_job_start_ms) / 1000;
-          int hours = t / 60 / 60, minutes = (t / 60) % 60;
-          sprintf_P(time, PSTR("%i " MSG_END_HOUR " %i " MSG_END_MINUTE), hours, minutes);
-          ECHO_LV(DB, time);
-          lcd_setstatus(time, true);
-          card.printingHasFinished();
-          card.checkautostart(true);
-        }
-        if (serial_char == '#') stop_buffering = true;
-
-        if (!serial_count) {
-          comment_mode = false; //for new command
-          return; //if empty line
-        }
-        command_queue[cmd_queue_index_w][serial_count] = 0; //terminate string
-        // if (!comment_mode) {
-        fromsd[cmd_queue_index_w] = true;
-        commands_in_queue += 1;
-        cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
-        // }
+#if ENABLED(SDSUPPORT)
+  if (!card.sdprinting || serial_count) return;
+  // '#' stops reading from SD to the buffer prematurely, so procedural macro calls are possible
+  // if it occurs, stop_buffering is triggered and the buffer is ran dry.
+  // this character _can_ occur in serial com, due to checksums. however, no checksums are used in SD printing
+  static bool stop_buffering = false;
+  if (commands_in_queue == 0) stop_buffering = false;
+  while (!card.eof() && commands_in_queue < BUFSIZE && !stop_buffering) {
+    int16_t n = card.get();
+    serial_char = (char)n;
+    if (serial_char == '\n' || serial_char == '\r' ||
+        ((serial_char == '#' || serial_char == ':') && !comment_mode) ||
+        serial_count >= (MAX_CMD_SIZE - 1) || n == -1
+    ) {
+      if (card.eof()) {
+        ECHO_EM(MSG_FILE_PRINTED);
+        print_job_stop_ms = millis();
+        char time[30];
+        millis_t t = (print_job_stop_ms - print_job_start_ms) / 1000;
+        int hours = t / 60 / 60, minutes = (t / 60) % 60;
+        sprintf_P(time, PSTR("%i " MSG_END_HOUR " %i " MSG_END_MINUTE), hours, minutes);
+        ECHO_LV(DB, time);
+        lcd_setstatus(time, true);
+        card.printingHasFinished();
+        card.checkautostart(true);
+      }
+      if (serial_char == '#') stop_buffering = true;
+      if (!serial_count) {
         comment_mode = false; //for new command
-        serial_count = 0; //clear buffer
+        return; //if empty line
       }
-      else {
-        if (serial_char == ';') comment_mode = true;
-        if (!comment_mode) command_queue[cmd_queue_index_w][serial_count++] = serial_char;
-      }
+      command_queue[cmd_queue_index_w][serial_count] = 0; //terminate string
+      // if (!comment_mode) {
+      fromsd[cmd_queue_index_w] = true;
+      commands_in_queue += 1;
+      cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
+      // }
+      comment_mode = false; //for new command
+      serial_count = 0; //clear buffer
+    } else {
+      if (serial_char == ';') comment_mode = true;
+      if (!comment_mode) command_queue[cmd_queue_index_w][serial_count++] = serial_char;
     }
-
-  #endif // SDSUPPORT
+  }
+#endif // SDSUPPORT
 }
 
 bool code_has_value() {
@@ -1140,13 +1116,12 @@ bool code_has_value() {
 
 float code_value() {
   float ret;
-  char *e = strchr(seen_pointer, 'E');
+  char* e = strchr(seen_pointer, 'E');
   if (e) {
     *e = 0;
     ret = strtod(seen_pointer + 1, NULL);
     *e = 'E';
-  }
-  else
+  } else
     ret = strtod(seen_pointer + 1, NULL);
   return ret;
 }
@@ -1156,22 +1131,22 @@ long code_value_long() { return strtol(seen_pointer + 1, NULL, 10); }
 int16_t code_value_short() { return (int16_t)strtol(seen_pointer + 1, NULL, 10); }
 
 bool code_seen(char code) {
-  seen_pointer = strchr(current_command_args, code); // +3 since "G0 " is the shortest prefix
-  return (seen_pointer != NULL);  //Return True if a character was found
+  seen_pointer = strchr(current_command_args, code);
+  return (seen_pointer != NULL); // Return TRUE if the code-letter was found
 }
 
 #define DEFINE_PGM_READ_ANY(type, reader)       \
-    static inline type pgm_read_any(const type *p)  \
-    { return pgm_read_##reader##_near(p); }
+  static inline type pgm_read_any(const type *p)  \
+  { return pgm_read_##reader##_near(p); }
 
 DEFINE_PGM_READ_ANY(float,       float);
 DEFINE_PGM_READ_ANY(signed char, byte);
 
 #define XYZ_CONSTS_FROM_CONFIG(type, array, CONFIG) \
-static const PROGMEM type array##_P[3] =        \
-    { X_##CONFIG, Y_##CONFIG, Z_##CONFIG };     \
-static inline type array(int axis)          \
-    { return pgm_read_any(&array##_P[axis]); }
+  static const PROGMEM type array##_P[3] =        \
+      { X_##CONFIG, Y_##CONFIG, Z_##CONFIG };     \
+  static inline type array(int axis)          \
+  { return pgm_read_any(&array##_P[axis]); }
 
 #if MECH(CARTESIAN) || MECH(COREXY) || MECH(COREXZ) || MECH(SCARA)
   XYZ_CONSTS_FROM_CONFIG(float, base_max_pos,  MAX_POS);
@@ -1184,38 +1159,38 @@ XYZ_CONSTS_FROM_CONFIG(signed char, home_dir,  HOME_DIR);
 
 #if ENABLED(DUAL_X_CARRIAGE)
 
-  #define DXC_FULL_CONTROL_MODE 0
-  #define DXC_AUTO_PARK_MODE    1
-  #define DXC_DUPLICATION_MODE  2
+#define DXC_FULL_CONTROL_MODE 0
+#define DXC_AUTO_PARK_MODE    1
+#define DXC_DUPLICATION_MODE  2
 
-  static int dual_x_carriage_mode = DEFAULT_DUAL_X_CARRIAGE_MODE;
+static int dual_x_carriage_mode = DEFAULT_DUAL_X_CARRIAGE_MODE;
 
-  static float x_home_pos(int extruder) {
-    if (extruder == 0)
-      return base_home_pos(X_AXIS) + home_offset[X_AXIS];
-    else
-      // In dual carriage mode the extruder offset provides an override of the
-      // second X-carriage offset when homed - otherwise X2_HOME_POS is used.
-      // This allow soft recalibration of the second extruder offset position without firmware reflash
-      // (through the M218 command).
-      return (hotend_offset[X_AXIS][1] > 0) ? hotend_offset[X_AXIS][1] : X2_HOME_POS;
-  }
+static float x_home_pos(int extruder) {
+  if (extruder == 0)
+    return base_home_pos(X_AXIS) + home_offset[X_AXIS];
+  else
+    // In dual carriage mode the extruder offset provides an override of the
+    // second X-carriage offset when homed - otherwise X2_HOME_POS is used.
+    // This allow soft recalibration of the second extruder offset position without firmware reflash
+    // (through the M218 command).
+    return (hotend_offset[X_AXIS][1] > 0) ? hotend_offset[X_AXIS][1] : X2_HOME_POS;
+}
 
-  static int x_home_dir(int extruder) {
-    return (extruder == 0) ? X_HOME_DIR : X2_HOME_DIR;
-  }
+static int x_home_dir(int extruder) {
+  return (extruder == 0) ? X_HOME_DIR : X2_HOME_DIR;
+}
 
-  static float inactive_extruder_x_pos = X2_MAX_POS; // used in mode 0 & 1
-  static bool active_extruder_parked = false; // used in mode 1 & 2
-  static float raised_parked_position[NUM_AXIS]; // used in mode 1
-  static millis_t delayed_move_time = 0; // used in mode 1
-  static float duplicate_hotend_x_offset = DEFAULT_DUPLICATION_X_OFFSET; // used in mode 2
-  static float duplicate_extruder_temp_offset = 0; // used in mode 2
-  bool extruder_duplication_enabled = false; // used in mode 2
+static float inactive_extruder_x_pos = X2_MAX_POS; // used in mode 0 & 1
+static bool active_extruder_parked = false; // used in mode 1 & 2
+static float raised_parked_position[NUM_AXIS]; // used in mode 1
+static millis_t delayed_move_time = 0; // used in mode 1
+static float duplicate_hotend_x_offset = DEFAULT_DUPLICATION_X_OFFSET; // used in mode 2
+static float duplicate_extruder_temp_offset = 0; // used in mode 2
+bool extruder_duplication_enabled = false; // used in mode 2
 
 #endif //DUAL_X_CARRIAGE
 
-void print_xyz(const char *prefix, const float x, const float y, const float z, bool eol = true) {
+void print_xyz(const char* prefix, const float x, const float y, const float z, bool eol = true) {
   ECHO_V(prefix);
   ECHO_MV(": (", x);
   ECHO_MV(", ", y);
@@ -1223,83 +1198,70 @@ void print_xyz(const char *prefix, const float x, const float y, const float z, 
   ECHO_M(")");
   if (eol) ECHO_E;
 }
-void print_xyz(const char *prefix, const float xyz[], bool eol = true) {
+void print_xyz(const char* prefix, const float xyz[], bool eol = true) {
   print_xyz(prefix, xyz[X_AXIS], xyz[Y_AXIS], xyz[Z_AXIS], eol);
 }
 
 static void set_axis_is_at_home(AxisEnum axis) {
-
-  #if ENABLED(DUAL_X_CARRIAGE)
-    if (axis == X_AXIS) {
-      if (active_extruder != 0) {
-        current_position[X_AXIS] = x_home_pos(active_extruder);
-                 min_pos[X_AXIS] = X2_MIN_POS;
-                 max_pos[X_AXIS] = max(hotend_offset[X_AXIS][1], X2_MAX_POS);
-        return;
-      }
-      else if (dual_x_carriage_mode == DXC_DUPLICATION_MODE) {
-        float xoff = home_offset[X_AXIS];
-        current_position[X_AXIS] = base_home_pos(X_AXIS) + xoff;
-                 min_pos[X_AXIS] = base_min_pos(X_AXIS) + xoff;
-                 max_pos[X_AXIS] = min(base_max_pos(X_AXIS) + xoff, max(hotend_offset[X_AXIS][1], X2_MAX_POS) - duplicate_hotend_x_offset);
-        return;
-      }
+#if ENABLED(DUAL_X_CARRIAGE)
+  if (axis == X_AXIS) {
+    if (active_extruder != 0) {
+      current_position[X_AXIS] = x_home_pos(active_extruder);
+      min_pos[X_AXIS] = X2_MIN_POS;
+      max_pos[X_AXIS] = max(hotend_offset[X_AXIS][1], X2_MAX_POS);
+      return;
+    } else if (dual_x_carriage_mode == DXC_DUPLICATION_MODE) {
+      float xoff = home_offset[X_AXIS];
+      current_position[X_AXIS] = base_home_pos(X_AXIS) + xoff;
+      min_pos[X_AXIS] = base_min_pos(X_AXIS) + xoff;
+      max_pos[X_AXIS] = min(base_max_pos(X_AXIS) + xoff, max(hotend_offset[X_AXIS][1], X2_MAX_POS) - duplicate_hotend_x_offset);
+      return;
     }
-  #endif
+  }
+#endif
 
-  #if MECH(SCARA)
-
-    if (axis == X_AXIS || axis == Y_AXIS) {
-
-      float homeposition[3];
-      for (int i = 0; i < 3; i++) homeposition[i] = base_home_pos(i);
-
-      // ECHO_MV("homeposition[x]= ", homeposition[0]);
-      // ECHO_EMV(" homeposition[y]= ", homeposition[1]);
-      // Works out real Home position angles using inverse kinematics, 
-      // and calculates homing offset using forward kinematics
-      calculate_delta(homeposition);
-
-      // ECHO_MV("base Theta= ", delta[X_AXIS]);
-      // ECHO_EMV(" base Psi+Theta=", delta[Y_AXIS]);
-
-      for (int i = 0; i < 2; i++) delta[i] -= home_offset[i];
-
-      // ECHO_MV("addhome X=", home_offset[X_AXIS]);
-      // ECHO_MV(" addhome Y=", home_offset[Y_AXIS]);
-      // ECHO_MV(" addhome Theta=", delta[X_AXIS]);
-      // ECHO_EMV(" addhome Psi+Theta=", delta[Y_AXIS]);
-
-      calculate_SCARA_forward_Transform(delta);
-
-      // ECHO_MV("Delta X=", delta[X_AXIS]);
-      // ECHO_EMV(" Delta Y=", delta[Y_AXIS]);
-      
-      current_position[axis] = delta[axis];
-
-      // SCARA home positions are based on configuration since the actual limits are determined by the 
-      // inverse kinematic transform.
-      min_pos[axis] = base_min_pos(axis); // + (delta[axis] - base_home_pos(axis));
-      max_pos[axis] = base_max_pos(axis); // + (delta[axis] - base_home_pos(axis));
-    }
-    else {
-      current_position[axis] = base_home_pos(axis) + home_offset[axis];
-               min_pos[axis] = base_min_pos(axis)  + home_offset[axis];
-               max_pos[axis] = base_max_pos(axis)  + home_offset[axis];
-    }
-  #elif MECH(DELTA)
-    current_position[axis] = base_home_pos[axis] + home_offset[axis];
-             min_pos[axis] = base_min_pos(axis)  + home_offset[axis];
-             max_pos[axis] = base_max_pos[axis]  + home_offset[axis];
-  #else
+#if MECH(SCARA)
+  if (axis == X_AXIS || axis == Y_AXIS) {
+    float homeposition[3];
+    for (int i = 0; i < 3; i++) homeposition[i] = base_home_pos(i);
+    // ECHO_MV("homeposition[x]= ", homeposition[0]);
+    // ECHO_EMV("homeposition[y]= ", homeposition[1]);
+    // Works out real Home position angles using inverse kinematics, 
+    // and calculates homing offset using forward kinematics
+    calculate_delta(homeposition);
+    // ECHO_MV("base Theta= ", delta[X_AXIS]);
+    // ECHO_EMV(" base Psi+Theta=", delta[Y_AXIS]);
+    for (int i = 0; i < 2; i++) delta[i] -= home_offset[i];
+    // ECHO_MV("addhome X=", home_offset[X_AXIS]);
+    // ECHO_MV(" addhome Y=", home_offset[Y_AXIS]);
+    // ECHO_MV(" addhome Theta=", delta[X_AXIS]);
+    // ECHO_EMV(" addhome Psi+Theta=", delta[Y_AXIS]);
+    calculate_SCARA_forward_Transform(delta);
+    // ECHO_MV("Delta X=", delta[X_AXIS]);
+    // ECHO_EMV(" Delta Y=", delta[Y_AXIS]);
+    current_position[axis] = delta[axis];
+    // SCARA home positions are based on configuration since the actual limits are determined by the 
+    // inverse kinematic transform.
+    min_pos[axis] = base_min_pos(axis); // + (delta[axis] - base_home_pos(axis));
+    max_pos[axis] = base_max_pos(axis); // + (delta[axis] - base_home_pos(axis));
+  } else {
     current_position[axis] = base_home_pos(axis) + home_offset[axis];
              min_pos[axis] = base_min_pos(axis)  + home_offset[axis];
              max_pos[axis] = base_max_pos(axis)  + home_offset[axis];
-  #endif
+  }
+#elif MECH(DELTA)
+  current_position[axis] = base_home_pos[axis] + home_offset[axis];
+           min_pos[axis] = base_min_pos(axis)  + home_offset[axis];
+           max_pos[axis] = base_max_pos[axis]  + home_offset[axis];
+#else
+  current_position[axis] = base_home_pos(axis) + home_offset[axis];
+           min_pos[axis] = base_min_pos(axis)  + home_offset[axis];
+           max_pos[axis] = base_max_pos(axis)  + home_offset[axis];
+#endif
   
-  #if ENABLED(AUTO_BED_LEVELING_FEATURE) && Z_HOME_DIR < 0
-    if (axis == Z_AXIS) current_position[Z_AXIS] -= zprobe_zoffset;
-  #endif
+#if ENABLED(AUTO_BED_LEVELING_FEATURE) && Z_HOME_DIR < 0
+  if (axis == Z_AXIS) current_position[Z_AXIS] -= zprobe_zoffset;
+#endif
   
   if (debugLevel & DEBUG_INFO) {
     ECHO_SMV(DB, "set_axis_is_at_home ", (unsigned long)axis);
@@ -1628,7 +1590,7 @@ static void clean_up_after_endstop_move() {
         }
       #endif
 
-      #if SERVO_LEVELING && HASNT(Z_PROBE_SLED)
+      #if HAS(SERVO_ENDSTOPS) && HASNT(Z_PROBE_SLED)
         // Deploy a probe if there is one, and homing towards the bed
         if (axis == Z_AXIS) {
           if (axis_home_dir < 0) deploy_z_probe();
@@ -1724,7 +1686,7 @@ static void clean_up_after_endstop_move() {
           }
       #endif
 
-      #if SERVO_LEVELING && HASNT(Z_PROBE_SLED)
+      #if HAS(SERVO_ENDSTOPS) && HASNT(Z_PROBE_SLED)
         // Deploy a probe if there is one, and homing towards the bed
         if (axis == Z_AXIS) {
           if (axis_home_dir < 0) {
@@ -3533,7 +3495,7 @@ inline void gcode_G28() {
 
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
 
-  void out_of_range_error(const char *p_edge) {
+  void out_of_range_error(const char* p_edge) {
     ECHO_M("?Probe ");
     PS_PGM(p_edge);
     ECHO_EM(" position out of range.");
@@ -4282,7 +4244,7 @@ inline void gcode_G92() {
    * M1: // M1 - Conditional stop - Wait for user button press on LCD
    */
   inline void gcode_M0_M1() {
-    char *args = current_command_args;
+    char* args = current_command_args;
 
     millis_t codenum = 0;
     bool hasP = false, hasS = false;
@@ -4956,7 +4918,7 @@ inline void gcode_M92() {
 #if ENABLED(M100_FREE_MEMORY_WATCHER)
   inline void gcode_M100() {
     static int m100_not_initialized = 1;
-    unsigned char *sp, *ptr;
+    unsigned char* sp, *ptr;
     int i, j, n;
 
     //
@@ -4970,7 +4932,7 @@ inline void gcode_M92() {
     //
     #if ENABLED(M100_FREE_MEMORY_DUMPER)      // Comment out to remove Dump sub-command
       if ( code_seen('D') ) {
-        ptr = (unsigned char *) __brkval;
+        ptr = (unsigned char*) __brkval;
 
         //
         // We want to start and end the dump on a nice 16 byte boundry even though
@@ -4978,14 +4940,14 @@ inline void gcode_M92() {
         //
         ECHO_M("\n__brkval : ");
         prt_hex_word( (unsigned int) ptr );
-        ptr = (unsigned char *) ((unsigned long) ptr & 0xfff0);
+        ptr = (unsigned char*) ((unsigned long) ptr & 0xfff0);
 
         sp = top_of_stack();
         ECHO_M("\nStack Pointer : ");
         prt_hex_word( (unsigned int) sp );
         ECHO_M("\n");
 
-        sp = (unsigned char *) ((unsigned long) sp | 0x000f);
+        sp = (unsigned char*) ((unsigned long) sp | 0x000f);
         n = sp - ptr;
 
         //
@@ -5026,7 +4988,7 @@ inline void gcode_M92() {
       int max_addr = (int) __brkval;
       int max_cnt = 0;
       int block_cnt = 0;
-      ptr = (unsigned char *) __brkval;
+      ptr = (unsigned char*) __brkval;
       sp = top_of_stack();
       n = sp - ptr;
 
@@ -5034,7 +4996,7 @@ inline void gcode_M92() {
 
       for(i = 0; i < n; i++) {
         if ( *(ptr+i) == (unsigned char) 0xe5) {
-          j = how_many_E5s_are_here( (unsigned char *) ptr+i );
+          j = how_many_E5s_are_here( (unsigned char*) ptr+i );
           if ( j > 8) {
             ECHO_MV("Found ", j );
             ECHO_M(" bytes free at 0x");
@@ -5065,7 +5027,7 @@ inline void gcode_M92() {
         int x;      // x gets the # of locations to corrupt within the memory pool
         x = code_value();
         ECHO_EM("Corrupting free memory block.\n");
-        ptr = (unsigned char *) __brkval;
+        ptr = (unsigned char*) __brkval;
         ECHO_MV("\n__brkval : ",(long) ptr );
         ptr += 8;
 
@@ -5092,7 +5054,7 @@ inline void gcode_M92() {
     //
     if (m100_not_initialized || code_seen('I') ) {        // If no sub-command is specified, the first time
       ECHO_EM("Initializing free memory block.\n");       // this happens, it will Initialize.
-      ptr = (unsigned char *) __brkval;         // Repeated M100 with no sub-command will not destroy the
+      ptr = (unsigned char*) __brkval;         // Repeated M100 with no sub-command will not destroy the
       ECHO_MV("\n__brkval : ",(long) ptr );     // state of the initialized free memory pool.
       ptr += 8;
 
@@ -5871,11 +5833,11 @@ inline void gcode_M226() {
         servo_position = code_value_short();
         if (servo_index >= 0 && servo_index < NUM_SERVOS && servo_index != DONDOLO_SERVO_INDEX) {
           Servo *srv = &servo[servo_index];
-          #if SERVO_LEVELING
+          #if HAS(SERVO_ENDSTOPS)
             srv->attach(0);
           #endif
             srv->write(servo_position);
-          #if SERVO_LEVELING
+          #if HAS(SERVO_ENDSTOPS)
             delay(PROBE_SERVO_DEACTIVATION_DELAY);
             srv->detach();
           #endif
@@ -5897,11 +5859,11 @@ inline void gcode_M226() {
         servo_position = code_value_short();
         if (servo_index >= 0 && servo_index < NUM_SERVOS) {
           Servo *srv = &servo[servo_index];
-          #if SERVO_LEVELING
+          #if HAS(SERVO_ENDSTOPS)
             srv->attach(0);
           #endif
           srv->write(servo_position);
-          #if SERVO_LEVELING
+          #if HAS(SERVO_ENDSTOPS)
             delay(SERVO_DEACTIVATION_DELAY);
             srv->detach();
           #endif
@@ -7040,7 +7002,7 @@ void process_next_command() {
     while (*current_command >= '0' && *current_command <= '9') ++current_command; // skip [0-9]*
     while (*current_command == ' ') ++current_command;
   }
-  char *starpos = strchr(current_command, '*');  // * should always be the last parameter
+  char* starpos = strchr(current_command, '*');  // * should always be the last parameter
   if (starpos) while (*starpos == ' ' || *starpos == '*') *starpos-- = '\0'; // nullify '*' and ' '
 
   // Get the command code, which must be G, M, or T
@@ -7396,7 +7358,7 @@ void process_next_command() {
       case 400: // M400 finish all moves
         gcode_M400(); break;
 
-      #if SERVO_LEVELING
+      #if HAS(SERVO_ENDSTOPS)
         case 401:
           gcode_M401(); break;
         case 402:
@@ -8182,7 +8144,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
   check_axes_activity();
 }
 
-void kill(const char *lcd_msg) {
+void kill(const char* lcd_msg) {
   #if ENABLED(ULTRA_LCD)
     lcd_setalertstatuspgm(lcd_msg);
   #endif
