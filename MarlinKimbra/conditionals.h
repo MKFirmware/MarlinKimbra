@@ -373,11 +373,6 @@
 #endif
 
 /**
- * Servo Leveling
- */
-//#define SERVO_LEVELING (ENABLED(SERVO_ENDSTOPS) && ENABLED(DEACTIVATE_SERVOS_AFTER_MOVE))
-
-/**
  * Sled Options
  */
 #if ENABLED(Z_PROBE_SLED)
