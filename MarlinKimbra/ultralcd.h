@@ -130,6 +130,8 @@
     void sdlistPopCallback(void *ptr);
     void sdfilePopCallback(void *ptr);
     void sdfolderPopCallback(void *ptr);
+    void sdfolderUpPopCallback(void *ptr);
+    void ExitUpPopCallback(void *ptr);
   #endif
 
   FORCE_INLINE bool lcd_hasstatus() { return false; }

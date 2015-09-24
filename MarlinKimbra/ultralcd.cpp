@@ -2392,11 +2392,11 @@ char *ftostr52(const float &x) {
 #include "ultralcd.h"
 #include "Nextion.h"
 
-const float MaxWave = 0.2;
-bool NextionON      = false;
-bool PageInfo       = false;
-char buffer[100]    = {0};
-int slidermaxval    = 20;
+const float MaxWave   = 0.2;
+bool NextionON        = false;
+bool PageInfo         = false;
+char buffer[100]      = {0};
+uint32_t slidermaxval = 20;
 char lcd_status_message[30] = WELCOME_MSG; // worst case is kana with up to 3*LCD_WIDTH+1
 uint8_t lcd_status_message_level = 0;
 
@@ -2423,7 +2423,7 @@ NexText sdrow2      = NexText(4,  5,  "t2");
 NexText sdrow3      = NexText(4,  6,  "t3");
 NexText sdrow4      = NexText(4,  7,  "t4");
 NexText sdrow5      = NexText(4,  8,  "t5");
-NexText sdcmd       = NexText(4, 15,  "sdcmd");
+NexText sdfolder    = NexText(4, 23,  "sdfolder");
 
 // Picture
 NexPicture Menu     = NexPicture(1, 10, "p0");
@@ -2439,6 +2439,8 @@ NexPicture Folder2  = NexPicture(4, 11, "p2");
 NexPicture Folder3  = NexPicture(4, 12, "p3");
 NexPicture Folder4  = NexPicture(4, 13, "p4");
 NexPicture Folder5  = NexPicture(4, 14, "p5");
+NexPicture Folderup = NexPicture(4, 15, "p6");
+NexPicture Exit     = NexPicture(4, 16, "p7");
 
 // Progress Bar
 
@@ -2462,6 +2464,16 @@ NexHotspot tdown    = NexHotspot(2, 17, "tdown");
 NexTimer startimer  = NexTimer(0,  1, "tm0");
 NexTimer fantimer   = NexTimer(1, 23, "tm0");
 
+// Variable
+NexVar Hotend       = NexVar(1, 20, "he");
+NexVar Bed          = NexVar(1, 21, "bed");
+NexVar filename0    = NexVar(4, 19, "va0");
+NexVar filename1    = NexVar(4, 20, "va1");
+NexVar filename2    = NexVar(4, 21, "va2");
+NexVar filename3    = NexVar(4, 22, "va3");
+NexVar filename4    = NexVar(4, 23, "va4");
+NexVar filename5    = NexVar(4, 24, "va5");
+
 NexTouch *nex_listen_list[] =
 {
   &page0,
@@ -2482,6 +2494,8 @@ NexTouch *nex_listen_list[] =
   &sdrow3,
   &sdrow4,
   &sdrow5,
+  &Folderup,
+  &Exit,
   NULL
 };
 
@@ -2491,16 +2505,16 @@ void setpageInfo() {
   PageInfo = true;
 
   #if HAS_TEMP_0
-    sendCommand("he.val=1");
+    Hotend.setValue(1);
   #endif
   #if HAS_TEMP_1
-    sendCommand("he.val=2");
+    Hotend.setValue(2);
   #endif
   #if HAS_TEMP_2
-    sendCommand("he.val=3");
+    Hotend.setValue(3);
   #elif HAS_TEMP_BED
     Hotend21.setText("BED");
-    sendCommand("bed.val=1");
+    Bed.setValue(1);
   #endif
 
   lcd_setstatus(lcd_status_message);
@@ -2508,82 +2522,102 @@ void setpageInfo() {
 
 #if ENABLED(SDSUPPORT)
   void printrowsd(uint8_t row, const bool folder, const char* filename, char* longFilename) {
-    String cmd;
+    const char* cmd;
     if (longFilename[0])
-      filename = longFilename;
+      cmd = longFilename;
+    else
+      cmd = filename;
 
     switch (row) {
       case 0:
       {
         if (folder) {
           Folder0.setPic(18);
-          sdrow0.attachPop(sdfolderPopCallback);
-        }
-        else {
+          sdrow0.attachPop(sdfolderPopCallback, &sdrow0);
+        } else if (cmd == "") {
           Folder0.setPic(17);
-          sdrow0.attachPop(sdfilePopCallback);
+          sdrow0.detachPop();
+        } else {
+          Folder0.setPic(17);
+          sdrow0.attachPop(sdfilePopCallback, &sdrow0);
         }
-        sdrow0.setText(filename);
+        sdrow0.setText(cmd);
+        filename0.setText(filename);
       }
       case 1:
       {
         if (folder) {
           Folder1.setPic(18);
-          sdrow1.attachPop(sdfolderPopCallback);
-        }
-        else {
+          sdrow1.attachPop(sdfolderPopCallback, &sdrow1);
+        } else if (cmd == "") {
           Folder1.setPic(17);
-          sdrow1.attachPop(sdfilePopCallback);
+          sdrow1.detachPop();
+        } else {
+          Folder1.setPic(17);
+          sdrow1.attachPop(sdfilePopCallback, &sdrow1);
         }
-        sdrow1.setText(filename);
+        sdrow1.setText(cmd);
+        filename1.setText(filename);
       }
       case 2:
       {
         if (folder) {
           Folder2.setPic(18);
-          sdrow2.attachPop(sdfolderPopCallback);
-        }
-        else {
+          sdrow2.attachPop(sdfolderPopCallback, &sdrow2);
+        } else if (cmd == "") {
           Folder2.setPic(17);
-          sdrow2.attachPop(sdfilePopCallback);
+          sdrow2.detachPop();
+        } else {
+          Folder2.setPic(17);
+          sdrow2.attachPop(sdfilePopCallback, &sdrow2);
         }
-        sdrow2.setText(filename);
+        sdrow2.setText(cmd);
+        filename2.setText(filename);
       }
       case 3:
       {
         if (folder) {
           Folder3.setPic(18);
-          sdrow3.attachPop(sdfolderPopCallback);
-        }
-        else {
+          sdrow3.attachPop(sdfolderPopCallback, &sdrow3);
+        } else if (cmd == "") {
           Folder3.setPic(17);
-          sdrow3.attachPop(sdfilePopCallback);
+          sdrow3.detachPop();
+        } else {
+          Folder3.setPic(17);
+          sdrow3.attachPop(sdfilePopCallback, &sdrow3);
         }
-        sdrow3.setText(filename);
+        sdrow3.setText(cmd);
+        filename3.setText(filename);
       }
       case 4:
       {
         if (folder) {
           Folder4.setPic(18);
-          sdrow4.attachPop(sdfolderPopCallback);
-        }
-        else {
+          sdrow4.attachPop(sdfolderPopCallback, &sdrow4);
+        } else if (cmd == "") {
           Folder4.setPic(17);
-          sdrow4.attachPop(sdfilePopCallback);
+          sdrow4.detachPop();
+        } else {
+          Folder4.setPic(17);
+          sdrow4.attachPop(sdfilePopCallback, &sdrow4);
         }
-        sdrow4.setText(filename);
+        sdrow4.setText(cmd);
+        filename4.setText(filename);
       }
       case 5:
       {
         if (folder) {
           Folder5.setPic(18);
-          sdrow5.attachPop(sdfolderPopCallback);
-        }
-        else {
+          sdrow5.attachPop(sdfolderPopCallback, &sdrow5);
+        } else if (cmd == "") {
           Folder5.setPic(17);
-          sdrow5.attachPop(sdfilePopCallback);
+          sdrow5.detachPop();
+        } else {
+          Folder5.setPic(17);
+          sdrow5.attachPop(sdfilePopCallback, &sdrow5);
         }
-        sdrow5.setText(filename);
+        sdrow5.setText(cmd);
+        filename5.setText(filename);
       }
     }
   }
@@ -2593,11 +2627,23 @@ void setpageInfo() {
     uint32_t i = 0;
     card.getWorkDirName();
 
+    if (card.filename[0] != '/') {
+      Folderup.setPic(20);
+      Folderup.attachPop(sdfolderUpPopCallback);
+      sdfolder.setText(card.filename);
+    } else {
+      Folderup.detachPop();
+      Folderup.setPic(19);
+      sdfolder.setText("");
+    }
+
     for (uint8_t row = 0; row < 6; row++) {
       i = row + number;
-      if (i <= fileCnt) {
+      if (i < fileCnt) {
         card.getfilename(i);
         printrowsd(row, card.filenameIsDir, card.filename, card.longFilename);
+      } else {
+        printrowsd(row, false, "", "");
       }
     }
     sendCommand("ref 0");
@@ -2609,12 +2655,17 @@ void setpageInfo() {
     uint16_t fileCnt = card.getnrfilenames();
 
     if (fileCnt <= 6)
-      slidermaxval = 1;
+      slidermaxval = 0;
     else
       slidermaxval  = fileCnt - 6;
 
+    uint16_t hig = 210 - slidermaxval * 10;
+    if (hig < 10) hig = 10;
+
+    sdlist.setHigValue(hig);
     sdlist.setMaxValue(slidermaxval);
     sdlist.setValue(slidermaxval);
+    sendCommand("ref 0");
 
     setrowsdcard();
   }
@@ -2643,14 +2694,49 @@ void setpageInfo() {
 
   void sdfilePopCallback(void *ptr) {
     memset(buffer, 0, sizeof(buffer));
-    sdcmd.getText(buffer, sizeof(buffer));
+
+    if (ptr == &sdrow0)
+      filename0.getText(buffer, sizeof(buffer));
+    else if (ptr == &sdrow1)
+      filename1.getText(buffer, sizeof(buffer));
+    else if (ptr == &sdrow2)
+      filename2.getText(buffer, sizeof(buffer));
+    else if (ptr == &sdrow3)
+      filename3.getText(buffer, sizeof(buffer));
+    else if (ptr == &sdrow4)
+      filename4.getText(buffer, sizeof(buffer));
+    else if (ptr == &sdrow5)
+      filename5.getText(buffer, sizeof(buffer));
+
     menu_action_sdfile(buffer);
   }
 
   void sdfolderPopCallback(void *ptr) {
     memset(buffer, 0, sizeof(buffer));
-    sdcmd.getText(buffer, sizeof(buffer));
+
+    if (ptr == &sdrow0)
+      filename0.getText(buffer, sizeof(buffer));
+    else if (ptr == &sdrow1)
+      filename1.getText(buffer, sizeof(buffer));
+    else if (ptr == &sdrow2)
+      filename2.getText(buffer, sizeof(buffer));
+    else if (ptr == &sdrow3)
+      filename3.getText(buffer, sizeof(buffer));
+    else if (ptr == &sdrow4)
+      filename4.getText(buffer, sizeof(buffer));
+    else if (ptr == &sdrow5)
+      filename5.getText(buffer, sizeof(buffer));
+
     menu_action_sddirectory(buffer);
+  }
+
+  void sdfolderUpPopCallback(void *ptr) {
+    card.updir();
+    setpagesdcard();
+  }
+
+  void ExitPopCallback(void *ptr) {
+    setpageInfo();
   }
 #endif
 
@@ -2748,7 +2834,9 @@ void lcd_init() {
     page0.attachPop(page0PopCallback);
 
     #if ENABLED(SDSUPPORT)
+      MSD.attachPop(setpagePopCallback, &MSD);
       sdlist.attachPop(sdlistPopCallback);
+      Exit.attachPop(ExitPopCallback);
     #endif
 
     #if HAS_TEMP_0
@@ -2762,7 +2850,6 @@ void lcd_init() {
     #endif
 
     Menu.attachPop(setpagePopCallback,    &Menu);
-    MSD.attachPop(setpagePopCallback,     &MSD);
     MSetup.attachPop(setpagePopCallback,  &Menu);
     Fanpic.attachPop(setfanPopCallback,   &Fanpic);
     m11.attachPop(sethotPopCallback,      &m11);
