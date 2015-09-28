@@ -23,8 +23,8 @@
 #include "NexHardware.h"
 
 #include "NexButton.h"
-//#include "NexCrop.h"
-//#include "NexGauge.h"
+#include "NexCrop.h"
+#include "NexGauge.h"
 #include "NexHotspot.h"
 #include "NexPage.h"
 #include "NexPicture.h"

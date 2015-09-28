@@ -31,6 +31,7 @@
 
 #include "Marlin_main.h"
 #include "ultralcd.h"
+#include "nextion_lcd.h"
 #include "base.h"
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
   #include "vector_3.h"
