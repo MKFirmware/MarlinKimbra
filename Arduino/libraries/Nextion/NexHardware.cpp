@@ -222,14 +222,35 @@ bool nexInit(void)
     bool ret1 = false;
     bool ret2 = false;
     
+    // Try default baudrate
     dbSerialBegin(9600);
-    nexSerial.begin(NEXTION_BAUDRATE);
+    nexSerial.begin(9600);
     sendCommand("");
     sendCommand("bkcmd=1");
     ret1 = recvRetCommandFinished();
     sendCommand("page 0");
     ret2 = recvRetCommandFinished();
-    return ret1 && ret2;
+
+    // If baudrate is 9600 set to 57600 and reconnect
+    if (ret1 && ret2) {
+      sendCommand("baud=57600");
+      nexSerial.end();
+      delay(1000);
+      nexSerial.begin(57600);
+      return ret1 && ret2;
+
+    // Else try to 57600 baudrate
+    } else {
+      nexSerial.end();
+      delay(1000);
+      nexSerial.begin(57600);
+      sendCommand("");
+      sendCommand("bkcmd=1");
+      ret1 = recvRetCommandFinished();
+      sendCommand("page 0");
+      ret2 = recvRetCommandFinished();
+      return ret1 && ret2;
+    }
 }
 
 void nexLoop(NexTouch *nex_listen_list[])

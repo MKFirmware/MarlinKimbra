@@ -1112,6 +1112,7 @@
 // #define MINIPANEL
 
 // Nextion HMI panel
+// REMEMBER TO INSTALL Nextion library in your ARDUINO library folder. You can find it in Arduino\libraries\
 //#define NEXTION
 
 // I2C Panels

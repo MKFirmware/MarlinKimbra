@@ -48,6 +48,9 @@
     #include <LiquidCrystal.h> // library for character LCD
   #endif
 #endif
+#if ENABLED(NEXTION)
+  #include <Nextion.h>
+#endif
 #if HAS(DIGIPOTSS)
   #include <SPI.h>
 #endif
