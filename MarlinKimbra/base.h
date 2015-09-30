@@ -50,6 +50,7 @@
 #include "language.h"
 #include "conditionals.h"
 #include "sanitycheck.h"
+#include "thermistortables.h"
 
 #include "comunication.h"
 

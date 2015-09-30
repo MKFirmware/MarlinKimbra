@@ -2355,7 +2355,7 @@
 #define ORIG_E1_ENABLE_PIN  30
 
 #define SDPOWER             -1
-#define SDSS                10  // 10 if using HW SPI. 53 if using SW SPI
+#define SDSS                53  // 10 if using HW SPI. 53 if using SW SPI
 #define LED_PIN             13
 #define ORIG_FAN_PIN        9
 #define PS_ON_PIN           12
@@ -5126,12 +5126,12 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
   #define MISO_PIN          74
   #define SCK_PIN           76
   #define SS_PIN            77
-//#define DUE_SOFTWARE_SPI
 #else
   #define DUE_SOFTWARE_SPI
   #define MOSI_PIN          51
   #define MISO_PIN          50
   #define SCK_PIN           52
+  #define SS_PIN            SDSS
 #endif
 /****************************************************************************************/
 
