@@ -2509,24 +2509,24 @@
 #define ORIG_X_STEP_PIN       96  // PB24
 #define ORIG_X_DIR_PIN         2  // PB25
 #define ORIG_X_ENABLE_PIN     24  // PA15, motor RESET pin
-#define ORIG_X_MIN_PIN             33  // PC1
-#define ORIG_X_MAX_PIN             34  // PC2
+#define ORIG_X_MIN_PIN        33  // PC1
+#define ORIG_X_MAX_PIN        34  // PC2
 #define X_MS1_PIN             99  // PC10
 
 // Y AXIS
 #define ORIG_Y_STEP_PIN       94  // PB22
 #define ORIG_Y_DIR_PIN        95  // PB23
 #define ORIG_Y_ENABLE_PIN     24  // PA15, motor RESET pin
-#define ORIG_Y_MIN_PIN             35  // PC3
-#define ORIG_Y_MAX_PIN             37  // PC5
+#define ORIG_Y_MIN_PIN        35  // PC3
+#define ORIG_Y_MAX_PIN        37  // PC5
 #define Y_MS1_PIN             10  // PC29
 
 // Z AXIS
 #define ORIG_Z_STEP_PIN       98  // PC27
 #define ORIG_Z_DIR_PIN         3  // PC28
 #define ORIG_Z_ENABLE_PIN     24  // PA15, motor RESET pin
-#define ORIG_Z_MIN_PIN             38  // PC6
-#define ORIG_Z_MAX_PIN             39  // PC7
+#define ORIG_Z_MIN_PIN        38  // PC6
+#define ORIG_Z_MAX_PIN        39  // PC7
 #define Z_MS1_PIN             44  // PC19
 
 // E0 AXIS
@@ -5131,7 +5131,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
   #define MOSI_PIN          51
   #define MISO_PIN          50
   #define SCK_PIN           52
-  #define SS_PIN            SDSS
+  #define SS_PIN            53
 #endif
 /****************************************************************************************/
 

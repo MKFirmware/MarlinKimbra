@@ -24,7 +24,6 @@
   char lcd_status_message[30] = WELCOME_MSG; // worst case is kana with up to 3*LCD_WIDTH+1
   uint8_t lcd_status_message_level = 0;
   static millis_t next_lcd_update_ms;
-  static millis_t return_to_status_ms = 30000;
 
   // Page
   NexPage Pstart      = NexPage(0, 0, "start");
@@ -125,6 +124,55 @@
     NULL
   };
 
+  NexText *hotend_list[] =
+  {
+    &Hotend0,
+    &Hotend1,
+    &Hotend2,
+    NULL
+  };
+
+  NexWaveform *graph_list[] =
+  {
+    &Graph0,
+    &Graph1,
+    &Graph2,
+    NULL
+  };
+
+  NexText *row_list[] =
+  {
+    &sdrow0,
+    &sdrow1,
+    &sdrow2,
+    &sdrow3,
+    &sdrow4,
+    &sdrow5,
+    NULL
+  };
+
+  NexPicture *folder_list[] =
+  {
+    &Folder0,
+    &Folder1,
+    &Folder2,
+    &Folder3,
+    &Folder4,
+    &Folder5,
+    NULL
+  };
+
+  NexVar *filename_list[] =
+  {
+    &filename0,
+    &filename1,
+    &filename2,
+    &filename3,
+    &filename4,
+    &filename5,
+    NULL
+  };
+
   void setpageInfo() {
     Pinfo.show();
 
@@ -154,98 +202,18 @@
       else
         cmd = filename;
 
-      switch (row) {
-        case 0:
-        {
-          if (folder) {
-            Folder0.setPic(18);
-            sdrow0.attachPop(sdfolderPopCallback, &sdrow0);
-          } else if (cmd == "") {
-            Folder0.setPic(17);
-            sdrow0.detachPop();
-          } else {
-            Folder0.setPic(17);
-            sdrow0.attachPop(sdfilePopCallback, &sdrow0);
-          }
-          sdrow0.setText(cmd);
-          filename0.setText(filename);
-        }
-        case 1:
-        {
-          if (folder) {
-            Folder1.setPic(18);
-            sdrow1.attachPop(sdfolderPopCallback, &sdrow1);
-          } else if (cmd == "") {
-            Folder1.setPic(17);
-            sdrow1.detachPop();
-          } else {
-            Folder1.setPic(17);
-            sdrow1.attachPop(sdfilePopCallback, &sdrow1);
-          }
-          sdrow1.setText(cmd);
-          filename1.setText(filename);
-        }
-        case 2:
-        {
-          if (folder) {
-            Folder2.setPic(18);
-            sdrow2.attachPop(sdfolderPopCallback, &sdrow2);
-          } else if (cmd == "") {
-            Folder2.setPic(17);
-            sdrow2.detachPop();
-          } else {
-            Folder2.setPic(17);
-            sdrow2.attachPop(sdfilePopCallback, &sdrow2);
-          }
-          sdrow2.setText(cmd);
-          filename2.setText(filename);
-        }
-        case 3:
-        {
-          if (folder) {
-            Folder3.setPic(18);
-            sdrow3.attachPop(sdfolderPopCallback, &sdrow3);
-          } else if (cmd == "") {
-            Folder3.setPic(17);
-            sdrow3.detachPop();
-          } else {
-            Folder3.setPic(17);
-            sdrow3.attachPop(sdfilePopCallback, &sdrow3);
-          }
-          sdrow3.setText(cmd);
-          filename3.setText(filename);
-        }
-        case 4:
-        {
-          if (folder) {
-            Folder4.setPic(18);
-            sdrow4.attachPop(sdfolderPopCallback, &sdrow4);
-          } else if (cmd == "") {
-            Folder4.setPic(17);
-            sdrow4.detachPop();
-          } else {
-            Folder4.setPic(17);
-            sdrow4.attachPop(sdfilePopCallback, &sdrow4);
-          }
-          sdrow4.setText(cmd);
-          filename4.setText(filename);
-        }
-        case 5:
-        {
-          if (folder) {
-            Folder5.setPic(18);
-            sdrow5.attachPop(sdfolderPopCallback, &sdrow5);
-          } else if (cmd == "") {
-            Folder5.setPic(17);
-            sdrow5.detachPop();
-          } else {
-            Folder5.setPic(17);
-            sdrow5.attachPop(sdfilePopCallback, &sdrow5);
-          }
-          sdrow5.setText(cmd);
-          filename5.setText(filename);
-        }
+      if (folder) {
+        folder_list[row]->setPic(18);
+        row_list[row]->attachPop(sdfolderPopCallback, row_list[row]);
+      } else if (cmd == "") {
+        folder_list[row]->setPic(17);
+        row_list[row]->detachPop();
+      } else {
+        folder_list[row]->setPic(17);
+        row_list[row]->attachPop(sdfilePopCallback, row_list[row]);
       }
+      row_list[row]->setText(cmd);
+      filename_list[row]->setText(filename);
     }
 
     static void setrowsdcard(uint32_t number = 0) {
@@ -288,8 +256,8 @@
       uint16_t hig = 210 - slidermaxval * 10;
       if (hig < 10) hig = 10;
 
-      sdlist.setHigValue(hig);
-      sdlist.setMaxValue(slidermaxval);
+      sdlist.setHigVal(hig);
+      sdlist.setMaxVal(slidermaxval);
       sdlist.setValue(slidermaxval);
       sendCommand("ref 0");
 
@@ -503,32 +471,10 @@
     else if (prc >= 95 && prc < 100)
       color = 63488;
 
-    switch (h) {
-      case 0:
-      {
-        Hotend0.setText(buffer);
-        Hotend0.setColor(color);
-        Graph0.addValue(0, (int)(T1 * MaxWave));
-        Graph0.addValue(1, (int)(T2 * MaxWave));
-        break;
-      }
-      case 1:
-      {
-        Hotend1.setText(buffer);
-        Hotend1.setColor(color);
-        Graph1.addValue(0, (int)(T1 * MaxWave));
-        Graph1.addValue(1, (int)(T2 * MaxWave));
-        break;
-      }
-      case 2:
-      {
-        Hotend2.setText(buffer);
-        Hotend2.setColor(color);
-        Graph2.addValue(0, (int)(T1 * MaxWave));
-        Graph2.addValue(1, (int)(T2 * MaxWave));
-        break;
-      }
-    }
+    hotend_list[h]->setText(buffer);
+    hotend_list[h]->setColor(color);
+    graph_list[h]->addValue(0, (int)(T1 * MaxWave));
+    graph_list[h]->addValue(1, (int)(T2 * MaxWave));
   }
 
   static void coordtoLCD() {
@@ -605,9 +551,6 @@
       #endif
 
       next_lcd_update_ms = ms + LCD_UPDATE_INTERVAL;
-      return_to_status_ms = ms + 30000;
-    } else if (ms > return_to_status_ms && !PageInfo) {
-      setpageInfo();
     }
   }
 

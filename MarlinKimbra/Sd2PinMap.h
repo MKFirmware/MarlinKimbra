@@ -37,6 +37,7 @@ struct pin_map_t {
 uint8_t const SDA_PIN = 20;  // D1
 uint8_t const SCL_PIN = 21;  // D0
 
+#undef SS_PIN
 #undef MOSI_PIN
 #undef MISO_PIN
 #undef SCK_PIN

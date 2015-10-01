@@ -1,12 +1,12 @@
 /**
  * @file NexSlider.cpp
  *
- * The implementation of class NexSlider. 
+ * The implementation of class NexSlider.
  *
  * @author  Wu Pengfei (email:<pengfei.wu@itead.cc>)
  * @date    2015/8/13
- * @copyright 
- * Copyright (C) 2014-2015 ITEAD Intelligent Systems Co., Ltd. \n
+ * @copyright
+ * Copyright (C) 2014-2015 ITEAD Intelligent Systems Co., Ltd.
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as
  * published by the Free Software Foundation; either version 2 of
@@ -42,7 +42,7 @@ bool NexSlider::setValue(uint32_t number)
     return recvRetCommandFinished();
 }
 
-bool NexSlider::setMaxValue(uint32_t number)
+bool NexSlider::setMaxVal(uint32_t number)
 {
     char buf[10] = {0};
     String cmd;
@@ -56,7 +56,21 @@ bool NexSlider::setMaxValue(uint32_t number)
     return recvRetCommandFinished();
 }
 
-bool NexSlider::setHigValue(uint32_t number)
+bool NexSlider::setMinVal(uint32_t number)
+{
+    char buf[10] = {0};
+    String cmd;
+
+    utoa(number, buf, 10);
+    cmd += getObjName();
+    cmd += ".minval=";
+    cmd += buf;
+
+    sendCommand(cmd.c_str());
+    return recvRetCommandFinished();
+}
+
+bool NexSlider::setHigVal(uint32_t number)
 {
     char buf[10] = {0};
     String cmd;
