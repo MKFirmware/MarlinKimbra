@@ -26,78 +26,79 @@
   static millis_t next_lcd_update_ms;
 
   // Page
-  NexPage Pstart      = NexPage(0, 0, "start");
-  NexPage Pinfo       = NexPage(1, 0, "info");
-  NexPage Ptemp       = NexPage(2, 0, "temp");
-  NexPage Pmenu       = NexPage(3, 0, "menu");
-  NexPage Psdcard     = NexPage(4, 0, "sdcard");
-  NexPage Psetup      = NexPage(5, 0, "setup");
+  NexPage Pstart        = NexPage(0, 0, "start");
+  NexPage Pinfo         = NexPage(1, 0, "info");
+  NexPage Ptemp         = NexPage(2, 0, "temp");
+  NexPage Pmenu         = NexPage(3, 0, "menu");
+  NexPage Psdcard       = NexPage(4, 0, "sdcard");
+  NexPage Psetup        = NexPage(5, 0, "setup");
 
   // Text
-  NexText Hotend0     = NexText(1,  1,  "t0");
-  NexText Hotend1     = NexText(1,  4,  "t1");
-  NexText Hotend2     = NexText(1,  5,  "t2");
-  NexText Hotend21    = NexText(1,  6,  "h2");
-  NexText LedStatus   = NexText(1,  7,  "t4");
-  NexText LedCoord    = NexText(1,  8,  "t5");
-  NexText set0        = NexText(2,  2,  "set0");
-  NexText set1        = NexText(2, 15,  "set1");
-  NexText sdrow0      = NexText(4,  3,  "t0");
-  NexText sdrow1      = NexText(4,  4,  "t1");
-  NexText sdrow2      = NexText(4,  5,  "t2");
-  NexText sdrow3      = NexText(4,  6,  "t3");
-  NexText sdrow4      = NexText(4,  7,  "t4");
-  NexText sdrow5      = NexText(4,  8,  "t5");
-  NexText sdfolder    = NexText(4, 23,  "sdfolder");
+  NexText Hotend0       = NexText(1,  1,  "t0");
+  NexText Hotend1       = NexText(1,  4,  "t1");
+  NexText Hotend2       = NexText(1,  5,  "t2");
+  NexText Hotend21      = NexText(1,  6,  "h2");
+  NexText LedStatus     = NexText(1,  7,  "t4");
+  NexText LedCoord      = NexText(1,  8,  "t5");
+  NexText set0          = NexText(2,  2,  "set0");
+  NexText set1          = NexText(2, 15,  "set1");
+  NexText sdrow0        = NexText(4,  3,  "t0");
+  NexText sdrow1        = NexText(4,  4,  "t1");
+  NexText sdrow2        = NexText(4,  5,  "t2");
+  NexText sdrow3        = NexText(4,  6,  "t3");
+  NexText sdrow4        = NexText(4,  7,  "t4");
+  NexText sdrow5        = NexText(4,  8,  "t5");
+  NexText sdfolder      = NexText(4, 23,  "sdfolder");
 
   // Picture
-  NexPicture Menu     = NexPicture(1, 10, "p0");
-  NexPicture MSD      = NexPicture(1, 11, "p1");
-  NexPicture MSetup   = NexPicture(1, 12, "p2");
-  NexPicture Hend0    = NexPicture(1, 13, "p3");
-  NexPicture Hend1    = NexPicture(1, 14, "p4");
-  NexPicture Hend2    = NexPicture(1, 15, "p5");
-  NexPicture Fanpic   = NexPicture(1, 19, "p6");
-  NexPicture Folder0  = NexPicture(4,  9, "p0");
-  NexPicture Folder1  = NexPicture(4, 10, "p1");
-  NexPicture Folder2  = NexPicture(4, 11, "p2");
-  NexPicture Folder3  = NexPicture(4, 12, "p3");
-  NexPicture Folder4  = NexPicture(4, 13, "p4");
-  NexPicture Folder5  = NexPicture(4, 14, "p5");
-  NexPicture Folderup = NexPicture(4, 15, "p6");
-  NexPicture Exit     = NexPicture(4, 16, "p7");
+  NexPicture Menu       = NexPicture(1, 10, "p0");
+  NexPicture MSD        = NexPicture(1, 11, "p1");
+  NexPicture MSetup     = NexPicture(1, 12, "p2");
+  NexPicture Hend0      = NexPicture(1, 13, "p3");
+  NexPicture Hend1      = NexPicture(1, 14, "p4");
+  NexPicture Hend2      = NexPicture(1, 15, "p5");
+  NexPicture Fanpic     = NexPicture(1, 19, "p6");
+  NexPicture Folder0    = NexPicture(4,  9, "p0");
+  NexPicture Folder1    = NexPicture(4, 10, "p1");
+  NexPicture Folder2    = NexPicture(4, 11, "p2");
+  NexPicture Folder3    = NexPicture(4, 12, "p3");
+  NexPicture Folder4    = NexPicture(4, 13, "p4");
+  NexPicture Folder5    = NexPicture(4, 14, "p5");
+  NexPicture Folderup   = NexPicture(4, 15, "p6");
+  NexPicture Exit       = NexPicture(4, 16, "p7");
 
   // Progress Bar
+  NexProgressBar sdbar  = NexProgressBar(1, 26, "j0");
 
   // Slider
-  NexSlider sdlist    = NexSlider(4, 1,   "h0");
+  NexSlider sdlist      = NexSlider(4, 1,   "h0");
 
   // Wafeform
-  NexWaveform Graph0  = NexWaveform(1,  9, "s0");
-  NexWaveform Graph1  = NexWaveform(1, 24, "s1");
-  NexWaveform Graph2  = NexWaveform(1, 25, "s2");
+  NexWaveform Graph0    = NexWaveform(1,  9, "s0");
+  NexWaveform Graph1    = NexWaveform(1, 24, "s1");
+  NexWaveform Graph2    = NexWaveform(1, 25, "s2");
 
   // Touch area
-  NexHotspot hot0     = NexHotspot(1, 14, "hot0");
-  NexHotspot hot1     = NexHotspot(1, 16, "hot1");
-  NexHotspot hot2     = NexHotspot(1, 18, "hot2");
-  NexHotspot m11      = NexHotspot(2, 14, "m11");
-  NexHotspot tup      = NexHotspot(2, 16, "tup");
-  NexHotspot tdown    = NexHotspot(2, 17, "tdown");
+  NexHotspot hot0       = NexHotspot(1, 14, "hot0");
+  NexHotspot hot1       = NexHotspot(1, 16, "hot1");
+  NexHotspot hot2       = NexHotspot(1, 18, "hot2");
+  NexHotspot m11        = NexHotspot(2, 14, "m11");
+  NexHotspot tup        = NexHotspot(2, 16, "tup");
+  NexHotspot tdown      = NexHotspot(2, 17, "tdown");
 
   // Timer
-  NexTimer startimer  = NexTimer(0,  1, "tm0");
-  NexTimer fantimer   = NexTimer(1, 23, "tm0");
+  NexTimer startimer    = NexTimer(0,  1, "tm0");
+  NexTimer fantimer     = NexTimer(1, 23, "tm0");
 
   // Variable
-  NexVar Hotend       = NexVar(1, 20, "he");
-  NexVar Bed          = NexVar(1, 21, "bed");
-  NexVar filename0    = NexVar(4, 19, "va0");
-  NexVar filename1    = NexVar(4, 20, "va1");
-  NexVar filename2    = NexVar(4, 21, "va2");
-  NexVar filename3    = NexVar(4, 22, "va3");
-  NexVar filename4    = NexVar(4, 23, "va4");
-  NexVar filename5    = NexVar(4, 24, "va5");
+  NexVar Hotend         = NexVar(1, 20, "he");
+  NexVar Bed            = NexVar(1, 21, "bed");
+  NexVar filename0      = NexVar(4, 19, "va0");
+  NexVar filename1      = NexVar(4, 20, "va1");
+  NexVar filename2      = NexVar(4, 21, "va2");
+  NexVar filename3      = NexVar(4, 22, "va3");
+  NexVar filename4      = NexVar(4, 23, "va4");
+  NexVar filename5      = NexVar(4, 24, "va5");
 
   NexTouch *nex_listen_list[] =
   {
@@ -468,7 +469,7 @@
       color = 65519;
     else if (prc >= 75 && prc < 95)
       color = 64487;
-    else if (prc >= 95 && prc < 100)
+    else if (prc >= 95)
       color = 63488;
 
     hotend_list[h]->setText(buffer);
@@ -548,6 +549,9 @@
           MSD.setPic(7);
         else
           MSD.setPic(6);
+        if (IS_SD_PRINTING)
+          // Progress bar solid part
+          sdbar.setValue(card.percentDone());
       #endif
 
       next_lcd_update_ms = ms + LCD_UPDATE_INTERVAL;
