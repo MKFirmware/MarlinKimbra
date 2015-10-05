@@ -54,7 +54,7 @@ int gumPreheatFanSpeed;
 typedef void (*menuFunc_t)();
 
 uint8_t lcd_status_message_level;
-char lcd_status_message[3*LCD_WIDTH+1] = WELCOME_MSG; // worst case is kana with up to 3*LCD_WIDTH+1
+char lcd_status_message[3 * LCD_WIDTH + 1] = WELCOME_MSG; // worst case is kana with up to 3*LCD_WIDTH+1
 
 #if ENABLED(DOGLCD)
   #include "dogm_lcd_implementation.h"
@@ -93,7 +93,6 @@ static void lcd_status_screen();
   #if ENABLED(FWRETRACT)
     static void lcd_control_retract_menu();
   #endif
-  static void lcd_sdcard_menu();
   
   #if MECH(DELTA)
     static void lcd_delta_calibrate_menu();
@@ -107,8 +106,6 @@ static void lcd_status_screen();
   static void menu_action_submenu(menuFunc_t data);
   static void menu_action_gcode(const char* pgcode);
   static void menu_action_function(menuFunc_t data);
-  static void menu_action_sdfile(const char* filename, char* longFilename);
-  static void menu_action_sddirectory(const char* filename, char* longFilename);
   static void menu_action_setting_edit_bool(const char* pstr, bool* ptr);
   static void menu_action_setting_edit_int3(const char* pstr, int* ptr, int minValue, int maxValue);
   static void menu_action_setting_edit_float3(const char* pstr, float* ptr, float minValue, float maxValue);
@@ -127,6 +124,12 @@ static void lcd_status_screen();
   static void menu_action_setting_edit_callback_float51(const char* pstr, float* ptr, float minValue, float maxValue, menuFunc_t callbackFunc);
   static void menu_action_setting_edit_callback_float52(const char* pstr, float* ptr, float minValue, float maxValue, menuFunc_t callbackFunc);
   static void menu_action_setting_edit_callback_long5(const char* pstr, unsigned long* ptr, unsigned long minValue, unsigned long maxValue, menuFunc_t callbackFunc);
+
+  #if ENABLED(SDSUPPORT)
+    static void lcd_sdcard_menu();
+    static void menu_action_sdfile(const char* filename, char* longFilename);
+    static void menu_action_sddirectory(const char* filename, char* longFilename);
+  #endif
 
   #define ENCODER_FEEDRATE_DEADZONE 10
 
@@ -167,7 +170,6 @@ static void lcd_status_screen();
       return; } \
     for (uint8_t _drawLineNr = 0; _drawLineNr < LCD_HEIGHT; _drawLineNr++, _lineNr++) { \
       _menuItemNr = 0;
-
 #else
   #define START_MENU(last_menu) do { \
     encoderRateMultiplierEnabled = false; \
@@ -250,9 +252,9 @@ static void lcd_status_screen();
     #define MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(type, label, args...) MENU_ITEM(setting_edit_callback_ ## type, label, PSTR(label), ## args)
   #endif //!ENCODER_RATE_MULTIPLIER
   #define END_MENU() \
-      if (encoderLine >= _menuItemNr) { encoderPosition = _menuItemNr * ENCODER_STEPS_PER_MENU_ITEM - 1; encoderLine = encoderPosition / ENCODER_STEPS_PER_MENU_ITEM; }\
-      if (encoderLine >= currentMenuViewOffset + LCD_HEIGHT) { currentMenuViewOffset = encoderLine - LCD_HEIGHT + 1; lcdDrawUpdate = 1; _lineNr = currentMenuViewOffset - 1; _drawLineNr = -1; } \
-      } } while(0)
+    if (encoderLine >= _menuItemNr) { encoderPosition = _menuItemNr * ENCODER_STEPS_PER_MENU_ITEM - 1; encoderLine = encoderPosition / ENCODER_STEPS_PER_MENU_ITEM; }\
+    if (encoderLine >= currentMenuViewOffset + LCD_HEIGHT) { currentMenuViewOffset = encoderLine - LCD_HEIGHT + 1; lcdDrawUpdate = 1; _lineNr = currentMenuViewOffset - 1; _drawLineNr = -1; } \
+    } } while(0)
 
   /** Used variables to keep track of the menu */
   volatile uint8_t buttons;  //the last checked buttons in a bit array.
@@ -268,7 +270,7 @@ static void lcd_status_screen();
   uint8_t lastEncoderBits;
   uint32_t encoderPosition;
   #if PIN_EXISTS(SD_DETECT)
-    bool lcd_oldcardstatus;
+    uint8_t lcd_sd_status;
   #endif
 
 #endif // ULTIPANEL
@@ -337,14 +339,10 @@ static void lcd_status_screen() {
                 lcd_status_message[0] = '\0';
                 expire_status_ms = 0;
               }
-            }
-            else {
+            } else
               expire_status_ms += LCD_UPDATE_INTERVAL;
-            }
-          }
-          else {
+          } else
             expire_status_ms = 0;
-          }
         #else
           expire_status_ms = 0;
         #endif // SDSUPPORT
@@ -379,8 +377,7 @@ static void lcd_status_screen() {
           ignore_click = wait_for_unclick = false;
         else
           current_click = false;
-      }
-      else if (current_click) {
+      } else if (current_click) {
         lcd_quick_feedback();
         wait_for_unclick = true;
         current_click = false;
@@ -457,9 +454,8 @@ static void lcd_return_to_status() { lcd_goto_menu(lcd_status_screen); }
 static void lcd_main_menu() {
   START_MENU(lcd_status_screen);
   MENU_ITEM(back, MSG_WATCH, lcd_status_screen);
-  if (movesplanned() || IS_SD_PRINTING) {
+  if (movesplanned() || IS_SD_PRINTING)
     MENU_ITEM(submenu, MSG_TUNE, lcd_tune_menu);
-  }
   else {
     MENU_ITEM(submenu, MSG_PREPARE, lcd_prepare_menu);
     #if MECH(DELTA)
@@ -467,9 +463,7 @@ static void lcd_main_menu() {
     #endif // DELTA
   }
   MENU_ITEM(submenu, MSG_CONTROL, lcd_control_menu);
-  
   MENU_ITEM(submenu, MSG_STATS, lcd_stats_menu);
-  
   #if ENABLED(SDSUPPORT)
     if (card.cardOK) {
       if (card.isFileOpen()) {
@@ -478,15 +472,13 @@ static void lcd_main_menu() {
         else
           MENU_ITEM(function, MSG_RESUME_PRINT, lcd_sdcard_resume);
         MENU_ITEM(function, MSG_STOP_PRINT, lcd_sdcard_stop);
-      }
-      else {
+      } else {
         MENU_ITEM(submenu, MSG_CARD_MENU, lcd_sdcard_menu);
         #if !PIN_EXISTS(SD_DETECT)
           MENU_ITEM(gcode, MSG_CNG_SDCARD, PSTR("M21"));  // SD-card changed by user
         #endif
       }
-    }
-    else {
+    } else {
       MENU_ITEM(submenu, MSG_NO_CARD, lcd_sdcard_menu);
       #if !PIN_EXISTS(SD_DETECT)
         MENU_ITEM(gcode, MSG_INIT_SDCARD, PSTR("M21")); // Manually initialize the SD-card via user interface
@@ -1681,7 +1673,7 @@ void lcd_init() {
   #if ENABLED(SDSUPPORT) && PIN_EXISTS(SD_DETECT)
     pinMode(SD_DETECT_PIN, INPUT);
     WRITE(SD_DETECT_PIN, HIGH);
-    lcd_oldcardstatus = IS_SD_INSERTED;
+    lcd_sd_status = 2; // UNKNOWN
   #endif
 
   #if ENABLED(LCD_HAS_SLOW_BUTTONS)
@@ -1738,24 +1730,22 @@ void lcd_update() {
   lcd_buttons_update();
 
   #if ENABLED(SDSUPPORT) && PIN_EXISTS(SD_DETECT)
-
-    if (IS_SD_INSERTED != lcd_oldcardstatus && lcd_detected()) {
+    bool sd_status = IS_SD_INSERTED;
+    if (sd_status != lcd_sd_status && lcd_detected()) {
       lcdDrawUpdate = 2;
-      lcd_oldcardstatus = IS_SD_INSERTED;
       lcd_implementation_init( // to maybe revive the LCD if static electricity killed it.
         #if ENABLED(LCD_PROGRESS_BAR)
           currentMenu == lcd_status_screen
         #endif
       );
-
-      if (lcd_oldcardstatus) {
+      if (sd_status) {
         card.initsd();
-        LCD_MESSAGEPGM(MSG_SD_INSERTED);
-      }
-      else {
+        if (lcd_sd_status != 2) LCD_MESSAGEPGM(MSG_SD_INSERTED);
+      } else {
         card.release();
-        LCD_MESSAGEPGM(MSG_SD_REMOVED);
+        if (lcd_sd_status != 2) LCD_MESSAGEPGM(MSG_SD_REMOVED);
       }
+      lcd_sd_status = sd_status;
     }
 
   #endif // SDSUPPORT && SD_DETECT_PIN
