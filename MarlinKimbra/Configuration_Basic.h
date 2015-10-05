@@ -134,7 +134,7 @@
  * (but gives greater accuracy and more stable PID)                                                  *
  * Please choose the one that matches your setup.                                                    *
  *                                                                                                   *
- * Temperature sensor settings (4.7kohm PULLUP):                                                     *
+ * Temperature sensor settings (1kohm PULLUP):                                                     *
  *  51 is 100k thermistor - EPCOS (1k pullup)                                                        *
  *  52 is 200k thermistor - ATC Semitec 204GT-2 (1k pullup)                                          *
  *  55 is 100k thermistor - ATC Semitec 104GT-2 (Used in ParCan & J-Head) (1k pullup)                *
