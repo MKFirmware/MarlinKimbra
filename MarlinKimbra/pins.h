@@ -25,9 +25,9 @@
 *
 *  4 BOARD_DUEMILANOVE_328P - Duemilanove w/ ATMega328P pin assignment
 *401 BOARD_RADDS       - Radds Arduino DUE
-*403 BOARD_RAMPS_FD_V1 - Ramps FD version 1 Arduino DUE
-*404 BOARD_RAMPS_FD_V2 - Ramps FD version 2 Arduino DUE
-*408 BOARD_SMART_RAMPS - Smart Ramps for Arduino DUE
+*403 BOARD_RAMPS_FD_V1 - Ramps FD version 1
+*404 BOARD_RAMPS_FD_V2 - Ramps FD version 2
+*408 BOARD_SMART_RAMPS - Smart Ramps
 *433 BOARD_RAMPS4DUE   - Ramps for Arduino DUE
 *
 *  5 BOARD_GEN6 - Gen6
@@ -2153,14 +2153,14 @@
 
 // SPI for Max6675 Thermocouple
 
-//works with radds??? #if DISABLED(SDSUPPORT)
-//// these pins are defined in the SD library if building with SD support
-//  #define MAX_SCK_PIN          52
-//  #define MAX_MISO_PIN         50
-//  #define MAX_MOSI_PIN         51
-//  #define MAX6675_SS       53
+// works with radds??? #if DISABLED(SDSUPPORT)
+// these pins are defined in the SD library if building with SD support
+//#define MAX_SCK_PIN          52
+//#define MAX_MISO_PIN         50
+//#define MAX_MOSI_PIN         51
+//#define MAX6675_SS       53
 //#else
-//  #define MAX6675_SS       49
+//#define MAX6675_SS       49
 //#endif
 
 #endif //RADDS
@@ -2170,16 +2170,11 @@
 
 /****************************************************************************************
 * 403 - 404
-* Arduino Due pin assignment
+* Arduino pin assignment
 * Ramps - FD v1 & v2
 ****************************************************************************************/
 #if MB(RAMPS_FD_V1) || MB(RAMPS_FD_V2)
 #define KNOWN_BOARD 1
-
-#ifndef __SAM3X8E__
- #error Oops!  Make sure you have 'Arduino Due' selected from the 'Tools -> Boards' menu.
-#endif
-
 
 #if MB(RAMPS_FD_V1)
   #define RAMPS_FD_V1
@@ -2305,15 +2300,11 @@
 
 /****************************************************************************************
 * 408
-* Arduino Due pin assignment
+* Arduino pin assignment
 * for SMART_RAMPS
 ****************************************************************************************/
 #if MB(SMART_RAMPS)
 #define KNOWN_BOARD
-
-#ifndef __SAM3X8E__
-  #error Oops!  Make sure you have 'Arduino Due' selected from the 'Tools -> Boards' menu.
-#endif
 
 #define ORIG_X_STEP_PIN       54
 #define ORIG_X_DIR_PIN        55
@@ -2699,14 +2690,14 @@
 #endif
 
 #if MB(MELZI)
- #define LED_PIN                27
- #define ORIG_FAN_PIN            4 // Works for Panelolu2 too
+  #define LED_PIN                27
+  #define ORIG_FAN_PIN            4 // Works for Panelolu2 too
 #endif
 
 #if MB(STB_11)
- #define ORIG_FAN_PIN            4
+  #define ORIG_FAN_PIN            4
   //  Uncomment this if you have the first generation (V1.10) of STBs board
- #define LCD_PIN_BL         17 // LCD backlight LED
+  #define LCD_PIN_BL         17 // LCD backlight LED
 #endif
 
 #if MB(AZTEEG_X1)

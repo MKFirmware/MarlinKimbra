@@ -25,9 +25,9 @@
 
 #define BOARD_DUEMILANOVE_328P  4    // Duemilanove w/ ATMega328P pin assignments
 #define BOARD_RADDS             402  // RADDS ARM 32
-#define BOARD_RAMPS_FD_V1       403  // RAMPS-FD V1 ARM 32
-#define BOARD_RAMPS_FD_V2       404  // RAMPS-FD V2 ARM 32
-#define BOARD_SMART_RAMPS       408  // SMART RAMPS ARM 32
+#define BOARD_RAMPS_FD_V1       403  // RAMPS-FD V1
+#define BOARD_RAMPS_FD_V2       404  // RAMPS-FD V2
+#define BOARD_SMART_RAMPS       408  // SMART RAMPS
 #define BOARD_RAMPS4DUE         433  // RAMPS4DUE with AndrewBCN's RAMPS mods (http://forums.reprap.org/read.php?219,479626,page=1) ARM 32
 
 #define BOARD_GEN6              5    // Gen6
