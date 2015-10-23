@@ -420,6 +420,13 @@
   #define STEPS_PER_CUBIC_MM_E (axis_steps_per_unit[E_AXIS + active_extruder] / EXTRUSION_AREA)
 #endif
 
+/**
+ * SD DETECT
+ *
+ */
+#if ENABLED(SD_DISABLED_DETECT)
+  #define SD_DETECT_PIN   -1
+#endif
 #if ENABLED(ULTIPANEL) && DISABLED(ELB_FULL_GRAPHIC_CONTROLLER)
   #undef SD_DETECT_INVERTED
 #endif
