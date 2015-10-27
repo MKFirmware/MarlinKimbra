@@ -350,8 +350,8 @@
  * (i.e. the software might assume it can be done instantaneously)                       *
  *                                                                                       *
  *****************************************************************************************/
-#define DEFAULT_XYJERK 10.0                 // (mm/sec)
-#define DEFAULT_ZJERK   0.4                 // (mm/sec)
+#define DEFAULT_XYJERK 20.0   // (mm/sec)
+#define DEFAULT_ZJERK  20.0   // (mm/sec)
 //  max initial speed for retract moves   E0... (mm/sec) per extruder
 #define DEFAULT_EJERK                   {5.0, 5.0, 5.0, 5.0}
 /*****************************************************************************************/

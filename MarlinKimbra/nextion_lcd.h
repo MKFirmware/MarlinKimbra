@@ -4,12 +4,13 @@
   #if ENABLED(NEXTION)
     #define LCD_UPDATE_INTERVAL 5000
 
-    void PstartPopCallback(void *ptr);
+    void ExitUpPopCallback(void *ptr);
     void setpagePopCallback(void *ptr);
     void hotPopCallback(void *ptr);
     void sethotPopCallback(void *ptr);
     void settempPopCallback(void *ptr);
     void setfanPopCallback(void *ptr);
+    void setmovePopCallback(void *ptr);
     void lcd_update();
     void lcd_init();
     void lcd_setstatus(const char* message, const bool persist = false);
@@ -22,7 +23,8 @@
       void sdfilePopCallback(void *ptr);
       void sdfolderPopCallback(void *ptr);
       void sdfolderUpPopCallback(void *ptr);
-      void ExitUpPopCallback(void *ptr);
+      void PlayPausePopCallback(void *ptr);
+      void StopPopCallback(void *ptr);
     #endif
 
     FORCE_INLINE bool lcd_hasstatus() { return false; }

@@ -17,15 +17,14 @@
 #include "firmware_test.h"
 static char serial_answer;
 
-void FirmwareTest()
-{
+void FirmwareTest() {
   ECHO_EM("---------- FIRMWARE TEST --------------");
   ECHO_EM("--------- by MarlinKimbra -------------");
   ECHO_EV(MSG_FWTEST_01);
   ECHO_EV(MSG_FWTEST_02);
   ECHO_EV(MSG_FWTEST_YES_NO);
   serial_answer = ' ';
-  while(serial_answer!='y' && serial_answer!='Y' && serial_answer!='n' && serial_answer!='N') {
+  while (serial_answer!='y' && serial_answer!='Y' && serial_answer!='n' && serial_answer!='N') {
     serial_answer = MYSERIAL.read();
   }
   if (serial_answer=='y' || serial_answer=='Y') {
@@ -33,13 +32,12 @@ void FirmwareTest()
 
     ECHO_EM(" ");
     ECHO_EM("***** ENDSTOP X *****");
-    #if EXIST(X_MIN_PIN) && X_MIN_PIN > -1 && X_HOME_DIR == -1
+    #if PIN_EXISTS(X_MIN_PIN) && (X_HOME_DIR == -1)
       if (!READ(X_MIN_PIN)^X_MIN_ENDSTOP_INVERTING) {
         ECHO_M("MIN ENDSTOP X: ");
         ECHO_EV(MSG_ENDSTOP_OPEN);
       }
-      else
-      {
+      else {
         ECHO_M("X ENDSTOP ");
         ECHO_EM(MSG_FWTEST_ERROR);
         ECHO_M(MSG_FWTEST_INVERT);
@@ -62,26 +60,24 @@ void FirmwareTest()
       ECHO_EM("X");
       ECHO_EV(MSG_FWTEST_YES);
       serial_answer = ' ';
-      while(serial_answer!='y' && serial_answer!='Y' && !(READ(X_MIN_PIN)^X_MIN_ENDSTOP_INVERTING)){
+      while (serial_answer!='y' && serial_answer!='Y' && !(READ(X_MIN_PIN)^X_MIN_ENDSTOP_INVERTING)) {
         serial_answer = MYSERIAL.read();
       }
       if (READ(X_MIN_PIN)^X_MIN_ENDSTOP_INVERTING) {
         ECHO_M("MIN ENDSTOP X: ");
         ECHO_EV(MSG_ENDSTOP_HIT);
       }
-      else
-      {
+      else {
         ECHO_M("X ");
         ECHO_EV(MSG_FWTEST_ENDSTOP_ERR);
         return;
       }
-    #elif EXIST(X_MAX_PIN) && X_MAX_PIN > -1 && X_HOME_DIR == 1
+    #elif PIN_EXISTS(X_MAX_PIN) && X_HOME_DIR == 1
       if (!READ(X_MAX_PIN)^X_MAX_ENDSTOP_INVERTING) {
         ECHO_M("MAX ENDSTOP X: ");
         ECHO_EV(MSG_ENDSTOP_OPEN);
       }
-      else
-      {
+      else {
         ECHO_M("X ENDSTOP ");
         ECHO_EM(MSG_FWTEST_ERROR);
         ECHO_M(MSG_FWTEST_INVERT);
@@ -104,15 +100,14 @@ void FirmwareTest()
       ECHO_EM("X");
       ECHO_EV(MSG_FWTEST_YES);
       serial_answer = ' ';
-      while(serial_answer!='y' && serial_answer!='Y' && !(READ(X_MAX_PIN)^X_MAX_ENDSTOP_INVERTING)) {
+      while (serial_answer!='y' && serial_answer!='Y' && !(READ(X_MAX_PIN)^X_MAX_ENDSTOP_INVERTING)) {
         serial_answer = MYSERIAL.read();
       }
       if (READ(X_MAX_PIN)^X_MAX_ENDSTOP_INVERTING) {
         ECHO_M("MAX ENDSTOP X: ");
         ECHO_EV(MSG_ENDSTOP_HIT);
       }
-      else
-      {
+      else {
         ECHO_M("X ");
         ECHO_EV(MSG_FWTEST_ENDSTOP_ERR);
         return;
@@ -131,13 +126,12 @@ void FirmwareTest()
 
     ECHO_EM(" ");
     ECHO_EM("***** ENDSTOP Y *****");
-    #if EXIST(Y_MIN_PIN) && Y_MIN_PIN > -1 && Y_HOME_DIR == -1
-      if (!READ(Y_MIN_PIN)^Y_MIN_ENDSTOP_INVERTING){
+    #if PIN_EXISTS(Y_MIN_PIN) && Y_HOME_DIR == -1
+      if (!READ(Y_MIN_PIN)^Y_MIN_ENDSTOP_INVERTING) {
         ECHO_M("MIN ENDSTOP Y: ");
         ECHO_EV(MSG_ENDSTOP_OPEN);
       }
-      else
-      {
+      else {
         ECHO_M("Y ENDSTOP ");
         ECHO_EM(MSG_FWTEST_ERROR);
         ECHO_M(MSG_FWTEST_INVERT);
@@ -160,26 +154,24 @@ void FirmwareTest()
       ECHO_EM("Y");
       ECHO_EV(MSG_FWTEST_YES);
       serial_answer = ' ';
-      while(serial_answer!='y' && serial_answer!='Y' && !(READ(Y_MIN_PIN)^Y_MIN_ENDSTOP_INVERTING)){
+      while (serial_answer!='y' && serial_answer!='Y' && !(READ(Y_MIN_PIN)^Y_MIN_ENDSTOP_INVERTING)) {
         serial_answer = MYSERIAL.read();
       }
-      if (READ(Y_MIN_PIN)^Y_MIN_ENDSTOP_INVERTING){
+      if (READ(Y_MIN_PIN)^Y_MIN_ENDSTOP_INVERTING) {
         ECHO_M("MIN ENDSTOP Y: ");
         ECHO_EV(MSG_ENDSTOP_HIT);
       }
-      else
-      {
+      else {
         ECHO_M("Y ");
         ECHO_EV(MSG_FWTEST_ENDSTOP_ERR);
         return;
       }
-    #elif EXIST(Y_MAX_PIN) && Y_MAX_PIN > -1 && Y_HOME_DIR == 1
-      if (!READ(Y_MAX_PIN)^Y_MAX_ENDSTOP_INVERTING){
+    #elif PIN_EXISTS(Y_MAX_PIN) && Y_HOME_DIR == 1
+      if (!READ(Y_MAX_PIN)^Y_MAX_ENDSTOP_INVERTING) {
         ECHO_M("MAX ENDSTOP Y: ");
         ECHO_EV(MSG_ENDSTOP_OPEN);
       }
-      else
-      {
+      else {
         ECHO_M("Y ENDSTOP ");
         ECHO_EM(MSG_FWTEST_ERROR);
         ECHO_M(MSG_FWTEST_INVERT);
@@ -202,15 +194,14 @@ void FirmwareTest()
       ECHO_EM("Y");
       ECHO_EV(MSG_FWTEST_YES);
       serial_answer = ' ';
-      while(serial_answer!='y' && serial_answer!='Y' && !(READ(Y_MAX_PIN)^Y_MAX_ENDSTOP_INVERTING)){
+      while (serial_answer!='y' && serial_answer!='Y' && !(READ(Y_MAX_PIN)^Y_MAX_ENDSTOP_INVERTING)) {
         serial_answer = MYSERIAL.read();
       }
-      if (READ(Y_MAX_PIN)^Y_MAX_ENDSTOP_INVERTING){
+      if (READ(Y_MAX_PIN)^Y_MAX_ENDSTOP_INVERTING) {
         ECHO_M("MAX ENDSTOP Y: ");
         ECHO_EV(MSG_ENDSTOP_HIT);
       }
-      else
-      {
+      else {
         ECHO_M("Y ");
         ECHO_EV(MSG_FWTEST_ENDSTOP_ERR);
         return;
@@ -229,13 +220,12 @@ void FirmwareTest()
 
     ECHO_EM(" ");
     ECHO_EM("***** ENDSTOP Z *****");
-    #if EXIST(Z_MIN_PIN) && Z_MIN_PIN > -1 && Z_HOME_DIR == -1
-      if (!READ(Z_MIN_PIN)^Z_MIN_ENDSTOP_INVERTING){
+    #if PIN_EXISTS(Z_MIN_PIN) && Z_HOME_DIR == -1
+      if (!READ(Z_MIN_PIN)^Z_MIN_ENDSTOP_INVERTING) {
         ECHO_M("MIN ENDSTOP Z: ");
         ECHO_EV(MSG_ENDSTOP_OPEN);
       }
-      else
-      {
+      else {
         ECHO_M("Z ENDSTOP ");
         ECHO_EM(MSG_FWTEST_ERROR);
         ECHO_M(MSG_FWTEST_INVERT);
@@ -258,26 +248,24 @@ void FirmwareTest()
       ECHO_EM("Z");
       ECHO_EV(MSG_FWTEST_YES);
       serial_answer = ' ';
-      while(serial_answer!='y' && serial_answer!='Y' && !(READ(Z_MIN_PIN)^Z_MIN_ENDSTOP_INVERTING)){
+      while (serial_answer!='y' && serial_answer!='Y' && !(READ(Z_MIN_PIN)^Z_MIN_ENDSTOP_INVERTING)) {
         serial_answer = MYSERIAL.read();
       }
-      if (READ(Z_MIN_PIN)^Z_MIN_ENDSTOP_INVERTING){
+      if (READ(Z_MIN_PIN)^Z_MIN_ENDSTOP_INVERTING) {
         ECHO_M("MIN ENDSTOP Z: ");
         ECHO_EV(MSG_ENDSTOP_HIT);
       }
-      else
-      {
+      else {
         ECHO_M("Z ");
         ECHO_EV(MSG_FWTEST_ENDSTOP_ERR);
         return;
       }
-    #elif EXIST(Z_MAX_PIN) && Z_MAX_PIN > -1 && Z_HOME_DIR == 1
-      if (!READ(Z_MAX_PIN)^Z_MAX_ENDSTOP_INVERTING){
+    #elif PIN_EXISTS(Z_MAX_PIN) && Z_HOME_DIR == 1
+      if (!READ(Z_MAX_PIN)^Z_MAX_ENDSTOP_INVERTING) {
         ECHO_M("MAX ENDSTOP Z: ");
         ECHO_EV(MSG_ENDSTOP_OPEN);
       }
-      else
-      {
+      else {
         ECHO_M("Z ENDSTOP ");
         ECHO_EM(MSG_FWTEST_ERROR);
         ECHO_M(MSG_FWTEST_INVERT);
@@ -300,15 +288,14 @@ void FirmwareTest()
       ECHO_EM("Z");
       ECHO_EV(MSG_FWTEST_YES);
       serial_answer = ' ';
-      while(serial_answer!='y' && serial_answer!='Y' && !(READ(Z_MAX_PIN)^Z_MAX_ENDSTOP_INVERTING)){
+      while (serial_answer!='y' && serial_answer!='Y' && !(READ(Z_MAX_PIN)^Z_MAX_ENDSTOP_INVERTING)) {
         serial_answer = MYSERIAL.read();
       }
-      if (READ(Z_MAX_PIN)^Z_MAX_ENDSTOP_INVERTING){
+      if (READ(Z_MAX_PIN)^Z_MAX_ENDSTOP_INVERTING) {
         ECHO_M("MAX ENDSTOP Z: ");
         ECHO_EV(MSG_ENDSTOP_HIT);
       }
-      else
-      {
+      else {
         ECHO_M("Z ");
         ECHO_EV(MSG_FWTEST_ENDSTOP_ERR);
         return;
@@ -337,14 +324,14 @@ void FirmwareTest()
 
   // Reset position to 0
   st_synchronize();
-  for(int8_t i=0; i < NUM_AXIS; i++) current_position[i] = 0;
+  for (int8_t i = 0; i < NUM_AXIS; i++) current_position[i] = 0;
   plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 
   ECHO_EM("***** TEST MOTOR  *****");
   ECHO_EV(MSG_FWTEST_ATTENTION);
   ECHO_EV(MSG_FWTEST_YES);
   serial_answer = ' ';
-  while(serial_answer!='y' && serial_answer!='Y'){
+  while (serial_answer!='y' && serial_answer!='Y') {
     serial_answer = MYSERIAL.read();
   }
   ECHO_EV(MSG_FWTEST_04);
@@ -357,18 +344,17 @@ void FirmwareTest()
   ECHO_EV(MSG_FWTEST_XAXIS);
   ECHO_EV(MSG_FWTEST_YES_NO);
   serial_answer = ' ';
-  while(serial_answer!='y' && serial_answer!='Y' && serial_answer!='n' && serial_answer!='N'){
+  while (serial_answer!='y' && serial_answer!='Y' && serial_answer!='n' && serial_answer!='N') {
     serial_answer = MYSERIAL.read();
   }
-  if(serial_answer=='y' || serial_answer=='Y'){
+  if (serial_answer=='y' || serial_answer=='Y') {
     ECHO_EM("MOTOR X ");
     ECHO_M(MSG_FWTEST_OK);
   }
-  else
-  {
+  else {
     ECHO_M(MSG_FWTEST_INVERT);
     ECHO_M("#define INVERT_X_DIR ");
-        ECHO_M(MSG_FWTEST_INTO);
+    ECHO_M(MSG_FWTEST_INTO);
     #if MECH(CARTESIAN)
       ECHO_EM("Configuration_Cartesian.h");
     #elif MECH(COREXY)
@@ -390,18 +376,17 @@ void FirmwareTest()
   ECHO_EV(MSG_FWTEST_YAXIS);
   ECHO_EV(MSG_FWTEST_YES_NO);
   serial_answer = ' ';
-  while(serial_answer!='y' && serial_answer!='Y' && serial_answer!='n' && serial_answer!='N'){
+  while (serial_answer!='y' && serial_answer!='Y' && serial_answer!='n' && serial_answer!='N') {
     serial_answer = MYSERIAL.read();
   }
-  if(serial_answer=='y' || serial_answer=='Y'){
+  if (serial_answer=='y' || serial_answer=='Y') {
     ECHO_EM("MOTOR Y ");
     ECHO_M(MSG_FWTEST_OK);
   }
-  else
-  {
+  else {
     ECHO_M(MSG_FWTEST_INVERT);
     ECHO_M("#define INVERT_Y_DIR ");
-        ECHO_M(MSG_FWTEST_INTO);
+    ECHO_M(MSG_FWTEST_INTO);
     #if MECH(CARTESIAN)
       ECHO_EM("Configuration_Cartesian.h");
     #elif MECH(COREXY)
@@ -423,18 +408,17 @@ void FirmwareTest()
   ECHO_EV(MSG_FWTEST_ZAXIS);
   ECHO_EV(MSG_FWTEST_YES_NO);
   serial_answer = ' ';
-  while(serial_answer!='y' && serial_answer!='Y' && serial_answer!='n' && serial_answer!='N'){
+  while (serial_answer!='y' && serial_answer!='Y' && serial_answer!='n' && serial_answer!='N') {
     serial_answer = MYSERIAL.read();
   }
-  if(serial_answer=='y' || serial_answer=='Y'){
+  if (serial_answer=='y' || serial_answer=='Y') {
     ECHO_EM("MOTOR Z ");
     ECHO_M(MSG_FWTEST_OK);
   }
-  else
-  {
+  else {
     ECHO_M(MSG_FWTEST_INVERT);
     ECHO_M("#define INVERT_Z_DIR ");
-        ECHO_M(MSG_FWTEST_INTO);
+    ECHO_M(MSG_FWTEST_INTO);
     #if MECH(CARTESIAN)
       ECHO_EM("Configuration_Cartesian.h");
     #elif MECH(COREXY)

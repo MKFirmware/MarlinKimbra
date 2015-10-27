@@ -1,5 +1,5 @@
 /**
- * Marlin Firmware
+ * MarlinKimbra Firmware
  *
  * Based on Sprinter and grbl.
  * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
@@ -69,7 +69,6 @@
 #if HAS(DIGIPOTSS)
   #include <SPI.h>
 #endif
-
 
 #if ENABLED(FIRMWARE_TEST)
   #include "firmware_test.h"
@@ -167,6 +166,7 @@
  * M119 - Output Endstop status to serial port
  * M120 - Enable endstop detection
  * M121 - Disable endstop detection
+ * M122 - S<1=true/0=false> Enable or disable check software endstop
  * M126 - Solenoid Air Valve Open (BariCUDA support by jmil)
  * M127 - Solenoid Air Valve Closed (BariCUDA vent to atmospheric pressure by jmil)
  * M128 - EtoP Open (BariCUDA EtoP = electricity to air pressure transducer by jmil)
@@ -305,6 +305,7 @@ millis_t print_job_stop_ms = 0;  ///< Print job stop time
 static uint8_t target_extruder;
 bool no_wait_for_cooling = true;
 bool target_direction;
+bool software_endstops = true;
 
 unsigned long printer_usage_seconds;
 
@@ -993,11 +994,14 @@ void get_command() {
       command[serial_count] = 0; // terminate string
 
       // this item in the queue is not from sd
-#if ENABLED(SDSUPPORT)
-      fromsd[cmd_queue_index_w] = false;
-#endif
-      char* npos = strchr(command, 'N');
+      #if ENABLED(SDSUPPORT)
+        fromsd[cmd_queue_index_w] = false;
+      #endif
+
+      while (*command == ' ') command++; // skip any leading spaces
+      char* npos = (*command == 'N') ? command : NULL; // Require the N parameter to start the line
       char* apos = strchr(command, '*');
+
       if (npos) {
         boolean M110 = strstr_P(command, PSTR("M110")) != NULL;
         if (M110) {
@@ -1027,6 +1031,7 @@ void get_command() {
         gcode_line_error(PSTR(MSG_ERR_NO_LINENUMBER_WITH_CHECKSUM), false);
         return;
       }
+
       // Movement commands alert when stopped
       if (IsStopped()) {
         char* gpos = strchr(command, 'G');
@@ -1043,10 +1048,13 @@ void get_command() {
           }
         }
       }
+
       // If command was e-stop process now
       if (strcmp(command, "M112") == 0) kill(PSTR(MSG_KILLED));
+
       cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
       commands_in_queue += 1;
+
       serial_count = 0; //clear buffer
     } else if (serial_char == '\\') { // Handle escapes
       if (MYSERIAL.available() > 0 && commands_in_queue < BUFSIZE) {
@@ -1060,51 +1068,57 @@ void get_command() {
       if (!comment_mode) command_queue[cmd_queue_index_w][serial_count++] = serial_char;
     }
   }
-#if ENABLED(SDSUPPORT)
-  if (!card.sdprinting || serial_count) return;
-  // '#' stops reading from SD to the buffer prematurely, so procedural macro calls are possible
-  // if it occurs, stop_buffering is triggered and the buffer is ran dry.
-  // this character _can_ occur in serial com, due to checksums. however, no checksums are used in SD printing
-  static bool stop_buffering = false;
-  if (commands_in_queue == 0) stop_buffering = false;
-  while (!card.eof() && commands_in_queue < BUFSIZE && !stop_buffering) {
-    int16_t n = card.get();
-    serial_char = (char)n;
-    if (serial_char == '\n' || serial_char == '\r' ||
-        ((serial_char == '#' || serial_char == ':') && !comment_mode) ||
-        serial_count >= (MAX_CMD_SIZE - 1) || n == -1
-    ) {
-      if (card.eof()) {
-        ECHO_EM(MSG_FILE_PRINTED);
-        print_job_stop_ms = millis();
-        char time[30];
-        millis_t t = (print_job_stop_ms - print_job_start_ms) / 1000;
-        int hours = t / 60 / 60, minutes = (t / 60) % 60;
-        sprintf_P(time, PSTR("%i " MSG_END_HOUR " %i " MSG_END_MINUTE), hours, minutes);
-        ECHO_LV(DB, time);
-        lcd_setstatus(time, true);
-        card.printingHasFinished();
-        card.checkautostart(true);
-      }
-      if (serial_char == '#') stop_buffering = true;
-      if (!serial_count) {
+
+  #if ENABLED(SDSUPPORT)
+    if (!card.sdprinting || serial_count) return;
+
+    // '#' stops reading from SD to the buffer prematurely, so procedural macro calls are possible
+    // if it occurs, stop_buffering is triggered and the buffer is ran dry.
+    // this character _can_ occur in serial com, due to checksums. however, no checksums are used in SD printing
+
+    static bool stop_buffering = false;
+    if (commands_in_queue == 0) stop_buffering = false;
+
+    while (!card.eof() && commands_in_queue < BUFSIZE && !stop_buffering) {
+      int16_t n = card.get();
+      serial_char = (char)n;
+      if (serial_char == '\n' || serial_char == '\r' ||
+          ((serial_char == '#' || serial_char == ':') && !comment_mode) ||
+          serial_count >= (MAX_CMD_SIZE - 1) || n == -1
+      ) {
+        if (card.eof()) {
+          ECHO_EM(MSG_FILE_PRINTED);
+          print_job_stop_ms = millis();
+          char time[30];
+          millis_t t = (print_job_stop_ms - print_job_start_ms) / 1000;
+          int hours = t / 60 / 60, minutes = (t / 60) % 60;
+          sprintf_P(time, PSTR("%i " MSG_END_HOUR " %i " MSG_END_MINUTE), hours, minutes);
+          ECHO_LV(DB, time);
+          lcd_setstatus(time, true);
+          card.printingHasFinished();
+          card.checkautostart(true);
+        }
+        if (serial_char == '#') stop_buffering = true;
+
+        if (!serial_count) {
+          comment_mode = false; //for new command
+          return; //if empty line
+        }
+        command_queue[cmd_queue_index_w][serial_count] = 0; //terminate string
+        // if (!comment_mode) {
+        fromsd[cmd_queue_index_w] = true;
+        commands_in_queue += 1;
+        cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
+        // }
         comment_mode = false; //for new command
-        return; //if empty line
+        serial_count = 0; //clear buffer
       }
-      command_queue[cmd_queue_index_w][serial_count] = 0; //terminate string
-      // if (!comment_mode) {
-      fromsd[cmd_queue_index_w] = true;
-      commands_in_queue += 1;
-      cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
-      // }
-      comment_mode = false; //for new command
-      serial_count = 0; //clear buffer
-    } else {
-      if (serial_char == ';') comment_mode = true;
-      if (!comment_mode) command_queue[cmd_queue_index_w][serial_count++] = serial_char;
+      else {
+        if (serial_char == ';') comment_mode = true;
+        if (!comment_mode) command_queue[cmd_queue_index_w][serial_count++] = serial_char;
+      }
     }
-  }
-#endif // SDSUPPORT
+  #endif // SDSUPPORT
 }
 
 bool code_has_value() {
@@ -1160,34 +1174,34 @@ XYZ_CONSTS_FROM_CONFIG(signed char, home_dir,  HOME_DIR);
 
 #if ENABLED(DUAL_X_CARRIAGE)
 
-#define DXC_FULL_CONTROL_MODE 0
-#define DXC_AUTO_PARK_MODE    1
-#define DXC_DUPLICATION_MODE  2
+  #define DXC_FULL_CONTROL_MODE 0
+  #define DXC_AUTO_PARK_MODE    1
+  #define DXC_DUPLICATION_MODE  2
 
-static int dual_x_carriage_mode = DEFAULT_DUAL_X_CARRIAGE_MODE;
+  static int dual_x_carriage_mode = DEFAULT_DUAL_X_CARRIAGE_MODE;
 
-static float x_home_pos(int extruder) {
-  if (extruder == 0)
-    return base_home_pos(X_AXIS) + home_offset[X_AXIS];
-  else
-    // In dual carriage mode the extruder offset provides an override of the
-    // second X-carriage offset when homed - otherwise X2_HOME_POS is used.
-    // This allow soft recalibration of the second extruder offset position without firmware reflash
-    // (through the M218 command).
-    return (hotend_offset[X_AXIS][1] > 0) ? hotend_offset[X_AXIS][1] : X2_HOME_POS;
-}
+  static float x_home_pos(int extruder) {
+    if (extruder == 0)
+      return base_home_pos(X_AXIS) + home_offset[X_AXIS];
+    else
+      // In dual carriage mode the extruder offset provides an override of the
+      // second X-carriage offset when homed - otherwise X2_HOME_POS is used.
+      // This allow soft recalibration of the second extruder offset position without firmware reflash
+      // (through the M218 command).
+      return (hotend_offset[X_AXIS][1] > 0) ? hotend_offset[X_AXIS][1] : X2_HOME_POS;
+  }
 
-static int x_home_dir(int extruder) {
-  return (extruder == 0) ? X_HOME_DIR : X2_HOME_DIR;
-}
+  static int x_home_dir(int extruder) {
+    return (extruder == 0) ? X_HOME_DIR : X2_HOME_DIR;
+  }
 
-static float inactive_extruder_x_pos = X2_MAX_POS; // used in mode 0 & 1
-static bool active_extruder_parked = false; // used in mode 1 & 2
-static float raised_parked_position[NUM_AXIS]; // used in mode 1
-static millis_t delayed_move_time = 0; // used in mode 1
-static float duplicate_hotend_x_offset = DEFAULT_DUPLICATION_X_OFFSET; // used in mode 2
-static float duplicate_extruder_temp_offset = 0; // used in mode 2
-bool extruder_duplication_enabled = false; // used in mode 2
+  static float inactive_extruder_x_pos = X2_MAX_POS; // used in mode 0 & 1
+  static bool active_extruder_parked = false; // used in mode 1 & 2
+  static float raised_parked_position[NUM_AXIS]; // used in mode 1
+  static millis_t delayed_move_time = 0; // used in mode 1
+  static float duplicate_hotend_x_offset = DEFAULT_DUPLICATION_X_OFFSET; // used in mode 2
+  static float duplicate_extruder_temp_offset = 0; // used in mode 2
+  bool extruder_duplication_enabled = false; // used in mode 2
 
 #endif //DUAL_X_CARRIAGE
 
@@ -1199,71 +1213,72 @@ void print_xyz(const char* prefix, const float x, const float y, const float z, 
   ECHO_M(")");
   if (eol) ECHO_E;
 }
+
 void print_xyz(const char* prefix, const float xyz[], bool eol = true) {
   print_xyz(prefix, xyz[X_AXIS], xyz[Y_AXIS], xyz[Z_AXIS], eol);
 }
 
 static void set_axis_is_at_home(AxisEnum axis) {
-#if ENABLED(DUAL_X_CARRIAGE)
-  if (axis == X_AXIS) {
-    if (active_extruder != 0) {
-      current_position[X_AXIS] = x_home_pos(active_extruder);
-      min_pos[X_AXIS] = X2_MIN_POS;
-      max_pos[X_AXIS] = max(hotend_offset[X_AXIS][1], X2_MAX_POS);
-      return;
-    } else if (dual_x_carriage_mode == DXC_DUPLICATION_MODE) {
-      float xoff = home_offset[X_AXIS];
-      current_position[X_AXIS] = base_home_pos(X_AXIS) + xoff;
-      min_pos[X_AXIS] = base_min_pos(X_AXIS) + xoff;
-      max_pos[X_AXIS] = min(base_max_pos(X_AXIS) + xoff, max(hotend_offset[X_AXIS][1], X2_MAX_POS) - duplicate_hotend_x_offset);
-      return;
+  #if ENABLED(DUAL_X_CARRIAGE)
+    if (axis == X_AXIS) {
+      if (active_extruder != 0) {
+        current_position[X_AXIS] = x_home_pos(active_extruder);
+        min_pos[X_AXIS] = X2_MIN_POS;
+        max_pos[X_AXIS] = max(hotend_offset[X_AXIS][1], X2_MAX_POS);
+        return;
+      } else if (dual_x_carriage_mode == DXC_DUPLICATION_MODE) {
+        float xoff = home_offset[X_AXIS];
+        current_position[X_AXIS] = base_home_pos(X_AXIS) + xoff;
+        min_pos[X_AXIS] = base_min_pos(X_AXIS) + xoff;
+        max_pos[X_AXIS] = min(base_max_pos(X_AXIS) + xoff, max(hotend_offset[X_AXIS][1], X2_MAX_POS) - duplicate_hotend_x_offset);
+        return;
+      }
     }
-  }
-#endif
+  #endif
 
-#if MECH(SCARA)
-  if (axis == X_AXIS || axis == Y_AXIS) {
-    float homeposition[3];
-    for (int i = 0; i < 3; i++) homeposition[i] = base_home_pos(i);
-    // ECHO_MV("homeposition[x]= ", homeposition[0]);
-    // ECHO_EMV("homeposition[y]= ", homeposition[1]);
-    // Works out real Home position angles using inverse kinematics, 
-    // and calculates homing offset using forward kinematics
-    calculate_delta(homeposition);
-    // ECHO_MV("base Theta= ", delta[X_AXIS]);
-    // ECHO_EMV(" base Psi+Theta=", delta[Y_AXIS]);
-    for (int i = 0; i < 2; i++) delta[i] -= home_offset[i];
-    // ECHO_MV("addhome X=", home_offset[X_AXIS]);
-    // ECHO_MV(" addhome Y=", home_offset[Y_AXIS]);
-    // ECHO_MV(" addhome Theta=", delta[X_AXIS]);
-    // ECHO_EMV(" addhome Psi+Theta=", delta[Y_AXIS]);
-    calculate_SCARA_forward_Transform(delta);
-    // ECHO_MV("Delta X=", delta[X_AXIS]);
-    // ECHO_EMV(" Delta Y=", delta[Y_AXIS]);
-    current_position[axis] = delta[axis];
-    // SCARA home positions are based on configuration since the actual limits are determined by the 
-    // inverse kinematic transform.
-    min_pos[axis] = base_min_pos(axis); // + (delta[axis] - base_home_pos(axis));
-    max_pos[axis] = base_max_pos(axis); // + (delta[axis] - base_home_pos(axis));
-  } else {
+  #if MECH(SCARA)
+    if (axis == X_AXIS || axis == Y_AXIS) {
+      float homeposition[3];
+      for (int i = 0; i < 3; i++) homeposition[i] = base_home_pos(i);
+      // ECHO_MV("homeposition[x]= ", homeposition[0]);
+      // ECHO_EMV("homeposition[y]= ", homeposition[1]);
+      // Works out real Home position angles using inverse kinematics, 
+      // and calculates homing offset using forward kinematics
+      calculate_delta(homeposition);
+      // ECHO_MV("base Theta= ", delta[X_AXIS]);
+      // ECHO_EMV(" base Psi+Theta=", delta[Y_AXIS]);
+      for (int i = 0; i < 2; i++) delta[i] -= home_offset[i];
+      // ECHO_MV("addhome X=", home_offset[X_AXIS]);
+      // ECHO_MV(" addhome Y=", home_offset[Y_AXIS]);
+      // ECHO_MV(" addhome Theta=", delta[X_AXIS]);
+      // ECHO_EMV(" addhome Psi+Theta=", delta[Y_AXIS]);
+      calculate_SCARA_forward_Transform(delta);
+      // ECHO_MV("Delta X=", delta[X_AXIS]);
+      // ECHO_EMV(" Delta Y=", delta[Y_AXIS]);
+      current_position[axis] = delta[axis];
+      // SCARA home positions are based on configuration since the actual limits are determined by the 
+      // inverse kinematic transform.
+      min_pos[axis] = base_min_pos(axis); // + (delta[axis] - base_home_pos(axis));
+      max_pos[axis] = base_max_pos(axis); // + (delta[axis] - base_home_pos(axis));
+    } else {
+      current_position[axis] = base_home_pos(axis) + home_offset[axis];
+               min_pos[axis] = base_min_pos(axis)  + home_offset[axis];
+               max_pos[axis] = base_max_pos(axis)  + home_offset[axis];
+    }
+  #elif MECH(DELTA)
+    current_position[axis] = base_home_pos[axis] + home_offset[axis];
+             min_pos[axis] = base_min_pos(axis)  + home_offset[axis];
+             max_pos[axis] = base_max_pos[axis]  + home_offset[axis];
+  #else
     current_position[axis] = base_home_pos(axis) + home_offset[axis];
              min_pos[axis] = base_min_pos(axis)  + home_offset[axis];
              max_pos[axis] = base_max_pos(axis)  + home_offset[axis];
-  }
-#elif MECH(DELTA)
-  current_position[axis] = base_home_pos[axis] + home_offset[axis];
-           min_pos[axis] = base_min_pos(axis)  + home_offset[axis];
-           max_pos[axis] = base_max_pos[axis]  + home_offset[axis];
-#else
-  current_position[axis] = base_home_pos(axis) + home_offset[axis];
-           min_pos[axis] = base_min_pos(axis)  + home_offset[axis];
-           max_pos[axis] = base_max_pos(axis)  + home_offset[axis];
-#endif
-  
-#if ENABLED(AUTO_BED_LEVELING_FEATURE) && Z_HOME_DIR < 0
-  if (axis == Z_AXIS) current_position[Z_AXIS] -= zprobe_zoffset;
-#endif
-  
+  #endif
+
+  #if ENABLED(AUTO_BED_LEVELING_FEATURE) && Z_HOME_DIR < 0
+    if (axis == Z_AXIS) current_position[Z_AXIS] -= zprobe_zoffset;
+  #endif
+
   if (debugLevel & DEBUG_INFO) {
     ECHO_SMV(DB, "set_axis_is_at_home ", (unsigned long)axis);
     ECHO_MV(" > (home_offset[axis]==", home_offset[axis]);
@@ -1276,17 +1291,12 @@ static void set_axis_is_at_home(AxisEnum axis) {
  */
 inline void set_homing_bump_feedrate(AxisEnum axis) {
   const int homing_bump_divisor[] = HOMING_BUMP_DIVISOR;
-  #if MECH(DELTA)
-    if (homing_bump_divisor[X_AXIS] >= 1)
-      feedrate = homing_feedrate[axis] / homing_bump_divisor[X_AXIS];
-  #else // No DELTA
-    if (homing_bump_divisor[axis] >= 1)
-      feedrate = homing_feedrate[axis] / homing_bump_divisor[axis];
-  #endif
-  else {
-    feedrate = homing_feedrate[axis] / 10;
+  int hbd = homing_bump_divisor[axis];
+  if (hbd < 1) {
+    hbd = 10;
     ECHO_LM(ER, MSG_ERR_HOMING_DIV);
   }
+  feedrate = homing_feedrate[axis] / hbd;
 }
 inline void line_to_current_position() {
   plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], feedrate/60, active_extruder, active_driver);
@@ -1716,12 +1726,14 @@ static void clean_up_after_endstop_move() {
 #endif // CARTESIAN || COREXY || COREXZ || SCARA
 
 #if MECH(DELTA)
-
   static void homeaxis(AxisEnum axis) {
     #define HOMEAXIS_DO(LETTER) \
       ((LETTER##_MIN_PIN > -1 && LETTER##_HOME_DIR==-1) || (LETTER##_MAX_PIN > -1 && LETTER##_HOME_DIR==1))
 
-    if (axis == X_AXIS ? HOMEAXIS_DO(X) : axis == Y_AXIS ? HOMEAXIS_DO(Y) : axis == Z_AXIS ? HOMEAXIS_DO(Z) : 0) {
+    if (axis == X_AXIS ? HOMEAXIS_DO(X) : 
+        axis == Y_AXIS ? HOMEAXIS_DO(Y) :
+        axis == Z_AXIS ? HOMEAXIS_DO(Z) :
+        0) {
 
       int axis_home_dir = home_dir(axis);
       current_position[axis] = 0;
@@ -1986,9 +1998,9 @@ static void clean_up_after_endstop_move() {
 
     float high_endstop  = 0;
     float low_endstop   = 0;
-    for(int x = 0; x < 3; x++) {
-      if (endstop_adj[x] > high_endstop) high_endstop = endstop_adj[x];
-      if (endstop_adj[x] < low_endstop) low_endstop = endstop_adj[x];
+    for (int8_t i = 0; i < 3; i++) {
+      if (endstop_adj[i] > high_endstop) high_endstop = endstop_adj[i];
+      if (endstop_adj[i] < low_endstop) low_endstop = endstop_adj[i];
     }
 
     if (high_endstop > 0) {
@@ -2000,7 +2012,7 @@ static void clean_up_after_endstop_move() {
       set_delta_constants();
     }
 
-    bed_safe_z = Z_RAISE_BETWEEN_PROBINGS - z_probe_offset[Z_AXIS];
+    bed_safe_z = 20;
   }
 
   int fix_tower_errors() {
@@ -2033,7 +2045,7 @@ static void clean_up_after_endstop_move() {
     ECHO_LMV(DB, "z_diff = ", z_diff, 5);
     ECHO_LMV(DB, "high_diff = ", high_diff, 5);
 
-    //Are all errors equal? (within defined precision)
+    // Are all errors equal? (within defined precision)
     xy_equal = false;
     xz_equal = false;
     yz_equal = false;
@@ -2056,17 +2068,17 @@ static void clean_up_after_endstop_move() {
 
     ECHO_LMV(DB, "Opp Range = ", high_opp - low_opp, 5);
 
-    if (high_opp - low_opp  < ac_prec) {
+    if (high_opp - low_opp  <= ac_prec) {
       ECHO_LM(DB, "Opposite Points within Limits - Adjustment not required");
       t1_err = false;
       t2_err = false;
       t3_err = false;
     }
 
-    //All Towers have errors 
+    // All Towers have errors 
     if ((t1_err == true) and (t2_err == true) and (t3_err == true)) {
       if ((xy_equal == false) or (xz_equal == false) or (yz_equal == false)) {
-        //Errors not equal .. select the tower that needs to be adjusted
+        // Errors not equal .. select the tower that needs to be adjusted
         if (abs(high_diff - x_diff) < 0.00001) err_tower = 1;
         if (abs(high_diff - y_diff) < 0.00001) err_tower = 2;
         if (abs(high_diff - z_diff) < 0.00001) err_tower = 3;
@@ -2081,12 +2093,14 @@ static void clean_up_after_endstop_move() {
       }
     }
 
-    //Two tower errors
+    /*
+    // Two tower errors
     if ((t1_err == true) and (t2_err == true) and (t3_err == false)) err_tower = 3;
     if ((t1_err == true) and (t2_err == false) and (t3_err == true)) err_tower = 2;
     if ((t1_err == false) and (t2_err == true) and (t3_err == true)) err_tower = 1;
+    */
 
-    //Single tower error
+    // Single tower error
     if ((t1_err == true) and (t2_err == false) and (t3_err == false)) err_tower = 1;
     if ((t1_err == false) and (t2_err == true) and (t3_err == false)) err_tower = 2;
     if ((t1_err == false) and (t2_err == false) and (t3_err == true)) err_tower = 3;
@@ -2103,7 +2117,7 @@ static void clean_up_after_endstop_move() {
       ECHO_LM(DB, "Tower geometry OK");
     }
     else {
-      //If a tower has been adjusted previously.. continue to correct by adjusting that tower! (but only if the difference between the opp points is still large)
+      // If a tower has been adjusted previously.. continue to correct by adjusting that tower! (but only if the difference between the opp points is still large)
       if (high_opp - low_opp  > ac_prec * 2) {
         if ((tower_adj[0] != 0) or (tower_adj[3] != 0)) {
           ECHO_LM(DB, "Tower 1 has already been adjusted");
@@ -2522,7 +2536,7 @@ static void clean_up_after_endstop_move() {
       probe_count ++;
     } while ((probe_done == false) and (probe_count < 20));
 
-    bed_safe_z = probe_z + 2;
+    bed_safe_z = probe_z + 5;
     return probe_z;
   }
 
@@ -2647,7 +2661,7 @@ static void clean_up_after_endstop_move() {
     }
     refresh_cmd_timeout();
     calculate_delta(destination);
-    plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], destination[E_AXIS], feedrate*feedrate_multiplier/60/100.0, active_extruder, active_driver);
+    plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], destination[E_AXIS], feedrate * feedrate_multiplier / 60 / 100.0, active_extruder, active_driver);
     set_current_to_destination();
   }
 
@@ -4701,17 +4715,13 @@ inline void gcode_M42() {
 
       sample_set[n] = current_position[Z_AXIS];
 
-      //
       // Get the current mean for the data points we have so far
-      //
       sum = 0.0;
       for (uint8_t j = 0; j <= n; j++) sum += sample_set[j];
       mean = sum / (n + 1);
 
-      //
       // Now, use that mean to calculate the standard deviation for the
       // data points we have so far
-      //
       sum = 0.0;
       for (uint8_t j = 0; j <= n; j++) {
         float ss = sample_set[j] - mean;
@@ -4899,30 +4909,30 @@ inline void gcode_M92() {
   plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 }
 
-// M100 Free Memory Watcher
-//
-// This code watches the free memory block between the bottom of the heap and the top of the stack.
-// This memory block is initialized and watched via the M100 command.
-//
-// M100 I Initializes the free memory block and prints vitals statistics about the area
-// M100 F Identifies how much of the free memory block remains free and unused.  It also
-//    detects and reports any corruption within the free memory block that may have
-//    happened due to errant firmware.
-// M100 D Does a hex display of the free memory block along with a flag for any errant
-//    data that does not match the expected value.
-// M100 C x Corrupts x locations within the free memory block.   This is useful to check the
-//    correctness of the M100 F and M100 D commands.
-//
-// Initial version by Roxy-3DPrintBoard
-//
-//
+/**
+ * M100 Free Memory Watcher
+ *
+ * This code watches the free memory block between the bottom of the heap and the top of the stack.
+ * This memory block is initialized and watched via the M100 command.
+ *
+ * M100 I Initializes the free memory block and prints vitals statistics about the area
+ * M100 F Identifies how much of the free memory block remains free and unused. It also
+ *        detects and reports any corruption within the free memory block that may have
+ *        happened due to errant firmware.
+ * M100 D Does a hex display of the free memory block along with a flag for any errant
+ *        data that does not match the expected value.
+ * M100 C x Corrupts x locations within the free memory block. This is useful to check the
+ *        correctness of the M100 F and M100 D commands.
+ *
+ * Initial version by Roxy-3DPrintBoard
+ *
+ */
 #if ENABLED(M100_FREE_MEMORY_WATCHER)
   inline void gcode_M100() {
     static int m100_not_initialized = 1;
     unsigned char* sp, *ptr;
     int i, j, n;
 
-    //
     // M100 D dumps the free memory block from __brkval to the stack pointer.
     // malloc() eats memory from the start of the block and the stack grows
     // up from the bottom of the block.    Solid 0xE5's indicate nothing has
@@ -4930,32 +4940,28 @@ inline void gcode_M92() {
     // the block of 0xE5's.  If there is, that would indicate memory corruption
     // probably caused by bad pointers.  Any unexpected values will be flagged in
     // the right hand column to help spotting them.
-    //
     #if ENABLED(M100_FREE_MEMORY_DUMPER)      // Comment out to remove Dump sub-command
-      if ( code_seen('D') ) {
+      if (code_seen('D')) {
         ptr = (unsigned char*) __brkval;
 
-        //
         // We want to start and end the dump on a nice 16 byte boundry even though
         // the values we are using are not 16 byte aligned.
         //
         ECHO_M("\n__brkval : ");
-        prt_hex_word( (unsigned int) ptr );
+        prt_hex_word((unsigned int) ptr);
         ptr = (unsigned char*) ((unsigned long) ptr & 0xfff0);
 
         sp = top_of_stack();
         ECHO_M("\nStack Pointer : ");
-        prt_hex_word( (unsigned int) sp );
+        prt_hex_word((unsigned int) sp);
         ECHO_M("\n");
 
         sp = (unsigned char*) ((unsigned long) sp | 0x000f);
         n = sp - ptr;
 
-        //
         // This is the main loop of the Dump command.
-        //
-        while ( ptr < sp ) {
-          prt_hex_word( (unsigned int) ptr);  // Print the address
+        while (ptr < sp) {
+          prt_hex_word((unsigned int) ptr);  // Print the address
           ECHO_M(":");
           for(i = 0; i < 16; i++) {     // and 16 data bytes
             prt_hex_byte( *(ptr+i));
@@ -4981,11 +4987,9 @@ inline void gcode_M92() {
       }
     #endif
 
-    //
     // M100 F   requests the code to return the number of free bytes in the memory pool along with
     // other vital statistics that define the memory pool.
-    //
-    if ( code_seen('F') ) {
+    if (code_seen('F')) {
       int max_addr = (int) __brkval;
       int max_cnt = 0;
       int block_cnt = 0;
@@ -4994,69 +4998,64 @@ inline void gcode_M92() {
       n = sp - ptr;
 
       // Scan through the range looking for the biggest block of 0xE5's we can find
-
-      for(i = 0; i < n; i++) {
+      for (i = 0; i < n; i++) {
         if ( *(ptr+i) == (unsigned char) 0xe5) {
-          j = how_many_E5s_are_here( (unsigned char*) ptr+i );
+          j = how_many_E5s_are_here((unsigned char*) ptr + i);
           if ( j > 8) {
             ECHO_MV("Found ", j );
             ECHO_M(" bytes free at 0x");
-            prt_hex_word( (int) ptr+i );
+            prt_hex_word((int) ptr + i);
             ECHO_M("\n");
             i += j;
             block_cnt++;
           }
-          if ( j>max_cnt) {     // We don't do anything with this information yet
+          if (j > max_cnt) {  // We don't do anything with this information yet
             max_cnt  = j;     // but we do know where the biggest free memory block is.
-            max_addr = (int) ptr+i;
+            max_addr = (int) ptr + i;
           }
         }
       }
-      if (block_cnt>1)
+      if (block_cnt > 1)
           ECHO_EM("\nMemory Corruption detected in free memory area.\n");
 
       ECHO_M("\nDone.\n");
       return;
     }
 
-    //
     // M100 C x  Corrupts x locations in the free memory pool and reports the locations of the corruption.
     // This is useful to check the correctness of the M100 D and the M100 F commands.
-    //
     #if ENABLED(M100_FREE_MEMORY_CORRUPTOR)
-      if ( code_seen('C') ) {
-        int x;      // x gets the # of locations to corrupt within the memory pool
+      if (code_seen('C')) {
+        int x;    // x gets the # of locations to corrupt within the memory pool
         x = code_value();
         ECHO_EM("Corrupting free memory block.\n");
         ptr = (unsigned char*) __brkval;
-        ECHO_MV("\n__brkval : ",(long) ptr );
+        ECHO_MV("\n__brkval : ",(long) ptr);
         ptr += 8;
 
         sp = top_of_stack();
-        ECHO_MV("\nStack Pointer : ",(long) sp );
+        ECHO_MV("\nStack Pointer : ",(long) sp);
         ECHO_EM("\n");
 
         n = sp - ptr - 64;    // -64 just to keep us from finding interrupt activity that
                               // has altered the stack.
-        j = n / (x+1);
+        j = n / (x + 1);
         for(i = 1; i <= x; i++) {
-          *(ptr+(i*j)) = i;
+          *(ptr + (i * j)) = i;
           ECHO_M("\nCorrupting address: 0x");
-          prt_hex_word( (unsigned int)  (ptr+(i*j)) );
+          prt_hex_word((unsigned int) (ptr + (i * j)));
         }
         ECHO_EM("\n");
         return;
       }
     #endif
 
-    //
     // M100 I    Initializes the free memory pool so it can be watched and prints vital
     // statistics that define the free memory pool.
-    //
-    if (m100_not_initialized || code_seen('I') ) {        // If no sub-command is specified, the first time
-      ECHO_EM("Initializing free memory block.\n");       // this happens, it will Initialize.
-      ptr = (unsigned char*) __brkval;         // Repeated M100 with no sub-command will not destroy the
-      ECHO_MV("\n__brkval : ",(long) ptr );     // state of the initialized free memory pool.
+    if (m100_not_initialized || code_seen('I')) {     // If no sub-command is specified, the first time
+      ECHO_EM("Initializing free memory block.\n");   // this happens, it will Initialize.
+      ptr = (unsigned char*) __brkval;        // Repeated M100 with no sub-command will not destroy the
+      ECHO_MV("\n__brkval : ",(long) ptr);    // state of the initialized free memory pool.
       ptr += 8;
 
       sp = top_of_stack();
@@ -5073,9 +5072,9 @@ inline void gcode_M92() {
         *(ptr+i) = (unsigned char) 0xe5;
 
       for(i = 0; i < n; i++) {
-        if ( *(ptr+i) != (unsigned char) 0xe5 ) {
-          ECHO_MV("? address : ", (unsigned long) ptr+i );
-          ECHO_MV("=", *(ptr+i) );
+        if ( *(ptr + i) != (unsigned char) 0xe5) {
+          ECHO_MV("? address : ", (unsigned long) ptr + i);
+          ECHO_MV("=", *(ptr + i));
           ECHO_EM("\n");
         }
       }
@@ -5086,6 +5085,7 @@ inline void gcode_M92() {
     return;
   }
 #endif
+
 /**
  * M104: Set hot end temperature
  */
@@ -5347,6 +5347,18 @@ inline void gcode_M120() { enable_endstops(true); }
  * M121: Disable endstops
  */
 inline void gcode_M121() { enable_endstops(false); }
+
+/**
+ * M122: Disable or enable software endstops
+ */
+inline void gcode_M122() {
+  if (code_seen('S')) {
+    if (code_value() == 0)
+      software_endstops = false;
+    else
+      software_endstops = true;
+  }
+}
 
 #if ENABLED(BARICUDA)
   #if HAS(HEATER_1)
@@ -7223,6 +7235,8 @@ void process_next_command() {
         gcode_M120(); break;
       case 121: // M121 Disable endstops
         gcode_M121(); break;
+      case 122: // M121 Disable or enable software endstops
+        gcode_M122(); break;
 
       #if ENABLED(BARICUDA)
         // PWM for HEATER_1_PIN
@@ -7467,7 +7481,7 @@ void ok_to_send() {
 }
 
 void clamp_to_software_endstops(float target[3]) {
-  if (SOFTWARE_MIN_ENDSTOPS) {
+  if (SOFTWARE_MIN_ENDSTOPS && software_endstops) {
     NOLESS(target[X_AXIS], min_pos[X_AXIS]);
     NOLESS(target[Y_AXIS], min_pos[Y_AXIS]);
     
@@ -7479,7 +7493,7 @@ void clamp_to_software_endstops(float target[3]) {
     NOLESS(target[Z_AXIS], min_pos[Z_AXIS] + negative_z_offset);
   }
 
-  if (SOFTWARE_MAX_ENDSTOPS) {
+  if (SOFTWARE_MAX_ENDSTOPS && software_endstops) {
     NOMORE(target[X_AXIS], max_pos[X_AXIS]);
     NOMORE(target[Y_AXIS], max_pos[Y_AXIS]);
     NOMORE(target[Z_AXIS], max_pos[Z_AXIS]);
@@ -7514,7 +7528,7 @@ void clamp_to_software_endstops(float target[3]) {
     float difference[NUM_AXIS];
     float addDistance[NUM_AXIS];
     float fractions[NUM_AXIS];
-    float frfm = feedrate/60*feedrate_multiplier/100.0;
+    float frfm = feedrate / 60 * feedrate_multiplier / 100.0;
     
     for (int8_t i = 0; i < NUM_AXIS; i++) difference[i] = target[i] - current_position[i];
 
@@ -7740,7 +7754,7 @@ void plan_arc(
   // Initialize the extruder axis
   arc_target[E_AXIS] = current_position[E_AXIS];
 
-  float feed_rate = feedrate*feedrate_multiplier/60/100.0;
+  float feed_rate = feedrate * feedrate_multiplier / 60 / 100.0;
 
   for (i = 1; i < segments; i++) { // Increment (segments-1)
 

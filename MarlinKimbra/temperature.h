@@ -19,17 +19,17 @@
 */
 
 #ifndef TEMPERATURE_H
-#define TEMPERATURE_H 
+#define TEMPERATURE_H
 
 // public functions
 void tp_init();  //initialize the heating
 void manage_heater(); //it is critical that this is called periodically.
 
 #if ENABLED(FILAMENT_SENSOR)
-  // For converting raw Filament Width to milimeters 
-  float analog2widthFil(); 
+  // For converting raw Filament Width to milimeters
+  float analog2widthFil();
 
-  // For converting raw Filament Width to an extrusion ratio 
+  // For converting raw Filament Width to an extrusion ratio
   int widthFil_to_size_ratio();
 #endif
 
@@ -80,7 +80,7 @@ extern float current_temperature_bed;
 #if ENABLED(BABYSTEPPING)
   extern volatile int babystepsTodo[3];
 #endif
-  
+
 //high level conversion routines, for use outside of temperature.cpp
 //inline so that there is no performance decrease.
 //deg=degreeCelsius
@@ -102,16 +102,16 @@ FORCE_INLINE float degTargetHotend(uint8_t hotend) { return target_temperature[H
 FORCE_INLINE float degTargetBed() { return target_temperature_bed; }
 
 #if ENABLED(THERMAL_PROTECTION_HOTENDS)
-  void start_watching_heater(int e=0);
+  void start_watching_heater(int h = 0);
 #endif
 
-FORCE_INLINE void setTargetHotend(const float &celsius, uint8_t hotend) {
+FORCE_INLINE void setTargetHotend(const float& celsius, uint8_t hotend) {
   target_temperature[HOTEND_ARG] = celsius;
   #if ENABLED(THERMAL_PROTECTION_HOTENDS)
     start_watching_heater(HOTEND_ARG);
   #endif
 }
-FORCE_INLINE void setTargetBed(const float &celsius) { target_temperature_bed = celsius; }
+FORCE_INLINE void setTargetBed(const float& celsius) { target_temperature_bed = celsius; }
 
 FORCE_INLINE bool isHeatingHotend(uint8_t hotend) { return target_temperature[HOTEND_ARG] > current_temperature[HOTEND_ARG]; }
 FORCE_INLINE bool isHeatingBed() { return target_temperature_bed > current_temperature_bed; }
