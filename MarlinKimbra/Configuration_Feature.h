@@ -93,7 +93,6 @@
  *                                                                                       *
  *****************************************************************************************/
 #define AUTOTEMP
-
 #define AUTOTEMP_OLDWEIGHT 0.98
 /*****************************************************************************************/
 
@@ -983,6 +982,8 @@
 //#define SDEXTRASLOW                            // Use even slower SD transfer mode (not normally needed - uncomment if you're getting volume init error)
 //#define SD_CHECK_AND_RETRY                     // Use CRC checks and retries on the SD communication
 
+// Decomment thi if you are external SD without DETECT_PIN
+//#define SD_DISABLED_DETECT
 // Some RAMPS and other boards don't detect when an SD card is inserted. You can work
 // around this by connecting a push button or single throw switch to the pin defined
 // as SD_DETECT_PIN in your board's pins definitions.

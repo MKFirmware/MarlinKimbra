@@ -1,6 +1,9 @@
 #ifndef MACROS_H
 #define MACROS_H
 
+// Compiler warning on unused varable.
+#define UNUSED(x) (void) (x)
+
 // Macros for bit masks
 #define BIT(b) (1<<(b))
 #define TEST(n,b) (((n)&BIT(b))!=0)
