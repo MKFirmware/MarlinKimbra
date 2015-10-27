@@ -339,10 +339,14 @@ static void lcd_status_screen() {
                 lcd_status_message[0] = '\0';
                 expire_status_ms = 0;
               }
-            } else
+            }
+            else {
               expire_status_ms += LCD_UPDATE_INTERVAL;
-          } else
+            }
+          }
+          else {
             expire_status_ms = 0;
+          }
         #else
           expire_status_ms = 0;
         #endif // SDSUPPORT
@@ -377,7 +381,8 @@ static void lcd_status_screen() {
           ignore_click = wait_for_unclick = false;
         else
           current_click = false;
-      } else if (current_click) {
+      }
+      else if (current_click) {
         lcd_quick_feedback();
         wait_for_unclick = true;
         current_click = false;
@@ -399,7 +404,7 @@ static void lcd_status_screen() {
     #if ENABLED(ULTIPANEL_FEEDMULTIPLY)
       // Dead zone at 100% feedrate
       if ((feedrate_multiplier < 100 && (feedrate_multiplier + int(encoderPosition)) > 100) ||
-              (feedrate_multiplier > 100 && (feedrate_multiplier + int(encoderPosition)) < 100)) {
+          (feedrate_multiplier > 100 && (feedrate_multiplier + int(encoderPosition)) < 100)) {
         encoderPosition = 0;
         feedrate_multiplier = 100;
       }
@@ -472,13 +477,15 @@ static void lcd_main_menu() {
         else
           MENU_ITEM(function, MSG_RESUME_PRINT, lcd_sdcard_resume);
         MENU_ITEM(function, MSG_STOP_PRINT, lcd_sdcard_stop);
-      } else {
+      }
+      else {
         MENU_ITEM(submenu, MSG_CARD_MENU, lcd_sdcard_menu);
         #if !PIN_EXISTS(SD_DETECT)
           MENU_ITEM(gcode, MSG_CNG_SDCARD, PSTR("M21"));  // SD-card changed by user
         #endif
       }
-    } else {
+    }
+    else {
       MENU_ITEM(submenu, MSG_NO_CARD, lcd_sdcard_menu);
       #if !PIN_EXISTS(SD_DETECT)
         MENU_ITEM(gcode, MSG_INIT_SDCARD, PSTR("M21")); // Manually initialize the SD-card via user interface
@@ -509,7 +516,7 @@ void lcd_set_home_offsets() {
 
 #if ENABLED(BABYSTEPPING)
 
-  static void _lcd_babystep(menuFunc_t menu, int axis, const char *msg) {
+  static void _lcd_babystep(menuFunc_t menu, int axis, const char* msg) {
     if (encoderPosition != 0) {
       babystepsTodo[axis] += (int)encoderPosition;
       encoderPosition = 0;
@@ -1644,31 +1651,31 @@ void lcd_init() {
     SET_INPUT(BTN_EN2);
     WRITE(BTN_EN1,HIGH);
     WRITE(BTN_EN2,HIGH);
-  #if BTN_ENC > 0
-    SET_INPUT(BTN_ENC);
-    WRITE(BTN_ENC,HIGH);
-  #endif
-  #if ENABLED(REPRAPWORLD_KEYPAD)
-    pinMode(SHIFT_CLK,OUTPUT);
-    pinMode(SHIFT_LD,OUTPUT);
-    pinMode(SHIFT_OUT,INPUT);
-    WRITE(SHIFT_OUT,HIGH);
-    WRITE(SHIFT_LD,HIGH);
-  #endif
-#else  // Not NEWPANEL
-  #if ENABLED(SR_LCD_2W_NL) // Non latching 2 wire shift register
-     pinMode (SR_DATA_PIN, OUTPUT);
-     pinMode (SR_CLK_PIN, OUTPUT);
-  #elif ENABLED(SHIFT_CLK)
-     pinMode(SHIFT_CLK,OUTPUT);
-     pinMode(SHIFT_LD,OUTPUT);
-     pinMode(SHIFT_EN,OUTPUT);
-     pinMode(SHIFT_OUT,INPUT);
-     WRITE(SHIFT_OUT,HIGH);
-     WRITE(SHIFT_LD,HIGH);
-     WRITE(SHIFT_EN,LOW);
-  #endif // SR_LCD_2W_NL
-#endif//!NEWPANEL
+    #if BTN_ENC > 0
+      SET_INPUT(BTN_ENC);
+      WRITE(BTN_ENC,HIGH);
+    #endif
+    #if ENABLED(REPRAPWORLD_KEYPAD)
+      pinMode(SHIFT_CLK,OUTPUT);
+      pinMode(SHIFT_LD,OUTPUT);
+      pinMode(SHIFT_OUT,INPUT);
+      WRITE(SHIFT_OUT,HIGH);
+      WRITE(SHIFT_LD,HIGH);
+    #endif
+  #else  // Not NEWPANEL
+    #if ENABLED(SR_LCD_2W_NL) // Non latching 2 wire shift register
+       pinMode (SR_DATA_PIN, OUTPUT);
+       pinMode (SR_CLK_PIN, OUTPUT);
+    #elif ENABLED(SHIFT_CLK)
+       pinMode(SHIFT_CLK,OUTPUT);
+       pinMode(SHIFT_LD,OUTPUT);
+       pinMode(SHIFT_EN,OUTPUT);
+       pinMode(SHIFT_OUT,INPUT);
+       WRITE(SHIFT_OUT,HIGH);
+       WRITE(SHIFT_LD,HIGH);
+       WRITE(SHIFT_EN,LOW);
+    #endif // SR_LCD_2W_NL
+  #endif//!NEWPANEL
 
   #if ENABLED(SDSUPPORT) && PIN_EXISTS(SD_DETECT)
     pinMode(SD_DETECT_PIN, INPUT);

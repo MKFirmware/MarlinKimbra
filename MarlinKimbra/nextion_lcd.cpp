@@ -32,6 +32,7 @@
   NexPage Pmenu         = NexPage(3, 0, "menu");
   NexPage Psdcard       = NexPage(4, 0, "sdcard");
   NexPage Psetup        = NexPage(5, 0, "setup");
+  NexPage Pmove         = NexPage(6, 0, "move");
 
   // Text
   NexText Hotend0       = NexText(1,  1,  "t0");
@@ -41,7 +42,6 @@
   NexText LedStatus     = NexText(1,  7,  "t4");
   NexText LedCoord      = NexText(1,  8,  "t5");
   NexText set0          = NexText(2,  2,  "set0");
-  NexText set1          = NexText(2, 15,  "set1");
   NexText sdrow0        = NexText(4,  3,  "t0");
   NexText sdrow1        = NexText(4,  4,  "t1");
   NexText sdrow2        = NexText(4,  5,  "t2");
@@ -58,6 +58,9 @@
   NexPicture Hend1      = NexPicture(1, 14, "p4");
   NexPicture Hend2      = NexPicture(1, 15, "p5");
   NexPicture Fanpic     = NexPicture(1, 19, "p6");
+  NexPicture NPlay      = NexPicture(1, 27, "p7");
+  NexPicture NStop      = NexPicture(1, 28, "p8");
+  NexPicture Exit1      = NexPicture(3,  4, "p3");
   NexPicture Folder0    = NexPicture(4,  9, "p0");
   NexPicture Folder1    = NexPicture(4, 10, "p1");
   NexPicture Folder2    = NexPicture(4, 11, "p2");
@@ -65,7 +68,16 @@
   NexPicture Folder4    = NexPicture(4, 13, "p4");
   NexPicture Folder5    = NexPicture(4, 14, "p5");
   NexPicture Folderup   = NexPicture(4, 15, "p6");
-  NexPicture Exit       = NexPicture(4, 16, "p7");
+  NexPicture Exit2      = NexPicture(4, 16, "p7");
+  NexPicture Exit3      = NexPicture(5,  4, "p3");
+  NexPicture XYHome     = NexPicture(6,  5, "p4");
+  NexPicture XYUp       = NexPicture(6,  6, "p5");
+  NexPicture XYRight    = NexPicture(6,  7, "p6");
+  NexPicture XYDown     = NexPicture(6,  8, "p7");
+  NexPicture XYLeft     = NexPicture(6,  9, "p8");
+  NexPicture ZHome      = NexPicture(6, 10, "p9");
+  NexPicture ZUp        = NexPicture(6, 11, "p10");
+  NexPicture ZDown      = NexPicture(6, 12, "p11");
 
   // Progress Bar
   NexProgressBar sdbar  = NexProgressBar(1, 26, "j0");
@@ -92,6 +104,7 @@
 
   // Variable
   NexVar Hotend         = NexVar(1, 20, "he");
+  NexVar set1           = NexVar(2, 17, "set1");
   NexVar Bed            = NexVar(1, 21, "bed");
   NexVar filename0      = NexVar(4, 19, "va0");
   NexVar filename1      = NexVar(4, 20, "va1");
@@ -99,6 +112,7 @@
   NexVar filename3      = NexVar(4, 22, "va3");
   NexVar filename4      = NexVar(4, 23, "va4");
   NexVar filename5      = NexVar(4, 24, "va5");
+  NexVar movecmd        = NexVar(6, 18, "vacmd");
 
   NexTouch *nex_listen_list[] =
   {
@@ -107,6 +121,8 @@
     &MSD,
     &MSetup,
     &Fanpic,
+    &NPlay,
+    &NStop,
     &hot0,
     &hot1,
     &hot2,
@@ -121,7 +137,17 @@
     &sdrow4,
     &sdrow5,
     &Folderup,
-    &Exit,
+    &Exit1,
+    &Exit2,
+    &Exit3,
+    &XYHome,
+    &XYUp,
+    &XYRight,
+    &XYDown,
+    &XYLeft,
+    &ZHome,
+    &ZUp,
+    &ZDown,
     NULL
   };
 
@@ -266,21 +292,21 @@
     }
 
     void sdlistPopCallback(void *ptr) {
-        uint32_t number = 0;
-        sdlist.getValue(&number);
-        number = slidermaxval - number;
-        setrowsdcard(number);
+      uint32_t number = 0;
+      sdlist.getValue(&number);
+      number = slidermaxval - number;
+      setrowsdcard(number);
     }
 
     static void menu_action_sdfile(const char* filename) {
-    char cmd[30];
-    char* c;
-    sprintf_P(cmd, PSTR("M23 %s"), filename);
-    for(c = &cmd[4]; *c; c++) *c = tolower(*c);
-    enqueuecommand(cmd);
-    enqueuecommands_P(PSTR("M24"));
-    setpageInfo();
-  }
+      char cmd[30];
+      char* c;
+      sprintf_P(cmd, PSTR("M23 %s"), filename);
+      for(c = &cmd[4]; *c; c++) *c = tolower(*c);
+      enqueuecommand(cmd);
+      enqueuecommands_P(PSTR("M24"));
+      setpageInfo();
+    }
 
     static void menu_action_sddirectory(const char* filename) {
       card.chdir(filename);
@@ -330,13 +356,14 @@
       setpagesdcard();
     }
 
-    void ExitPopCallback(void *ptr) {
-      setpageInfo();
-    }
   #endif
 
+  void ExitPopCallback(void *ptr) {
+    setpageInfo();
+  }
+
   void PstartPopCallback(void *ptr) {
-      setpageInfo();
+    setpageInfo();
   }
 
   void hotPopCallback(void *ptr) {
@@ -400,13 +427,17 @@
   }
 
   void setpagePopCallback(void *ptr) {
-    if (ptr == &Menu)
+    if (ptr == &Menu) {
+      PageInfo = false;
       Pmenu.show();
-    if (ptr == &MSetup)
+    }
+    else if (ptr == &MSetup) {
+      PageInfo = false;
       Psetup.show();
+    }
 
     #if ENABLED(SDSUPPORT)
-      if (ptr == &MSD)
+      else if (ptr == &MSD)
         setpagesdcard();
     #endif
   }
@@ -414,6 +445,31 @@
   void setfanPopCallback(void *ptr) {
     if (fanSpeed) fanSpeed = 0;
     else fanSpeed = 255;
+  }
+
+  void setmovePopCallback(void *ptr) {
+    memset(buffer, 0, sizeof(buffer));
+    movecmd.getText(buffer, sizeof(buffer));
+    enqueuecommands_P(PSTR("G91"));
+    enqueuecommands_P(buffer);
+    enqueuecommands_P(PSTR("G90"));
+  }
+
+  void PlayPausePopCallback(void *ptr) {
+    if (card.cardOK && card.isFileOpen()) {
+      if (card.sdprinting)
+        card.pauseSDPrint();
+      else
+        card.startFileprint();
+    }
+  }
+
+  void StopPopCallback(void *ptr) {
+    quickStop();
+    card.sdprinting = false;
+    card.closeFile();
+    autotempShutdown();
+    lcd_setstatus(MSG_PRINT_ABORTED, true);
   }
 
   void lcd_init() {
@@ -425,12 +481,16 @@
     } else {
       ECHO_LM(DB, "Nextion LCD connected!");
 
-      Pstart.attachPop(PstartPopCallback);
+      Pstart.attachPop(ExitPopCallback);
+      Exit1.attachPop(ExitPopCallback);
+      Exit3.attachPop(ExitPopCallback);
 
       #if ENABLED(SDSUPPORT)
         MSD.attachPop(setpagePopCallback, &MSD);
         sdlist.attachPop(sdlistPopCallback);
-        Exit.attachPop(ExitPopCallback);
+        Exit2.attachPop(ExitPopCallback);
+        NPlay.attachPop(PlayPausePopCallback);
+        NStop.attachPop(StopPopCallback);
       #endif
 
       #if HAS_TEMP_0
@@ -444,11 +504,19 @@
       #endif
 
       Menu.attachPop(setpagePopCallback,    &Menu);
-      MSetup.attachPop(setpagePopCallback,  &Menu);
+      MSetup.attachPop(setpagePopCallback,  &MSetup);
       Fanpic.attachPop(setfanPopCallback,   &Fanpic);
       m11.attachPop(sethotPopCallback,      &m11);
       tup.attachPop(settempPopCallback,     &tup);
       tdown.attachPop(settempPopCallback,   &tdown);
+      XYHome.attachPop(setmovePopCallback);
+      XYUp.attachPop(setmovePopCallback);
+      XYRight.attachPop(setmovePopCallback);
+      XYDown.attachPop(setmovePopCallback);
+      XYLeft.attachPop(setmovePopCallback);
+      ZHome.attachPop(setmovePopCallback);
+      ZUp.attachPop(setmovePopCallback);
+      ZDown.attachPop(setmovePopCallback);
 
       startimer.enable();
     }
@@ -479,7 +547,7 @@
   }
 
   static void coordtoLCD() {
-    char *valuetemp;
+    char* valuetemp;
 
     memset(buffer, 0, sizeof(buffer));
     strcat(buffer, "X");
@@ -545,13 +613,29 @@
       coordtoLCD();
 
       #if ENABLED(SDSUPPORT)
-        if (card.cardOK)
+
+        if (card.cardOK) {
           MSD.setPic(7);
-        else
+          NPlay.setPic(38);
+          NStop.setPic(41);
+        }
+        else {
           MSD.setPic(6);
-        if (IS_SD_PRINTING)
-          // Progress bar solid part
-          sdbar.setValue(card.percentDone());
+          NPlay.setPic(39);
+          NStop.setPic(42);
+        }
+
+        if (card.isFileOpen()) {
+          if (card.sdprinting) {
+            // Progress bar solid part
+            sdbar.setValue(card.percentDone());
+            NPlay.setPic(38);
+          }
+          else {
+            NPlay.setPic(40);
+          }
+        }
+
       #endif
 
       next_lcd_update_ms = ms + LCD_UPDATE_INTERVAL;
