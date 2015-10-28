@@ -576,24 +576,22 @@ void set_stepper_direction(bool onlye) {
 
   #if DISABLED(ADVANCE) && ENABLED(DONDOLO)
     if (TEST(out_bits, E_AXIS)) {
-      if (active_extruder == 0) {
-        REV_E_DIR();
-        count_direction[E_AXIS] = -1;
+      switch(active_extruder) {
+        case 0:
+          REV_E_DIR(); break;
+        case 1:
+          NORM_E_DIR(); break;
       }
-      else {
-        NORM_E_DIR();
-        count_direction[E_AXIS] = -1;
-      }
+      count_direction[E_AXIS] = -1;
     }
     else {
-      if (active_extruder == 0) {
-        NORM_E_DIR();
-        count_direction[E_AXIS] = 1;
+      switch(active_extruder) {
+        case 0:
+          NORM_E_DIR(); break;
+        case 1:
+          REV_E_DIR(); break;
       }
-      else {
-        REV_E_DIR();
-        count_direction[E_AXIS] = 1;
-      }
+      count_direction[E_AXIS] = 1;
     }
   #elif DISABLED(ADVANCE)
     if (TEST(out_bits, E_AXIS)) {
