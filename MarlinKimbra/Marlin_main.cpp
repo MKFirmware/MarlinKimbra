@@ -6950,26 +6950,22 @@ inline void gcode_T(uint8_t tmp_extruder) {
             active_driver = 0;
             ECHO_LMV(DB, MSG_ACTIVE_COLOR, (int)active_extruder);
           #elif ENABLED(DONDOLO)
+            st_synchronize();
+            servo[DONDOLO_SERVO_INDEX].attach(0);
+            if (target_extruder == 0) {
+              servo[DONDOLO_SERVO_INDEX].write(DONDOLO_SERVOPOS_E0);
+            }
+            else if (target_extruder == 1) {
+              servo[DONDOLO_SERVO_INDEX].write(DONDOLO_SERVOPOS_E1);
+            }
+            delay(DONDOLO_SERVO_DELAY);
+            servo[DONDOLO_SERVO_INDEX].detach();
             active_extruder = target_extruder;
             active_driver = 0;
-            if (active_extruder == 0) {
-              st_synchronize();
-              servo[DONDOLO_SERVO_INDEX].attach(0);
-              servo[DONDOLO_SERVO_INDEX].write(DONDOLO_SERVOPOS_E0);
-              delay (DONDOLO_SERVO_DELAY);
-              servo[DONDOLO_SERVO_INDEX].detach();
-            }
-            else if (active_extruder == 1) {
-              st_synchronize();
-              servo[DONDOLO_SERVO_INDEX].attach(0);
-              servo[DONDOLO_SERVO_INDEX].write(DONDOLO_SERVOPOS_E1);
-              delay(DONDOLO_SERVO_DELAY);
-              servo[DONDOLO_SERVO_INDEX].detach();
-            }
             set_stepper_direction(true);
             ECHO_LMV(DB, MSG_ACTIVE_DRIVER, active_driver);
             ECHO_LMV(DB, MSG_ACTIVE_EXTRUDER, active_extruder);
-          #else 
+          #else
             active_driver = active_extruder = target_extruder;
             ECHO_LMV(DB, MSG_ACTIVE_EXTRUDER, active_extruder);
           #endif // end MKR4 || NPR2 || DONDOLO
