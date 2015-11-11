@@ -52,4 +52,9 @@ uint16_t recvRetString(char *buffer, uint16_t len, uint32_t timeout = 100);
 void sendCommand(const char* cmd);
 bool recvRetCommandFinished(uint32_t timeout = 100);
 
+bool sendCurrentPageId(uint8_t* pageId);
+bool setCurrentBrightness(uint8_t dimValue);
+bool setDefaultBaudrate(uint32_t baudrate);
+void sendRefreshAll(void);
+
 #endif /* #ifndef __NEXHARDWARE_H__ */
