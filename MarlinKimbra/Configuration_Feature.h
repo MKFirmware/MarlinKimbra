@@ -406,7 +406,7 @@
  *                                                                     *
  ***********************************************************************/
 //#define NPR2
-#define COLOR_STEP {120,25,-65,-155} // CARTER ANGLE
+#define COLOR_STEP {0, 10, 20, 30}   // CARTER ANGLE
 #define COLOR_SLOWRATE 170           // MICROSECOND delay for carter motor routine (Carter Motor Feedrate: upper value-slow feedrate)  
 #define COLOR_HOMERATE 4             // FEEDRATE for carter home
 #define MOTOR_ANGLE 1.8              // Nema angle for single step 
@@ -674,10 +674,10 @@
  *                                                                        *
  **************************************************************************/
 //#define BABYSTEPPING
-//#define BABYSTEP_XY  // not only z, but also XY in the menu. more clutter, more functions
-                       // not implemented for CoreXY and deltabots!
-#define BABYSTEP_INVERT_Z false     // true for inverse movements in Z
-#define BABYSTEP_Z_MULTIPLICATOR 2  // faster z movements
+#define BABYSTEP_XY  // not only z, but also XY in the menu. more clutter, more functions
+                     // not implemented for CoreXY and deltabots!
+#define BABYSTEP_INVERT_Z false   // true for inverse movements in Z
+#define BABYSTEP_MULTIPLICATOR 2  // faster z movements
 /**************************************************************************/
 
 
@@ -1074,13 +1074,13 @@
 
 // The Panucatt Devices Viki 2.0 and mini Viki with Graphic LCD
 // http://panucatt.com
-// ==> REMEMBER TO INSTALL U8glib to your ARDUINO library folder: http://code.google.com/p/u8glib/wiki/u8glib
+// ==> REMEMBER TO INSTALL U8glib to your ARDUINO library folder: https://github.com/olikraus/U8glib_Arduino
 //#define VIKI2
 //#define miniVIKI
 
 // This is a new controller currently under development.  https://github.com/eboston/Adafruit-ST7565-Full-Graphic-Controller/
 //
-// ==> REMEMBER TO INSTALL U8glib to your ARDUINO library folder: http://code.google.com/p/u8glib/wiki/u8glib
+// ==> REMEMBER TO INSTALL U8glib to your ARDUINO library folder: https://github.com/olikraus/U8glib_Arduino
 //#define ELB_FULL_GRAPHIC_CONTROLLER
 //#define SD_DETECT_INVERTED
 
@@ -1095,7 +1095,7 @@
 // The RepRapDiscount FULL GRAPHIC Smart Controller (quadratic white PCB)
 // http://reprap.org/wiki/RepRapDiscount_Full_Graphic_Smart_Controller
 //
-// ==> REMEMBER TO INSTALL U8glib to your ARDUINO library folder: http://code.google.com/p/u8glib/wiki/u8glib
+// ==> REMEMBER TO INSTALL U8glib to your ARDUINO library folder: https://github.com/olikraus/U8glib_Arduino
 //#define REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
 
 // The RepRapWorld REPRAPWORLD_KEYPAD v1.1
@@ -1113,7 +1113,7 @@
 // #define MINIPANEL
 
 // Nextion HMI panel
-// REMEMBER TO INSTALL Nextion library in your ARDUINO library folder. You can find it in Arduino\libraries\
+// ==> REMEMBER TO INSTALL Nextion library in your ARDUINO library folder. You can find it in Arduino\libraries\
 //#define NEXTION
 
 // I2C Panels
@@ -1132,7 +1132,7 @@
 //#define LCD_I2C_VIKI
   
 // SSD1306 OLED generic display support
-// ==> REMEMBER TO INSTALL U8glib to your ARDUINO library folder: http://code.google.com/p/u8glib/wiki/u8glib
+// ==> REMEMBER TO INSTALL U8glib to your ARDUINO library folder: https://github.com/olikraus/U8glib_Arduino
 //#define U8GLIB_SSD1306
 
 // Shift register panels

@@ -308,6 +308,9 @@
 #define Z_RAISE_BETWEEN_PROBINGS     5      //How much the extruder will be raised when travelling from between next probing points
 #define Z_RAISE_AFTER_PROBING        5      //How much the extruder will be raised after the last probing point.
 
+//#define Z_PROBE_END_SCRIPT "G1 Z10 F8000\nG1 X10 Y10\nG1 Z0.5"  // These commands will be executed in the end of G29 routine.
+                                                                  // Useful to retract a deployable Z probe.
+
 //#define Z_PROBE_SLED                // turn on if you have a z-probe mounted on a sled like those designed by Charles Bell
 //#define SLED_DOCKING_OFFSET 5       // the extra distance the X axis must travel to pick up the sled. 0 should be fine but you can push it further if you'd like.
 /*****************************************************************************************/

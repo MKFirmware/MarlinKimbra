@@ -29,9 +29,11 @@ void digipot_i2c_set_current(int channel, float current) {
     addr = 0x2E; // channel 4-7
     channel -= 4;
   }
+
   // Initial setup
   i2c_send(addr, 0x40, 0xff);
   i2c_send(addr, 0xA0, 0xff);
+
   // Set actual wiper value
   byte addresses[4] = { 0x00, 0x10, 0x60, 0x70 };
   i2c_send(addr, addresses[channel], current_to_wiper(current));

@@ -28,8 +28,8 @@ vector_3::vector_3(float x_, float y_, float z_) : x(x_), y(y_), z(z_) { }
 
 vector_3 vector_3::cross(vector_3 left, vector_3 right) {
   return vector_3(left.y * right.z - left.z * right.y,
-    left.z * right.x - left.x * right.z,
-    left.x * right.y - left.y * right.x);
+                  left.z * right.x - left.x * right.z,
+                  left.x * right.y - left.y * right.x);
 }
 
 vector_3 vector_3::operator+(vector_3 v) { return vector_3((x + v.x), (y + v.y), (z + v.z)); }
@@ -51,9 +51,9 @@ void vector_3::normalize() {
 }
 
 void vector_3::apply_rotation(matrix_3x3 matrix) {
-  float resultX = x * matrix.matrix[3*0+0] + y * matrix.matrix[3*1+0] + z * matrix.matrix[3*2+0];
-  float resultY = x * matrix.matrix[3*0+1] + y * matrix.matrix[3*1+1] + z * matrix.matrix[3*2+1];
-  float resultZ = x * matrix.matrix[3*0+2] + y * matrix.matrix[3*1+2] + z * matrix.matrix[3*2+2];
+  float resultX = x * matrix.matrix[3 * 0 + 0] + y * matrix.matrix[3 * 1 + 0] + z * matrix.matrix[3 * 2 + 0];
+  float resultY = x * matrix.matrix[3 * 0 + 1] + y * matrix.matrix[3 * 1 + 1] + z * matrix.matrix[3 * 2 + 1];
+  float resultZ = x * matrix.matrix[3 * 0 + 2] + y * matrix.matrix[3 * 1 + 2] + z * matrix.matrix[3 * 2 + 2];
   x = resultX;
   y = resultY;
   z = resultZ;
@@ -66,7 +66,7 @@ void vector_3::debug(const char title[]) {
   ECHO_EMV(" z: ", z, 6);
 }
 
-void apply_rotation_xyz(matrix_3x3 matrix, float &x, float& y, float& z) {
+void apply_rotation_xyz(matrix_3x3 matrix, float& x, float& y, float& z) {
   vector_3 vector = vector_3(x, y, z);
   vector.apply_rotation(matrix);
   x = vector.x;
@@ -79,9 +79,9 @@ matrix_3x3 matrix_3x3::create_from_rows(vector_3 row_0, vector_3 row_1, vector_3
   //row_1.debug("row_1");
   //row_2.debug("row_2");
   matrix_3x3 new_matrix;
-  new_matrix.matrix[0] = row_0.x; new_matrix.matrix[1] = row_0.y; new_matrix.matrix[2] = row_0.z; 
-  new_matrix.matrix[3] = row_1.x; new_matrix.matrix[4] = row_1.y; new_matrix.matrix[5] = row_1.z; 
-  new_matrix.matrix[6] = row_2.x; new_matrix.matrix[7] = row_2.y; new_matrix.matrix[8] = row_2.z; 
+  new_matrix.matrix[0] = row_0.x; new_matrix.matrix[1] = row_0.y; new_matrix.matrix[2] = row_0.z;
+  new_matrix.matrix[3] = row_1.x; new_matrix.matrix[4] = row_1.y; new_matrix.matrix[5] = row_1.z;
+  new_matrix.matrix[6] = row_2.x; new_matrix.matrix[7] = row_2.y; new_matrix.matrix[8] = row_2.z;
   //new_matrix.debug("new_matrix");
   return new_matrix;
 }
@@ -94,7 +94,7 @@ void matrix_3x3::set_to_identity() {
 
 matrix_3x3 matrix_3x3::create_look_at(vector_3 target) {
   vector_3 z_row = target.get_normal();
-  vector_3 x_row = vector_3(1, 0, -target.x/target.z).get_normal();
+  vector_3 x_row = vector_3(1, 0, -target.x / target.z).get_normal();
   vector_3 y_row = vector_3::cross(z_row, x_row).get_normal();
 
   // x_row.debug("x_row");
@@ -110,8 +110,8 @@ matrix_3x3 matrix_3x3::create_look_at(vector_3 target) {
 
 matrix_3x3 matrix_3x3::transpose(matrix_3x3 original) {
   matrix_3x3 new_matrix;
-  new_matrix.matrix[0] = original.matrix[0]; new_matrix.matrix[1] = original.matrix[3]; new_matrix.matrix[2] = original.matrix[6]; 
-  new_matrix.matrix[3] = original.matrix[1]; new_matrix.matrix[4] = original.matrix[4]; new_matrix.matrix[5] = original.matrix[7]; 
+  new_matrix.matrix[0] = original.matrix[0]; new_matrix.matrix[1] = original.matrix[3]; new_matrix.matrix[2] = original.matrix[6];
+  new_matrix.matrix[3] = original.matrix[1]; new_matrix.matrix[4] = original.matrix[4]; new_matrix.matrix[5] = original.matrix[7];
   new_matrix.matrix[6] = original.matrix[2]; new_matrix.matrix[7] = original.matrix[5]; new_matrix.matrix[8] = original.matrix[8];
   return new_matrix;
 }
@@ -119,9 +119,9 @@ matrix_3x3 matrix_3x3::transpose(matrix_3x3 original) {
 void matrix_3x3::debug(const char title[]) {
   ECHO_LV(DB, title);
   int count = 0;
-  for(int i = 0; i < 3; i++) {
+  for (int i = 0; i < 3; i++) {
     ECHO_S(DB);
-    for(int j = 0; j < 3; j++) {
+    for (int j = 0; j < 3; j++) {
       if (matrix[count] >= 0.0) ECHO_C('+');
       ECHO_V(matrix[count], 6);
       ECHO_C(' ');
