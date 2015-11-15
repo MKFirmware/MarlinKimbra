@@ -35,6 +35,7 @@
 #include "NexTimer.h"
 #include "NexNumber.h"
 #include "NexVar.h"
+#include "NexDualStateButton.h"
 
 
 #endif /* #ifndef __NEXTION_H__ */

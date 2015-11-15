@@ -19,13 +19,13 @@
 #ifndef VECTOR_3_H
 #define VECTOR_3_H
 
+#if ENABLED(AUTO_BED_LEVELING_FEATURE)
 class matrix_3x3;
 
-struct vector_3
-{
+struct vector_3 {
   float x, y, z;
 
-        vector_3();
+  vector_3();
   vector_3(float x, float y, float z);
 
   static vector_3 cross(vector_3 a, vector_3 b);
@@ -37,12 +37,11 @@ struct vector_3
   vector_3 get_normal();
 
   void debug(const char title[]);
-  
+
   void apply_rotation(matrix_3x3 matrix);
 };
 
-struct matrix_3x3
-{
+struct matrix_3x3 {
   float matrix[9];
 
   static matrix_3x3 create_from_rows(vector_3 row_0, vector_3 row_1, vector_3 row_2);
@@ -55,6 +54,7 @@ struct matrix_3x3
 };
 
 
-void apply_rotation_xyz(matrix_3x3 rotationMatrix, float &x, float& y, float& z);
+void apply_rotation_xyz(matrix_3x3 rotationMatrix, float& x, float& y, float& z);
+#endif // AUTO_BED_LEVELING_FEATURE
 
 #endif // VECTOR_3_H

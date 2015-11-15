@@ -1,9 +1,12 @@
 #ifndef ULTRALCD_H
 #define ULTRALCD_H
 
+#include "Marlin_main.h"
 #if ENABLED(ULTRA_LCD)
-  int lcd_strlen(char *s);
-  int lcd_strlen_P(const char *s);
+  #include "buzzer.h"
+
+  int lcd_strlen(char* s);
+  int lcd_strlen_P(const char* s);
   void lcd_update();
   void lcd_init();
   bool lcd_hasstatus();
@@ -105,37 +108,39 @@
     #define B_ST BIT(BL_ST)
     #define EN_B BIT(BLEN_B)
     #define EN_A BIT(BLEN_A)
-    
+
     #define LCD_CLICKED ((buttons&B_MI)||(buttons&B_ST))
   #endif//NEWPANEL
 
-  char *itostr2(const uint8_t &x);
-  char *itostr31(const int &xx);
-  char *itostr3(const int &xx);
-  char *itostr3left(const int &xx);
-  char *itostr4(const int &xx);
+  char* itostr2(const uint8_t& x);
+  char* itostr31(const int& xx);
+  char* itostr3(const int& xx);
+  char* itostr3left(const int& xx);
+  char* itostr4(const int& xx);
+  char* itostr4sign(const int& x);
 
-  char *ltostr7(const long &xx);
+  char* ltostr7(const long& xx);
 
-  char *ftostr3(const float &x);
-  char *ftostr30(const float &x);
-  char *ftostr31ns(const float &x); // float to string without sign character
-  char *ftostr31(const float &x);
-  char *ftostr32(const float &x);
-  char *ftostr43(const float &x);
-  char *ftostr12ns(const float &x); 
-  char *ftostr32sp(const float &x); // remove zero-padding from ftostr32
-  char *ftostr5(const float &x);
-  char *ftostr51(const float &x);
-  char *ftostr52(const float &x);
+  char* ftostr3(const float& x);
+  char* ftostr4sign(const float& x);
+  char* ftostr30(const float& x);
+  char* ftostr31ns(const float& x); // float to string without sign character
+  char* ftostr31(const float& x);
+  char* ftostr32(const float& x);
+  char* ftostr43(const float& x);
+  char* ftostr12ns(const float& x); 
+  char* ftostr32sp(const float& x); // remove zero-padding from ftostr32
+  char* ftostr5(const float& x);
+  char* ftostr51(const float& x);
+  char* ftostr52(const float& x);
 
 #elif DISABLED(NEXTION)
 
   FORCE_INLINE void lcd_update() {}
   FORCE_INLINE void lcd_init() {}
   FORCE_INLINE bool lcd_hasstatus() { return false; }
-  FORCE_INLINE void lcd_setstatus(const char* message, const bool persist=false) {}
-  FORCE_INLINE void lcd_setstatuspgm(const char* message, const uint8_t level=0) {}
+  FORCE_INLINE void lcd_setstatus(const char* message, const bool persist=false) {UNUSED(message); UNUSED(persist);}
+  FORCE_INLINE void lcd_setstatuspgm(const char* message, const uint8_t level=0) {UNUSED(message); UNUSED(level);}
   FORCE_INLINE void lcd_buttons_update() {}
   FORCE_INLINE void lcd_reset_alert_level() {}
   FORCE_INLINE bool lcd_detected(void) { return true; }
