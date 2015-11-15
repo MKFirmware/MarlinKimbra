@@ -118,7 +118,6 @@
  * M3   - Put S<value> in laser beam control
  * M4   - Turn on laser beam
  * M5   - Turn off laser beam
- * M11  - Start printer for pause mode
  * M17  - Enable/Power all stepper motors
  * M18  - Disable all stepper motors; same as M84
  * M20  - List SD card
@@ -434,7 +433,7 @@ unsigned long printer_usage_seconds;
 
 #if HAS(FILRUNOUT)
   static bool filrunoutEnqueued = false;
-  bool printing = false;
+  bool filrunoutActive = false;
 #endif
 
 #if ENABLED(SDSUPPORT)
@@ -3663,9 +3662,10 @@ inline void gcode_G28() {
       int abl2 = auto_bed_leveling_grid_points * auto_bed_leveling_grid_points;
 
       double eqnAMatrix[abl2 * 3], // "A" matrix of the linear system of equations
-             eqnBVector[abl2];     // "B" vector of Z points
-
+             eqnBVector[abl2],     // "B" vector of Z points
+             mean = 0.0;
       int8_t indexIntoAB[auto_bed_leveling_grid_points][auto_bed_leveling_grid_points];
+
       int probePointCounter = 0;
       bool zig = (auto_bed_leveling_grid_points & 1) ? true : false; //always end at [RIGHT_PROBE_BED_POSITION, BACK_PROBE_BED_POSITION]
 
@@ -3693,14 +3693,13 @@ inline void gcode_G28() {
           float measured_z,
                 z_before = probePointCounter ? Z_RAISE_BETWEEN_PROBINGS + current_position[Z_AXIS] : Z_RAISE_BEFORE_PROBING;
 
-          if (probePointCounter) {
-            if (debugLevel & DEBUG_INFO) ECHO_LMV(DB, "z_before = (between) ", (float)(Z_RAISE_BETWEEN_PROBINGS + current_position[Z_AXIS]));
-          }
-          else {
-            if (debugLevel & DEBUG_INFO) ECHO_LMV(DB, "z_before = (before) ", (float)Z_RAISE_BEFORE_PROBING);
+          if (debugLevel & DEBUG_INFO) {
+            if (probePointCounter)
+              ECHO_LMV(DB, "z_before = (between) ", (float)(Z_RAISE_BETWEEN_PROBINGS + current_position[Z_AXIS]));
+            else
+              ECHO_LMV(DB, "z_before = (before) ", (float)Z_RAISE_BEFORE_PROBING);
           }
 
-          // Enhanced G29 - Do not retract servo between probes
           ProbeAction act;
           if (deploy_probe_for_each_reading) // G29 E - Stow between probes
             act = ProbeDeployAndStow;
@@ -3712,6 +3711,7 @@ inline void gcode_G28() {
             act = ProbeStay;
 
           measured_z = probe_pt(xProbe, yProbe, z_before, act, verbose_level);
+          mean += measured_z;
 
           eqnBVector[probePointCounter] = measured_z;
           eqnAMatrix[probePointCounter + 0 * abl2] = xProbe;
@@ -3737,46 +3737,44 @@ inline void gcode_G28() {
       double plane_equation_coefficients[3];
       qr_solve(plane_equation_coefficients, abl2, 3, eqnAMatrix, eqnBVector);
 
+      mean /= abl2;
+
       if (verbose_level) {
         ECHO_SMV(DB, "Eqn coefficients: a: ", plane_equation_coefficients[0], 8);
         ECHO_MV(" b: ", plane_equation_coefficients[1], 8);
         ECHO_EMV(" d: ", plane_equation_coefficients[2], 8);
+        if (verbose_level > 2)
+          ECHO_LMV(DB, "Mean of sampled points: ", mean, 8);
       }
 
       if (!dryrun) set_bed_level_equation_lsq(plane_equation_coefficients);
-      matrix_3x3 inverse_bed_level_matrix = matrix_3x3::transpose(plan_bed_level_matrix); // inverse bed level matrix
-      // In the special case of an rotation matrix "the inverse" = "the transposed" matrix.
-
-      // search minimum and maximum point on bed in rotated coordinates
-      float rot_min_diff = Z_MAX_POS,
-            rot_max_diff = -Z_MAX_POS,
-            min_diff = Z_MAX_POS;
-      for (int8_t i = 0; i < abl2; i++) {
-          vector_3 probe_point = vector_3(eqnAMatrix[i + 0 * abl2], eqnAMatrix[i + 1 * abl2], eqnBVector[i]);
-          probe_point.apply_rotation(inverse_bed_level_matrix);
-          rot_min_diff = min(rot_min_diff, probe_point.z);
-          rot_max_diff = max(rot_max_diff, probe_point.z);
-          min_diff = min(min_diff, eqnBVector[i]);
-      }
 
       // Show the Topography map if enabled
       if (do_topography_map) {
-        // search minimum measured Z
-
+        ECHO_LM(DB, "Bed Height Topography:");
         ECHO_LM(DB, "+-----------+");
         ECHO_LM(DB, "|...Back....|");
         ECHO_LM(DB, "|Left..Right|");
         ECHO_LM(DB, "|...Front...|");
         ECHO_LM(DB, "+-----------+");
-        ECHO_LM(DB, "Measured Bed Topography:");
 
-        for (int8_t yy = auto_bed_leveling_grid_points - 1; yy >= 0; yy--) {
+        float min_diff = 999;
+
+        for (int yy = auto_bed_leveling_grid_points - 1; yy >= 0; yy--) {
           ECHO_S(DB);
-          for (int8_t xx = 0; xx < auto_bed_leveling_grid_points; xx++) {
-            int8_t ind = indexIntoAB[xx][yy];
+          for (int xx = 0; xx < auto_bed_leveling_grid_points; xx++) {
+            int ind = indexIntoAB[xx][yy];
+            float diff = eqnBVector[ind] - mean;
 
-            float diff = eqnBVector[ind];
+            float x_tmp = eqnAMatrix[ind + 0 * abl2],
+                  y_tmp = eqnAMatrix[ind + 1 * abl2],
+                  z_tmp = 0;
 
+            apply_rotation_xyz(plan_bed_level_matrix, x_tmp, y_tmp, z_tmp);
+
+            if (eqnBVector[ind] - z_tmp < min_diff)
+              min_diff = eqnBVector[ind] - z_tmp;
+              
             if (diff >= 0.0)
               ECHO_M(" +");   // Include + for column alignment
             else
@@ -3786,65 +3784,30 @@ inline void gcode_G28() {
           ECHO_E;
         } // yy
         ECHO_E;
+        if (verbose_level > 3) {
+          ECHO_LM(DB, "Corrected Bed Height vs. Bed Topology:");
 
-        ECHO_LM(DB, "Corrected Bed Topography:");
-        for (int8_t yy = auto_bed_leveling_grid_points - 1; yy >= 0; yy--) {
-          ECHO_S(DB);
-          for (int8_t xx = 0; xx < auto_bed_leveling_grid_points; xx++) {
-            int8_t ind = indexIntoAB[xx][yy];
+          for (int yy = auto_bed_leveling_grid_points - 1; yy >= 0; yy--) {
+            ECHO_S(DB);
+            for (int xx = 0; xx < auto_bed_leveling_grid_points; xx++) {
+              int ind = indexIntoAB[xx][yy];
+              float x_tmp = eqnAMatrix[ind + 0 * abl2],
+                    y_tmp = eqnAMatrix[ind + 1 * abl2],
+                    z_tmp = 0;
 
-            float diff = eqnBVector[ind] - min_diff;
+              apply_rotation_xyz(plan_bed_level_matrix, x_tmp, y_tmp, z_tmp);
+              float diff = eqnBVector[ind] - min_diff;
 
-            if (diff >= 0.0)
-              ECHO_M(" +");   // Include + for column alignment
-            else
-              ECHO_M(" ");
-            ECHO_V(diff, 5);
-          } // xx
+              if (diff >= 0.0)
+                ECHO_M(" +");   // Include + for column alignment
+              else
+                ECHO_M(" ");
+              ECHO_V(diff, 5);
+            } // xx
+            ECHO_E;
+          } // yy
           ECHO_E;
-        } // yy
-        ECHO_E;
-
-        ECHO_LM(DB, "Corrected Bed Topography in new coordinates:");
-        for (int8_t yy = auto_bed_leveling_grid_points - 1; yy >= 0; yy--) {
-          ECHO_S(DB);
-          for (int8_t xx = 0; xx < auto_bed_leveling_grid_points; xx++) {
-            int8_t ind = indexIntoAB[xx][yy];
-
-            vector_3 probe_point = vector_3(eqnAMatrix[ind + 0 * abl2], eqnAMatrix[ind + 1 * abl2], eqnBVector[ind]);
-            probe_point.apply_rotation(inverse_bed_level_matrix);
-            float diff = probe_point.z - rot_min_diff;
-
-            if (diff >= 0.0)
-              ECHO_M(" +");   // Include + for column alignment
-            else
-              ECHO_M(" ");
-            ECHO_V(diff, 5);
-          } // xx
-          ECHO_E;
-        } // yy
-        ECHO_E;
-
-        ECHO_LM(DB, "Height from Bed to Nozzle");
-        ECHO_LM(DB, "(+) above, or (-) below surface :");
-        for (int8_t yy = auto_bed_leveling_grid_points - 1; yy >= 0; yy--) {
-          ECHO_S(DB);
-          for (int8_t xx = 0; xx < auto_bed_leveling_grid_points; xx++) {
-            int8_t ind = indexIntoAB[xx][yy];
-
-            vector_3 probe_point = vector_3(eqnAMatrix[ind + 0 * abl2], eqnAMatrix[ind + 1 * abl2], eqnBVector[ind]);
-            probe_point.apply_rotation(inverse_bed_level_matrix);
-            float diff = -(probe_point.z - rot_max_diff);
-
-            if (diff >= 0.0)
-              ECHO_M(" +");   // Include + for column alignment
-            else
-              ECHO_M(" ");
-            ECHO_V(diff, 5);
-          } // xx
-          ECHO_E;
-        } // yy
-        ECHO_E;
+        }
       } //do_topography_map
 
     #else // !AUTO_BED_LEVELING_GRID
@@ -3871,21 +3834,64 @@ inline void gcode_G28() {
       plan_bed_level_matrix.debug(" Bed Level Correction Matrix:");
 
     if (!dryrun) {
-      uint8_t ind = abl2-1; // last point probe = current point
-      vector_3 probe_point = vector_3(eqnAMatrix[ind + 0 * abl2], eqnAMatrix[ind + 1 * abl2], eqnBVector[ind]);
-      probe_point.apply_rotation(inverse_bed_level_matrix);
-      current_position[Z_AXIS] = -zprobe_zoffset + (probe_point.z - rot_max_diff)
-      #if HAS(SERVO_ENDSTOPS) || HAS(Z_PROBE_SLED)
-        + Z_RAISE_AFTER_PROBING
-      #endif
-      ;
+      // Correct the Z height difference from Z probe position and nozzle tip position.
+      // The Z height on homing is measured by Z probe, but the Z probe is quite far from the nozzle.
+      // When the bed is uneven, this height must be corrected.
+      float x_tmp = current_position[X_AXIS] + X_PROBE_OFFSET_FROM_EXTRUDER,
+            y_tmp = current_position[Y_AXIS] + Y_PROBE_OFFSET_FROM_EXTRUDER,
+            z_tmp = current_position[Z_AXIS],
+            real_z = st_get_position_mm(Z_AXIS);  //get the real Z (since plan_get_position is now correcting the plane)
+
+      if (debugLevel & DEBUG_INFO) {
+        ECHO_LMV(DB, "> BEFORE apply_rotation_xyz > z_tmp  = ", z_tmp);
+        ECHO_LMV(DB, "> BEFORE apply_rotation_xyz > real_z = ", real_z);
+      }
+
+      apply_rotation_xyz(plan_bed_level_matrix, x_tmp, y_tmp, z_tmp); // Apply the correction sending the Z probe offset
+
+      // Get the current Z position and send it to the planner.
+      //
+      // >> (z_tmp - real_z) : The rotated current Z minus the uncorrected Z (most recent plan_set_position/sync_plan_position)
+      //
+      // >> zprobe_zoffset : Z distance from nozzle to Z probe (set by default, M851, EEPROM, or Menu)
+      //
+      // >> Z_RAISE_AFTER_PROBING : The distance the Z probe will have lifted after the last probe
+      //
+      // >> Should home_offset[Z_AXIS] be included?
+      //
+      //      Discussion: home_offset[Z_AXIS] was applied in G28 to set the starting Z.
+      //      If Z is not tweaked in G29 -and- the Z probe in G29 is not actually "homing" Z...
+      //      then perhaps it should not be included here. The purpose of home_offset[] is to
+      //      adjust for inaccurate endstops, not for reasonably accurate probes. If it were
+      //      added here, it could be seen as a compensating factor for the Z probe.
+      //
+      if (debugLevel & DEBUG_INFO)
+        ECHO_LMV(DB, "> AFTER apply_rotation_xyz > z_tmp  = ", z_tmp);
+
+      current_position[Z_AXIS] = -zprobe_zoffset + (z_tmp - real_z)
+        #if HAS(SERVO_ENDSTOPS) || ENABLED(Z_PROBE_SLED)
+          + Z_RAISE_AFTER_PROBING
+        #endif
+        ;
+      // current_position[Z_AXIS] += home_offset[Z_AXIS]; // The Z probe determines Z=0, not "Z home"
       sync_plan_position();
 
-      if (debugLevel & DEBUG_INFO) ECHO_LMV(DB, "> AFTER apply_rotation_xyz > current_position[Z_AXIS]= ", current_position[Z_AXIS], 5);
+      if (debugLevel & DEBUG_INFO)
+        print_xyz("> corrected Z in G29", current_position);
     }
 
+    // Sled assembly for Cartesian bots
     #if HAS(Z_PROBE_SLED)
       dock_sled(true); // dock the probe
+    #endif
+
+    #if ENABLED(Z_PROBE_END_SCRIPT)
+      if (debugLevel & DEBUG_INFO) {
+        ECHO_SM(DB, "Z Probe End Script: ");
+        ECHO_EM(Z_PROBE_END_SCRIPT);
+      }
+      enqueuecommands_P(PSTR(Z_PROBE_END_SCRIPT));
+      st_synchronize();
     #endif
 
     if (debugLevel & DEBUG_INFO) ECHO_LM(DB, "<<< gcode_G29");
@@ -4329,22 +4335,6 @@ inline void gcode_G92() {
     laser_ttl_modulation = 0;
   }
 #endif //LASERBEAM
-
-#if HAS(FILRUNOUT)
-  /**
-   * M11: Start printing
-   */
-  inline void gcode_M11() {
-    printing = true;
-    filrunoutEnqueued = false;
-    ECHO_LM(DB, "Start Printing, pause pin active.");
-    ECHO_S(RESUME);
-    ECHO_E;
-    #if HAS(POWER_CONSUMPTION_SENSOR)
-      startpower = power_consumption_hour;
-    #endif
-  }
-#endif
 
 /**
  * M17: Enable power on all stepper motors
@@ -6336,6 +6326,7 @@ inline void gcode_M503() {
    *  X[position] - Move to this X position, with Y
    *  Y[position] - Move to this Y position, with X
    *  L[distance] - Retract distance for removal (manual reload)
+   *  S[0-1]      - Deactivate Filament runout - Active Filament runout
    *
    *  Default values are used for omitted arguments.
    *
@@ -6346,6 +6337,26 @@ inline void gcode_M503() {
       ECHO_LM(ER, MSG_TOO_COLD_FOR_FILAMENTCHANGE);
       return;
     }
+
+    #if HAS(FILRUNOUT)
+      if (code_seen('S')) {
+        if (code_value() == 1) {
+          filrunoutActive = true;
+          filrunoutEnqueued = false;
+          ECHO_LM(DB, "Filament runout activated.");
+          ECHO_S(RESUME);
+          ECHO_E;
+          #if HAS(POWER_CONSUMPTION_SENSOR)
+            startpower = power_consumption_hour;
+          #endif
+        } else {
+          filrunoutActive = false;
+          filrunoutEnqueued = false;
+          ECHO_LM(DB, "Filament runout deactivated.");
+        }
+        return;
+      }
+    #endif
 
     float lastpos[NUM_AXIS], fr60 = feedrate / 60;
 
@@ -6936,16 +6947,14 @@ inline void gcode_T(uint8_t tmp_extruder) {
             ECHO_LMV(DB, MSG_ACTIVE_EXTRUDER, active_extruder);
           #elif ENABLED(NPR2)
             st_synchronize(); // Finish all movement
-            if (old_color == 99)
-            {
+            if (old_color == 99) {
               csteps = (color_position[target_extruder]) * color_step_moltiplicator;
             }
-            else
-            {
+            else {
               csteps = (color_position[target_extruder] - color_position[old_color]) * color_step_moltiplicator;
             }
-            if (csteps < 0) colorstep(-csteps,false);
-            if (csteps > 0) colorstep(csteps,true);
+            if (csteps < 0) colorstep(-csteps, false);
+            if (csteps > 0) colorstep(csteps, true);
             old_color = active_extruder = target_extruder;
             active_driver = 0;
             ECHO_LMV(DB, MSG_ACTIVE_COLOR, (int)active_extruder);
@@ -7113,11 +7122,6 @@ void process_next_command() {
         case 5: // M05 - Turn off laser beam
           gcode_M5(); break;
       #endif //LASERBEAM
-
-      #if HAS(FILRUNOUT)
-        case 11: //M11 - Start printing
-          gcode_M11(); break;
-      #endif
 
       case 17: //M17 - Enable/Power all stepper motors
         gcode_M17(); break;
@@ -7974,7 +7978,7 @@ void idle(bool ignore_stepper_queue/*=false*/) {
 void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
 
   #if HAS(FILRUNOUT)
-    if ((printing || IS_SD_PRINTING ) && (READ(FILRUNOUT_PIN) ^ FILRUNOUT_PIN_INVERTING))
+    if ((filrunoutActive || IS_SD_PRINTING) && (READ(FILRUNOUT_PIN) ^ FILRUNOUT_PIN_INVERTING))
       filrunout();
   #endif
 

@@ -80,20 +80,20 @@ volatile static unsigned long step_events_completed; // The number of step event
 static long acceleration_time, deceleration_time;
 //static unsigned long accelerate_until, decelerate_after, acceleration_rate, initial_rate, final_rate, nominal_rate;
 static unsigned short acc_step_rate; // needed for deceleration start point
-static char step_loops;
+static uint8_t step_loops;
+static uint8_t step_loops_nominal;
 static unsigned short OCR1A_nominal;
-static unsigned short step_loops_nominal;
 
 volatile long endstops_trigsteps[3] = { 0 };
 volatile long endstops_stepsTotal, endstops_stepsDone;
 static volatile char endstop_hit_bits = 0; // use X_MIN, Y_MIN, Z_MIN and Z_PROBE as BIT value
 
-#if DISABLED(Z_DUAL_ENDSTOPS)
-  static byte
-#else
+#if ENABLED(Z_DUAL_ENDSTOPS) || ENABLED(NPR2)
   static uint16_t
+#else
+  static byte
 #endif
-    old_endstop_bits = 0; // use X_MIN, X_MAX... Z_MAX, Z_PROBE, Z2_MIN, Z2_MAX
+  old_endstop_bits = 0; // use X_MIN, X_MAX... Z_MAX, Z_PROBE, Z2_MIN, Z2_MAX, E_MIN
 
 #if ENABLED(ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED)
   bool abort_on_endstop_hit = false;
@@ -277,16 +277,16 @@ void checkHitEndstops() {
       LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_ZS);
     }
     #if ENABLED(Z_PROBE_ENDSTOP)
-    if (endstop_hit_bits & BIT(Z_PROBE)) {
-      ECHO_MV(MSG_ENDSTOP_ZPS, (float)endstops_trigsteps[Z_AXIS] / axis_steps_per_unit[Z_AXIS]);
-      LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_ZPS);
-    }
+      if (endstop_hit_bits & BIT(Z_PROBE)) {
+        ECHO_MV(MSG_ENDSTOP_ZPS, (float)endstops_trigsteps[Z_AXIS] / axis_steps_per_unit[Z_AXIS]);
+        LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_ZPS);
+      }
     #endif
     #if ENABLED(NPR2)
-    if (endstop_hit_bits & BIT(E_MIN)) {
-      ECHO_MV(MSG_ENDSTOP_E, (float)endstops_trigsteps[E_AXIS] / axis_steps_per_unit[E_AXIS]);
-      LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_ES);
-    }
+      if (endstop_hit_bits & BIT(E_MIN)) {
+        ECHO_MV(MSG_ENDSTOP_E, (float)endstops_trigsteps[E_AXIS] / axis_steps_per_unit[E_AXIS]);
+        LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_ES);
+      }
     #endif
     ECHO_E;
 
@@ -315,7 +315,7 @@ void enable_endstops(bool check) {
 // Check endstops
 inline void update_endstops() {
 
-  #if ENABLED(Z_DUAL_ENDSTOPS)
+  #if ENABLED(Z_DUAL_ENDSTOPS) || ENABLED(NPR2)
     uint16_t
   #else
     byte
@@ -478,6 +478,9 @@ inline void update_endstops() {
   #if MECH(COREXZ)
     }
   #endif
+  #if ENABLED(NPR2)
+    UPDATE_ENDSTOP(E, MIN);
+  #endif
   old_endstop_bits = current_endstop_bits;
 }
 
@@ -504,7 +507,8 @@ void st_wake_up() {
 
 FORCE_INLINE unsigned short calc_timer(unsigned short step_rate) {
   unsigned short timer;
-  if (step_rate > MAX_STEP_FREQUENCY) step_rate = MAX_STEP_FREQUENCY;
+
+  NOMORE(step_rate, MAX_STEP_FREQUENCY);
 
   if(step_rate > (2 * DOUBLE_STEP_FREQUENCY)) { // If steprate > 2*DOUBLE_STEP_FREQUENCY >> step 4 times
     step_rate = (step_rate >> 2) & 0x3fff;
@@ -518,8 +522,8 @@ FORCE_INLINE unsigned short calc_timer(unsigned short step_rate) {
     step_loops = 1;
   }
 
-  if (step_rate < (F_CPU / 500000)) step_rate = (F_CPU / 500000);
-  step_rate -= (F_CPU / 500000); // Correct for minimal speed
+  NOLESS(step_rate, F_CPU / 500000);
+  step_rate -= F_CPU / 500000; // Correct for minimal speed
   if (step_rate >= (8 * 256)) { // higher step rate
     unsigned short table_address = (unsigned short)&speed_lookuptable_fast[(unsigned char)(step_rate >> 8)][0];
     unsigned char tmp_step_rate = (step_rate & 0x00ff);
@@ -738,8 +742,7 @@ ISR(TIMER1_COMPA_vect) {
       acc_step_rate += current_block->initial_rate;
 
       // upper limit
-      if (acc_step_rate > current_block->nominal_rate)
-        acc_step_rate = current_block->nominal_rate;
+      NOMORE(acc_step_rate, current_block->nominal_rate);
 
       // step_rate to timer interval
       timer = calc_timer(acc_step_rate);
@@ -748,10 +751,9 @@ ISR(TIMER1_COMPA_vect) {
 
       #if ENABLED(ADVANCE)
 
-        for (int8_t i = 0; i < step_loops; i++) {
-          advance += advance_rate;
-        }
-        // if (advance > current_block->advance) advance = current_block->advance;
+        advance += advance_rate * step_loops;
+        //NOLESS(advance, current_block->advance);
+
         // Do E steps + advance steps
         e_steps[current_block->active_driver] += ((advance >> 8) - old_advance);
         old_advance = advance >> 8;
@@ -761,29 +763,26 @@ ISR(TIMER1_COMPA_vect) {
     else if (step_events_completed > (unsigned long)current_block->decelerate_after) {
       MultiU24X32toH16(step_rate, deceleration_time, current_block->acceleration_rate);
 
-      if (step_rate > acc_step_rate) { // Check step_rate stays positive
-        step_rate = current_block->final_rate;
+      if (step_rate <= acc_step_rate) { // Still decelerating?
+        step_rate = acc_step_rate - step_rate;
+        NOLESS(step_rate, current_block->final_rate);
       }
-      else {
-        step_rate = acc_step_rate - step_rate; // Decelerate from acceleration end point.
-      }
-
-      // lower limit
-      if (step_rate < current_block->final_rate)
+      else
         step_rate = current_block->final_rate;
 
       // step_rate to timer interval
       timer = calc_timer(step_rate);
       OCR1A = timer;
       deceleration_time += timer;
+
       #if ENABLED(ADVANCE)
-        for (int8_t i = 0; i < step_loops; i++) {
-          advance -= advance_rate;
-        }
-        if (advance < final_advance) advance = final_advance;
+        advance -= advance_rate * step_loops;
+        NOLESS(advance, final_advance);
+
         // Do E steps + advance steps
-        e_steps[current_block->active_driver] += ((advance >> 8) - old_advance);
-        old_advance = advance >> 8;
+        uint32_t advance_whole = advance >> 8;
+        e_steps[current_block->active_driver] += advance_whole - old_advance;
+        old_advance = advance_whole;
       #endif //ADVANCE
     }
     else {
@@ -996,28 +995,28 @@ void st_init() {
   #if HAS(X_MIN)
     SET_INPUT(X_MIN_PIN);
     #if ENABLED(ENDSTOPPULLUP_XMIN)
-      WRITE(X_MIN_PIN,HIGH);
+      WRITE(X_MIN_PIN, HIGH);
     #endif
   #endif
 
   #if HAS(Y_MIN)
     SET_INPUT(Y_MIN_PIN);
     #if ENABLED(ENDSTOPPULLUP_YMIN)
-      WRITE(Y_MIN_PIN,HIGH);
+      WRITE(Y_MIN_PIN, HIGH);
     #endif
   #endif
 
   #if HAS(Z_MIN)
     SET_INPUT(Z_MIN_PIN);
     #if ENABLED(ENDSTOPPULLUP_ZMIN)
-      WRITE(Z_MIN_PIN,HIGH);
+      WRITE(Z_MIN_PIN, HIGH);
     #endif
   #endif
 
   #if HAS(Z2_MIN)
     SET_INPUT(Z2_MIN_PIN);
     #if ENABLED(ENDSTOPPULLUP_Z2MIN)
-      WRITE(Z2_MIN_PIN,HIGH);
+      WRITE(Z2_MIN_PIN, HIGH);
     #endif
   #endif
 
@@ -1031,35 +1030,35 @@ void st_init() {
   #if HAS(X_MAX)
     SET_INPUT(X_MAX_PIN);
     #if ENABLED(ENDSTOPPULLUP_XMAX)
-      WRITE(X_MAX_PIN,HIGH);
+      WRITE(X_MAX_PIN, HIGH);
     #endif
   #endif
 
   #if HAS(Y_MAX)
     SET_INPUT(Y_MAX_PIN);
     #if ENABLED(ENDSTOPPULLUP_YMAX)
-      WRITE(Y_MAX_PIN,HIGH);
+      WRITE(Y_MAX_PIN, HIGH);
     #endif
   #endif
 
   #if HAS(Z_MAX)
     SET_INPUT(Z_MAX_PIN);
     #if ENABLED(ENDSTOPPULLUP_ZMAX)
-      WRITE(Z_MAX_PIN,HIGH);
+      WRITE(Z_MAX_PIN, HIGH);
     #endif
   #endif
 
   #if HAS(Z2_MAX)
     SET_INPUT(Z2_MAX_PIN);
     #if ENABLED(ENDSTOPPULLUP_Z2MAX)
-      WRITE(Z2_MAX_PIN,HIGH);
+      WRITE(Z2_MAX_PIN, HIGH);
     #endif
   #endif
 
   #if HAS(Z_PROBE) // Check for Z_PROBE_ENDSTOP so we don't pull a pin high unless it's to be used.
     SET_INPUT(Z_PROBE_PIN);
     #if ENABLED(ENDSTOPPULLUP_ZPROBE)
-      WRITE(Z_PROBE_PIN,HIGH);
+      WRITE(Z_PROBE_PIN, HIGH);
     #endif
   #endif
 

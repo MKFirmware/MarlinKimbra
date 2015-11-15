@@ -1,10 +1,11 @@
 /**
- * @file NexButton.h
+ * @file NexDualStateButton.h
  *
- * The definition of class NexButton.
+ * The definition of class NexDSButton.
  *
- * @author Wu Pengfei (email:<pengfei.wu@itead.cc>)
- * @date 2015/8/13
+ * @author  huang xianming (email:<xianming.huang@itead.cc>)
+ * @date    2015/11/11
+ *
  *
  * @copyright
  * Copyright (C) 2014-2015 ITEAD Intelligent Systems Co., Ltd.
@@ -14,8 +15,8 @@
  * the License, or (at your option) any later version.
  */
 
-#ifndef __NEXBUTTON_H__
-#define __NEXBUTTON_H__
+#ifndef __NEXDSBUTTON_H__
+#define __NEXDSBUTTON_H__
 
 #include "NexTouch.h"
 #include "NexHardware.h"
@@ -25,42 +26,42 @@
  */
 
 /**
- * NexButton component.
+ * NexDSButton component.
  *
  * Commonly, you want to do something after push and pop it. It is recommanded that only
  * call @ref NexTouch::attachPop to satisfy your purpose.
  *
  * @warning Please do not call @ref NexTouch::attachPush on this component, even though you can.
  */
-class NexButton: public NexTouch
+class NexDSButton: public NexTouch
 {
 public: /* methods */
-
     /**
      * @copydoc NexObject::NexObject(uint8_t pid, uint8_t cid, const char *name);
      */
-    NexButton(uint8_t pid, uint8_t cid, const char *name);
+    NexDSButton(uint8_t pid, uint8_t cid, const char *name);
 
     /**
-     * Get text attribute of component.
+     * Get number attribute of component.
      *
      * @param buffer - buffer storing text returned.
      * @param len - length of buffer.
      * @return The real length of text returned.
      */
-    uint16_t getText(char *buffer, uint16_t len);    
+    bool getValue(uint32_t *number);
 
     /**
-     * Set text attribute of component.
+     * Set number attribute of component.
      *
-     * @param buffer - text buffer terminated with '\0'.
+     * @param buffer - number buffer.
      * @return true if success, false for failure.
      */
-    bool setText(const char *buffer);
+    bool setValue(uint32_t number);
 };
 /**
  * @}
  */
 
 
-#endif /* #ifndef __NEXBUTTON_H__ */
+
+#endif /* #ifndef __NEXDSBUTTON_H__ */

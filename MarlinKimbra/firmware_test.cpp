@@ -32,7 +32,7 @@ void FirmwareTest() {
 
     ECHO_EM(" ");
     ECHO_EM("***** ENDSTOP X *****");
-    #if PIN_EXISTS(X_MIN_PIN) && (X_HOME_DIR == -1)
+    #if PIN_EXISTS(X_MIN) && (X_HOME_DIR == -1)
       if (!READ(X_MIN_PIN)^X_MIN_ENDSTOP_INVERTING) {
         ECHO_M("MIN ENDSTOP X: ");
         ECHO_EV(MSG_ENDSTOP_OPEN);
@@ -72,7 +72,7 @@ void FirmwareTest() {
         ECHO_EV(MSG_FWTEST_ENDSTOP_ERR);
         return;
       }
-    #elif PIN_EXISTS(X_MAX_PIN) && X_HOME_DIR == 1
+    #elif PIN_EXISTS(X_MAX) && X_HOME_DIR == 1
       if (!READ(X_MAX_PIN)^X_MAX_ENDSTOP_INVERTING) {
         ECHO_M("MAX ENDSTOP X: ");
         ECHO_EV(MSG_ENDSTOP_OPEN);
@@ -126,7 +126,7 @@ void FirmwareTest() {
 
     ECHO_EM(" ");
     ECHO_EM("***** ENDSTOP Y *****");
-    #if PIN_EXISTS(Y_MIN_PIN) && Y_HOME_DIR == -1
+    #if PIN_EXISTS(Y_MIN) && Y_HOME_DIR == -1
       if (!READ(Y_MIN_PIN)^Y_MIN_ENDSTOP_INVERTING) {
         ECHO_M("MIN ENDSTOP Y: ");
         ECHO_EV(MSG_ENDSTOP_OPEN);
@@ -166,7 +166,7 @@ void FirmwareTest() {
         ECHO_EV(MSG_FWTEST_ENDSTOP_ERR);
         return;
       }
-    #elif PIN_EXISTS(Y_MAX_PIN) && Y_HOME_DIR == 1
+    #elif PIN_EXISTS(Y_MAX) && Y_HOME_DIR == 1
       if (!READ(Y_MAX_PIN)^Y_MAX_ENDSTOP_INVERTING) {
         ECHO_M("MAX ENDSTOP Y: ");
         ECHO_EV(MSG_ENDSTOP_OPEN);
@@ -220,7 +220,7 @@ void FirmwareTest() {
 
     ECHO_EM(" ");
     ECHO_EM("***** ENDSTOP Z *****");
-    #if PIN_EXISTS(Z_MIN_PIN) && Z_HOME_DIR == -1
+    #if PIN_EXISTS(Z_MIN) && Z_HOME_DIR == -1
       if (!READ(Z_MIN_PIN)^Z_MIN_ENDSTOP_INVERTING) {
         ECHO_M("MIN ENDSTOP Z: ");
         ECHO_EV(MSG_ENDSTOP_OPEN);
@@ -260,7 +260,7 @@ void FirmwareTest() {
         ECHO_EV(MSG_FWTEST_ENDSTOP_ERR);
         return;
       }
-    #elif PIN_EXISTS(Z_MAX_PIN) && Z_HOME_DIR == 1
+    #elif PIN_EXISTS(Z_MAX) && Z_HOME_DIR == 1
       if (!READ(Z_MAX_PIN)^Z_MAX_ENDSTOP_INVERTING) {
         ECHO_M("MAX ENDSTOP Z: ");
         ECHO_EV(MSG_ENDSTOP_OPEN);
