@@ -76,8 +76,6 @@ static void lcd_status_screen();
   static void lcd_main_menu();
   static void lcd_tune_menu();
   static void lcd_prepare_menu();
-  static void lcd_prepare_motion_menu();
-  static void lcd_prepare_temperature_menu();
   static void lcd_move_menu();
   static void lcd_control_menu();
   static void lcd_stats_menu();
@@ -2467,7 +2465,7 @@ char* ftostr52(const float& x) {
           LCD_Printpos(0, 1); lcd_printPGM(PSTR("                  "));
           delay(5000);
           enqueuecommands_P(PSTR("G28"));
-          lcd_goto_menu(lcd_prepare_motion_menu);
+          lcd_goto_menu(lcd_prepare_menu);
         }
       break;
     }
