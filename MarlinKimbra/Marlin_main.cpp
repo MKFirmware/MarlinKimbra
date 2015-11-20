@@ -118,6 +118,7 @@
  * M3   - Put S<value> in laser beam control
  * M4   - Turn on laser beam
  * M5   - Turn off laser beam
+ * M11  - Start printer for pause mode
  * M17  - Enable/Power all stepper motors
  * M18  - Disable all stepper motors; same as M84
  * M20  - List SD card
@@ -433,7 +434,7 @@ unsigned long printer_usage_seconds;
 
 #if HAS(FILRUNOUT)
   static bool filrunoutEnqueued = false;
-  bool filrunoutActive = false;
+  bool printing = false;
 #endif
 
 #if ENABLED(SDSUPPORT)
@@ -4336,6 +4337,22 @@ inline void gcode_G92() {
   }
 #endif //LASERBEAM
 
+#if HAS(FILRUNOUT)
+  /**
+   * M11: Start printing
+   */
+  inline void gcode_M11() {
+    printing = true;
+    filrunoutEnqueued = false;
+    ECHO_LM(DB, "Start Printing, pause pin active.");
+    ECHO_S(RESUME);
+    ECHO_E;
+    #if HAS(POWER_CONSUMPTION_SENSOR)
+      startpower = power_consumption_hour;
+    #endif
+  }
+#endif
+
 /**
  * M17: Enable power on all stepper motors
  */
@@ -6326,7 +6343,6 @@ inline void gcode_M503() {
    *  X[position] - Move to this X position, with Y
    *  Y[position] - Move to this Y position, with X
    *  L[distance] - Retract distance for removal (manual reload)
-   *  S[0-1]      - Deactivate Filament runout - Active Filament runout
    *
    *  Default values are used for omitted arguments.
    *
@@ -6337,26 +6353,6 @@ inline void gcode_M503() {
       ECHO_LM(ER, MSG_TOO_COLD_FOR_FILAMENTCHANGE);
       return;
     }
-
-    #if HAS(FILRUNOUT)
-      if (code_seen('S')) {
-        if (code_value() == 1) {
-          filrunoutActive = true;
-          filrunoutEnqueued = false;
-          ECHO_LM(DB, "Filament runout activated.");
-          ECHO_S(RESUME);
-          ECHO_E;
-          #if HAS(POWER_CONSUMPTION_SENSOR)
-            startpower = power_consumption_hour;
-          #endif
-        } else {
-          filrunoutActive = false;
-          filrunoutEnqueued = false;
-          ECHO_LM(DB, "Filament runout deactivated.");
-        }
-        return;
-      }
-    #endif
 
     float lastpos[NUM_AXIS], fr60 = feedrate / 60;
 
@@ -7122,6 +7118,11 @@ void process_next_command() {
         case 5: // M05 - Turn off laser beam
           gcode_M5(); break;
       #endif //LASERBEAM
+
+      #if HAS(FILRUNOUT)
+        case 11: //M11 - Start printing
+          gcode_M11(); break;
+      #endif
 
       case 17: //M17 - Enable/Power all stepper motors
         gcode_M17(); break;
@@ -7978,7 +7979,7 @@ void idle(bool ignore_stepper_queue/*=false*/) {
 void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
 
   #if HAS(FILRUNOUT)
-    if ((filrunoutActive || IS_SD_PRINTING) && (READ(FILRUNOUT_PIN) ^ FILRUNOUT_PIN_INVERTING))
+    if ((printing || IS_SD_PRINTING ) && (READ(FILRUNOUT_PIN) ^ FILRUNOUT_PIN_INVERTING))
       filrunout();
   #endif
 

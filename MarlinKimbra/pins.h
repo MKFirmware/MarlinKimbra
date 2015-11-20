@@ -24,7 +24,7 @@
 *302 BOARD_MINIRAMBO - Mini Rambo
 *
 *  4 BOARD_DUEMILANOVE_328P - Duemilanove w/ ATMega328P pin assignment
-* 40 BOARD_MKS_BASE    – Arduino Mega2560 with RAMPS v1.4 pin assignments
+* 40 BOARD_MKS_BASE    â€“ Arduino Mega2560 with RAMPS v1.4 pin assignments
 *401 BOARD_RADDS       - Radds Arduino DUE
 *403 BOARD_RAMPS_FD_V1 - Ramps FD version 1
 *404 BOARD_RAMPS_FD_V2 - Ramps FD version 2
