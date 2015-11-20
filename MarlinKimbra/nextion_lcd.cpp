@@ -455,22 +455,24 @@
     enqueuecommands_P(PSTR("G90"));
   }
 
-  void PlayPausePopCallback(void *ptr) {
-    if (card.cardOK && card.isFileOpen()) {
-      if (card.sdprinting)
-        card.pauseSDPrint();
-      else
-        card.startFileprint();
+  #if ENABLED(SDSUPPORT)
+    void PlayPausePopCallback(void *ptr) {
+      if (card.cardOK && card.isFileOpen()) {
+        if (card.sdprinting)
+          card.pauseSDPrint();
+        else
+          card.startFileprint();
+      }
     }
-  }
 
-  void StopPopCallback(void *ptr) {
-    quickStop();
-    card.sdprinting = false;
-    card.closeFile();
-    autotempShutdown();
-    lcd_setstatus(MSG_PRINT_ABORTED, true);
-  }
+    void StopPopCallback(void *ptr) {
+      quickStop();
+      card.sdprinting = false;
+      card.closeFile();
+      autotempShutdown();
+      lcd_setstatus(MSG_PRINT_ABORTED, true);
+    }
+  #endif
 
   void lcd_init() {
     delay(1000);
