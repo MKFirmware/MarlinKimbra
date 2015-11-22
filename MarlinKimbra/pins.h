@@ -24,7 +24,7 @@
 *302 BOARD_MINIRAMBO - Mini Rambo
 *
 *  4 BOARD_DUEMILANOVE_328P - Duemilanove w/ ATMega328P pin assignment
-* 40 BOARD_MKS_BASE    – Arduino Mega2560 with RAMPS v1.4 pin assignments
+* 40 BOARD_MKS_BASE    - Arduino Mega2560 with RAMPS v1.4 pin assignments
 *401 BOARD_RADDS       - Radds Arduino DUE
 *403 BOARD_RAMPS_FD_V1 - Ramps FD version 1
 *404 BOARD_RAMPS_FD_V2 - Ramps FD version 2
@@ -2270,21 +2270,20 @@
 #define ORIG_X_DIR_PIN          23
 #define ORIG_X_ENABLE_PIN       26
 
-
 #define ORIG_Y_STEP_PIN         17
 #define ORIG_Y_DIR_PIN          16
 #define ORIG_Y_ENABLE_PIN       22
 
-#define ORIG_Z_STEP_PIN         2
-#define ORIG_Z_DIR_PIN          3
+#define ORIG_Z_STEP_PIN          2
+#define ORIG_Z_DIR_PIN           3
 #define ORIG_Z_ENABLE_PIN       15
 
 #define ORIG_X_MIN_PIN          28
-#define ORIG_X_MAX_PIN          -1  // 34   //Max endstops default to disabled "-1", set to commented value to enable.
+#define ORIG_X_MAX_PIN          34
 #define ORIG_Y_MIN_PIN          30
-#define ORIG_Y_MAX_PIN          -1  // 36
+#define ORIG_Y_MAX_PIN          36
 #define ORIG_Z_MIN_PIN          32
-#define ORIG_Z_MAX_PIN          -1  // 38
+#define ORIG_Z_MAX_PIN          38
 
 #define ORIG_E0_STEP_PIN        61
 #define ORIG_E0_DIR_PIN         60
@@ -2299,7 +2298,7 @@
 #define ORIG_E2_ENABLE_PIN      49
 
 #define SDPOWER                 -1
-#define SDSS                    10
+#define SDSS                     4
 #define LED_PIN                 -1
 
 #define BEEPER_PIN              41
@@ -2323,21 +2322,18 @@
 #define ORIG_TEMP_2_PIN         -1  // 2   // ANALOG NUMBERING
 #define ORIG_TEMP_3_PIN         -1  // 3   // ANALOG NUMBERING
 
-
-
-  #if NUM_SERVOS > 0
-    #define SERVO0_PIN           5
-    #if NUM_SERVOS > 1
-      #define SERVO1_PIN         6
-      #if NUM_SERVOS > 2
-        #define SERVO2_PIN      39
-        #if NUM_SERVOS > 3
-          #define SERVO3_PIN    40
-        #endif
+#if NUM_SERVOS > 0
+  #define SERVO0_PIN           5
+  #if NUM_SERVOS > 1
+    #define SERVO1_PIN         6
+    #if NUM_SERVOS > 2
+      #define SERVO2_PIN      39
+      #if NUM_SERVOS > 3
+        #define SERVO3_PIN    40
       #endif
     #endif
   #endif
-
+#endif
 
 #if ENABLED(ULTRA_LCD)
   // RADDS LCD panel
