@@ -27,13 +27,13 @@
   #define EN_B BIT(BLEN_B) // The two encoder pins are connected through BTN_EN1 and BTN_EN2
   #define EN_A BIT(BLEN_A)
 
-  #if ENABLED(BTN_ENC) && BTN_ENC > -1
+  #if ENABLED(BTN_ENC) && BTN_ENC > 0
     // encoder click is directly connected
     #define BLEN_C 2
     #define EN_C BIT(BLEN_C)
   #endif
 
-  #if HAS(BTN_BACK)
+  #if ENABLED(BTN_BACK) && BTN_BACK > 0
     #define BLEN_D 3
     #define EN_D BIT(BLEN_D)
   #endif

@@ -62,28 +62,31 @@
 //  why double up on these macros? see http://gcc.gnu.org/onlinedocs/cpp/Stringification.html
 
 /// Read a pin wrapper
-#define READ(IO)        _READ(IO)
+#define READ(IO)          _READ(IO)
 /// Write to a pin wrapper
-#define WRITE(IO, v)    _WRITE(IO, v)
+#define WRITE(IO, v)      _WRITE(IO, v)
 
 /// toggle a pin wrapper
-#define TOGGLE(IO)      _TOGGLE(IO)
+#define TOGGLE(IO)        _TOGGLE(IO)
 
 /// set pin as input wrapper
-#define SET_INPUT(IO)   _SET_INPUT(IO)
+#define SET_INPUT(IO)     _SET_INPUT(IO)
 /// set pin as output wrapper
-#define SET_OUTPUT(IO)  _SET_OUTPUT(IO)
+#define SET_OUTPUT(IO)    _SET_OUTPUT(IO)
 
 /// check if pin is an input wrapper
-#define GET_INPUT(IO)   _GET_INPUT(IO)
+#define GET_INPUT(IO)     _GET_INPUT(IO)
 /// check if pin is an output wrapper
-#define GET_OUTPUT(IO)  _GET_OUTPUT(IO)
+#define GET_OUTPUT(IO)    _GET_OUTPUT(IO)
 
 /// check if pin is an timer wrapper
-#define GET_TIMER(IO)   _GET_TIMER(IO)
+#define GET_TIMER(IO)     _GET_TIMER(IO)
 
 // Shorthand
-#define OUT_WRITE(IO, v) { SET_OUTPUT(IO); WRITE(IO, v); }
+#define OUT_WRITE(IO, v)  { SET_OUTPUT(IO); WRITE(IO, v); }
+
+// Pullup
+#define PULLUP(IO, v)     WRITE(IO, v)
 
 /*
   ports and functions
