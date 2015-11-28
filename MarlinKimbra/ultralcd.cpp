@@ -515,7 +515,7 @@ void lcd_set_home_offsets() {
 
 #if ENABLED(BABYSTEPPING)
 
-  static void _lcd_babystep(menuFunc_t menu, int axis, const char* msg) {
+  static void _lcd_babystep(int axis, const char* msg) {
     if (encoderPosition != 0) {
       babystepsTodo[axis] += BABYSTEP_MULTIPLICATOR * (int)encoderPosition;
       encoderPosition = 0;
@@ -524,9 +524,9 @@ void lcd_set_home_offsets() {
     if (lcdDrawUpdate) lcd_implementation_drawedit(msg, "");
     if (LCD_CLICKED) lcd_goto_menu(lcd_tune_menu);
   }
-  static void lcd_babystep_x() { _lcd_babystep(lcd_tune_menu, X_AXIS, PSTR(MSG_BABYSTEPPING_X)); }
-  static void lcd_babystep_y() { _lcd_babystep(lcd_tune_menu, Y_AXIS, PSTR(MSG_BABYSTEPPING_Y)); }
-  static void lcd_babystep_z() { _lcd_babystep(lcd_tune_menu, Z_AXIS, PSTR(MSG_BABYSTEPPING_Z)); }
+  static void lcd_babystep_x() { _lcd_babystep(X_AXIS, PSTR(MSG_BABYSTEPPING_X)); }
+  static void lcd_babystep_y() { _lcd_babystep(Y_AXIS, PSTR(MSG_BABYSTEPPING_Y)); }
+  static void lcd_babystep_z() { _lcd_babystep(Z_AXIS, PSTR(MSG_BABYSTEPPING_Z)); }
 
 #endif // BABYSTEPPING
 
@@ -547,72 +547,27 @@ static void lcd_tune_fixstep() {
   #endif
   #if HOTENDS > 1 && TEMP_SENSOR_1 != 0
     void watch_temp_callback_E1() { start_watching_heater(1); }
-    #if HOTENDS > 2 && TEMP_SENSOR_2 != 0
-      void watch_temp_callback_E2() { start_watching_heater(2); }
-      #if HOTENDS > 3 && TEMP_SENSOR_3 != 0
-        void watch_temp_callback_E3() { start_watching_heater(3); }
-      #endif // HOTENDS > 3
-    #endif // HOTENDS > 2
-  #endif // HOTENDS > 1
+  #endif
+  #if HOTENDS > 2 && TEMP_SENSOR_2 != 0
+    void watch_temp_callback_E2() { start_watching_heater(2); }
+  #endif
+  #if HOTENDS > 3 && TEMP_SENSOR_3 != 0
+    void watch_temp_callback_E3() { start_watching_heater(3); }
+  #endif
 #else
   #if TEMP_SENSOR_0 != 0
     void watch_temp_callback_E0() {}
   #endif
   #if HOTENDS > 1 && TEMP_SENSOR_1 != 0
     void watch_temp_callback_E1() {}
-    #if HOTENDS > 2 && TEMP_SENSOR_2 != 0
-      void watch_temp_callback_E2() {}
-      #if HOTENDS > 3 && TEMP_SENSOR_3 != 0
-        void watch_temp_callback_E3() {}
-      #endif // HOTENDS > 3
-    #endif // HOTENDS > 2
-  #endif // HOTENDS > 1
-#endif // !THERMAL_PROTECTION_HOTENDS
-
-/**
- * Items shared between Tune and Temperature menus
- */
-static void nozzle_bed_fan_menu_items(uint8_t &encoderLine, uint8_t &_lineNr, uint8_t &_drawLineNr, uint8_t &_menuItemNr, bool &wasClicked, bool &itemSelected) {
-  //
-  // Nozzle:
-  // Nozzle [1-4]:
-  //
-  #if HOTENDS == 1
-    #if TEMP_SENSOR_0 != 0
-      MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE, &target_temperature[0], 0, HEATER_0_MAXTEMP - 15, watch_temp_callback_E0);
-    #endif
-  #else // HOTENDS > 1
-    #if TEMP_SENSOR_0 != 0
-      MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE " 0", &target_temperature[0], 0, HEATER_0_MAXTEMP - 15, watch_temp_callback_E0);
-    #endif
-    #if TEMP_SENSOR_1 != 0
-      MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE " 1", &target_temperature[1], 0, HEATER_1_MAXTEMP - 15, watch_temp_callback_E1);
-    #endif
-    #if HOTENDS > 2
-      #if TEMP_SENSOR_2 != 0
-        MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE " 2", &target_temperature[2], 0, HEATER_2_MAXTEMP - 15, watch_temp_callback_E2);
-      #endif
-      #if EXTRUDERS > 3
-        #if TEMP_SENSOR_3 != 0
-          MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE " 3", &target_temperature[3], 0, HEATER_3_MAXTEMP - 15, watch_temp_callback_E3);
-        #endif
-      #endif // HOTENDS > 3
-    #endif // HOTENDS > 2
-  #endif // HOTENDS > 1
-
-  //
-  // Bed:
-  //
-  #if TEMP_SENSOR_BED != 0
-    MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP - 15);
   #endif
-
-  //
-  // Fan Speed:
-  //
-  MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255);
-}
-
+  #if HOTENDS > 2 && TEMP_SENSOR_2 != 0
+    void watch_temp_callback_E2() {}
+  #endif
+  #if HOTENDS > 3 && TEMP_SENSOR_3 != 0
+    void watch_temp_callback_E3() {}
+  #endif
+#endif // !THERMAL_PROTECTION_HOTENDS
 
 /**
  *
@@ -632,9 +587,44 @@ static void lcd_tune_menu() {
   //
   MENU_ITEM_EDIT(int3, MSG_SPEED, &feedrate_multiplier, 10, 999);
 
-  // Nozzle, Bed, and Fan Control
-  nozzle_bed_fan_menu_items(encoderLine, _lineNr, _drawLineNr, _menuItemNr, wasClicked, itemSelected);
+  //
+  // Nozzle:
+  //
+  #if HOTENDS == 1
+    #if TEMP_SENSOR_0 != 0
+      MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE, &target_temperature[0], 0, HEATER_0_MAXTEMP - 15, watch_temp_callback_E0);
+    #endif
+  #else // HOTENDS > 1
+    #if TEMP_SENSOR_0 != 0
+      MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE " 0", &target_temperature[0], 0, HEATER_0_MAXTEMP - 15, watch_temp_callback_E0);
+    #endif
+    #if TEMP_SENSOR_1 != 0
+      MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE " 1", &target_temperature[1], 0, HEATER_1_MAXTEMP - 15, watch_temp_callback_E1);
+    #endif
+    #if HOTENDS > 2
+      #if TEMP_SENSOR_2 != 0
+        MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE " 2", &target_temperature[2], 0, HEATER_2_MAXTEMP - 15, watch_temp_callback_E2);
+      #endif
+      #if HOTENDS > 3
+        #if TEMP_SENSOR_3 != 0
+          MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE " 3", &target_temperature[3], 0, HEATER_3_MAXTEMP - 15, watch_temp_callback_E3);
+        #endif
+      #endif // HOTENDS > 3
+    #endif // HOTENDS > 2
+  #endif // HOTENDS > 1
 
+  //
+  // Bed:
+  //
+  #if TEMP_SENSOR_BED != 0
+    MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP - 15);
+  #endif
+
+  //
+  // Fan Speed:
+  //
+  MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255);
+  
   //
   // Flow:
   // Flow 1:
@@ -846,7 +836,7 @@ void lcd_cooldown() {
 
 static void lcd_prepare_menu() {
   START_MENU(lcd_main_menu);
-  
+
   //
   // ^ Main
   //
@@ -1208,8 +1198,43 @@ static void lcd_control_temperature_menu() {
   //
   MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
 
-  // Nozzle, Bed, and Fan Control
-  nozzle_bed_fan_menu_items(encoderLine, _lineNr, _drawLineNr, _menuItemNr, wasClicked, itemSelected);
+  //
+  // Nozzle:
+  //
+  #if HOTENDS == 1
+    #if TEMP_SENSOR_0 != 0
+      MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE, &target_temperature[0], 0, HEATER_0_MAXTEMP - 15, watch_temp_callback_E0);
+    #endif
+  #else // HOTENDS > 1
+    #if TEMP_SENSOR_0 != 0
+      MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE " 0", &target_temperature[0], 0, HEATER_0_MAXTEMP - 15, watch_temp_callback_E0);
+    #endif
+    #if TEMP_SENSOR_1 != 0
+      MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE " 1", &target_temperature[1], 0, HEATER_1_MAXTEMP - 15, watch_temp_callback_E1);
+    #endif
+    #if HOTENDS > 2
+      #if TEMP_SENSOR_2 != 0
+        MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE " 2", &target_temperature[2], 0, HEATER_2_MAXTEMP - 15, watch_temp_callback_E2);
+      #endif
+      #if HOTENDS > 3
+        #if TEMP_SENSOR_3 != 0
+          MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE " 3", &target_temperature[3], 0, HEATER_3_MAXTEMP - 15, watch_temp_callback_E3);
+        #endif
+      #endif // HOTENDS > 3
+    #endif // HOTENDS > 2
+  #endif // HOTENDS > 1
+
+  //
+  // Bed:
+  //
+  #if TEMP_SENSOR_BED != 0
+    MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP - 15);
+  #endif
+
+  //
+  // Fan Speed:
+  //
+  MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255);
 
   //
   // Autotemp, Min, Max, Fact
@@ -1217,7 +1242,7 @@ static void lcd_control_temperature_menu() {
   #if ENABLED(AUTOTEMP) && (TEMP_SENSOR_0 != 0)
     MENU_ITEM_EDIT(bool, MSG_AUTOTEMP, &autotemp_enabled);
     MENU_ITEM_EDIT(float3, MSG_MIN, &autotemp_min, 0, HEATER_0_MAXTEMP - 15);
-    MENU_ITEM_EDIT(float3, MSG_MAX, &autotemp_max, 0, HEATER_0_MAXTEMP -15 );
+    MENU_ITEM_EDIT(float3, MSG_MAX, &autotemp_max, 0, HEATER_0_MAXTEMP - 15);
     MENU_ITEM_EDIT(float32, MSG_FACTOR, &autotemp_factor, 0.0, 1.0);
   #endif
 
@@ -1732,19 +1757,19 @@ void lcd_init() {
 
     SET_INPUT(BTN_EN1);
     SET_INPUT(BTN_EN2);
-    WRITE(BTN_EN1, HIGH);
-    WRITE(BTN_EN2, HIGH);
+    PULLUP(BTN_EN1, HIGH);
+    PULLUP(BTN_EN2, HIGH);
 
     #if BTN_ENC > 0
       SET_INPUT(BTN_ENC);
-      WRITE(BTN_ENC, HIGH);
+      PULLUP(BTN_ENC, HIGH);
     #endif
 
     #if ENABLED(REPRAPWORLD_KEYPAD)
       pinMode(SHIFT_CLK, OUTPUT);
       pinMode(SHIFT_LD, OUTPUT);
       pinMode(SHIFT_OUT, INPUT);
-      WRITE(SHIFT_OUT, HIGH);
+      PULLUP(SHIFT_OUT, HIGH);
       WRITE(SHIFT_LD, HIGH);
     #endif
 
@@ -1758,7 +1783,7 @@ void lcd_init() {
       pinMode(SHIFT_LD, OUTPUT);
       pinMode(SHIFT_EN, OUTPUT);
       pinMode(SHIFT_OUT, INPUT);
-      WRITE(SHIFT_OUT, HIGH);
+      PULLUP(SHIFT_OUT, HIGH);
       WRITE(SHIFT_LD, HIGH);
       WRITE(SHIFT_EN, LOW);
     #endif // SR_LCD_2W_NL
@@ -1767,7 +1792,7 @@ void lcd_init() {
 
   #if ENABLED(SDSUPPORT) && PIN_EXISTS(SD_DETECT)
     pinMode(SD_DETECT_PIN, INPUT);
-    WRITE(SD_DETECT_PIN, HIGH);
+    PULLUP(SD_DETECT_PIN, HIGH);
     lcd_sd_status = 2; // UNKNOWN
   #endif
 

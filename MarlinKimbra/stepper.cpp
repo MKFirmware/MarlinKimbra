@@ -995,70 +995,70 @@ void st_init() {
   #if HAS(X_MIN)
     SET_INPUT(X_MIN_PIN);
     #if ENABLED(ENDSTOPPULLUP_XMIN)
-      WRITE(X_MIN_PIN, HIGH);
+      PULLUP(X_MIN_PIN, HIGH);
     #endif
   #endif
 
   #if HAS(Y_MIN)
     SET_INPUT(Y_MIN_PIN);
     #if ENABLED(ENDSTOPPULLUP_YMIN)
-      WRITE(Y_MIN_PIN, HIGH);
+      PULLUP(Y_MIN_PIN, HIGH);
     #endif
   #endif
 
   #if HAS(Z_MIN)
     SET_INPUT(Z_MIN_PIN);
     #if ENABLED(ENDSTOPPULLUP_ZMIN)
-      WRITE(Z_MIN_PIN, HIGH);
+      PULLUP(Z_MIN_PIN, HIGH);
     #endif
   #endif
 
   #if HAS(Z2_MIN)
     SET_INPUT(Z2_MIN_PIN);
     #if ENABLED(ENDSTOPPULLUP_Z2MIN)
-      WRITE(Z2_MIN_PIN, HIGH);
+      PULLUP(Z2_MIN_PIN, HIGH);
     #endif
   #endif
 
   #if HAS(E_MIN)
     SET_INPUT(E_MIN_PIN);
     #if ENABLED(ENDSTOPPULLUP_EMIN)
-      WRITE(E_MIN_PIN, HIGH);
+      PULLUP(E_MIN_PIN, HIGH);
     #endif
   #endif
 
   #if HAS(X_MAX)
     SET_INPUT(X_MAX_PIN);
     #if ENABLED(ENDSTOPPULLUP_XMAX)
-      WRITE(X_MAX_PIN, HIGH);
+      PULLUP(X_MAX_PIN, HIGH);
     #endif
   #endif
 
   #if HAS(Y_MAX)
     SET_INPUT(Y_MAX_PIN);
     #if ENABLED(ENDSTOPPULLUP_YMAX)
-      WRITE(Y_MAX_PIN, HIGH);
+      PULLUP(Y_MAX_PIN, HIGH);
     #endif
   #endif
 
   #if HAS(Z_MAX)
     SET_INPUT(Z_MAX_PIN);
     #if ENABLED(ENDSTOPPULLUP_ZMAX)
-      WRITE(Z_MAX_PIN, HIGH);
+      PULLUP(Z_MAX_PIN, HIGH);
     #endif
   #endif
 
   #if HAS(Z2_MAX)
     SET_INPUT(Z2_MAX_PIN);
     #if ENABLED(ENDSTOPPULLUP_Z2MAX)
-      WRITE(Z2_MAX_PIN, HIGH);
+      PULLUP(Z2_MAX_PIN, HIGH);
     #endif
   #endif
 
   #if HAS(Z_PROBE) // Check for Z_PROBE_ENDSTOP so we don't pull a pin high unless it's to be used.
     SET_INPUT(Z_PROBE_PIN);
     #if ENABLED(ENDSTOPPULLUP_ZPROBE)
-      WRITE(Z_PROBE_PIN, HIGH);
+      PULLUP(Z_PROBE_PIN, HIGH);
     #endif
   #endif
 
