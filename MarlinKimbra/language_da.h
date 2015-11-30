@@ -55,8 +55,6 @@
 #define MSG_MOVE_Y                          "Flyt Y"
 #define MSG_MOVE_Z                          "Flyt Z"
 #define MSG_MOVE_E                          "Extruder"
-#define MSG_MOVE_E1                         "Extruder2"
-#define MSG_MOVE_E2                         "Extruder3"
 #define MSG_MOVE_01MM                       "Flyt 0.1mm"
 #define MSG_MOVE_1MM                        "Flyt 1mm"
 #define MSG_MOVE_10MM                       "Flyt 10mm"
