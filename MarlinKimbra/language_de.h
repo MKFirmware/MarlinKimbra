@@ -148,9 +148,9 @@
 #define MSG_ERR_MINTEMP                     "Err: MINTEMP"
 #define MSG_ERR_MAXTEMP_BED                 "Err: MAXTEMP BED"
 #define MSG_ERR_MINTEMP_BED                 "Err: MINTEMP BED"
-#define MSG_END_DAY                         "days"
-#define MSG_END_HOUR                        "hours"
-#define MSG_END_MINUTE                      "minutes"
+#define MSG_END_DAY                         "tage"
+#define MSG_END_HOUR                        "uur"
+#define MSG_END_MINUTE                      "minuten"
 
 // Debug
 #define MSG_DEBUG_ECHO                      "DEBUG ECHO ENABLED"
