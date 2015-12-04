@@ -2297,19 +2297,26 @@
 #define ORIG_E2_DIR_PIN         53
 #define ORIG_E2_ENABLE_PIN      49
 
+#define ORIG_E3_STEP_PIN        35
+#define ORIG_E3_DIR_PIN         33
+#define ORIG_E3_ENABLE_PIN      37
+
+#define ORIG_E4_STEP_PIN        29
+#define ORIG_E4_DIR_PIN         27
+#define ORIG_E4_ENABLE_PIN      31
+
 #define SDPOWER                 -1
 #define SDSS                     4
 #define LED_PIN                 -1
 
 #define BEEPER_PIN              41
 
-#define ORIG_FAN_PIN            -1
+#define ORIG_FAN_PIN 	           9
+#define ORIG_FAN2_PIN            8
 
-//#define CONTROLLERORIG_FAN_PIN  8 //Pin used for the fan to cool controller
+#define PS_ON_PIN               40
 
-#define PS_ON_PIN          40
-
-#define KILL_PIN           -1
+#define KILL_PIN                -1
 
 #define ORIG_HEATER_BED_PIN     7    // BED
 #define ORIG_HEATER_0_PIN       13

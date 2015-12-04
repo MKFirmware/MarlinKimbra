@@ -353,7 +353,7 @@ unsigned long printer_usage_seconds;
 
 #endif // FWRETRACT
 
-#if ENABLED(ULTIPANEL) && HAS(POWER_SWITCH)
+#if (ENABLED(ULTIPANEL) || ENABLED(NEXTION)) && HAS(POWER_SWITCH)
   bool powersupply = 
     #if ENABLED(PS_DEFAULT_OFF)
       false
@@ -3692,13 +3692,13 @@ inline void gcode_G28() {
 
           // raise extruder
           float measured_z,
-                z_before = probePointCounter ? Z_RAISE_BETWEEN_PROBINGS + current_position[Z_AXIS] : Z_RAISE_BEFORE_PROBING;
+                z_before = probePointCounter ? Z_RAISE_BETWEEN_PROBINGS + current_position[Z_AXIS] : Z_RAISE_BEFORE_PROBING + current_position[Z_AXIS];
 
           if (debugLevel & DEBUG_INFO) {
             if (probePointCounter)
               ECHO_LMV(DB, "z_before = (between) ", (float)(Z_RAISE_BETWEEN_PROBINGS + current_position[Z_AXIS]));
             else
-              ECHO_LMV(DB, "z_before = (before) ", (float)Z_RAISE_BEFORE_PROBING);
+              ECHO_LMV(DB, "z_before = (before) ", (float)Z_RAISE_BEFORE_PROBING + current_position[Z_AXIS]);
           }
 
           ProbeAction act;
