@@ -21,7 +21,7 @@
   bool PageInfo         = false;
   char buffer[100]      = {0};
   uint32_t slidermaxval = 20;
-  char lcd_status_message[30] = WELCOME_MSG; // worst case is kana with up to 3*LCD_WIDTH+1
+  char lcd_status_message[30] = WELCOME_MSG;
   uint8_t lcd_status_message_level = 0;
   static millis_t next_lcd_update_ms;
 

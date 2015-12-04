@@ -4,7 +4,7 @@
   #if ENABLED(NEXTION)
     #define LCD_UPDATE_INTERVAL 5000
 
-    void ExitUpPopCallback(void *ptr);
+    void ExitPopCallback(void *ptr);
     void setpagePopCallback(void *ptr);
     void hotPopCallback(void *ptr);
     void sethotPopCallback(void *ptr);
