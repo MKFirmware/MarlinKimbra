@@ -7795,7 +7795,7 @@ void plan_arc(
   // Ensure last segment arrives at target location.
   #if MECH(DELTA) || MECH(SCARA)
     calculate_delta(target);
-    adjust_delta(arc_target);
+    adjust_delta(target);
     plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], target[E_AXIS], feed_rate, active_extruder, active_driver);
   #else
     plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feed_rate, active_extruder, active_driver);
