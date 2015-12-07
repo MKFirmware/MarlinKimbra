@@ -12,6 +12,7 @@
  * - Temperature status LEDs
  * - PID Settings - HOTEND
  * - PID Settings - BED
+ * - Inverted PINS
  * - Thermal runaway protection
  * - Fan configuration
  * - Mediancount (ONLY FOR DUE)
@@ -232,6 +233,17 @@
 
 //#define PID_BED_DEBUG // Sends debug data to the serial port.
 /***********************************************************************/
+
+
+/********************************************************************************
+ ************************ Inverted Heater or Bed PINS ***************************
+ ********************************************************************************
+ *                                                                              *
+ * For inverted logical Heater or Bed pins                                      *
+ *                                                                              *
+ ********************************************************************************/
+//#define INVERTED_HEATER_PINS
+//#define INVERTED_BED_PINS
 
 
 /********************************************************************************
