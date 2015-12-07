@@ -139,15 +139,15 @@
   #define ORIG_HEATER_2_PIN     -1
   #define ORIG_HEATER_BED_PIN    3  // (bed)
   
-  #define SDPOWER          -1
-  #define SDSS             31  // SCL pin of I2C header || CS Pin for SD Card support
-  #define LED_PIN          -1
+  #define SDPOWER               -1
+  #define SDSS                  31  // SCL pin of I2C header || CS Pin for SD Card support
+  #define LED_PIN               -1
   
   #define ORIG_FAN_PIN          -1
-  #define PS_ON_PIN        19
+  #define ORIG_PS_ON_PIN        19
   
   //our pin for debugging.
-  #define DEBUG_PIN        -1
+  #define DEBUG_PIN             -1
   
   //our RS485 pins
   //#define TORIG_X_ENABLE_PIN  12
@@ -233,7 +233,7 @@
   #define LED_PIN          -1
   
   #define ORIG_FAN_PIN     31
-  #define PS_ON_PIN        15
+  #define ORIG_PS_ON_PIN   15
   
   //All these generations of Gen7 supply thermistor power
   //via PS_ON, so ignore bad thermistor readings
@@ -308,7 +308,7 @@
   #define LED_PIN          -1
   
   #define ORIG_FAN_PIN          -1  // Gen7 v1.3 removed the fan pin
-  #define PS_ON_PIN        15
+  #define ORIG_PS_ON_PIN        15
   
   //All these generations of Gen7 supply thermistor power
   //via PS_ON, so ignore bad thermistor readings
@@ -380,7 +380,7 @@
 
   #define ORIG_FAN_PIN          -1
 
-  #define PS_ON_PIN        15
+  #define ORIG_PS_ON_PIN        15
 
   //our pin for debugging.
   #define DEBUG_PIN         0
@@ -452,7 +452,7 @@
   //FAN
   #define ORIG_FAN_PIN -1
   
-  #define PS_ON_PIN -1
+  #define ORIG_PS_ON_PIN -1
   #define KILL_PIN -1
   
   #define ORIG_HEATER_0_PIN 19 // EXTRUDER 1
@@ -554,7 +554,7 @@
   #else
   #define ORIG_FAN_PIN 31
   #endif
-  #define PS_ON_PIN 15
+  #define ORIG_PS_ON_PIN 15
   
   //All these generations of Gen7 supply thermistor power
   //via PS_ON, so ignore bad thermistor readings
@@ -620,7 +620,7 @@
   
   #define ORIG_FAN_PIN          16  // 5V PWM
   
-  #define PS_ON_PIN             10  // Set to -1 if using a manual switch on the PWRSW Connector
+  #define ORIG_PS_ON_PIN        10  // Set to -1 if using a manual switch on the PWRSW Connector
   #define SLEEP_WAKE_PIN        26  // This feature still needs work
   
   #define ORIG_HEATER_0_PIN     45  // 12V PWM1
@@ -749,7 +749,7 @@
   #define LED_PIN               -1
 
   //pin for controlling the PSU.
-  #define PS_ON_PIN             14
+  #define ORIG_PS_ON_PIN        14
 
   //Alex extras from Gen3+
   #define KILL_PIN              -1
@@ -802,7 +802,7 @@
   #define SDPOWER                 48
   #define SDSS                    53
   #define LED_PIN                 13
-  #define PS_ON_PIN               -1
+  #define ORIG_PS_ON_PIN          -1
   #define KILL_PIN                -1
   
   #if ENABLED(RAMPS_V_1_0) // RAMPS_V_1_0
@@ -900,7 +900,7 @@
   #define LED_PIN                 13
   
   #define ORIG_FAN_PIN            9
-  #define PS_ON_PIN               12
+  #define ORIG_PS_ON_PIN          12
   
   #define ORIG_HEATER_0_PIN       10  // Hotend 1
   #define ORIG_HEATER_1_PIN       -1
@@ -1108,7 +1108,7 @@
   #define LED_PIN                 13
 
   #define ORIG_FAN_PIN            4
-  #define PS_ON_PIN               12
+  #define ORIG_PS_ON_PIN          12
 
   #define ORIG_HEATER_0_PIN       10  // HOTEND 1
   #define ORIG_HEATER_1_PIN       9   // HOTEND 2
@@ -1310,7 +1310,7 @@
   #define LED_PIN                 13
 
   #define ORIG_FAN_PIN            9
-  #define PS_ON_PIN               12
+  #define ORIG_PS_ON_PIN          12
 
   #define ORIG_HEATER_0_PIN       10  // HOTEND 1
   #define ORIG_HEATER_1_PIN       -1
@@ -1512,7 +1512,7 @@
   #define LED_PIN                 13
 
   #define ORIG_FAN_PIN            8
-  #define PS_ON_PIN               12
+  #define ORIG_PS_ON_PIN          12
 
   #define ORIG_HEATER_0_PIN       10   // HOTEND 1
   #define ORIG_HEATER_1_PIN        9   // HOTEND 2
@@ -1714,7 +1714,7 @@
   #define LED_PIN                 13
 
   #define ORIG_FAN_PIN            8
-  #define PS_ON_PIN               12
+  #define ORIG_PS_ON_PIN          12
 
   #define ORIG_HEATER_0_PIN       10  // HOTEND 1
   #define ORIG_HEATER_1_PIN       9   // HOTEND 2
@@ -1931,7 +1931,7 @@
 #define SDSS               53
 #define LED_PIN            13
 #define ORIG_FAN_PIN        8
-#define PS_ON_PIN           4
+#define ORIG_PS_ON_PIN      4
 #define KILL_PIN           -1 //80 with Smart Controller LCD
 #define SUICIDE_PIN        -1  //PIN that has to be turned on right after start, to keep power flowing.
 
@@ -2024,17 +2024,17 @@
 #define ORIG_E0_DIR_PIN          12
 #define ORIG_E0_ENABLE_PIN       -1
 
-#define SDPOWER          -1
-#define SDSS          -1
-#define LED_PIN            -1
-#define ORIG_FAN_PIN             5
-#define PS_ON_PIN          -1
-#define KILL_PIN           -1
+#define SDPOWER                  -1
+#define SDSS                     -1
+#define LED_PIN                  -1
+#define ORIG_FAN_PIN              5
+#define ORIG_PS_ON_PIN           -1
+#define KILL_PIN                 -1
 
-#define ORIG_HEATER_0_PIN        6
+#define ORIG_HEATER_0_PIN         6
 #define ORIG_HEATER_1_PIN        -1
 #define ORIG_HEATER_2_PIN        -1
-#define ORIG_TEMP_0_PIN          0    // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
+#define ORIG_TEMP_0_PIN           0    // MUST USE ANALOG INPUT NUMBERING NOT DIGITAL OUTPUT NUMBERING!!!!!!!!!
 #define ORIG_TEMP_1_PIN          -1
 #define ORIG_TEMP_2_PIN          -1
 #define ORIG_HEATER_BED_PIN      -1
@@ -2314,17 +2314,17 @@
 #define ORIG_FAN_PIN 	           9
 #define ORIG_FAN2_PIN            8
 
-#define PS_ON_PIN               40
+#define ORIG_PS_ON_PIN          40
 
 #define KILL_PIN                -1
 
-#define ORIG_HEATER_BED_PIN     7    // BED
+#define ORIG_HEATER_BED_PIN      7    // BED
 #define ORIG_HEATER_0_PIN       13
 #define ORIG_HEATER_1_PIN       12
 #define ORIG_HEATER_2_PIN       11
 
-#define ORIG_TEMP_BED_PIN       4   // ANALOG NUMBERING
-#define ORIG_TEMP_0_PIN         0   // ANALOG NUMBERING
+#define ORIG_TEMP_BED_PIN        4   // ANALOG NUMBERING
+#define ORIG_TEMP_0_PIN          0   // ANALOG NUMBERING
 #define ORIG_TEMP_1_PIN         -1  // 1   // ANALOG NUMBERING
 #define ORIG_TEMP_2_PIN         -1  // 2   // ANALOG NUMBERING
 #define ORIG_TEMP_3_PIN         -1  // 3   // ANALOG NUMBERING
@@ -2373,7 +2373,7 @@
     #define SDCARDDETECT    14
     #define KILL_PIN        -1
 
-  #elif defined(SPARK_FULL_GRAPHICS)
+  #elif ENABLED(SPARK_FULL_GRAPHICS)
     #define LCD_PINS_D4     29
     #define LCD_PINS_ENABLE 27
     #define LCD_PINS_RS     25
@@ -2464,9 +2464,9 @@
 
 #define ORIG_FAN_PIN            -1
 
-#define CONTROLLERORIG_FAN_PIN  -1 //Pin used for the fan to cool controller
+#define CONTROLLER_FAN_PIN      -1
 
-#define PS_ON_PIN               -1
+#define ORIG_PS_ON_PIN          -1
 
 #define KILL_PIN                -1
 
@@ -2582,7 +2582,7 @@
 #define SDSS                  53  // 10 if using HW SPI. 53 if using SW SPI
 #define LED_PIN               13
 #define ORIG_FAN_PIN           9
-#define PS_ON_PIN             12
+#define ORIG_PS_ON_PIN        12
 #define KILL_PIN              -1
 #define SUICIDE_PIN           -1  // PIN that has to be turned on right after start, to keep power flowing
 
@@ -2647,7 +2647,7 @@
 #define ORIG_TEMP_BED_PIN       10   // ANALOG NUMBERING
 
 #define ORIG_FAN_PIN             9
-#define PS_ON_PIN               12
+#define ORIG_PS_ON_PIN          12
 #define SDPOWER                 -1
 #define SDSS                    53
 #define LED_PIN                 13
@@ -2692,7 +2692,7 @@
     #define ORIG_E0_STEP_PIN      4    //Edited @ EJE Electronics 20100715
     #define ORIG_E0_DIR_PIN       2    //Edited @ EJE Electronics 20100715
     #define ORIG_E0_ENABLE_PIN    3    //Added @ EJE Electronics 20100715
-    #define ORIG_TEMP_0_PIN      5     //changed @ rkoeppl 20110410
+    #define ORIG_TEMP_0_PIN       5    //changed @ rkoeppl 20110410
     #define ORIG_TEMP_1_PIN      -1    //changed @ rkoeppl 20110410
 
 
@@ -2707,19 +2707,19 @@
     #define ORIG_HEATER_BED_PIN   1    //changed @ rkoeppl 20110410
     #define ORIG_TEMP_BED_PIN     0    //changed @ rkoeppl 20110410
     #endif
-    #define SDPOWER          -1
-    #define SDSS          17
-    #define LED_PIN         -1    //changed @ rkoeppl 20110410
+    #define SDPOWER              -1
+    #define SDSS                 17
+    #define LED_PIN              -1    //changed @ rkoeppl 20110410
     #define ORIG_FAN_PIN         -1    //changed @ rkoeppl 20110410
-    #define PS_ON_PIN       -1    //changed @ rkoeppl 20110410
-    #define KILL_PIN        -1    //changed @ drakelive 20120830
+    #define ORIG_PS_ON_PIN       -1    //changed @ rkoeppl 20110410
+    #define KILL_PIN             -1    //changed @ drakelive 20120830
     //our pin for debugging.
 
-    #define DEBUG_PIN        0
+    #define DEBUG_PIN             0
 
     //our RS485 pins
-    #define TORIG_X_ENABLE_PIN 12
-    #define RORIG_X_ENABLE_PIN 13
+    #define TORIG_X_ENABLE_PIN   12
+    #define RORIG_X_ENABLE_PIN   13
 
 #endif // GEN6 || GEN6_DELUXE
 /****************************************************************************************/
@@ -2796,7 +2796,7 @@
 #define ORIG_FAN_PIN          92 // PA5
 #define FAN2_PIN              31 // PA7
 
-#define PS_ON_PIN             -1
+#define ORIG_PS_ON_PIN        -1
 #define KILL_PIN              -1
 #define SUICIDE_PIN           -1 //PIN that has to be turned on right after start, to keep power flowing.
 
@@ -2943,8 +2943,8 @@
     #endif
   #endif
 
-  #define PS_ON_PIN          -1
-  #define KILL_PIN           -1
+  #define ORIG_PS_ON_PIN          -1
+  #define KILL_PIN                -1
 
   #define ORIG_HEATER_0_PIN       13 // (extruder)
   #define ORIG_HEATER_1_PIN       -1
@@ -3127,7 +3127,7 @@
 #define LED_PIN                 13
 
 #define ORIG_FAN_PIN             9
-#define PS_ON_PIN               12
+#define ORIG_PS_ON_PIN          12
 
 #if ENABLED(REPRAP_DISCOUNT_SMART_CONTROLLER) || ENABLED(G3D_PANEL)
   #define KILL_PIN              41
@@ -3329,7 +3329,7 @@
 
 #define ORIG_FAN_PIN            6
 #define BEEPER_PIN              33
-#define PS_ON_PIN               12
+#define ORIG_PS_ON_PIN          12
 
 #if ENABLED(REPRAP_DISCOUNT_SMART_CONTROLLER) || ENABLED(G3D_PANEL)
   #define KILL_PIN              41
@@ -3540,8 +3540,8 @@
 #define SDPOWER            -1
 #define SDSS               53
 #define LED_PIN            13
-#define ORIG_FAN_PIN            7
-#define PS_ON_PIN          12
+#define ORIG_FAN_PIN        7
+#define ORIG_PS_ON_PIN     12
 #define KILL_PIN           -1
 #define SUICIDE_PIN        54  //PIN that has to be turned on right after start, to keep power flowing.
 
@@ -3631,21 +3631,21 @@
 #define ORIG_E1_DIR_PIN         36
 #define ORIG_E1_ENABLE_PIN      30
 
-#define SDPOWER            -1
-#define SDSS               53
-#define LED_PIN            13
+#define SDPOWER                 -1
+#define SDSS                    53
+#define LED_PIN                 13
 
 
-#define ORIG_FAN_PIN            7 // IO pin. Buffer needed
-#define PS_ON_PIN          12
-#define KILL_PIN           -1
+#define ORIG_FAN_PIN             7 // IO pin. Buffer needed
+#define ORIG_PS_ON_PIN          12
+#define KILL_PIN                -1
 
-#define ORIG_HEATER_0_PIN       9    // EXTRUDER 1
-#define ORIG_HEATER_1_PIN       8    // EXTRUDER 2 (FAN On Sprinter)
+#define ORIG_HEATER_0_PIN        9    // EXTRUDER 1
+#define ORIG_HEATER_1_PIN        8    // EXTRUDER 2 (FAN On Sprinter)
 #define ORIG_HEATER_2_PIN       -1
 
 #if TEMP_SENSOR_0 == -1
-#define ORIG_TEMP_0_PIN         8   // ANALOG NUMBERING
+#define ORIG_TEMP_0_PIN          8   // ANALOG NUMBERING
 #else
 #define ORIG_TEMP_0_PIN         13   // ANALOG NUMBERING
 
@@ -3740,7 +3740,7 @@
 
 #define ORIG_FAN_PIN 7
 #define FAN2_PIN 6
-#define PS_ON_PIN 12
+#define ORIG_PS_ON_PIN 12
 #define KILL_PIN -1
 
 #define ORIG_HEATER_0_PIN 9 // EXTRUDER 1
@@ -3854,7 +3854,7 @@
 
   #define ORIG_FAN_PIN 9
   #define FAN2_PIN -1
-  #define PS_ON_PIN -1
+  #define ORIG_PS_ON_PIN -1
   #define KILL_PIN -1
 
   #define ORIG_HEATER_0_PIN 7 // EXTRUDER 1
@@ -3872,7 +3872,7 @@
   #define ORIG_HEATER_BED_PIN 3 // BED
   #define ORIG_TEMP_BED_PIN 6   // ANALOG NUMBERING
 
-  #define BEEPER_PIN -1  
+  #define BEEPER_PIN -1
 
   #define LCD_PINS_RS -1
   #define LCD_PINS_ENABLE -1
@@ -3962,7 +3962,7 @@
     #endif
   #endif
 
-  #define PS_ON_PIN 12
+  #define ORIG_PS_ON_PIN 12
   #define KILL_PIN -1
 
   #define ORIG_HEATER_0_PIN 2 
@@ -4080,13 +4080,13 @@
 #define ORIG_E1_DIR_PIN          -1
 #define ORIG_E1_ENABLE_PIN       -1
 
-#define SDPOWER            -1
-#define SDSS               -1
-#define LED_PIN            -1
-#define ORIG_FAN_PIN            -1
-#define PS_ON_PIN          -1
-#define KILL_PIN           -1
-#define SUICIDE_PIN        -1  //PIN that has to be turned on right after start, to keep power flowing.
+#define SDPOWER                  -1
+#define SDSS                     -1
+#define LED_PIN                  -1
+#define ORIG_FAN_PIN             -1
+#define ORIG_PS_ON_PIN           -1
+#define KILL_PIN                 -1
+#define SUICIDE_PIN              -1  //PIN that has to be turned on right after start, to keep power flowing.
 
 #define LCD_PINS_RS 24
 #define LCD_PINS_ENABLE 22
@@ -4147,19 +4147,19 @@
 #define ORIG_E1_DIR_PIN          47
 #define ORIG_E1_ENABLE_PIN       48
 
-#define SDPOWER            -1
-#define SDSS               53
-#define LED_PIN            8
-#define ORIG_FAN_PIN            7
-#define PS_ON_PIN          -1
-#define KILL_PIN           -1
-#define SUICIDE_PIN        -1  //PIN that has to be turned on right after start, to keep power flowing.
+#define SDPOWER                  -1
+#define SDSS                     53
+#define LED_PIN                   8
+#define ORIG_FAN_PIN              7
+#define ORIG_PS_ON_PIN           -1
+#define KILL_PIN                 -1
+#define SUICIDE_PIN              -1  //PIN that has to be turned on right after start, to keep power flowing.
 #define SAFETY_TRIGGERED_PIN     28 //PIN to detect the safety circuit has triggered
 #define MAIN_VOLTAGE_MEASURE_PIN 14 //Analogue PIN to measure the main voltage, with a 100k - 4k7 resitor divider.
 
 #define MOTOR_CURRENT_PWM_XY_PIN 44
-#define MOTOR_CURRENT_PWM_Z_PIN 45
-#define MOTOR_CURRENT_PWM_E_PIN 46
+#define MOTOR_CURRENT_PWM_Z_PIN  45
+#define MOTOR_CURRENT_PWM_E_PIN  46
 //Motor current PWM conversion, PWM value = MotorCurrentSetting * 255 / range
 #define MOTOR_CURRENT_PWM_RANGE 2000
 #define DEFAULT_PWM_MOTOR_CURRENT  {1300, 1300, 1250}
@@ -4245,7 +4245,7 @@
 
 #define ORIG_FAN_PIN             8 // IO pin. Buffer needed
 
-#define PS_ON_PIN                12
+#define ORIG_PS_ON_PIN          12
 
 #if ENABLED(REPRAP_DISCOUNT_SMART_CONTROLLER) || ENABLED(G3D_PANEL)
   #define KILL_PIN               41
@@ -4368,7 +4368,7 @@
 
 #define ORIG_FAN_PIN             8 // IO pin. Buffer needed
 
-#define PS_ON_PIN                12
+#define ORIG_PS_ON_PIN          12
 
 #if ENABLED(REPRAP_DISCOUNT_SMART_CONTROLLER) || ENABLED(G3D_PANEL)
   #define KILL_PIN               41
@@ -4502,7 +4502,7 @@
 #define SDPOWER            -1
 #define SDSS                8
 #define LED_PIN            -1
-#define PS_ON_PIN          -1
+#define ORIG_PS_ON_PIN     -1
 #define KILL_PIN           -1
 #define ALARM_PIN          -1
 
@@ -4574,7 +4574,7 @@
 #define ORIG_FAN_PIN            7
 //additional FAN1 PIN (e.g. useful for electronics fan or light on/off) on PIN 8
 
-#define PS_ON_PIN               45
+#define ORIG_PS_ON_PIN          45
 #define KILL_PIN                46
 
 #if (TEMP_SENSOR_0==0)
@@ -4701,7 +4701,7 @@
 #define SDPOWER            -1
 #define SDSS               -1
 #define LED_PIN            39
-#define PS_ON_PIN          -1
+#define ORIG_PS_ON_PIN     -1
 #define KILL_PIN           -1
 #define ALARM_PIN          -1
 
@@ -4772,7 +4772,7 @@
 #define SDPOWER                 -1
 #define SDSS                    20  // PB0 - 8 in marlin env.
 #define LED_PIN                 -1
-#define PS_ON_PIN               -1
+#define ORIG_PS_ON_PIN          -1
 #define ALARM_PIN               -1
 #define SD_DETECT_PIN           -1
 
@@ -4913,7 +4913,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define SD_DETECT_PIN      -1
 #define SDSS               20 // 8
 #define LED_PIN             6
-#define PS_ON_PIN          27
+#define ORIG_PS_ON_PIN     27
 #define KILL_PIN           -1
 #define ALARM_PIN          -1
 
@@ -4994,7 +4994,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 
 #define SDPOWER                 -1
 #define LED_PIN                 -1
-#define PS_ON_PIN               -1
+#define ORIG_PS_ON_PIN          -1
 #define KILL_PIN                -1
 #define ALARM_PIN               -1
 
@@ -5058,7 +5058,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 
 #define ORIG_FAN_PIN            -1
 
-#define PS_ON_PIN         14
+#define ORIG_PS_ON_PIN         14
 #define KILL_PIN           -1
 
 #define ORIG_HEATER_0_PIN       12 // (extruder)
@@ -5153,7 +5153,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define SD_DETECT_PIN      -1 // 10 optional also used as mode pin
 #define LED_PIN            -1
 #define ORIG_FAN_PIN        3
-#define PS_ON_PIN          -1
+#define ORIG_PS_ON_PIN     -1
 #define KILL_PIN           -1
 
 #define ORIG_HEATER_0_PIN       4
@@ -5214,8 +5214,8 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define SDSS               11
 #define SD_DETECT_PIN      -1 // 10 optional also used as mode pin
 #define LED_PIN            -1
-#define ORIG_FAN_PIN            14 /* PWM on MIDDLE connector */
-#define PS_ON_PIN          -1
+#define ORIG_FAN_PIN       14 /* PWM on MIDDLE connector */
+#define ORIG_PS_ON_PIN     -1
 #define KILL_PIN           -1
 
 #define ORIG_HEATER_0_PIN        3 /*DONE PWM on RIGHT connector */
@@ -5287,7 +5287,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define SD_DETECT_PIN           -1 // 10 optional also used as mode pin
 #define LED_PIN                 13
 #define ORIG_FAN_PIN             7
-#define PS_ON_PIN               -1
+#define ORIG_PS_ON_PIN          -1
 #define KILL_PIN                -1
 #define SOL1_PIN                16
 #define SOL2_PIN                17
@@ -5338,7 +5338,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define SDSS               53
 #define LED_PIN            -1
 #define ORIG_FAN_PIN            -1
-#define PS_ON_PIN           9
+#define ORIG_PS_ON_PIN           9
 #define KILL_PIN           -1
 
 #define ORIG_HEATER_0_PIN       13
@@ -5381,7 +5381,6 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
   #define MOSI_PIN          51
   #define MISO_PIN          50
   #define SCK_PIN           52
-  #define SS_PIN            53
 #endif
 /****************************************************************************************/
 
