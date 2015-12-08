@@ -65,6 +65,7 @@
 *  M119 - Output Endstop status to serial port
 *  M120 - Disable Endstop
 *  M121 - Enable Endstop
+*  M122 - S<1=true/0=false> Enable or disable check software endstop
 *  M126 - Solenoid Air Valve Open (BariCUDA support by jmil)
 *  M127 - Solenoid Air Valve Closed (BariCUDA vent to atmospheric pressure by jmil)
 *  M128 - EtoP Open (BariCUDA EtoP = electricity to air pressure transducer by jmil)
@@ -88,7 +89,7 @@
 *  M300 - Play beep sound S[frequency Hz] P[duration ms]
 *  M301 - Set PID parameters P I and D
 *  M302 - Allow cold extrudes
-*  M303 - PID relay autotune S[temperature] sets the target temperature. (default target temperature = 150C)
+*  M303 - PID relay autotune S<temperature> sets the target temperature (default target temperature = 150C). H<hotend> C<cycles>
 *  M304 - Set bed PID parameters P I and D
 *  M350 - Set microstepping mode.
 *  M351 - Toggle MS1 MS2 pins directly.
