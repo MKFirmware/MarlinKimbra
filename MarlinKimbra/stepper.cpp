@@ -304,7 +304,7 @@ void checkHitEndstops() {
 }
 
 void enable_endstops(bool check) {
-  if (debugLevel & DEBUG_INFO) {
+  if (debugLevel & DEBUG_DEBUG) {
     ECHO_SM(DB, "setup_for_endstop_move > enable_endstops");
     if (check) ECHO_EM("(true)");
     else ECHO_EM("(false)");

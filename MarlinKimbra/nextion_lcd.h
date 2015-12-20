@@ -18,6 +18,12 @@
     void lcd_setalertstatuspgm(const char* message);
     void lcd_reset_alert_level();
 
+    #if ENABLED(NEXTION_GFX)
+      void gfx_clear(float x, float y, float z);
+      void gfx_cursor_to(float x, float y, float z);
+      void gfx_line_to(float x, float y, float z);
+    #endif
+
     #if ENABLED(SDSUPPORT)
       void sdlistPopCallback(void *ptr);
       void sdfilePopCallback(void *ptr);
