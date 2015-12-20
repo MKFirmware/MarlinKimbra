@@ -53,6 +53,9 @@
  * HOTENDS OFFSET:
  *  M218 T  XY            hotend_offset (x4) (T0..3)
  *
+ * HOTENDS AD595:
+ *  M595 T O G            Hotend AD595 Offset & Gain
+ *
  * DELTA:
  *  M666  XYZ             endstop_adj (x3)
  *  M666  R               delta_radius
@@ -169,6 +172,11 @@ void Config_StoreSettings() {
 
   #if HOTENDS > 1
     EEPROM_WRITE_VAR(i, hotend_offset);
+  #endif
+
+  #if HEATER_USES_AD595
+    EEPROM_WRITE_VAR(i, ad595_offset);
+    EEPROM_WRITE_VAR(i, ad595_gain);
   #endif
 
   #if MECH(DELTA)
@@ -312,6 +320,11 @@ void Config_RetrieveSettings() {
 
     #if HOTENDS > 1
       EEPROM_READ_VAR(i, hotend_offset);
+    #endif
+
+    #if HEATER_USES_AD595
+      EEPROM_READ_VAR(i, ad595_offset);
+      EEPROM_READ_VAR(i, ad595_gain);
     #endif
 
     #if MECH(DELTA)
@@ -591,11 +604,6 @@ void Config_ResetDefault() {
   #endif
 
   volumetric_enabled = false;
-
-  for (short i = 0; i < EXTRUDERS; i++) {
-    filament_size[i] = DEFAULT_NOMINAL_FILAMENT_DIA;
-  }
-
   calculate_volumetric_multipliers();
 
   #if ENABLED(IDLE_OOZING_PREVENT)
@@ -710,8 +718,19 @@ void Config_ResetDefault() {
         ECHO_MV(" Y", hotend_offset[Y_AXIS][h]);
         ECHO_EMV(" Z", hotend_offset[Z_AXIS][h]);
       }
-    #endif //HOTENDS > 1
-    
+    #endif // HOTENDS > 1
+
+    #if HEATER_USES_AD595
+      if (!forReplay) {
+        ECHO_LM(DB, "Hotend AD595:");
+      }
+      for (int h = 0; h < EXTRUDERS; h++) {
+        ECHO_SMV(DB, "  M595 T", h);
+        ECHO_MV(" Offset", ad595_offset[h]);
+        ECHO_EMV(", Gain: ", ad595_gain[h]);
+      }
+    #endif // HEATER_USES_AD595
+
     #if MECH(DELTA)
       if (!forReplay) {
         ECHO_LM(DB, "Delta Geometry adjustment:");

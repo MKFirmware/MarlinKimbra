@@ -153,6 +153,7 @@
 #define MSG_HEATING_FAILED_LCD              "Heating failed"
 #define MSG_ERR_REDUNDANT_TEMP              "Err: REDUNDANT TEMP ERROR"
 #define MSG_THERMAL_RUNAWAY                 "THERMAL RUNAWAY"
+#define MSG_HOTEND_AD595                    "HOTEND AD595 Offset & Gain"
 #define MSG_ERR_MAXTEMP                     "Err: MAXTEMP"
 #define MSG_ERR_MINTEMP                     "Err: MINTEMP"
 #define MSG_ERR_MAXTEMP_BED                 "Err: MAXTEMP BED"
@@ -166,6 +167,7 @@
 #define MSG_DEBUG_INFO                      "DEBUG INFO ENABLED"
 #define MSG_DEBUG_ERRORS                    "DEBUG ERRORS ENABLED"
 #define MSG_DEBUG_DRYRUN                    "DEBUG DRYRUN ENABLED"
+#define MSG_DEBUG                           "DEBUG ENABLED"
 
 // Calibrate Delta
 #if MECH(DELTA)

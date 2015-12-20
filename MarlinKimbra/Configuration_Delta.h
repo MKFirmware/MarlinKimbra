@@ -48,13 +48,13 @@
 // and processor overload (too many expensive sqrt calls).
 // The new function do not use segments per second but segments per mm
 // if you want use new function comment this (using // at the start of the line)
-#define DELTA_SEGMENTS_PER_SECOND 150
+#define DELTA_SEGMENTS_PER_SECOND 200
 
 // Center-to-center distance of the holes in the diagonal push rods.
-#define DEFAULT_DELTA_DIAGONAL_ROD 217.0    // mm
+#define DEFAULT_DELTA_DIAGONAL_ROD 220.0    // mm
 
 // Horizontal offset from middle of printer to smooth rod center.
-#define DELTA_SMOOTH_ROD_OFFSET 145.0       // mm
+#define DELTA_SMOOTH_ROD_OFFSET 150.0       // mm
 
 // Horizontal offset of the universal joints on the end effector.
 #define DELTA_EFFECTOR_OFFSET 20.0          // mm

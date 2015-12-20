@@ -157,10 +157,11 @@
 #define MSG_END_MINUTE                      "minuti"
 
 // Debug
-#define MSG_DEBUG_ECHO                      "DEBUG RIPETI"
-#define MSG_DEBUG_INFO                      "DEBUG INFO"
-#define MSG_DEBUG_ERRORS                    "DEBUG ERRORI"
-#define MSG_DEBUG_DRYRUN                    "DEBUG STAMPA A VUOTO"
+#define MSG_DEBUG_ECHO                      "DEBUG RIPETI ABILITATO"
+#define MSG_DEBUG_INFO                      "DEBUG INFO ABILITATO"
+#define MSG_DEBUG_ERRORS                    "DEBUG ERRORI ABILITATO"
+#define MSG_DEBUG_DRYRUN                    "DEBUG STAMPA A VUOTO ABILITATO"
+#define MSG_DEBUG                           "DEBUG ABILITATO"
 
 // Calibrate Delta
 #if MECH(DELTA)
