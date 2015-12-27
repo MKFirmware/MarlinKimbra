@@ -10,7 +10,6 @@ void idle(bool ignore_stepper_queue = false);
 
 void manage_inactivity(bool ignore_stepper_queue=false);
 
-
 void FlushSerialRequestResend();
 void ok_to_send();
 
@@ -62,7 +61,8 @@ enum DebugFlags {
   DEBUG_INFO          = BIT(1),
   DEBUG_ERRORS        = BIT(2),
   DEBUG_DRYRUN        = BIT(3),
-  DEBUG_COMMUNICATION = BIT(4)
+  DEBUG_COMMUNICATION = BIT(4),
+  DEBUG_DEBUG         = BIT(5)
 };
 
 void clamp_to_software_endstops(float target[3]);
@@ -99,8 +99,13 @@ extern float home_offset[3];
 
 // Hotend offset
 #if HOTENDS > 1
-  extern float hotend_offset[NUM_HOTEND_OFFSETS][HOTENDS];
+  extern float hotend_offset[3][HOTENDS];
 #endif // HOTENDS > 1
+
+#if HEATER_USES_AD595
+  extern float ad595_offset[HOTENDS];
+  extern float ad595_gain[HOTENDS];
+#endif
 
 #if ENABLED(NPR2)
   extern int old_color; // old color for system NPR2
@@ -112,7 +117,6 @@ extern float home_offset[3];
   extern float tower_adj[6];
   extern float delta_radius;
   extern float delta_diagonal_rod;
-  extern float delta_segments_per_second;
 #elif ENABLED(Z_DUAL_ENDSTOPS)
   extern float z_endstop_adj;
 #endif
@@ -172,6 +176,10 @@ extern int fanSpeed;
   extern void IDLE_OOZING_retract(bool retracting);
 #endif
 
+#if ENABLED(PIDTEMP) && ENABLED(PID_ADD_EXTRUSION_RATE)
+  extern int lpq_len;
+#endif
+
 #if ENABLED(FWRETRACT)
   extern bool autoretract_enabled;
   extern bool retracted[EXTRUDERS]; // extruder[n].retracted
@@ -202,6 +210,10 @@ extern uint8_t active_driver;
 #if ENABLED(DIGIPOT_I2C)
   extern void digipot_i2c_set_current( int channel, float current );
   extern void digipot_i2c_init();
+#endif
+
+#if HAS(TEMP_0) || HAS(TEMP_BED) || ENABLED(HEATER_0_USES_MAX6675)
+  void print_heaterstates();
 #endif
 
 #if ENABLED(FIRMWARE_TEST)

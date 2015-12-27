@@ -7,7 +7,6 @@
 
 #if ENABLED(MAKRPANEL)
   #define DOGLCD
-  #define SDSUPPORT
   #define DEFAULT_LCD_CONTRAST 17
   #define ULTIPANEL
   #define NEWPANEL
@@ -38,7 +37,6 @@
 #endif
 
 #if ENABLED(PANEL_ONE)
-  #define SDSUPPORT
   #define ULTIMAKERCONTROLLER
 #endif
 
@@ -84,7 +82,6 @@
 
 #if ENABLED(MINIPANEL)
  #define DOGLCD
- #define SDSUPPORT
  #define ULTIPANEL
  #define NEWPANEL
  #define DEFAULT_LCD_CONTRAST 17
@@ -108,11 +105,11 @@
   #define LCD_I2C_ADDRESS 0x20 // I2C Address of the port expander
   #define LCD_USE_I2C_BUZZER //comment out to disable buzzer on LCD
 
-  #if NOTEXIST(ENCODER_PULSES_PER_STEP)
+  #if DISABLED(ENCODER_PULSES_PER_STEP)
     #define ENCODER_PULSES_PER_STEP 4
   #endif
 
-  #if NOTEXIST(ENCODER_STEPS_PER_MENU_ITEM)
+  #if DISABLED(ENCODER_STEPS_PER_MENU_ITEM)
     #define ENCODER_STEPS_PER_MENU_ITEM 1
   #endif
 
@@ -149,24 +146,30 @@
    #define NEWPANEL
 #endif
 
+#if ENABLED(DOGLCD) // Change number of lines to match the DOG graphic display
+  #if DISABLED(LCD_WIDTH)
+    #define LCD_WIDTH 22
+  #endif
+  #if DISABLED(LCD_HEIGHT)
+    #define LCD_HEIGHT 5
+  #endif
+#endif
+
 #if ENABLED(ULTIPANEL)
   #define NEWPANEL  //enable this if you have a click-encoder panel
-  #define SDSUPPORT
   #define ULTRA_LCD
-  #if ENABLED(DOGLCD) // Change number of lines to match the DOG graphic display
-    #define LCD_WIDTH 22
-    #define LCD_HEIGHT 5
-  #else
+  #if DISABLED(LCD_WIDTH)
     #define LCD_WIDTH 20
+  #endif
+  #if DISABLED(LCD_HEIGHT)
     #define LCD_HEIGHT 4
   #endif
 #else //no panel but just LCD
   #if ENABLED(ULTRA_LCD)
-    #if ENABLED(DOGLCD) // Change number of lines to match the 128x64 graphics display
-      #define LCD_WIDTH 22
-      #define LCD_HEIGHT 5
-    #else
+    #if DISABLED(LCD_WIDTH)
       #define LCD_WIDTH 16
+    #endif
+    #if DISABLED(LCD_HEIGHT)
       #define LCD_HEIGHT 2
     #endif
   #endif
@@ -204,7 +207,7 @@
 /**
  * Default LCD contrast for dogm-like LCD displays
  */
-#if ENABLED(DOGLCD) && NOTEXIST(DEFAULT_LCD_CONTRAST)
+#if ENABLED(DOGLCD) && DISABLED(DEFAULT_LCD_CONTRAST)
   #define DEFAULT_LCD_CONTRAST 32
 #endif
 
@@ -222,6 +225,14 @@
 #include "Configuration_Overall.h"
 
 /**
+ * DONDOLO
+ */
+#if ENABLED(DONDOLO)
+  #undef SINGLENOZZLE
+  #define DRIVER_EXTRUDERS 1
+#endif
+
+/**
  * SINGLENOZZLE
  */
 #if ENABLED(SINGLENOZZLE)
@@ -234,7 +245,7 @@
 /**
  * DRIVER_EXTRUDERS
  */
-#if DISABLED(MKR4) && DISABLED(NPR2)
+#if DISABLED(MKR4) && DISABLED(NPR2) && DISABLED(DONDOLO)
   #define DRIVER_EXTRUDERS EXTRUDERS // This defines the number of Driver extruder
 #endif
 
@@ -317,10 +328,10 @@
   #undef SLOWDOWN //DELTA not needs SLOWDOWN
   #define AUTOLEVEL_GRID_MULTI 1/AUTOLEVEL_GRID
   // DELTA must have same valour for 3 axis endstop hits
-  #undef Y_HOME_BUMP_MM
-  #undef Z_HOME_BUMP_MM
-  #define Y_HOME_BUMP_MM X_HOME_BUMP_MM
-  #define Z_HOME_BUMP_MM X_HOME_BUMP_MM
+  #define X_HOME_BUMP_MM XYZ_HOME_BUMP_MM
+  #define Y_HOME_BUMP_MM XYZ_HOME_BUMP_MM
+  #define Z_HOME_BUMP_MM XYZ_HOME_BUMP_MM
+  #define HOMING_BUMP_DIVISOR {XYZ_BUMP_DIVISOR, XYZ_BUMP_DIVISOR, XYZ_BUMP_DIVISOR}
 
   // Effective horizontal distance bridged by diagonal push rods.
   #define DEFAULT_DELTA_RADIUS (DELTA_SMOOTH_ROD_OFFSET-DELTA_EFFECTOR_OFFSET-DELTA_CARRIAGE_OFFSET)
@@ -330,7 +341,7 @@
   #define BACK_PROBE_BED_POSITION DELTA_PROBABLE_RADIUS
   
   // Radius for probe
-  #define DELTA_PROBABLE_RADIUS (PRINTER_RADIUS)
+  #define DELTA_PROBABLE_RADIUS BED_PRINTER_RADIUS
 #endif
   
 /**
@@ -367,11 +378,6 @@
     #define Z_RAISE_AFTER_PROBING 0
   #endif
 #endif
-
-/**
- * Servo Leveling
- */
-//#define SERVO_LEVELING (ENABLED(SERVO_ENDSTOPS) && ENABLED(DEACTIVATE_SERVOS_AFTER_MOVE))
 
 /**
  * Sled Options
@@ -421,6 +427,13 @@
   #define STEPS_PER_CUBIC_MM_E (axis_steps_per_unit[E_AXIS + active_extruder] / EXTRUSION_AREA)
 #endif
 
+/**
+ * SD DETECT
+ *
+ */
+#if ENABLED(SD_DISABLED_DETECT)
+  #define SD_DETECT_PIN   -1
+#endif
 #if ENABLED(ULTIPANEL) && DISABLED(ELB_FULL_GRAPHIC_CONTROLLER)
   #undef SD_DETECT_INVERTED
 #endif
@@ -429,7 +442,7 @@
  * Power Signal Control Definitions
  * By default use Normal definition
  */
-#if NOTEXIST(POWER_SUPPLY)
+#if DISABLED(POWER_SUPPLY)
   #define POWER_SUPPLY 0
 #endif
 #if (POWER_SUPPLY == 1)     // 1 = ATX
@@ -496,32 +509,32 @@
   #define BED_USES_THERMISTOR
 #endif
 
+#define HEATER_USES_AD595 (ENABLED(HEATER_0_USES_AD595) || ENABLED(HEATER_1_USES_AD595) || ENABLED(HEATER_2_USES_AD595) || ENABLED(HEATER_3_USES_AD595))
+
 /**
  * ARRAY_BY_EXTRUDERS based on EXTRUDERS
  */
 #if EXTRUDERS > 9
-  #define ARRAY_BY_EXTRUDER(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10) { v1, v2, v3, v4, v5, v6, v7, v8, v9, v10 }
+  #define ARRAY_BY_EXTRUDERS(v1) { v1, v1, v1, v1, v1, v1, v1, v1, v1, v1 }
 #elif EXTRUDERS > 8
-  #define ARRAY_BY_EXTRUDER(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10) { v1, v2, v3, v4, v5, v6, v7, v8, v9 }
+  #define ARRAY_BY_EXTRUDERS(v1) { v1, v1, v1, v1, v1, v1, v1, v1, v1 }
 #elif EXTRUDERS > 7
-  #define ARRAY_BY_EXTRUDER(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10) { v1, v2, v3, v4, v5, v6, v7, v8 }
+  #define ARRAY_BY_EXTRUDERS(v1) { v1, v1, v1, v1, v1, v1, v1, v1 }
 #elif EXTRUDERS > 6
-  #define ARRAY_BY_EXTRUDER(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10) { v1, v2, v3, v4, v5, v6, v7 }
+  #define ARRAY_BY_EXTRUDERS(v1) { v1, v1, v1, v1, v1, v1, v1 }
 #elif EXTRUDERS > 5
-  #define ARRAY_BY_EXTRUDER(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10) { v1, v2, v3, v4, v5, v6 }
+  #define ARRAY_BY_EXTRUDERS(v1) { v1, v1, v1, v1, v1, v1 }
 #elif EXTRUDERS > 4
-  #define ARRAY_BY_EXTRUDER(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10) { v1, v2, v3, v4, v5 }
+  #define ARRAY_BY_EXTRUDERS(v1) { v1, v1, v1, v1, v1 }
 #elif EXTRUDERS > 3
-  #define ARRAY_BY_EXTRUDER(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10) { v1, v2, v3, v4 }
+  #define ARRAY_BY_EXTRUDERS(v1) { v1, v1, v1, v1 }
 #elif EXTRUDERS > 2
-  #define ARRAY_BY_EXTRUDER(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10) { v1, v2, v3 }
+  #define ARRAY_BY_EXTRUDERS(v1) { v1, v1, v1 }
 #elif EXTRUDERS > 1
-  #define ARRAY_BY_EXTRUDER(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10) { v1, v2 }
+  #define ARRAY_BY_EXTRUDERS(v1) { v1, v1 }
 #else
-  #define ARRAY_BY_EXTRUDER(v1, v2, v3, v4, v5, v6, v7, v8, v9, v10) { v1 }
+  #define ARRAY_BY_EXTRUDERS(v1) { v1 }
 #endif
-
-#define ARRAY_BY_EXTRUDERS(v1) ARRAY_BY_EXTRUDER(v1, v1, v1, v1, v1, v1, v1, v1, v1, v1)
 
 /**
  * ARRAY_BY_HOTENDS based on HOTENDS
@@ -580,7 +593,7 @@
 #define HAS_Z_MAX (PIN_EXISTS(Z_MAX))
 #define HAS_Z2_MIN (PIN_EXISTS(Z2_MIN))
 #define HAS_Z2_MAX (PIN_EXISTS(Z2_MAX))
-#define HAS_Z_PROBE (PIN_EXISTS(Z_PROBE))
+#define HAS_Z_PROBE (ENABLED(Z_PROBE_ENDSTOP) && PIN_EXISTS(Z_PROBE))
 #define HAS_E_MIN (PIN_EXISTS(E_MIN))
 #define HAS_SOLENOID_1 (PIN_EXISTS(SOL1))
 #define HAS_SOLENOID_2 (PIN_EXISTS(SOL2))
@@ -623,12 +636,12 @@
 #define HAS_E0E1 (PIN_EXISTS(E0E1_CHOICE))
 #define HAS_E0E2 (PIN_EXISTS(E0E2_CHOICE))
 #define HAS_E0E3 (PIN_EXISTS(E0E3_CHOICE))
-#define HAS_E0E4 (PIN_EXISTS(E0E4_CHOICE))
 #define HAS_E1E3 (PIN_EXISTS(E1E3_CHOICE))
 #define HAS_BTN_BACK (PIN_EXISTS(BTN_BACK))
 #define HAS_POWER_SWITCH (POWER_SUPPLY > 0 && PIN_EXISTS(PS_ON))
+#define HAS_MOTOR_CURRENT_PWM_XY (PIN_EXISTS(MOTOR_CURRENT_PWM_XY))
 
-#define HAS_DIGIPOTSS (DIGIPOTSS_PIN >= 0)
+#define HAS_DIGIPOTSS (PIN_EXISTS(DIGIPOTSS))
 
 /**
  * Shorthand for filament sensor and power sensor for ultralcd.cpp, dogm_lcd_implementation.h, ultralcd_implementation_hitachi_HD44780.h
@@ -637,12 +650,12 @@
 #define HAS_LCD_POWER_SENSOR (HAS_POWER_CONSUMPTION_SENSOR && ENABLED(POWER_CONSUMPTION_LCD_DISPLAY))
 
 /**
- * Helper Macros for heaters and extruder fan
+ * Helper Macros for heaters and extruder fan and rele
  */
 #if ENABLED(INVERTED_HEATER_PINS)
-  #define WRITE_HEATER(pin,value) WRITE(pin,!value)
+  #define WRITE_HEATER(pin, value) WRITE(pin, !value)
 #else
-  #define WRITE_HEATER(pin,value) WRITE(pin,value)
+  #define WRITE_HEATER(pin, value) WRITE(pin, value)
 #endif
 #define WRITE_HEATER_0P(v) WRITE_HEATER(HEATER_0_PIN, v)
 #if HOTENDS > 1 || ENABLED(HEATERS_PARALLEL)
@@ -673,6 +686,15 @@
     #define WRITE_FAN(v) WRITE(FAN_PIN, v)
   #endif
 #endif
+#if ENABLED(MKR4)
+  #if ENABLED(INVERTED_RELE_PINS)
+    #define WRITE_RELE(pin, value) WRITE(pin, !value)
+    #define OUT_WRITE_RELE(pin, value) OUT_WRITE(pin, !value)
+  #else
+    #define WRITE_RELE(pin, value) WRITE(pin, value)
+    #define OUT_WRITE_RELE(pin, value) OUT_WRITE(pin, value)
+  #endif
+#endif
 
 /**
  * Buzzer
@@ -694,14 +716,5 @@
  * The axis order in all axis related arrays is X, Y, Z, E
  */
 #define NUM_AXIS 4
-
-// Hotend offset
-#if HOTENDS > 1
-  #if DISABLED(DUAL_X_CARRIAGE)
-    #define NUM_HOTEND_OFFSETS 2 // only in XY plane
-  #else
-    #define NUM_HOTEND_OFFSETS 3 // supports offsets in XYZ plane
-  #endif
-#endif // HOTENDS > 1
 
 #endif //CONDITIONALS_H

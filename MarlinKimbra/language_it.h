@@ -60,7 +60,7 @@
 #define MSG_MOVE_01MM                       "Muovi di 0.1mm"
 #define MSG_MOVE_1MM                        "Muovi di   1mm"
 #define MSG_MOVE_10MM                       "Muovi di  10mm"
-#define MSG_SPEED                           "Velocit√†"
+#define MSG_SPEED                           "Velocita"
 #define MSG_NOZZLE                          "Ugello"
 #define MSG_BED                             "Piatto"
 #define MSG_FAN_SPEED                       "Ventola"
@@ -104,7 +104,7 @@
 #define MSG_TEMPERATURE                     "Temperatura"
 #define MSG_MOTION                          "Movimento"
 #define MSG_FILAMENT                        "Filamento"
-#define MSG_VOLUMETRIC_ENABLED              "E in mm3"
+#define MSG_VOLUMETRIC_ENABLED              "E in mm≥"
 #define MSG_FILAMENT_SIZE_EXTRUDER          "Diam. filo"
 #define MSG_CONTRAST                        "Contrasto LCD"
 #define MSG_STORE_EPROM                     "Salva in EEPROM"
@@ -157,10 +157,11 @@
 #define MSG_END_MINUTE                      "minuti"
 
 // Debug
-#define MSG_DEBUG_ECHO                      "DEBUG RIPETI"
-#define MSG_DEBUG_INFO                      "DEBUG INFO"
-#define MSG_DEBUG_ERRORS                    "DEBUG ERRORI"
-#define MSG_DEBUG_DRYRUN                    "DEBUG STAMPA A VUOTO"
+#define MSG_DEBUG_ECHO                      "DEBUG RIPETI ABILITATO"
+#define MSG_DEBUG_INFO                      "DEBUG INFO ABILITATO"
+#define MSG_DEBUG_ERRORS                    "DEBUG ERRORI ABILITATO"
+#define MSG_DEBUG_DRYRUN                    "DEBUG STAMPA A VUOTO ABILITATO"
+#define MSG_DEBUG                           "DEBUG ABILITATO"
 
 // Calibrate Delta
 #if MECH(DELTA)

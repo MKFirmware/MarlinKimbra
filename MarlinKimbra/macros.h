@@ -1,6 +1,9 @@
 #ifndef MACROS_H
 #define MACROS_H
 
+// Compiler warning on unused varable.
+#define UNUSED(x) (void) (x)
+
 // Macros for bit masks
 #define BIT(b) (1<<(b))
 #define TEST(n,b) (((n)&BIT(b))!=0)
@@ -14,14 +17,8 @@
 #define COS_60 0.5
 
 // Macros to support option testing
-#define _CAT(a, ...) a ## __VA_ARGS__
-#define SWITCH_ENABLED_0 0
-#define SWITCH_ENABLED_1 1
-#define SWITCH_ENABLED_  1
-#define ENABLED(b) _CAT(SWITCH_ENABLED_, b)
-#define DISABLED(b) (!_CAT(SWITCH_ENABLED_, b))
-#define EXIST defined
-#define NOTEXIST !defined
+#define ENABLED defined
+#define DISABLED !defined
 #define PIN_EXISTS(PN) (defined(PN##_PIN) && PN##_PIN >= 0)
 #define HAS(FE) (HAS_##FE)
 #define HASNT(FE) (!(HAS_##FE))
@@ -34,6 +31,9 @@
 // Function macro
 #define  FORCE_INLINE __attribute__((always_inline)) inline
 
-#define CRITICAL_SECTION_START  unsigned char _sreg = SREG; cli();
-#define CRITICAL_SECTION_END    SREG = _sreg;
+#if DISABLED(CRITICAL_SECTION_START)
+  #define CRITICAL_SECTION_START  unsigned char _sreg = SREG; cli();
+  #define CRITICAL_SECTION_END    SREG = _sreg;
+#endif
+
 #endif //__MACROS_H

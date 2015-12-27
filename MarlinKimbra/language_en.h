@@ -8,12 +8,12 @@
 #ifndef LANGUAGE_EN_H
 #define LANGUAGE_EN_H
 
-#if !( ENABLED(MAPPER_NON)|| ENABLED(MAPPER_C2C3)|| ENABLED(MAPPER_D0D1)|| ENABLED(MAPPER_D0D1_MOD)|| ENABLED(MAPPER_E382E383) )
+#if DISABLED(MAPPER_NON) && DISABLED(MAPPER_C2C3) && DISABLED(MAPPER_D0D1) && DISABLED(MAPPER_D0D1_MOD) && DISABLED(MAPPER_E382E383)
   #define MAPPER_NON         // For direct asci codes
 #endif
 
 //#define SIMULATE_ROMFONT //Comment in to see what is seen on the character based displays
-#if !( ENABLED(SIMULATE_ROMFONT)|| ENABLED(DISPLAY_CHARSET_ISO10646_1)|| ENABLED(DISPLAY_CHARSET_ISO10646_5)|| ENABLED(DISPLAY_CHARSET_ISO10646_KANA)|| ENABLED(DISPLAY_CHARSET_ISO10646_CN) )
+#if DISABLED(SIMULATE_ROMFONT) && DISABLED(DISPLAY_CHARSET_ISO10646_1) && DISABLED(DISPLAY_CHARSET_ISO10646_5) && DISABLED(DISPLAY_CHARSET_ISO10646_KANA) && DISABLED(DISPLAY_CHARSET_ISO10646_CN)
   #define DISPLAY_CHARSET_ISO10646_1 // use the better font on full graphic displays.
 #endif
 
@@ -153,6 +153,7 @@
 #define MSG_HEATING_FAILED_LCD              "Heating failed"
 #define MSG_ERR_REDUNDANT_TEMP              "Err: REDUNDANT TEMP ERROR"
 #define MSG_THERMAL_RUNAWAY                 "THERMAL RUNAWAY"
+#define MSG_HOTEND_AD595                    "HOTEND AD595 Offset & Gain"
 #define MSG_ERR_MAXTEMP                     "Err: MAXTEMP"
 #define MSG_ERR_MINTEMP                     "Err: MINTEMP"
 #define MSG_ERR_MAXTEMP_BED                 "Err: MAXTEMP BED"
@@ -166,6 +167,7 @@
 #define MSG_DEBUG_INFO                      "DEBUG INFO ENABLED"
 #define MSG_DEBUG_ERRORS                    "DEBUG ERRORS ENABLED"
 #define MSG_DEBUG_DRYRUN                    "DEBUG DRYRUN ENABLED"
+#define MSG_DEBUG                           "DEBUG ENABLED"
 
 // Calibrate Delta
 #if MECH(DELTA)

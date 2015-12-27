@@ -25,7 +25,7 @@
 #include <avr/interrupt.h>
 
 #include "macros.h"
-#include "boards.h"
+#include "Boards.h"
 #include "mechanics.h"
 
 #include "Configuration_Version.h"
@@ -50,6 +50,7 @@
 #include "language.h"
 #include "conditionals.h"
 #include "sanitycheck.h"
+#include "thermistortables.h"
 
 #include "comunication.h"
 

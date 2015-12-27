@@ -19,11 +19,16 @@
 // 9  Finnish
 // 10 Aragonese
 // 11 Dutch
-// 12 Catalan
-// 13 Basque-Euskera
-// 14 Portuguese (Brazil)
+// 12 Danish
+// 13 Catalan
+// 14 Basque-Euskera
+// 15 Portuguese (Brazil)
+// 16 Bulgarian
+// 17 Japanese
+// 18 Japanese utf
+// 19 Chinese
 
-#if NOTEXIST(LANGUAGE_CHOICE)
+#if DISABLED(LANGUAGE_CHOICE)
   #define LANGUAGE_CHOICE 7  // Pick your language from the list above
 #endif
 
@@ -45,20 +50,20 @@
 #elif MB(SAV_MKI)
   #define MACHINE_NAME "SAV MkI"
   #define SOURCE_CODE_URL "https://github.com/fmalpartida/Marlin/tree/SAV-MkI-config"
-#elif NOTEXIST(MACHINE_NAME)
+#elif DISABLED(MACHINE_NAME)
   #define MACHINE_NAME "3D Printer"
 #endif
 
-#if EXIST(CUSTOM_MACHINE_NAME)
+#if ENABLED(CUSTOM_MACHINE_NAME)
   #undef MACHINE_NAME
   #define MACHINE_NAME CUSTOM_MACHINE_NAME
 #endif
 
-#if NOTEXIST(SOURCE_CODE_URL)
+#if DISABLED(SOURCE_CODE_URL)
   #define SOURCE_CODE_URL "https://github.com/MagoKimbra/MarlinKimbra"
 #endif
 
-#if NOTEXIST(BUILD_VERSION)
+#if DISABLED(BUILD_VERSION)
   #define BUILD_VERSION "V4; MarlinKimbra for 4 extruder"
 #endif
 
@@ -176,12 +181,13 @@
 #define MSG_KU                              " Ku: "
 #define MSG_TU                              " Tu: "
 #define MSG_CLASSIC_PID                     " Classic PID "
-#define MSG_KP                              " Kp: "
+#define MSG_KP                              "Kp: "
 #define MSG_KI                              " Ki: "
 #define MSG_KD                              " Kd: "
+#define MSG_KC                              " Kc: "
 #define MSG_B                               "B:"
 #define MSG_T                               "T:"
-#define MSG_AT                              "@:"
+#define MSG_AT                              "@"
 #define MSG_BAT                             "B@:"
 #define MSG_W                               "W:"
 #define MSG_PID_AUTOTUNE_FINISHED           MSG_PID_AUTOTUNE " finished! Put the last Kp, Ki and Kd constants from above into Configuration.h or send command M500 for save in EEPROM the new value!"
@@ -191,6 +197,7 @@
 #define MSG_PID_DEBUG_PTERM                 " pTerm "
 #define MSG_PID_DEBUG_ITERM                 " iTerm "
 #define MSG_PID_DEBUG_DTERM                 " dTerm "
+#define MSG_PID_DEBUG_CTERM                 " cTerm "
 #define MSG_INVALID_EXTRUDER_NUM            " - Invalid extruder number !"
 
 #define MSG_HEATER_BED                      "bed"
@@ -253,12 +260,22 @@
   #include "language_an.h"
 #elif LANGUAGE_CHOICE == 11 // Dutch
   #include "language_nl.h"
-#elif LANGUAGE_CHOICE == 12 // Catalan
+#elif LANGUAGE_CHOICE == 12 // Danish
+  #include "language_da.h"
+#elif LANGUAGE_CHOICE == 13 // Catalan
   #include "language_ca.h"
-#elif LANGUAGE_CHOICE == 13 // Basque-Euskera
+#elif LANGUAGE_CHOICE == 14 // Basque-Euskera
   #include "language_eu.h"
-#elif LANGUAGE_CHOICE == 14 // Portuguese - Brasil
+#elif LANGUAGE_CHOICE == 15 // Portuguese - Brasil
   #include "language_pt-br.h"
+#elif LANGUAGE_CHOICE == 16 // Bulgarian
+  #include "language_bg.h"
+#elif LANGUAGE_CHOICE == 17 // Japanese
+  #include "language_kana.h"
+#elif LANGUAGE_CHOICE == 18 // Japanese utf
+  #include "language_kana_utf8.h"
+#elif LANGUAGE_CHOICE == 19 // Chinese
+  #include "language_cn.h"
 #endif
 
 #endif //__LANGUAGE_H
