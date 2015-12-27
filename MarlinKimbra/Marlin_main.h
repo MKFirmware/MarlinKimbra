@@ -80,7 +80,7 @@ void prepare_arc_move(char isclockwise);
 void clamp_to_software_endstops(float target[3]);
 
 extern millis_t previous_cmd_ms;
-inline void refresh_cmd_timeout();
+void refresh_cmd_timeout();
 
 #if ENABLED(FAST_PWM_FAN)
   void setPwmFrequency(uint8_t pin, int val);

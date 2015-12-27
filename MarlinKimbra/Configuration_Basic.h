@@ -96,7 +96,7 @@
 #define EXTRUDERS 1
 
 // This defines the number of Driver extruder you have and use
-#define DRIVER_EXTRUDERS 1
+#define DRIVER_EXTRUDERS EXTRUDERS
 /***********************************************************************/
 
 

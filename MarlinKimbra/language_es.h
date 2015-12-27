@@ -9,27 +9,37 @@
 #define LANGUAGE_ES_H
 
 #define MAPPER_NON
-// Define SIMULATE_ROMFONT to see what is seen on the character based display defined in Configuration.h
-//#define SIMULATE_ROMFONT
 #define DISPLAY_CHARSET_ISO10646_1
 
+
+
+
+
+
+
 #define WELCOME_MSG                         MACHINE_NAME " lista."
+
 #define MSG_SD_INSERTED                     "Tarjeta colocada"
 #define MSG_SD_REMOVED                      "Tarjeta retirada"
 #define MSG_MAIN                            "Menu principal"
 #define MSG_AUTOSTART                       " Autostart"
 #define MSG_DISABLE_STEPPERS                "Apagar motores"
 #define MSG_AUTO_HOME                       "Llevar al origen"
-#define MSG_BED_SETTING                     "Bed Setting"
-#define MSG_LP_INTRO                        " Leveling bed...       Press to start  "
-#define MSG_LP_1                            " Adjust first point  & Press the button"
-#define MSG_LP_2                            " Adjust second point & Press the button"
-#define MSG_LP_3                            " Adjust third point  & Press the button"
-#define MSG_LP_4                            " Adjust fourth point & Press the button"
-#define MSG_LP_5                            "     Is it ok?         Press to end"       
-#define MSG_LP_6                            " BED leveled!"
+#define MSG_MBL_SETTING                     "Manual Bed Leveling"
+#define MSG_MBL_BUTTON                      " Press the button   "
+#define MSG_MBL_INTRO                       " Leveling bed...    "
+#define MSG_MBL_1                           " Adjust first point "
+#define MSG_MBL_2                           " Adjust second point"
+#define MSG_MBL_3                           " Adjust third point "
+#define MSG_MBL_4                           " Adjust fourth point"
+#define MSG_MBL_5                           "    Is it ok?       "
+#define MSG_MBL_6                           " BED leveled!       "
 #define MSG_SET_HOME_OFFSETS                "Ajustar offsets"
 #define MSG_SET_ORIGIN                      "Establecer cero"
+#define MSG_ONFOR                           "On x:"
+#define MSG_PWRCONSUMED                     "P.er:"
+
+
 #define MSG_PREHEAT_PLA                     "Precalentar PLA"
 #define MSG_PREHEAT_PLA_ALL                 "Precal. PLA Todo"
 #define MSG_PREHEAT_PLA_BEDONLY             "Precal. PLA Base"
@@ -48,21 +58,16 @@
 #define MSG_SWITCH_PS_OFF                   "Apagar"
 #define MSG_EXTRUDE                         "Extruir"
 #define MSG_RETRACT                         "Retraer"
-#define MSG_MOVE_AXIS                       "Mover ejes"
+#define MSG_PURGE                           "Purge"
 #define MSG_LEVEL_BED                       "Level bed"
-#define MSG_MOVE_X                          "Mover X"
-#define MSG_MOVE_Y                          "Mover Y"
-#define MSG_MOVE_Z                          "Mover Z"
-#define MSG_MOVE_E                          "Extrusor"
-#define MSG_MOVE_01MM                       "Mover 0.1mm"
-#define MSG_MOVE_1MM                        "Mover 1mm"
-#define MSG_MOVE_10MM                       "Mover 10mm"
 #define MSG_SPEED                           "Velocidad"
 #define MSG_NOZZLE                          "Nozzle"
 #define MSG_BED                             "Base"
 #define MSG_FAN_SPEED                       "Ventilador"
 #define MSG_FLOW                            "Flujo"
 #define MSG_CONTROL                         "Control"
+#define MSG_STATS                           "Statistics"
+#define MSG_FIX_LOSE_STEPS                  "Fix axis steps"
 #define MSG_MIN                             LCD_STR_THERMOMETER " Min"
 #define MSG_MAX                             LCD_STR_THERMOMETER " Max"
 #define MSG_FACTOR                          LCD_STR_THERMOMETER " Fact"
@@ -85,6 +90,15 @@
 #define MSG_Y                               "Y"
 #define MSG_Z                               "Z"
 #define MSG_E                               "E"
+
+#define MSG_MOVE_AXIS                       "Mover ejes"
+#define MSG_MOVE_X                          "Mover X"
+#define MSG_MOVE_Y                          "Mover Y"
+#define MSG_MOVE_Z                          "Mover Z"
+#define MSG_MOVE_01MM                       "Mover 0.1mm"
+#define MSG_MOVE_1MM                        "Mover 1mm"
+#define MSG_MOVE_10MM                       "Mover 10mm"
+#define MSG_MOVE_E                          "Extrusor"
 #define MSG_VMIN                            "Vmin"
 #define MSG_VTRAV_MIN                       "Vvacio min"
 #define MSG_AMAX                            "Amax"
@@ -100,7 +114,7 @@
 #define MSG_TEMPERATURE                     "Temperatura"
 #define MSG_MOTION                          "Movimiento"
 #define MSG_VOLUMETRIC                      "Filament"
-#define MSG_VOLUMETRIC_ENABLED              "E in mm3"
+#define MSG_VOLUMETRIC_ENABLED              "E in mm" STR_h3
 #define MSG_FILAMENT_SIZE_EXTRUDER          "Fil. Dia."
 #define MSG_CONTRAST                        "Contraste"
 #define MSG_STORE_EPROM                     "Guardar memoria"
@@ -136,13 +150,15 @@
 #define MSG_ZPROBE_OUT                      "sonda Z fuera"
 #define MSG_POSITION_UNKNOWN                "Reiniciar X/Y y Z"
 #define MSG_ZPROBE_ZOFFSET                  "Offset Z"
-#define MSG_BABYSTEP_X                      "Babystep X"
-#define MSG_BABYSTEP_Y                      "Babystep Y"
-#define MSG_BABYSTEP_Z                      "Babystep Z"
+#define MSG_BABYSTEP                        "Babystep"
+#define MSG_BABYSTEP_X                      MSG_BABYSTEP " " MSG_X
+#define MSG_BABYSTEP_Y                      MSG_BABYSTEP " " MSG_Y
+#define MSG_BABYSTEP_Z                      MSG_BABYSTEP " " MSG_Z
 #define MSG_ENDSTOP_ABORT                   "Endstop abort"
 #define MSG_HEATING_FAILED_LCD              "Heating failed"
 #define MSG_ERR_REDUNDANT_TEMP              "Err: REDUNDANT TEMP ERROR"
 #define MSG_THERMAL_RUNAWAY                 "THERMAL RUNAWAY"
+#define MSG_HOTEND_AD595                    "HOTEND AD595 Offset & Gain"
 #define MSG_ERR_MAXTEMP                     "Err: MAXTEMP"
 #define MSG_ERR_MINTEMP                     "Err: MINTEMP"
 #define MSG_ERR_MAXTEMP_BED                 "Err: MAXTEMP BED"
@@ -151,25 +167,40 @@
 #define MSG_END_HOUR                        "hours"
 #define MSG_END_MINUTE                      "minutes"
 
+#define MSG_ENDSTOPS_HIT                    "endstops hit: "
+#define MSG_BABYSTEPPING                    "Babystepping"
+#define MSG_BABYSTEPPING_X                  MSG_BABYSTEPPING " " MSG_X
+#define MSG_BABYSTEPPING_Y                  MSG_BABYSTEPPING " " MSG_Y
+#define MSG_BABYSTEPPING_Z                  MSG_BABYSTEPPING " " MSG_Z
+
+#define MSG_ENDSTOP_XS                      MSG_X
+#define MSG_ENDSTOP_YS                      MSG_Y
+#define MSG_ENDSTOP_ZS                      MSG_Z
+#define MSG_ENDSTOP_ZPS                     MSG_Z "P"
+#define MSG_ENDSTOP_ES                      MSG_E
+
 // Debug
 #define MSG_DEBUG_ECHO                      "DEBUG ECHO ENABLED"
 #define MSG_DEBUG_INFO                      "DEBUG INFO ENABLED"
 #define MSG_DEBUG_ERRORS                    "DEBUG ERRORS ENABLED"
 #define MSG_DEBUG_DRYRUN                    "DEBUG DRYRUN ENABLED"
+#define MSG_DEBUG                           "DEBUG ENABLED"
 
 // Calibrate Delta
 #if MECH(DELTA)
   #define MSG_DELTA_CALIBRATE               "Delta Calibration"
-  #define MSG_DELTA_CALIBRATE_X             "Calibrate X"
-  #define MSG_DELTA_CALIBRATE_Y             "Calibrate Y"
-  #define MSG_DELTA_CALIBRATE_Z             "Calibrate Z"
-  #define MSG_DELTA_CALIBRATE_CENTER        "Calibrate Center"
+  #define MSG_DELTA_CALIBRATE               "Calibrate"
+  #define MSG_DELTA_CALIBRATE_X             MSG_DELTA_CALIBRATE " " MSG_X
+  #define MSG_DELTA_CALIBRATE_Y             MSG_DELTA_CALIBRATE " " MSG_Y
+  #define MSG_DELTA_CALIBRATE_Z             MSG_DELTA_CALIBRATE " " MSG_Z
+  #define MSG_DELTA_CALIBRATE_CENTER        MSG_DELTA_CALIBRATE " Center"
 #endif // DELTA
 
 // Scara
 #if MECH(SCARA)
-  #define MSG_XSCALE                        "X Scale"
-  #define MSG_YSCALE                        "Y Scale"
+  #define MSG_SCALE                         "Scale"
+  #define MSG_XSCALE                        MSG_X " " MSG_SCALE
+  #define MSG_YSCALE                        MSG_Y " " MSG_SCALE
 #endif
 
 #define MSG_HEATING                         "Heating..."
@@ -180,10 +211,10 @@
 // Extra
 #define MSG_LASER                           "Laser Preset"
 #define MSG_CONFIG                          "Configuration"
-#define MSG_E_BOWDEN_LENGTH                 "Extrude " STRINGIFY(BOWDEN_LENGTH) "mm"
-#define MSG_R_BOWDEN_LENGTH                 "Retract " STRINGIFY(BOWDEN_LENGTH) "mm"
-#define MSG_PURGE_XMM                       "Purge " STRINGIFY(LCD_PURGE_LENGTH) "mm"
-#define MSG_RETRACT_XMM                     "Retract " STRINGIFY(LCD_RETRACT_LENGTH) "mm"
+#define MSG_E_BOWDEN_LENGTH                 MSG_EXTRUDE " " STRINGIFY(BOWDEN_LENGTH) "mm"
+#define MSG_R_BOWDEN_LENGTH                 MSG_RETRACT " " STRINGIFY(BOWDEN_LENGTH) "mm"
+#define MSG_PURGE_XMM                       MSG_PURGE " " STRINGIFY(LCD_PURGE_LENGTH) "mm"
+#define MSG_RETRACT_XMM                     MSG_RETRACT " " STRINGIFY(LCD_RETRACT_LENGTH) "mm"
 #define MSG_SAVED_POS                       "Saved position"
 #define MSG_RESTORING_POS                   "Restoring position"
 #define MSG_INVALID_POS_SLOT                "Invalid slot, total slots: "
@@ -205,10 +236,10 @@
   #define MSG_FWTEST_04                     "Start check MOTOR"
   #define MSG_FWTEST_ATTENTION              "ATTENTION! Check that the three axes are more than 5 mm from the endstop!"
   #define MSG_FWTEST_END                    "Finish Test. Disable FIRMWARE_TEST and recompile."
-  #define MSG_FWTEST_INTO                    "into "
-  #define MSG_FWTEST_ERROR                   "ERROR"
-  #define MSG_FWTEST_OK                      "OK"
-  #define MSG_FWTEST_NDEF                    "not defined"
+  #define MSG_FWTEST_INTO                   "into "
+  #define MSG_FWTEST_ERROR                  "ERROR"
+  #define MSG_FWTEST_OK                     "OK"
+  #define MSG_FWTEST_NDEF                   "not defined"
 #endif // FIRMWARE_TEST
 
 #endif // LANGUAGE_ES_H

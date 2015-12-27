@@ -521,7 +521,7 @@ void lcd_set_home_offsets() {
       encoderPosition = 0;
       lcdDrawUpdate = 1;
     }
-    if (lcdDrawUpdate) lcd_implementation_drawedit(msg, "");
+    if (lcdDrawUpdate) lcd_implementation_drawedit(msg, (char*)"");
     if (LCD_CLICKED) lcd_goto_menu(lcd_tune_menu);
   }
   static void lcd_babystep_x() { _lcd_babystep(X_AXIS, PSTR(MSG_BABYSTEPPING_X)); }
@@ -1740,7 +1740,9 @@ static void menu_action_function(menuFunc_t func) { (*func)(); }
 
 #endif // SDSUPPORT
 
-static void menu_action_setting_edit_bool(const char* pstr, bool* ptr) { *ptr = !(*ptr); }
+static void menu_action_setting_edit_bool(const char* pstr, bool* ptr) {
+	*ptr = !(*ptr);
+}
 static void menu_action_setting_edit_callback_bool(const char* pstr, bool* ptr, menuFunc_t callback) {
   menu_action_setting_edit_bool(pstr, ptr);
   (*callback)();
@@ -1989,7 +1991,7 @@ void lcd_finishstatus(bool persist=false) {
     progress_bar_ms = millis();
     #if PROGRESS_MSG_EXPIRE > 0
       expire_status_ms = persist ? 0 : progress_bar_ms + PROGRESS_MSG_EXPIRE;
-    #endif
+		#endif
   #endif
   lcdDrawUpdate = 2;
 

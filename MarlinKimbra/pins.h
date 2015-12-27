@@ -5351,7 +5351,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 
 /****************************************************************************************
 *********** Available chip select pins for HW SPI are 4 10 52 77 ************************
-/****************************************************************************************/
+****************************************************************************************/
 #if (SDSS == 4) || (SDSS == 10) || (SDSS == 52) || (SDSS == 77)
   #if (SDSS == 4)
     #define SPI_PIN         87
@@ -5382,7 +5382,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 
 /****************************************************************************************
 ********************************* END MOTHERBOARD ***************************************
-/****************************************************************************************/
+****************************************************************************************/
 
 #ifndef ORIG_HEATER_1_PIN
   #define ORIG_HEATER_1_PIN -1
@@ -5433,64 +5433,57 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
   #endif
 #endif
 
+#if ENABLED(DISABLE_XMIN_ENDSTOP) || (X_HOME_DIR > 0)    // Home X to MAX
+	#ifdef ORIG_X_MIN_PIN
+		#undef ORIG_X_MIN_PIN
+	#endif
+  #define ORIG_X_MIN_PIN -1
+#endif
+#if ENABLED(DISABLE_XMAX_ENDSTOP) || (X_HOME_DIR < 0) // Home X to MIN
+	#ifdef ORIG_X_MAX_PIN
+		#undef ORIG_X_MAX_PIN
+	#endif
+  #define ORIG_X_MAX_PIN -1
+#endif
+
+#if ENABLED(DISABLE_YMIN_ENDSTOP) || (Y_HOME_DIR > 0)    // Home Y to MAX
+	#ifdef ORIG_Y_MIN_PIN
+		#undef ORIG_Y_MIN_PIN
+	#endif
+  #define ORIG_Y_MIN_PIN -1
+#endif
+#if ENABLED(DISABLE_YMAX_ENDSTOP) || (Y_HOME_DIR < 0) // Home X to MIN
+	#ifdef ORIG_Y_MAX_PIN
+		#undef ORIG_Y_MAX_PIN
+	#endif
+  #define ORIG_Y_MAX_PIN -1
+#endif
+
+#if ENABLED(DISABLE_ZMIN_ENDSTOP) || (Z_HOME_DIR > 0)    // Home Z to MAX
+	#ifdef ORIG_Z_MIN_PIN
+		#undef ORIG_Z_MIN_PIN
+	#endif
+  #define ORIG_Z_MIN_PIN -1
+#endif
+#if ENABLED(DISABLE_ZMAX_ENDSTOP) || (Z_HOME_DIR < 0) // Home X to MIN
+	#ifdef ORIG_Z_MAX_PIN
+		#undef ORIG_Z_MAX_PIN
+	#endif
+  #define ORIG_Z_MAX_PIN -1
+#endif
+
+#if DISABLED(Z_PROBE_ENDSTOP) // Allow code to compile regardless of Z_PROBE_ENDSTOP setting.
+	#ifdef Z_PROBE_PIN
+		#undef Z_PROBE_PIN
+	#endif
+  #define Z_PROBE_PIN -1
+#endif
+/****************************************************************************************/
 
 /****************************************************************************************/
 #include "Configuration_Pins.h"
 /****************************************************************************************/
 
-
-#if X_HOME_DIR > 0    // Home X to MAX
-  #define X_MIN_PIN -1
-#elif X_HOME_DIR < 0  // Home X to MIN
-  #define X_MAX_PIN -1
-#endif //X_HOME_DIR > 0
-
-#if Y_HOME_DIR > 0    // Home Y to MAX
-  #define Y_MIN_PIN -1
-#elif Y_HOME_DIR < 0  // Home Y to MIN
-  #define Y_MAX_PIN -1
-#endif //Y_HOME_DIR > 0
-
-#if Z_HOME_DIR > 0    // Home Z to MAX
-  #define Z_MIN_PIN -1
-#elif Z_HOME_DIR < 0  // Home Z to MIN
-  #define Z_MAX_PIN -1
-#endif //Z_HOME_DIR > 0
-
-#if DISABLED(Z_PROBE_ENDSTOP) // Allow code to compile regardless of Z_PROBE_ENDSTOP setting.
-  #define Z_PROBE_PIN -1
-#endif
-
-#if ENABLED(DISABLE_XMAX_ENDSTOP)
-  #undef X_MAX_PIN
-  #define X_MAX_PIN -1
-#endif
-
-#if ENABLED(DISABLE_XMIN_ENDSTOP)
-  #undef X_MIN_PIN 
-  #define X_MIN_PIN -1
-#endif
-
-#if ENABLED(DISABLE_YMAX_ENDSTOP)
-  #undef Y_MAX_PIN
-  #define Y_MAX_PIN -1
-#endif
-
-#if ENABLED(DISABLE_YMIN_ENDSTOP)
-  #undef Y_MIN_PIN
-  #define Y_MIN_PIN -1
-#endif
-
-#if ENABLED(DISABLE_ZMAX_ENDSTOP)
-  #undef Z_MAX_PIN
-  #define Z_MAX_PIN -1
-#endif
-
-#if ENABLED(DISABLE_ZMIN_ENDSTOP)
-  #undef Z_MIN_PIN 
-  #define Z_MIN_PIN -1
-#endif
-/****************************************************************************************/
 
 // List of pins which to ignore when asked to change by gcode, 0 and 1 are RX and TX, do not mess with those!
 #define _E0_PINS E0_STEP_PIN, E0_DIR_PIN, E0_ENABLE_PIN, HEATER_0_PIN, analogInputToDigitalPin(TEMP_0_PIN),

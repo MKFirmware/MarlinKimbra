@@ -263,17 +263,17 @@ void endstops_hit_on_purpose() {
 
 void checkHitEndstops() {
   if (endstop_hit_bits) {
-    ECHO_SM(DB, MSG_ENDSTOPS_HIT);
+    ECHO_SM(DB, SERIAL_ENDSTOPS_HIT);
     if (endstop_hit_bits & BIT(X_MIN)) {
-      ECHO_MV(MSG_ENDSTOP_X, (float)endstops_trigsteps[X_AXIS] / axis_steps_per_unit[X_AXIS]);
+      ECHO_MV(SERIAL_NDSTOP_X, (float)endstops_trigsteps[X_AXIS] / axis_steps_per_unit[X_AXIS]);
       LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_XS);
     }
     if (endstop_hit_bits & BIT(Y_MIN)) {
-      ECHO_MV(MSG_ENDSTOP_Y, (float)endstops_trigsteps[Y_AXIS] / axis_steps_per_unit[Y_AXIS]);
+      ECHO_MV(SERIAL_NDSTOP_Y, (float)endstops_trigsteps[Y_AXIS] / axis_steps_per_unit[Y_AXIS]);
       LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_YS);
     }
     if (endstop_hit_bits & BIT(Z_MIN)) {
-      ECHO_MV(MSG_ENDSTOP_Z, (float)endstops_trigsteps[Z_AXIS] / axis_steps_per_unit[Z_AXIS]);
+      ECHO_MV(SERIAL_NDSTOP_Z, (float)endstops_trigsteps[Z_AXIS] / axis_steps_per_unit[Z_AXIS]);
       LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_ZS);
     }
     #if ENABLED(Z_PROBE_ENDSTOP)
@@ -284,7 +284,7 @@ void checkHitEndstops() {
     #endif
     #if ENABLED(NPR2)
       if (endstop_hit_bits & BIT(E_MIN)) {
-        ECHO_MV(MSG_ENDSTOP_E, (float)endstops_trigsteps[E_AXIS] / axis_steps_per_unit[E_AXIS]);
+        ECHO_MV(SERIAL_NDSTOP_E, (float)endstops_trigsteps[E_AXIS] / axis_steps_per_unit[E_AXIS]);
         LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_ES);
       }
     #endif
@@ -537,7 +537,7 @@ FORCE_INLINE unsigned short calc_timer(unsigned short step_rate) {
     timer = (unsigned short)pgm_read_word_near(table_address);
     timer -= (((unsigned short)pgm_read_word_near(table_address + 2) * (unsigned char)(step_rate & 0x0007)) >> 3);
   }
-  if (timer < 100) { timer = 100; MYSERIAL.print(MSG_STEPPER_TOO_HIGH); MYSERIAL.println(step_rate); }//(20kHz this should never happen)
+  if (timer < 100) { timer = 100; MYSERIAL.print(SERIAL_STEPPER_TOO_HIGH); MYSERIAL.println(step_rate); }//(20kHz this should never happen)
   return timer;
 }
 
@@ -1414,21 +1414,21 @@ void microstep_mode(uint8_t driver, uint8_t stepping_mode) {
 }
 
 void microstep_readings() {
-  ECHO_SM(DB, MSG_MICROSTEP_MS1_MS2);
-  ECHO_M(MSG_MICROSTEP_X);
+  ECHO_SM(DB, SERIAL_MICROSTEP_MS1_MS2);
+  ECHO_M(SERIAL_MICROSTEP_X);
   ECHO_V(digitalRead(X_MS1_PIN));
   ECHO_EV(digitalRead(X_MS2_PIN));
-  ECHO_SM(DB, MSG_MICROSTEP_Y);
+  ECHO_SM(DB, SERIAL_MICROSTEP_Y);
   ECHO_V(digitalRead(Y_MS1_PIN));
   ECHO_EV(digitalRead(Y_MS2_PIN));
-  ECHO_SM(DB, MSG_MICROSTEP_Z);
+  ECHO_SM(DB, SERIAL_MICROSTEP_Z);
   ECHO_V(digitalRead(Z_MS1_PIN));
   ECHO_EV(digitalRead(Z_MS2_PIN));
-  ECHO_SM(DB, MSG_MICROSTEP_E0);
+  ECHO_SM(DB, SERIAL_MICROSTEP_E0);
   ECHO_V(digitalRead(E0_MS1_PIN));
   ECHO_EV(digitalRead(E0_MS2_PIN));
   #if HAS(MICROSTEPS_E1)
-    ECHO_SM(DB, MSG_MICROSTEP_E1);
+    ECHO_SM(DB, SERIAL_MICROSTEP_E1);
     ECHO_V(digitalRead(E1_MS1_PIN));
     ECHO_EV(digitalRead(E1_MS2_PIN));
   #endif

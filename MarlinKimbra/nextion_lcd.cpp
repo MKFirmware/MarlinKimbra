@@ -298,7 +298,7 @@
       setrowsdcard(number);
     }
 
-    static void menu_action_sdfile(const char* filename) {
+    static void menu_action_sdfile(const char* filename, char* longFilename) {
       char cmd[30];
       char* c;
       sprintf_P(cmd, PSTR("M23 %s"), filename);
@@ -308,7 +308,7 @@
       setpageInfo();
     }
 
-    static void menu_action_sddirectory(const char* filename) {
+    static void menu_action_sddirectory(const char* filename, char* longFilename) {
       card.chdir(filename);
       setpagesdcard();
     }

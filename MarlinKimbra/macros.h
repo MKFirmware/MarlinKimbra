@@ -10,7 +10,9 @@
 #define SET_BIT(n,b,value) (n) ^= ((-value)^(n)) & (BIT(b))
 
 // Macros for maths shortcuts
-#define M_PI 3.1415926536
+#ifndef M_PI 
+  #define M_PI 3.1415926536
+#endif
 #define RADIANS(d) ((d)*M_PI/180.0)
 #define DEGREES(r) ((r)*180.0/M_PI)
 #define SIN_60 0.8660254037844386

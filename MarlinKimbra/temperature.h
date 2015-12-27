@@ -84,21 +84,16 @@ extern float current_temperature_bed;
 //high level conversion routines, for use outside of temperature.cpp
 //inline so that there is no performance decrease.
 //deg=degreeCelsius
-#if HOTENDS <= 1
-  #define HOTEND_ARG 0
-#else
-  #define HOTEND_ARG hotend
-#endif
 
-FORCE_INLINE float degHotend(uint8_t hotend) { return current_temperature[HOTEND_ARG]; }
+FORCE_INLINE float degHotend(uint8_t hotend) { return current_temperature[hotend]; }
 FORCE_INLINE float degBed() { return current_temperature_bed; }
 
 #if ENABLED(SHOW_TEMP_ADC_VALUES)
-  FORCE_INLINE float rawHotendTemp(uint8_t hotend) { return current_temperature_raw[HOTEND_ARG]; }
+  FORCE_INLINE float rawHotendTemp(uint8_t hotend) { return current_temperature_raw[hotend]; }
   FORCE_INLINE float rawBedTemp() { return current_temperature_bed_raw; }
 #endif
 
-FORCE_INLINE float degTargetHotend(uint8_t hotend) { return target_temperature[HOTEND_ARG]; }
+FORCE_INLINE float degTargetHotend(uint8_t hotend) { return target_temperature[hotend]; }
 FORCE_INLINE float degTargetBed() { return target_temperature_bed; }
 
 #if ENABLED(THERMAL_PROTECTION_HOTENDS)
@@ -106,17 +101,17 @@ FORCE_INLINE float degTargetBed() { return target_temperature_bed; }
 #endif
 
 FORCE_INLINE void setTargetHotend(const float& celsius, uint8_t hotend) {
-  target_temperature[HOTEND_ARG] = celsius;
+  target_temperature[hotend] = celsius;
   #if ENABLED(THERMAL_PROTECTION_HOTENDS)
-    start_watching_heater(HOTEND_ARG);
+    start_watching_heater(hotend);
   #endif
 }
 FORCE_INLINE void setTargetBed(const float& celsius) { target_temperature_bed = celsius; }
 
-FORCE_INLINE bool isHeatingHotend(uint8_t hotend) { return target_temperature[HOTEND_ARG] > current_temperature[HOTEND_ARG]; }
+FORCE_INLINE bool isHeatingHotend(uint8_t hotend) { return target_temperature[hotend] > current_temperature[hotend]; }
 FORCE_INLINE bool isHeatingBed() { return target_temperature_bed > current_temperature_bed; }
 
-FORCE_INLINE bool isCoolingHotend(uint8_t hotend) { return target_temperature[HOTEND_ARG] < current_temperature[HOTEND_ARG]; }
+FORCE_INLINE bool isCoolingHotend(uint8_t hotend) { return target_temperature[hotend] < current_temperature[hotend]; }
 FORCE_INLINE bool isCoolingBed() { return target_temperature_bed < current_temperature_bed; }
 
 #define HOTEND_ROUTINES(NR) \

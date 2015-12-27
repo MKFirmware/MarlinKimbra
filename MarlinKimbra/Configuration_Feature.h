@@ -1051,6 +1051,8 @@
 //#define LCD_SCREEN_ROT_180   //Rotate screen orientation for graphics display by 180 degree clockwise
 //#define LCD_SCREEN_ROT_270   //Rotate screen orientation for graphics display by 270 degree clockwise
 
+//#define INVERT_CLICK_BUTTON           // Option for invert encoder button logic
+//#define INVERT_BACK_BUTTON            // Option for invert back button logic if avaible
 //#define INVERT_ROTARY_SWITCH          // Option for invert rotary encoder
 #define ENCODER_RATE_MULTIPLIER         // If defined, certain menu edit operations automatically multiply the steps when the encoder is moved quickly
 #define ENCODER_10X_STEPS_PER_SEC   75  // If the encoder steps per sec exceeds this value, multiply steps moved x10 to quickly advance the value
@@ -1122,10 +1124,10 @@
 
 // The MakerLab Mini Panel with graphic controller and SD support
 // http://reprap.org/wiki/Mini_panel
-// #define MINIPANEL
+//#define MINIPANEL
 
 // Nextion HMI panel
-// ==> REMEMBER TO INSTALL Nextion library in your ARDUINO library folder. You can find it in Arduino\libraries\
+// REMEMBER TO INSTALL Nextion library in your ARDUINO library folder. You can find it in Arduino/libraries/
 //#define NEXTION
 
 // I2C Panels
