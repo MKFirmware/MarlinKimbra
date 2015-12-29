@@ -54,9 +54,18 @@
     #if ENABLED(BTN_ENC) && BTN_ENC > -1
       // the pause/stop/restart button is connected to BTN_ENC when used
       #define B_ST (EN_C)                            // Map the pause/stop/resume button into its normalized functional name
-      #define LCD_CLICKED (buttons&(B_MI|B_RI|B_ST)) // pause/stop button also acts as click until we implement proper pause/stop.
+
+      #if ENABLED(INVERT_CLICK_BUTTON)
+        #define LCD_CLICKED !(buttons&(B_MI|B_RI|B_ST)) // pause/stop button also acts as click until we implement proper pause/stop.
+      #else
+        #define LCD_CLICKED (buttons&(B_MI|B_RI|B_ST)) // pause/stop button also acts as click until we implement proper pause/stop.
+      #endif
     #else
-      #define LCD_CLICKED (buttons&(B_MI|B_RI))
+      #if ENABLED(INVERT_CLICK_BUTTON)
+        #define LCD_CLICKED !(buttons&(B_MI|B_RI))
+      #else
+        #define LCD_CLICKED (buttons&(B_MI|B_RI))
+      #endif
     #endif
 
     // I2C buttons take too long to read inside an interrupt context and so we read them during lcd_update
@@ -69,12 +78,20 @@
 
       #define B_MI (PANELOLU2_ENCODER_C<<B_I2C_BTN_OFFSET) // requires LiquidTWI2 library v1.2.3 or later
 
-      #define LCD_CLICKED (buttons&B_MI)
+      #if ENABLED(INVERT_CLICK_BUTTON)
+        #define LCD_CLICKED !(buttons&B_MI)
+      #else
+        #define LCD_CLICKED (buttons&B_MI)
+      #endif
 
       // I2C buttons take too long to read inside an interrupt context and so we read them during lcd_update
       #define LCD_HAS_SLOW_BUTTONS
     #else
-      #define LCD_CLICKED (buttons&EN_C)
+      #if ENABLED(INVERT_CLICK_BUTTON)
+        #define LCD_CLICKED !(buttons&EN_C)
+      #else
+        #define LCD_CLICKED (buttons&EN_C)
+      #endif
     #endif
 
   #elif ENABLED(REPRAPWORLD_KEYPAD)
@@ -99,15 +116,29 @@
     #define EN_REPRAPWORLD_KEYPAD_DOWN BIT((BLEN_REPRAPWORLD_KEYPAD_DOWN+REPRAPWORLD_BTN_OFFSET))
     #define EN_REPRAPWORLD_KEYPAD_LEFT BIT((BLEN_REPRAPWORLD_KEYPAD_LEFT+REPRAPWORLD_BTN_OFFSET))
 
-    //#define LCD_CLICKED ((buttons&EN_C) || (buttons&EN_REPRAPWORLD_KEYPAD_F1))
+    /*
+    #if ENABLED(INVERT_CLICK_BUTTON)
+      #define LCD_CLICKED !((buttons&EN_C) || (buttons&EN_REPRAPWORLD_KEYPAD_F1))
+    #else
+      #define LCD_CLICKED ((buttons&EN_C) || (buttons&EN_REPRAPWORLD_KEYPAD_F1))
+    #endif
+    */
     //#define REPRAPWORLD_KEYPAD_MOVE_Y_DOWN (buttons&EN_REPRAPWORLD_KEYPAD_DOWN)
     //#define REPRAPWORLD_KEYPAD_MOVE_Y_UP (buttons&EN_REPRAPWORLD_KEYPAD_UP)
     //#define REPRAPWORLD_KEYPAD_MOVE_HOME (buttons&EN_REPRAPWORLD_KEYPAD_MIDDLE)
 
   #elif ENABLED(NEWPANEL)
-    #define LCD_CLICKED (buttons&EN_C)
+    #if ENABLED(INVERT_CLICK_BUTTON)
+      #define LCD_CLICKED !(buttons&EN_C)
+    #else
+      #define LCD_CLICKED (buttons&EN_C)
+    #endif
     #if HAS(BTN_BACK)
-      #define LCD_BACK_CLICKED (buttons&EN_D)
+      #if ENABLED(INVERT_BACK_BUTTON)
+        #define LCD_BACK_CLICKED !(buttons&EN_D)
+      #else
+        #define LCD_BACK_CLICKED (buttons&EN_D)
+      #endif
     #endif
 
   #else // old style ULTIPANEL
@@ -128,7 +159,11 @@
     #define B_RI BIT(BL_RI)
     #define B_ST BIT(BL_ST)
 
-    #define LCD_CLICKED (buttons&(B_MI|B_ST))
+    #if ENABLED(INVERT_CLICK_BUTTON)
+      #define LCD_CLICKED !(buttons&(B_MI|B_ST))
+    #else
+      #define LCD_CLICKED (buttons&(B_MI|B_ST))
+    #endif
   #endif
 
 #endif //ULTIPANEL

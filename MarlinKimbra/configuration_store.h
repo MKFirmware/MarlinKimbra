@@ -23,21 +23,6 @@ FORCE_INLINE void Config_RetrieveSettings() { Config_ResetDefault(); Config_Prin
 #endif
 
 #if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
-static const char *cfgSD_KEY[] = { //Keep this in lexicographical order for better search performance(O(Nlog2(N)) insted of O(N*N)) (if you don't keep this sorted, the algorithm for find the key index won't work, keep attention.)
-#if HAS(POWER_CONSUMPTION_SENSOR)
-  "PWR",
-#endif
-  "TME",
-};
-
-enum cfgSD_ENUM {   //This need to be in the same order as cfgSD_KEY
-#if HAS(POWER_CONSUMPTION_SENSOR)
-  SD_CFG_PWR,
-#endif
-  SD_CFG_TME,
-  SD_CFG_END //Leave this always as the last
-};
-
 void ConfigSD_StoreSettings();
 void ConfigSD_RetrieveSettings(bool addValue = false);
 int ConfigSD_KeyIndex(char *key);

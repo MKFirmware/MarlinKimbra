@@ -35,7 +35,7 @@ void FirmwareTest() {
     #if PIN_EXISTS(X_MIN) && (X_HOME_DIR == -1)
       if (!READ(X_MIN_PIN)^X_MIN_ENDSTOP_INVERTING) {
         ECHO_M("MIN ENDSTOP X: ");
-        ECHO_EV(MSG_ENDSTOP_OPEN);
+        ECHO_EV(SERIAL_ENDSTOP_OPEN);
       }
       else {
         ECHO_M("X ENDSTOP ");
@@ -65,7 +65,7 @@ void FirmwareTest() {
       }
       if (READ(X_MIN_PIN)^X_MIN_ENDSTOP_INVERTING) {
         ECHO_M("MIN ENDSTOP X: ");
-        ECHO_EV(MSG_ENDSTOP_HIT);
+        ECHO_EV(SERIAL_ENDSTOP_HIT);
       }
       else {
         ECHO_M("X ");
@@ -75,7 +75,7 @@ void FirmwareTest() {
     #elif PIN_EXISTS(X_MAX) && X_HOME_DIR == 1
       if (!READ(X_MAX_PIN)^X_MAX_ENDSTOP_INVERTING) {
         ECHO_M("MAX ENDSTOP X: ");
-        ECHO_EV(MSG_ENDSTOP_OPEN);
+        ECHO_EV(SERIAL_ENDSTOP_OPEN);
       }
       else {
         ECHO_M("X ENDSTOP ");
@@ -105,7 +105,7 @@ void FirmwareTest() {
       }
       if (READ(X_MAX_PIN)^X_MAX_ENDSTOP_INVERTING) {
         ECHO_M("MAX ENDSTOP X: ");
-        ECHO_EV(MSG_ENDSTOP_HIT);
+        ECHO_EV(SERIAL_ENDSTOP_HIT);
       }
       else {
         ECHO_M("X ");
@@ -129,7 +129,7 @@ void FirmwareTest() {
     #if PIN_EXISTS(Y_MIN) && Y_HOME_DIR == -1
       if (!READ(Y_MIN_PIN)^Y_MIN_ENDSTOP_INVERTING) {
         ECHO_M("MIN ENDSTOP Y: ");
-        ECHO_EV(MSG_ENDSTOP_OPEN);
+        ECHO_EV(SERIAL_ENDSTOP_OPEN);
       }
       else {
         ECHO_M("Y ENDSTOP ");
@@ -159,7 +159,7 @@ void FirmwareTest() {
       }
       if (READ(Y_MIN_PIN)^Y_MIN_ENDSTOP_INVERTING) {
         ECHO_M("MIN ENDSTOP Y: ");
-        ECHO_EV(MSG_ENDSTOP_HIT);
+        ECHO_EV(SERIAL_ENDSTOP_HIT);
       }
       else {
         ECHO_M("Y ");
@@ -169,7 +169,7 @@ void FirmwareTest() {
     #elif PIN_EXISTS(Y_MAX) && Y_HOME_DIR == 1
       if (!READ(Y_MAX_PIN)^Y_MAX_ENDSTOP_INVERTING) {
         ECHO_M("MAX ENDSTOP Y: ");
-        ECHO_EV(MSG_ENDSTOP_OPEN);
+        ECHO_EV(SERIAL_ENDSTOP_OPEN);
       }
       else {
         ECHO_M("Y ENDSTOP ");
@@ -199,7 +199,7 @@ void FirmwareTest() {
       }
       if (READ(Y_MAX_PIN)^Y_MAX_ENDSTOP_INVERTING) {
         ECHO_M("MAX ENDSTOP Y: ");
-        ECHO_EV(MSG_ENDSTOP_HIT);
+        ECHO_EV(SERIAL_ENDSTOP_HIT);
       }
       else {
         ECHO_M("Y ");
@@ -223,7 +223,7 @@ void FirmwareTest() {
     #if PIN_EXISTS(Z_MIN) && Z_HOME_DIR == -1
       if (!READ(Z_MIN_PIN)^Z_MIN_ENDSTOP_INVERTING) {
         ECHO_M("MIN ENDSTOP Z: ");
-        ECHO_EV(MSG_ENDSTOP_OPEN);
+        ECHO_EV(SERIAL_ENDSTOP_OPEN);
       }
       else {
         ECHO_M("Z ENDSTOP ");
@@ -253,7 +253,7 @@ void FirmwareTest() {
       }
       if (READ(Z_MIN_PIN)^Z_MIN_ENDSTOP_INVERTING) {
         ECHO_M("MIN ENDSTOP Z: ");
-        ECHO_EV(MSG_ENDSTOP_HIT);
+        ECHO_EV(SERIAL_ENDSTOP_HIT);
       }
       else {
         ECHO_M("Z ");
@@ -263,7 +263,7 @@ void FirmwareTest() {
     #elif PIN_EXISTS(Z_MAX) && Z_HOME_DIR == 1
       if (!READ(Z_MAX_PIN)^Z_MAX_ENDSTOP_INVERTING) {
         ECHO_M("MAX ENDSTOP Z: ");
-        ECHO_EV(MSG_ENDSTOP_OPEN);
+        ECHO_EV(SERIAL_ENDSTOP_OPEN);
       }
       else {
         ECHO_M("Z ENDSTOP ");
@@ -293,7 +293,7 @@ void FirmwareTest() {
       }
       if (READ(Z_MAX_PIN)^Z_MAX_ENDSTOP_INVERTING) {
         ECHO_M("MAX ENDSTOP Z: ");
-        ECHO_EV(MSG_ENDSTOP_HIT);
+        ECHO_EV(SERIAL_ENDSTOP_HIT);
       }
       else {
         ECHO_M("Z ");

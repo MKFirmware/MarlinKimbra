@@ -86,7 +86,7 @@ void CardReader::lsDive(const char* prepend, SdFile parent, const char* const ma
       SdFile dir;
       if (!dir.open(parent, lfilename, O_READ)) {
         if (lsAction == LS_SerialPrint) {
-          ECHO_LMV(ER, MSG_SD_CANT_OPEN_SUBDIR, lfilename);
+          ECHO_LMV(ER, SERIAL_SD_CANT_OPEN_SUBDIR, lfilename);
         }
       }
       lsDive(path, dir);
@@ -176,7 +176,7 @@ void CardReader::ls()  {
       SdFile dir;
       if (!dir.open(diveDir, segment, O_READ)) {
         ECHO_E;
-        ECHO_SMV(DB, MSG_SD_CANT_OPEN_SUBDIR, segment);
+        ECHO_SMV(DB, SERIAL_SD_CANT_OPEN_SUBDIR, segment);
         break;
       }
 
@@ -207,30 +207,30 @@ void CardReader::initsd() {
       && !card.init(SPI_SPEED, LCD_SDSS)
     #endif
   ) {
-    ECHO_LM(DB, MSG_SD_INIT_FAIL);
+    ECHO_LM(DB, SERIAL_SD_INIT_FAIL);
   }
   else if (!volume.init(&card)) {
-    ECHO_LM(ER, MSG_SD_VOL_INIT_FAIL);
+    ECHO_LM(ER, SERIAL_SD_VOL_INIT_FAIL);
   }
   else if (!root.openRoot(&volume)) {
-    ECHO_LM(ER, MSG_SD_OPENROOT_FAIL);
+    ECHO_LM(ER, SERIAL_SD_OPENROOT_FAIL);
   }
   else {
     cardOK = true;
-    ECHO_LM(DB, MSG_SD_CARD_OK);
+    ECHO_LM(DB, SERIAL_SD_CARD_OK);
   }
   workDir = root;
   curDir = &root;
   /*
   if (!workDir.openRoot(&volume)) {
-    ECHO_EM(MSG_SD_WORKDIR_FAIL);
+    ECHO_EM(SERIAL_SD_WORKDIR_FAIL);
   }
   */
 }
 
 void CardReader::setroot(bool temporary) {
   /*if (!workDir.openRoot(&volume)) {
-    ECHO_EM(MSG_SD_WORKDIR_FAIL);
+    ECHO_EM(SERIAL_SD_WORKDIR_FAIL);
   }*/
   if(temporary) lastDir = workDir;
   workDir = root;
@@ -279,7 +279,7 @@ void CardReader::openFile(char* name, bool read, bool replace_current/*=true*/, 
   if (file.isOpen()) { //replacing current file by new file, or subfile call
     if (!replace_current) {
       if (file_subcall_ctr > SD_PROCEDURE_DEPTH - 1) {
-        ECHO_LMV(ER, MSG_SD_MAX_DEPTH, SD_PROCEDURE_DEPTH);
+        ECHO_LMV(ER, SERIAL_SD_MAX_DEPTH, SD_PROCEDURE_DEPTH);
         kill(PSTR(MSG_KILLED));
         return;
       }
@@ -317,7 +317,7 @@ void CardReader::openFile(char* name, bool read, bool replace_current/*=true*/, 
         subdirname[dirname_end - dirname_start] = 0;
         ECHO_EV(subdirname);
         if (!myDir.open(curDir, subdirname, O_READ)) {
-          ECHO_SMV(ER, MSG_SD_OPEN_FILE_FAIL, subdirname);
+          ECHO_SMV(ER, SERIAL_SD_OPEN_FILE_FAIL, subdirname);
           ECHO_EM(".");
           return;
         } else {
@@ -337,24 +337,24 @@ void CardReader::openFile(char* name, bool read, bool replace_current/*=true*/, 
   if (read) {
     if (file.open(curDir, fname, O_READ)) {
       filesize = file.fileSize();
-      ECHO_MV(MSG_SD_FILE_OPENED, fname);
-      ECHO_EMV(MSG_SD_SIZE, filesize);
+      ECHO_MV(SERIAL_SD_FILE_OPENED, fname);
+      ECHO_EMV(SERIAL_SD_SIZE, filesize);
       sdpos = 0;
 
-      ECHO_EM(MSG_SD_FILE_SELECTED);
+      ECHO_EM(SERIAL_SD_FILE_SELECTED);
       getfilename(0, fname);
       if(lcd_status) lcd_setstatus(longFilename[0] ? longFilename : fname);
     } else {
-      ECHO_MV(MSG_SD_OPEN_FILE_FAIL, fname);
+      ECHO_MV(SERIAL_SD_OPEN_FILE_FAIL, fname);
       ECHO_PGM(".\n");
     }
   } else { //write
     if (!file.open(curDir, fname, O_CREAT | O_APPEND | O_WRITE | O_TRUNC)) {
-      ECHO_SMV(ER, MSG_SD_OPEN_FILE_FAIL, fname);
+      ECHO_SMV(ER, SERIAL_SD_OPEN_FILE_FAIL, fname);
       ECHO_EM(".");
     } else {
       saving = true;
-      ECHO_LMV(DB, MSG_SD_WRITE_TO_FILE, name);
+      ECHO_LMV(DB, SERIAL_SD_WRITE_TO_FILE, name);
       if (lcd_status) lcd_setstatus(fname);
     }
   }
@@ -378,7 +378,7 @@ void CardReader::removeFile(char* name) {
         subdirname[dirname_end - dirname_start] = 0;
         ECHO_EV(subdirname);
         if (!myDir.open(curDir, subdirname, O_READ)) {
-          ECHO_SMV(DB, MSG_SD_OPEN_FILE_FAIL, subdirname);
+          ECHO_SMV(DB, SERIAL_SD_OPEN_FILE_FAIL, subdirname);
           ECHO_EM(".");
           return;
         }
@@ -393,20 +393,20 @@ void CardReader::removeFile(char* name) {
   } else // relative path
     curDir = &workDir;
   if (file.remove(curDir, fname)) {
-    ECHO_EMV(MSG_SD_FILE_DELETED, fname);
+    ECHO_EMV(SERIAL_SD_FILE_DELETED, fname);
     sdpos = 0;
   } else {
-    ECHO_MV(MSG_SD_FILE_DELETION_ERR, fname);
+    ECHO_MV(SERIAL_SD_FILE_DELETION_ERR, fname);
     ECHO_C('.');
   }
 }
 
 void CardReader::getStatus() {
   if (cardOK) {
-    ECHO_MV(MSG_SD_PRINTING_BYTE, sdpos);
-    ECHO_EMV(MSG_SD_SLASH, filesize);
+    ECHO_MV(SERIAL_SD_PRINTING_BYTE, sdpos);
+    ECHO_EMV(SERIAL_SD_SLASH, filesize);
   } else
-    ECHO_EM(MSG_SD_NOT_PRINTING);
+    ECHO_EM(SERIAL_SD_NOT_PRINTING);
 }
 
 void CardReader::write_command(char* buf) {
@@ -423,7 +423,7 @@ void CardReader::write_command(char* buf) {
   end[3] = '\0';
   file.write(begin);
   if (file.writeError) {
-    ECHO_LM(ER, MSG_SD_ERR_WRITE_TO_FILE);
+    ECHO_LM(ER, SERIAL_SD_ERR_WRITE_TO_FILE);
   }
 }
 
@@ -538,28 +538,28 @@ void CardReader::unparseKeyLine(const char* key, char* value) {
   file.writeError = false;
   file.write(key);
   if (file.writeError) {
-    ECHO_LM(ER, MSG_SD_ERR_WRITE_TO_FILE);
+    ECHO_LM(ER, SERIAL_SD_ERR_WRITE_TO_FILE);
     return;
   }
   
   file.writeError = false;
   file.write("=");
   if (file.writeError) {
-    ECHO_LM(ER, MSG_SD_ERR_WRITE_TO_FILE);
+    ECHO_LM(ER, SERIAL_SD_ERR_WRITE_TO_FILE);
     return;
   }
   
   file.writeError = false;
   file.write(value);
   if (file.writeError) {
-    ECHO_LM(ER, MSG_SD_ERR_WRITE_TO_FILE);
+    ECHO_LM(ER, SERIAL_SD_ERR_WRITE_TO_FILE);
     return;
   }
 
   file.writeError = false;
   file.write("\n");
   if (file.writeError) {
-    ECHO_LM(ER, MSG_SD_ERR_WRITE_TO_FILE);
+    ECHO_LM(ER, SERIAL_SD_ERR_WRITE_TO_FILE);
     return;
   }
 }
@@ -589,7 +589,7 @@ void CardReader::chdir(const char* relpath) {
   SdFile* parent = &root;
   if (workDir.isOpen()) parent = &workDir;
   if (!newfile.open(*parent, relpath, O_READ)) {
-    ECHO_LMV(DB, MSG_SD_CANT_ENTER_SUBDIR, relpath);
+    ECHO_LMV(DB, SERIAL_SD_CANT_ENTER_SUBDIR, relpath);
   } else {
     if (workDirDepth < MAX_DIR_DEPTH) {
       ++workDirDepth;

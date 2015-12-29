@@ -8,68 +8,68 @@
 #ifndef LANGUAGE_CA_H
 #define LANGUAGE_CA_H
 
-//#define MAPPER_NON 
-#define MAPPER_C2C3  // because of "ó"
-// Define SIMULATE_ROMFONT to see what is seen on the character based display defined in Configuration.h
-//#define SIMULATE_ROMFONT
+#define MAPPER_C2C3                 // because of "ó"
 #define DISPLAY_CHARSET_ISO10646_1
 
+
 #define WELCOME_MSG                         MACHINE_NAME " preparada."
-#define MSG_SD_INSERTED                     "SD detectada."
-#define MSG_SD_REMOVED                      "SD expulsada."
+#define MSG_SD                              "SD"
+#define MSG_SD_INSERTED                     MSG_SD " detectada."
+#define MSG_SD_REMOVED                      MSG_SD " expulsada."
 #define MSG_MAIN                            "Menu principal"
 #define MSG_AUTOSTART                       "Inici automatic"
 #define MSG_DISABLE_STEPPERS                "Apagar motors"
 #define MSG_AUTO_HOME                       "Home global"
-#define MSG_BED_SETTING                     "Bed Setting"
-#define MSG_LP_INTRO                        " Leveling bed...       Press to start  "
-#define MSG_LP_1                            " Adjust first point  & Press the button"
-#define MSG_LP_2                            " Adjust second point & Press the button"
-#define MSG_LP_3                            " Adjust third point  & Press the button"
-#define MSG_LP_4                            " Adjust fourth point & Press the button"
-#define MSG_LP_5                            "     Is it ok?         Press to end"       
-#define MSG_LP_6                            " BED leveled!"
+#define MSG_MBL_SETTING                     "Manual Bed Leveling"
+#define MSG_MBL_BUTTON                      " Press the button   "
+#define MSG_MBL_INTRO                       " Leveling bed...    "
+#define MSG_MBL_1                           " Adjust first point "
+#define MSG_MBL_2                           " Adjust second point"
+#define MSG_MBL_3                           " Adjust third point "
+#define MSG_MBL_4                           " Adjust fourth point"
+#define MSG_MBL_5                           "    Is it ok?       "
+#define MSG_MBL_6                           " BED leveled!       "
 #define MSG_SET_HOME_OFFSETS                "Set home offsets"
 #define MSG_SET_ORIGIN                      "Establir origen"
-#define MSG_PREHEAT_PLA                     "Preescalfar PLA"
-#define MSG_PREHEAT_PLA_ALL                 "Preesc. tot PLA All"
-#define MSG_PREHEAT_PLA_BEDONLY             "Preesc. llit PLA"
-#define MSG_PREHEAT_PLA_SETTINGS            "Configuració PLA"
-#define MSG_PREHEAT_ABS                     "Preescalfar ABS"
-#define MSG_PREHEAT_ABS_ALL                 "Preheat ABS All"
-#define MSG_PREHEAT_ABS_BEDONLY             "Preesc. llit ABS"
-#define MSG_PREHEAT_ABS_SETTINGS            "Configuració ABS"
-#define MSG_PREHEAT_GUM                     "Preheat GUM"
-#define MSG_PREHEAT_GUM_ALL                 "Preheat GUM All"
-#define MSG_PREHEAT_GUM_BEDONLY             "Preheat GUM Bed"
-#define MSG_PREHEAT_GUM_SETTINGS            "Preheat GUM conf"
-#define MSG_TOO_COLD_FOR_M600               "M600 Hotend too cold to change filament"
+#define MSG_ONFOR                           "On x:"
+#define MSG_PWRCONSUMED                     "P.er:"
+#define MSG_PREHEAT                         "Preesc."
+#define MSG_CONFIG                          "Configuració
+#define MSG_PREHEAT_PLA                     MSG_PREHEAT " PLA"
+#define MSG_PREHEAT_PLA_ALL                 MSG_PREHEAT_PLA " All"
+#define MSG_PREHEAT_PLA_BEDONLY             MSG_PREHEAT_PLA " llit"
+#define MSG_PREHEAT_PLA_SETTINGS            "PLA " MSG_CONFIG
+#define MSG_PREHEAT_ABS                     MSG_PREHEAT " ABS"
+#define MSG_PREHEAT_ABS_ALL                 MSG_PREHEAT_ABS " All"
+#define MSG_PREHEAT_ABS_BEDONLY             MSG_PREHEAT_ABS " llit"
+#define MSG_PREHEAT_ABS_SETTINGS            "ABS " MSG_CONFIG
+#define MSG_PREHEAT_GUM                     MSG_PREHEAT " GUM"
+#define MSG_PREHEAT_GUM_ALL                 MSG_PREHEAT_GUM " All"
+#define MSG_PREHEAT_GUM_BEDONLY             MSG_PREHEAT_GUM " Bed"
+#define MSG_PREHEAT_GUM_SETTINGS            "GUM " MSG_CONFIG
+#define MSG_TOO_COLD_FOR_FILAMENTCHANGE     "Hotend too cold to change filament"
 #define MSG_COOLDOWN                        "Refredar"
 #define MSG_SWITCH_PS_ON                    "Switch power on"
 #define MSG_SWITCH_PS_OFF                   "Switch power off"
 #define MSG_EXTRUDE                         "Extruir"
 #define MSG_RETRACT                         "Refredar"
-#define MSG_MOVE_AXIS                       "Moure eixos"
-#define MSG_MOVE_X                          "Moure X"
-#define MSG_MOVE_Y                          "Moure Y"
-#define MSG_MOVE_Z                          "Moure Z"
-#define MSG_MOVE_E                          "Extrusor"
-#define MSG_MOVE_01MM                       "Moure 0.1mm"
-#define MSG_MOVE_1MM                        "Moure 1mm"
-#define MSG_MOVE_10MM                       "Moure 10mm"
+#define MSG_PURGE                           "Purge"
+#define MSG_LEVEL_BED                       "Level bed"
 #define MSG_SPEED                           "Velocitat"
 #define MSG_NOZZLE                          "Nozzle"
 #define MSG_BED                             "Llit"
 #define MSG_FAN_SPEED                       "Vel. Ventilador"
 #define MSG_FLOW                            "Fluxe"
 #define MSG_CONTROL                         "Control"
-#define MSG_MIN                             " \002 Min"
-#define MSG_MAX                             " \002 Max"
-#define MSG_FACTOR                          " \002 Fact"
+#define MSG_STATS                           "Statistics"
+#define MSG_FIX_LOSE_STEPS                  "Fix axis steps"
+#define MSG_MIN                             LCD_STR_THERMOMETER " Min"
+#define MSG_MAX                             LCD_STR_THERMOMETER " Max"
+#define MSG_FACTOR                          LCD_STR_THERMOMETER " Fact"
 #define MSG_IDLEOOZING                      "Anti oozing"
 #define MSG_AUTOTEMP                        "Autotemp"
-#define MSG_ON                              "On "
-#define MSG_OFF                             "Off"
+#define MSG_ON                              "ON "
+#define MSG_OFF                             "OFF"
 #define MSG_PID_P                           "PID-P"
 #define MSG_PID_I                           "PID-I"
 #define MSG_PID_D                           "PID-D"
@@ -81,26 +81,35 @@
 #define MSG_VZ_JERK                         "Vz-jerk"
 #define MSG_VE_JERK                         "Ve-jerk"
 #define MSG_VMAX                            "Vmax "
-#define MSG_X                               "x"
-#define MSG_Y                               "y"
-#define MSG_Z                               "z"
-#define MSG_E                               "e"
+#define MSG_X                               "X"
+#define MSG_Y                               "Y"
+#define MSG_Z                               "Z"
+#define MSG_E                               "E"
+#define MSG_MOVE                            "Move"
+#define MSG_MOVE_AXIS                       MSG_MOVE " eixos"
+#define MSG_MOVE_X                          MSG_MOVE " " MSG_X
+#define MSG_MOVE_Y                          MSG_MOVE " " MSG_Y
+#define MSG_MOVE_Z                          MSG_MOVE " " MSG_Z
+#define MSG_MOVE_01MM                       MSG_MOVE " 0.1mm"
+#define MSG_MOVE_1MM                        MSG_MOVE " 1mm"
+#define MSG_MOVE_10MM                       MSG_MOVE " 10mm"
+#define MSG_MOVE_E                          "Extrusor"
 #define MSG_VMIN                            "Vmin"
 #define MSG_VTRAV_MIN                       "VTrav min"
 #define MSG_AMAX                            "Amax "
 #define MSG_A_RETRACT                       "A-retract"
 #define MSG_A_TRAVEL                        "A-travel"
-#define MSG_XSTEPS                          "X passos/mm"
-#define MSG_YSTEPS                          "Y passos/mm"
-#define MSG_ZSTEPS                          "Z passos/mm"
-#define MSG_E0STEPS                         "E0 passos/mm"
-#define MSG_E1STEPS                         "E1 passos/mm"
-#define MSG_E2STEPS                         "E2 passos/mm"
-#define MSG_E3STEPS                         "E3 passos/mm"
+#define MSG_XSTEPS                          MSG_X " passos/mm"
+#define MSG_YSTEPS                          MSG_Y " passos/mm"
+#define MSG_ZSTEPS                          MSG_Z " passos/mm"
+#define MSG_E0STEPS                         MSG_E "0 passos/mm"
+#define MSG_E1STEPS                         MSG_E "1 passos/mm"
+#define MSG_E2STEPS                         MSG_E "2 passos/mm"
+#define MSG_E3STEPS                         MSG_E "3 passos/mm"
 #define MSG_TEMPERATURE                     "Temperatura"
 #define MSG_MOTION                          "Moviment"
 #define MSG_VOLUMETRIC                      "Filament"
-#define MSG_VOLUMETRIC_ENABLED              "E in mm3"
+#define MSG_VOLUMETRIC_ENABLED              MSG_E " in mm3"
 #define MSG_FILAMENT_SIZE_EXTRUDER          "Fil. Dia."
 #define MSG_CONTRAST                        "Contrast de LCD"
 #define MSG_STORE_EPROM                     "Desar a memoria"
@@ -113,8 +122,8 @@
 #define MSG_PAUSE_PRINT                     "Pausa imp."
 #define MSG_RESUME_PRINT                    "Reprendre imp."
 #define MSG_STOP_PRINT                      "Parar inp."
-#define MSG_CARD_MENU                       "Imprimir de SD"
-#define MSG_NO_CARD                         "-Sense targeta SD"
+#define MSG_CARD_MENU                       "Imprimir de " MSG_SD
+#define MSG_NO_CARD                         "Sense targeta " MSG_SD
 #define MSG_DWELL                           "Repos..."
 #define MSG_USERWAIT                        "Esperant usuari.."
 #define MSG_RESUMING                        "Reprenent imp."
@@ -123,7 +132,7 @@
 #define MSG_KILLED                          "PARADA DE EMERG. "
 #define MSG_STOPPED                         "ATURAT. "
 #define MSG_CONTROL_RETRACT                 "Retreure mm"
-#define MSG_CONTROL_RETRACT_SWAP            "Swap Retreure mm"
+#define MSG_CONTROL_RETRACT_SWAP            "Swap Re. mm"
 #define MSG_CONTROL_RETRACTF                "Retreure  F"
 #define MSG_CONTROL_RETRACT_ZLIFT           "Aixecar mm"
 #define MSG_CONTROL_RETRACT_RECOVER         "DesRet +mm"
@@ -131,45 +140,54 @@
 #define MSG_CONTROL_RETRACT_RECOVERF        "DesRet  F"
 #define MSG_AUTORETRACT                     "AutoRetr."
 #define MSG_FILAMENTCHANGE                  "Canviar filament"
-#define MSG_INIT_SDCARD                     "Iniciant SD"
-#define MSG_CNG_SDCARD                      "Canviar SD"
+#define MSG_INIT_SDCARD                     "Iniciant " MSG_SD
+#define MSG_CNG_SDCARD                      "Canviar " MSG_SD
 #define MSG_ZPROBE_OUT                      "Z probe out. bed"
 #define MSG_POSITION_UNKNOWN                "Home X/Y abans Z"
 #define MSG_ZPROBE_ZOFFSET                  "Z Offset"
-#define MSG_BABYSTEP_X                      "Babystep X"
-#define MSG_BABYSTEP_Y                      "Babystep Y"
-#define MSG_BABYSTEP_Z                      "Babystep Z"
+#define MSG_BABYSTEP                        "Babystep"
+#define MSG_BABYSTEP_X                      MSG_BABYSTEP " " MSG_X
+#define MSG_BABYSTEP_Y                      MSG_BABYSTEP " " MSG_Y
+#define MSG_BABYSTEP_Z                      MSG_BABYSTEP " " MSG_Z
 #define MSG_ENDSTOP_ABORT                   "Endstop abort"
 #define MSG_HEATING_FAILED_LCD              "Heating failed"
-#define MSG_ERR_REDUNDANT_TEMP              "Err: REDUNDANT TEMP ERROR"
+#define MSG_ERR_REDUNDANT_TEMP              "REDUNDANT TEMP ERROR"
 #define MSG_THERMAL_RUNAWAY                 "THERMAL RUNAWAY"
-#define MSG_ERR_MAXTEMP                     "Err: MAXTEMP"
-#define MSG_ERR_MINTEMP                     "Err: MINTEMP"
-#define MSG_ERR_MAXTEMP_BED                 "Err: MAXTEMP BED"
-#define MSG_ERR_MINTEMP_BED                 "Err: MINTEMP BED"
+#define MSG_HOTEND_AD595                    "HOTEND AD595 Offset & Gain"
+#define MSG_ERR_MAXTEMP                     "MAXTEMP ERROR"
+#define MSG_ERR_MINTEMP                     "MINTEMP ERROR"
+#define MSG_ERR_MAXTEMP_BED                 "MAXTEMP BED ERROR"
+#define MSG_ERR_MINTEMP_BED                 "MINTEMP BED ERROR"
 #define MSG_END_DAY                         "days"
 #define MSG_END_HOUR                        "hours"
 #define MSG_END_MINUTE                      "minutes"
 
-// Debug
-#define MSG_DEBUG_ECHO                      "DEBUG ECHO ENABLED"
-#define MSG_DEBUG_INFO                      "DEBUG INFO ENABLED"
-#define MSG_DEBUG_ERRORS                    "DEBUG ERRORS ENABLED"
-#define MSG_DEBUG_DRYRUN                    "DEBUG DRYRUN ENABLED"
+#define MSG_ENDSTOPS_HIT                    "endstops hit: "
+#define MSG_BABYSTEPPING                    "Babystepping"
+#define MSG_BABYSTEPPING_X                  MSG_BABYSTEPPING " " MSG_X
+#define MSG_BABYSTEPPING_Y                  MSG_BABYSTEPPING " " MSG_Y
+#define MSG_BABYSTEPPING_Z                  MSG_BABYSTEPPING " " MSG_Z
+
+#define MSG_ENDSTOP_XS                      MSG_X
+#define MSG_ENDSTOP_YS                      MSG_Y
+#define MSG_ENDSTOP_ZS                      MSG_Z
+#define MSG_ENDSTOP_ZPS                     MSG_Z "P"
+#define MSG_ENDSTOP_ES                      MSG_E
 
 // Calibrate Delta
 #if MECH(DELTA)
   #define MSG_DELTA_CALIBRATE               "Delta Calibration"
-  #define MSG_DELTA_CALIBRATE_X             "Calibrate X"
-  #define MSG_DELTA_CALIBRATE_Y             "Calibrate Y"
-  #define MSG_DELTA_CALIBRATE_Z             "Calibrate Z"
+  #define MSG_DELTA_CALIBRATE_X             "Calibrate " MSG_X
+  #define MSG_DELTA_CALIBRATE_Y             "Calibrate " MSG_Y
+  #define MSG_DELTA_CALIBRATE_Z             "Calibrate " MSG_Z
   #define MSG_DELTA_CALIBRATE_CENTER        "Calibrate Center"
 #endif // DELTA
 
 // Scara
 #if MECH(SCARA)
-  #define MSG_XSCALE                        "X Scale"
-  #define MSG_YSCALE                        "Y Scale"
+  #define MSG_SCALE                         "Scale"
+  #define MSG_XSCALE                        MSG_X " " MSG_SCALE
+  #define MSG_YSCALE                        MSG_Y " " MSG_SCALE
 #endif
 
 #define MSG_HEATING                         "Heating..."
@@ -180,10 +198,10 @@
 // Extra
 #define MSG_LASER                           "Laser Preset"
 #define MSG_CONFIG                          "Configuration"
-#define MSG_E_BOWDEN_LENGTH                 "Extrude " STRINGIFY(BOWDEN_LENGTH) "mm"
-#define MSG_R_BOWDEN_LENGTH                 "Retract " STRINGIFY(BOWDEN_LENGTH) "mm"
-#define MSG_PURGE_XMM                       "Purge " STRINGIFY(LCD_PURGE_LENGTH) "mm"
-#define MSG_RETRACT_XMM                     "Retract " STRINGIFY(LCD_RETRACT_LENGTH) "mm"
+#define MSG_E_BOWDEN_LENGTH                 MSG_EXTRUDE " " STRINGIFY(BOWDEN_LENGTH) "mm"
+#define MSG_R_BOWDEN_LENGTH                 MSG_RETRACT " " STRINGIFY(BOWDEN_LENGTH) "mm"
+#define MSG_PURGE_XMM                       MSG_PURGE " " STRINGIFY(LCD_PURGE_LENGTH) "mm"
+#define MSG_RETRACT_XMM                     MSG_RETRACT " " STRINGIFY(LCD_RETRACT_LENGTH) "mm"
 #define MSG_SAVED_POS                       "Saved position"
 #define MSG_RESTORING_POS                   "Restoring position"
 #define MSG_INVALID_POS_SLOT                "Invalid slot, total slots: "
@@ -205,10 +223,10 @@
   #define MSG_FWTEST_04                     "Start check MOTOR"
   #define MSG_FWTEST_ATTENTION              "ATTENTION! Check that the three axes are more than 5 mm from the endstop!"
   #define MSG_FWTEST_END                    "Finish Test. Disable FIRMWARE_TEST and recompile."
-  #define MSG_FWTEST_INTO                    "into "
-  #define MSG_FWTEST_ERROR                   "ERROR"
-  #define MSG_FWTEST_OK                      "OK"
-  #define MSG_FWTEST_NDEF                    "not defined"
+  #define MSG_FWTEST_INTO                   "into "
+  #define MSG_FWTEST_ERROR                  "ERROR"
+  #define MSG_FWTEST_OK                     "OK"
+  #define MSG_FWTEST_NDEF                   "not defined"
 #endif // FIRMWARE_TEST
 
-#endif // LANGUAGE_EN_H
+#endif // LANGUAGE_CA_H

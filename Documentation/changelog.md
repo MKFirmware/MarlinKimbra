@@ -1,28 +1,38 @@
+### Version 4.2.2
+* Added the possibility to invert the logic for lcd buttons.
+* Language files bugfix.
+* Fixed a freeze problem during write operations to the SD.
+* Re-enabled by default SDSUPPORT for DISCOUNT displays.
+
+### Version 4.2.1
+* SDSUPPORT disabled by default.
+* General BugFix.
+
 ### Version 4.2.0
-* Add Dual Extruder DONDOLO
+* Add Dual Extruder DONDOLO.
 * Add PID Extrusion Rate Kc in percent.
-* New configuration systems (Now you can create a separate file with all configuration and use it in you FW update)
-* New namings for file
-* Added more documentation inside configuration file
-* More checks for feature incompatibility during compilation
-* Codeclean
-* General bugfix
-* Removed legacy support for old configuration (Do not use your old configuration files, namings and position for configuration has changed)
+* New configuration systems (Now you can create a separate file with all configuration and use it in you FW update).
+* New namings for file.
+* Added more documentation inside configuration file.
+* More checks for feature incompatibility during compilation.
+* Codeclean.
+* General bugfix.
+* Removed legacy support for old configuration (Do not use your old configuration files, namings and position for configuration has changed).
 
 ### Version 4.1.5
-* Added dot for SD write operation
-* Added statistics menu
-* Added an overall configuration file
-* Added M70 gcode for calibrate AC721 current sensor
-* Added documentation for calibrate AC721 current sensor
-* Critical stepper motor frequency bugfix
+* Added dot for SD write operation.
+* Added statistics menu.
+* Added an overall configuration file.
+* Added M70 gcode for calibrate AC721 current sensor.
+* Added documentation for calibrate AC721 current sensor.
+* Critical stepper motor frequency bugfix.
 * Introduced more intuitive menu tree.
-* Added a menu option to fix loose steps from LCD
-* Improved italian translation
+* Added a menu option to fix loose steps from LCD.
+* Improved italian translation.
 * G28 gcode now support the "B" flag that enable you to come back to the last position of the axis before the homing command. (Used for fix loose steps)
 * Implemented FAST_PWM_FAN and FAN_SOFT_PWM also for other fan that can be added in configuration_adv file.
 * Added the ability to set a min speed to the fan that can be added in configuration_adv file.
-* General bugfix
+* General bugfix.
 
 ### Version 4.1.4
 * Add support for Piggy Alligator board

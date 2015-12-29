@@ -25,7 +25,11 @@
   #define EN_A BIT(BLEN_A)
   #define EN_B BIT(BLEN_B)
   #define EN_C BIT(BLEN_C)
-  #define LCD_CLICKED (buttons&EN_C)
+  #if ENABLED(INVERT_CLICK_BUTTON)
+    #define LCD_CLICKED !(buttons&EN_C)
+  #else
+    #define LCD_CLICKED (buttons&EN_C)
+  #endif
 #endif
 
 #include <U8glib.h>
@@ -114,7 +118,6 @@
 
 // LCD selection
 #if ENABLED(U8GLIB_ST7920)
-  //U8GLIB_ST7920_128X64_RRD u8g(0,0,0);
   U8GLIB_ST7920_128X64_RRD u8g(0);
 #elif ENABLED(MAKRPANEL)
   // The MaKrPanel display, ST7565 controller as well
@@ -315,7 +318,7 @@ static void lcd_implementation_status_screen() {
         }
         else {
           lcd_print(itostr4(power_consumption_hour-startpower));
-          lcd_print("Wh");
+          lcd_print((char*)"Wh");
         }
       #else
         uint16_t time = (millis() - print_job_start_ms) / 60000;
@@ -459,6 +462,7 @@ static void lcd_implementation_drawmenu_generic(bool isSelected, uint8_t row, co
     pstr++;
   }
   while (n--) lcd_print(' ');
+  lcd_print(pre_char);
   u8g.setPrintPos(LCD_PIXEL_WIDTH - DOG_CHAR_WIDTH, (row + 1) * DOG_CHAR_HEIGHT);
   lcd_print(post_char);
   lcd_print(' ');
@@ -535,7 +539,6 @@ void lcd_implementation_drawedit(const char* pstr, char* value) {
 }
 
 #if ENABLED(SDSUPPORT)
-
   static void _drawmenu_sd(bool isSelected, uint8_t row, const char* pstr, const char* filename, char* const longFilename, bool isDir) {
     char c;
     uint8_t n = LCD_WIDTH - 1;

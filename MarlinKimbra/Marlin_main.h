@@ -72,6 +72,7 @@ extern uint8_t debugLevel;
 extern bool Running;
 inline bool IsRunning() { return  Running; }
 inline bool IsStopped() { return !Running; }
+extern bool Printing;
 
 bool enqueuecommand(const char *cmd); //put a single ASCII command at the end of the current buffer or return false when it is full
 void enqueuecommands_P(const char *cmd); //put one or many ASCII commands at the end of the current buffer, read from flash
@@ -80,7 +81,7 @@ void prepare_arc_move(char isclockwise);
 void clamp_to_software_endstops(float target[3]);
 
 extern millis_t previous_cmd_ms;
-inline void refresh_cmd_timeout();
+void refresh_cmd_timeout();
 
 #if ENABLED(FAST_PWM_FAN)
   void setPwmFrequency(uint8_t pin, int val);

@@ -67,6 +67,7 @@
  * ADVANCED FEATURES:
  * - Buffer stuff
  * - Whatchdog
+ * - Start / Stop Gcode
  *
  * Basic-settings can be found in Configuration_Basic.h
  * Mechanisms-settings can be found in Configuration_Xxxxxx.h (where Xxxxxx can be: Cartesian - Delta - Core - Scara)
@@ -1051,6 +1052,8 @@
 //#define LCD_SCREEN_ROT_180   //Rotate screen orientation for graphics display by 180 degree clockwise
 //#define LCD_SCREEN_ROT_270   //Rotate screen orientation for graphics display by 270 degree clockwise
 
+//#define INVERT_CLICK_BUTTON           // Option for invert encoder button logic
+//#define INVERT_BACK_BUTTON            // Option for invert back button logic if avaible
 //#define INVERT_ROTARY_SWITCH          // Option for invert rotary encoder
 #define ENCODER_RATE_MULTIPLIER         // If defined, certain menu edit operations automatically multiply the steps when the encoder is moved quickly
 #define ENCODER_10X_STEPS_PER_SEC   75  // If the encoder steps per sec exceeds this value, multiply steps moved x10 to quickly advance the value
@@ -1086,13 +1089,13 @@
 
 // The Panucatt Devices Viki 2.0 and mini Viki with Graphic LCD
 // http://panucatt.com
-// ==> REMEMBER TO INSTALL U8glib to your ARDUINO library folder: https://github.com/olikraus/U8glib_Arduino
+// REMEMBER TO INSTALL U8glib to your ARDUINO library folder: https://github.com/olikraus/U8glib_Arduino
 //#define VIKI2
 //#define miniVIKI
 
 // This is a new controller currently under development.  https://github.com/eboston/Adafruit-ST7565-Full-Graphic-Controller/
 //
-// ==> REMEMBER TO INSTALL U8glib to your ARDUINO library folder: https://github.com/olikraus/U8glib_Arduino
+// REMEMBER TO INSTALL U8glib to your ARDUINO library folder: https://github.com/olikraus/U8glib_Arduino
 //#define ELB_FULL_GRAPHIC_CONTROLLER
 //#define SD_DETECT_INVERTED
 
@@ -1107,7 +1110,7 @@
 // The RepRapDiscount FULL GRAPHIC Smart Controller (quadratic white PCB)
 // http://reprap.org/wiki/RepRapDiscount_Full_Graphic_Smart_Controller
 //
-// ==> REMEMBER TO INSTALL U8glib to your ARDUINO library folder: https://github.com/olikraus/U8glib_Arduino
+// REMEMBER TO INSTALL U8glib to your ARDUINO library folder: https://github.com/olikraus/U8glib_Arduino
 //#define REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
 
 // The RepRapWorld REPRAPWORLD_KEYPAD v1.1
@@ -1122,11 +1125,13 @@
 
 // The MakerLab Mini Panel with graphic controller and SD support
 // http://reprap.org/wiki/Mini_panel
-// #define MINIPANEL
+//#define MINIPANEL
 
 // Nextion HMI panel
-// ==> REMEMBER TO INSTALL Nextion library in your ARDUINO library folder. You can find it in Arduino\libraries\
+// REMEMBER TO INSTALL Nextion library in your ARDUINO library folder. You can find it in Arduino/libraries/
 //#define NEXTION
+// For GFX Visualization enable Nextion GFX
+//#define NEXTION_GFX
 
 // I2C Panels
 //#define LCD_I2C_SAINSMART_YWROBOT
@@ -1144,7 +1149,7 @@
 //#define LCD_I2C_VIKI
   
 // SSD1306 OLED generic display support
-// ==> REMEMBER TO INSTALL U8glib to your ARDUINO library folder: https://github.com/olikraus/U8glib_Arduino
+// REMEMBER TO INSTALL U8glib to your ARDUINO library folder: https://github.com/olikraus/U8glib_Arduino
 //#define U8GLIB_SSD1306
 
 // Shift register panels
@@ -1493,4 +1498,19 @@
 //#define WATCHDOG_RESET_MANUAL
 /*****************************************************************************************/
 
+
+/*****************************************************************************************
+ ********************************* Start - Stop Gcode ************************************
+ *****************************************************************************************
+ *                                                                                       *
+ * Start - Stop Gcode use when Start or Stop printing width M11 command                  *
+ *                                                                                       *
+ *****************************************************************************************/
+//#define START_GCODE
+#define START_PRINTING_SCRIPT "G28\nG1 Z10 F8000"
+
+//#define STOP_GCODE
+#define STOP_PRINTING_SCRIPT "G28\nM107\nM104 T0 S0\nM140 S0\nM84\nM81"
+/*****************************************************************************************/
+ 
 #endif

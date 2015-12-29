@@ -14,16 +14,22 @@
   #include "stepper.h"
   #include "configuration_store.h"
   #include "nextion_lcd.h"
+  #include "nextion_gfx.h"
   #include <Nextion.h>
 
   const float MaxWave   = 0.2;
   bool NextionON        = false;
   bool PageInfo         = false;
+  bool gfxON            = false;
   char buffer[100]      = {0};
   uint32_t slidermaxval = 20;
   char lcd_status_message[30] = WELCOME_MSG;
   uint8_t lcd_status_message_level = 0;
   static millis_t next_lcd_update_ms;
+
+  #if ENABLED(NEXTION_GFX)
+    GFX gfx = GFX(196, 194);
+  #endif
 
   // Page
   NexPage Pstart        = NexPage(0, 0, "start");
@@ -272,6 +278,7 @@
 
     static void setpagesdcard() {
       PageInfo = false;
+      gfxON    = false;
       Psdcard.show();
       uint16_t fileCnt = card.getnrfilenames();
 
@@ -429,10 +436,12 @@
   void setpagePopCallback(void *ptr) {
     if (ptr == &Menu) {
       PageInfo = false;
+      gfxON    = false;
       Pmenu.show();
     }
     else if (ptr == &MSetup) {
       PageInfo = false;
+      gfxON    = false;
       Psetup.show();
     }
 
@@ -487,6 +496,14 @@
       Exit1.attachPop(ExitPopCallback);
       Exit3.attachPop(ExitPopCallback);
 
+      #if ENABLED(NEXTION_GFX)
+        gfx.color_set(VC_AXIS + X_AXIS, 63488);
+        gfx.color_set(VC_AXIS + Y_AXIS, 2016);
+        gfx.color_set(VC_AXIS + Z_AXIS, 31);
+        gfx.color_set(VC_MOVE, 2047);
+        gfx.color_set(VC_TOOL, 65535);
+      #endif
+
       #if ENABLED(SDSUPPORT)
         MSD.attachPop(setpagePopCallback, &MSD);
         sdlist.attachPop(sdlistPopCallback);
@@ -533,8 +550,8 @@
     itoa(T2, valuetemp, 10);
     strcat(buffer, valuetemp);
     uint32_t color = 1023;
-    uint32_t prc = (T1/(T2 + 0.1)) * 100;
-    
+    uint32_t prc = (T1/(T2 + 0.01)) * 100;
+
     if (prc >= 50 && prc < 75)
       color = 65519;
     else if (prc >= 75 && prc < 95)
@@ -544,8 +561,11 @@
 
     hotend_list[h]->setText(buffer);
     hotend_list[h]->setColor(color);
-    graph_list[h]->addValue(0, (int)(T1 * MaxWave));
-    graph_list[h]->addValue(1, (int)(T2 * MaxWave));
+
+    if (!gfxON) {
+      graph_list[h]->addValue(0, (int)(T1 * MaxWave));
+      graph_list[h]->addValue(1, (int)(T2 * MaxWave));
+    }
   }
 
   static void coordtoLCD() {
@@ -554,11 +574,7 @@
     memset(buffer, 0, sizeof(buffer));
     strcat(buffer, "X");
     if (axis_known_position[X_AXIS]) {
-      #if MECH(DELTA)
-        valuetemp = ftostr30(current_position[X_AXIS]);
-      #else
-        valuetemp = ftostr3(current_position[X_AXIS]);
-      #endif
+      valuetemp = ftostr4sign(current_position[X_AXIS]);
       strcat(buffer, valuetemp);
     }
     else
@@ -566,11 +582,7 @@
 
     strcat(buffer, " Y");
     if (axis_known_position[Y_AXIS]) {
-      #if MECH(DELTA)
-        valuetemp = ftostr30(current_position[Y_AXIS]);
-      #else
-        valuetemp = ftostr3(current_position[Y_AXIS]);
-      #endif
+      valuetemp = ftostr4sign(current_position[Y_AXIS]);
       strcat(buffer, valuetemp);
     }
     else
@@ -664,95 +676,33 @@
 
   void lcd_reset_alert_level() { lcd_status_message_level = 0; }
 
+  #if ENABLED(NEXTION_GFX)
+    void gfx_clear(float x, float y, float z) {
+      if (PageInfo) {
+        gfx.clear(x, y, z);
+        gfxON = true;
+      }
+    }
+
+    void gfx_cursor_to(float x, float y, float z) {
+      if (PageInfo && gfxON)
+        gfx.cursor_to(x, y, z);
+    }
+
+    void gfx_line_to(float x, float y, float z){
+      if (PageInfo && gfxON)
+        gfx.line_to(VC_TOOL, x, y, z);
+    }
+  #endif
+
   /*********************************/
   /** Number to string conversion **/
   /*********************************/
 
   char conv[8];
 
-  // Convert float to string with +123.4 format
-  char *ftostr3(const float &x) {
-    return itostr3((int)x);
-  }
-
-  // Convert int to string with 12 format
-  char *itostr2(const uint8_t &x) {
-    //sprintf(conv,"%5.1f",x);
-    int xx = x;
-    conv[0] = (xx / 10) % 10 + '0';
-    conv[1] = xx % 10 + '0';
-    conv[2] = 0;
-    return conv;
-  }
-
-  // Convert float to string with +123.4 format
-  char *ftostr31(const float &x) {
-    int xx = abs(x * 10);
-    conv[0] = (x >= 0) ? '+' : '-';
-    conv[1] = (xx / 1000) % 10 + '0';
-    conv[2] = (xx / 100) % 10 + '0';
-    conv[3] = (xx / 10) % 10 + '0';
-    conv[4] = '.';
-    conv[5] = xx % 10 + '0';
-    conv[6] = 0;
-    return conv;
-  }
-
-  // Convert float to string with 123.4 format, dropping sign
-  char *ftostr31ns(const float &x) {
-    int xx = abs(x * 10);
-    conv[0] = (xx / 1000) % 10 + '0';
-    conv[1] = (xx / 100) % 10 + '0';
-    conv[2] = (xx / 10) % 10 + '0';
-    conv[3] = '.';
-    conv[4] = xx % 10 + '0';
-    conv[5] = 0;
-    return conv;
-  }
-
-  // Convert float to string with 123.4 format
-  char *ftostr32(const float &x) {
-    long xx = abs(x * 100);
-    conv[0] = x >= 0 ? (xx / 10000) % 10 + '0' : '-';
-    conv[1] = (xx / 1000) % 10 + '0';
-    conv[2] = (xx / 100) % 10 + '0';
-    conv[3] = '.';
-    conv[4] = (xx / 10) % 10 + '0';
-    conv[5] = xx % 10 + '0';
-    conv[6] = 0;
-    return conv;
-  }
-
-  // Convert float to string with 1.234 format
-  char *ftostr43(const float &x) {
-    long xx = x * 1000;
-    if (xx >= 0) {
-      conv[0] = (xx / 1000) % 10 + '0';
-    }
-    else {
-      conv[0] = '-';
-    }
-    xx = abs(xx);
-    conv[1] = '.';
-    conv[2] = (xx / 100) % 10 + '0';
-    conv[3] = (xx / 10) % 10 + '0';
-    conv[4] = (xx) % 10 + '0';
-    conv[5] = 0;
-    return conv;
-  }
-
-  // Convert float to string with 1.23 format
-  char *ftostr12ns(const float &x) {
-    long xx=x*100;
-    
-    xx=abs(xx);
-    conv[0]=(xx/100)%10+'0';
-    conv[1]='.';
-    conv[2]=(xx/10)%10+'0';
-    conv[3]=(xx)%10+'0';
-    conv[4]=0;
-    return conv;
-  }
+  // Convert float to rj string with _123, -123, _-12, or __-1 format
+  char *ftostr4sign(const float& x) { return itostr4sign((int)x); }
 
   // Convert float to space-padded string with -_23.4_ format
   char *ftostr32sp(const float &x) {
@@ -800,144 +750,28 @@
     return conv;
   }
 
-  // Convert int to lj string with +123.0 format
-  char *itostr31(const int &x) {
-    conv[0] = x >= 0 ? '+' : '-';
+  // Convert int to rj string with _123, -123, _-12, or __-1 format
+  char* itostr4sign(const int& x) {
     int xx = abs(x);
-    conv[1] = (xx / 100) % 10 + '0';
-    conv[2] = (xx / 10) % 10 + '0';
-    conv[3] = xx % 10 + '0';
-    conv[4] = '.';
-    conv[5] = '0';
-    conv[6] = 0;
-    return conv;
-  }
-
-  // Convert int to rj string with 123 or -12 format
-  char *itostr3(const int &x) {
-    int xx = x;
-    if (xx < 0) {
-       conv[0] = '-';
-       xx = -xx;
-    }
-    else
-      conv[0] = xx >= 100 ? (xx / 100) % 10 + '0' : ' ';
-
-    conv[1] = xx >= 10 ? (xx / 10) % 10 + '0' : ' ';
-    conv[2] = xx % 10 + '0';
-    conv[3] = 0;
-    return conv;
-  }
-
-  // Convert int to lj string with 123 format
-  char *itostr3left(const int &xx) {
+    int sign = 0;
     if (xx >= 100) {
-      conv[0] = (xx / 100) % 10 + '0';
-      conv[1] = (xx / 10) % 10 + '0';
-      conv[2] = xx % 10 + '0';
-      conv[3] = 0;
+      conv[1] = (xx / 100) % 10 + '0';
+      conv[2] = (xx / 10) % 10 + '0';
     }
     else if (xx >= 10) {
-      conv[0] = (xx / 10) % 10 + '0';
-      conv[1] = xx % 10 + '0';
-      conv[2] = 0;
+      conv[0] = ' ';
+      sign = 1;
+      conv[2] = (xx / 10) % 10 + '0';
     }
     else {
-      conv[0] = xx % 10 + '0';
-      conv[1] = 0;
+      conv[0] = ' ';
+      conv[1] = ' ';
+      sign = 2;
     }
-    return conv;
-  }
-
-  // Convert int to rj string with 1234 format
-  char *itostr4(const int &xx) {
-    conv[0] = xx >= 1000 ? (xx / 1000) % 10 + '0' : ' ';
-    conv[1] = xx >= 100 ? (xx / 100) % 10 + '0' : ' ';
-    conv[2] = xx >= 10 ? (xx / 10) % 10 + '0' : ' ';
+    conv[sign] = x < 0 ? '-' : ' ';
     conv[3] = xx % 10 + '0';
     conv[4] = 0;
     return conv;
   }
 
-  char *ltostr7(const long &xx) {
-    if (xx >= 1000000)
-      conv[0]=(xx/1000000)%10+'0';
-    else
-      conv[0]=' ';
-    if (xx >= 100000)
-      conv[1]=(xx/100000)%10+'0';
-    else
-      conv[1]=' ';
-    if (xx >= 10000)
-      conv[2]=(xx/10000)%10+'0';
-    else
-      conv[2]=' ';
-    if (xx >= 1000)
-      conv[3]=(xx/1000)%10+'0';
-    else
-      conv[3]=' ';
-    if (xx >= 100)
-      conv[4]=(xx/100)%10+'0';
-    else
-      conv[4]=' ';
-    if (xx >= 10)
-      conv[5]=(xx/10)%10+'0';
-    else
-      conv[5]=' ';
-    conv[6]=(xx)%10+'0';
-    conv[7]=0;
-    return conv;
-  }
-
-  // convert float to string with +123 format
-  char *ftostr30(const float &x) {
-    int xx=x;
-    conv[0]=(xx>=0)?'+':'-';
-    xx=abs(xx);
-    conv[1]=(xx/100)%10+'0';
-    conv[2]=(xx/10)%10+'0';
-    conv[3]=(xx)%10+'0';
-    conv[4]=0;
-    return conv;
-  }
-
-  // Convert float to rj string with 12345 format
-  char *ftostr5(const float &x) {
-    long xx = abs(x);
-    conv[0] = xx >= 10000 ? (xx / 10000) % 10 + '0' : ' ';
-    conv[1] = xx >= 1000 ? (xx / 1000) % 10 + '0' : ' ';
-    conv[2] = xx >= 100 ? (xx / 100) % 10 + '0' : ' ';
-    conv[3] = xx >= 10 ? (xx / 10) % 10 + '0' : ' ';
-    conv[4] = xx % 10 + '0';
-    conv[5] = 0;
-    return conv;
-  }
-
-  // Convert float to string with +1234.5 format
-  char *ftostr51(const float &x) {
-    long xx = abs(x * 10);
-    conv[0] = (x >= 0) ? '+' : '-';
-    conv[1] = (xx / 10000) % 10 + '0';
-    conv[2] = (xx / 1000) % 10 + '0';
-    conv[3] = (xx / 100) % 10 + '0';
-    conv[4] = (xx / 10) % 10 + '0';
-    conv[5] = '.';
-    conv[6] = xx % 10 + '0';
-    conv[7] = 0;
-    return conv;
-  }
-
-  // Convert float to string with +123.45 format
-  char *ftostr52(const float &x) {
-    conv[0] = (x >= 0) ? '+' : '-';
-    long xx = abs(x * 100);
-    conv[1] = (xx / 10000) % 10 + '0';
-    conv[2] = (xx / 1000) % 10 + '0';
-    conv[3] = (xx / 100) % 10 + '0';
-    conv[4] = '.';
-    conv[5] = (xx / 10) % 10 + '0';
-    conv[6] = xx % 10 + '0';
-    conv[7] = 0;
-    return conv;
-  }
 #endif

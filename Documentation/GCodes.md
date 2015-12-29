@@ -27,7 +27,7 @@
 *  M3   - S[0-255] Put output in laser beam control
 *  M4   - Turn on laser beam
 *  M5   - Turn off laser beam
-*  M11  - Start printer for pause mode
+*  M11  - Start/Stop printing serial mode
 *  M17  - Enable/Power all stepper motors
 *  M18  - Disable all stepper motors; same as M84
 *  M20  - List SD card
@@ -107,6 +107,7 @@
 *  M502 - reverts to the default "factory settings".  You still need to store them in EEPROM afterwards if you want to.
 *  M503 - print the current settings (from memory not from EEPROM)
 *  M540 - Use S[0|1] to enable or disable the stop SD card print on endstop hit (requires ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED)
+*  M595 - Set hotend AD595 offset and gain
 *  M600 - Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
 *  M605 - Set dual x-carriage movement mode: Smode [ X<duplication x-offset> Rduplication temp offset ]
 *  M666 - Set z probe offset or Endstop and delta geometry adjustment. M666 L for list command

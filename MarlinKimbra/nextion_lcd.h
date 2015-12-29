@@ -39,25 +39,10 @@
 
     #define LCD_MESSAGEPGM(x) lcd_setstatuspgm(PSTR(x))
     #define LCD_ALERTMESSAGEPGM(x) lcd_setalertstatuspgm(PSTR(x))
-    
-    char *itostr2(const uint8_t &x);
-    char *itostr31(const int &xx);
-    char *itostr3(const int &xx);
-    char *itostr3left(const int &xx);
-    char *itostr4(const int &xx);
 
-    char *ltostr7(const long &xx);
+    char* itostr4sign(const int& x);
+    char* ftostr4sign(const float& x);
+    char* ftostr32sp(const float& x); // remove zero-padding from ftostr32
 
-    char *ftostr3(const float &x);
-    char *ftostr30(const float &x);
-    char *ftostr31ns(const float &x); // float to string without sign character
-    char *ftostr31(const float &x);
-    char *ftostr32(const float &x);
-    char *ftostr43(const float &x);
-    char *ftostr12ns(const float &x); 
-    char *ftostr32sp(const float &x); // remove zero-padding from ftostr32
-    char *ftostr5(const float &x);
-    char *ftostr51(const float &x);
-    char *ftostr52(const float &x);
   #endif
 #endif // NEXTIONLCD_H

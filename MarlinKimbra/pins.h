@@ -5351,7 +5351,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 
 /****************************************************************************************
 *********** Available chip select pins for HW SPI are 4 10 52 77 ************************
-/****************************************************************************************/
+****************************************************************************************/
 #if (SDSS == 4) || (SDSS == 10) || (SDSS == 52) || (SDSS == 77)
   #if (SDSS == 4)
     #define SPI_PIN         87
@@ -5382,7 +5382,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 
 /****************************************************************************************
 ********************************* END MOTHERBOARD ***************************************
-/****************************************************************************************/
+****************************************************************************************/
 
 #ifndef ORIG_HEATER_1_PIN
   #define ORIG_HEATER_1_PIN -1
@@ -5460,6 +5460,7 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #if DISABLED(Z_PROBE_ENDSTOP) // Allow code to compile regardless of Z_PROBE_ENDSTOP setting.
   #define Z_PROBE_PIN -1
 #endif
+/****************************************************************************************/
 
 #if ENABLED(DISABLE_XMAX_ENDSTOP)
   #undef X_MAX_PIN

@@ -118,7 +118,7 @@
  * M3   - Put S<value> in laser beam control
  * M4   - Turn on laser beam
  * M5   - Turn off laser beam
- * M11  - Start printer for pause mode
+ * M11  - Start/Stop printing serial mode
  * M17  - Enable/Power all stepper motors
  * M18  - Disable all stepper motors; same as M84
  * M20  - List SD card
@@ -251,6 +251,7 @@
 #endif
 
 bool Running = true;
+bool Printing = false;
 
 uint8_t debugLevel = DEBUG_INFO|DEBUG_ERRORS;
 
@@ -300,7 +301,7 @@ const int sensitive_pins[] = SENSITIVE_PINS; ///< Sensitive pin list for M42
 // Inactivity shutdown
 millis_t previous_cmd_ms = 0;
 static millis_t max_inactive_time = 0;
-static millis_t stepper_inactive_time = DEFAULT_STEPPER_DEACTIVE_TIME * 1000L;
+static millis_t stepper_inactive_time = DEFAULT_STEPPER_DEACTIVE_TIME * 1000UL;
 millis_t print_job_start_ms = 0; ///< Print job start time
 millis_t print_job_stop_ms = 0;  ///< Print job stop time
 static uint8_t target_extruder;
@@ -439,7 +440,6 @@ unsigned long printer_usage_seconds;
 
 #if HAS(FILRUNOUT)
   static bool filrunoutEnqueued = false;
-  bool printing = false;
 #endif
 
 #if ENABLED(SDSUPPORT)
@@ -509,30 +509,28 @@ bool setTargetedHotend(int code);
 #endif
 
 #ifdef __AVR__ // HAL for Due
-#if ENABLED(SDSUPPORT)
-  #include "SdFatUtil.h"
-  int freeMemory() { return SdFatUtil::FreeRam(); }
-#else
-  extern "C" {
-    extern unsigned int __bss_end;
-    extern unsigned int __heap_start;
-    extern void *__brkval;
+  #if ENABLED(SDSUPPORT)
+    #include "SdFatUtil.h"
+    int freeMemory() { return SdFatUtil::FreeRam(); }
+  #else
+    extern "C" {
+      extern unsigned int __bss_end;
+      extern unsigned int __heap_start;
+      extern void *__brkval;
 
-    int freeMemory() {
-      int free_memory;
+      int freeMemory() {
+        int free_memory;
 
-      if ((int)__brkval == 0)
-        free_memory = ((int)&free_memory) - ((int)&__bss_end);
-      else
-        free_memory = ((int)&free_memory) - ((int)__brkval);
+        if ((int)__brkval == 0)
+          free_memory = ((int)&free_memory) - ((int)&__bss_end);
+        else
+          free_memory = ((int)&free_memory) - ((int)__brkval);
 
-      return free_memory;
+        return free_memory;
+      }
     }
-  }
-#endif // !SDSUPPORT
+  #endif // !SDSUPPORT
 #endif
-
-
 
 #if ENABLED(M100_FREE_MEMORY_WATCHER)
   // top_of_stack() returns the location of a variable on its stack frame.  The value returned is above
@@ -628,7 +626,7 @@ bool enqueuecommand(const char* cmd) {
   // This is dangerous if a mixing of serial and this happens
   char* command = command_queue[cmd_queue_index_w];
   strcpy(command, cmd);
-  ECHO_SMV(DB, MSG_ENQUEUEING, command);
+  ECHO_SMV(DB, SERIAL_ENQUEUEING, command);
   ECHO_EM("\"");
   cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
   commands_in_queue++;
@@ -670,7 +668,6 @@ bool enqueuecommand(const char* cmd) {
     WRITE(HOME_PIN, HIGH);
   }
 #endif
-
 
 #if HAS(PHOTOGRAPH)
   void setup_photpin() {
@@ -746,6 +743,7 @@ bool enqueuecommand(const char* cmd) {
     #endif
   }
 #endif
+
 /**
  * Led init
  */
@@ -762,15 +760,14 @@ bool enqueuecommand(const char* cmd) {
     #endif
   }
 #endif
-/**
- * Led init
- */
+
 #if HAS(Z_PROBE_SLED)
   void setup_zprobesled() {
     pinMode(SLED_PIN, OUTPUT);
     digitalWrite(SLED_PIN, LOW); // turn it off
   }
 #endif
+
 /**
  * Stepper Reset (RigidBoard, et.al.)
  */
@@ -825,22 +822,22 @@ void setup() {
 
   // Check startup - does nothing if bootloader sets MCUSR to 0
   byte mcu = MCUSR;
-  if (mcu & 1) ECHO_EM(MSG_POWERUP);
-  if (mcu & 2) ECHO_EM(MSG_EXTERNAL_RESET);
-  if (mcu & 4) ECHO_EM(MSG_BROWNOUT_RESET);
-  if (mcu & 8) ECHO_EM(MSG_WATCHDOG_RESET);
-  if (mcu & 32) ECHO_EM(MSG_SOFTWARE_RESET);
+  if (mcu & 1) ECHO_EM(SERIAL_POWERUP);
+  if (mcu & 2) ECHO_EM(SERIAL_EXTERNAL_RESET);
+  if (mcu & 4) ECHO_EM(SERIAL_BROWNOUT_RESET);
+  if (mcu & 8) ECHO_EM(SERIAL_WATCHDOG_RESET);
+  if (mcu & 32) ECHO_EM(SERIAL_SOFTWARE_RESET);
   MCUSR = 0;
 
   ECHO_LM(DB, MSG_MARLIN " " BUILD_VERSION);
 
   #if ENABLED(STRING_DISTRIBUTION_DATE) && ENABLED(STRING_CONFIG_H_AUTHOR)
-    ECHO_LM(DB, MSG_CONFIGURATION_VER STRING_DISTRIBUTION_DATE MSG_AUTHOR STRING_CONFIG_H_AUTHOR);
-    ECHO_LM(DB, MSG_COMPILED __DATE__);
+    ECHO_LM(DB, SERIAL_CONFIGURATION_VER STRING_DISTRIBUTION_DATE SERIAL_AUTHOR STRING_CONFIG_H_AUTHOR);
+    ECHO_LM(DB, SERIAL_COMPILED __DATE__);
   #endif // STRING_DISTRIBUTION_DATE
 
-  ECHO_SMV(DB, MSG_FREE_MEMORY, freeMemory());
-  ECHO_EMV(MSG_PLANNER_BUFFER_BYTES, (int)sizeof(block_t)*BLOCK_BUFFER_SIZE);
+  ECHO_SMV(DB, SERIAL_FREE_MEMORY, freeMemory());
+  ECHO_EMV(SERIAL_PLANNER_BUFFER_BYTES, (int)sizeof(block_t)*BLOCK_BUFFER_SIZE);
 
   #if ENABLED(SDSUPPORT)
     for (int8_t i = 0; i < BUFSIZE; i++) fromsd[i] = false;
@@ -918,7 +915,7 @@ void loop() {
         if (strstr_P(command, PSTR("M29"))) {
           // M29 closes the file
           card.closeFile();
-          ECHO_EM(MSG_FILE_SAVED);
+          ECHO_EM(SERIAL_FILE_SAVED);
         }
         else {
           // Write the string from the read buffer to SD
@@ -1015,25 +1012,25 @@ void get_command() {
         }
         gcode_N = strtol(npos + 1, NULL, 10);
         if (gcode_N != gcode_LastN + 1 && !M110) {
-          gcode_line_error(PSTR(MSG_ERR_LINE_NO));
+          gcode_line_error(PSTR(SERIAL_ERR_LINE_NO));
           return;
         }
         if (apos) {
           byte checksum = 0, count = 0;
           while (command[count] != '*') checksum ^= command[count++];
           if (strtol(apos + 1, NULL, 10) != checksum) {
-            gcode_line_error(PSTR(MSG_ERR_CHECKSUM_MISMATCH));
+            gcode_line_error(PSTR(SERIAL_ERR_CHECKSUM_MISMATCH));
             return;
           }
           // if no errors, continue parsing
         } else if (npos == command) {
-          gcode_line_error(PSTR(MSG_ERR_NO_CHECKSUM));
+          gcode_line_error(PSTR(SERIAL_ERR_NO_CHECKSUM));
           return;
         }
         gcode_LastN = gcode_N;
         // if no errors, continue parsing
       } else if (apos) { // No '*' without 'N'
-        gcode_line_error(PSTR(MSG_ERR_NO_LINENUMBER_WITH_CHECKSUM), false);
+        gcode_line_error(PSTR(SERIAL_ERR_NO_LINENUMBER_WITH_CHECKSUM), false);
         return;
       }
 
@@ -1047,7 +1044,7 @@ void get_command() {
           case 1:
           case 2:
           case 3:
-            ECHO_LM(ER, MSG_ERR_STOPPED);
+            ECHO_LM(ER, SERIAL_ERR_STOPPED);
             LCD_MESSAGEPGM(MSG_STOPPED);
             break;
           }
@@ -1092,7 +1089,7 @@ void get_command() {
           serial_count >= (MAX_CMD_SIZE - 1) || n == -1
       ) {
         if (card.eof()) {
-          ECHO_EM(MSG_FILE_PRINTED);
+          ECHO_EM(SERIAL_FILE_PRINTED);
           print_job_stop_ms = millis();
           char time[30];
           millis_t t = (print_job_stop_ms - print_job_start_ms) / 1000;
@@ -1299,7 +1296,7 @@ inline void set_homing_bump_feedrate(AxisEnum axis) {
   int hbd = homing_bump_divisor[axis];
   if (hbd < 1) {
     hbd = 10;
-    ECHO_LM(ER, MSG_ERR_HOMING_DIV);
+    ECHO_LM(ER, SERIAL_ERR_HOMING_DIV);
   }
   feedrate = homing_feedrate[axis] / hbd;
 }
@@ -1557,10 +1554,10 @@ static void clean_up_after_endstop_move() {
       #endif
 
       if (verbose_level > 2) {
-        ECHO_SM(DB, MSG_BED_LEVELLING_BED);
-        ECHO_MV(MSG_BED_LEVELLING_X, x, 3);
-        ECHO_MV(MSG_BED_LEVELLING_Y, y, 3);
-        ECHO_EMV(MSG_BED_LEVELLING_Z, measured_z, 3);
+        ECHO_SM(DB, SERIAL_BED_LEVELLING_BED);
+        ECHO_MV(SERIAL_BED_LEVELLING_X, x, 3);
+        ECHO_MV(SERIAL_BED_LEVELLING_Y, y, 3);
+        ECHO_EMV(SERIAL_BED_LEVELLING_Z, measured_z, 3);
       }
 
       if (debugLevel & DEBUG_INFO) ECHO_LM(DB, "<<< probe_pt");
@@ -2856,11 +2853,11 @@ static void clean_up_after_endstop_move() {
 #if HAS(TEMP_0) || HAS(TEMP_BED) || ENABLED(HEATER_0_USES_MAX6675)
   void print_heaterstates() {
     #if HAS(TEMP_0) || ENABLED(HEATER_0_USES_MAX6675)
-      ECHO_MV(MSG_T, degHotend(target_extruder), 1);
+      ECHO_MV(SERIAL_T, degHotend(target_extruder), 1);
       ECHO_MV(" /", degTargetHotend(target_extruder), 1);
     #endif
     #if HAS(TEMP_BED)
-      ECHO_MV(" " MSG_B, degBed(), 1);
+      ECHO_MV(" " SERIAL_B, degBed(), 1);
       ECHO_MV(" /", degTargetBed(), 1);
     #endif
     #if HOTENDS > 1
@@ -2871,14 +2868,14 @@ static void clean_up_after_endstop_move() {
       }
     #endif
     #if HAS(TEMP_BED)
-      ECHO_M(" " MSG_BAT);
+      ECHO_M(" " SERIAL_BAT);
       #if ENABLED(BED_WATTS)
         ECHO_VM((BED_WATTS * getHeaterPower(-1)) / 127, "W");
       #else
         ECHO_V(getHeaterPower(-1));
       #endif
     #endif
-    ECHO_M(" " MSG_AT ":");
+    ECHO_M(" " SERIAL_AT ":");
     #if ENABLED(HOTEND_WATTS)
       ECHO_VM((HOTEND_WATTS * getHeaterPower(target_extruder)) / 127, "W");
     #else
@@ -2886,7 +2883,7 @@ static void clean_up_after_endstop_move() {
     #endif
     #if HOTENDS > 1
       for (int8_t h = 0; h < HOTENDS; ++h) {
-        ECHO_MV(" " MSG_AT, h);
+        ECHO_MV(" " SERIAL_AT, h);
         ECHO_C(':');
         #if ENABLED(EXTRUDER_WATTS)
           ECHO_VM((EXTRUDER_WATTS * getHeaterPower(h)) / 127. "W");
@@ -2922,7 +2919,7 @@ inline void wait_heater() {
     /* continue to loop until we have reached the target temp
       _and_ until TEMP_RESIDENCY_TIME hasn't passed since we reached it */
     while((!cancel_heatup)&&((residency_start_ms == -1) ||
-          (residency_start_ms >= 0 && (((unsigned int) (millis() - residency_start_ms)) < (TEMP_RESIDENCY_TIME * 1000UL)))) )
+          (residency_start_ms >= 0 && (((millis_t) (millis() - residency_start_ms)) < (TEMP_RESIDENCY_TIME * 1000UL)))) )
   #else
     while ( target_direction ? (isHeatingHotend(target_extruder)) : (isCoolingHotend(target_extruder)&&(no_wait_for_cooling==false)) )
   #endif //TEMP_RESIDENCY_TIME
@@ -2933,7 +2930,7 @@ inline void wait_heater() {
           print_heaterstates();
         #endif
         #if ENABLED(TEMP_RESIDENCY_TIME)
-          ECHO_M(" " MSG_W);
+          ECHO_M(" " SERIAL_W);
           if (residency_start_ms > -1) {
             temp_ms = ((TEMP_RESIDENCY_TIME * 1000UL) - (millis() - residency_start_ms)) / 1000UL;
             ECHO_EV(temp_ms);
@@ -2976,7 +2973,6 @@ inline void wait_bed() {
     millis_t ms = millis();
     if (ms > temp_ms + 1000UL) { //Print Temp Reading every 1 second while heating up.
       temp_ms = ms;
-      float tt = degHotend(active_extruder);
       #if HAS(TEMP_0) || HAS(TEMP_BED) || ENABLED(HEATER_0_USES_MAX6675)
         print_heaterstates();
         ECHO_E;
@@ -3025,7 +3021,7 @@ void gcode_get_destination() {
 }
 
 void unknown_command_error() {
-  ECHO_SMV(DB, MSG_UNKNOWN_COMMAND, current_command);
+  ECHO_SMV(DB, SERIAL_UNKNOWN_COMMAND, current_command);
   ECHO_M("\"\n");
 }
 
@@ -4285,7 +4281,6 @@ inline void gcode_G60() {
 inline void gcode_G61() {
   if (!pos_saved) return;
 
-  bool make_move = false;
   int slot = 0;
   if (code_seen('S')) slot = code_value();
 
@@ -4424,21 +4419,38 @@ inline void gcode_G92() {
   }
 #endif //LASERBEAM
 
-#if HAS(FILRUNOUT)
-  /**
-   * M11: Start printing
-   */
-  inline void gcode_M11() {
-    printing = true;
-    filrunoutEnqueued = false;
-    ECHO_LM(DB, "Start Printing, pause pin active.");
-    ECHO_S(RESUME);
-    ECHO_E;
+/**
+ * M11: Start/Stop printing serial mode
+ */
+inline void gcode_M11() {
+  if (Printing) {
+    Printing = false;
+    ECHO_LM(DB, "Stop Printing");
+    #if ENABLED(STOP_GCODE)
+      enqueuecommands_P(PSTR(STOP_PRINTING_SCRIPT));
+    #endif
+    #if HAS(FILRUNOUT)
+      filrunoutEnqueued = false;
+      ECHO_LM(DB, "Filament runout deactivated.");
+    #endif
+  }
+  else {
+    Printing = true;
+    ECHO_LM(DB, "Start Printing");
+    #if ENABLED(START_GCODE)
+      enqueuecommands_P(PSTR(START_PRINTING_SCRIPT));
+    #endif
+    #if HAS(FILRUNOUT)
+      filrunoutEnqueued = false;
+      ECHO_LM(DB, "Filament runout activated.");
+      ECHO_S(RESUME);
+      ECHO_E;
+    #endif
     #if HAS(POWER_CONSUMPTION_SENSOR)
       startpower = power_consumption_hour;
     #endif
   }
-#endif
+}
 
 /**
  * M17: Enable power on all stepper motors
@@ -4454,9 +4466,9 @@ inline void gcode_M17() {
    * M20: List SD card to serial output
    */
   inline void gcode_M20() {
-    ECHO_EM(MSG_BEGIN_FILE_LIST);
+    ECHO_EM(SERIAL_BEGIN_FILE_LIST);
     card.ls();
-    ECHO_EM(MSG_END_FILE_LIST);
+    ECHO_EM(SERIAL_END_FILE_LIST);
   }
 
   /**
@@ -5211,7 +5223,7 @@ inline void gcode_M105() {
     ECHO_S(OK);
     print_heaterstates();
   #else // HASNT(TEMP_0) && HASNT(TEMP_BED)
-    ECHO_LM(ER, MSG_ERR_NO_THERMISTORS);
+    ECHO_LM(ER, SERIAL_ERR_NO_THERMISTORS);
   #endif
 
   ECHO_E;
@@ -5269,14 +5281,14 @@ inline void gcode_M109() {
 inline void gcode_M111() {
   debugLevel = code_seen('S') ? code_value_short() : DEBUG_INFO|DEBUG_COMMUNICATION;
 
-  if (debugLevel & DEBUG_ECHO) ECHO_LM(DB, MSG_DEBUG_ECHO);
-  if (debugLevel & DEBUG_INFO) ECHO_LM(DB, MSG_DEBUG_INFO);
-  //if (debugLevel & DEBUG_ERRORS) ECHO_LM(DB, MSG_DEBUG_ERRORS);
+  if (debugLevel & DEBUG_ECHO) ECHO_LM(DB, SERIAL_DEBUG_ECHO);
+  if (debugLevel & DEBUG_INFO) ECHO_LM(DB, SERIAL_DEBUG_INFO);
+  //if (debugLevel & DEBUG_ERRORS) ECHO_LM(DB, SERIAL_DEBUG_ERRORS);
   if (debugLevel & DEBUG_DRYRUN) {
-    ECHO_LM(DB, MSG_DEBUG_DRYRUN);
+    ECHO_LM(DB, SERIAL_DEBUG_DRYRUN);
     disable_all_heaters();
   }
-  if (debugLevel & DEBUG_DEBUG) ECHO_LM(DB, MSG_DEBUG);
+  if (debugLevel & DEBUG_DEBUG) ECHO_LM(DB, SERIAL_DEBUG);
 }
 
 /**
@@ -5294,7 +5306,7 @@ inline void gcode_M114() {
   ECHO_MV(" Z:", current_position[Z_AXIS]);
   ECHO_MV(" E:", current_position[E_AXIS]);
 
-  ECHO_MV(MSG_COUNT_X, st_get_position_mm(X_AXIS));
+  ECHO_MV(SERIAL_COUNT_X, st_get_position_mm(X_AXIS));
   ECHO_MV(" Y:", st_get_position_mm(Y_AXIS));
   ECHO_EMV(" Z:", st_get_position_mm(Z_AXIS));
 
@@ -5317,7 +5329,7 @@ inline void gcode_M114() {
     ECHO_MV(" Z:", current_position[Z_AXIS]);
     ECHO_MV(" E:", current_position[E_AXIS]);
 
-    ECHO_MV(MSG_COUNT_X, st_get_position_mm(X_AXIS));
+    ECHO_MV(SERIAL_COUNT_X, st_get_position_mm(X_AXIS));
     ECHO_MV(" Y:", st_get_position_mm(Y_AXIS));
     ECHO_EMV(" Z:", st_get_position_mm(Z_AXIS));
     
@@ -5339,7 +5351,7 @@ inline void gcode_M114() {
  * M115: Capabilities string
  */
 inline void gcode_M115() {
-  ECHO_M(MSG_M115_REPORT);
+  ECHO_M(SERIAL_M115_REPORT);
 }
 
 #if ENABLED(ULTIPANEL) || ENABLED(NEXTION)
@@ -5357,36 +5369,36 @@ inline void gcode_M115() {
  * M119: Output endstop states to serial output
  */
 inline void gcode_M119() {
-  ECHO_LV(DB, MSG_M119_REPORT);
+  ECHO_LV(DB, SERIAL_M119_REPORT);
   #if HAS(X_MIN)
-    ECHO_EMV(MSG_X_MIN, ((READ(X_MIN_PIN)^X_MIN_ENDSTOP_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
+    ECHO_EMV(SERIAL_X_MIN, ((READ(X_MIN_PIN)^X_MIN_ENDSTOP_INVERTING)?SERIAL_ENDSTOP_HIT:SERIAL_ENDSTOP_OPEN));
   #endif
   #if HAS(X_MAX)
-    ECHO_EMV(MSG_X_MAX, ((READ(X_MAX_PIN)^X_MAX_ENDSTOP_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
+    ECHO_EMV(SERIAL_X_MAX, ((READ(X_MAX_PIN)^X_MAX_ENDSTOP_INVERTING)?SERIAL_ENDSTOP_HIT:SERIAL_ENDSTOP_OPEN));
   #endif
   #if HAS(Y_MIN)
-    ECHO_EMV(MSG_Y_MIN, ((READ(Y_MIN_PIN)^Y_MIN_ENDSTOP_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
+    ECHO_EMV(SERIAL_Y_MIN, ((READ(Y_MIN_PIN)^Y_MIN_ENDSTOP_INVERTING)?SERIAL_ENDSTOP_HIT:SERIAL_ENDSTOP_OPEN));
   #endif
   #if HAS(Y_MAX)
-    ECHO_EMV(MSG_Y_MAX, ((READ(Y_MAX_PIN)^Y_MAX_ENDSTOP_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
+    ECHO_EMV(SERIAL_Y_MAX, ((READ(Y_MAX_PIN)^Y_MAX_ENDSTOP_INVERTING)?SERIAL_ENDSTOP_HIT:SERIAL_ENDSTOP_OPEN));
   #endif
   #if HAS(Z_MIN)
-    ECHO_EMV(MSG_Z_MIN, ((READ(Z_MIN_PIN)^Z_MIN_ENDSTOP_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
+    ECHO_EMV(SERIAL_Z_MIN, ((READ(Z_MIN_PIN)^Z_MIN_ENDSTOP_INVERTING)?SERIAL_ENDSTOP_HIT:SERIAL_ENDSTOP_OPEN));
   #endif
   #if HAS(Z_MAX)
-    ECHO_EMV(MSG_Z_MAX, ((READ(Z_MAX_PIN)^Z_MAX_ENDSTOP_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
+    ECHO_EMV(SERIAL_Z_MAX, ((READ(Z_MAX_PIN)^Z_MAX_ENDSTOP_INVERTING)?SERIAL_ENDSTOP_HIT:SERIAL_ENDSTOP_OPEN));
   #endif
   #if HAS(Z2_MAX)
-    ECHO_EMV(MSG_Z2_MAX, ((READ(Z2_MAX_PIN)^Z2_MAX_ENDSTOP_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
+    ECHO_EMV(SERIAL_Z2_MAX, ((READ(Z2_MAX_PIN)^Z2_MAX_ENDSTOP_INVERTING)?SERIAL_ENDSTOP_HIT:SERIAL_ENDSTOP_OPEN));
   #endif
   #if HAS(Z_PROBE)
-    ECHO_EMV(MSG_Z_PROBE, ((READ(Z_PROBE_PIN)^Z_PROBE_ENDSTOP_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
+    ECHO_EMV(SERIAL_Z_PROBE, ((READ(Z_PROBE_PIN)^Z_PROBE_ENDSTOP_INVERTING)?SERIAL_ENDSTOP_HIT:SERIAL_ENDSTOP_OPEN));
   #endif
   #if HAS(E_MIN)
-    ECHO_EMV(MSG_E_MIN, ((READ(E_MIN_PIN)^E_MIN_ENDSTOP_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
+    ECHO_EMV(SERIAL_E_MIN, ((READ(E_MIN_PIN)^E_MIN_ENDSTOP_INVERTING)?SERIAL_ENDSTOP_HIT:SERIAL_ENDSTOP_OPEN));
   #endif
   #if HAS(FILRUNOUT)
-    ECHO_EMV(MSG_FILRUNOUT_PIN, ((READ(FILRUNOUT_PIN)^FILRUNOUT_PIN_INVERTING)?MSG_ENDSTOP_HIT:MSG_ENDSTOP_OPEN));
+    ECHO_EMV(SERIAL_FILRUNOUT_PIN, ((READ(FILRUNOUT_PIN)^FILRUNOUT_PIN_INVERTING)?SERIAL_ENDSTOP_HIT:SERIAL_ENDSTOP_OPEN));
   #endif
   ECHO_E;
 }
@@ -5458,7 +5470,7 @@ inline void gcode_M140() {
   inline void gcode_M145() {
     uint8_t material = code_seen('S') ? code_value_short() : 0;
     if (material < 0 || material > 2) {
-      ECHO_SM(DB, MSG_ERR_MATERIAL_INDEX);
+      ECHO_SM(DB, SERIAL_ERR_MATERIAL_INDEX);
     }
     else {
       int v;
@@ -5768,7 +5780,7 @@ inline void gcode_M206() {
     if (code_seen('Y')) hotend_offset[Y_AXIS][target_extruder] = code_value();
     if (code_seen('Z')) hotend_offset[Z_AXIS][target_extruder] = code_value();
 
-    ECHO_SM(DB, MSG_HOTEND_OFFSET);
+    ECHO_SM(DB, SERIAL_HOTEND_OFFSET);
     for (int e = 0; e < HOTENDS; e++) {
       ECHO_MV(" ", hotend_offset[X_AXIS][e]);
       ECHO_MV(",", hotend_offset[Y_AXIS][e]);
@@ -6003,7 +6015,7 @@ inline void gcode_M226() {
       ECHO_E;
     }
     else {
-      ECHO_LM(ER, MSG_INVALID_EXTRUDER);
+      ECHO_LM(ER, SERIAL_INVALID_EXTRUDER);
     }
   }
 #endif // PIDTEMP
@@ -6032,7 +6044,6 @@ inline void gcode_M226() {
     int h = code_seen('H') ? code_value_short() : 0;
     int c = code_seen('C') ? code_value_short() : 5;
     float temp = code_seen('S') ? code_value() : (h < 0 ? 70.0 : 150.0);
-
     if (h >= 0 && h < HOTENDS) target_extruder = h;
     PID_autotune(temp, h, c);
   }
@@ -6172,7 +6183,7 @@ inline void gcode_M226() {
             break;
         #endif
       default:
-        ECHO_LM(ER, MSG_INVALID_SOLENOID);
+        ECHO_LM(ER, SERIAL_INVALID_SOLENOID);
         break;
     }
   }
@@ -6316,7 +6327,7 @@ inline void gcode_M428() {
         new_pos[i] = base;
       }
       else {
-        ECHO_LM(ER, MSG_ERR_M428_TOO_FAR);
+        ECHO_LM(ER, SERIAL_ERR_M428_TOO_FAR);
         LCD_ALERTMESSAGEPGM("Err: Too far!");
         #if HAS(BUZZER)
           enqueuecommands_P(PSTR("M300 S40 P200"));
@@ -6427,13 +6438,14 @@ inline void gcode_M503() {
       return;
     }
 
-    float lastpos[NUM_AXIS], fr60 = feedrate / 60;
+    float lastpos[NUM_AXIS];
 
     filament_changing = true;
     for (int i = 0; i < NUM_AXIS; i++)
       lastpos[i] = destination[i] = current_position[i];
 
     #if MECH(DELTA)
+			float fr60 = feedrate / 60;
       #define RUNPLAN calculate_delta(destination); \
                       plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], destination[E_AXIS], fr60, active_extruder, active_driver);
     #else
@@ -6590,7 +6602,7 @@ inline void gcode_M503() {
       case DXC_DUPLICATION_MODE:
         if (code_seen('X')) duplicate_hotend_x_offset = max(code_value(), X2_MIN_POS - x_home_pos(0));
         if (code_seen('R')) duplicate_extruder_temp_offset = code_value();
-        ECHO_SM(DB, MSG_HOTEND_OFFSET);
+        ECHO_SM(DB, SERIAL_HOTEND_OFFSET);
         ECHO_MV(" ", hotend_offset[X_AXIS][0]);
         ECHO_MV(",", hotend_offset[Y_AXIS][0]);
         ECHO_MV(" ", duplicate_hotend_x_offset);
@@ -6761,8 +6773,8 @@ inline void gcode_M907() {
     if (code_seen('C')) {
       csteps = code_value() * color_step_moltiplicator;
       ECHO_LMV(DB, "csteps: ", csteps);
-      if (csteps < 0) colorstep(-csteps,false);
-      if (csteps > 0) colorstep(csteps,true);
+      if (csteps < 0) colorstep(-csteps, false);
+      if (csteps > 0) colorstep(csteps, true);
     }
   }
 #endif
@@ -6772,6 +6784,7 @@ inline void gcode_M907() {
  */
 inline void gcode_M999() {
   Running = true;
+  Printing = false;
   lcd_reset_alert_level();
   //gcode_LastN = Stopped_gcode_LastN;
   FlushSerialRequestResend();
@@ -6783,10 +6796,9 @@ inline void gcode_M999() {
  *   F[mm/min] Set the movement feedrate
  */
 inline void gcode_T(uint8_t tmp_extruder) {
-  long csteps;
   if (tmp_extruder >= EXTRUDERS) {
     ECHO_SMV(DB, "T", (int)tmp_extruder);
-    ECHO_EM(" " MSG_INVALID_EXTRUDER);
+    ECHO_EM(" " SERIAL_INVALID_EXTRUDER);
   }
   else {
     target_extruder = tmp_extruder;
@@ -7012,9 +7024,10 @@ inline void gcode_T(uint8_t tmp_extruder) {
               }
             #endif // E0E1_CHOICE_PIN E0E2_CHOICE_PIN E1E3_CHOICE_PIN
             active_extruder = target_extruder;
-            ECHO_LMV(DB, MSG_ACTIVE_DRIVER, active_driver);
-            ECHO_LMV(DB, MSG_ACTIVE_EXTRUDER, active_extruder);
+            ECHO_LMV(DB, SERIAL_ACTIVE_DRIVER, active_driver);
+            ECHO_LMV(DB, SERIAL_ACTIVE_EXTRUDER, active_extruder);
           #elif ENABLED(NPR2)
+						long csteps;
             st_synchronize(); // Finish all movement
             if (old_color == 99) {
               csteps = (color_position[target_extruder]) * color_step_moltiplicator;
@@ -7026,7 +7039,7 @@ inline void gcode_T(uint8_t tmp_extruder) {
             if (csteps > 0) colorstep(csteps, true);
             old_color = active_extruder = target_extruder;
             active_driver = 0;
-            ECHO_LMV(DB, MSG_ACTIVE_COLOR, (int)active_extruder);
+            ECHO_LMV(DB, SERIAL_ACTIVE_COLOR, (int)active_extruder);
           #elif ENABLED(DONDOLO)
             st_synchronize();
             servo[DONDOLO_SERVO_INDEX].attach(0);
@@ -7041,11 +7054,11 @@ inline void gcode_T(uint8_t tmp_extruder) {
             active_extruder = target_extruder;
             active_driver = 0;
             set_stepper_direction(true);
-            ECHO_LMV(DB, MSG_ACTIVE_DRIVER, active_driver);
-            ECHO_LMV(DB, MSG_ACTIVE_EXTRUDER, active_extruder);
+            ECHO_LMV(DB, SERIAL_ACTIVE_DRIVER, active_driver);
+            ECHO_LMV(DB, SERIAL_ACTIVE_EXTRUDER, active_extruder);
           #else
             active_driver = active_extruder = target_extruder;
-            ECHO_LMV(DB, MSG_ACTIVE_EXTRUDER, active_extruder);
+            ECHO_LMV(DB, SERIAL_ACTIVE_EXTRUDER, active_extruder);
           #endif // end MKR4 || NPR2 || DONDOLO
         #endif // end no DUAL_X_CARRIAGE
 
@@ -7192,12 +7205,9 @@ void process_next_command() {
           gcode_M5(); break;
       #endif //LASERBEAM
 
-      #if HAS(FILRUNOUT)
-        case 11: //M11 - Start printing
-          gcode_M11(); break;
-      #endif
-
-      case 17: //M17 - Enable/Power all stepper motors
+      case 11: // M11 - Start/Stop printing serial mode
+        gcode_M11(); break;
+      case 17: // M17 - Enable/Power all stepper motors
         gcode_M17(); break;
 
       #if ENABLED(SDSUPPORT)
@@ -7587,12 +7597,12 @@ void clamp_to_software_endstops(float target[3]) {
     if (de) {
       if (degHotend(active_extruder) < extrude_min_temp) {
         curr_e = dest_e; // Behave as if the move really took place, but ignore E part
-        ECHO_LM(ER, MSG_ERR_COLD_EXTRUDE_STOP);
+        ECHO_LM(ER, SERIAL_ERR_COLD_EXTRUDE_STOP);
       }
       #if ENABLED(PREVENT_LENGTHY_EXTRUDE)
         if (labs(de) > EXTRUDE_MAXLENGTH) {
           curr_e = dest_e; // Behave as if the move really took place, but ignore E part
-          ECHO_LM(ER, MSG_ERR_LONG_EXTRUDE_STOP);
+          ECHO_LM(ER, SERIAL_ERR_LONG_EXTRUDE_STOP);
         }
       #endif
     }
@@ -8072,7 +8082,7 @@ void idle(bool ignore_stepper_queue/*=false*/) {
 void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
 
   #if HAS(FILRUNOUT)
-    if ((printing || IS_SD_PRINTING ) && (READ(FILRUNOUT_PIN) ^ FILRUNOUT_PIN_INVERTING))
+    if ((Printing || IS_SD_PRINTING) && (READ(FILRUNOUT_PIN) ^ FILRUNOUT_PIN_INVERTING))
       filrunout();
   #endif
 
@@ -8266,7 +8276,7 @@ void kill(const char* lcd_msg) {
     SET_INPUT(PS_ON_PIN);
   #endif
 
-  ECHO_LM(ER, MSG_ERR_KILLED);
+  ECHO_LM(ER, SERIAL_ERR_KILLED);
 
   // FMC small patch to update the LCD before ending
   sei();   // enable interrupts
@@ -8361,7 +8371,7 @@ void Stop() {
   if (IsRunning()) {
     Running = false;
     Stopped_gcode_LastN = gcode_LastN; // Save last g_code for restart
-    ECHO_LM(ER, MSG_ERR_STOPPED);
+    ECHO_LM(ER, SERIAL_ERR_STOPPED);
     ECHO_S(PAUSE);
     ECHO_E;
     LCD_MESSAGEPGM(MSG_STOPPED);
@@ -8374,7 +8384,7 @@ bool setTargetedHotend(int code) {
     target_extruder = code_value_short();
     if (target_extruder >= EXTRUDERS) {
       ECHO_SMV(ER, "M", code);
-      ECHO_EMV(" " MSG_INVALID_EXTRUDER, target_extruder);
+      ECHO_EMV(" " SERIAL_INVALID_EXTRUDER, target_extruder);
       return true;
     }
   }
