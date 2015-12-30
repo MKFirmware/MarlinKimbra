@@ -2885,8 +2885,8 @@ static void clean_up_after_endstop_move() {
       for (int8_t h = 0; h < HOTENDS; ++h) {
         ECHO_MV(" " SERIAL_AT, h);
         ECHO_C(':');
-        #if ENABLED(EXTRUDER_WATTS)
-          ECHO_VM((EXTRUDER_WATTS * getHeaterPower(h)) / 127. "W");
+        #if ENABLED(HOTEND_WATTS)
+          ECHO_VM((HOTEND_WATTS * getHeaterPower(h)) / 127, "W");
         #else
           ECHO_V(getHeaterPower(h));
         #endif
