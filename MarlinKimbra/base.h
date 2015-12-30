@@ -47,7 +47,7 @@
 #include "Configuration_Feature.h"
 #include "Configuration_Overall.h"
 
-#include "language.h"
+#include "language/language.h"
 #include "conditionals.h"
 #include "sanitycheck.h"
 #include "thermistortables.h"
