@@ -1,34 +1,32 @@
-#include "base.h"
+#include "../base.h"
 
 #if ENABLED(NEXTION)
-  #include "Marlin_main.h"
-  #include "cardreader.h"
-  #include "temperature.h"
+  #include "../Marlin_main.h"
+  #include "../cardreader.h"
+  #include "../temperature.h"
 
   #if ENABLED(AUTO_BED_LEVELING_FEATURE)
-    #include "vector_3.h"
+    #include "../vector_3.h"
   #endif
 
-  #include "planner.h"
-  #include "stepper_indirection.h"
-  #include "stepper.h"
-  #include "configuration_store.h"
+  #include "../planner.h"
+  #include "../stepper_indirection.h"
+  #include "../stepper.h"
+  #include "../configuration_store.h"
   #include "nextion_lcd.h"
   #include "nextion_gfx.h"
   #include <Nextion.h>
 
-  const float MaxWave   = 0.2;
   bool NextionON        = false;
   bool PageInfo         = false;
-  bool gfxON            = false;
   char buffer[100]      = {0};
   uint32_t slidermaxval = 20;
-  char lcd_status_message[30] = WELCOME_MSG;
+  char lcd_status_message[30] = WELCOME_MSG; // worst case is kana with up to 3*LCD_WIDTH+1
   uint8_t lcd_status_message_level = 0;
   static millis_t next_lcd_update_ms;
 
   #if ENABLED(NEXTION_GFX)
-    GFX gfx = GFX(196, 194);
+    GFX gfx = GFX(200, 190);
   #endif
 
   // Page
@@ -41,10 +39,10 @@
   NexPage Pmove         = NexPage(6, 0, "move");
 
   // Text
-  NexText Hotend0       = NexText(1,  1,  "t0");
+  NexText Hotend0       = NexText(1,  2,  "t0");
   NexText Hotend1       = NexText(1,  4,  "t1");
-  NexText Hotend2       = NexText(1,  5,  "t2");
-  NexText Hotend21      = NexText(1,  6,  "h2");
+  NexText Hotend21      = NexText(1,  5,  "h2");
+  NexText Hotend2       = NexText(1,  6,  "t2");
   NexText LedStatus     = NexText(1,  7,  "t4");
   NexText LedCoord      = NexText(1,  8,  "t5");
   NexText set0          = NexText(2,  2,  "set0");
@@ -57,15 +55,15 @@
   NexText sdfolder      = NexText(4, 23,  "sdfolder");
 
   // Picture
-  NexPicture Menu       = NexPicture(1, 10, "p0");
-  NexPicture MSD        = NexPicture(1, 11, "p1");
-  NexPicture MSetup     = NexPicture(1, 12, "p2");
-  NexPicture Hend0      = NexPicture(1, 13, "p3");
+  NexPicture Menu       = NexPicture(1,  9, "p0");
+  NexPicture MSD        = NexPicture(1, 10, "p1");
+  NexPicture MSetup     = NexPicture(1, 11, "p2");
+  NexPicture Hend0      = NexPicture(1, 12, "p3");
   NexPicture Hend1      = NexPicture(1, 14, "p4");
-  NexPicture Hend2      = NexPicture(1, 15, "p5");
-  NexPicture Fanpic     = NexPicture(1, 19, "p6");
-  NexPicture NPlay      = NexPicture(1, 27, "p7");
-  NexPicture NStop      = NexPicture(1, 28, "p8");
+  NexPicture Hend2      = NexPicture(1, 16, "p5");
+  NexPicture Fanpic     = NexPicture(1, 18, "p6");
+  NexPicture NPlay      = NexPicture(1, 24, "p7");
+  NexPicture NStop      = NexPicture(1, 25, "p8");
   NexPicture Exit1      = NexPicture(3,  4, "p3");
   NexPicture Folder0    = NexPicture(4,  9, "p0");
   NexPicture Folder1    = NexPicture(4, 10, "p1");
@@ -86,32 +84,29 @@
   NexPicture ZDown      = NexPicture(6, 12, "p11");
 
   // Progress Bar
-  NexProgressBar sdbar  = NexProgressBar(1, 26, "j0");
+  NexProgressBar sdbar  = NexProgressBar(1, 23, "j0");
 
   // Slider
   NexSlider sdlist      = NexSlider(4, 1,   "h0");
 
   // Wafeform
-  NexWaveform Graph0    = NexWaveform(1,  9, "s0");
-  NexWaveform Graph1    = NexWaveform(1, 24, "s1");
-  NexWaveform Graph2    = NexWaveform(1, 25, "s2");
 
   // Touch area
-  NexHotspot hot0       = NexHotspot(1, 14, "hot0");
-  NexHotspot hot1       = NexHotspot(1, 16, "hot1");
-  NexHotspot hot2       = NexHotspot(1, 18, "hot2");
+  NexHotspot hot0       = NexHotspot(1, 13, "hot0");
+  NexHotspot hot1       = NexHotspot(1, 15, "hot1");
+  NexHotspot hot2       = NexHotspot(1, 17, "hot2");
   NexHotspot m11        = NexHotspot(2, 14, "m11");
   NexHotspot tup        = NexHotspot(2, 16, "tup");
   NexHotspot tdown      = NexHotspot(2, 17, "tdown");
 
   // Timer
   NexTimer startimer    = NexTimer(0,  1, "tm0");
-  NexTimer fantimer     = NexTimer(1, 23, "tm0");
+  NexTimer fantimer     = NexTimer(1, 22, "tm0");
 
   // Variable
-  NexVar Hotend         = NexVar(1, 20, "he");
+  NexVar Hotend         = NexVar(1, 19, "he");
+  NexVar Bed            = NexVar(1, 20, "bed");
   NexVar set1           = NexVar(2, 17, "set1");
-  NexVar Bed            = NexVar(1, 21, "bed");
   NexVar filename0      = NexVar(4, 19, "va0");
   NexVar filename1      = NexVar(4, 20, "va1");
   NexVar filename2      = NexVar(4, 21, "va2");
@@ -165,14 +160,6 @@
     NULL
   };
 
-  NexWaveform *graph_list[] =
-  {
-    &Graph0,
-    &Graph1,
-    &Graph2,
-    NULL
-  };
-
   NexText *row_list[] =
   {
     &sdrow0,
@@ -210,6 +197,10 @@
     Pinfo.show();
 
     PageInfo = true;
+
+    #if ENABLED(NEXTION_GFX)
+      gfx_clear(X_MAX_POS, Y_MAX_POS, Z_MAX_POS);
+    #endif
 
     #if HAS_TEMP_0
       Hotend.setValue(1);
@@ -278,7 +269,6 @@
 
     static void setpagesdcard() {
       PageInfo = false;
-      gfxON    = false;
       Psdcard.show();
       uint16_t fileCnt = card.getnrfilenames();
 
@@ -436,12 +426,10 @@
   void setpagePopCallback(void *ptr) {
     if (ptr == &Menu) {
       PageInfo = false;
-      gfxON    = false;
       Pmenu.show();
     }
     else if (ptr == &MSetup) {
       PageInfo = false;
-      gfxON    = false;
       Psetup.show();
     }
 
@@ -561,11 +549,6 @@
 
     hotend_list[h]->setText(buffer);
     hotend_list[h]->setColor(color);
-
-    if (!gfxON) {
-      graph_list[h]->addValue(0, (int)(T1 * MaxWave));
-      graph_list[h]->addValue(1, (int)(T2 * MaxWave));
-    }
   }
 
   static void coordtoLCD() {
@@ -678,19 +661,17 @@
 
   #if ENABLED(NEXTION_GFX)
     void gfx_clear(float x, float y, float z) {
-      if (PageInfo) {
+      if (PageInfo)
         gfx.clear(x, y, z);
-        gfxON = true;
-      }
     }
 
     void gfx_cursor_to(float x, float y, float z) {
-      if (PageInfo && gfxON)
+      if (PageInfo)
         gfx.cursor_to(x, y, z);
     }
 
     void gfx_line_to(float x, float y, float z){
-      if (PageInfo && gfxON)
+      if (PageInfo)
         gfx.line_to(VC_TOOL, x, y, z);
     }
   #endif

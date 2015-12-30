@@ -5,7 +5,7 @@
    https://github.com/MagoKimbra/MarlinKimbra
    Use the "Download Zip" button on the right.
   3. Some boards require special files and/or libraries from the ArduinoAddons directory.
-  4. Start the arduino IDE.
+  4. Start the arduino IDE 1.6.7.
   5. Select Tools -> Board -> Arduino Mega 2560    or your microcontroller
   6. Select the correct serial port in Tools ->Serial Port
   7. Open MarlinKimbra.ino

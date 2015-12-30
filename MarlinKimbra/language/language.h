@@ -132,8 +132,8 @@
 
 #define SERIAL_STEPPER_TOO_HIGH                "Steprate too high: "
 #define SERIAL_ENDSTOPS_HIT                    "endstops hit: "
-#define SERIAL_ERR_COLD_EXTRUDE_STOP           " cold extrusion prevented"
-#define SERIAL_ERR_LONG_EXTRUDE_STOP           " too long extrusion prevented"
+#define SERIAL_ERR_COLD_EXTRUDE_STOP           "cold extrusion prevented"
+#define SERIAL_ERR_LONG_EXTRUDE_STOP           "too long extrusion prevented"
 #define SERIAL_MICROSTEP_MS1_MS2               "MS1,MS2 Pins"
 #define SERIAL_MICROSTEP_X                     "X:"
 #define SERIAL_MICROSTEP_Y                     "Y:"
