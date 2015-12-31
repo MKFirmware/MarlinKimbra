@@ -11,7 +11,7 @@
 #include "stepper.h"
 #include "temperature.h"
 #include "ultralcd.h"
-#include "nextion_lcd.h"
+#include "nextion/nextion_lcd.h"
 #include "cardreader.h"
 
 CardReader::CardReader() {
