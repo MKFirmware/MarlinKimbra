@@ -14,9 +14,9 @@
  * - Stepper step logic
  * - Stepper direction
  * - Disables axis
+ * - Manual home positions
  * - Travel limits
  * - Axis relative mode
- * - Manual home positions
  * - Axis steps per unit
  * - Axis feedrate
  * - Axis accelleration
@@ -263,6 +263,20 @@
 
 
 /*****************************************************************************************
+ ******************************** Manual home positions **********************************
+ *****************************************************************************************/
+// The position of the homing switches
+#define MANUAL_HOME_POSITIONS   // If defined, MANUAL_*_HOME_POS below will be used
+#define BED_CENTER_AT_0_0       // If defined, the center of the bed is at (X=0, Y=0)
+
+//Manual homing switch locations:
+#define MANUAL_X_HOME_POS 0
+#define MANUAL_Y_HOME_POS 0
+#define MANUAL_Z_HOME_POS 200      // Distance between nozzle and print surface after homing.
+/*****************************************************************************************/
+
+
+/*****************************************************************************************
  ************************************ Travel limits **************************************
  *****************************************************************************************
  *                                                                                       *
@@ -287,37 +301,20 @@
 
 
 /*****************************************************************************************
- ******************************** Manual home positions **********************************
- *****************************************************************************************/
-// The position of the homing switches
-#define MANUAL_HOME_POSITIONS   // If defined, MANUAL_*_HOME_POS below will be used
-#define BED_CENTER_AT_0_0       // If defined, the center of the bed is at (X=0, Y=0)
-
-//Manual homing switch locations:
-#define MANUAL_X_HOME_POS 0
-#define MANUAL_Y_HOME_POS 0
-#define MANUAL_Z_HOME_POS 200      // Distance between nozzle and print surface after homing.
-/*****************************************************************************************/
-
-
-/*****************************************************************************************
  ******************************* Axis steps per unit *************************************
  *****************************************************************************************/
-#define XYZ_STEPS_PER_UNIT 80
- // Default steps per unit                              X,                  Y,                  Z,  E0...(per extruder)
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {XYZ_STEPS_PER_UNIT, XYZ_STEPS_PER_UNIT, XYZ_STEPS_PER_UNIT, 625, 625, 625, 625}
+// Default steps per unit               X,  Y,  Z,  E0...(per extruder)
+#define DEFAULT_AXIS_STEPS_PER_UNIT   {80, 80, 80, 625, 625, 625, 625}
 /*****************************************************************************************/
 
 
 /*****************************************************************************************
  ********************************** Axis feedrate ****************************************
  *****************************************************************************************/
-#define XYZ_MAX_FEEDRATE              500   // (mm/sec)
-#define XYZ_MANUAL_FEEDRATE           50    // (mm/min)
-//                                                    X,                Y,                Z, E0...(per extruder). (mm/sec)
-#define DEFAULT_MAX_FEEDRATE          {XYZ_MAX_FEEDRATE, XYZ_MAX_FEEDRATE, XYZ_MAX_FEEDRATE, 100, 100, 100, 100}
-// Feedrates for manual moves along                      X,                   Y,                   Z, E from panel
-#define MANUAL_FEEDRATE               {XYZ_MANUAL_FEEDRATE*60, XYZ_MANUAL_FEEDRATE*60, XYZ_MANUAL_FEEDRATE*60, 60}
+//                                       X,   Y,   Z,  E0...(per extruder). (mm/sec)
+#define DEFAULT_MAX_FEEDRATE          {500, 500, 500, 100, 100, 100, 100}
+// Feedrates for manual moves along        X,     Y,     Z,  E from panel
+#define MANUAL_FEEDRATE               {50*60, 50*60, 50*60, 60}
 #define DEFAULT_MINIMUMFEEDRATE       0.0                       // minimum feedrate
 #define DEFAULT_MINTRAVELFEEDRATE     0.0
 // Minimum planner junction speed. Sets the default minimum speed the planner plans for at the end
@@ -330,9 +327,8 @@
 /*****************************************************************************************
  ******************************** Axis accelleration *************************************
  *****************************************************************************************/
-#define XYZ_MAX_ACCELERATION          5000 // (mm/s^2)
-//  Maximum start speed for accelerated moves.            X,                    Y,                    Z,   E0...(per extruder)
-#define DEFAULT_MAX_ACCELERATION      {XYZ_MAX_ACCELERATION, XYZ_MAX_ACCELERATION, XYZ_MAX_ACCELERATION, 1000, 1000, 1000, 1000}
+//  Maximum start speed for accelerated moves.    X,    Y,    Z,   E0...(per extruder)
+#define DEFAULT_MAX_ACCELERATION              {5000, 5000, 5000, 1000, 1000, 1000, 1000}
 //  Maximum acceleration in mm/s^2 for retracts   E0... (per extruder)
 #define DEFAULT_RETRACT_ACCELERATION  {10000, 10000, 10000, 10000}
 //  X, Y, Z and E* maximum acceleration in mm/s^2 for printing moves
@@ -360,10 +356,8 @@
 /*****************************************************************************************
  ************************************ Homing feedrate ************************************
  *****************************************************************************************/
-// set the homing speeds (mm/min)
-#define HOMING_XYZ_FEEDRATE 100
-#define HOMING_FEEDRATE {HOMING_XYZ_FEEDRATE*60, HOMING_XYZ_FEEDRATE*60, HOMING_XYZ_FEEDRATE*60, 0}
-
+// set the homing speeds (mm/min)       X,      Y,      Z
+#define HOMING_FEEDRATE           {100*60, 100*60, 100*60, 0}
 // homing hits the endstop, then retracts by this distance, before it tries to slowly bump again:
 #define XYZ_HOME_BUMP_MM 5
 // Re-Bump Speed Divisor (Divides the Homing Feedrate)
