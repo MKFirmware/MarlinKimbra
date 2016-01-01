@@ -195,16 +195,16 @@
 
 //Preheat Constants
 #define PLA_PREHEAT_HOTEND_TEMP 190
-#define PLA_PREHEAT_HPB_TEMP 60
-#define PLA_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
+#define PLA_PREHEAT_HPB_TEMP     60
+#define PLA_PREHEAT_FAN_SPEED   255   // Insert Value between 0 and 255
 
 #define ABS_PREHEAT_HOTEND_TEMP 240
-#define ABS_PREHEAT_HPB_TEMP 100
-#define ABS_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
+#define ABS_PREHEAT_HPB_TEMP    100
+#define ABS_PREHEAT_FAN_SPEED   255   // Insert Value between 0 and 255
 
 #define GUM_PREHEAT_HOTEND_TEMP 230
-#define GUM_PREHEAT_HPB_TEMP 60
-#define GUM_PREHEAT_FAN_SPEED 255   // Insert Value between 0 and 255
+#define GUM_PREHEAT_HPB_TEMP     60
+#define GUM_PREHEAT_FAN_SPEED   255   // Insert Value between 0 and 255
 /*****************************************************************************************************/
 
 

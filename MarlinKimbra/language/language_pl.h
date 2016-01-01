@@ -34,7 +34,6 @@
 #define MSG_ONFOR                           "On x:"
 #define MSG_PWRCONSUMED                     "P.er:"
 #define MSG_PREHEAT                         "Preheat"
-#define MSG_CONFIG                          "conf."
 #define MSG_PREHEAT_PLA                     "Rozgrzej PLA"
 #define MSG_PREHEAT_PLA_ALL                 "Roz. PLA Wszystko"
 #define MSG_PREHEAT_PLA_BEDONLY             "Rozgrzej PLA Loze"

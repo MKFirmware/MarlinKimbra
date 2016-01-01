@@ -34,19 +34,18 @@
 #define MSG_ONFOR                           "On x:"
 #define MSG_PWRCONSUMED                     "P.er:"
 #define MSG_PREHEAT                         "Berotu"
-#define MSG_CONFIG                          "Konfig"
 #define MSG_PREHEAT_PLA                     MSG_PREHEAT " PLA"
 #define MSG_PREHEAT_PLA_ALL                 MSG_PREHEAT_PLA " Guztia"
 #define MSG_PREHEAT_PLA_BEDONLY             MSG_PREHEAT_PLA " Ohea"
-#define MSG_PREHEAT_PLA_SETTINGS            "PLA " MSG_CONFIG
+#define MSG_PREHEAT_PLA_SETTINGS            "PLA Konfig"
 #define MSG_PREHEAT_ABS                     MSG_PREHEAT " ABS"
 #define MSG_PREHEAT_ABS_ALL                 MSG_PREHEAT_ABS " Guztia"
 #define MSG_PREHEAT_ABS_BEDONLY             MSG_PREHEAT_ABS " Ohea"
-#define MSG_PREHEAT_ABS_SETTINGS            "ABS " MSG_CONFIG
+#define MSG_PREHEAT_ABS_SETTINGS            "ABS Konfig"
 #define MSG_PREHEAT_GUM                     MSG_PREHEAT " GUM"
 #define MSG_PREHEAT_GUM_ALL                 MSG_PREHEAT_GUM " Guztia"
 #define MSG_PREHEAT_GUM_BEDONLY             MSG_PREHEAT_GUM " Ohea"
-#define MSG_PREHEAT_GUM_SETTINGS            "GUM " MSG_CONFIG
+#define MSG_PREHEAT_GUM_SETTINGS            "GUM Konfig"
 #define MSG_TOO_COLD_FOR_FILAMENTCHANGE     "Hotend too cold to change filament"
 #define MSG_COOLDOWN                        "Hoztu"
 #define MSG_SWITCH_PS_ON                    "Energia piztu"

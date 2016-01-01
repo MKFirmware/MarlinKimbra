@@ -34,19 +34,18 @@
 #define MSG_ONFOR                           "On x:"
 #define MSG_PWRCONSUMED                     "P.er:"
 #define MSG_PREHEAT                         "\xc3\xc4"
-#define MSG_CONFIG                          "\xbe\xbf"
 #define MSG_PREHEAT_PLA                     MSG_PREHEAT " PLA"
 #define MSG_PREHEAT_PLA_ALL                 MSG_PREHEAT_PLA " \xc5\xc6"
 #define MSG_PREHEAT_PLA_BEDONLY             MSG_PREHEAT_PLA " \xc4\xc7"
-#define MSG_PREHEAT_PLA_SETTINGS            "PLA " MSG_CONFIG
+#define MSG_PREHEAT_PLA_SETTINGS            "PLA \xbe\xbf"
 #define MSG_PREHEAT_ABS                     MSG_PREHEAT " ABS"
 #define MSG_PREHEAT_ABS_ALL                 MSG_PREHEAT_ABS " \xc5\xc6"
 #define MSG_PREHEAT_ABS_BEDONLY             MSG_PREHEAT_ABS " \xbe\xc6"
-#define MSG_PREHEAT_ABS_SETTINGS            "ABS " MSG_CONFIG
+#define MSG_PREHEAT_ABS_SETTINGS            "ABS \xbe\xbf"
 #define MSG_PREHEAT_GUM                     MSG_PREHEAT " GUM"
 #define MSG_PREHEAT_GUM_ALL                 MSG_PREHEAT_GUM " \xc5\xc6"
 #define MSG_PREHEAT_GUM_BEDONLY             MSG_PREHEAT_GUM " \xc4\xc7"
-#define MSG_PREHEAT_GUM_SETTINGS            "GUM " MSG_CONFIG
+#define MSG_PREHEAT_GUM_SETTINGS            "GUM \xbe\xbf"
 #define MSG_TOO_COLD_FOR_FILAMENTCHANGE     "Hotend too cold to change filament"
 #define MSG_COOLDOWN                        "\xc8\xc9"
 #define MSG_SWITCH_PS_ON                    "\xb9\xcb\xca\xb3"

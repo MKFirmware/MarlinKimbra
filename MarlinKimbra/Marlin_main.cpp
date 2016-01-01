@@ -5916,7 +5916,7 @@ inline void gcode_M226() {
           #endif
             srv->write(servo_position);
           #if HAS(SERVO_ENDSTOPS)
-            delay(PROBE_SERVO_DEACTIVATION_DELAY);
+            delay(SERVO_DEACTIVATION_DELAY);
             srv->detach();
           #endif
         }

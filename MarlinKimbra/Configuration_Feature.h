@@ -1,5 +1,5 @@
-#ifndef Configuration_Feature_H
-#define Configuration_Feature_H
+#ifndef CONFIGURATION_FEATURE_H
+#define CONFIGURATION_FEATURE_H
 
 /*
  * This configuration file contains all features that can be enabled.
@@ -220,15 +220,15 @@
 #define PID_BED_INTEGRAL_DRIVE_MAX MAX_BED_POWER // limit for the integral term
 // 120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
 // from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
-#define  DEFAULT_bedKp 10.00
-#define  DEFAULT_bedKi .023
-#define  DEFAULT_bedKd 305.4
+#define DEFAULT_bedKp 10.00
+#define DEFAULT_bedKi .023
+#define DEFAULT_bedKd 305.4
 
 // 120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
 // from pidautotune
-//#define  DEFAULT_bedKp 97.1
-//#define  DEFAULT_bedKi 1.41
-//#define  DEFAULT_bedKd 1675.16
+//#define DEFAULT_bedKp 97.1
+//#define DEFAULT_bedKi 1.41
+//#define DEFAULT_bedKd 1675.16
 
 // FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
 
@@ -995,7 +995,7 @@
 //#define SDEXTRASLOW                            // Use even slower SD transfer mode (not normally needed - uncomment if you're getting volume init error)
 //#define SD_CHECK_AND_RETRY                     // Use CRC checks and retries on the SD communication
 
-// Decomment thi if you are external SD without DETECT_PIN
+// Decomment this if you are external SD without DETECT_PIN
 //#define SD_DISABLED_DETECT
 // Some RAMPS and other boards don't detect when an SD card is inserted. You can work
 // around this by connecting a push button or single throw switch to the pin defined

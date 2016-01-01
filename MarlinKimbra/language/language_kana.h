@@ -36,7 +36,6 @@
 #define MSG_ONFOR                           "On x:"
 #define MSG_PWRCONSUMED                     "P.er:"
 #define MSG_PREHEAT                         "Preheat"
-#define MSG_CONFIG                          "conf."
 #define MSG_PREHEAT_PLA                     "PLA \xd6\xc8\xc2"
 #define MSG_PREHEAT_PLA_ALL                 MSG_PREHEAT_PLA " \xbd\xcd\xde\xc3"                            // " All"
 #define MSG_PREHEAT_PLA_BEDONLY             MSG_PREHEAT_PLA " \xcd\xde\xaf\xc4\xde"                        // "Bed"
