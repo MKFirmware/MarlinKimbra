@@ -4,11 +4,6 @@
 #include "Arduino.h"
 #include "pins_arduino.h"
 
-// Arduino < 1.0.0 does not define this, so we need to do it ourselves
-#ifndef analogInputToDigitalPin
-  #define analogInputToDigitalPin(p) ((p) + 0xA0)
-#endif
-
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -17,6 +12,10 @@
 #ifdef __SAM3X8E__
   #include "HAL.h"
 #else
+  // Arduino < 1.0.0 does not define this, so we need to do it ourselves
+  #ifndef analogInputToDigitalPin
+    #define analogInputToDigitalPin(p) ((p) + 0xA0)
+  #endif
   #include <util/delay.h>
   #include <avr/eeprom.h>
   #include "fastio.h"
