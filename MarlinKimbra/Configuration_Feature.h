@@ -439,6 +439,7 @@
  * Set DONDOLO SERVOPOS E0 angle for E0 extruder                       *
  * Set DONDOLO SERVOPOS E1 angle for E1 extruder                       *
  * Remember set HOTEND OFFSET X Y Z                                    *
+ *                                                                     *
  ***********************************************************************/
 //#define DONDOLO
 #define DONDOLO_SERVO_INDEX 0
@@ -977,10 +978,10 @@
  * M501 - reads parameters from EEPROM (if you need reset them after you changed them temporarily).                     *
  * M502 - reverts to the default "factory settings".  You still need to store them in EEPROM afterwards if you want to. *
  *                                                                                                                      *
- * Uncomment EEPROM_SETTINGS to enable this feature.                                                                    *
+ * Uncomment EEPROM SETTINGS to enable this feature.                                                                    *
+ * Uncomment EEPROM CHITCHAT to enable EEPROM Serial responses.                                                         *
  *                                                                                                                      *
  ************************************************************************************************************************/
-// Uncomment EEPROM_SETTINGS to enable EEPROM support
 //#define EEPROM_SETTINGS
 //#define EEPROM_CHITCHAT // Uncomment this to enable EEPROM Serial responses.
 //#define DISABLE_M503
