@@ -34,7 +34,6 @@
 #define MSG_ONFOR                           "On x:"
 #define MSG_PWRCONSUMED                     "P.er:"
 #define MSG_PREHEAT                         "Preheat"
-#define MSG_CONFIG                          "conf."
 #define MSG_PREHEAT_PLA                     "PLA voorverwarmen"
 #define MSG_PREHEAT_PLA_ALL                 "PLA voorverw. aan"
 #define MSG_PREHEAT_PLA_BEDONLY             "PLA voorverw. Bed"
@@ -46,7 +45,7 @@
 #define MSG_PREHEAT_GUM                     MSG_PREHEAT " GUM"
 #define MSG_PREHEAT_GUM_ALL                 MSG_PREHEAT_GUM " All"
 #define MSG_PREHEAT_GUM_BEDONLY             MSG_PREHEAT_GUM " Bed"
-#define MSG_PREHEAT_GUM_SETTINGS            "GUM " MSG_CONFIG
+#define MSG_PREHEAT_GUM_SETTINGS            "GUM conf."
 #define MSG_TOO_COLD_FOR_FILAMENTCHANGE     "Hotend too cold to change filament"
 #define MSG_COOLDOWN                        "Afkoelen"
 #define MSG_SWITCH_PS_ON                    "Stroom aan"

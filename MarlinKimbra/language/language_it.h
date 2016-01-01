@@ -34,7 +34,6 @@
 #define MSG_ONFOR                           "On x:"
 #define MSG_PWRCONSUMED                     "P.za:"
 #define MSG_PREHEAT                         "Preriscalda"
-#define MSG_CONFIG                          "conf."
 #define MSG_PREHEAT_PLA                     "Preriscalda PLA"
 #define MSG_PREHEAT_PLA_ALL                 "Prer. PLA Tutto"
 #define MSG_PREHEAT_PLA_BEDONLY             "Prer. PLA Piatto"

@@ -222,13 +222,13 @@
 #endif
 
 #include "pins.h"
-#include "Configuration_Overall.h"
 
 /**
  * DONDOLO
  */
 #if ENABLED(DONDOLO)
   #undef SINGLENOZZLE
+  #undef DRIVER_EXTRUDERS
   #define DRIVER_EXTRUDERS 1
 #endif
 
@@ -236,9 +236,11 @@
  * SINGLENOZZLE
  */
 #if ENABLED(SINGLENOZZLE)
+  #undef HOTENDS
   #define HOTENDS 1
   #undef TEMP_SENSOR_1_AS_REDUNDANT
 #else
+  #undef HOTENDS
   #define HOTENDS EXTRUDERS
 #endif
 
@@ -246,6 +248,7 @@
  * DRIVER_EXTRUDERS
  */
 #if DISABLED(MKR4) && DISABLED(NPR2) && DISABLED(DONDOLO)
+  #undef DRIVER_EXTRUDERS
   #define DRIVER_EXTRUDERS EXTRUDERS // This defines the number of Driver extruder
 #endif
 

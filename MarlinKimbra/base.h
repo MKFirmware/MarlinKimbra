@@ -29,29 +29,30 @@
 #include "mechanics.h"
 
 #include "Configuration_Version.h"
-#include "Configuration_Basic.h"
 #include "Configuration_Overall.h"
 
-#if MECH(CARTESIAN)
-  #include "Configuration_Cartesian.h"
-#elif MECH(COREXY)
-  #include "Configuration_Core.h"
-#elif MECH(COREXZ)
-  #include "Configuration_Core.h"
-#elif MECH(DELTA)
-  #include "Configuration_Delta.h"
-#elif MECH(SCARA)
-  #include "Configuration_Scara.h"
+#ifndef CONFIGURATION_OVERALL_ON
+  #include "Configuration_Basic.h"
+
+  #if MECH(CARTESIAN)
+    #include "Configuration_Cartesian.h"
+  #elif MECH(COREXY)
+    #include "Configuration_Core.h"
+  #elif MECH(COREXZ)
+    #include "Configuration_Core.h"
+  #elif MECH(DELTA)
+    #include "Configuration_Delta.h"
+  #elif MECH(SCARA)
+    #include "Configuration_Scara.h"
+  #endif
+
+  #include "Configuration_Feature.h"
 #endif
-
-#include "Configuration_Feature.h"
-#include "Configuration_Overall.h"
 
 #include "language/language.h"
 #include "conditionals.h"
 #include "sanitycheck.h"
 #include "thermistortables.h"
-
 #include "comunication.h"
 
 typedef unsigned long millis_t;
