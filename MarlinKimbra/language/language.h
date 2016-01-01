@@ -204,24 +204,24 @@
 #define SERIAL_BED_LEVELLING_Y                 " Y: "
 #define SERIAL_BED_LEVELLING_Z                 " Z: "
 
-#include "language_en.h" // English
-
-#if LANGUAGE_CHOICE == 2 // Polish
+#if   LANGUAGE_CHOICE == 1  // English
+  #include "language_en.h"
+#elif LANGUAGE_CHOICE == 2  // Polish
   #include "language_pl.h"
-#elif LANGUAGE_CHOICE == 3 // French
+#elif LANGUAGE_CHOICE == 3  // French
   #include "language_fr.h"
-#elif LANGUAGE_CHOICE == 4 // German
+#elif LANGUAGE_CHOICE == 4  // German
   #include "language_de.h"
-#elif LANGUAGE_CHOICE == 5 // Spanish
+#elif LANGUAGE_CHOICE == 5  // Spanish
   #include "language_es.h"
-#elif LANGUAGE_CHOICE == 6 // Russian
-	#define MAPPER_D0D1      // For Cyrillic
+#elif LANGUAGE_CHOICE == 6  // Russian
+	#define MAPPER_D0D1       // For Cyrillic
   #include "language_ru.h"
-#elif LANGUAGE_CHOICE == 7 // Italian
+#elif LANGUAGE_CHOICE == 7  // Italian
   #include "language_it.h"
-#elif LANGUAGE_CHOICE == 8 // Portuguese
+#elif LANGUAGE_CHOICE == 8  // Portuguese
   #include "language_pt.h"
-#elif LANGUAGE_CHOICE == 9 // Finnish
+#elif LANGUAGE_CHOICE == 9  // Finnish
   #include "language_fi.h"
 #elif LANGUAGE_CHOICE == 10 // Aragonese
   #include "language_an.h"
