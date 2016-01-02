@@ -1,20 +1,24 @@
-/*
-  Test.h
-  Tools for firmware test
-  By MagoKimbra
+/**
+ * Tools for firmware test
+ * By MagoKimbra
  */
- 
-#include "base.h"
+
+#include "../base.h"
+
 #if ENABLED(FIRMWARE_TEST)
-#include "Marlin_main.h"
-#if ENABLED(AUTO_BED_LEVELING_FEATURE)
-  #include "vector_3.h"
-#endif
-#include "planner.h"
-#include "stepper_indirection.h"
-#include "stepper.h"
-#include "temperature.h"
+
 #include "firmware_test.h"
+
+#include "../Marlin_main.h"
+#include "../planner.h"
+#include "../stepper_indirection.h"
+#include "../stepper.h"
+#include "../temperature.h"
+
+#if ENABLED(AUTO_BED_LEVELING_FEATURE)
+  #include "../vector_3.h"
+#endif
+
 static char serial_answer;
 
 void FirmwareTest() {

@@ -253,24 +253,24 @@
 
 // Enable this to sample the bed in a grid (least squares solution)
 // Note: this feature generates 10KB extra code size
-#define AUTO_BED_LEVELING_GRID
+//#define AUTO_BED_LEVELING_GRID
 
 // yes AUTO_BED_LEVELING_GRID
-#define MIN_PROBE_EDGE 10 // The probe square sides can be no smaller than this
+//#define MIN_PROBE_EDGE 10 // The probe square sides can be no smaller than this
 // Set the number of grid points per dimension
 // You probably don't need more than 3 (squared=9)
-#define AUTO_BED_LEVELING_GRID_POINTS 2
+//#define AUTO_BED_LEVELING_GRID_POINTS 2
 // yes AUTO_BED_LEVELING_GRID
 
 // no AUTO_BED_LEVELING_GRID
 // Arbitrary points to probe. A simple cross-product
 // is used to estimate the plane of the bed.
-#define ABL_PROBE_PT_1_X 15
-#define ABL_PROBE_PT_1_Y 180
-#define ABL_PROBE_PT_2_X 15
-#define ABL_PROBE_PT_2_Y 20
-#define ABL_PROBE_PT_3_X 170
-#define ABL_PROBE_PT_3_Y 20
+//#define ABL_PROBE_PT_1_X 15
+//#define ABL_PROBE_PT_1_Y 180
+//#define ABL_PROBE_PT_2_X 15
+//#define ABL_PROBE_PT_2_Y 20
+//#define ABL_PROBE_PT_3_X 170
+//#define ABL_PROBE_PT_3_Y 20
 // no AUTO_BED_LEVELING_GRID
 
 // Offsets to the probe relative to the extruder tip (Hotend - Probe)

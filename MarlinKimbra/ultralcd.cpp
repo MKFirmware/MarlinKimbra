@@ -17,7 +17,7 @@
 #include "ultralcd.h"
 
 #if HAS(BUZZER)
-  #include "buzzer.h"
+  #include "module/buzzer.h"
 #endif
 
 int8_t encoderDiff; // updated from interrupt context and added to encoderPosition every LCD update

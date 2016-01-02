@@ -2,11 +2,12 @@
   blinkm.cpp - Library for controlling a BlinkM over i2c
   Created by Tim Koster, August 21 2013.
 */
-#include "base.h"
+#include "../base.h"
 
 #if ENABLED(BLINKM)
 
 #include "blinkm.h"
+#include <Wire.h>
 
 void SendColors(byte red, byte grn, byte blu) {
   Wire.begin();

@@ -708,6 +708,18 @@
  * Servos
  */
 #if HAS(SERVOS)
+  #ifndef X_ENDSTOP_SERVO_NR
+    #define X_ENDSTOP_SERVO_NR -1
+  #endif
+  #ifndef Y_ENDSTOP_SERVO_NR
+    #define Y_ENDSTOP_SERVO_NR -1
+  #endif
+  #ifndef Z_ENDSTOP_SERVO_NR
+    #define Z_ENDSTOP_SERVO_NR -1
+  #endif
+  #ifndef SERVO_DEACTIVATION_DELAY
+    #define SERVO_DEACTIVATION_DELAY 300
+  #endif
   #if X_ENDSTOP_SERVO_NR >= 0 || Y_ENDSTOP_SERVO_NR >= 0 || Z_ENDSTOP_SERVO_NR >= 0
     #define HAS_SERVO_ENDSTOPS true
     #define SERVO_ENDSTOP_IDS { X_ENDSTOP_SERVO_NR, Y_ENDSTOP_SERVO_NR, Z_ENDSTOP_SERVO_NR }

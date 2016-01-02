@@ -36,7 +36,7 @@
 #include "stepper.h"
 #include "temperature.h"
 #include "ultralcd.h"
-#include "nextion/nextion_lcd.h"
+#include "module/nextion_lcd.h"
 
 #if ENABLED(SDSUPPORT)
   #include "cardreader.h"

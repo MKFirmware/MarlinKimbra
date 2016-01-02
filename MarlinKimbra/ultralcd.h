@@ -3,7 +3,9 @@
 
 #include "Marlin_main.h"
 #if ENABLED(ULTRA_LCD)
-  #include "buzzer.h"
+  #if HAS(BUZZER)
+    #include "module/buzzer.h"
+  #endif
 
   int lcd_strlen(char* s);
   int lcd_strlen_P(const char* s);

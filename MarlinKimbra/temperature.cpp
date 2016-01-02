@@ -24,7 +24,7 @@
   #include "vector_3.h"
 #endif
 #include "ultralcd.h"
-#include "nextion/nextion_lcd.h"
+#include "module/nextion_lcd.h"
 #include "planner.h"
 #include "stepper_indirection.h"
 #if MB(ALLIGATOR)
