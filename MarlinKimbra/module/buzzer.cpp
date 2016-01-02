@@ -1,7 +1,8 @@
-#include "base.h"
+#include "../base.h"
+
 #if HAS(BUZZER)
   #include "buzzer.h"
-  #include "ultralcd.h"
+  #include "../ultralcd.h"
 
   void buzz(long duration, uint16_t freq) {
     if (freq > 0) {

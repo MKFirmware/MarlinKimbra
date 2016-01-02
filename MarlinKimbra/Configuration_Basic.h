@@ -41,7 +41,8 @@
 #define MACHINE_UUID "00000000-0000-0000-0000-000000000000"
 
 // If you want test the firmware uncomment below. Use Serial arduino monitor...
-//#define FIRMWARE_TEST // ONLY BAUDRATE 115200
+// ONLY BAUDRATE 115200
+//#define FIRMWARE_TEST
 
 // Some particular clients re-start sending commands only after receiving a 'wait' when there is a bed serial-connection.
 //#define NO_TIMEOUTS 1000  // Milliseconds

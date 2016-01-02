@@ -472,14 +472,20 @@
       #if DISABLED(Z_ENDSTOP_SERVO_NR)
         #error DEPENDENCY ERROR: Missing setting Z_ENDSTOP_SERVO_NR
       #endif
-      #if DISABLED(X_ENDSTOP_SERVO_ANGLES)
-        #error DEPENDENCY ERROR: Missing setting X_ENDSTOP_SERVO_ANGLES
+      #if ENABLED(X_ENDSTOP_SERVO_NR) && X_ENDSTOP_SERVO_NR > -1
+        #if DISABLED(X_ENDSTOP_SERVO_ANGLES)
+          #error DEPENDENCY ERROR: Missing setting X_ENDSTOP_SERVO_ANGLES
+        #endif
       #endif
-      #if DISABLED(Y_ENDSTOP_SERVO_ANGLES)
-        #error DEPENDENCY ERROR: Missing setting Y_ENDSTOP_SERVO_ANGLES
+      #if ENABLED(Y_ENDSTOP_SERVO_NR) && Y_ENDSTOP_SERVO_NR > -1
+        #if DISABLED(Y_ENDSTOP_SERVO_ANGLES)
+          #error DEPENDENCY ERROR: Missing setting Y_ENDSTOP_SERVO_ANGLES
+        #endif
       #endif
-      #if DISABLED(Z_ENDSTOP_SERVO_ANGLES)
-        #error DEPENDENCY ERROR: Missing setting Z_ENDSTOP_SERVO_ANGLES
+      #if ENABLED(Z_ENDSTOP_SERVO_NR) && Z_ENDSTOP_SERVO_NR > -1
+        #if DISABLED(Z_ENDSTOP_SERVO_ANGLES)
+          #error DEPENDENCY ERROR: Missing setting Z_ENDSTOP_SERVO_ANGLES
+        #endif
       #endif
       #if DISABLED(SERVO_DEACTIVATION_DELAY)
         #error DEPENDENCY ERROR: Missing setting SERVO_DEACTIVATION_DELAY

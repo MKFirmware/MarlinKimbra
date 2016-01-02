@@ -31,7 +31,7 @@
 
 #include "Marlin_main.h"
 #include "ultralcd.h"
-#include "nextion/nextion_lcd.h"
+#include "module/nextion_lcd.h"
 #include "base.h"
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
   #include "vector_3.h"
@@ -54,16 +54,15 @@
 #endif
 
 #if HAS(BUZZER)
-  #include "buzzer.h"
+  #include "module/buzzer.h"
 #endif
 
 #if ENABLED(BLINKM)
-  #include "blinkm.h"
-  #include "Wire.h"
+  #include "module/blinkm.h"
 #endif
 
 #if HAS(SERVOS)
-  #include "servo.h"
+  #include "module/servo.h"
 #endif
 
 #if HAS(DIGIPOTSS)
@@ -71,7 +70,7 @@
 #endif
 
 #if ENABLED(FIRMWARE_TEST)
-  #include "firmware_test.h"
+  #include "module/firmware_test.h"
 #endif
 
 /**
