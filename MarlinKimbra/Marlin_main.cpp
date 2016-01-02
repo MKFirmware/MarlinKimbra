@@ -2997,7 +2997,7 @@ inline void wait_bed() {
 void gcode_get_destination() {
   #if ENABLED(IDLE_OOZING_PREVENT)
     if(code_seen(axis_codes[E_AXIS])) IDLE_OOZING_retract(false);
-  #endif 
+  #endif
   for (int i = 0; i < NUM_AXIS; i++) {
     if (code_seen(axis_codes[i])) {
       destination[i] = code_value() + (axis_relative_modes[i] || relative_mode ? current_position[i] : 0);
