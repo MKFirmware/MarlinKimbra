@@ -549,6 +549,7 @@
  *                                                                                       *
  *****************************************************************************************/
 //#define ADVANCE
+
 #define EXTRUDER_ADVANCE_K .0
 #define D_FILAMENT 2.85
 #define STEPS_MM_E 836
@@ -566,6 +567,7 @@
  *                                                                        *
  **************************************************************************/
 //#define FILAMENTCHANGEENABLE
+
 #define FILAMENTCHANGE_XPOS 3
 #define FILAMENTCHANGE_YPOS 3
 #define FILAMENTCHANGE_ZADD 10
@@ -726,6 +728,7 @@
  *                                                                        *
  **************************************************************************/
 //#define FWRETRACT                     //ONLY PARTIALLY TESTED
+
 #define MIN_RETRACT                 0.1 //minimum extruded mm to accept a automatic gcode retraction attempt
 #define RETRACT_LENGTH              3   //default retract length (positive mm)
 #define RETRACT_LENGTH_SWAP        13   //default swap retract length (positive mm), for extruder change
@@ -879,6 +882,7 @@
  *                                                                                *
  **********************************************************************************/
 //#define FILAMENT_SENSOR
+
 #define FILAMENT_SENSOR_EXTRUDER_NUM  0     //The number of the extruder that has the filament sensor (0,1,2,3)
 #define MEASUREMENT_DELAY_CM         14     //measurement delay in cm.  This is the distance from filament sensor to middle of barrel
 #define MEASURED_UPPER_LIMIT          2.00  //upper limit factor used for sensor reading validation in mm
@@ -908,6 +912,7 @@
  *                                                                                *
  **********************************************************************************/
 //#define FILAMENT_RUNOUT_SENSOR
+
 #define FILRUNOUT_PIN_INVERTING true        // Should be uncommented and true or false should assigned
 #define ENDSTOPPULLUP_FIL_RUNOUT            // Uncomment to use internal pullup for filament runout pins if the sensor is defined.
 #define FILAMENT_RUNOUT_SCRIPT "M600"       // Script execute when filament run out
@@ -963,6 +968,7 @@
  *                                                                        *
  **************************************************************************/
 //#define POWER_CONSUMPTION
+
 #define POWER_VOLTAGE      12.00    //(V) The power supply OUT voltage
 #define POWER_SENSITIVITY   0.066   //(V/A) How much increase V for 1A of increase
 #define POWER_OFFSET        0.005   //(A) Help to get 0A when no load is connected.
@@ -1209,6 +1215,7 @@
  *                                                                        *
  **************************************************************************/
 //#define CHDK
+
 #define CHDK_DELAY 50   //How long in ms the pin should stay HIGH before going LOW again
 /**************************************************************************/
 
@@ -1333,54 +1340,54 @@
 //#define HAVE_TMCDRIVER
 
 //#define X_IS_TMC
-//#define X_MAX_CURRENT 1000  //in mA
-//#define X_SENSE_RESISTOR 91 //in mOhms
-//#define X_MICROSTEPS 16     //number of microsteps
+#define X_MAX_CURRENT 1000  //in mA
+#define X_SENSE_RESISTOR 91 //in mOhms
+#define X_MICROSTEPS 16     //number of microsteps
 
 //#define X2_IS_TMC
-//#define X2_MAX_CURRENT 1000  //in mA
-//#define X2_SENSE_RESISTOR 91 //in mOhms
-//#define X2_MICROSTEPS 16     //number of microsteps
+#define X2_MAX_CURRENT 1000  //in mA
+#define X2_SENSE_RESISTOR 91 //in mOhms
+#define X2_MICROSTEPS 16     //number of microsteps
 
 //#define Y_IS_TMC
-//#define Y_MAX_CURRENT 1000  //in mA
-//#define Y_SENSE_RESISTOR 91 //in mOhms
-//#define Y_MICROSTEPS 16     //number of microsteps
+#define Y_MAX_CURRENT 1000  //in mA
+#define Y_SENSE_RESISTOR 91 //in mOhms
+#define Y_MICROSTEPS 16     //number of microsteps
 
 //#define Y2_IS_TMC
-//#define Y2_MAX_CURRENT 1000  //in mA
-//#define Y2_SENSE_RESISTOR 91 //in mOhms
-//#define Y2_MICROSTEPS 16     //number of microsteps 
+#define Y2_MAX_CURRENT 1000  //in mA
+#define Y2_SENSE_RESISTOR 91 //in mOhms
+#define Y2_MICROSTEPS 16     //number of microsteps 
 
 //#define Z_IS_TMC
-//#define Z_MAX_CURRENT 1000  //in mA
-//#define Z_SENSE_RESISTOR 91 //in mOhms
-//#define Z_MICROSTEPS 16     //number of microsteps
+#define Z_MAX_CURRENT 1000  //in mA
+#define Z_SENSE_RESISTOR 91 //in mOhms
+#define Z_MICROSTEPS 16     //number of microsteps
 
 //#define Z2_IS_TMC
-//#define Z2_MAX_CURRENT 1000  //in mA
-//#define Z2_SENSE_RESISTOR 91 //in mOhms
-//#define Z2_MICROSTEPS 16     //number of microsteps
+#define Z2_MAX_CURRENT 1000  //in mA
+#define Z2_SENSE_RESISTOR 91 //in mOhms
+#define Z2_MICROSTEPS 16     //number of microsteps
 
 //#define E0_IS_TMC
-//#define E0_MAX_CURRENT 1000  //in mA
-//#define E0_SENSE_RESISTOR 91 //in mOhms
-//#define E0_MICROSTEPS 16     //number of microsteps
+#define E0_MAX_CURRENT 1000  //in mA
+#define E0_SENSE_RESISTOR 91 //in mOhms
+#define E0_MICROSTEPS 16     //number of microsteps
 
 //#define E1_IS_TMC
-//#define E1_MAX_CURRENT 1000  //in mA
-//#define E1_SENSE_RESISTOR 91 //in mOhms
-//#define E1_MICROSTEPS 16     //number of microsteps 
+#define E1_MAX_CURRENT 1000  //in mA
+#define E1_SENSE_RESISTOR 91 //in mOhms
+#define E1_MICROSTEPS 16     //number of microsteps 
 
 //#define E2_IS_TMC
-//#define E2_MAX_CURRENT 1000  //in mA
-//#define E2_SENSE_RESISTOR 91 //in mOhms
-//#define E2_MICROSTEPS 16     //number of microsteps 
+#define E2_MAX_CURRENT 1000  //in mA
+#define E2_SENSE_RESISTOR 91 //in mOhms
+#define E2_MICROSTEPS 16     //number of microsteps 
 
 //#define E3_IS_TMC
-//#define E3_MAX_CURRENT 1000  //in mA
-//#define E3_SENSE_RESISTOR 91 //in mOhms
-//#define E3_MICROSTEPS 16     //number of microsteps   
+#define E3_MAX_CURRENT 1000  //in mA
+#define E3_SENSE_RESISTOR 91 //in mOhms
+#define E3_MICROSTEPS 16     //number of microsteps   
 /***********************************************************************/
 
 
@@ -1397,64 +1404,64 @@
 //#define HAVE_L6470DRIVER
 
 //#define X_IS_L6470
-//#define X_MICROSTEPS 16     //number of microsteps
-//#define X_K_VAL 50          // 0 - 255, Higher values, are higher power. Be carefull not to go too high    
-//#define X_OVERCURRENT 2000  //maxc current in mA. If the current goes over this value, the driver will switch off
-//#define X_STALLCURRENT 1500 //current in mA where the driver will detect a stall
+#define X_MICROSTEPS 16     //number of microsteps
+#define X_K_VAL 50          // 0 - 255, Higher values, are higher power. Be carefull not to go too high    
+#define X_OVERCURRENT 2000  //maxc current in mA. If the current goes over this value, the driver will switch off
+#define X_STALLCURRENT 1500 //current in mA where the driver will detect a stall
 
 //#define X2_IS_L6470
-//#define X2_MICROSTEPS 16     //number of microsteps
-//#define X2_K_VAL 50          // 0 - 255, Higher values, are higher power. Be carefull not to go too high    
-//#define X2_OVERCURRENT 2000  //maxc current in mA. If the current goes over this value, the driver will switch off
-//#define X2_STALLCURRENT 1500 //current in mA where the driver will detect a stall
+#define X2_MICROSTEPS 16     //number of microsteps
+#define X2_K_VAL 50          // 0 - 255, Higher values, are higher power. Be carefull not to go too high    
+#define X2_OVERCURRENT 2000  //maxc current in mA. If the current goes over this value, the driver will switch off
+#define X2_STALLCURRENT 1500 //current in mA where the driver will detect a stall
 
 //#define Y_IS_L6470
-//#define Y_MICROSTEPS 16     //number of microsteps
-//#define Y_K_VAL 50          // 0 - 255, Higher values, are higher power. Be carefull not to go too high    
-//#define Y_OVERCURRENT 2000  //maxc current in mA. If the current goes over this value, the driver will switch off
-//#define Y_STALLCURRENT 1500 //current in mA where the driver will detect a stall
+#define Y_MICROSTEPS 16     //number of microsteps
+#define Y_K_VAL 50          // 0 - 255, Higher values, are higher power. Be carefull not to go too high    
+#define Y_OVERCURRENT 2000  //maxc current in mA. If the current goes over this value, the driver will switch off
+#define Y_STALLCURRENT 1500 //current in mA where the driver will detect a stall
 
 //#define Y2_IS_L6470
-//#define Y2_MICROSTEPS 16     //number of microsteps 
-//#define Y2_K_VAL 50          // 0 - 255, Higher values, are higher power. Be carefull not to go too high    
-//#define Y2_OVERCURRENT 2000  //maxc current in mA. If the current goes over this value, the driver will switch off
-//#define Y2_STALLCURRENT 1500 //current in mA where the driver will detect a stall 
+#define Y2_MICROSTEPS 16     //number of microsteps 
+#define Y2_K_VAL 50          // 0 - 255, Higher values, are higher power. Be carefull not to go too high    
+#define Y2_OVERCURRENT 2000  //maxc current in mA. If the current goes over this value, the driver will switch off
+#define Y2_STALLCURRENT 1500 //current in mA where the driver will detect a stall 
 
 //#define Z_IS_L6470
-//#define Z_MICROSTEPS 16     //number of microsteps
-//#define Z_K_VAL 50          // 0 - 255, Higher values, are higher power. Be carefull not to go too high    
-//#define Z_OVERCURRENT 2000  //maxc current in mA. If the current goes over this value, the driver will switch off
-//#define Z_STALLCURRENT 1500 //current in mA where the driver will detect a stall
+#define Z_MICROSTEPS 16     //number of microsteps
+#define Z_K_VAL 50          // 0 - 255, Higher values, are higher power. Be carefull not to go too high    
+#define Z_OVERCURRENT 2000  //maxc current in mA. If the current goes over this value, the driver will switch off
+#define Z_STALLCURRENT 1500 //current in mA where the driver will detect a stall
 
 //#define Z2_IS_L6470
-//#define Z2_MICROSTEPS 16     //number of microsteps
-//#define Z2_K_VAL 50          // 0 - 255, Higher values, are higher power. Be carefull not to go too high    
-//#define Z2_OVERCURRENT 2000  //maxc current in mA. If the current goes over this value, the driver will switch off
-//#define Z2_STALLCURRENT 1500 //current in mA where the driver will detect a stall
+#define Z2_MICROSTEPS 16     //number of microsteps
+#define Z2_K_VAL 50          // 0 - 255, Higher values, are higher power. Be carefull not to go too high    
+#define Z2_OVERCURRENT 2000  //maxc current in mA. If the current goes over this value, the driver will switch off
+#define Z2_STALLCURRENT 1500 //current in mA where the driver will detect a stall
 
 //#define E0_IS_L6470
-//#define E0_MICROSTEPS 16     //number of microsteps
-//#define E0_K_VAL 50          // 0 - 255, Higher values, are higher power. Be carefull not to go too high    
-//#define E0_OVERCURRENT 2000  //maxc current in mA. If the current goes over this value, the driver will switch off
-//#define E0_STALLCURRENT 1500 //current in mA where the driver will detect a stall
+#define E0_MICROSTEPS 16     //number of microsteps
+#define E0_K_VAL 50          // 0 - 255, Higher values, are higher power. Be carefull not to go too high    
+#define E0_OVERCURRENT 2000  //maxc current in mA. If the current goes over this value, the driver will switch off
+#define E0_STALLCURRENT 1500 //current in mA where the driver will detect a stall
 
 //#define E1_IS_L6470
-//#define E1_MICROSTEPS 16     //number of microsteps
-//#define E1_K_VAL 50          // 0 - 255, Higher values, are higher power. Be carefull not to go too high    
-//#define E1_OVERCURRENT 2000  //maxc current in mA. If the current goes over this value, the driver will switch off
-//#define E1_STALLCURRENT 1500 //current in mA where the driver will detect a stall
+#define E1_MICROSTEPS 16     //number of microsteps
+#define E1_K_VAL 50          // 0 - 255, Higher values, are higher power. Be carefull not to go too high    
+#define E1_OVERCURRENT 2000  //maxc current in mA. If the current goes over this value, the driver will switch off
+#define E1_STALLCURRENT 1500 //current in mA where the driver will detect a stall
 
 //#define E2_IS_L6470
-//#define E2_MICROSTEPS 16     //number of microsteps
-//#define E2_K_VAL 50          // 0 - 255, Higher values, are higher power. Be carefull not to go too high    
-//#define E2_OVERCURRENT 2000  //maxc current in mA. If the current goes over this value, the driver will switch off
-//#define E2_STALLCURRENT 1500 //current in mA where the driver will detect a stall
+#define E2_MICROSTEPS 16     //number of microsteps
+#define E2_K_VAL 50          // 0 - 255, Higher values, are higher power. Be carefull not to go too high    
+#define E2_OVERCURRENT 2000  //maxc current in mA. If the current goes over this value, the driver will switch off
+#define E2_STALLCURRENT 1500 //current in mA where the driver will detect a stall
 
 //#define E3_IS_L6470
-//#define E3_MICROSTEPS 16     //number of microsteps
-//#define E3_K_VAL 50          // 0 - 255, Higher values, are higher power. Be carefull not to go too high    
-//#define E3_OVERCURRENT 2000  //maxc current in mA. If the current goes over this value, the driver will switch off
-//#define E3_STALLCURRENT 1500 //current in mA where the driver will detect a stall
+#define E3_MICROSTEPS 16     //number of microsteps
+#define E3_K_VAL 50          // 0 - 255, Higher values, are higher power. Be carefull not to go too high    
+#define E3_OVERCURRENT 2000  //maxc current in mA. If the current goes over this value, the driver will switch off
+#define E3_STALLCURRENT 1500 //current in mA where the driver will detect a stall
 /**********************************************************************************/  
 
 
