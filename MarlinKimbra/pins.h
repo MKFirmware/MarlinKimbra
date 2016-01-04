@@ -3789,7 +3789,7 @@
 #if MB(MINITRONICS)
   #define KNOWN_BOARD 1
 
-  #ifndef __AVR_ATmega1281__
+  #ifndef __AVR_ATmega1280__
     #error Oops! Make sure you have 'Minitronics ' selected from the 'Tools -> Boards' menu.
   #endif
 
