@@ -2847,7 +2847,7 @@ static void clean_up_after_endstop_move() {
     }
     do_blocking_move_to_x(oldXpos); // return to position before docking
   }
-#endif //Z_PROBE_SLED
+#endif // Z_PROBE_SLED
 
 #if HAS(TEMP_0) || HAS(TEMP_BED) || ENABLED(HEATER_0_USES_MAX6675)
   void print_heaterstates() {
@@ -6213,13 +6213,13 @@ inline void gcode_M226() {
  */
 inline void gcode_M400() { st_synchronize(); }
 
-#if ENABLED(AUTO_BED_LEVELING_FEATURE) && HASNT(Z_PROBE_SLED) && HAS(SERVO_ENDSTOPS)
+#if HAS(SERVO_ENDSTOPS)
 
   /**
    * M401: Engage Z Servo endstop if available
    */
   inline void gcode_M401() {
-    #if HAS(SERVO_ENDSTOPS)
+    #if ENABLED(AUTO_BED_LEVELING_FEATURE) && HASNT(Z_PROBE_SLED)
       raise_z_for_servo();
     #endif
     deploy_z_probe();
@@ -6229,13 +6229,17 @@ inline void gcode_M400() { st_synchronize(); }
    * M402: Retract Z Servo endstop if enabled
    */
   inline void gcode_M402() {
-    #if HAS(SERVO_ENDSTOPS)
+    #if ENABLED(AUTO_BED_LEVELING_FEATURE) && HASNT(Z_PROBE_SLED)
       raise_z_for_servo();
     #endif
-    stow_z_probe(false);
+    #if MECH(DELTA)
+      retract_z_probe();
+    #else
+      stow_z_probe(false);
+    #endif
   }
 
-#endif // AUTO_BED_LEVELING_FEATURE && (HAS(SERVO_ENDSTOPS) && !Z_PROBE_SLED)
+#endif // HAS(SERVO_ENDSTOPS)
 
 #if ENABLED(FILAMENT_SENSOR)
 

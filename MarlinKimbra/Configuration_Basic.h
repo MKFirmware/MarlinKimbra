@@ -44,7 +44,7 @@
 // ONLY BAUDRATE 115200
 //#define FIRMWARE_TEST
 
-// Some particular clients re-start sending commands only after receiving a 'wait' when there is a bed serial-connection.
+// Some particular clients re-start sending commands only after receiving a 'wait' when there is a bad serial-connection.
 //#define NO_TIMEOUTS 1000  // Milliseconds
 //#define ADVANCED_OK     // Uncomment to include more info in ok command
 /***********************************************************************/

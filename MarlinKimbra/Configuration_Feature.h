@@ -225,12 +225,6 @@
 #define DEFAULT_bedKi .023
 #define DEFAULT_bedKd 305.4
 
-// 120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
-// from pidautotune
-//#define DEFAULT_bedKp 97.1
-//#define DEFAULT_bedKi 1.41
-//#define DEFAULT_bedKd 1675.16
-
 // FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
 
 //#define PID_BED_DEBUG // Sends debug data to the serial port.

@@ -301,26 +301,26 @@
  * If you have enabled the Auto bed levelling this add the Support for                   *
  * a dedicated Z PROBE endstop separate from the Z MIN endstop.                          *
  * If you would like to use both a Z PROBE and a Z MIN endstop together                  *
- * or just a Z PROBE with a custom pin, uncomment #define Z_PROBE_ENDSTOP                *
+ * or just a Z PROBE with a custom pin, uncomment #define Z PROBE ENDSTOP                *
  * and read the instructions below.                                                      *
  *                                                                                       *
  * If you want to still use the Z min endstop for homing,                                *
- * disable Z_SAFE_HOMING.                                                                *
+ * disable Z SAFE HOMING.                                                                *
  * Eg: to park the head outside the bed area when homing with G28.                       *
  *                                                                                       *
  * WARNING: The Z MIN endstop will need to set properly as it would                      *
  * without a Z PROBE to prevent head crashes and premature stopping                      *
  * during a print.                                                                       *
- * To use a separte Z PROBE endstop, you must have a Z_PROBE_PIN                         *
+ * To use a separte Z PROBE endstop, you must have a Z PROBE PIN                         *
  * defined in the pins.h file for your control board.                                    *
  * If you are using a servo based Z PROBE, you will need to enable                       *
- * NUM_SERVOS, SERVO_ENDSTOPS and SERVO_ENDSTOPS_ANGLES in                               *
+ * NUM SERVOS, SERVO ENDSTOPS and SERVO ENDSTOPS ANGLES in                               *
  * Configuration_Feature R/C Servo section.                                              *
  *                                                                                       *
  * WARNING: Setting the wrong pin may have unexpected and potentially                    *
  * disastrous outcomes. Use with caution and do your homework.                           *
  *                                                                                       *
- * Uncomment Z_PROBE_ENDSTOP to enable.                                                  *
+ * Uncomment Z PROBE ENDSTOP to enable.                                                  *
  *                                                                                       *
  *****************************************************************************************/
 //#define Z_PROBE_ENDSTOP
