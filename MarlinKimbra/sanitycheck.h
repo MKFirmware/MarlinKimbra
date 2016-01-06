@@ -629,12 +629,6 @@
       #if DISABLED(CFG_SD_FILE)
         #error DEPENDENCY ERROR: Missing setting CFG_SD_FILE
       #endif
-      #if DISABLED(CFG_SD_MAX_KEY_LEN)
-        #error DEPENDENCY ERROR: Missing setting CFG_SD_MAX_KEY_LEN
-      #endif
-      #if DISABLED(CFG_SD_MAX_VALUE_LEN)
-        #error DEPENDENCY ERROR: Missing setting CFG_SD_MAX_VALUE_LEN
-      #endif
     #endif
   #endif
   #if DISABLED(DISPLAY_CHARSET_HD44780_JAPAN) && DISABLED(DISPLAY_CHARSET_HD44780_WESTERN) && DISABLED(DISPLAY_CHARSET_HD44780_CYRILLIC)

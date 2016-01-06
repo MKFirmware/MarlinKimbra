@@ -252,7 +252,7 @@
 bool Running = true;
 bool Printing = false;
 
-uint8_t debugLevel = DEBUG_INFO|DEBUG_ERRORS;
+uint8_t debugLevel = DEBUG_ERRORS;
 
 static float feedrate = 1500.0, saved_feedrate;
 float current_position[NUM_AXIS] = { 0.0 };
@@ -309,6 +309,7 @@ bool target_direction;
 bool software_endstops = true;
 
 unsigned long printer_usage_seconds;
+double printer_usage_filament;
 
 #if !MECH(DELTA)
   int xy_travel_speed = XY_TRAVEL_SPEED;
@@ -3010,6 +3011,8 @@ void gcode_get_destination() {
     float next_feedrate = code_value();
     if (next_feedrate > 0.0) feedrate = next_feedrate;
   }
+
+  printer_usage_filament += (destination[E_AXIS] - current_position[E_AXIS]);
 
   #if ENABLED(NEXTION_GFX)
     if((code_seen(axis_codes[X_AXIS]) || code_seen(axis_codes[Y_AXIS])) && code_seen(axis_codes[E_AXIS]))
