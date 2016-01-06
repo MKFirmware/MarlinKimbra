@@ -1,3 +1,7 @@
+### Version 4.2.3
+* Added Filament tot printed in stats
+* Overall rewrite
+
 ### Version 4.2.2
 * Added the possibility to invert the logic for lcd buttons.
 * Language files bugfix.
