@@ -1032,12 +1032,10 @@
 // With ENDSTOPS_ONLY_FOR_HOMING you must send "M120" to enable endstops.
 //#define ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
 
-//This enable the firmware to write some configuration that require frequent update, on the SD card
-//#define SD_SETTINGS                     //Uncomment to enable
-#define SD_CFG_SECONDS        300         //seconds between update
-#define CFG_SD_FILE           "INFO.CFG"  //name of the configuration file
-#define CFG_SD_MAX_KEY_LEN    3+1         //icrease this if you add key name longer than the actual value.
-#define CFG_SD_MAX_VALUE_LEN  12+1        //this should be enought for int, long and float if you need to retrive strings increase this carefully
+// This enable the firmware to write some configuration that require frequent update, on the SD card
+//#define SD_SETTINGS                     // Uncomment to enable
+#define SD_CFG_SECONDS        300         // seconds between update
+#define CFG_SD_FILE           "INFO.CFG"  // name of the configuration file
 /*****************************************************************************************/
 
 

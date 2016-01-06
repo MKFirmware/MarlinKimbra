@@ -132,7 +132,9 @@ extern bool axis_known_position[3];
 extern float zprobe_zoffset;
 
 // Lifetime stats
-extern unsigned long printer_usage_seconds;  //this can old about 136 year before go overflow. If you belive that you can live more than this please contact me.
+extern unsigned long printer_usage_seconds;  // this can old about 136 year before go overflow. If you belive that you can live more than this please contact me.
+// Filament stats
+extern double printer_usage_filament;
 
 #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
   extern float extrude_min_temp;
