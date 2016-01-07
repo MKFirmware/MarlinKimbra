@@ -3,7 +3,7 @@
  * Externa DAC for Alligator Board
  *
  ****************************************************************/
-#include "base.h"
+#include "../base.h"
 
 #if MB(ALLIGATOR)
   #include "stepper.h"

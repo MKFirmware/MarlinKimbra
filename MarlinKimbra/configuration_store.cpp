@@ -1,17 +1,17 @@
 #include "base.h"
 #include "Marlin_main.h"
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
-  #include "vector_3.h"
+  #include "module/vector_3.h"
 #endif
-#include "planner.h"
-#include "stepper_indirection.h"
-#include "stepper.h"
-#include "temperature.h"
-#include "ultralcd.h"
+#include "module/planner.h"
+#include "module/stepper_indirection.h"
+#include "module/stepper.h"
+#include "module/temperature.h"
+#include "module/ultralcd.h"
 #include "configuration_store.h"
 
 #if ENABLED(SDSUPPORT)
-  #include "cardreader.h"
+  #include "module/cardreader.h"
 #endif
 /**
  * configuration_store.cpp

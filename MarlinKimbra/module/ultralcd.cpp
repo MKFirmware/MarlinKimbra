@@ -1,8 +1,9 @@
-#include "base.h"
+#include "../base.h"
+#include "../Marlin_main.h"
+#include "../configuration_store.h"
 
 #if ENABLED(ULTRA_LCD)
 
-#include "Marlin_main.h"
 #include "cardreader.h"
 #include "temperature.h"
 
@@ -13,11 +14,10 @@
 #include "planner.h"
 #include "stepper_indirection.h"
 #include "stepper.h"
-#include "configuration_store.h"
 #include "ultralcd.h"
 
 #if HAS(BUZZER)
-  #include "module/buzzer.h"
+  #include "buzzer.h"
 #endif
 
 int8_t encoderDiff; // updated from interrupt context and added to encoderPosition every LCD update

@@ -17,7 +17,7 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 #include <math.h>
-#include "base.h"
+#include "../base.h"
 
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
 #include "vector_3.h"

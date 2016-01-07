@@ -18,14 +18,14 @@
   #endif
   #include <util/delay.h>
   #include <avr/eeprom.h>
-  #include "fastio.h"
+  #include "module/fastio.h"
 #endif
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 
-#include "macros.h"
+#include "module/macros.h"
 #include "Boards.h"
-#include "mechanics.h"
+#include "module/mechanics.h"
 
 #include "Configuration_Version.h"
 #include "Configuration_Overall.h"
@@ -49,10 +49,10 @@
 #endif
 
 #include "language/language.h"
-#include "conditionals.h"
-#include "sanitycheck.h"
-#include "thermistortables.h"
-#include "comunication.h"
+#include "module/conditionals.h"
+#include "module/sanitycheck.h"
+#include "module/thermistortables.h"
+#include "module/comunication.h"
 
 typedef unsigned long millis_t;
 

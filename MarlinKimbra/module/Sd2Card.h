@@ -18,9 +18,11 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#include "../base.h"
+
 #ifndef Sd2Card_h
 #define Sd2Card_h
-#include "base.h"
+
 #if ENABLED(SDSUPPORT)
 
 /**

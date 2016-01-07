@@ -1,10 +1,10 @@
 #ifndef ULTRALCD_H
 #define ULTRALCD_H
 
-#include "Marlin_main.h"
+#include "../Marlin_main.h"
 #if ENABLED(ULTRA_LCD)
   #if HAS(BUZZER)
-    #include "module/buzzer.h"
+    #include "buzzer.h"
   #endif
 
   int lcd_strlen(char* s);

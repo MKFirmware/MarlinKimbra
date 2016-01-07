@@ -16,10 +16,10 @@
  */
 
 #include "../base.h"
+#include "../Marlin_main.h"
 
 #if ENABLED(NEXTION_GFX)
-  #include "../Marlin_main.h"
-  #include "../stepper.h"
+  #include "stepper.h"
   #include "nextion_gfx.h"
 
   const int INSIDE  = 0;  // 0000

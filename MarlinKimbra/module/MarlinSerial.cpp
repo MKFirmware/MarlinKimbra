@@ -20,7 +20,7 @@
   Modified 28 September 2010 by Mark Sproul
 */
 
-#include "base.h"
+#include "../base.h"
 
 #include "MarlinSerial.h"
 

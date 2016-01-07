@@ -30,27 +30,27 @@
 #include "base.h"
 
 #include "Marlin_main.h"
-#include "ultralcd.h"
+#include "module/ultralcd.h"
 #include "module/nextion_lcd.h"
-#include "base.h"
+
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
-  #include "vector_3.h"
+  #include "module/vector_3.h"
   #if ENABLED(AUTO_BED_LEVELING_GRID)
-    #include "qr_solve.h"
+    #include "module/qr_solve.h"
   #endif
 #endif // AUTO_BED_LEVELING_FEATURE
-#include "planner.h"
-#include "stepper_indirection.h"
+#include "module/planner.h"
+#include "module/stepper_indirection.h"
 #if MB(ALLIGATOR)
-  #include "external_dac.h"
+  #include "module/external_dac.h"
 #endif
-#include "stepper.h"
-#include "temperature.h"
-#include "cardreader.h"
+#include "module/stepper.h"
+#include "module/temperature.h"
+#include "module/cardreader.h"
 #include "configuration_store.h"
 
 #if ENABLED(USE_WATCHDOG)
-  #include "watchdog.h"
+  #include "module/watchdog.h"
 #endif
 
 #if HAS(BUZZER)
@@ -214,7 +214,7 @@
  * M501 - Read parameters from EEPROM (if you need reset them after you changed them temporarily).
  * M502 - Revert to the default "factory settings". You still need to store them in EEPROM afterwards if you want to.
  * M503 - Print the current settings (from memory not from EEPROM). Use S0 to leave off headings.
- * M540 - Use S[0|1] to enable or disable the stop SD card print on endstop hit (requires ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED)
+ * M540 - Use S[0|1] to enable or disable the stop print on endstop hit (requires ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED)
  * M595 - Set hotend AD595 offset and gain
  * M600 - Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
  * M605 - Set dual x-carriage movement mode: S<mode> [ X<duplication x-offset> R<duplication temp offset> ]
@@ -262,7 +262,7 @@ bool axis_known_position[3] = { false };
 bool pos_saved = false;
 float stored_position[NUM_POSITON_SLOTS][NUM_AXIS];
 
-static long gcode_N, gcode_LastN, Stopped_gcode_LastN = 0;
+static long gcode_N, gcode_LastN;
 
 static char* current_command, *current_command_args;
 static int cmd_queue_index_r = 0;
@@ -498,6 +498,11 @@ double printer_usage_filament;
 //===========================================================================
 inline void refresh_cmd_timeout() { previous_cmd_ms = millis(); }
 
+void delay_ms(millis_t ms) {
+  ms += millis();
+  while (millis() < ms) idle();
+}
+
 void process_next_command();
 
 void plan_arc(float target[NUM_AXIS], float* offset, uint8_t clockwise);
@@ -510,7 +515,7 @@ bool setTargetedHotend(int code);
 
 #ifdef __AVR__ // HAL for Due
   #if ENABLED(SDSUPPORT)
-    #include "SdFatUtil.h"
+    #include "module/SdFatUtil.h"
     int freeMemory() { return SdFatUtil::FreeRam(); }
   #else
     extern "C" {
@@ -723,7 +728,7 @@ bool enqueuecommand(const char* cmd) {
     #if ENABLED(DONDOLO)
       servo[DONDOLO_SERVO_INDEX].attach(0);
   		servo[DONDOLO_SERVO_INDEX].write(DONDOLO_SERVOPOS_E0);
-  		delay(DONDOLO_SERVO_DELAY);
+  		delay_ms(DONDOLO_SERVO_DELAY);
       servo[DONDOLO_SERVO_INDEX].detach();
   	#endif
 
@@ -849,23 +854,28 @@ void setup() {
   // loads data from EEPROM if available else uses defaults (and resets step acceleration rate)
   Config_RetrieveSettings();
 
-  lcd_init();
-
+  lcd_init();   // Initialize LCD
   tp_init();    // Initialize temperature loop
   plan_init();  // Initialize planner;
+
   #if ENABLED(USE_WATCHDOG)
     watchdog_init();
   #endif
+
   st_init();    // Initialize stepper, this enables interrupts!
+
   #if HAS(PHOTOGRAPH)
     setup_photpin();
   #endif
+
   #if ENABLED(LASERBEAM)
-    setup_laserbeampin();   // Initialize Laserbeam pin
+    setup_laserbeampin();
   #endif
+
   #if HAS(SERVOS)
     servo_init();
   #endif
+
   #if HAS(STEPPER_RESET)
     enableStepperDrivers();
   #endif
@@ -876,17 +886,19 @@ void setup() {
 
   #if HAS(Z_PROBE_SLED)
     setup_zprobesled();
-  #endif // Z_PROBE_SLED
+  #endif
 
   #if HAS(HOME)
     setup_homepin();
   #endif
+
   #if ENABLED(TEMP_STAT_LEDS)
     setup_statled();
   #endif
+
   #if ENABLED(FIRMWARE_TEST)
     FirmwareTest();
-  #endif // FIRMWARE_TEST
+  #endif
 }
 
 /**
@@ -3985,6 +3997,9 @@ inline void gcode_G28() {
      * G30: Do a single Z probe at the current XY
      */
     inline void gcode_G30() {
+
+      if (debugLevel & DEBUG_INFO) ECHO_LM(DB, "gcode_G30 >>>");
+
       #if HAS(SERVO_ENDSTOPS)
         raise_z_for_servo();
       #endif
@@ -4009,6 +4024,8 @@ inline void gcode_G28() {
       #endif
 
       stow_z_probe(); // Retract Z Servo endstop if available
+
+      if (debugLevel & DEBUG_INFO) ECHO_LM(DB, "<<< gcode_G30");
     }
   #endif // !Z_PROBE_SLED
 #endif // AUTO_BED_LEVELING_FEATURE
@@ -4019,6 +4036,7 @@ inline void gcode_G28() {
    * G29: Delta Z-Probe, probes the bed at more points.
    */
   inline void gcode_G29() {
+
     if (debugLevel & DEBUG_INFO) ECHO_LM(DB, "gcode_G29 >>>");
 
     if (code_seen('D')) {
@@ -4034,10 +4052,9 @@ inline void gcode_G28() {
     deploy_z_probe();
     calibrate_print_surface(z_probe_offset[Z_AXIS] + (code_seen(axis_codes[Z_AXIS]) ? code_value() : 0.0));
     retract_z_probe();
+    clean_up_after_endstop_move();
 
     if (debugLevel & DEBUG_INFO) ECHO_LM(DB, "<<< gcode_G29");
-
-    clean_up_after_endstop_move();
   }
 
   /* G30: Delta AutoCalibration
@@ -4047,6 +4064,8 @@ inline void gcode_G28() {
    *
    */
   inline void gcode_G30() {
+
+    if (debugLevel & DEBUG_INFO) ECHO_LM(DB, "gcode_G30 >>>");
 
     //Zero the bed level array
     reset_bed_level();
@@ -4248,6 +4267,8 @@ inline void gcode_G28() {
     lcd_reset_alert_level();
 
     clean_up_after_endstop_move();
+
+    if (debugLevel & DEBUG_INFO) ECHO_LM(DB, "<<< gcode_G30");
   }
 #endif // DELTA && Z_PROBE_ENDSTOP
 
@@ -4674,6 +4695,8 @@ inline void gcode_M42() {
    */
   inline void gcode_M48() {
 
+    if (debugLevel & DEBUG_INFO) ECHO_LM(DB, "gcode_M48 >>>");
+
     double sum = 0.0, mean = 0.0, sigma = 0.0, sample_set[50];
     uint8_t verbose_level = 1, n_samples = 10, n_legs = 0;
 
@@ -4815,7 +4838,7 @@ inline void gcode_M42() {
 
       if (deploy_probe_for_each_reading) {
         deploy_z_probe(); 
-        delay(1000);
+        delay_ms(1000);
       }
 
       setup_for_endstop_move();
@@ -4856,21 +4879,21 @@ inline void gcode_M42() {
 
       if (deploy_probe_for_each_reading) {
         stow_z_probe();
-        delay(1000);
+        delay_ms(1000);
       }
     }
 
     if (!deploy_probe_for_each_reading) {
       stow_z_probe();
-      delay(1000);
+      delay_ms(1000);
     }
 
     clean_up_after_endstop_move();
 
     if (verbose_level > 0) ECHO_EMV("Mean: ", mean, 6);
-
     ECHO_EMV("Standard Deviation: ", sigma, 6);
 
+    if (debugLevel & DEBUG_INFO) ECHO_LM(DB, "<<< gcode_M28");
   }
 
 #endif // AUTO_BED_LEVELING_FEATURE && Z_PROBE_REPEATABILITY_TEST
@@ -4937,7 +4960,7 @@ inline void gcode_M81() {
   disable_e();
   finishAndDisableSteppers();
   fanSpeed = 0;
-  delay(1000); // Wait 1 second before switching off
+  delay_ms(1000); // Wait 1 second before switching off
   #if HAS(SUICIDE)
     st_synchronize();
     suicide();
@@ -5918,7 +5941,7 @@ inline void gcode_M226() {
           #endif
             srv->write(servo_position);
           #if HAS(SERVO_ENDSTOPS)
-            delay(SERVO_DEACTIVATION_DELAY);
+            delay_ms(SERVO_DEACTIVATION_DELAY);
             srv->detach();
           #endif
         }
@@ -5926,7 +5949,7 @@ inline void gcode_M226() {
           Servo *srv = &servo[servo_index];
           srv->attach(0);
           srv->write(servo_position);
-          delay (DONDOLO_SERVO_DELAY);
+          delay_ms(DONDOLO_SERVO_DELAY);
           srv->detach();
         }
         else {
@@ -5944,7 +5967,7 @@ inline void gcode_M226() {
           #endif
           srv->write(servo_position);
           #if HAS(SERVO_ENDSTOPS)
-            delay(SERVO_DEACTIVATION_DELAY);
+            delay_ms(SERVO_DEACTIVATION_DELAY);
             srv->detach();
           #endif
         }
@@ -6498,7 +6521,7 @@ inline void gcode_M503() {
     st_synchronize();
     //disable extruder steppers so filament can be removed
     disable_e();
-    delay(100);
+    delay_ms(100);
     boolean beep = true;
     boolean sleep = false;
     uint8_t cnt = 0;
@@ -6792,7 +6815,6 @@ inline void gcode_M999() {
   Running = true;
   Printing = false;
   lcd_reset_alert_level();
-  //gcode_LastN = Stopped_gcode_LastN;
   FlushSerialRequestResend();
 }
 
@@ -6896,28 +6918,28 @@ inline void gcode_T(uint8_t tmp_extruder) {
                 WRITE_RELE(E0E2_CHOICE_PIN, LOW);
                 WRITE_RELE(E1E3_CHOICE_PIN, LOW);
                 active_driver = 0;
-                delay(500); // 500 microseconds delay for relay
+                delay_ms(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               case 1:
                 WRITE_RELE(E0E2_CHOICE_PIN, LOW);
                 WRITE_RELE(E1E3_CHOICE_PIN, LOW);
                 active_driver = 1;
-                delay(500); // 500 microseconds delay for relay
+                delay_ms(500); // 500 microseconds delay for relay
                 enable_e1();
                 break;
               case 2:
                 WRITE_RELE(E0E2_CHOICE_PIN, HIGH);
                 WRITE_RELE(E1E3_CHOICE_PIN, LOW);
                 active_driver = 0;
-                delay(500); // 500 microseconds delay for relay
+                delay_ms(500); // 500 microseconds delay for relay
                 enable_e2();
                 break;
               case 3:
                 WRITE_RELE(E0E2_CHOICE_PIN, LOW);
                 WRITE_RELE(E1E3_CHOICE_PIN, HIGH);
                 active_driver = 1;
-                delay(500); // 500 microseconds delay for relay
+                delay_ms(500); // 500 microseconds delay for relay
                 enable_e3();
                 break;
               }
@@ -6931,7 +6953,7 @@ inline void gcode_T(uint8_t tmp_extruder) {
                 WRITE_RELE(E0E2_CHOICE_PIN, LOW);
                 WRITE_RELE(E0E3_CHOICE_PIN, LOW);
                 active_driver = 0;
-                delay(500); // 500 microseconds delay for relay
+                delay_ms(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               case 1:
@@ -6939,7 +6961,7 @@ inline void gcode_T(uint8_t tmp_extruder) {
                 WRITE_RELE(E0E2_CHOICE_PIN, LOW);
                 WRITE_RELE(E0E3_CHOICE_PIN, LOW);
                 active_driver = 0;
-                delay(500); // 500 microseconds delay for relay
+                delay_ms(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               case 2:
@@ -6947,7 +6969,7 @@ inline void gcode_T(uint8_t tmp_extruder) {
                 WRITE_RELE(E0E2_CHOICE_PIN, HIGH);
                 WRITE_RELE(E0E3_CHOICE_PIN, LOW);
                 active_driver = 0;
-                delay(500); // 500 microseconds delay for relay
+                delay_ms(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               case 3:
@@ -6955,7 +6977,7 @@ inline void gcode_T(uint8_t tmp_extruder) {
                 WRITE_RELE(E0E2_CHOICE_PIN, HIGH);
                 WRITE_RELE(E0E3_CHOICE_PIN, HIGH);
                 active_driver = 0;
-                delay(500); // 500 microseconds delay for relay
+                delay_ms(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               }
@@ -6967,19 +6989,19 @@ inline void gcode_T(uint8_t tmp_extruder) {
               case 0:
                 WRITE_RELE(E0E2_CHOICE_PIN, LOW);
                 active_driver = 0;
-                delay(500); // 500 microseconds delay for relay
+                delay_ms(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               case 1:
                 WRITE_RELE(E0E2_CHOICE_PIN, LOW);
                 active_driver = 1;
-                delay(500); // 500 microseconds delay for relay
+                delay_ms(500); // 500 microseconds delay for relay
                 enable_e1();
                 break;
               case 2:
                 WRITE_RELE(E0E2_CHOICE_PIN, HIGH);
                 active_driver = 0;
-                delay(500); // 500 microseconds delay for relay
+                delay_ms(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               }
@@ -6992,21 +7014,21 @@ inline void gcode_T(uint8_t tmp_extruder) {
                 WRITE_RELE(E0E1_CHOICE_PIN, LOW);
                 WRITE_RELE(E0E2_CHOICE_PIN, LOW);
                 active_driver = 0;
-                delay(500); // 500 microseconds delay for relay
+                delay_ms(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               case 1:
                 WRITE_RELE(E0E1_CHOICE_PIN, HIGH);
                 WRITE_RELE(E0E2_CHOICE_PIN, LOW);
                 active_driver = 0;
-                delay(500); // 500 microseconds delay for relay
+                delay_ms(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               case 2:
                 WRITE_RELE(E0E1_CHOICE_PIN, HIGH);
                 WRITE_RELE(E0E2_CHOICE_PIN, HIGH);
                 active_driver = 0;
-                delay(500); // 500 microseconds delay for relay
+                delay_ms(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               }
@@ -7018,13 +7040,13 @@ inline void gcode_T(uint8_t tmp_extruder) {
               case 0:
                 WRITE_RELE(E0E1_CHOICE_PIN, LOW);
                 active_driver = 0;
-                delay(500); // 500 microseconds delay for relay
+                delay_ms(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               case 1:
                 WRITE_RELE(E0E1_CHOICE_PIN, HIGH);
                 active_driver = 0;
-                delay(500); // 500 microseconds delay for relay
+                delay_ms(500); // 500 microseconds delay for relay
                 enable_e0();
                 break;
               }
@@ -7055,7 +7077,7 @@ inline void gcode_T(uint8_t tmp_extruder) {
             else if (target_extruder == 1) {
               servo[DONDOLO_SERVO_INDEX].write(DONDOLO_SERVOPOS_E1);
             }
-            delay(DONDOLO_SERVO_DELAY);
+            delay_ms(DONDOLO_SERVO_DELAY);
             servo[DONDOLO_SERVO_INDEX].detach();
             active_extruder = target_extruder;
             active_driver = 0;
@@ -8376,7 +8398,6 @@ void Stop() {
   disable_all_heaters();
   if (IsRunning()) {
     Running = false;
-    Stopped_gcode_LastN = gcode_LastN; // Save last g_code for restart
     ECHO_LM(ER, SERIAL_ERR_STOPPED);
     ECHO_S(PAUSE);
     ECHO_E;

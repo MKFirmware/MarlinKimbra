@@ -1,8 +1,8 @@
-#include "base.h"
+#include "../base.h"
 
 #if ENABLED(SDSUPPORT)
 
-#include "Marlin_main.h"
+#include "../Marlin_main.h"
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
   #include "vector_3.h"
 #endif
@@ -11,7 +11,7 @@
 #include "stepper.h"
 #include "temperature.h"
 #include "ultralcd.h"
-#include "module/nextion_lcd.h"
+#include "nextion_lcd.h"
 #include "cardreader.h"
 
 CardReader::CardReader() {
