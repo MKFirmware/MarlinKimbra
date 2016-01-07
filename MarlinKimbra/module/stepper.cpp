@@ -22,8 +22,8 @@
 /* The timer calculations of this module informed by the 'RepRap cartesian firmware' by Zack Smith
    and Philipp Tiefenbacher. */
 
-#include "base.h"
-#include "Marlin_main.h"
+#include "../base.h"
+#include "../Marlin_main.h"
 
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
   #include "vector_3.h"
@@ -36,7 +36,7 @@
 #include "stepper.h"
 #include "temperature.h"
 #include "ultralcd.h"
-#include "module/nextion_lcd.h"
+#include "nextion_lcd.h"
 
 #if ENABLED(SDSUPPORT)
   #include "cardreader.h"
@@ -96,7 +96,11 @@ static volatile char endstop_hit_bits = 0; // use X_MIN, Y_MIN, Z_MIN and Z_PROB
     old_endstop_bits = 0; // use X_MIN, X_MAX... Z_MAX, Z_PROBE, Z2_MIN, Z2_MAX, E_MIN
 
 #if ENABLED(ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED)
-  bool abort_on_endstop_hit = false;
+  #if ENABLED(ABORT_ON_ENDSTOP_HIT_INIT)
+    bool abort_on_endstop_hit = ABORT_ON_ENDSTOP_HIT_INIT;
+  #else
+    bool abort_on_endstop_hit = false;
+  #endif
 #endif
 
 #if PIN_EXISTS(MOTOR_CURRENT_PWM_XY)
@@ -263,7 +267,16 @@ void endstops_hit_on_purpose() {
 
 void checkHitEndstops() {
   if (endstop_hit_bits) {
-    ECHO_SM(DB, SERIAL_ENDSTOPS_HIT);
+
+    #if ENABLED(ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED)
+      if (abort_on_endstop_hit)
+        ECHO_SM(ER, SERIAL_ENDSTOPS_HIT);
+      else
+        ECHO_SM(DB, SERIAL_ENDSTOPS_HIT);
+    #else
+      ECHO_SM(DB, SERIAL_ENDSTOPS_HIT);
+    #endif
+
     if (endstop_hit_bits & BIT(X_MIN)) {
       ECHO_MV(SERIAL_ENDSTOP_X, (float)endstops_trigsteps[X_AXIS] / axis_steps_per_unit[X_AXIS]);
       LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_XS);
@@ -290,16 +303,19 @@ void checkHitEndstops() {
     #endif
     ECHO_E;
 
-    endstops_hit_on_purpose();
-
-    #if ENABLED(ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED) && ENABLED(SDSUPPORT)
-      if (abort_on_endstop_hit) {
-        card.sdprinting = false;
-        card.closeFile();
-        quickStop();
-        disable_all_heaters(); // switch off all heaters.
+    #if ENABLED(ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED)
+      if (abort_on_endstop_hit && !(endstop_hit_bits & BIT(Z_PROBE)) && !(endstop_hit_bits & BIT(E_MIN))) {
+        #if ENABLED(SDSUPPORT)
+          card.sdprinting = false;
+          card.closeFile();
+        #endif
+        for (int i = 0; i < 3; i++) axis_known_position[i] = false; // not homed anymore
+        quickStop(); // kill the planner buffer
+        Stop();      // restart by M999
       }
     #endif
+
+    endstops_hit_on_purpose();
   }
 }
 

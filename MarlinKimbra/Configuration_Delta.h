@@ -107,9 +107,6 @@
  *****************************************************************************************/
 //#define Z_PROBE_ENDSTOP
 
-// Uncomment to enable autocalibration debug messages
-#define DEBUG_MESSAGES
-
 // Speed for autocalibration travel and probing moves
 #define AUTOCAL_TRAVELRATE 100  // mm/sec
 #define AUTOCAL_PROBERATE   50  // mm/sec

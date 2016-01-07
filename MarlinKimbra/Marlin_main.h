@@ -83,6 +83,8 @@ void clamp_to_software_endstops(float target[3]);
 extern millis_t previous_cmd_ms;
 void refresh_cmd_timeout();
 
+extern void delay_ms(millis_t ms);
+
 #if ENABLED(FAST_PWM_FAN)
   void setPwmFrequency(uint8_t pin, int val);
 #endif
@@ -236,7 +238,6 @@ extern void calculate_volumetric_multipliers();
   long code_value_long();
   bool code_seen(char );
 
-
   //
   // Utility functions used by M100 to get its work done.
   //
@@ -247,4 +248,5 @@ extern void calculate_volumetric_multipliers();
   int how_many_E5s_are_here( unsigned char *);
 
 #endif
+
 #endif //MARLIN_H

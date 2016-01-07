@@ -18,14 +18,18 @@
  * <http://www.gnu.org/licenses/>.
  */
 
+#include "../base.h"
+
 #ifndef SdFatUtil_h
 #define SdFatUtil_h
+
 /**
  * \file
  * \brief Useful utility functions.
  */
- #include "base.h"
+
 #include "MarlinSerial.h"
+
 /** Store and print a string in flash memory.*/
 #define PgmPrint(x) SerialPrint_P(PSTR(x))
 /** Store and print a string in flash memory followed by a CR/LF.*/

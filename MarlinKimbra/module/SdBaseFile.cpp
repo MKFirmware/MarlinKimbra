@@ -18,9 +18,11 @@
  * <http://www.gnu.org/licenses/>.
  */
 
-#include "base.h"
+#include "../base.h"
+#include "../Marlin_main.h"
+
 #if ENABLED(SDSUPPORT)
-#include "Marlin_main.h"
+
 #include <stdint.h>
 #include "SdBaseFile.h"
 //------------------------------------------------------------------------------

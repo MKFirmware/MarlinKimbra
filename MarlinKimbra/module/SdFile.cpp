@@ -17,9 +17,12 @@
  * along with the Arduino SdFat Library.  If not, see
  * <http://www.gnu.org/licenses/>.
  */
-#include "base.h"
+
+#include "../base.h"
+#include "../Marlin_main.h"
+
 #if ENABLED(SDSUPPORT)
-#include "Marlin_main.h"
+
 #include "SdFile.h"
 /**  Create a file object and open it in the current working directory.
  *

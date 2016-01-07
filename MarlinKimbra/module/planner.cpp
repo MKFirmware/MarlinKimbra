@@ -48,8 +48,8 @@
  *
  */
 
-#include "base.h"
-#include "Marlin_main.h"
+#include "../base.h"
+#include "../Marlin_main.h"
 
 #include "planner.h"
 #include "stepper_indirection.h"

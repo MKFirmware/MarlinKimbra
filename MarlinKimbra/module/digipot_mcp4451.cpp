@@ -1,4 +1,4 @@
-#include "base.h"
+#include "../base.h"
 
 #if ENABLED(DIGIPOT_I2C)
 

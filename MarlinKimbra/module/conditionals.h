@@ -221,7 +221,7 @@
   #endif
 #endif
 
-#include "pins.h"
+#include "../Pins.h"
 
 /**
  * DONDOLO

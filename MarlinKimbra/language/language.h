@@ -184,11 +184,11 @@
 #define SERIAL_T_MINTEMP                       "MINTEMP triggered"
 
 // Endstop
-#define SERIAL_ENDSTOP_X                       " X:"
-#define SERIAL_ENDSTOP_Y                       " Y:"
-#define SERIAL_ENDSTOP_Z                       " Z:"
-#define SERIAL_ENDSTOP_E                       " E:"
-#define SERIAL_ENDSTOP_PROBE                   " PROBE:"
+#define SERIAL_ENDSTOP_X                       " X="
+#define SERIAL_ENDSTOP_Y                       " Y="
+#define SERIAL_ENDSTOP_Z                       " Z="
+#define SERIAL_ENDSTOP_E                       " E="
+#define SERIAL_ENDSTOP_PROBE                   " PROBE="
 
 // Debug
 #define SERIAL_DEBUG_ECHO                      "DEBUG ECHO ENABLED"

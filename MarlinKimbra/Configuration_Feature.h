@@ -32,6 +32,7 @@
  * MOTION FEATURES:
  * - Software endstops
  * - Endstops only for homing
+ * - Abort on endstop hit feature
  * - R/C Servo
  * - Late Z axis
  * - Ahead slowdown
@@ -580,19 +581,38 @@
  **************************************************************************/
 #define SOFTWARE_MIN_ENDSTOPS true  // If true, axis won't move to coordinates less than HOME_POS.
 #define SOFTWARE_MAX_ENDSTOPS true  // If true, axis won't move to coordinates greater than the defined lengths below.
-/***********************************************************************/
+/**************************************************************************/
 
 
 /**************************************************************************
  *********************** Endstops only for homing *************************
+ **************************************************************************
+ *                                                                        *
+ * If defined the endstops will only be used for homing                   *
+ *                                                                        *
  **************************************************************************/
-#define ENDSTOPS_ONLY_FOR_HOMING // If defined the endstops will only be used for homing
-/***********************************************************************/
+#define ENDSTOPS_ONLY_FOR_HOMING
+/**************************************************************************/
 
 
-/***********************************************************************
- **************************** R/C Servo ********************************
- ***********************************************************************/
+/**************************************************************************
+ ******************** Abort on endstop hit feature ************************
+ **************************************************************************
+ *                                                                        *
+ * This option allows you to abort printing when any endstop is triggered.*
+ * This feature must be enabled with "M540 S1" or from the LCD menu or    *
+ * by define ABORT ON ENDSTOP HIT INIT true.                              *
+ * To have any effect, endstops must be enabled during SD printing.       *
+ * With ENDSTOPS ONLY FOR HOMING you must send "M120" to enable endstops. *
+ *                                                                        *
+ **************************************************************************/
+//#define ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
+//#define ABORT_ON_ENDSTOP_HIT_INIT true
+
+
+/**************************************************************************
+ ****************************** R/C Servo *********************************
+ **************************************************************************/
 //#define ENABLE_SERVOS
 // Number of servos
 // If you select a configuration below, this will receive a default value and does not need to be set manually
@@ -621,7 +641,7 @@
 // 300ms is a good value but you can try less delay.
 // If the servo can't reach the requested position, increase it.
 #define SERVO_DEACTIVATION_DELAY 300
-/***********************************************************************/
+/**************************************************************************/
 
 
 /***********************************************************************
@@ -1025,12 +1045,6 @@
 
 // This allows hosts to request long names for files and folders with M33
 //#define LONG_FILENAME_HOST_SUPPORT
-
-// This option allows you to abort SD printing when any endstop is triggered.
-// This feature must be enabled with "M540 S1" or from the LCD menu.
-// To have any effect, endstops must be enabled during SD printing.
-// With ENDSTOPS_ONLY_FOR_HOMING you must send "M120" to enable endstops.
-//#define ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
 
 // This enable the firmware to write some configuration that require frequent update, on the SD card
 //#define SD_SETTINGS                     // Uncomment to enable
