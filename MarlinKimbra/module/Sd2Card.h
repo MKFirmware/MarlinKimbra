@@ -32,6 +32,7 @@
 #include "SdFatConfig.h"
 #include "Sd2PinMap.h"
 #include "SdInfo.h"
+
 //------------------------------------------------------------------------------
 // SPI speed is F_CPU/2^(1 + index), 0 <= index <= 6
 /** Set SCK to max rate of F_CPU/2. See Sd2Card::setSckRate(). */

@@ -10,7 +10,7 @@
 #include <string.h>
 #include <inttypes.h>
 #ifdef __SAM3X8E__
-  #include "HAL.h"
+  #include "module/HAL.h"
 #else
   // Arduino < 1.0.0 does not define this, so we need to do it ourselves
   #ifndef analogInputToDigitalPin
