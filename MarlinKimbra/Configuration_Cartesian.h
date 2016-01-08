@@ -181,7 +181,6 @@
 #define Y_MIN_POS 0
 #define Z_MAX_POS 200
 #define Z_MIN_POS 0
-#define E_MIN_POS 0
 /*****************************************************************************************/
 
 
@@ -268,9 +267,9 @@
 #define ABL_PROBE_PT_1_X 15
 #define ABL_PROBE_PT_1_Y 180
 #define ABL_PROBE_PT_2_X 15
-#define ABL_PROBE_PT_2_Y 20
-#define ABL_PROBE_PT_3_X 170
-#define ABL_PROBE_PT_3_Y 20
+#define ABL_PROBE_PT_2_Y 15
+#define ABL_PROBE_PT_3_X 180
+#define ABL_PROBE_PT_3_Y 15
 // no AUTO_BED_LEVELING_GRID
 
 // Offsets to the probe relative to the extruder tip (Hotend - Probe)
@@ -289,8 +288,8 @@
 //#define Z_PROBE_END_SCRIPT "G1 Z10 F8000\nG1 X10 Y10\nG1 Z0.5"  // These commands will be executed in the end of G29 routine.
                                                                   // Useful to retract a deployable Z probe.
 
-//#define Z_PROBE_SLED                // turn on if you have a z-probe mounted on a sled like those designed by Charles Bell
-//#define SLED_DOCKING_OFFSET 5       // the extra distance the X axis must travel to pick up the sled. 0 should be fine but you can push it further if you'd like.
+//#define Z_PROBE_SLED          // turn on if you have a z-probe mounted on a sled like those designed by Charles Bell
+#define SLED_DOCKING_OFFSET 5   // the extra distance the X axis must travel to pick up the sled. 0 should be fine but you can push it further if you'd like.
 /*****************************************************************************************/
 
 
@@ -331,8 +330,8 @@
  ******************************** Manual home positions **********************************
  *****************************************************************************************/
 // The position of the homing switches
-//#define MANUAL_HOME_POSITIONS  // If defined, MANUAL_*_HOME_POS below will be used
-//#define BED_CENTER_AT_0_0  // If defined, the center of the bed is at (X=0, Y=0)
+//#define MANUAL_HOME_POSITIONS   // If defined, MANUAL_*_HOME_POS below will be used
+//#define BED_CENTER_AT_0_0       // If defined, the center of the bed is at (X=0, Y=0)
 
 //Manual homing switch locations:
 #define MANUAL_X_HOME_POS 0

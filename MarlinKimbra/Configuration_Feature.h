@@ -607,7 +607,7 @@
  *                                                                        *
  **************************************************************************/
 //#define ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
-//#define ABORT_ON_ENDSTOP_HIT_INIT true
+#define ABORT_ON_ENDSTOP_HIT_INIT true
 
 
 /**************************************************************************
@@ -927,9 +927,9 @@
  **********************************************************************************/
 //#define FILAMENT_RUNOUT_SENSOR
 
-#define FILRUNOUT_PIN_INVERTING true        // Should be uncommented and true or false should assigned
-#define ENDSTOPPULLUP_FIL_RUNOUT            // Uncomment to use internal pullup for filament runout pins if the sensor is defined.
-#define FILAMENT_RUNOUT_SCRIPT "M600"       // Script execute when filament run out
+#define FILRUNOUT_PIN_INVERTING true  // Should be uncommented and true or false should assigned
+#define ENDSTOPPULLUP_FIL_RUNOUT      // Uncomment to use internal pullup for filament runout pins if the sensor is defined.
+#define FILAMENT_RUNOUT_SCRIPT "M600" // Script execute when filament run out
 /**********************************************************************************/
 
 
