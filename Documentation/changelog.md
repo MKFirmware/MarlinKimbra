@@ -1,3 +1,6 @@
+### Version 4.2.4
+* Added Abort on endstop hit feature
+
 ### Version 4.2.3
 * Added Filament tot printed in stats
 * Overall rewrite
