@@ -977,7 +977,7 @@ void get_command() {
     static millis_t last_command_time = 0;
     millis_t ms = millis();
 
-    if (!MYSERIAL.available() && commands_in_queue == 0 && ms - last_command_time > NO_TIMEOUTS) {
+    if (!MYSERIAL.available() && commands_in_queue == 0 && ms - last_command_time > 1000UL) {
       ECHO_L(WT);
       last_command_time = ms;
     }
