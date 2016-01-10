@@ -11,6 +11,8 @@
  * License: http://opensource.org/licenses/BSD-3-Clause
  */
 
+#include "../base.h"
+
 #ifndef DOGM_LCD_IMPLEMENTATION_H
 #define DOGM_LCD_IMPLEMENTATION_H
 
@@ -37,7 +39,6 @@
 
 #include "ultralcd.h"
 #include "ultralcd_st7920_u8glib_rrd.h"
-#include "Configuration_Basic.h"
 
 #if DISABLED(MAPPER_C2C3) && DISABLED(MAPPER_NON) && ENABLED(USE_BIG_EDIT_FONT)
   #undef USE_BIG_EDIT_FONT
