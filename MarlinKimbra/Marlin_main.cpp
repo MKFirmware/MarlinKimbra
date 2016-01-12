@@ -188,6 +188,7 @@
  * M218 - Set hotend offset (in mm): T<extruder_number> X<offset_on_X> Y<offset_on_Y>
  * M220 - Set speed factor override percentage: S<factor in percent>
  * M221 - Set extrude factor override percentage: S<factor in percent>
+ * M222 - Set density extrusion percentage: S<factor in percent>
  * M226 - Wait until the specified pin reaches the state required: P<pin number> S<pin state>
  * M240 - Trigger a camera to take a photograph
  * M250 - Set LCD contrast C<contrast value> (value 0..63)
@@ -275,6 +276,7 @@ bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
 int feedrate_multiplier = 100; //100->1 200->2
 int saved_feedrate_multiplier;
 int extruder_multiplier[EXTRUDERS] = ARRAY_BY_EXTRUDERS(100);
+int density_multiplier[EXTRUDERS] = ARRAY_BY_EXTRUDERS(100);
 bool volumetric_enabled = false;
 float filament_size[EXTRUDERS] = ARRAY_BY_EXTRUDERS(DEFAULT_NOMINAL_FILAMENT_DIA);
 float volumetric_multiplier[EXTRUDERS] = ARRAY_BY_EXTRUDERS(1.0);
@@ -283,6 +285,7 @@ float min_pos[3] = { X_MIN_POS, Y_MIN_POS, Z_MIN_POS };
 float max_pos[3] = { X_MAX_POS, Y_MAX_POS, Z_MAX_POS };
 
 uint8_t active_extruder = 0;
+uint8_t previous_extruder = 0;
 uint8_t active_driver = 0;
 
 int fanSpeed = 0;
@@ -3011,6 +3014,7 @@ void gcode_get_destination() {
   #if ENABLED(IDLE_OOZING_PREVENT)
     if(code_seen(axis_codes[E_AXIS])) IDLE_OOZING_retract(false);
   #endif
+
   for (int i = 0; i < NUM_AXIS; i++) {
     if (code_seen(axis_codes[i])) {
       destination[i] = code_value() + (axis_relative_modes[i] || relative_mode ? current_position[i] : 0);
@@ -3019,9 +3023,14 @@ void gcode_get_destination() {
       destination[i] = current_position[i];
     }
   }
+
   if (code_seen('F')) {
     float next_feedrate = code_value();
     if (next_feedrate > 0.0) feedrate = next_feedrate;
+  }
+
+  if (code_seen('P')) {
+    destination[E_AXIS] = (code_value() * density_multiplier[previous_extruder] / 100) + current_position[E_AXIS];
   }
 
   printer_usage_filament += (destination[E_AXIS] - current_position[E_AXIS]);
@@ -5839,6 +5848,22 @@ inline void gcode_M221() {
 }
 
 /**
+ * M222: Set density extrusion percentage (M222 T0 S95)
+ */
+inline void gcode_M222() {
+  if (code_seen('S')) {
+    int sval = code_value();
+    if (code_seen('T')) {
+      if (setTargetedHotend(222)) return;
+      density_multiplier[target_extruder] = sval;
+    }
+    else {
+      density_multiplier[active_extruder] = sval;
+    }
+  }
+}
+
+/**
  * M226: Wait until the specified pin reaches the state required (M226 P<pin> S<state>)
  */
 inline void gcode_M226() {
@@ -7051,9 +7076,10 @@ inline void gcode_T(uint8_t tmp_extruder) {
                 break;
               }
             #endif // E0E1_CHOICE_PIN E0E2_CHOICE_PIN E1E3_CHOICE_PIN
+            previous_extruder = active_extruder;
             active_extruder = target_extruder;
-            ECHO_LMV(DB, SERIAL_ACTIVE_DRIVER, active_driver);
-            ECHO_LMV(DB, SERIAL_ACTIVE_EXTRUDER, active_extruder);
+            ECHO_LMV(DB, SERIAL_ACTIVE_DRIVER, (int)active_driver);
+            ECHO_LMV(DB, SERIAL_ACTIVE_EXTRUDER, (int)active_extruder);
           #elif ENABLED(NPR2)
 						long csteps;
             st_synchronize(); // Finish all movement
@@ -7065,6 +7091,7 @@ inline void gcode_T(uint8_t tmp_extruder) {
             }
             if (csteps < 0) colorstep(-csteps, false);
             if (csteps > 0) colorstep(csteps, true);
+            previous_extruder = active_extruder;
             old_color = active_extruder = target_extruder;
             active_driver = 0;
             ECHO_LMV(DB, SERIAL_ACTIVE_COLOR, (int)active_extruder);
@@ -7079,14 +7106,16 @@ inline void gcode_T(uint8_t tmp_extruder) {
             }
             delay_ms(DONDOLO_SERVO_DELAY);
             servo[DONDOLO_SERVO_INDEX].detach();
+            previous_extruder = active_extruder;
             active_extruder = target_extruder;
             active_driver = 0;
             set_stepper_direction(true);
-            ECHO_LMV(DB, SERIAL_ACTIVE_DRIVER, active_driver);
-            ECHO_LMV(DB, SERIAL_ACTIVE_EXTRUDER, active_extruder);
+            ECHO_LMV(DB, SERIAL_ACTIVE_DRIVER, (int)active_driver);
+            ECHO_LMV(DB, SERIAL_ACTIVE_EXTRUDER, (int)active_extruder);
           #else
+            previous_extruder = active_extruder;
             active_driver = active_extruder = target_extruder;
-            ECHO_LMV(DB, SERIAL_ACTIVE_EXTRUDER, active_extruder);
+            ECHO_LMV(DB, SERIAL_ACTIVE_EXTRUDER, (int)active_extruder);
           #endif // end MKR4 || NPR2 || DONDOLO
         #endif // end no DUAL_X_CARRIAGE
 
@@ -7415,8 +7444,10 @@ void process_next_command() {
 
       case 220: // M220 S<factor in percent>- set speed factor override percentage
         gcode_M220(); break;
-      case 221: // M221 S<factor in percent>- set extrude factor override percentage
+      case 221: // M221 T<extruder> S<factor in percent>- set extrude factor override percentage
         gcode_M221(); break;
+      case 222: // M222 T<extruder> S<factor in percent>- set Density extrude factor override percentage
+        gcode_M222(); break;
       case 226: // M226 P<pin number> S<pin state>- Wait until the specified pin reaches the state required
         gcode_M226(); break;
 
