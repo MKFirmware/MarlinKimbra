@@ -3,7 +3,7 @@
 ## G Codes
 
 *  G0  -> G1
-*  G1  - Coordinated Movement X Y Z E F(feedrate)
+*  G1  - Coordinated Movement X Y Z E F(feedrate) P(Purge)
 *  G2  - CW ARC
 *  G3  - CCW ARC
 *  G4  - Dwell S[seconds] or P[milliseconds], delay in Second or Millisecond
@@ -83,7 +83,8 @@
 *  M209 - S[1=true/0=false] enable automatic retract detect if the slicer did not support G10/11: every normal extrude-only move will be classified as retract depending on the direction.
 *  M218 - set hotend offset (in mm): T[extruder_number] X[offset_on_X] Y[offset_on_Y]
 *  M220 - S[factor in percent] - set speed factor override percentage
-*  M221 - S[factor in percent] - set extrude factor override percentage
+*  M221 - T<extruder> S<factor in percent> - set extrude factor override percentage
+*  M222 - T<extruder> S<factor in percent> - set density extrude factor percentage for purge
 *  M240 - Trigger a camera to take a photograph
 *  M280 - Position an RC Servo P[index] S[angle/microseconds], ommit S to report back current angle
 *  M300 - Play beep sound S[frequency Hz] P[duration ms]

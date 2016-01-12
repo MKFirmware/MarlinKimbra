@@ -1,5 +1,7 @@
 ### Version 4.2.4
 * Added Abort on endstop hit feature
+* Added Purge command G1 P<valor>
+* Added M222 T<extruder> S<factor in percent> set density extrude factor percentage for purge
 
 ### Version 4.2.3
 * Added Filament tot printed in stats
