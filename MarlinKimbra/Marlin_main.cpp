@@ -47,7 +47,7 @@
 #include "module/stepper.h"
 #include "module/temperature.h"
 #include "module/cardreader.h"
-#include "configuration_store.h"
+#include "Configuration_Store.h"
 
 #if ENABLED(USE_WATCHDOG)
   #include "module/watchdog.h"

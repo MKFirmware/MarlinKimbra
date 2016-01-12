@@ -1,6 +1,6 @@
 #include "../base.h"
 #include "../Marlin_main.h"
-#include "../configuration_store.h"
+#include "../Configuration_Store.h"
 
 #if ENABLED(NEXTION)
   #include "cardreader.h"
