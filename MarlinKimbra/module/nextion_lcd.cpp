@@ -98,6 +98,8 @@
   NexHotspot m11        = NexHotspot(2, 14, "m11");
   NexHotspot tup        = NexHotspot(2, 16, "tup");
   NexHotspot tdown      = NexHotspot(2, 17, "tdown");
+  NexHotspot ScrollUp   = NexHotspot(4, 27, "m0");
+  NexHotspot ScrollDown = NexHotspot(4, 28, "m1");
 
   // Timer
   NexTimer startimer    = NexTimer(0,  1, "tm0");
@@ -131,6 +133,8 @@
     &tup,
     &tdown,
     &sdlist,
+    &ScrollUp,
+    &ScrollDown,
     &sdrow0,
     &sdrow1,
     &sdrow2,
@@ -495,6 +499,8 @@
       #if ENABLED(SDSUPPORT)
         MSD.attachPop(setpagePopCallback, &MSD);
         sdlist.attachPop(sdlistPopCallback);
+        ScrollUp.attachPop(sdlistPopCallback);
+        ScrollDown.attachPop(sdlistPopCallback);
         Exit2.attachPop(ExitPopCallback);
         NPlay.attachPop(PlayPausePopCallback);
         NStop.attachPop(StopPopCallback);
@@ -661,17 +667,17 @@
 
   #if ENABLED(NEXTION_GFX)
     void gfx_clear(float x, float y, float z) {
-      if (PageInfo)
+      if (PageInfo && (Printing || IS_SD_PRINTING))
         gfx.clear(x, y, z);
     }
 
     void gfx_cursor_to(float x, float y, float z) {
-      if (PageInfo)
+      if (PageInfo && (Printing || IS_SD_PRINTING))
         gfx.cursor_to(x, y, z);
     }
 
     void gfx_line_to(float x, float y, float z){
-      if (PageInfo)
+      if (PageInfo && (Printing || IS_SD_PRINTING))
         gfx.line_to(VC_TOOL, x, y, z);
     }
   #endif
