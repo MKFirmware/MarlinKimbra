@@ -8,7 +8,7 @@
 #include "module/stepper.h"
 #include "module/temperature.h"
 #include "module/ultralcd.h"
-#include "configuration_store.h"
+#include "Configuration_Store.h"
 
 #if ENABLED(SDSUPPORT)
   #include "module/cardreader.h"
