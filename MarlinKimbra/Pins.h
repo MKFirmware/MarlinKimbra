@@ -2347,7 +2347,23 @@
     #undef SDSS
     #define SDSS            10
     #define SDCARDDETECT    14
-          
+
+  #elif ENABLED(REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER)
+    #define LCD_PINS_RS     46
+    #define LCD_PINS_ENABLE 47
+    #define LCD_PINS_D4     44
+
+    #define BEEPER_PIN      41
+
+    #define BTN_EN1         50
+    #define BTN_EN2         52
+    #define BTN_ENC         48
+
+    #if UI_VOLTAGE_LEVEL != 1
+      #undef UI_VOLTAGE_LEVEL
+      #define UI_VOLTAGE_LEVEL  1
+    #endif
+
   #elif ENABLED(SSD1306_OLED_I2C_CONTROLLER)
     #define BTN_EN1         50
     #define BTN_EN2         52
