@@ -1,6 +1,6 @@
 #include "../base.h"
 #include "../Marlin_main.h"
-#include "../configuration_store.h"
+#include "../Configuration_Store.h"
 
 #if ENABLED(ULTRA_LCD)
 
@@ -2452,7 +2452,7 @@ char* ftostr52(const float& x) {
   return conv;
 }
 
-#if DISABLED(DELTA) && DISABLED(Z_SAFE_HOMING) && Z_HOME_DIR < 0
+#if !MECH(DELTA) && DISABLED(Z_SAFE_HOMING) && Z_HOME_DIR < 0
 
   static void lcd_level_bed() {
 
