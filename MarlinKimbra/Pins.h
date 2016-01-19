@@ -5369,12 +5369,8 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
   #define MOSI_PIN          75
   #define MISO_PIN          74
   #define SCK_PIN           76
-  #define SS_PIN            77
 #else
   #define DUE_SOFTWARE_SPI
-  #define MOSI_PIN          51
-  #define MISO_PIN          50
-  #define SCK_PIN           52
 #endif
 /****************************************************************************************/
 

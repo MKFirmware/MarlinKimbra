@@ -26,7 +26,9 @@
   #endif // BLUETOOTH
 #else
   #ifdef __SAM3X8E__
-    #if SERIAL_PORT == 0
+    #if SERIAL_PORT == -1
+      #define MYSERIAL SerialUSB
+    #elif SERIAL_PORT == 0
       #define MYSERIAL Serial
     #elif SERIAL_PORT == 1
       #define MYSERIAL Serial1
