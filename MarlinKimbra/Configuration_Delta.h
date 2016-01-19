@@ -127,7 +127,7 @@
 // How much the nozzle will be raised when travelling from between next probing points
 #define Z_RAISE_BETWEEN_PROBINGS 5
 
-// Works best with ACCURATE_BED_LEVELING_POINTS 5 or higher.
+// Define the grid for bed level AUTO BED LEVELING GRID POINTS X AUTO BED LEVELING GRID POINTS.
 #define AUTO_BED_LEVELING_GRID_POINTS 9
 
 /*****************************************************************************************/
@@ -327,7 +327,7 @@
 //  Maximum start speed for accelerated moves.    X,    Y,    Z,   E0...(per extruder)
 #define DEFAULT_MAX_ACCELERATION              {5000, 5000, 5000, 1000, 1000, 1000, 1000}
 //  Maximum acceleration in mm/s^2 for retracts   E0... (per extruder)
-#define DEFAULT_RETRACT_ACCELERATION  {10000, 10000, 10000, 10000}
+#define DEFAULT_RETRACT_ACCELERATION          {10000, 10000, 10000, 10000}
 //  X, Y, Z and E* maximum acceleration in mm/s^2 for printing moves
 #define DEFAULT_ACCELERATION          3000
 //  X, Y, Z acceleration in mm/s^2 for travel (non printing) moves

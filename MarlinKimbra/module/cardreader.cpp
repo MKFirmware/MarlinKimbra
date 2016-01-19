@@ -294,11 +294,13 @@ void CardReader::openFile(char* name, bool read, bool replace_current/*=true*/, 
       ECHO_EMV("\" pos", sdpos);
       filespos[file_subcall_ctr] = sdpos;
       file_subcall_ctr++;
-    } else {
+    }
+    else {
      ECHO_LMV(DB, "Now doing file: ", name);
     }
     file.close();
-  } else { // opening fresh file
+  }
+  else { // opening fresh file
     file_subcall_ctr = 0; // resetting procedure depth in case user cancels print while in procedure
     ECHO_LMV(DB, "Now fresh file: ", name);
   }
@@ -320,12 +322,14 @@ void CardReader::openFile(char* name, bool read, bool replace_current/*=true*/, 
           ECHO_SMV(ER, SERIAL_SD_OPEN_FILE_FAIL, subdirname);
           ECHO_EM(".");
           return;
-        } else {
+        }
+        else {
           //ECHO_EM("dive ok");
         }
         curDir = &myDir;
         dirname_start = dirname_end + 1;
-      } else { // the remainder after all /fsa/fdsa/ is the filename
+      }
+      else { // the remainder after all /fsa/fdsa/ is the filename
         fname = dirname_start;
         //ECHO_EM("remainder");
         //ECHO_EV(fname);

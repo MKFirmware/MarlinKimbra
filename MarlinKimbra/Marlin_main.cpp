@@ -188,7 +188,7 @@
  * M218 - Set hotend offset (in mm): T<extruder_number> X<offset_on_X> Y<offset_on_Y>
  * M220 - Set speed factor override percentage: S<factor in percent>
  * M221 - Set extrude factor override percentage: S<factor in percent>
- * M222 - Set density extrusion percentage: S<factor in percent>
+ * M222 - Set density extrusion percentage for purge: S<factor in percent>
  * M226 - Wait until the specified pin reaches the state required: P<pin number> S<pin state>
  * M240 - Trigger a camera to take a photograph
  * M250 - Set LCD contrast C<contrast value> (value 0..63)
@@ -2514,7 +2514,7 @@ static void clean_up_after_endstop_move() {
         double xProbe = left_probe_bed_position + xGridSpacing * xCount;
 
         // Avoid probing the corners (outside the round or hexagon print surface) on a delta printer.
-        float distance_from_center = sqrt(xProbe*xProbe + yProbe*yProbe);
+        float distance_from_center = sqrt(xProbe * xProbe + yProbe * yProbe);
         if (distance_from_center > DELTA_PROBABLE_RADIUS) continue;
 
         bed_level[xCount][yCount] = probe_bed(xProbe, yProbe);
@@ -7442,11 +7442,11 @@ void process_next_command() {
           gcode_M218(); break;
       #endif
 
-      case 220: // M220 S<factor in percent>- set speed factor override percentage
+      case 220: // M220 S<factor in percent> - set speed factor override percentage
         gcode_M220(); break;
-      case 221: // M221 T<extruder> S<factor in percent>- set extrude factor override percentage
+      case 221: // M221 T<extruder> S<factor in percent> - set extrude factor override percentage
         gcode_M221(); break;
-      case 222: // M222 T<extruder> S<factor in percent>- set Density extrude factor override percentage
+      case 222: // M222 T<extruder> S<factor in percent> - set density extrude factor percentage for purge
         gcode_M222(); break;
       case 226: // M226 P<pin number> S<pin state>- Wait until the specified pin reaches the state required
         gcode_M226(); break;

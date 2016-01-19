@@ -9,7 +9,7 @@
 enum LsAction { LS_SerialPrint, LS_Count, LS_GetFilename };
 
 class CardReader {
- public:
+public:
   CardReader();
 
   void initsd();
@@ -30,9 +30,9 @@ class CardReader {
   void getStatus();
   void printingHasFinished();
 
-#if ENABLED(LONG_FILENAME_HOST_SUPPORT)
-  void printLongPath(char* path);
-#endif
+  #if ENABLED(LONG_FILENAME_HOST_SUPPORT)
+    void printLongPath(char* path);
+  #endif
 
   void getfilename(uint16_t nr, const char* const match = NULL);
   uint16_t getnrfilenames();
@@ -53,18 +53,18 @@ class CardReader {
   FORCE_INLINE uint8_t percentDone() { return (isFileOpen() && filesize) ? sdpos / ((filesize + 99) / 100) : 0; }
   FORCE_INLINE char* getWorkDirName() { workDir.getFilename(filename); return filename; }
 
- public:
+public:
   bool saving, logging, sdprinting, cardOK, filenameIsDir;
   char filename[FILENAME_LENGTH], longFilename[LONG_FILENAME_LENGTH];
   int autostart_index;
- private:
+private:
   SdFile root, *curDir, workDir, lastDir, workDirParents[MAX_DIR_DEPTH];
   uint16_t workDirDepth;
   Sd2Card card;
   SdVolume volume;
   SdFile file;
-#define SD_PROCEDURE_DEPTH 1
-#define MAXPATHNAMELENGTH (FILENAME_LENGTH*MAX_DIR_DEPTH + MAX_DIR_DEPTH + 1)
+  #define SD_PROCEDURE_DEPTH 1
+  #define MAXPATHNAMELENGTH (FILENAME_LENGTH * MAX_DIR_DEPTH + MAX_DIR_DEPTH + 1)
   uint8_t file_subcall_ctr;
   uint32_t filespos[SD_PROCEDURE_DEPTH];
   char filenames[SD_PROCEDURE_DEPTH][MAXPATHNAMELENGTH];
