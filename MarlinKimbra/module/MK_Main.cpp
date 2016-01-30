@@ -1,5 +1,5 @@
 /**
- * MarlinKimbra Firmware
+ * MK Firmware
  *
  * Based on Sprinter and grbl.
  * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm

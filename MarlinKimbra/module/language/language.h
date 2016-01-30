@@ -71,7 +71,7 @@
 #elif MECH(SCARA)
   #define SERIAL_M115_REPORT                    "FIRMWARE_NAME:MK_" SHORT_BUILD_VERSION " FIRMWARE_URL:" FIRMWARE_URL " PROTOCOL_VERSION:" PROTOCOL_VERSION " MACHINE_TYPE:Scara EXTRUDER_COUNT:" STRINGIFY(EXTRUDERS) " UUID:" MACHINE_UUID "\n"
 #endif  
-#define MSG_MARLIN                              "MarlinKimbra"
+
 #define SERIAL_ENQUEUEING                       "enqueueing \""
 #define SERIAL_POWERUP                          "PowerUp"
 #define SERIAL_EXTERNAL_RESET                   "External Reset"

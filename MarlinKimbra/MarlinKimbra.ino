@@ -1,8 +1,8 @@
 /**
- * MarlinKimbra Firmware
+ * MK Firmware
  *
  * Based on Marlin, Sprinter and grbl
- * Copyright (C) 2013 MagoKimbra
+ * Copyright (C) 2013 MK
  * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
  *
  * This program is free software: you can redistribute it and/or modify
