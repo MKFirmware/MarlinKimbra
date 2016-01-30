@@ -51,10 +51,7 @@
 #include "module/temperature/thermistortables.h"
 #include "module/lcd/ultralcd.h"
 #include "module/nextion/nextion_lcd.h"
-
-#if ENABLED(SDSUPPORT)
-  #include "module/sd/cardreader.h"
-#endif
+#include "module/sd/cardreader.h"
 
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
   #include "module/motion/vector_3.h"
