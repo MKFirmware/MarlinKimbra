@@ -1,3 +1,10 @@
+### Version 4.2.5
+* Big Update
+* Add HAL for 8 bit version
+* Rewrite Communication and use HAL for it
+* Rewrite Servo
+* and more
+
 ### Version 4.2.4
 * Added Abort on endstop hit feature
 * Added Purge command G1 P<valor>
