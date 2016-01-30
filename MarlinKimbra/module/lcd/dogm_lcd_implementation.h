@@ -11,7 +11,7 @@
  * License: http://opensource.org/licenses/BSD-3-Clause
  */
 
-#include "../base.h"
+#include "../../base.h"
 
 #ifndef DOGM_LCD_IMPLEMENTATION_H
 #define DOGM_LCD_IMPLEMENTATION_H
