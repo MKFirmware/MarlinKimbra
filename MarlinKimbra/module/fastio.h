@@ -6,7 +6,6 @@
 #ifndef _FASTIO_ARDUINO_H
 #define _FASTIO_ARDUINO_H
 
-#include <avr/io.h>
 
 /*
   utility functions

@@ -24,12 +24,14 @@
 // Serial port 0 is still used by the Arduino bootloader regardless of this setting.
 #define SERIAL_PORT 0
 
-// Enable the Bluetooth serial interface on AT90USB devices
-//#define BLUETOOTH
-
 // This determines the communication speed of the printer
 // 2400,9600,19200,38400,57600,115200,250000
 #define BAUDRATE 115200
+
+// Enable the Bluetooth serial interface
+//#define BLUETOOTH
+#define BLUETOOTH_SERIAL 1
+#define BLUETOOTH_BAUD 115200
 
 // User-specified version info of this build to display in [Pronterface, etc] terminal window during
 // startup. Implementation of an idea by Prof Braino to inform user that any changes made to this

@@ -4,26 +4,16 @@
 #include "Arduino.h"
 #include "pins_arduino.h"
 
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
-#ifdef __SAM3X8E__
-  #include "module/HAL.h"
-#else
-  // Arduino < 1.0.0 does not define this, so we need to do it ourselves
-  #ifndef analogInputToDigitalPin
-    #define analogInputToDigitalPin(p) ((p) + 0xA0)
-  #endif
-  #include <util/delay.h>
-  #include <avr/eeprom.h>
-  #include "module/fastio.h"
-#endif
+
+#include "module/HAL.h"
+
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 
-#include "module/macros.h"
 #include "Boards.h"
 #include "module/mechanics.h"
 
@@ -47,13 +37,58 @@
 
   #include "Configuration_Feature.h"
 #endif
+#include "Configuration_Store.h"
 
-#include "language/language.h"
+#include "module/language/language.h"
 #include "module/conditionals.h"
 #include "module/sanitycheck.h"
-#include "module/thermistortables.h"
-#include "module/comunication.h"
+#include "module/communication/communication.h"
+#include "module/MK_Main.h"
+#include "module/motion/stepper.h"
+#include "module/motion/stepper_indirection.h"
+#include "module/motion/planner.h"
+#include "module/temperature/temperature.h"
+#include "module/temperature/thermistortables.h"
+#include "module/lcd/ultralcd.h"
+#include "module/nextion/nextion_lcd.h"
 
-typedef unsigned long millis_t;
+#if ENABLED(SDSUPPORT)
+  #include "module/sd/cardreader.h"
+#endif
+
+#if ENABLED(AUTO_BED_LEVELING_FEATURE)
+  #include "module/motion/vector_3.h"
+  #if ENABLED(AUTO_BED_LEVELING_GRID)
+    #include "module/motion/qr_solve.h"
+  #endif
+#endif // AUTO_BED_LEVELING_FEATURE
+
+#if MB(ALLIGATOR)
+  #include "module/alligator/external_dac.h"
+#endif
+
+#if ENABLED(USE_WATCHDOG)
+  #include "module/watchdog/watchdog.h"
+#endif
+
+#if HAS(BUZZER)
+  #include "module/lcd/buzzer.h"
+#endif
+
+#if ENABLED(BLINKM)
+  #include "module/blinkm/blinkm.h"
+#endif
+
+#if HAS(SERVOS)
+  #include "module/servo/servo.h"
+#endif
+
+#if HAS(DIGIPOTSS)
+  #include <SPI.h>
+#endif
+
+#if ENABLED(FIRMWARE_TEST)
+  #include "module/fwtest/firmware_test.h"
+#endif
 
 #endif

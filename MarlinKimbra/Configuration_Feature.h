@@ -276,7 +276,6 @@
 //but only if the current temperature is far enough below the target for a reliable test.
 #define WATCH_TEMP_PERIOD  16               // Seconds
 #define WATCH_TEMP_INCREASE 4               // Degrees Celsius
-  
 
 //#define THERMAL_PROTECTION_BED 
 
@@ -1492,7 +1491,7 @@
  ************************************** Buffer stuff ************************************
  ****************************************************************************************/
 // The number of linear motions that can be in the plan at any give time.
-// THE BLOCK_BUFFER_SIZE NEEDS TO BE A POWER OF 2, i.g. 8,16,32 because shifts and ors are used to do the ring-buffering.
+// THE BLOCK BUFFER SIZE NEEDS TO BE A POWER OF 2, i.g. 8,16,32 because shifts and ors are used to do the ring-buffering.
 #define BLOCK_BUFFER_SIZE 16 // maximize block buffer
 
 //The ASCII buffer for receiving from the serial:
