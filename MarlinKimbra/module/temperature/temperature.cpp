@@ -468,8 +468,7 @@ void checkExtruderAutoFans() {
 inline void _temp_error(int h, const char* serial_msg, const char* lcd_msg) {
   static bool killed = false;
   if (IsRunning()) {
-    ECHO_S(ER);
-    Com::printF(serial_msg);
+    ECHO_ST(ER, serial_msg);
     ECHO_M(SERIAL_STOPPED_HEATER);
     if (h >= 0) ECHO_EV((int)h); else ECHO_EM(SERIAL_HEATER_BED);
     #if ENABLED(ULTRA_LCD)

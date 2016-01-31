@@ -1,55 +1,43 @@
 #ifndef COMMUNICATION_H
   #define COMMUNICATION_H
 
-  class Com {
-    public:
-      #define START       "start"               // start for host
-      #define OK          "ok "                 // ok answer for host
-      #define ER          "Error: "             // error for host
-      #define WT          "Wait"                // wait for host
-      #define DB          "Echo: "              // message for user
-      #define CFG         "Config: "            // config for host
-      #define INFO        "Info: "              // info for host
-      #define RESEND      "Resend: "            // resend for host
-      #define WARNING     "Warning: "           // warning for host
-      #define TNAN        "NAN"                 // NAN for host
-      #define TINF        "INF"                 // INF for host
-      #define PAUSE       "//action:pause"      // command for host that support action
-      #define RESUME      "//action:resume"     // command for host that support action
-      #define DISCONNECT  "//action:disconnect" // command for host that support action
+  #define START       "start"               // start for host
+  #define OK          "ok "                 // ok answer for host
+  #define ER          "Error: "             // error for host
+  #define WT          "Wait"                // wait for host
+  #define DB          "Echo: "              // message for user
+  #define CFG         "Config: "            // config for host
+  #define INFO        "Info: "              // info for host
+  #define RESEND      "Resend: "            // resend for host
+  #define WARNING     "Warning: "           // warning for host
+  #define TNAN        "NAN"                 // NAN for host
+  #define TINF        "INF"                 // INF for host
+  #define PAUSE       "//action:pause"      // command for host that support action
+  #define RESUME      "//action:resume"     // command for host that support action
+  #define DISCONNECT  "//action:disconnect" // command for host that support action
 
-      static void printFloat(float number, uint8_t digits);
-      static void printVal(int value);
-      static void printVal(int8_t value);
-      static void printVal(uint8_t value);
-      static void printVal(int32_t value);
-      static void printVal(uint32_t value);
-      static void printVal(float value, uint8_t digits = 2);
-      static void printVal(double value, uint8_t digits = 2);
-      static void printArray(float *arr, uint8_t n = 4, uint8_t digits = 2);
-      static void printArray(long *arr, uint8_t n = 4);
-      static void printNumber(uint32_t n);
-      static void print(long value);
-      static void print(uint16_t value);
-      static void print(uint32_t value);
-      static void print(int value);
-      static void print(float number);
-      static void print(const char *text);
-      static void print(char c);
-      static void println() { HAL::serialWriteByte('\r'); HAL::serialWriteByte('\n'); }
-      static void printF(FSTRINGPARAM(ptr));
-    protected:
-    private:
-  };
+  #define SERIAL_INIT(baud)           MKSERIAL.begin(baud), delay(1)
+  #define SERIAL_WRITE(x)             MKSERIAL.write(x)
+  #define SERIAL_PRINT(msg, args...)  MKSERIAL.print(msg, ##args)
+  #define SERIAL_ENDL                 MKSERIAL.println()
 
-  #define SERIAL_WRITE(x)                   HAL::serialWriteByte(x)
+  FORCE_INLINE void PS_PGM(const char *str) {
+    char c;
+    while (c = pgm_read_byte(str)) {
+      SERIAL_WRITE(c);
+      str++;
+    }
+  }
 
-  #define ECHO_S(srt)                       Com::printF(PSTR(srt))
-  #define ECHO_M(msg)                       Com::printF(PSTR(msg))
-  #define ECHO_T(txt)                       Com::print(txt)
-  #define ECHO_V(val, args...)              Com::printVal(val, ##args)
-  #define ECHO_C(x)                         Com::print(x)
-  #define ECHO_E                            Com::println()
+  #define ECHO_ENDL                         SERIAL_ENDL
+  #define ECHO_PGM(message)                 PS_PGM(PSTR(message))
+
+  #define ECHO_S(srt)                       ECHO_PGM(srt)
+  #define ECHO_M(msg)                       ECHO_PGM(msg)
+  #define ECHO_T                            SERIAL_PRINT
+  #define ECHO_V                            SERIAL_PRINT
+  #define ECHO_C                            SERIAL_WRITE
+  #define ECHO_E                            SERIAL_ENDL
 
   #define ECHO_MV(msg, val, args...)        ECHO_M(msg),ECHO_V(val, ##args)
   #define ECHO_VM(val, msg, args...)        ECHO_V(val, ##args),ECHO_M(msg)

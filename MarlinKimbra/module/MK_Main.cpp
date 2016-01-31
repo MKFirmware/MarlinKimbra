@@ -1,7 +1,8 @@
 /**
  * MK Firmware
  *
- * Based on Sprinter and grbl.
+ * Based on Marlin, Sprinter and grbl
+ * Copyright (C) 2013 MagoKimbra
  * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
  *
  * This program is free software: you can redistribute it and/or modify
@@ -587,7 +588,7 @@ void setup() {
     disableStepperDrivers();
   #endif
 
-  HAL::serialSetBaudrate(BAUDRATE);
+  SERIAL_INIT(BAUDRATE);
   ECHO_EM(START);
   HAL::showStartReason();
   ECHO_EM(BUILD_VERSION);
@@ -732,7 +733,7 @@ void get_command() {
     static millis_t last_command_time = 0;
     millis_t ms = millis();
 
-    if (!HAL::serialByteAvailable() && commands_in_queue == 0 && ms - last_command_time > 1000UL) {
+    if (!MKSERIAL.available() && commands_in_queue == 0 && ms - last_command_time > 1000UL) {
       ECHO_L(WT);
       last_command_time = ms;
     }
@@ -741,13 +742,13 @@ void get_command() {
   //
   // Loop while serial characters are incoming and the queue is not full
   //
-  while (HAL::serialByteAvailable() > 0 && commands_in_queue < BUFSIZE) {
+  while (MKSERIAL.available() > 0 && commands_in_queue < BUFSIZE) {
 
     #if ENABLED(NO_TIMEOUTS)
       last_command_time = ms;
     #endif
 
-    serial_char = HAL::serialReadByte();
+    serial_char = MKSERIAL.read();
 
     //
     // If the character ends the line, or the line is full...
@@ -826,9 +827,9 @@ void get_command() {
 
       serial_count = 0; //clear buffer
     } else if (serial_char == '\\') { // Handle escapes
-      if (HAL::serialByteAvailable() > 0 && commands_in_queue < BUFSIZE) {
+      if (MKSERIAL.available() > 0 && commands_in_queue < BUFSIZE) {
         // if we have one more character, copy it over
-        serial_char = HAL::serialReadByte();
+        serial_char = MKSERIAL.read();
         command_queue[cmd_queue_index_w][serial_count++] = serial_char;
       }
       // otherwise do nothing
@@ -7384,7 +7385,7 @@ ExitUnknownCommand:
 
 void FlushSerialRequestResend() {
   //char command_queue[cmd_queue_index_r][100]="Resend:";
-  HAL::serialFlush();
+  MKSERIAL.flush();
   ECHO_LV(RESEND, (long)(gcode_LastN + 1));
   ECHO_S(OK);
 }

@@ -8,9 +8,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <inttypes.h>
-
-#include "module/HAL.h"
-
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 
@@ -37,12 +34,15 @@
 
   #include "Configuration_Feature.h"
 #endif
+
+#include "module/HAL/HAL.h"
+#include "module/communication/communication.h"
+
 #include "Configuration_Store.h"
 
 #include "module/language/language.h"
 #include "module/conditionals.h"
 #include "module/sanitycheck.h"
-#include "module/communication/communication.h"
 #include "module/MK_Main.h"
 #include "module/motion/stepper.h"
 #include "module/motion/stepper_indirection.h"
@@ -86,6 +86,10 @@
 
 #if ENABLED(FIRMWARE_TEST)
   #include "module/fwtest/firmware_test.h"
+#endif
+
+#if ENABLED(RFID_MODULE)
+  #include "module/mfrc522/MFRC522_serial.h"
 #endif
 
 #endif
