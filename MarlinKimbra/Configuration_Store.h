@@ -24,7 +24,9 @@ FORCE_INLINE void Config_RetrieveSettings() { Config_ResetDefault(); Config_Prin
 
 #if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
 #define CFG_SD_MAX_KEY_LEN    3+1         // icrease this if you add key name longer than the actual value.
-#define CFG_SD_MAX_VALUE_LEN  30+1        // this should be enought for int, long and float if you need to retrive strings increase this carefully
+#define CFG_SD_MAX_VALUE_LEN  10+1        // this should be enought for int, long and float if you need to retrive strings increase this carefully
+//(11 = strlen("4294967295")+1) (4294967295 = (2^32)-1) (32 = the num of bits of the bigger basic data scructor used)
+//If yuou need to save string increase this to strlen("YOUR LONGER STRING")+1
 void ConfigSD_StoreSettings();
 void ConfigSD_RetrieveSettings(bool addValue = false);
 int ConfigSD_KeyIndex(char *key);
