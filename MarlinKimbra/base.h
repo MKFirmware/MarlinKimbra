@@ -88,8 +88,4 @@
   #include "module/fwtest/firmware_test.h"
 #endif
 
-#if ENABLED(RFID_MODULE)
-  #include "module/mfrc522/MFRC522_serial.h"
-#endif
-
 #endif
