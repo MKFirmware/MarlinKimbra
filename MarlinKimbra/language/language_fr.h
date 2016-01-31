@@ -33,6 +33,7 @@
 #define MSG_SET_ORIGIN                      "Regler origine"
 #define MSG_ONFOR                           "On x:"
 #define MSG_PWRCONSUMED                     "P.er:"
+#define MSG_FILCONSUMED                     "F:"
 #define MSG_PREHEAT                         "Prech."
 #define MSG_PREHEAT_PLA                     MSG_PREHEAT " PLA"
 #define MSG_PREHEAT_PLA_ALL                 MSG_PREHEAT_PLA " Tout"

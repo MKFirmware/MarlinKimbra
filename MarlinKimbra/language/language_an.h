@@ -33,6 +33,7 @@
 #define MSG_SET_ORIGIN                      "Establir zero"
 #define MSG_ONFOR                           "On x:"
 #define MSG_PWRCONSUMED                     "P.er:"
+#define MSG_FILCONSUMED                     "F:"
 #define MSG_PREHEAT                         "Prec."
 #define MSG_CONGIG                          "conf."
 #define MSG_PREHEAT_PLA                     MSG_PREHEAT " PLA"

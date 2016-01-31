@@ -1,3 +1,6 @@
+### Version 4.2.5
+* 4.2.2 backward compatibility added
+
 ### Version 4.2.4
 * Added Abort on endstop hit feature
 * Added Purge command G1 P<valor>

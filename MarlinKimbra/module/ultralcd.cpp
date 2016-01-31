@@ -1148,6 +1148,11 @@ static void lcd_stats_menu() {
     sprintf_P(row, PSTR(MSG_PWRCONSUMED " %iWh"), power_consumption_hour);
     LCD_Printpos(0, 1); lcd_print(row);
   #endif
+  char lung[30];
+	unsigned int kmeter = (long)printer_usage_filament / 1000 / 1000,meter = ((long)printer_usage_filament / 1000) % 1000,
+			centimeter = ((long)printer_usage_filament / 10) % 100, millimeter = ((long)printer_usage_filament) % 10;
+	sprintf_P(lung, PSTR(MSG_FILCONSUMED "%i Km %i m %i cm %i mm"), kmeter, meter, centimeter, millimeter);
+	LCD_Printpos(0, 2); lcd_print(lung);
   if (LCD_CLICKED) lcd_goto_menu(lcd_main_menu);
 }
 
