@@ -33,6 +33,7 @@
 #define MSG_SET_ORIGIN                      "Setze Null hier"
 #define MSG_ONFOR                           "On x:"
 #define MSG_PWRCONSUMED                     "P.er:"
+#define MSG_FILCONSUMED                     "F:"
 #define MSG_PREHEAT                         "Vorwärmen"
 #define MSG_PREHEAT_PLA                     MSG_PREHEAT " PLA"
 #define MSG_PREHEAT_PLA_ALL                 MSG_PREHEAT_PLA " All"

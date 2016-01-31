@@ -38,6 +38,7 @@
 #define MSG_SET_ORIGIN                      "キヅユンセツト"                 // "Set origin"
 #define MSG_ONFOR                           "On x:"
 #define MSG_PWRCONSUMED                     "P.er:"
+#define MSG_FILCONSUMED                     "F:"
 #define MSG_PREHEAT                         "Preheat"
 #define MSG_PREHEAT_PLA                     "PLA ヨネシ"                    // "Preheat PLA"
 #define MSG_PREHEAT_PLA_ALL                 MSG_PREHEAT_PLA " スベテ"      // " All"

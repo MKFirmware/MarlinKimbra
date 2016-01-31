@@ -33,6 +33,7 @@
 #define MSG_SET_ORIGIN                      "Imposta Origine"
 #define MSG_ONFOR                           "On x:"
 #define MSG_PWRCONSUMED                     "P.za:"
+#define MSG_FILCONSUMED                     "F:"
 #define MSG_PREHEAT                         "Preriscalda"
 #define MSG_PREHEAT_PLA                     "Preriscalda PLA"
 #define MSG_PREHEAT_PLA_ALL                 "Prer. PLA Tutto"

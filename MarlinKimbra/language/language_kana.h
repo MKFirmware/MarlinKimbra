@@ -35,6 +35,7 @@
 #define MSG_SET_ORIGIN                      "\xb7\xbc\xde\xad\xdd\xbe\xaf\xc4"                             // "Set origin"
 #define MSG_ONFOR                           "On x:"
 #define MSG_PWRCONSUMED                     "P.er:"
+#define MSG_FILCONSUMED                     "F:"
 #define MSG_PREHEAT                         "Preheat"
 #define MSG_PREHEAT_PLA                     "PLA \xd6\xc8\xc2"
 #define MSG_PREHEAT_PLA_ALL                 MSG_PREHEAT_PLA " \xbd\xcd\xde\xc3"                            // " All"
