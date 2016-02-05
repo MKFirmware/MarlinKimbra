@@ -1,12 +1,12 @@
 <img align="right" src="Documentation/Logo/MarlinKimbra%20Logo%20GitHub.png" />
-# MarlinKimbra 3D Printer Firmware
-## Version 4.2.4 dev
+# MK 3D Printer Firmware
+## Version 4.2.5 dev
 
 ### Special thanks
 * all Marlin8bit-developers.
 
 ---
-# MarlinKimbra 3D Printer Firmware
+# MK 3D Printer Firmware
   * [Configuration & Compilation](/Documentation/Compilation.md)
   * Supported
     * [Features](/Documentation/Features.md)
