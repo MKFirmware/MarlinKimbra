@@ -359,8 +359,8 @@ class SdBaseFile {
   bool open(SdBaseFile* dirFile, const uint8_t dname[11], uint8_t oflag);
   bool openCachedEntry(uint8_t cacheIndex, uint8_t oflags);
   dir_t* readDirCache();
-//------------------------------------------------------------------------------
-// to be deleted
+  //------------------------------------------------------------------------------
+  // to be deleted
   static void printDirName(const dir_t& dir,
                            uint8_t width, bool printSlash);
   //------------------------------------------------------------------------------

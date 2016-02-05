@@ -350,7 +350,7 @@ int8_t SdBaseFile::lsPrintNext(uint8_t flags, uint8_t indent) {
       ECHO_C('.');
       w++;
     }
-    ECHO_T(dir.name[i]);
+    ECHO_C(dir.name[i]);
     w++;
   }
   if (DIR_IS_SUBDIR(&dir)) {
@@ -585,7 +585,7 @@ bool SdBaseFile::open(const char* path, uint8_t oflag) {
  * or can't be opened in the access mode specified by oflag.
  */
 bool SdBaseFile::open(SdBaseFile* dirFile, const char* path, uint8_t oflag) {
-  uint8_t dname[LONG_FILENAME_LENGTH+1];
+  uint8_t dname[11];
   SdBaseFile dir1, dir2;
   SdBaseFile* parent = dirFile;
   SdBaseFile* sub = &dir1;
@@ -953,7 +953,7 @@ void SdBaseFile::printDirName(const dir_t& dir,
       ECHO_C('.');
       w++;
     }
-    ECHO_T(dir.name[i]);
+    ECHO_C(dir.name[i]);
     w++;
   }
   if (DIR_IS_SUBDIR(&dir) && printSlash) {
@@ -988,7 +988,7 @@ static void print2u(uint8_t v) {
  * \param[in] fatDate The date field from a directory entry.
  */
 void SdBaseFile::printFatDate(uint16_t fatDate) {
-  ECHO_T(FAT_YEAR(fatDate));
+  ECHO_V(FAT_YEAR(fatDate));
   ECHO_C('-');
   print2u(FAT_MONTH(fatDate));
   ECHO_C('-');

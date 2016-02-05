@@ -5637,15 +5637,10 @@ inline void gcode_M221() {
  * M222: Set density extrusion percentage (M222 T0 S95)
  */
 inline void gcode_M222() {
+  if (setTargetedExtruder(222)) return;
+
   if (code_seen('S')) {
-    int sval = code_value();
-    if (code_seen('T')) {
-      if (setTargetedExtruder(222)) return;
-      density_multiplier[target_extruder] = sval;
-    }
-    else {
-      density_multiplier[active_extruder] = sval;
-    }
+    density_multiplier[target_extruder] = code_value();
   }
 }
 

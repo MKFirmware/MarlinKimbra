@@ -625,10 +625,10 @@
           if (card.sdprinting) {
             // Progress bar solid part
             sdbar.setValue(card.percentDone());
-            NPlay.setPic(38);
+            NPlay.setPic(40);
           }
           else {
-            NPlay.setPic(40);
+            NPlay.setPic(38);
           }
         }
 

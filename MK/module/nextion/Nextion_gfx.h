@@ -61,11 +61,8 @@
         }
 
         void clear() {
-          float zero[3] = {}, old_origin[3];
+          float zero[3] = {};
           fill(_left, _top, _width, _height, _color[VC_BACKGROUND]);
-
-          memcpy(old_origin, _origin, sizeof(_origin));
-          memcpy(_origin, zero, sizeof(_origin));
 
           for (int i = 0; i < 3; i++) {
             float pos[3] = {};
@@ -73,18 +70,7 @@
             cursor_to(zero);
             line_to(VC_AXIS + i, pos);
           }
-          cursor_to(0, 0, _max[Z_AXIS]);
-          line_to(VC_AXIS + Y_AXIS, 0, _max[Y_AXIS], _max[Z_AXIS]);
-          line_to(VC_AXIS + Z_AXIS, 0, _max[Y_AXIS], 0);
-          line_to(VC_AXIS + X_AXIS, _max[X_AXIS], _max[Y_AXIS], 0);
-          line_to(VC_AXIS + Z_AXIS, _max[X_AXIS], _max[Y_AXIS], _max[Z_AXIS]);
-          line_to(VC_AXIS + Y_AXIS, _max[X_AXIS], 0, _max[Z_AXIS]);
-          line_to(VC_AXIS + Z_AXIS, _max[X_AXIS], 0, 0);
-          line_to(VC_AXIS + Y_AXIS, _max[X_AXIS], _max[Y_AXIS], 0);
-          cursor_to(0, 0, _max[Z_AXIS]);
-          line_to(VC_AXIS + X_AXIS, _max[X_AXIS], 0, _max[Z_AXIS]);
-
-          memcpy(_origin, old_origin, sizeof(_origin));
+          cursor_to(zero);
         }
 
         void clear(float scale) {
