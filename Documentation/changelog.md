@@ -1,7 +1,7 @@
 ### Version 4.2.5
 * Big Update
 * Add HAL for 8 bit version
-* Rewrite Communication and use HAL for it
+* Rewrite Communication
 * Rewrite Servo
 * and more
 
