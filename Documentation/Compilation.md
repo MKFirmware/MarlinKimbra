@@ -6,11 +6,12 @@
    Use the "Download Zip" button on the right.
   3. Some boards require special files and/or libraries from the ArduinoAddons directory.
   4. Start the arduino IDE 1.6.7.
-  5. Select Tools -> Board -> Arduino Mega 2560    or your microcontroller
-  6. Select the correct serial port in Tools ->Serial Port
-  7. Open MarlinKimbra.ino
-  8. Click the Verify/Compile button
-  9. Click the Upload button. If all goes well the firmware is uploading
+  5. Select File -> Preferences -> Compiler warning and select none
+  6. Select Tools -> Board -> Arduino Mega 2560    or your microcontroller
+  7. Select the correct serial port in Tools ->Serial Port
+  8. Open MarlinKimbra.ino
+  9. Click the Verify/Compile button
+  10. Click the Upload button. If all goes well the firmware is uploading
 
 
 Guida in Italiano per la compilazione dei campi.
