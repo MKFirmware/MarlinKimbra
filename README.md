@@ -6,7 +6,7 @@
 * all Marlin8bit-developers.
 
 ---
-# MarlinKimbra 3D Printer Firmware
+# MK 3D Printer Firmware
   * [Configuration & Compilation](/Documentation/Compilation.md)
   * Supported
     * [Features](/Documentation/Features.md)
