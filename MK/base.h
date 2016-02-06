@@ -11,9 +11,7 @@
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 
-#define ENABLED defined
-#define DISABLED !defined
-
+#include "module/macros.h"
 #include "Boards.h"
 #include "module/mechanics.h"
 
@@ -36,14 +34,14 @@
 #include "Configuration_Feature.h"
 #include "Configuration_Overall.h"
 
+#include "module/conditionals.h"
+#include "module/sanitycheck.h"
 #include "module/HAL/HAL.h"
 #include "module/communication/communication.h"
 
 #include "Configuration_Store.h"
 
 #include "module/language/language.h"
-#include "module/conditionals.h"
-#include "module/sanitycheck.h"
 #include "module/MK_Main.h"
 #include "module/motion/stepper.h"
 #include "module/motion/stepper_indirection.h"
@@ -59,7 +57,7 @@
   #if ENABLED(AUTO_BED_LEVELING_GRID)
     #include "module/motion/qr_solve.h"
   #endif
-#endif // AUTO_BED_LEVELING_FEATURE
+#endif
 
 #if MB(ALLIGATOR)
   #include "module/alligator/external_dac.h"

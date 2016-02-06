@@ -25,48 +25,11 @@
 #ifndef HAL_H
   #define HAL_H
 
-  #include <avr/io.h>
   #include "fastio.h"
 
   // Arduino < 1.0.0 does not define this, so we need to do it ourselves
   #ifndef analogInputToDigitalPin
     #define analogInputToDigitalPin(p) ((p) + 0xA0)
-  #endif
-
-  /**
-   * Defines & Macros
-   */
-  // Compiler warning on unused varable.
-  #define UNUSED(x) (void) (x)
-
-  // Macros for bit
-  #define BIT(b)                (1<<(b))
-  #define TEST(n, b)            (((n)&BIT(b))!=0)
-  #define SET_BIT(n, b, value)  (n) ^= ((-value)^(n)) & (BIT(b))
-
-  // Macros for maths shortcuts
-  #ifndef M_PI 
-    #define M_PI 3.1415926536
-  #endif
-  #define RADIANS(d) ((d)*M_PI/180.0)
-  #define DEGREES(r) ((r)*180.0/M_PI)
-  #define SIN_60 0.8660254037844386
-  #define COS_60 0.5
-
-  // Macros to support option testing
-  #define PIN_EXISTS(PN) (defined(PN##_PIN) && PN##_PIN >= 0)
-  #define HAS(FE) (HAS_##FE)
-  #define HASNT(FE) (!(HAS_##FE))
-
-  // Macros to contrain values
-  #define NOLESS(v,n) do{ if (v < n) v = n; }while(0)
-  #define NOMORE(v,n) do{ if (v > n) v = n; }while(0)
-  #define COUNT(a) (sizeof(a)/sizeof(*a))
-
-  #define  FORCE_INLINE __attribute__((always_inline)) inline
-  #ifndef CRITICAL_SECTION_START
-    #define CRITICAL_SECTION_START  unsigned char _sreg = SREG; cli();
-    #define CRITICAL_SECTION_END    SREG = _sreg;
   #endif
 
   //#define EXTERNALSERIAL  // Force using arduino serial
@@ -119,6 +82,83 @@
       static void showStartReason();
       static int getFreeRam();
       static void resetHardware();
+
+      // SPI related functions
+      static void spiBegin() {
+        #if SDSS >= 0
+          SET_INPUT(MISO_PIN);
+          SET_OUTPUT(MOSI_PIN);
+          SET_OUTPUT(SCK_PIN);
+          // SS must be in output mode even it is not chip select
+          SET_OUTPUT(SDSS);
+          // set SS high - may be chip select for another SPI device
+          WRITE(SDSS, HIGH);
+        #endif
+      }
+      static inline void spiInit(uint8_t spiRate) {
+        uint8_t r = 0;
+        for (uint8_t b = 2; spiRate > b && r < 6; b <<= 1, r++);
+
+        SET_OUTPUT(SDSS);
+        WRITE(SDSS, HIGH);
+        SET_OUTPUT(SCK_PIN);
+        SET_OUTPUT(MOSI_PIN);
+        SET_INPUT(MISO_PIN);
+        #ifdef	PRR
+          PRR &= ~(1<<PRSPI);
+        #elif defined PRR0
+          PRR0 &= ~(1<<PRSPI);
+        #endif
+        // See avr processor documentation
+        SPCR = (1 << SPE) | (1 << MSTR) | (r >> 1);
+        SPSR = (r & 1 || r == 6 ? 0 : 1) << SPI2X;
+      }
+      static inline uint8_t spiReceive(uint8_t send = 0xFF) {
+        SPDR = send;
+        while (!(SPSR & (1 << SPIF))) {}
+        return SPDR;
+      }
+      static inline void spiReadBlock(uint8_t* buf, size_t nbyte) {
+        if (nbyte-- == 0) return;
+        SPDR = 0XFF;
+        for (size_t i = 0; i < nbyte; i++) {
+          while (!(SPSR & (1 << SPIF))) {}
+          buf[i] = SPDR;
+          SPDR = 0XFF;
+        }
+        while (!(SPSR & (1 << SPIF))) {}
+        buf[nbyte] = SPDR;
+      }
+      static inline void spiSend(uint8_t b) {
+        SPDR = b;
+        while (!(SPSR & (1 << SPIF))) {}
+      }
+      static inline void spiSend(const uint8_t* buf, size_t n) {
+        if (n == 0) return;
+        SPDR = buf[0];
+        if (n > 1) {
+          uint8_t b = buf[1];
+          size_t i = 2;
+          while (1) {
+            while (!(SPSR & (1 << SPIF))) {}
+            SPDR = b;
+            if (i == n) break;
+            b = buf[i++];
+          }
+        }
+        while (!(SPSR & (1 << SPIF))) {}
+      }
+      static inline __attribute__((always_inline))
+      void spiSendBlock(uint8_t token, const uint8_t* buf) {
+        SPDR = token;
+        for (uint16_t i = 0; i < 512; i += 2) {
+          while (!(SPSR & (1 << SPIF))) {}
+          SPDR = buf[i];
+          while (!(SPSR & (1 << SPIF))) {}
+          SPDR = buf[i + 1];
+        }
+        while (!(SPSR & (1 << SPIF))) {}
+      }
     protected:
     private:
   };
