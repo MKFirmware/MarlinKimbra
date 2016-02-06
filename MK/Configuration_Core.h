@@ -1,6 +1,6 @@
 #ifndef CONFIGURATION_MECHANISM
 #define CONFIGURATION_MECHANISM
-#define KNOWN_MECH 1
+#define KNOWN_MECH
 /*
  * This configuration file contains mechanism settings for cartesian printer.
  *

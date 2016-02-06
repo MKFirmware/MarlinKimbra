@@ -626,6 +626,9 @@
   
   #if ENABLED(RA_CONTROL_PANEL)
     #define SDSS                53
+    #define SCK_PIN             52
+    #define MISO_PIN            50
+    #define MOSI_PIN            51
     #define SD_DETECT_PIN       28
 
     #define BTN_EN1             14
@@ -785,6 +788,9 @@
   
   #define SDPOWER                 48
   #define SDSS                    53
+  #define SCK_PIN                 52
+  #define MISO_PIN                50
+  #define MOSI_PIN                51
   #define LED_PIN                 13
   #define ORIG_PS_ON_PIN          -1
   #define KILL_PIN                -1
@@ -881,6 +887,9 @@
   
   #define SDPOWER                 -1
   #define SDSS                    53
+  #define SCK_PIN                 52
+  #define MISO_PIN                50
+  #define MOSI_PIN                51
   #define LED_PIN                 13
   
   #define ORIG_FAN_PIN            9
@@ -1019,15 +1028,7 @@
   #endif // ULTRA_LCD
 
   // SPI for Max6675 Thermocouple
-  #if DISABLED(SDSUPPORT)
-  // these pins are defined in the SD library if building with SD support
-    #define SCK_PIN               52
-    #define MISO_PIN              50
-    #define MOSI_PIN              51
-    #define MAX6675_SS            66  // Do not use pin 53 if there is even the remote possibility of using Display/SD card
-  #else
-    #define MAX6675_SS            66  // Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
-  #endif
+  #define MAX6675_SS              66  // Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
 
 #endif // RAMPS_13_HFB
 /****************************************************************************************/
@@ -1089,6 +1090,9 @@
 
   #define SDPOWER                 -1
   #define SDSS                    53
+  #define SCK_PIN                 52
+  #define MISO_PIN                50
+  #define MOSI_PIN                51
   #define LED_PIN                 13
 
   #define ORIG_FAN_PIN            4
@@ -1221,15 +1225,7 @@
   #endif // ULTRA_LCD
 
   // SPI for Max6675 Thermocouple
-  #if DISABLED(SDSUPPORT)
-  // these pins are defined in the SD library if building with SD support
-    #define SCK_PIN               52
-    #define MISO_PIN              50
-    #define MOSI_PIN              51
-    #define MAX6675_SS            66  // Do not use pin 53 if there is even the remote possibility of using Display/SD card
-  #else
-    #define MAX6675_SS            66  // Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
-  #endif
+  #define MAX6675_SS              66  // Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
 
 #endif // RAMPS_13_HHB
 /****************************************************************************************/
@@ -1291,6 +1287,9 @@
 
   #define SDPOWER                 -1
   #define SDSS                    53
+  #define SCK_PIN                 52
+  #define MISO_PIN                50
+  #define MOSI_PIN                51
   #define LED_PIN                 13
 
   #define ORIG_FAN_PIN            9
@@ -1423,15 +1422,7 @@
   #endif // ULTRA_LCD
 
   // SPI for Max6675 Thermocouple
-  #if DISABLED(SDSUPPORT)
-  // these pins are defined in the SD library if building with SD support
-    #define SCK_PIN               52
-    #define MISO_PIN              50
-    #define MOSI_PIN              51
-    #define MAX6675_SS            66  // Do not use pin 53 if there is even the remote possibility of using Display/SD card
-  #else
-    #define MAX6675_SS            66  // Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
-  #endif
+  #define MAX6675_SS              66  // Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
 
 #endif // RAMPS_13_HFF
 /****************************************************************************************/
@@ -1493,6 +1484,9 @@
 
   #define SDPOWER                 -1
   #define SDSS                    53
+  #define SCK_PIN                 52
+  #define MISO_PIN                50
+  #define MOSI_PIN                51
   #define LED_PIN                 13
 
   #define ORIG_FAN_PIN            8
@@ -1625,15 +1619,7 @@
   #endif // ULTRA_LCD
 
   // SPI for Max6675 Thermocouple
-  #if DISABLED(SDSUPPORT)
-  // these pins are defined in the SD library if building with SD support
-    #define SCK_PIN               52
-    #define MISO_PIN              50
-    #define MOSI_PIN              51
-    #define MAX6675_SS            66  // Do not use pin 53 if there is even the remote possibility of using Display/SD card
-  #else
-    #define MAX6675_SS            66  // Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
-  #endif
+  #define MAX6675_SS              66  // Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
 
 #endif // RAMPS_13_HHF
 /****************************************************************************************/
@@ -1695,6 +1681,9 @@
 
   #define SDPOWER                 -1
   #define SDSS                    53
+  #define SCK_PIN                 52
+  #define MISO_PIN                50
+  #define MOSI_PIN                51
   #define LED_PIN                 13
 
   #define ORIG_FAN_PIN            8
@@ -1827,15 +1816,7 @@
   #endif // ULTRA_LCD
 
   // SPI for Max6675 Thermocouple
-  #if DISABLED(SDSUPPORT)
-  // these pins are defined in the SD library if building with SD support
-    #define SCK_PIN               52
-    #define MISO_PIN              50
-    #define MOSI_PIN              51
-    #define MAX6675_SS            66  // Do not use pin 53 if there is even the remote possibility of using Display/SD card
-  #else
-    #define MAX6675_SS            66  // Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
-  #endif
+  #define MAX6675_SS              66  // Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
 
 #endif // RAMPS_13_HHH
 /****************************************************************************************/
@@ -1913,6 +1894,9 @@
 
 #define SDPOWER            -1
 #define SDSS               53
+#define SCK_PIN            52
+#define MISO_PIN           50
+#define MOSI_PIN           51
 #define LED_PIN            13
 #define ORIG_FAN_PIN        8
 #define ORIG_PS_ON_PIN      4
@@ -2083,6 +2067,9 @@
   
   #define SDPOWER                 -1
   #define SDSS                    53
+  #define SCK_PIN                 52
+  #define MISO_PIN                50
+  #define MOSI_PIN                51
   #define LED_PIN                 13
   
   #define ORIG_FAN_PIN            9
@@ -2221,15 +2208,7 @@
   #endif // ULTRA_LCD
 
   // SPI for Max6675 Thermocouple
-  #if DISABLED(SDSUPPORT)
-  // these pins are defined in the SD library if building with SD support
-    #define SCK_PIN               52
-    #define MISO_PIN              50
-    #define MOSI_PIN              51
-    #define MAX6675_SS            66  // Do not use pin 53 if there is even the remote possibility of using Display/SD card
-  #else
-    #define MAX6675_SS            66  // Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
-  #endif
+  #define MAX6675_SS              66  // Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
 
 #endif // MKS_BASE
 /****************************************************************************************/
