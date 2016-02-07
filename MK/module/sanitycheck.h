@@ -496,9 +496,6 @@
     #if DISABLED(BABYSTEP_INVERT_Z)
       #error DEPENDENCY ERROR: Missing setting BABYSTEP_INVERT_Z
     #endif
-    #if DISABLED(BABYSTEP_Z_MULTIPLICATOR)
-      #error DEPENDENCY ERROR: Missing setting BABYSTEP_Z_MULTIPLICATOR
-    #endif
   #endif
   #if ENABLED(FWRETRACT)
     #if DISABLED(MIN_RETRACT)
