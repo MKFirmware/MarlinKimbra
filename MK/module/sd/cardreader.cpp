@@ -99,8 +99,9 @@ void CardReader::lsDive(const char* prepend, SdFile parent, const char* const ma
           nrFiles++;
           break;
         case LS_SerialPrint:
+          createFilename(filename, p);
           ECHO_T(prepend);
-          ECHO_ET(longFilename);
+          ECHO_ET(filename);
           break;
         case LS_GetFilename:
           createFilename(filename, p);
@@ -328,39 +329,15 @@ void CardReader::openFile(char* name, bool read, bool replace_current/*=true*/, 
   else // relative path
     curDir = &workDir;
 
-  char newName[FILENAME_LENGTH + 2];
-  if (strlen((char *)fname) >= 9) {
-    // Generate 8.3 from longfile name
-    char *pExt, szExt[5];
-
-    if ((pExt = strchr((char *)fname, '.')) != NULL) {
-      strncpy(szExt, pExt, 4);
-      szExt[4] = 0;
-      if (pExt > (char*)fname + 6) pExt = (char*)fname + 6;
-    }
-    else {
-      szExt[0] = 0;
-      pExt = (char*)fname + 6;
-    }
-    uint8_t cb = pExt - (char *)fname;
-    memcpy(newName, fname, cb);
-    newName[cb] = 0;
-    strcat(newName, "~1");
-    strcat(newName, szExt);
-  }
-  else {
-    memcpy(newName, fname, FILENAME_LENGTH + 2);
-  }
-      
   if (read) {
-    if (file.open(curDir, newName, O_READ)) {
+    if (file.open(curDir, fname, O_READ)) {
       filesize = file.fileSize();
       ECHO_MT(SERIAL_SD_FILE_OPENED, fname);
       ECHO_EMV(SERIAL_SD_SIZE, filesize);
       sdpos = 0;
 
       ECHO_EM(SERIAL_SD_FILE_SELECTED);
-      getfilename(0, newName);
+      getfilename(0, fname);
       if(lcd_status) lcd_setstatus(longFilename[0] ? longFilename : fname);
     }
     else {
@@ -368,7 +345,7 @@ void CardReader::openFile(char* name, bool read, bool replace_current/*=true*/, 
     }
   }
   else { //write
-    if (!file.open(curDir, newName, O_CREAT | O_APPEND | O_WRITE | O_TRUNC)) {
+    if (!file.open(curDir, fname, O_CREAT | O_APPEND | O_WRITE | O_TRUNC)) {
       ECHO_LMT(ER, SERIAL_SD_OPEN_FILE_FAIL, fname);
     }
     else {
