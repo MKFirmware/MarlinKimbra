@@ -1022,10 +1022,11 @@
 /*****************************************************************************************
  *************************************** SDCARD *******************************************
  ****************************************************************************************/
-//#define SDSUPPORT                              // Enable SD Card Support in Hardware Console
-//#define SDSLOW                                 // Use slower SD transfer mode (not normally needed - uncomment if you're getting volume init error)
-//#define SDEXTRASLOW                            // Use even slower SD transfer mode (not normally needed - uncomment if you're getting volume init error)
-//#define SD_CHECK_AND_RETRY                     // Use CRC checks and retries on the SD communication
+//#define SDSUPPORT           // Enable SD Card Support in Hardware Console
+//#define SDSLOW              // Use slower SD transfer mode (not normally needed - uncomment if you're getting volume init error)
+//#define SDEXTRASLOW         // Use even slower SD transfer mode (not normally needed - uncomment if you're getting volume init error)
+//#define SD_CHECK_AND_RETRY  // Use CRC checks and retries on the SD communication
+//#define SD_EXTENDED_DIR     // Show extended directory including file length. Don't use this with Pronterface
 
 // Decomment this if you are external SD without DETECT_PIN
 //#define SD_DISABLED_DETECT
@@ -1043,9 +1044,6 @@
 // if a file is deleted, it frees a block. hence, the order is not purely chronological. To still have auto0.g accessible, there is again the option to do that.
 // using:
 //#define MENU_ADDAUTOSTART
-
-// This allows hosts to request long names for files and folders with M33
-//#define LONG_FILENAME_HOST_SUPPORT
 
 // This enable the firmware to write some configuration that require frequent update, on the SD card
 //#define SD_SETTINGS                     // Uncomment to enable

@@ -683,16 +683,12 @@ void loop() {
         char* command = command_queue[cmd_queue_index_r];
         if (strstr_P(command, PSTR("M29"))) {
           // M29 closes the file
-          card.closeFile();
-          ECHO_EM(SERIAL_FILE_SAVED);
+          card.finishWrite();
         }
         else {
           // Write the string from the read buffer to SD
           card.write_command(command);
-          if (card.logging)
-            process_next_command(); // The card is saving because it's logging
-          else
-            ECHO_L(OK);
+          ECHO_L(OK);
         }
       }
       else
@@ -826,14 +822,16 @@ void get_command() {
       commands_in_queue += 1;
 
       serial_count = 0; //clear buffer
-    } else if (serial_char == '\\') { // Handle escapes
+    }
+    else if (serial_char == '\\') { // Handle escapes
       if (MKSERIAL.available() > 0 && commands_in_queue < BUFSIZE) {
         // if we have one more character, copy it over
         serial_char = MKSERIAL.read();
         command_queue[cmd_queue_index_w][serial_count++] = serial_char;
       }
       // otherwise do nothing
-    } else { // its not a newline, carriage return or escape char
+    }
+    else { // its not a newline, carriage return or escape char
       if (serial_char == ';') comment_mode = true;
       if (!comment_mode) command_queue[cmd_queue_index_w][serial_count++] = serial_char;
     }
@@ -4282,28 +4280,28 @@ inline void gcode_M17() {
    * M21: Init SD Card
    */
   inline void gcode_M21() {
-    card.initsd();
+    card.mount();
   }
 
   /**
    * M22: Release SD Card
    */
   inline void gcode_M22() {
-    card.release();
+    card.unmount();
   }
 
   /**
    * M23: Select a file
    */
   inline void gcode_M23() {
-    card.openFile(current_command_args, true);
+    card.selectFile(current_command_args);
   }
 
   /**
    * M24: Start SD Print
    */
   inline void gcode_M24() {
-    card.startFileprint();
+    card.startPrint();
     print_job_start_ms = millis();
     #if HAS(POWER_CONSUMPTION_SENSOR)
       startpower = power_consumption_hour;
@@ -4314,7 +4312,7 @@ inline void gcode_M17() {
    * M25: Pause SD Print
    */
   inline void gcode_M25() {
-    card.pauseSDPrint();
+    card.pausePrint();
   }
 
   /**
@@ -4329,14 +4327,14 @@ inline void gcode_M17() {
    * M27: Get SD Card status
    */
   inline void gcode_M27() {
-    card.getStatus();
+    card.printStatus();
   }
 
   /**
    * M28: Start SD Write
    */
   inline void gcode_M28() {
-    card.openFile(current_command_args, false);
+    card.startWrite(current_command_args, false);
   }
 
   /**
@@ -4352,8 +4350,8 @@ inline void gcode_M17() {
    */
   inline void gcode_M30() {
     if (card.cardOK) {
-      card.closeFile();
-      card.removeFile(current_command_args);
+      card.fat.chdir();
+      card.deleteFile(current_command_args);
     }
   }
 #endif
@@ -4372,62 +4370,16 @@ inline void gcode_M31() {
   autotempShutdown();
 }
 
-#if ENABLED(SDSUPPORT)
-
-  /**
-   * M32: Select file and start SD Print
-   */
-  inline void gcode_M32() {
-    if (card.sdprinting) st_synchronize();
-
-    char* namestartpos = strchr(current_command_args, '!');  // Find ! to indicate filename string start.
-    if (!namestartpos)
-      namestartpos = current_command_args; // Default name position, 4 letters after the M
-    else
-      namestartpos++; // to skip the '!'
-
-    bool call_procedure = code_seen('P') && (seen_pointer < namestartpos);
-
-    if (card.cardOK) {
-      card.openFile(namestartpos, true, !call_procedure);
-
-      if (code_seen('S') && seen_pointer < namestartpos) // "S" (must occur _before_ the filename!)
-        card.setIndex(code_value_short());
-
-      card.startFileprint();
-      if (!call_procedure)
-        print_job_start_ms = millis(); // procedure calls count as normal print time.
-    }
+/**
+ * M32: Make Directory
+ */
+inline void gcode_M32() {
+  if (card.cardOK) {
+    card.fat.chdir();
+    card.makeDirectory(current_command_args);
+    card.mount();
   }
-
-  #if ENABLED(LONG_FILENAME_HOST_SUPPORT)
-
-    /**
-     * M33: Get the long full path of a file or folder
-     *
-     * Parameters:
-     *   <dospath> Case-insensitive DOS-style path to a file or folder
-     *
-     * Example:
-     *   M33 miscel~1/armchair/armcha~1.gco
-     *
-     * Output:
-     *   /Miscellaneous/Armchair/Armchair.gcode
-     */
-    inline void gcode_M33() {
-      card.printLongPath(current_command_args);
-    }
-
-  #endif
-
-  /**
-   * M928: Start SD Write
-   */
-  inline void gcode_M928() {
-    card.openLogFile(current_command_args);
-  }
-
-#endif // SDSUPPORT
+}
 
 /**
  * M42: Change pin status via GCode
@@ -7061,16 +7013,8 @@ void process_next_command() {
           gcode_M29(); break;
         case 30: // M30 <filename> Delete File
           gcode_M30(); break;
-        case 32: // M32 - Select file and start SD print
+        case 32: // M32 - Make directory
           gcode_M32(); break;
-
-        #if ENABLED(LONG_FILENAME_HOST_SUPPORT)
-          case 33: // M33 - Get the long full path to a file or folder
-            gcode_M33(); break;
-        #endif
-
-        case 928: // M928 - Start SD write
-          gcode_M928(); break;
       #endif //SDSUPPORT
 
       case 31: // M31 take time since the start of the SD print or an M109 command

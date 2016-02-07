@@ -40,6 +40,8 @@
     #define MKSERIAL Serial
   #endif
 
+  #define PACK
+
   #if defined(ARDUINO) && ARDUINO >= 100
     #include "Arduino.h"
   #else
