@@ -782,29 +782,25 @@ void lcd_implementation_drawedit(const char* pstr, char* value) {
 
 #if ENABLED(SDSUPPORT)
 
-  static void lcd_implementation_drawmenu_sd(bool sel, uint8_t row, const char* pstr, const char* filename, char* longFilename, uint8_t concat, char post_char) {
+  static void lcd_implementation_drawmenu_sd(bool sel, uint8_t row, const char* pstr, const char* longFilename, uint8_t concat, char post_char) {
     char c;
     uint8_t n = LCD_WIDTH - concat;
     lcd.setCursor(0, row);
     lcd.print(sel ? '>' : ' ');
-    if (longFilename[0]) {
-      filename = longFilename;
-      longFilename[n] = '\0';
-    }
-    while ((c = *filename) && n > 0) {
+    while ((c = *longFilename) && n > 0) {
       n -= lcd_print(c);
-      filename++;
+      longFilename++;
     }
     while (n--) lcd.print(' ');
     lcd.print(post_char);
   }
 
-  static void lcd_implementation_drawmenu_sdfile(bool sel, uint8_t row, const char* pstr, const char* filename, char* longFilename) {
-    lcd_implementation_drawmenu_sd(sel, row, pstr, filename, longFilename, 2, ' ');
+  static void lcd_implementation_drawmenu_sdfile(bool sel, uint8_t row, const char* pstr, const char* longFilename) {
+    lcd_implementation_drawmenu_sd(sel, row, pstr, longFilename, 2, ' ');
   }
 
-  static void lcd_implementation_drawmenu_sddirectory(bool sel, uint8_t row, const char* pstr, const char* filename, char* longFilename) {
-    lcd_implementation_drawmenu_sd(sel, row, pstr, filename, longFilename, 2, LCD_STR_FOLDER[0]);
+  static void lcd_implementation_drawmenu_sddirectory(bool sel, uint8_t row, const char* pstr, const char* longFilename) {
+    lcd_implementation_drawmenu_sd(sel, row, pstr, longFilename, 2, LCD_STR_FOLDER[0]);
   }
 
 #endif // SDSUPPORT

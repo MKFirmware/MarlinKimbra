@@ -32,6 +32,11 @@
     #define analogInputToDigitalPin(p) ((p) + 0xA0)
   #endif
 
+  #if DISABLED(CRITICAL_SECTION_START)
+    #define CRITICAL_SECTION_START  unsigned char _sreg = SREG; cli();
+    #define CRITICAL_SECTION_END    SREG = _sreg;
+  #endif
+
   //#define EXTERNALSERIAL  // Force using arduino serial
   #ifndef EXTERNALSERIAL
     #include "HardwareSerial.h"
@@ -39,6 +44,8 @@
   #else
     #define MKSERIAL Serial
   #endif
+
+  #define PACK
 
   #if defined(ARDUINO) && ARDUINO >= 100
     #include "Arduino.h"
@@ -159,6 +166,21 @@
         }
         while (!(SPSR & (1 << SPIF))) {}
       }
+
+      static inline void digitalWrite(uint8_t pin,uint8_t value) {
+        ::digitalWrite(pin,value);
+      }
+      static inline uint8_t digitalRead(uint8_t pin) {
+        return ::digitalRead(pin);
+      }
+      static inline void pinMode(uint8_t pin,uint8_t mode) {
+        ::pinMode(pin,mode);
+      }
+
+      static inline unsigned long timeInMilliseconds() {
+        return millis();
+      }
+
     protected:
     private:
   };

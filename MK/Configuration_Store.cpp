@@ -931,7 +931,7 @@ void ConfigSD_ResetDefault() {
     if(!IS_SD_INSERTED || card.isFileOpen() || card.sdprinting) return;
     set_sd_dot();
     card.setroot(true);
-    card.openFile((char *)CFG_SD_FILE, false, true, false);
+    card.startWrite((char *)CFG_SD_FILE, false);
     char buff[CFG_SD_MAX_VALUE_LEN];
     #if HAS(POWER_CONSUMPTION_SENSOR)
       ltoa(power_consumption_hour, buff, 10);
@@ -942,7 +942,7 @@ void ConfigSD_ResetDefault() {
     ltoa(printer_usage_filament, buff, 10);
     card.unparseKeyLine(cfgSD_KEY[SD_CFG_FIL], buff);
 
-    card.closeFile(false);
+    card.closeFile();
     card.setlast();
     config_last_update = millis();
     unset_sd_dot();
@@ -955,7 +955,7 @@ void ConfigSD_ResetDefault() {
     int k_idx;
     int k_len, v_len;
     card.setroot(true);
-    card.openFile((char *)CFG_SD_FILE, true, true, false);
+    card.selectFile((char *)CFG_SD_FILE);
     while(true) {
       k_len = CFG_SD_MAX_KEY_LEN;
       v_len = CFG_SD_MAX_VALUE_LEN;
@@ -983,7 +983,7 @@ void ConfigSD_ResetDefault() {
         break;
       }
     }
-    card.closeFile(false);
+    card.closeFile();
     card.setlast();
     config_readed = true;
     unset_sd_dot();

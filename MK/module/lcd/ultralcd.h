@@ -11,8 +11,8 @@
   void lcd_update();
   void lcd_init();
   bool lcd_hasstatus();
-  void lcd_setstatus(const char* message, const bool persist=false);
-  void lcd_setstatuspgm(const char* message, const uint8_t level=0);
+  void lcd_setstatus(const char* message, const bool persist = false);
+  void lcd_setstatuspgm(const char* message, const uint8_t level = 0);
   void lcd_setalertstatuspgm(const char* message);
   void lcd_reset_alert_level();
   bool lcd_detected(void);

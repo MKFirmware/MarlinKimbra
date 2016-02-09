@@ -109,8 +109,8 @@ static void lcd_status_screen();
 
   #if ENABLED(SDSUPPORT)
     static void lcd_sdcard_menu();
-    static void menu_action_sdfile(const char* filename, char* longFilename);
-    static void menu_action_sddirectory(const char* filename, char* longFilename);
+    static void menu_action_sdfile(const char* longFilename);
+    static void menu_action_sddirectory(const char* longFilename);
   #endif
 
   #define ENCODER_FEEDRATE_DEADZONE 10
@@ -417,9 +417,9 @@ static void lcd_return_to_status() { lcd_goto_menu(lcd_status_screen); }
 
 #if ENABLED(SDSUPPORT)
 
-  static void lcd_sdcard_pause() { card.pauseSDPrint(); }
+  static void lcd_sdcard_pause() { card.pausePrint(); }
 
-  static void lcd_sdcard_resume() { card.startFileprint(); }
+  static void lcd_sdcard_resume() { card.startPrint(); }
 
   static void lcd_sdcard_stop() {
     quickStop();
@@ -481,8 +481,6 @@ static void lcd_main_menu() {
 
 #if ENABLED(SDSUPPORT) && ENABLED(MENU_ADDAUTOSTART)
   static void lcd_autostart_sd() {
-    card.autostart_index = 0;
-    card.setroot();
     card.checkautostart(true);
   }
 #endif
@@ -1517,7 +1515,7 @@ static void lcd_control_volumetric_menu() {
 
   #if !PIN_EXISTS(SD_DETECT)
     static void lcd_sd_refresh() {
-      card.initsd();
+      card.mount();
       currentMenuViewOffset = 0;
     }
   #endif
@@ -1538,7 +1536,7 @@ static void lcd_control_volumetric_menu() {
     START_MENU(lcd_main_menu);
     MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
     card.getWorkDirName();
-    if (card.filename[0] == '/') {
+    if (fullName[0] == '/') {
       #if !PIN_EXISTS(SD_DETECT)
         MENU_ITEM(function, LCD_STR_REFRESH MSG_REFRESH, lcd_sd_refresh);
       #endif
@@ -1556,9 +1554,9 @@ static void lcd_control_volumetric_menu() {
           i
         );
         if (card.filenameIsDir)
-          MENU_ITEM(sddirectory, MSG_CARD_MENU, card.filename, card.longFilename);
+          MENU_ITEM(sddirectory, MSG_CARD_MENU, fullName);
         else
-          MENU_ITEM(sdfile, MSG_CARD_MENU, card.filename, card.longFilename);
+          MENU_ITEM(sdfile, MSG_CARD_MENU, fullName);
       }
       else {
         MENU_ITEM_DUMMY();
@@ -1714,18 +1712,18 @@ static void menu_action_function(menuFunc_t func) { (*func)(); }
 
 #if ENABLED(SDSUPPORT)
 
-  static void menu_action_sdfile(const char* filename, char* longFilename) {
+  static void menu_action_sdfile(const char* longFilename) {
     char cmd[30];
     char* c;
-    sprintf_P(cmd, PSTR("M23 %s"), filename);
+    sprintf_P(cmd, PSTR("M23 %s"), longFilename);
     for (c = &cmd[4]; *c; c++) *c = tolower(*c);
     enqueuecommand(cmd);
     enqueuecommands_P(PSTR("M24"));
     lcd_return_to_status();
   }
 
-  static void menu_action_sddirectory(const char* filename, char* longFilename) {
-    card.chdir(filename);
+  static void menu_action_sddirectory(const char* longFilename) {
+    card.chdir(longFilename);
     encoderPosition = 0;
   }
 
@@ -1851,11 +1849,11 @@ void lcd_update() {
       );
 
       if (sd_status) {
-        card.initsd();
+        card.mount();
         if (lcd_sd_status != 2) LCD_MESSAGEPGM(MSG_SD_INSERTED);
       }
       else {
-        card.release();
+        card.unmount();
         if (lcd_sd_status != 2) LCD_MESSAGEPGM(MSG_SD_REMOVED);
       }
 

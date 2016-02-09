@@ -212,24 +212,19 @@
   }
 
   #if ENABLED(SDSUPPORT)
-    void printrowsd(uint8_t row, const bool folder, const char* filename, char* longFilename) {
-      const char* cmd;
-      if (longFilename[0])
-        cmd = longFilename;
-      else
-        cmd = filename;
-
+    void printrowsd(uint8_t row, const bool folder, const char* filename) {
+      
       if (folder) {
         folder_list[row]->setPic(18);
         row_list[row]->attachPop(sdfolderPopCallback, row_list[row]);
-      } else if (cmd == "") {
+      } else if (filename == "") {
         folder_list[row]->setPic(17);
         row_list[row]->detachPop();
       } else {
         folder_list[row]->setPic(17);
         row_list[row]->attachPop(sdfilePopCallback, row_list[row]);
       }
-      row_list[row]->setText(cmd);
+      row_list[row]->setText(filename);
       filename_list[row]->setText(filename);
     }
 
@@ -238,10 +233,10 @@
       uint32_t i = 0;
       card.getWorkDirName();
 
-      if (card.filename[0] != '/') {
+      if (fullName[0] != '/') {
         Folderup.setPic(20);
         Folderup.attachPop(sdfolderUpPopCallback);
-        sdfolder.setText(card.filename);
+        sdfolder.setText(fullName);
       } else {
         Folderup.detachPop();
         Folderup.setPic(19);
@@ -252,9 +247,9 @@
         i = row + number;
         if (i < fileCnt) {
           card.getfilename(i);
-          printrowsd(row, card.filenameIsDir, card.filename, card.longFilename);
+          printrowsd(row, card.filenameIsDir, fullName);
         } else {
-          printrowsd(row, false, "", (char*)"");
+          printrowsd(row, false, "");
         }
       }
       sendCommand("ref 0");
@@ -449,16 +444,15 @@
     void PlayPausePopCallback(void *ptr) {
       if (card.cardOK && card.isFileOpen()) {
         if (card.sdprinting)
-          card.pauseSDPrint();
+          card.pausePrint();
         else
-          card.startFileprint();
+          card.startPrint();
       }
     }
 
     void StopPopCallback(void *ptr) {
       quickStop();
-      card.sdprinting = false;
-      card.closeFile();
+      card.stopPrint();
       autotempShutdown();
       lcd_setstatus(MSG_PRINT_ABORTED, true);
     }

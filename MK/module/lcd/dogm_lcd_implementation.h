@@ -540,27 +540,22 @@ void lcd_implementation_drawedit(const char* pstr, char* value) {
 }
 
 #if ENABLED(SDSUPPORT)
-  static void _drawmenu_sd(bool isSelected, uint8_t row, const char* pstr, const char* filename, char* const longFilename, bool isDir) {
+  static void _drawmenu_sd(bool isSelected, uint8_t row, const char* pstr, const char* longFilename, bool isDir) {
     char c;
     uint8_t n = LCD_WIDTH - 1;
-
-    if (longFilename[0]) {
-      filename = longFilename;
-      longFilename[n] = '\0';
-    }
 
     lcd_implementation_mark_as_selected(row, isSelected);
 
     if (isDir) lcd_print(LCD_STR_FOLDER[0]);
-    while ((c = *filename)) {
+    while ((c = *longFilename)) {
       n -= lcd_print(c);
-      filename++;
+      longFilename++;
     }
     while (n--) lcd_print(' ');
   }
 
-  #define lcd_implementation_drawmenu_sdfile(sel, row, pstr, filename, longFilename) _drawmenu_sd(sel, row, pstr, filename, longFilename, false)
-  #define lcd_implementation_drawmenu_sddirectory(sel, row, pstr, filename, longFilename) _drawmenu_sd(sel, row, pstr, filename, longFilename, true)
+  #define lcd_implementation_drawmenu_sdfile(sel, row, pstr, longFilename) _drawmenu_sd(sel, row, pstr, longFilename, false)
+  #define lcd_implementation_drawmenu_sddirectory(sel, row, pstr, longFilename) _drawmenu_sd(sel, row, pstr, longFilename, true)
 
 #endif //SDSUPPORT
 
