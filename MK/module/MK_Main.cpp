@@ -2794,7 +2794,7 @@ void gcode_get_destination() {
 
   printer_usage_filament += (destination[E_AXIS] - current_position[E_AXIS]);
 
-  #if ENABLED(NEXTION_GFX)
+  #if ENABLED(NEXTION) && ENABLED(NEXTION_GFX)
     if((code_seen(axis_codes[X_AXIS]) || code_seen(axis_codes[Y_AXIS])) && code_seen(axis_codes[E_AXIS]))
       gfx_line_to(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS]);
     else
@@ -3365,7 +3365,7 @@ inline void gcode_G28() {
     #endif
   }
 
-  #if ENABLED(NEXTION_GFX)
+  #if ENABLED(NEXTION) && ENABLED(NEXTION_GFX)
     gfx_clear(X_MAX_POS, Y_MAX_POS, Z_MAX_POS);
     gfx_cursor_to(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS]);
   #endif
@@ -4350,36 +4350,35 @@ inline void gcode_M17() {
    */
   inline void gcode_M30() {
     if (card.cardOK) {
-      card.fat.chdir();
+      card.closeFile();
       card.deleteFile(current_command_args);
     }
   }
-#endif
 
-/**
- * M31: Get the time since the start of SD Print (or last M109)
- */
-inline void gcode_M31() {
-  print_job_stop_ms = millis();
-  millis_t t = (print_job_stop_ms - print_job_start_ms) / 1000;
-  int min = t / 60, sec = t % 60;
-  char time[30];
-  sprintf_P(time, PSTR("%i min, %i sec"), min, sec);
-  ECHO_LT(DB, time);
-  lcd_setstatus(time);
-  autotempShutdown();
-}
-
-/**
- * M32: Make Directory
- */
-inline void gcode_M32() {
-  if (card.cardOK) {
-    card.fat.chdir();
-    card.makeDirectory(current_command_args);
-    card.mount();
+  /**
+   * M31: Get the time since the start of SD Print (or last M109)
+   */
+  inline void gcode_M31() {
+    print_job_stop_ms = millis();
+    millis_t t = (print_job_stop_ms - print_job_start_ms) / 1000;
+    int min = t / 60, sec = t % 60;
+    char time[30];
+    sprintf_P(time, PSTR("%i min, %i sec"), min, sec);
+    ECHO_LT(DB, time);
+    lcd_setstatus(time);
+    autotempShutdown();
   }
-}
+
+  /**
+   * M32: Make Directory
+   */
+  inline void gcode_M32() {
+    if (card.cardOK) {
+      card.makeDirectory(current_command_args);
+      card.mount();
+    }
+  }
+#endif
 
 /**
  * M42: Change pin status via GCode
@@ -7013,12 +7012,12 @@ void process_next_command() {
           gcode_M29(); break;
         case 30: // M30 <filename> Delete File
           gcode_M30(); break;
+        case 31: // M31 take time since the start of the SD print or an M109 command
+          gcode_M31(); break;
         case 32: // M32 - Make directory
           gcode_M32(); break;
       #endif //SDSUPPORT
 
-      case 31: // M31 take time since the start of the SD print or an M109 command
-        gcode_M31(); break;
       case 42: // M42 -Change pin status via gcode
         gcode_M42(); break;
 

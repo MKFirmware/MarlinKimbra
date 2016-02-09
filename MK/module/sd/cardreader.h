@@ -3,7 +3,7 @@
 
 #if ENABLED(SDSUPPORT)
 
-#define SD_MAX_FOLDER_DEPTH 5     // Maximum folder depth
+#define SD_MAX_FOLDER_DEPTH 10     // Maximum folder depth
 #define MAX_VFAT_ENTRIES (2)
 #define FILENAME_LENGTH 13
 /** Total size of the buffer used to store the long filenames */
@@ -13,15 +13,13 @@
 extern char tempLongFilename[LONG_FILENAME_LENGTH + 1];
 extern char fullName[LONG_FILENAME_LENGTH * SD_MAX_FOLDER_DEPTH + SD_MAX_FOLDER_DEPTH + 1];
 
+enum LsAction { LS_Count, LS_GetFilename };
+
 #include "SdFat.h"
 
 class CardReader {
 public:
   SdFat fat;
-  //Sd2Card card; // ~14 Byte
-  //SdVolume volume;
-  //SdFile root;
-  //SdFile dir[SD_MAX_FOLDER_DEPTH+1];
   SdFile file;
   CardReader();
 
@@ -29,6 +27,7 @@ public:
   void mount();
   void unmount();
   void ls();
+  void getfilename(uint16_t nr, const char* const match = NULL);
   void startPrint();
   void pausePrint();
   void continuePrint(bool intern = false);
@@ -43,8 +42,12 @@ public:
   void closeFile(bool store_location = false);
   char *createFilename(char *buffer, const dir_t &p);
   void printingHasFinished();
-  void updateSDFileCount();
-  void chdir(const char* name);
+  void chdir(const char* relpath);
+  void updir();
+  void setroot(bool temporary = false);
+  void setlast();
+
+  uint16_t getnrfilenames();
 
   void parseKeyLine(char* key, char* value, int &len_k, int &len_v);
   void unparseKeyLine(const char* key, char* value);
@@ -52,9 +55,9 @@ public:
   FORCE_INLINE void setIndex(uint32_t newpos) { sdpos = newpos; file.seekSet(sdpos); }
   FORCE_INLINE bool isFileOpen() { return file.isOpen(); }
   FORCE_INLINE bool eof() { return sdpos >= filesize; }
-  FORCE_INLINE void updir() { chdir(".."); }
   FORCE_INLINE int16_t get() { sdpos = file.curPosition(); return (int16_t)file.read(); }
   FORCE_INLINE uint8_t percentDone() { return (isFileOpen() && filesize) ? sdpos / ((filesize + 99) / 100) : 0; }
+  FORCE_INLINE char* getWorkDirName() { workDir.getFilename(fullName); return fullName; }
 
   //files init.g on the sd card are performed in a row
   //this is to delay autostart and hence the initialisaiton of the sd card to some seconds after the normal init, so the device is available quick after a reset
@@ -62,18 +65,17 @@ public:
 
 public:
   bool saving, sdprinting, cardOK, filenameIsDir;
-  uint16_t nrFiles; // counter for the files in the current directory and recycled as position counter for getting the nrFiles'th name in the directory.
-  uint8_t folderLevel;
-  char cwd[SD_MAX_FOLDER_DEPTH*LONG_FILENAME_LENGTH+2];
 private:
-  SdFile root, *curDir, workDir;
+  SdBaseFile root, *curDir, workDir, lastDir, workDirParents[SD_MAX_FOLDER_DEPTH];
   Sd2Card card;
-  SdVolume volume;
+  uint16_t workDirDepth;
   uint32_t filesize;
   millis_t next_autostart_ms;
   uint32_t sdpos;
-
+  uint16_t nrFiles; // counter for the files in the current directory and recycled as position counter for getting the nrFiles'th name in the directory.
+  LsAction lsAction; //stored for recursion.
   bool autostart_stilltocheck; //the sd start is delayed, because otherwise the serial cannot answer fast enought to make contact with the hostsoftware.
+  void lsDive(SdBaseFile parent, const char* const match = NULL);
 };
 
 extern CardReader card;

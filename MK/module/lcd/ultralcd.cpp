@@ -1532,23 +1532,31 @@ static void lcd_control_volumetric_menu() {
    */
   void lcd_sdcard_menu() {
     if (lcdDrawUpdate == 0 && LCD_CLICKED == 0) return; // nothing to do (so don't thrash the SD card)
-    card.updateSDFileCount();
-    uint16_t fileCnt = card.nrFiles;
-    char LongFileName[LONG_FILENAME_LENGTH + 1];
+    uint16_t fileCnt = card.getnrfilenames();
     START_MENU(lcd_main_menu);
     MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
-    dir_t* p = NULL;
-    SdBaseFile *root = card.fat.vwd();
-    root->rewind();
-    while ((p = root->getLongFilename(p, tempLongFilename, 0, NULL)) != NULL) {
+    card.getWorkDirName();
+    if (fullName[0] == '/') {
+      #if !PIN_EXISTS(SD_DETECT)
+        MENU_ITEM(function, LCD_STR_REFRESH MSG_REFRESH, lcd_sd_refresh);
+      #endif
+    }
+    else {
+      MENU_ITEM(function, LCD_STR_FOLDER "..", lcd_sd_updir);
+    }
+
+    for (uint16_t i = 0; i < fileCnt; i++) {
       if (_menuItemNr == _lineNr) {
-        strcpy(LongFileName, tempLongFilename);
-        if (DIR_IS_SUBDIR(p)) {
-          MENU_ITEM(sddirectory, MSG_CARD_MENU, LongFileName);
-        }
-        else {
-          MENU_ITEM(sdfile, MSG_CARD_MENU, LongFileName);
-        }
+        card.getfilename(
+          #if ENABLED(SDCARD_RATHERRECENTFIRST)
+            fileCnt-1 -
+          #endif
+          i
+        );
+        if (card.filenameIsDir)
+          MENU_ITEM(sddirectory, MSG_CARD_MENU, fullName);
+        else
+          MENU_ITEM(sdfile, MSG_CARD_MENU, fullName);
       }
       else {
         MENU_ITEM_DUMMY();

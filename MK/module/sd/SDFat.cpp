@@ -25,8 +25,21 @@
 #include "Arduino.h"
 #include "SDFat.h"
 
-extern int8_t RFstricmp(const char* s1, const char* s2);
-extern int8_t RFstrnicmp(const char* s1, const char* s2, size_t n);
+extern int8_t RFstricmp(const char* s1, const char* s2) {
+  while(*s1 && (tolower(*s1) == tolower(*s2)))
+    s1++, s2++;
+  return (const uint8_t)tolower(*s1) - (const uint8_t)tolower(*s2);
+}
+
+extern int8_t RFstrnicmp(const char* s1, const char* s2, size_t n) {
+  while(n--) {
+    if(tolower(*s1) != tolower(*s2))
+      return (uint8_t)tolower(*s1) - (uint8_t)tolower(*s2);
+    s1++;
+    s2++;
+  }
+  return 0;
+}
 
 //------------------------------------------------------------------------------
 static void pstrPrintln(PGM_P str) {
@@ -310,6 +323,9 @@ bool SdFat::truncate(const char* path, uint32_t length) {
   return file.truncate(length);
 }
 
+//==============================================================================
+// SdBaseFile member functions
+//------------------------------------------------------------------------------
 // macro for debug
 #define DBG_FAIL_MACRO  //  ECHO_ET(__LINE__)
 //------------------------------------------------------------------------------
@@ -1236,7 +1252,7 @@ bool SdBaseFile::open(SdBaseFile* dirFile, const uint8_t *dname, uint8_t oflag, 
   if (emptyFound)
     p->name[0] = DIR_NAME_DELETED;
 
-  for(int8_t i=0;i< cVFATFoundCur - cVFATNeeded;i++) {
+  for(int8_t i = 0; i < cVFATFoundCur - cVFATNeeded; i++) {
     if (dirFile->write(p, sizeof(dir_t)) < 0)
       goto fail;
     dirFile->sync();
@@ -2876,7 +2892,7 @@ void (*SdBaseFile::oldDateTime_)(uint16_t& date, uint16_t& time) = 0;  // NOLINT
 //==============================================================================
 // debug trace macro
 #define SD_TRACE(m, b)
-
+// #define SD_TRACE(m, b) Serial.print(m);Serial.println(b);
 // SPI functions
 #ifndef SOFTWARE_SPI
 // functions for hardware SPI
@@ -2885,7 +2901,6 @@ void (*SdBaseFile::oldDateTime_)(uint16_t& date, uint16_t& time) = 0;  // NOLINT
 #if (SPR0 != 0 || SPR1 != 1)
   #error unexpected SPCR bits
 #endif
-
 //------------------------------------------------------------------------------
 /**
  * initialize SPI pins
@@ -2910,7 +2925,7 @@ static uint8_t spiRec() {
 /** SPI read data - only one call so force inline */
 static inline __attribute__((always_inline))
   uint8_t spiRec(uint8_t* buf, uint16_t nbyte) {
-  HAL::spiReadBlock(buf,nbyte);
+  HAL::spiReadBlock(buf, nbyte);
   return 0;
 }
 //------------------------------------------------------------------------------
@@ -2922,7 +2937,7 @@ static void spiSend(uint8_t b) {
 /** SPI send block - only one call so force inline */
 static inline __attribute__((always_inline))
   void spiSendBlock(uint8_t token, const uint8_t* buf) {
-    HAL::spiSendBlock(token,buf);
+    HAL::spiSendBlock(token, buf);
 }
 static void spiSend(const uint8_t* buf, size_t n) {
   HAL::spiSend(buf, n);
@@ -3117,14 +3132,16 @@ uint32_t Sd2Card::cardSize() {
 }
 //------------------------------------------------------------------------------
 void Sd2Card::chipSelectHigh() {
-  digitalWrite(chipSelectPin_, HIGH);
+  HAL::digitalWrite(chipSelectPin_, HIGH);
+  // insure MISO goes high impedance
+  HAL::spiSend(0XFF);
 }
 //------------------------------------------------------------------------------
 void Sd2Card::chipSelectLow() {
-  #if DISABLED(SOFTWARE_SPI)
-    HAL::spiInit(spiRate_);
+  #ifndef SOFTWARE_SPI
+    spiInit(spiRate_);
   #endif  // SOFTWARE_SPI
-  digitalWrite(chipSelectPin_, LOW);
+  HAL::digitalWrite(chipSelectPin_, LOW);
 }
 //------------------------------------------------------------------------------
 /** Erase a range of blocks.
@@ -3199,25 +3216,25 @@ bool Sd2Card::init(uint8_t sckRateID, uint8_t chipSelectPin) {
   errorCode_ = type_ = 0;
   chipSelectPin_ = chipSelectPin;
   // 16-bit init start time allows over a minute
-  uint16_t t0 = (uint16_t)millis();
+  uint16_t t0 = (uint16_t)HAL::timeInMilliseconds();
   uint32_t arg;
 
-  pinMode(chipSelectPin_, OUTPUT);
-  digitalWrite(chipSelectPin_, HIGH);
+  HAL::pinMode(chipSelectPin_, OUTPUT);
+  HAL::digitalWrite(chipSelectPin_, HIGH);
   spiBegin();
 
-#ifndef SOFTWARE_SPI
-  // set SCK rate for initialization commands
-  spiRate_ = SPI_SD_INIT_RATE;
-  spiInit(spiRate_);
-#endif  // SOFTWARE_SPI
+  #ifndef SOFTWARE_SPI
+    // set SCK rate for initialization commands
+    spiRate_ = SPI_SD_INIT_RATE;
+    spiInit(spiRate_);
+  #endif  // SOFTWARE_SPI
 
   // must supply min of 74 clock cycles with CS high.
   for (uint8_t i = 0; i < 20; i++) spiSend(0XFF);
 
   // command to go idle in SPI mode
   while (cardCommand(CMD0, 0) != R1_IDLE_STATE) {
-    if (((uint16_t)millis() - t0) > SD_INIT_TIMEOUT) {
+    if (((uint16_t)HAL::timeInMilliseconds() - t0) > SD_INIT_TIMEOUT) {
       error(SD_CARD_ERROR_CMD0);
       goto fail;
     }
@@ -3233,7 +3250,7 @@ bool Sd2Card::init(uint8_t sckRateID, uint8_t chipSelectPin) {
       type(SD_CARD_TYPE_SD2);
       break;
     }
-    if (((uint16_t)millis() - t0) > SD_INIT_TIMEOUT) {
+    if (((uint16_t)HAL::timeInMilliseconds() - t0) > SD_INIT_TIMEOUT) {
       error(SD_CARD_ERROR_CMD8);
       goto fail;
     }
@@ -3243,7 +3260,7 @@ bool Sd2Card::init(uint8_t sckRateID, uint8_t chipSelectPin) {
 
   while (cardAcmd(ACMD41, arg) != R1_READY_STATE) {
     // check for timeout
-    if (((uint16_t)millis() - t0) > SD_INIT_TIMEOUT) {
+    if (((uint16_t)HAL::timeInMilliseconds() - t0) > SD_INIT_TIMEOUT) {
       error(SD_CARD_ERROR_ACMD41);
       goto fail;
     }
@@ -3258,19 +3275,19 @@ bool Sd2Card::init(uint8_t sckRateID, uint8_t chipSelectPin) {
     // discard rest of ocr - contains allowed voltage range
     for (uint8_t i = 0; i < 3; i++) spiRec();
   }
-#if USE_SD_CRC
-  if (cardCommand(CMD59, 1) > 1) {
-    error(SD_CARD_ERROR_CMD59);
-    goto fail;
-  }
-#endif  // USE_SD_CRC
+  #if USE_SD_CRC
+    if (cardCommand(CMD59, 1) > 1) {
+      error(SD_CARD_ERROR_CMD59);
+      goto fail;
+    }
+  #endif  // USE_SD_CRC
   chipSelectHigh();
 
-#ifndef SOFTWARE_SPI
-  return setSckRate(sckRateID);
-#else  // SOFTWARE_SPI
-  return true;
-#endif  // SOFTWARE_SPI
+  #ifndef SOFTWARE_SPI
+    return setSckRate(sckRateID);
+  #else  // SOFTWARE_SPI
+    return true;
+  #endif  // SOFTWARE_SPI
 
 fail:
   chipSelectHigh();
@@ -3315,9 +3332,9 @@ bool Sd2Card::readData(uint8_t* dst) {
 bool Sd2Card::readData(uint8_t* dst, size_t count) {
   uint16_t crc;
   // wait for start block token
-  uint16_t t0 = millis();
+  uint16_t t0 = HAL::timeInMilliseconds();
   while ((status_ = spiRec()) == 0XFF) {
-    if (((uint16_t)millis() - t0) > SD_READ_TIMEOUT) {
+    if (((uint16_t)HAL::timeInMilliseconds() - t0) > SD_READ_TIMEOUT) {
       error(SD_CARD_ERROR_READ_TIMEOUT);
       goto fail;
     }
@@ -3333,12 +3350,12 @@ bool Sd2Card::readData(uint8_t* dst, size_t count) {
   }
   // get crc
   crc = (spiRec() << 8) | spiRec();
-#if USE_SD_CRC
-  if (crc != CRC_CCITT(dst, count)) {
-    error(SD_CARD_ERROR_READ_CRC);
-    goto fail;
-  }
-#endif  // USE_SD_CRC
+  #if USE_SD_CRC
+    if (crc != CRC_CCITT(dst, count)) {
+      error(SD_CARD_ERROR_READ_CRC);
+      goto fail;
+    }
+  #endif  // USE_SD_CRC
 
   chipSelectHigh();
   return true;
@@ -3433,9 +3450,9 @@ bool Sd2Card::setSckRate(uint8_t sckRateID) {
 //------------------------------------------------------------------------------
 // wait for card to go not busy
 bool Sd2Card::waitNotBusy(uint16_t timeoutMillis) {
-  uint16_t t0 = millis();
+  uint16_t t0 = HAL::timeInMilliseconds();
   while (spiRec() != 0XFF) {
-    if (((uint16_t)millis() - t0) >= timeoutMillis) goto fail;
+    if (((uint16_t)HAL::timeInMilliseconds() - t0) >= timeoutMillis) goto fail;
   }
   return true;
 
