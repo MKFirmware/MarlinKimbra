@@ -299,13 +299,10 @@ void Servo::writeMicroseconds(int value)
   }
 }
 
-int Servo::read() // return the value as degrees
-{
-  return map(readMicroseconds()+1, SERVO_MIN(), SERVO_MAX(), 0, 180);
-}
+// return the value as degrees
+int Servo::read() { return map(this->readMicroseconds() + 1, SERVO_MIN(), SERVO_MAX(), 0, 180); }
 
-int Servo::readMicroseconds()
-{
+int Servo::readMicroseconds() {
   unsigned int pulsewidth;
   if (this->servoIndex != INVALID_SERVO)
     pulsewidth = ticksToUs(servos[this->servoIndex].ticks)  + TRIM_DURATION;
@@ -315,9 +312,16 @@ int Servo::readMicroseconds()
   return pulsewidth;
 }
 
-bool Servo::attached()
-{
-  return servos[this->servoIndex].Pin.isActive;
+bool Servo::attached() { return servos[this->servoIndex].Pin.isActive; }
+
+void Servo::move(int value) {
+  if (this->attach(0) >= 0) {
+    this->write(value);
+    #if ENABLED(DEACTIVATE_SERVOS_AFTER_MOVE)
+      delay(SERVO_DEACTIVATION_DELAY);
+      this->detach();
+    #endif
+  }
 }
 
 #endif
