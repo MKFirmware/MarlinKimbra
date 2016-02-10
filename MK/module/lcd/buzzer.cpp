@@ -3,7 +3,7 @@
 #if HAS(BUZZER)
   #include "buzzer.h"
 
-  void buzz(long duration, uint16_t freq) {
+  void buzz(uint16_t freq, long duration) {
     if (freq > 0) {
       #if ENABLED(LCD_USE_I2C_BUZZER)
         lcd_buzz(duration, freq);
@@ -20,9 +20,8 @@
             delayMicroseconds(delay);
           }
         #else // buzzer has its own resonator - needs a DC
-          WRITE(BEEPER_PIN, HIGH);
-          delay(duration);
-          WRITE(BEEPER_PIN, LOW);
+          tone(BEEPER_PIN, freq, duration);
+          delay(1 + duration);
         #endif
       #else
         delay(duration);
