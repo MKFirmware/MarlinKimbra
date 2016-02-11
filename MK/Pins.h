@@ -137,7 +137,7 @@
   //#define TORIG_X_ENABLE_PIN  12
   //#define RORIG_X_ENABLE_PIN  13
   
-  #define BEEPER_PIN       -1
+  #define ORIG_BEEPER_PIN  -1
   #define SD_DETECT_PIN    -1
   #define SUICIDE_PIN      -1  //has to be defined; otherwise Power_off doesn't work
   
@@ -616,7 +616,7 @@
   #define ORIG_TEMP_2_PIN       1   // ANALOG NUMBERING
   #define ORIG_TEMP_BED_PIN     0   // ANALOG NUMBERING
   
-  #define BEEPER_PIN            36
+  #define ORIG_BEEPER_PIN       36
   
   #define KILL_PIN              -1
   
@@ -946,7 +946,7 @@
       #endif // PANEL_ONE
   
       #if ENABLED(REPRAP_DISCOUNT_SMART_CONTROLLER)
-        #define BEEPER_PIN        37
+        #define ORIG_BEEPER_PIN   37
 
         #define BTN_EN1           31
         #define BTN_EN2           33
@@ -973,13 +973,13 @@
         #define SD_DETECT_PIN     49
         #define LCD_SDSS          53
         #define KILL_PIN          41
-        #define BEEPER_PIN        23
+        #define ORIG_BEEPER_PIN   23
         #define DOGLCD_CS         29
         #define DOGLCD_A0         27
         #define LCD_PIN_BL        33
       #else
         // arduino pin which triggers an piezzo beeper
-        #define BEEPER_PIN        33  // Beeper on AUX-4
+        #define ORIG_BEEPER_PIN   33  // Beeper on AUX-4
 
         // buttons are directly attached using AUX-2
         #if ENABLED(REPRAPWORLD_KEYPAD)
@@ -1009,7 +1009,7 @@
   
     #else // old style panel with shift register
       // arduino pin witch triggers an piezo beeper
-      #define BEEPER_PIN          33  // No Beeper added
+      #define ORIG_BEEPER_PIN     33  // No Beeper added
 
       //buttons are attached to a shift register
       // Not wired this yet
@@ -1143,7 +1143,7 @@
       #endif // PANEL_ONE
 
       #if ENABLED(REPRAP_DISCOUNT_SMART_CONTROLLER)
-        #define BEEPER_PIN        37
+        #define ORIG_BEEPER_PIN   37
 
         #define BTN_EN1           31
         #define BTN_EN2           33
@@ -1170,13 +1170,13 @@
         #define SD_DETECT_PIN     49
         #define LCD_SDSS          53
         #define KILL_PIN          41
-        #define BEEPER_PIN        23
+        #define ORIG_BEEPER_PIN   23
         #define DOGLCD_CS         29
         #define DOGLCD_A0         27
         #define LCD_PIN_BL        33
       #else
         // arduino pin which triggers an piezzo beeper
-        #define BEEPER_PIN        33  // Beeper on AUX-4
+        #define ORIG_BEEPER_PIN   33  // Beeper on AUX-4
 
         // buttons are directly attached using AUX-2
         #if ENABLED(REPRAPWORLD_KEYPAD)
@@ -1206,7 +1206,7 @@
 
     #else // old style panel with shift register
       // arduino pin witch triggers an piezo beeper
-      #define BEEPER_PIN          33  // No Beeper added
+      #define ORIG_BEEPER_PIN     33  // No Beeper added
 
       //buttons are attached to a shift register
       // Not wired this yet
@@ -1340,7 +1340,7 @@
       #endif // PANEL_ONE
   
       #if ENABLED(REPRAP_DISCOUNT_SMART_CONTROLLER)
-        #define BEEPER_PIN        37
+        #define ORIG_BEEPER_PIN   37
 
         #define BTN_EN1           31
         #define BTN_EN2           33
@@ -1367,13 +1367,13 @@
         #define SD_DETECT_PIN     49
         #define LCD_SDSS          53
         #define KILL_PIN          41
-        #define BEEPER_PIN        23
+        #define ORIG_BEEPER_PIN   23
         #define DOGLCD_CS         29
         #define DOGLCD_A0         27
         #define LCD_PIN_BL        33
       #else
         // arduino pin which triggers an piezzo beeper
-        #define BEEPER_PIN        33  // Beeper on AUX-4
+        #define ORIG_BEEPER_PIN   33  // Beeper on AUX-4
 
         // buttons are directly attached using AUX-2
         #if ENABLED(REPRAPWORLD_KEYPAD)
@@ -1403,7 +1403,7 @@
 
     #else // old style panel with shift register
       // arduino pin witch triggers an piezo beeper
-      #define BEEPER_PIN          33  // No Beeper added
+      #define ORIG_BEEPER_PIN     33  // No Beeper added
 
       //buttons are attached to a shift register
       // Not wired this yet
@@ -1537,7 +1537,7 @@
       #endif // PANEL_ONE
   
       #if ENABLED(REPRAP_DISCOUNT_SMART_CONTROLLER)
-        #define BEEPER_PIN        37
+        #define ORIG_BEEPER_PIN   37
 
         #define BTN_EN1           31
         #define BTN_EN2           33
@@ -1564,13 +1564,13 @@
         #define SD_DETECT_PIN     49
         #define LCD_SDSS          53
         #define KILL_PIN          41
-        #define BEEPER_PIN        23
+        #define ORIG_BEEPER_PIN   23
         #define DOGLCD_CS         29
         #define DOGLCD_A0         27
         #define LCD_PIN_BL        33
       #else
         // arduino pin which triggers an piezzo beeper
-        #define BEEPER_PIN        33  // Beeper on AUX-4
+        #define ORIG_BEEPER_PIN   33  // Beeper on AUX-4
 
         // buttons are directly attached using AUX-2
         #if ENABLED(REPRAPWORLD_KEYPAD)
@@ -1600,7 +1600,7 @@
 
     #else // old style panel with shift register
       // arduino pin witch triggers an piezo beeper
-      #define BEEPER_PIN          33  // No Beeper added
+      #define ORIG_BEEPER_PIN     33  // No Beeper added
 
       // buttons are attached to a shift register
       // Not wired this yet
@@ -1734,7 +1734,7 @@
       #endif // PANEL_ONE
 
       #if ENABLED(REPRAP_DISCOUNT_SMART_CONTROLLER)
-        #define BEEPER_PIN        37
+        #define ORIG_BEEPER_PIN   37
 
         #define BTN_EN1           31
         #define BTN_EN2           33
@@ -1761,13 +1761,13 @@
         #define SD_DETECT_PIN     49
         #define LCD_SDSS          53
         #define KILL_PIN          41
-        #define BEEPER_PIN        23
+        #define ORIG_BEEPER_PIN   23
         #define DOGLCD_CS         29
         #define DOGLCD_A0         27
         #define LCD_PIN_BL        33
       #else
         // arduino pin which triggers an piezzo beeper
-        #define BEEPER_PIN        33  // Beeper on AUX-4
+        #define ORIG_BEEPER_PIN   33  // Beeper on AUX-4
 
         // buttons are directly attached using AUX-2
         #if ENABLED(REPRAPWORLD_KEYPAD)
@@ -1797,7 +1797,7 @@
 
     #else // old style panel with shift register
       // arduino pin witch triggers an piezo beeper
-      #define BEEPER_PIN          33  // No Beeper added
+      #define ORIG_BEEPER_PIN     33  // No Beeper added
 
       // buttons are attached to a shift register
       // Not wired this yet
@@ -1907,7 +1907,7 @@
   #define KILL_PIN 80
   #if ENABLED(NEWPANEL)
    //arduino pin which triggers an piezzo beeper
-    #define BEEPER_PIN 79      // Beeper on AUX-4
+    #define ORIG_BEEPER_PIN 79      // Beeper on AUX-4
     #define LCD_PINS_RS 70
     #define LCD_PINS_ENABLE 71
     #define LCD_PINS_D4 72
@@ -1928,7 +1928,7 @@
 
   #else //old style panel with shift register
     //arduino pin witch triggers an piezzo beeper
-    #define BEEPER_PIN 33    No Beeper added
+    #define ORIG_BEEPER_PIN 33    No Beeper added
     //buttons are attached to a shift register
     // Not wired this yet
     // #define SHIFT_CLK 38
@@ -2126,7 +2126,7 @@
       #endif // PANEL_ONE
   
       #if ENABLED(REPRAP_DISCOUNT_SMART_CONTROLLER)
-        #define BEEPER_PIN        37
+        #define ORIG_BEEPER_PIN   37
 
         #define BTN_EN1           31
         #define BTN_EN2           33
@@ -2153,13 +2153,13 @@
         #define SD_DETECT_PIN     49
         #define LCD_SDSS          53
         #define KILL_PIN          41
-        #define BEEPER_PIN        23
+        #define ORIG_BEEPER_PIN   23
         #define DOGLCD_CS         29
         #define DOGLCD_A0         27
         #define LCD_PIN_BL        33
       #else
         // arduino pin which triggers an piezzo beeper
-        #define BEEPER_PIN        33  // Beeper on AUX-4
+        #define ORIG_BEEPER_PIN   33  // Beeper on AUX-4
 
         // buttons are directly attached using AUX-2
         #if ENABLED(REPRAPWORLD_KEYPAD)
@@ -2189,7 +2189,7 @@
   
     #else // old style panel with shift register
       // arduino pin witch triggers an piezo beeper
-      #define BEEPER_PIN          33  // No Beeper added
+      #define ORIG_BEEPER_PIN     33  // No Beeper added
 
       //buttons are attached to a shift register
       // Not wired this yet
@@ -2272,7 +2272,7 @@
 #define SDSS                     4
 #define LED_PIN                 -1
 
-#define BEEPER_PIN              41
+#define ORIG_BEEPER_PIN         41
 
 #define ORIG_FAN_PIN 	           9
 #define ORIG_FAN2_PIN            8
@@ -2332,7 +2332,7 @@
     #define LCD_PINS_ENABLE 47
     #define LCD_PINS_D4     44
 
-    #define BEEPER_PIN      41
+    #define ORIG_BEEPER_PIN 41
 
     #define BTN_EN1         50
     #define BTN_EN2         52
@@ -2439,7 +2439,7 @@
 #define SDSS                     4
 #define LED_PIN                 13
 
-#define BEEPER_PIN              -1
+#define ORIG_BEEPER_PIN         -1
 
 #define ORIG_FAN_PIN            -1
 
@@ -2487,7 +2487,7 @@
     #define LCD_PINS_D7         29
 
     #if ENABLED(REPRAP_DISCOUNT_SMART_CONTROLLER)
-      #define BEEPER_PIN        37
+      #define ORIG_BEEPER_PIN   37
 
       #define BTN_EN1           33
       #define BTN_EN2           31
@@ -2773,7 +2773,7 @@
 #define LED_PIN               -1
 
 #define ORIG_FAN_PIN          92 // PA5
-#define FAN2_PIN              31 // PA7
+#define ORIG_FAN2_PIN         31 // PA7
 
 #define ORIG_PS_ON_PIN        -1
 #define KILL_PIN              -1
@@ -2792,9 +2792,9 @@
 #define ORIG_TEMP_2_PIN        3 // PA22, analog pin on piggy
 #define ORIG_TEMP_3_PIN        4 // PA6, analog on piggy
 
-#define LED_RED_PIN           40 // PC8
-#define LED_GREEN_PIN         41 // PC9
-#define CASE_LIGHTS_PIN       36 // PC4
+#define LED_PWM1_PIN          40 // PC8
+#define LED_PWM2_PIN          41 // PC9
+#define LED_PWM3_PIN          36 // PC4
 
 #define EXP_VOLTAGE_LEVEL_PIN 65
 
@@ -2820,7 +2820,7 @@
   #define LCD_PINS_RS         18
   #define LCD_PINS_ENABLE     15
   #define LCD_PINS_D4         19
-  #define BEEPER_PIN          64
+  #define ORIG_BEEPER_PIN     64
 
   #define BTN_EN1             14
   #define BTN_EN2             16
@@ -2967,7 +2967,7 @@
   #if ENABLED(ULTRA_LCD) && ENABLED(NEWPANEL)
   
     // No buzzer installed
-    #define BEEPER_PIN -1
+    #define ORIG_BEEPER_PIN -1
 
     //LCD Pins
     #if ENABLED(DOGLCD)
@@ -2977,7 +2977,7 @@
           #define LCD_PINS_RS     30 //CS chip select /SS chip slave select
           #define LCD_PINS_ENABLE 29 //SID (MOSI)
           #define LCD_PINS_D4     17 //SCK (CLK) clock
-          #define BEEPER_PIN      27 // Pin 27 is taken by LED_PIN, but Melzi LED does nothing with Marlin so this can be used for BEEPER_PIN. You can use this pin with M42 instead of BEEPER_PIN.
+          #define ORIG_BEEPER_PIN 27 // Pin 27 is taken by LED_PIN, but Melzi LED does nothing with Marlin so this can be used for ORIG_BEEPER_PIN. You can use this pin with M42 instead of ORIG_BEEPER_PIN.
         #else         // Sanguinololu 1.3
           #define LCD_PINS_RS      4
           #define LCD_PINS_ENABLE 17
@@ -3026,7 +3026,7 @@
     #define SD_DETECT_PIN         -1
 
   #elif ENABLED(MAKRPANEL)
-    #define BEEPER_PIN            29
+    #define ORIG_BEEPER_PIN       29
 
     // Pins for DOGM SPI LCD Support
     #define DOGLCD_A0             30
@@ -3160,7 +3160,7 @@
     #define LCD_PINS_D7 29
 
     #if ENABLED(REPRAP_DISCOUNT_SMART_CONTROLLER)
-      #define BEEPER_PIN 37
+      #define ORIG_BEEPER_PIN 37
 
       #define BTN_EN1 31
       #define BTN_EN2 33
@@ -3182,7 +3182,7 @@
       #define SD_DETECT_PIN 49
     #else
       //arduino pin which triggers an piezzo beeper
-      #define BEEPER_PIN 33  // Beeper on AUX-4
+      #define ORIG_BEEPER_PIN 33  // Beeper on AUX-4
 
       //buttons are directly attached using AUX-2
       #if ENABLED(REPRAPWORLD_KEYPAD)
@@ -3208,7 +3208,7 @@
 
   #else //old style panel with shift register
     //arduino pin witch triggers an piezzo beeper
-    #define BEEPER_PIN 33   //No Beeper added
+    #define ORIG_BEEPER_PIN 33   //No Beeper added
 
     //buttons are attached to a shift register
     // Not wired this yet
@@ -3306,8 +3306,8 @@
 #define SDSS                    53
 #define LED_PIN                 13
 
-#define ORIG_FAN_PIN            6
-#define BEEPER_PIN              33
+#define ORIG_FAN_PIN             6
+#define ORIG_BEEPER_PIN         33
 #define ORIG_PS_ON_PIN          12
 
 #if ENABLED(REPRAP_DISCOUNT_SMART_CONTROLLER) || ENABLED(G3D_PANEL)
@@ -3326,8 +3326,8 @@
 #define ORIG_TEMP_2_PIN         12   // ANALOG NUMBERING
 #define ORIG_TEMP_3_PIN         11   // ANALOG NUMBERING
 
-#define TC1                4    // ANALOG NUMBERING Thermo couple on Azteeg X3Pro
-#define TC2                5    // ANALOG NUMBERING Thermo couple on Azteeg X3Pro
+#define TC1                      4    // ANALOG NUMBERING Thermo couple on Azteeg X3Pro
+#define TC2                      5    // ANALOG NUMBERING Thermo couple on Azteeg X3Pro
 
 #define ORIG_HEATER_BED_PIN      8   // BED
 
@@ -3362,7 +3362,7 @@
     #define LCD_PINS_D7 29
 
     #if ENABLED(REPRAP_DISCOUNT_SMART_CONTROLLER)
-      #define BEEPER_PIN 37
+      #define ORIG_BEEPER_PIN 37
 
       #define BTN_EN1 31
       #define BTN_EN2 33
@@ -3384,7 +3384,7 @@
       #define SD_DETECT_PIN 49
     #else
       //arduino pin which triggers an piezzo beeper
-      #define BEEPER_PIN 33  // Beeper on AUX-4
+      #define ORIG_BEEPER_PIN 33  // Beeper on AUX-4
 
       //buttons are directly attached using AUX-2
       #if ENABLED(REPRAPWORLD_KEYPAD)
@@ -3410,7 +3410,7 @@
 
   #else //old style panel with shift register
     //arduino pin witch triggers an piezzo beeper
-    #define BEEPER_PIN 33   //No Beeper added
+    #define ORIG_BEEPER_PIN 33   //No Beeper added
 
     //buttons are attached to a shift register
     // Not wired this yet
@@ -3430,7 +3430,7 @@
 #endif //ULTRA_LCD
 
 #if ENABLED(VIKI2) || ENABLED(miniVIKI)
-  #define BEEPER_PIN       33
+  #define ORIG_BEEPER_PIN  33
  // Pins for DOGM SPI LCD Support
   #define DOGLCD_A0        44
   #define DOGLCD_CS        45
@@ -3528,7 +3528,7 @@
 
   #if ENABLED(NEWPANEL)
   //arduino pin witch triggers an piezzo beeper
-    #define BEEPER_PIN 18
+    #define ORIG_BEEPER_PIN 18
 
     #define LCD_PINS_RS 20
     #define LCD_PINS_ENABLE 17
@@ -3546,7 +3546,7 @@
 
   #else //old style panel with shift register
     //arduino pin witch triggers an piezzo beeper
-    #define BEEPER_PIN 18
+    #define ORIG_BEEPER_PIN 18
 
     //buttons are attached to a shift register
     #define SHIFT_CLK 38
@@ -3635,7 +3635,7 @@
 #define ORIG_HEATER_BED_PIN     10   // BED
 #define ORIG_TEMP_BED_PIN       14   // ANALOG NUMBERING
 
-#define BEEPER_PIN 33     // Beeper on AUX-4
+#define ORIG_BEEPER_PIN         33   // Beeper on AUX-4
 
 #if ENABLED(ULTRA_LCD)
   #if ENABLED(NEWPANEL)
@@ -3716,7 +3716,7 @@
   #define LED_PIN 13
 
   #define ORIG_FAN_PIN 7
-  #define FAN2_PIN 6
+  #define ORIG_FAN2_PIN 6
   #define ORIG_PS_ON_PIN 12
   #define KILL_PIN -1
 
@@ -3751,7 +3751,7 @@
     #define ORIG_TEMP_BED_PIN 14 // ANALOG NUMBERING
   #endif
 
-  #define BEEPER_PIN 64
+  #define ORIG_BEEPER_PIN 64
 
   #define LCD_PINS_RS 14
   #define LCD_PINS_ENABLE 15
@@ -3826,7 +3826,7 @@
   #define LED_PIN 46
 
   #define ORIG_FAN_PIN 9
-  #define FAN2_PIN -1
+  #define ORIG_FAN2_PIN -1
   #define ORIG_PS_ON_PIN -1
   #define KILL_PIN -1
 
@@ -3845,7 +3845,7 @@
   #define ORIG_HEATER_BED_PIN 3 // BED
   #define ORIG_TEMP_BED_PIN 6   // ANALOG NUMBERING
 
-  #define BEEPER_PIN -1
+  #define ORIG_BEEPER_PIN -1
 
   #define LCD_PINS_RS -1
   #define LCD_PINS_ENABLE -1
@@ -3943,7 +3943,7 @@
   #define ORIG_HEATER_2_PIN 9 
   #define ORIG_HEATER_BED_PIN 10 
   #define ORIG_FAN_PIN 6
-  #define FAN2_PIN 7
+  #define ORIG_FAN2_PIN 7
 
   #if TEMP_SENSOR_0 == -1
     #define ORIG_TEMP_0_PIN 11 // ANALOG NUMBERING
@@ -3969,7 +3969,7 @@
     #define ORIG_TEMP_BED_PIN 14 // ANALOG NUMBERING
   #endif
 
-  #define BEEPER_PIN 61
+  #define ORIG_BEEPER_PIN 61
 
   #define LCD_PINS_RS 32 
   #define LCD_PINS_ENABLE 31
@@ -4138,7 +4138,7 @@
 #define DEFAULT_PWM_MOTOR_CURRENT  {1300, 1300, 1250}
 
 //arduino pin witch triggers an piezzo beeper
-#define BEEPER_PIN 18
+#define ORIG_BEEPER_PIN 18
 
 #define LCD_PINS_RS 20
 #define LCD_PINS_ENABLE 15
@@ -4252,10 +4252,10 @@
   #endif
 #endif
 
-#define BEEPER_PIN               33
+#define ORIG_BEEPER_PIN          33
 
 #if ENABLED(ULTRA_LCD) && ENABLED(NEWPANEL)
-  #define BEEPER_PIN -1
+  #define ORIG_BEEPER_PIN        -1
 
   #define LCD_PINS_RS 27
   #define LCD_PINS_ENABLE 29
@@ -4375,10 +4375,10 @@
   #endif
 #endif
 
-#define BEEPER_PIN                   33
+#define ORIG_BEEPER_PIN           33
 
 #if ENABLED(ULTRA_LCD) && ENABLED(NEWPANEL)
-  #define BEEPER_PIN -1
+  #define ORIG_BEEPER_PIN -1
 
   #define LCD_PINS_RS 27
   #define LCD_PINS_ENABLE 29
@@ -4604,7 +4604,7 @@
 #define SDPOWER            -1
 #define SDSS               53
 #define SD_DETECT_PIN      49
-#define BEEPER_PIN         44
+#define ORIG_BEEPER_PIN    44
 #define LCD_PINS_RS        19
 #define LCD_PINS_ENABLE    42
 #define LCD_PINS_D4        18
@@ -4757,7 +4757,7 @@
   #define MOSI_PIN         10
 #endif
 
-#define BEEPER_PIN         -1
+#define ORIG_BEEPER_PIN    -1
 #define LCD_PINS_RS        -1
 #define LCD_PINS_ENABLE    -1
 #define LCD_PINS_D4        -1
@@ -5449,6 +5449,17 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #endif
 #ifndef Z2_MAX_PIN
   #define Z2_MAX_PIN    -1
+#endif
+
+#ifndef ORIG_FAN_PIN
+  #define ORIG_FAN_PIN  -1
+#endif
+#ifndef ORIG_FAN2_PIN
+  #define ORIG_FAN2_PIN -1
+#endif
+
+#ifndef ORIG_BEEPER_PIN
+  #define ORIG_BEEPER_PIN -1
 #endif
 
 /****************************************************************************************/
