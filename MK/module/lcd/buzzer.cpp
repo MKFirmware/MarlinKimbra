@@ -3,7 +3,7 @@
 #if HAS(BUZZER)
   #include "buzzer.h"
 
-  void buzz(uint16_t freq, long duration) {
+  void buzz(long duration, uint16_t freq) {
     if (freq > 0) {
       #if ENABLED(LCD_USE_I2C_BUZZER)
         lcd_buzz(duration, freq);
