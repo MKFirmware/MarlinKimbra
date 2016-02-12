@@ -626,9 +626,6 @@
   
   #if ENABLED(RA_CONTROL_PANEL)
     #define SDSS                53
-    #define SCK_PIN             52
-    #define MISO_PIN            50
-    #define MOSI_PIN            51
     #define SD_DETECT_PIN       28
 
     #define BTN_EN1             14
@@ -788,9 +785,6 @@
   
   #define SDPOWER                 48
   #define SDSS                    53
-  #define SCK_PIN                 52
-  #define MISO_PIN                50
-  #define MOSI_PIN                51
   #define LED_PIN                 13
   #define ORIG_PS_ON_PIN          -1
   #define KILL_PIN                -1
@@ -817,13 +811,6 @@
     #define MAX6675_SS            66  // Do not use pin 53 if there is even the remote possibility of using Display/SD card
   #else
     #define MAX6675_SS            66  // Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
-  #endif
-  
-  #if DISABLED(SDSUPPORT)
-    // these pins are defined in the SD library if building with SD support
-    #define SCK_PIN               52
-    #define MISO_PIN              50
-    #define MOSI_PIN              51
   #endif
 
 #endif // RAMPS_OLD
@@ -887,9 +874,6 @@
   
   #define SDPOWER                 -1
   #define SDSS                    53
-  #define SCK_PIN                 52
-  #define MISO_PIN                50
-  #define MOSI_PIN                51
   #define LED_PIN                 13
   
   #define ORIG_FAN_PIN            9
@@ -1090,9 +1074,6 @@
 
   #define SDPOWER                 -1
   #define SDSS                    53
-  #define SCK_PIN                 52
-  #define MISO_PIN                50
-  #define MOSI_PIN                51
   #define LED_PIN                 13
 
   #define ORIG_FAN_PIN            4
@@ -1287,9 +1268,6 @@
 
   #define SDPOWER                 -1
   #define SDSS                    53
-  #define SCK_PIN                 52
-  #define MISO_PIN                50
-  #define MOSI_PIN                51
   #define LED_PIN                 13
 
   #define ORIG_FAN_PIN            9
@@ -1484,9 +1462,6 @@
 
   #define SDPOWER                 -1
   #define SDSS                    53
-  #define SCK_PIN                 52
-  #define MISO_PIN                50
-  #define MOSI_PIN                51
   #define LED_PIN                 13
 
   #define ORIG_FAN_PIN            8
@@ -1681,9 +1656,6 @@
 
   #define SDPOWER                 -1
   #define SDSS                    53
-  #define SCK_PIN                 52
-  #define MISO_PIN                50
-  #define MOSI_PIN                51
   #define LED_PIN                 13
 
   #define ORIG_FAN_PIN            8
@@ -1894,19 +1866,16 @@
 
 #define SDPOWER            -1
 #define SDSS               53
-#define SCK_PIN            52
-#define MISO_PIN           50
-#define MOSI_PIN           51
 #define LED_PIN            13
 #define ORIG_FAN_PIN        8
 #define ORIG_PS_ON_PIN      4
-#define KILL_PIN           -1 //80 with Smart Controller LCD
-#define SUICIDE_PIN        -1  //PIN that has to be turned on right after start, to keep power flowing.
+#define KILL_PIN           -1 // 80 with Smart Controller LCD
+#define SUICIDE_PIN        -1 // PIN that has to be turned on right after start, to keep power flowing.
 
 #if ENABLED(ULTRA_LCD)
   #define KILL_PIN 80
   #if ENABLED(NEWPANEL)
-   //arduino pin which triggers an piezzo beeper
+   // arduino pin which triggers an piezzo beeper
     #define ORIG_BEEPER_PIN 79      // Beeper on AUX-4
     #define LCD_PINS_RS 70
     #define LCD_PINS_ENABLE 71
@@ -2067,9 +2036,6 @@
   
   #define SDPOWER                 -1
   #define SDSS                    53
-  #define SCK_PIN                 52
-  #define MISO_PIN                50
-  #define MOSI_PIN                51
   #define LED_PIN                 13
   
   #define ORIG_FAN_PIN            9
@@ -2367,19 +2333,6 @@
 	#endif // SPARK_FULL_GRAPHICS
 #endif // ULTRA_LCD
 
-
-// SPI for Max6675 Thermocouple
-
-// works with radds??? #if DISABLED(SDSUPPORT)
-// these pins are defined in the SD library if building with SD support
-//#define MAX_SCK_PIN          52
-//#define MAX_MISO_PIN         50
-//#define MAX_MOSI_PIN         51
-//#define MAX6675_SS       53
-//#else
-//#define MAX6675_SS       49
-//#endif
-
 #endif //RADDS
 /****************************************************************************************/
 
@@ -2499,16 +2452,7 @@
 #endif //ULTRA_LCD
 
 // SPI for Max6675 Thermocouple
-
-#if DISABLED(SDSUPPORT)
-// these pins are defined in the SD library if building with SD support
-  #define MAX_SCK_PIN           52
-  #define MAX_MISO_PIN          50
-  #define MAX_MOSI_PIN          51
-  #define MAX6675_SS            53
-#else
-  #define MAX6675_SS            49
-#endif
+#define MAX6675_SS              53
 
 #endif //RAMPS-FD
 /****************************************************************************************/
@@ -3228,16 +3172,7 @@
 #endif //ULTRA_LCD
 
 // SPI for Max6675 Thermocouple
-
-#if DISABLED(SDSUPPORT)
-// these pins are defined in the SD library if building with SD support
-  #define SCK_PIN          52
-  #define MISO_PIN         50
-  #define MOSI_PIN         51
-  #define MAX6675_SS       66// Do not use pin 53 if there is even the remote possibility of using Display/SD card
-#else
-  #define MAX6675_SS       66// Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
-#endif
+#define MAX6675_SS       66 // Do not use pin 53 if there is even the remote possibility of using Display/SD card
 
 #endif // AZTEEG X3
 /****************************************************************************************/
@@ -3437,25 +3372,17 @@
   #define LCD_SCREEN_ROT_180
 
  //The encoder and click button
-  #define BTN_EN1          22
-  #define BTN_EN2           7
-  #define BTN_ENC          39  //the click switch
+  #define BTN_EN1           22
+  #define BTN_EN2            7
+  #define BTN_ENC           39  // the click switch
 
-  #define SDSS             53
-  #define SD_DETECT_PIN    49
+  #define SDSS              53
+  #define SD_DETECT_PIN     49
 
-  #define KILL_PIN         31
+  #define KILL_PIN          31
 #endif
  
-#if DISABLED(SDSUPPORT)
-// these pins are defined in the SD library if building with SD support
-  #define SCK_PIN          52
-  #define MISO_PIN         50
-  #define MOSI_PIN         51
-  #define MAX6675_SS       66// Do not use pin 53 if there is even the remote possibility of using Display/SD card
-#else
-  #define MAX6675_SS       66// Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
-#endif
+#define MAX6675_SS          66  // Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
 
 #endif // AZTEEG X3 PRO
 /****************************************************************************************/
@@ -4271,15 +4198,7 @@
 #endif // ULTRA_LCD && NEWPANEL
 
 // SPI for Max6675 Thermocouple
-#if DISABLED(SDSUPPORT)
-// these pins are defined in the SD library if building with SD support
-  #define SCK_PIN          52
-  #define MISO_PIN         50
-  #define MOSI_PIN         51
-  #define MAX6675_SS       66 // Do not use pin 53 if there is even the remote possibility of using Display/SD card
-#else
-  #define MAX6675_SS       66// Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
-#endif
+#define MAX6675_SS            66  // Do not use pin 53 if there is even the remote possibility of using Display/SD card
 
 #endif // 3DRAG
 /****************************************************************************************/
@@ -4394,15 +4313,7 @@
 #endif // ULTRA_LCD && NEWPANEL
 
 // SPI for Max6675 Thermocouple
-#if DISABLED(SDSUPPORT)
-// these pins are defined in the SD library if building with SD support
-  #define SCK_PIN          52
-  #define MISO_PIN         50
-  #define MOSI_PIN         51
-  #define MAX6675_SS       66 // Do not use pin 53 if there is even the remote possibility of using Display/SD card
-#else
-  #define MAX6675_SS       66// Do not use pin 49 as this is tied to the switch inside the SD card socket to detect if there is an SD card present
-#endif
+#define MAX6675_SS          66  // Do not use pin 53 if there is even the remote possibility of using Display/SD card
 
 #endif // K8200
 /****************************************************************************************/
@@ -4478,13 +4389,6 @@
 #define ORIG_PS_ON_PIN     -1
 #define KILL_PIN           -1
 #define ALARM_PIN          -1
-
-#if DISABLED(SDSUPPORT)
-// these pins are defined in the SD library if building with SD support
-  #define SCK_PIN           9
-  #define MISO_PIN         11
-  #define MOSI_PIN         10
-#endif
 
 #endif // TEENSYLU || PRINTRBOARD
 /****************************************************************************************/
@@ -4678,13 +4582,6 @@
 #define KILL_PIN           -1
 #define ALARM_PIN          -1
 
-#if DISABLED(SDSUPPORT)
-// these pins are defined in the SD library if building with SD support
-  #define SCK_PIN           9
-  #define MISO_PIN         11
-  #define MOSI_PIN         10
-#endif
-
 #endif // BRAINWAVE
 /****************************************************************************************/
 
@@ -4749,21 +4646,13 @@
 #define ALARM_PIN               -1
 #define SD_DETECT_PIN           -1
 
-
-#if DISABLED(SDSUPPORT)
-   // these pins are defined in the SD library if building with SD support
-  #define SCK_PIN          9
-  #define MISO_PIN         11
-  #define MOSI_PIN         10
-#endif
-
-#define ORIG_BEEPER_PIN    -1
-#define LCD_PINS_RS        -1
-#define LCD_PINS_ENABLE    -1
-#define LCD_PINS_D4        -1
-#define LCD_PINS_D5        -1
-#define LCD_PINS_D6        -1
-#define LCD_PINS_D7        -1
+#define ORIG_BEEPER_PIN         -1
+#define LCD_PINS_RS             -1
+#define LCD_PINS_ENABLE         -1
+#define LCD_PINS_D4             -1
+#define LCD_PINS_D5             -1
+#define LCD_PINS_D6             -1
+#define LCD_PINS_D7             -1
 
 #if ENABLED(SAV_3DLCD)
 // For LCD SHIFT register LCD
@@ -4890,13 +4779,6 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 #define KILL_PIN           -1
 #define ALARM_PIN          -1
 
-#if DISABLED(SDSUPPORT)
-// these pins are defined in the SD library if building with SD support
-  #define SCK_PIN         21 // 9
-  #define MISO_PIN        23 // 11
-  #define MOSI_PIN        22 // 10
-#endif
-
 #if ENABLED(ULTIPANEL)
 #define LCD_PINS_RS         8
 #define LCD_PINS_ENABLE     9
@@ -4973,13 +4855,6 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 
 // The SDSS pin uses a different pin mapping from file Sd2PinMap.h
 #define SDSS                    20
-
-#if DISABLED(SDSUPPORT)
-// these pins are defined in the SD library if building with SD support
-  #define SCK_PIN                9
-  #define MISO_PIN              11
-  #define MOSI_PIN              10
-#endif
 
 // Microstepping pins
 // Note that the pin mapping is not from fastio.h
@@ -5329,27 +5204,53 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 
 
 /****************************************************************************************
-*********** Available chip select pins for HW SPI are 4 10 52 77 ************************
-****************************************************************************************/
-#if (SDSS == 4) || (SDSS == 10) || (SDSS == 52) || (SDSS == 77)
-  #if (SDSS == 4)
-    #define SPI_PIN         87
-    #define SPI_CHAN        1
-  #elif (SDSS == 10)
-    #define SPI_PIN         77
-    #define SPI_CHAN        0
-  #elif (SDSS == 52) 
-    #define SPI_PIN         86
-    #define SPI_CHAN        2
+******************** Available chip select pins for HW SPI ******************************
+*****************************************************************************************/
+#if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__)
+  #define MOSI_PIN            51
+  #define MISO_PIN            50
+  #define SCK_PIN             52
+#elif defined(__AVR_ATmega644P__) || defined(__AVR_ATmega644__) || defined(__AVR_ATmega1284P__)
+  #define MOSI_PIN             5
+  #define MISO_PIN             6
+  #define SCK_PIN              7
+#elif defined(__AVR_ATmega32U4__)
+  #define MOSI_PIN             2
+  #define MISO_PIN             3
+  #define SCK_PIN              1
+#elif defined(__AVR_AT90USB646__) || defined(__AVR_AT90USB1286__)
+  #define MOSI_PIN            22
+  #define MISO_PIN            23
+  #define SCK_PIN             21
+#elif defined(__AVR_ATmega168__) ||defined(__AVR_ATmega168P__) ||defined(__AVR_ATmega328P__)
+  #define MOSI_PIN            11
+  #define MISO_PIN            12
+  #define SCK_PIN             13
+#elif defined(__AVR_ATmega1281__)
+  #define MOSI_PIN            11
+  #define MISO_PIN            12
+  #define SCK_PIN             10
+#elif defined (__SAM3X8E__)
+  #if (SDSS == 4) || (SDSS == 10) || (SDSS == 52) || (SDSS == 77)
+    #if (SDSS == 4)
+      #define SPI_PIN         87
+      #define SPI_CHAN        1
+    #elif (SDSS == 10)
+      #define SPI_PIN         77
+      #define SPI_CHAN        0
+    #elif (SDSS == 52) 
+      #define SPI_PIN         86
+      #define SPI_CHAN        2
+    #else
+      #define SPI_PIN         77
+      #define SPI_CHAN        0
+    #endif
+    #define MOSI_PIN          75
+    #define MISO_PIN          74
+    #define SCK_PIN           76
   #else
-    #define SPI_PIN         77
-    #define SPI_CHAN        0
+    #define DUE_SOFTWARE_SPI
   #endif
-  #define MOSI_PIN          75
-  #define MISO_PIN          74
-  #define SCK_PIN           76
-#else
-  #define DUE_SOFTWARE_SPI
 #endif
 /****************************************************************************************/
 

@@ -101,7 +101,7 @@
  * M110 - Set the current line number
  * M111 - Set debug flags with S<mask>. See flag bits defined in Marlin.h.
  * M112 - Emergency stop
- * M114 - Output current position to serial port, (V)erbose for user
+ * M114 - Output current position to serial port
  * M115 - Capabilities string
  * M117 - Display a message on the controller screen
  * M119 - Output Endstop status to serial port

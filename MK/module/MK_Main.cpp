@@ -5725,7 +5725,7 @@ inline void gcode_M226() {
     uint16_t beepS = code_seen('S') ? code_value_short() : 100;
     uint32_t beepP = code_seen('P') ? code_value_long() : 1000;
     if (beepP > 5000) beepP = 5000; // limit to 5 seconds
-    buzz(beepS, beepP);
+    buzz(beepP, beepS);
   }
 
 #endif // HAS(BUZZER)

@@ -2,7 +2,7 @@
   #define BUZZER_H
 
   #if HAS(BUZZER)
-    void buzz(uint16_t freq, long duration);
+    void buzz(long duration, uint16_t freq);
   #endif
 
 #endif // BUZZER_H
