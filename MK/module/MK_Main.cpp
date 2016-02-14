@@ -8022,11 +8022,13 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
 }
 
 void kill(const char* lcd_msg) {
+  #if ENABLED(KILL_METHOD) && KILL_METHOD == 1
+    HAL::resetHardware();
+  #else
+
   #if ENABLED(ULTRA_LCD)
     lcd_setalertstatuspgm(lcd_msg);
   #endif
-
-  HAL::resetHardware();
 
   cli(); // Stop interrupts
   disable_all_heaters();
