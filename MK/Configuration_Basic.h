@@ -42,6 +42,11 @@
 // You can use an online service to generate a random UUID. (eg http://www.uuidgenerator.net/version4)
 #define MACHINE_UUID "00000000-0000-0000-0000-000000000000"
 
+// Kill Method
+// 0 - Disable heaters, wait forever
+// 1 - Reset controller. Will not reset separate communication chips!
+#define KILL_METHOD 0
+
 // If you want test the firmware uncomment below. Use Serial arduino monitor...
 // ONLY BAUDRATE 115200
 //#define FIRMWARE_TEST
