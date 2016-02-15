@@ -58,11 +58,11 @@ volatile static unsigned long step_events_completed; // The number of step event
 #if ENABLED(ADVANCE)
   static long advance_rate, advance, final_advance = 0;
   static long old_advance = 0;
-  static long e_steps[4];
+  static long e_steps[6];
 #endif
 
 static long acceleration_time, deceleration_time;
-//static unsigned long accelerate_until, decelerate_after, acceleration_rate, initial_rate, final_rate, nominal_rate;
+// static unsigned long accelerate_until, decelerate_after, acceleration_rate, initial_rate, final_rate, nominal_rate;
 static unsigned short acc_step_rate; // needed for deceleration start point
 static uint8_t step_loops;
 static uint8_t step_loops_nominal;
@@ -91,10 +91,14 @@ static volatile char endstop_hit_bits = 0; // use X_MIN, Y_MIN, Z_MIN and Z_PROB
   int motor_current_setting[3] = DEFAULT_PWM_MOTOR_CURRENT;
 #endif
 
+#if ENABLED(COLOR_MIXING_EXTRUDER)
+  static long counter_m[DRIVER_EXTRUDERS];
+#endif
+
 static bool check_endstops = true;
 
-volatile long count_position[NUM_AXIS] = { 0 };
-volatile signed char count_direction[NUM_AXIS] = { 1, 1, 1, 1 };
+volatile long count_position[NUM_AXIS] = { 0 }; // Positions of stepper motors, in step units
+volatile signed char count_direction[NUM_AXIS] = { 1 };
 
 
 //===========================================================================
@@ -303,14 +307,7 @@ void checkHitEndstops() {
   }
 }
 
-void enable_endstops(bool check) {
-  if (debugLevel & DEBUG_DEBUG) {
-    ECHO_SM(DB, "setup_for_endstop_move > enable_endstops");
-    if (check) ECHO_EM("(true)");
-    else ECHO_EM("(false)");
-  }
-  check_endstops = check;
-}
+void enable_endstops(bool check) { check_endstops = check; }
 
 // Check endstops
 inline void update_endstops() {
@@ -537,7 +534,12 @@ FORCE_INLINE unsigned short calc_timer(unsigned short step_rate) {
     timer = (unsigned short)pgm_read_word_near(table_address);
     timer -= (((unsigned short)pgm_read_word_near(table_address + 2) * (unsigned char)(step_rate & 0x0007)) >> 3);
   }
-  if (timer < 100) { timer = 100; ECHO_M(SERIAL_STEPPER_TOO_HIGH); ECHO_T(step_rate); }//(20kHz this should never happen)
+
+  if (timer < 100) { // (20kHz this should never happen)
+    timer = 100;
+    ECHO_EMV(SERIAL_STEPPER_TOO_HIGH, step_rate);
+  }
+
   return timer;
 }
 
@@ -622,7 +624,13 @@ FORCE_INLINE void trapezoid_generator_reset() {
     advance = current_block->initial_advance;
     final_advance = current_block->final_advance;
     // Do E steps + advance steps
-    e_steps[current_block->active_driver] += ((advance >>8) - old_advance);
+    #if ENABLED(COLOR_MIXING_EXTRUDER)
+      // Move mixing steppers proportionally
+      for (int8_t j = 0; j < DRIVER_EXTRUDERS; j++)
+        e_steps[j] += ((advance >> 8) - old_advance) * current_block->mix_steps[j] / current_block->step_event_count;
+    #else
+      e_steps[current_block->active_driver] += ((advance >> 8) - old_advance);
+    #endif
     old_advance = advance >>8;
   #endif
   deceleration_time = 0;
@@ -657,14 +665,21 @@ ISR(TIMER1_COMPA_vect) {
     if (current_block) {
       current_block->busy = true;
       trapezoid_generator_reset();
-      counter_x = -(current_block->step_event_count >> 1);
-      counter_y = counter_z = counter_e = counter_x;
+
+      // Initialize Bresenham counters to 1/2 the ceiling
+      long new_count = -(current_block->step_event_count >> 1);
+      counter_x = counter_y = counter_z = counter_e = new_count;
+
+      #if ENABLED(COLOR_MIXING_EXTRUDER)
+        for (int8_t e = 0; e < DRIVER_EXTRUDERS; e++) counter_m[e] = new_count;
+      #endif
+
       step_events_completed = 0;
 
       #if ENABLED(Z_LATE_ENABLE)
         if (current_block->steps[Z_AXIS] > 0) {
           enable_z();
-          OCR1A = 2000; //1ms wait
+          OCR1A = 2000; // 1ms wait
           return;
         }
       #endif
@@ -674,7 +689,7 @@ ISR(TIMER1_COMPA_vect) {
       // #endif
     }
     else {
-      OCR1A = 2000; // 1kHz.
+      OCR1A = 2000; // 1kHz
     }
   }
 
@@ -685,17 +700,30 @@ ISR(TIMER1_COMPA_vect) {
 
     // Take multiple steps per interrupt (For high speed moves)
     for (int8_t i = 0; i < step_loops; i++) {
-      #ifndef USBCON
+
         MKSERIAL.checkRx(); // Check for serial chars.
-      #endif
 
       #if ENABLED(ADVANCE)
         counter_e += current_block->steps[E_AXIS];
         if (counter_e > 0) {
           counter_e -= current_block->step_event_count;
-          e_steps[current_block->active_driver] += TEST(out_bits, E_AXIS) ? -1 : 1;
+          #if DISABLED(COLOR_MIXING_EXTRUDER)
+            // Don't step E for mixing extruder
+            e_steps[current_block->active_driver] += TEST(out_bits, E_AXIS) ? -1 : 1;
+          #endif
         }
-      #endif //ADVANCE
+
+        #if ENABLED(COLOR_MIXING_EXTRUDER)
+          long dir = TEST(out_bits, E_AXIS) ? -1 : 1;
+          for (uint8_t j = 0; j < DRIVER_EXTRUDERS; j++) {
+            counter_m[j] += current_block->mix_steps[j];
+            if (counter_m[j] > 0) {
+              counter_m[j] -= current_block->step_event_count;
+              e_steps[j] += dir;
+            }
+          }
+        #endif // !COLOR_MIXING_EXTRUDER
+      #endif // ADVANCE
 
       #define _COUNTER(axis) counter_## axis
       #define _APPLY_STEP(AXIS) AXIS ##_APPLY_STEP
@@ -705,11 +733,19 @@ ISR(TIMER1_COMPA_vect) {
         _COUNTER(axis) += current_block->steps[_AXIS(AXIS)]; \
         if (_COUNTER(axis) > 0) { _APPLY_STEP(AXIS)(!_INVERT_STEP_PIN(AXIS),0); }
 
-      STEP_START(x,X);
-      STEP_START(y,Y);
-      STEP_START(z,Z);
+      STEP_START(x, X);
+      STEP_START(y, Y);
+      STEP_START(z, Z);
       #if DISABLED(ADVANCE)
-        STEP_START(e,E);
+        #if ENABLED(COLOR_MIXING_EXTRUDER)
+          counter_e += current_block->steps[E_AXIS];
+          for (uint8_t j = 0; j < DRIVER_EXTRUDERS; j++) {
+            counter_m[j] += current_block->mix_steps[j];
+            if (counter_m[j] > 0) En_STEP_WRITE(j, !INVERT_E_STEP_PIN);
+          }
+        #else
+          STEP_START(e, E);
+        #endif
       #endif
 
       #if ENABLED(STEPPER_HIGH_LOW) && STEPPER_HIGH_LOW_DELAY > 0
@@ -727,7 +763,21 @@ ISR(TIMER1_COMPA_vect) {
       STEP_END(y, Y);
       STEP_END(z, Z);
       #if DISABLED(ADVANCE)
-        STEP_END(e, E);
+        #if ENABLED(MIXING_EXTRUDER_FEATURE)
+          // Always count the single E axis
+          if (counter_e > 0) {
+            counter_e -= current_block->step_event_count;
+            count_position[E_AXIS] += count_direction[E_AXIS];
+          }
+          for (int8_t j = 0; j < DRIVER_EXTRUDERS; j++) {
+            if (counter_m[j] > 0) {
+              counter_m[j] -= current_block->step_event_count;
+              En_STEP_WRITE(j, INVERT_E_STEP_PIN);
+            }
+          }
+        #else
+          STEP_END(e, E);
+        #endif
       #endif
 
       step_events_completed++;
@@ -882,6 +932,36 @@ ISR(TIMER1_COMPA_vect) {
           }
         }
       #endif
+      #if DRIVER_EXTRUDERS > 4
+        if (e_steps[4] != 0) {
+          E4_STEP_WRITE(INVERT_E_STEP_PIN);
+          if (e_steps[4] < 0) {
+            E4_DIR_WRITE(INVERT_E4_DIR);
+            e_steps[4]++;
+            E4_STEP_WRITE(!INVERT_E_STEP_PIN);
+          }
+          else if (e_steps[4] > 0) {
+            E4_DIR_WRITE(!INVERT_E4_DIR);
+            e_steps[4]--;
+            E4_STEP_WRITE(!INVERT_E_STEP_PIN);
+          }
+        }
+      #endif
+      #if DRIVER_EXTRUDERS > 5
+        if (e_steps[5] != 0) {
+          E5_STEP_WRITE(INVERT_E_STEP_PIN);
+          if (e_steps[5] < 0) {
+            E5_DIR_WRITE(INVERT_E5_DIR);
+            e_steps[5]++;
+            E5_STEP_WRITE(!INVERT_E_STEP_PIN);
+          }
+          else if (e_steps[5] > 0) {
+            E5_DIR_WRITE(!INVERT_E5_DIR);
+            e_steps[5]--;
+            E5_STEP_WRITE(!INVERT_E_STEP_PIN);
+          }
+        }
+      #endif
     }
   }
 #endif // ADVANCE
@@ -930,6 +1010,12 @@ void st_init() {
   #if HAS(E3_DIR)
     E3_DIR_INIT;
   #endif
+  #if HAS(E4_DIR)
+    E4_DIR_INIT;
+  #endif
+  #if HAS(E5_DIR)
+    E5_DIR_INIT;
+  #endif
 
   //Initialize Enable Pins - steppers default to disabled.
 
@@ -975,6 +1061,14 @@ void st_init() {
     E3_ENABLE_INIT;
     if (!E_ENABLE_ON) E3_ENABLE_WRITE(HIGH);
   #endif
+  #if HAS(E4_ENABLE)
+    E4_ENABLE_INIT;
+    if (!E_ENABLE_ON) E4_ENABLE_WRITE(HIGH);
+  #endif
+  #if HAS(E5_ENABLE)
+    E5_ENABLE_INIT;
+    if (!E_ENABLE_ON) E5_ENABLE_WRITE(HIGH);
+  #endif
 
   //Choice E0-E1 or E0-E2 or E1-E3 pin
   #if ENABLED(MKR4) && HAS(E0E1)
@@ -985,6 +1079,12 @@ void st_init() {
   #endif
   #if ENABLED(MKR4) && HAS(E0E3)
     OUT_WRITE_RELE(E0E3_CHOICE_PIN, LOW);
+  #endif
+  #if ENABLED(MKR4) && HAS(E0E4)
+    OUT_WRITE_RELE(E0E4_CHOICE_PIN, LOW);
+  #endif
+  #if ENABLED(MKR4) && HAS(E0E5)
+    OUT_WRITE_RELE(E0E5_CHOICE_PIN, LOW);
   #endif
   #if ENABLED(MKR4) && HAS(E1E3)
     OUT_WRITE_RELE(E1E3_CHOICE_PIN, LOW);
@@ -1106,6 +1206,12 @@ void st_init() {
   #if HAS(E3_STEP)
     E_AXIS_INIT(3);
   #endif
+  #if HAS(E4_STEP)
+    E_AXIS_INIT(4);
+  #endif
+  #if HAS(E5_STEP)
+    E_AXIS_INIT(5);
+  #endif
 
   // waveform generation = 0100 = CTC
   TCCR1B &= ~BIT(WGM13);
@@ -1132,7 +1238,7 @@ void st_init() {
       TCCR0A &= ~BIT(WGM01);
       TCCR0A &= ~BIT(WGM00);
     #endif
-    e_steps[0] = e_steps[1] = e_steps[2] = e_steps[3] = 0;
+    e_steps[0] = e_steps[1] = e_steps[2] = e_steps[3] = e_steps[4] = e_steps[5] = 0;
     TIMSK0 |= BIT(OCIE0A);
   #endif //ADVANCE
 

@@ -15,7 +15,7 @@ extern char fullName[LONG_FILENAME_LENGTH * SD_MAX_FOLDER_DEPTH + SD_MAX_FOLDER_
 
 enum LsAction { LS_Count, LS_GetFilename };
 
-#include "SdFat.h"
+#include "SDFat.h"
 
 class CardReader {
 public:

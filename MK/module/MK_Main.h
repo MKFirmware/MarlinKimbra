@@ -230,6 +230,10 @@ extern uint8_t active_driver;
   void FirmwareTest();
 #endif
 
+#if ENABLED(COLOR_MIXING_EXTRUDER)
+  extern float mixing_factor[DRIVER_EXTRUDERS];
+#endif
+
 extern void calculate_volumetric_multipliers();
 
 #if ENABLED(M100_FREE_MEMORY_WATCHER)

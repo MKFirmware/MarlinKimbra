@@ -25,11 +25,11 @@
 *
 *  4 BOARD_DUEMILANOVE_328P - Duemilanove w/ ATMega328P pin assignment
 * 40 BOARD_MKS_BASE    - Arduino Mega2560 with RAMPS v1.4 pin assignments
-*401 BOARD_RADDS       - Radds Arduino DUE
-*403 BOARD_RAMPS_FD_V1 - Ramps FD version 1
-*404 BOARD_RAMPS_FD_V2 - Ramps FD version 2
-*408 BOARD_SMART_RAMPS - Smart Ramps
-*433 BOARD_RAMPS4DUE   - Ramps for Arduino DUE
+*401 BOARD_RADDS       - Radds ARM 32 Arduino DUE
+*403 BOARD_RAMPS_FD_V1 - Ramps FD version 1 ARM 32 Arduino DUE
+*404 BOARD_RAMPS_FD_V2 - Ramps FD version 2 ARM 32 Arduino DUE
+*408 BOARD_SMART_RAMPS - Smart Ramps ARM 32 Arduino DUE
+*433 BOARD_RAMPS4DUE   - Ramps ARM 32 Arduino DUE
 *
 *  5 BOARD_GEN6 - Gen6
 * 51 BOARD_GEN6_DELUXE - Gen6 deluxe
@@ -51,6 +51,7 @@
 *701 BOARD_MEGATRONICS_2 - Megatronics v2.0
 *702 BOARD_MINITRONICS   - Minitronics v1.0
 *703 BOARD_MEGATRONICS_3 - Megatronics v3.0
+*705 BOARD_ULTRATRONICS  - Ultratronics v1 ARM 32 Arduino DUE
 * 71 BOARD_ULTIMAKER_OLD - Ultimaker (Older electronics. Pre 1.5.4. This is rare)
 * 72 BOARD_ULTIMAIN_2 - Ultimainboard 2.x (Uses TEMP_SENSOR 20)
 * 77 BOARD_3DRAG - 3Drag Controller
@@ -82,7 +83,6 @@
 * These Pins are assigned for the modified GEN7
 * Board from Alfons3 Please review the pins and adjust it for your needs
 ******************************************************************************/
-
 #if MB(GEN7_CUSTOM)
   #define KNOWN_BOARD
 
@@ -164,7 +164,6 @@
 * 11
 * Gen7 v1.1, v1.2
 ****************************************************************************************/
-
 #if MB(GEN7_12)
   #define KNOWN_BOARD
   
@@ -239,7 +238,6 @@
 * 12
 * Gen7 v1.3
 ****************************************************************************************/
-
 #if MB(GEN7_13)
   #define KNOWN_BOARD
   
@@ -314,7 +312,6 @@
 * 13
 * Gen7 v1.4 pin assignment
 ****************************************************************************************/
-
 #if MB(GEN7_14)
   #define GEN7_VERSION     14 // v1.4
   #define KNOWN_BOARD
@@ -382,7 +379,6 @@
 * 2
 * Cheaptronic v1.0
 ****************************************************************************************/
-
 #if MB(CHEAPTRONIC)
   #define KNOWN_BOARD 1
   
@@ -480,7 +476,6 @@
 * 20
 * Sethi 3D_1 pin assignment - www.sethi3d.com.br
 ****************************************************************************************/
-
 #if MB(SETHI)
   #define KNOWN_BOARD
   
@@ -560,7 +555,6 @@
 * 21
 * Elefu RA Board
 ****************************************************************************************/
-
 #if MB(ELEFU_3)
   #define KNOWN_BOARD 1
   
@@ -675,12 +669,10 @@
 
 
 
-
 /****************************************************************************************
 * 22
 * Gen3  Monolithic Electronics
 ****************************************************************************************/
-
 #if MB(GEN3_MONOLITHIC)
   #define KNOWN_BOARD 1
 
@@ -750,7 +742,6 @@
 * 3 
 * RAMPS OLD
 ****************************************************************************************/
-
 #if MB(RAMPS_OLD)
   #define KNOWN_BOARD 1
   
@@ -818,13 +809,11 @@
 
 
 
-
 /****************************************************************************************
 * 33
 * RAMPS 1.3 / 1.4
 * RAMPS_13_HFB (Hotend0, Fan, Bed)
 ****************************************************************************************/
-
 #if MB(RAMPS_13_HFB)
   #define KNOWN_BOARD 1
   
@@ -1024,7 +1013,6 @@
 * RAMPS 1.3 / 1.4
 * RAMPS_13_HHB (Hotend0, Hotend1, Bed)
 ****************************************************************************************/
-
 #if MB(RAMPS_13_HHB)
   #define KNOWN_BOARD 1
 
@@ -1218,7 +1206,6 @@
 * RAMPS 1.3 / 1.4
 * RAMPS_13_HFF (Hotend0, Fan, Fan)
 ****************************************************************************************/
-
 #if MB(RAMPS_13_HFF)
   #define KNOWN_BOARD 1
 
@@ -1412,7 +1399,6 @@
 * RAMPS 1.3 / 1.4
 * RAMPS_13_HHF (Hotend0, Hotend1, Fan)
 ****************************************************************************************/
-
 #if MB(RAMPS_13_HHF)
   #define KNOWN_BOARD 1
 
@@ -1606,7 +1592,6 @@
 * RAMPS 1.3 / 1.4
 * RAMPS_13_HHH (Hotend0, Hotend1, Hotend2)
 ****************************************************************************************/
-
 #if MB(RAMPS_13_HHH)
   #define KNOWN_BOARD 1
 
@@ -1799,7 +1784,6 @@
 * 301
 * Rambo
 ****************************************************************************************/
-
 #if MB(RAMBO)
 #define KNOWN_BOARD
 
@@ -1934,7 +1918,6 @@
 * 4
 * Duemilanove w/ ATMega328P
 ****************************************************************************************/
-
 #if MB(DUEMILANOVE_328P)
 #define KNOWN_BOARD 1
 
@@ -1986,7 +1969,6 @@
 * 40
 * MKS_BASE 1.0 
 ****************************************************************************************/
-
 #if MB(MKS_BASE)
   #define KNOWN_BOARD 1
   
@@ -2187,12 +2169,12 @@
 * RADDS
 ****************************************************************************************/
 #if MB(RADDS)
-#define KNOWN_BOARD 1
-//
+#define KNOWN_BOARD
+
 #ifndef __SAM3X8E__
- #error Oops!  Make sure you have 'Arduino Due' selected from the 'Tools -> Boards' menu.
+  #error Oops!  Make sure you have 'Arduino Due' selected from the 'Tools -> Boards' menu.
 #endif
-//
+
 #define RADDS
 
 #define ORIG_X_STEP_PIN         24
@@ -2513,6 +2495,7 @@
 /****************************************************************************************/
 
 
+
 /****************************************************************************************
 * 433
 * Arduino Due pin assignment
@@ -2579,11 +2562,11 @@
 /****************************************************************************************/
 
 
+
 /****************************************************************************************
 * 5 - 51
 * Gen6 - Gen6 Deluxe
 ****************************************************************************************/
-
 #if MB(GEN6) || MB(GEN6_DELUXE)
 #define KNOWN_BOARD 1
 
@@ -2804,7 +2787,6 @@
 * 65 - Azteeg X1
 * 66 - MELZI 1284
 ****************************************************************************************/
-
 #if MB(SANGUINOLOLU_11) || MB(SANGUINOLOLU_12) || MB(MELZI) || MB(STB_11) || MB(AZTEEG_X1) || MB(MELZI_1284)
 
   #if !defined(__AVR_ATmega644P__) && !defined(__AVR_ATmega1284P__)
@@ -3001,7 +2983,6 @@
 * 67
 * AZTEEG X3
 ****************************************************************************************/
-
 #if MB(AZTEEG_X3)
 #define KNOWN_BOARD 1
 
@@ -3183,7 +3164,6 @@
 * 68 
 * AZTEEG X3 PRO
 ****************************************************************************************/
-
 #if MB(AZTEEG_X3_PRO)
 #define KNOWN_BOARD 1
 
@@ -3393,7 +3373,6 @@
 * 7
 * Ultimaker pin assignment
 ****************************************************************************************/
-
 #if MB(ULTIMAKER)
 #define KNOWN_BOARD
 
@@ -3501,7 +3480,6 @@
 * 70
 * MegaTronics
 ****************************************************************************************/
-
 #if MB(MEGATRONICS)
 #define KNOWN_BOARD 1
 
@@ -3598,7 +3576,6 @@
 * 701
 * MegaTronics v2.0
 ****************************************************************************************/
-
 #if MB(MEGATRONICS_2)
   #define KNOWN_BOARD 1
   
@@ -3707,7 +3684,6 @@
 * 702
 * Minitronics v1.0
 ****************************************************************************************/
-
 #if MB(MINITRONICS)
   #define KNOWN_BOARD 1
 
@@ -3801,7 +3777,6 @@
 * 703
 * MegaTronics v3.0
 ****************************************************************************************/
-
 #if MB(MEGATRONICS_3)
   #define KNOWN_BOARD 1
 
@@ -3927,10 +3902,151 @@
 
 
 /****************************************************************************************
+* 705
+* ULTRATRONICS
+*****************************************************************************************/
+#if MB(ULTRATRONICS)
+#define KNOWN_BOARD
+
+#ifndef __SAM3X8E__
+  #error Oops!  Make sure you have 'Arduino Due' selected from the 'Tools -> Boards' menu.
+#endif
+
+// X AXIS
+#define ORIG_X_STEP_PIN       35  
+#define ORIG_X_DIR_PIN        34  
+#define ORIG_X_ENABLE_PIN     37  
+#define ORIG_X_MIN_PIN        -1  
+#define ORIG_X_MAX_PIN        -1  
+#define X_MS1_PIN             -1  
+
+// Y AXIS
+#define ORIG_Y_STEP_PIN       22  
+#define ORIG_Y_DIR_PIN        23  
+#define ORIG_Y_ENABLE_PIN     9  
+#define ORIG_Y_MIN_PIN        -1  
+#define ORIG_Y_MAX_PIN        -1  
+#define Y_MS1_PIN             -1  
+
+// Z AXIS
+#define ORIG_Z_STEP_PIN       25  
+#define ORIG_Z_DIR_PIN        26  
+#define ORIG_Z_ENABLE_PIN     24  
+#define ORIG_Z_MIN_PIN        -1  
+#define ORIG_Z_MAX_PIN        -1  
+#define Z_MS1_PIN             -1  
+
+// E0 AXIS
+#define ORIG_E0_STEP_PIN      47  
+#define ORIG_E0_DIR_PIN       46  
+#define ORIG_E0_ENABLE_PIN    48  
+#define E0_MS1_PIN            -1  
+
+// E1 AXIS
+#define ORIG_E1_STEP_PIN      44  
+#define ORIG_E1_DIR_PIN       36  
+#define ORIG_E1_ENABLE_PIN    45  
+
+// E2 AXIS
+#define ORIG_E2_STEP_PIN      42 
+#define ORIG_E2_DIR_PIN       41 
+#define ORIG_E2_ENABLE_PIN    43 
+
+// E3 AXIS
+#define ORIG_E3_STEP_PIN      39 
+#define ORIG_E3_DIR_PIN       38 
+#define ORIG_E3_ENABLE_PIN    40 
+
+#define MOTOR_FAULT_PIN       -1 
+
+#define SDPOWER               -1
+#define SDSS                  -1 
+#define SD_DETECT_PIN         -1 
+#define LED_PIN               -1
+
+#define ORIG_FAN_PIN          -1 
+#define FAN2_PIN              -1 
+
+#define ORIG_PS_ON_PIN        -1
+#define KILL_PIN              -1
+#define SUICIDE_PIN           -1 //PIN that has to be turned on right after start, to keep power flowing.
+
+// Note that on the Due pin A0 on the board is channel 2 on the ARM chip
+#define ORIG_HEATER_BED_PIN   69 
+#define ORIG_HEATER_0_PIN     68 
+#define ORIG_HEATER_1_PIN      8 
+#define ORIG_HEATER_2_PIN      9 
+#define ORIG_HEATER_3_PIN     97 
+
+#define ORIG_TEMP_BED_PIN      0 
+#define ORIG_TEMP_0_PIN        1 
+#define ORIG_TEMP_1_PIN       52 
+#define ORIG_TEMP_2_PIN       51 
+#define ORIG_TEMP_3_PIN       50 
+
+#define LED_RED_PIN           40 
+#define LED_GREEN_PIN         41 
+#define CASE_LIGHTS_PIN       36 
+
+#define EXP_VOLTAGE_LEVEL_PIN 65
+
+#define DAC0_SYNC             53 
+#define DAC1_SYNC              6 
+
+//64K SPI EEPROM
+#define SPI_CHAN_EEPROM1       2
+#define SPI_EEPROM1_CS        25 
+
+//2K SPI EEPROM
+#define SPI_EEPROM2_CS        26 
+
+//** FLASH SPI**/
+//32Mb
+#define SPI_FLASH_CS          23 
+
+/** Display **/
+
+// GLCD on expansion port
+#if ENABLED(REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER)
+
+  #define LCD_PINS_RS         18
+  #define LCD_PINS_ENABLE     15
+  #define LCD_PINS_D4         19
+  #define BEEPER_PIN          64
+
+  #define BTN_EN1             14
+  #define BTN_EN2             16
+  #define BTN_ENC             17
+  
+  #if UI_VOLTAGE_LEVEL != 1
+    #undef UI_VOLTAGE_LEVEL
+    #define UI_VOLTAGE_LEVEL  1
+  #endif
+     
+#endif //REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
+
+#if NUM_SERVOS > 0
+  #define SERVO0_PIN          -1
+  #if NUM_SERVOS > 1
+    #define SERVO1_PIN        -1
+    #if NUM_SERVOS > 2
+      #define SERVO2_PIN      -1
+      #if NUM_SERVOS > 3
+        #define SERVO3_PIN    -1
+      #endif
+    #endif
+  #endif
+#endif
+
+#endif // ULTRATRONICS
+/****************************************************************************************/
+
+
+
+/****************************************************************************************
 * 71
 * Ultimaker pin assignment (Old electronics)
 ****************************************************************************************/
-
 #if MB(ULTIMAKER_OLD)
   #define KNOWN_BOARD
 
@@ -4004,7 +4120,6 @@
 * 72
 * Ultiboard v2.0 pin assignment
 ****************************************************************************************/
-
 #if MB(ULTIMAIN_2)
 #define KNOWN_BOARD
 
@@ -5263,23 +5378,54 @@ DaveX plan for Teensylu/printrboard-type pinouts (ref teensylu & sprinter) for a
 ********************************* END MOTHERBOARD ***************************************
 ****************************************************************************************/
 
+#ifndef ORIG_E0_DIR_PIN
+  #define ORIG_E0_DIR_PIN     -1
+  #define ORIG_E0_ENABLE_PIN  -1
+  #define ORIG_E0_STEP_PIN    -1
+#endif
+#ifndef ORIG_E1_DIR_PIN
+  #define ORIG_E1_DIR_PIN     -1
+  #define ORIG_E1_ENABLE_PIN  -1
+  #define ORIG_E1_STEP_PIN    -1
+#endif
+#ifndef ORIG_E2_DIR_PIN
+  #define ORIG_E2_DIR_PIN     -1
+  #define ORIG_E2_ENABLE_PIN  -1
+  #define ORIG_E2_STEP_PIN    -1
+#endif
+#ifndef ORIG_E3_DIR_PIN
+  #define ORIG_E3_DIR_PIN     -1
+  #define ORIG_E3_ENABLE_PIN  -1
+  #define ORIG_E3_STEP_PIN    -1
+#endif
+#ifndef ORIG_E4_DIR_PIN
+  #define ORIG_E4_DIR_PIN     -1
+  #define ORIG_E4_ENABLE_PIN  -1
+  #define ORIG_E4_STEP_PIN    -1
+#endif
+#ifndef ORIG_E5_DIR_PIN
+  #define ORIG_E5_DIR_PIN     -1
+  #define ORIG_E5_ENABLE_PIN  -1
+  #define ORIG_E5_STEP_PIN    -1
+#endif
+
 #ifndef ORIG_HEATER_1_PIN
-  #define ORIG_HEATER_1_PIN -1
+  #define ORIG_HEATER_1_PIN   -1
 #endif
 #ifndef ORIG_TEMP_1_PIN
-  #define ORIG_TEMP_1_PIN -1
+  #define ORIG_TEMP_1_PIN     -1
 #endif
 #ifndef ORIG_HEATER_2_PIN
-  #define ORIG_HEATER_2_PIN -1
+  #define ORIG_HEATER_2_PIN   -1
 #endif
 #ifndef ORIG_TEMP_2_PIN
-  #define ORIG_TEMP_2_PIN -1
+  #define ORIG_TEMP_2_PIN     -1
 #endif
 #ifndef ORIG_HEATER_3_PIN
-  #define ORIG_HEATER_3_PIN -1
+  #define ORIG_HEATER_3_PIN   -1
 #endif
 #ifndef ORIG_TEMP_3_PIN
-  #define ORIG_TEMP_3_PIN -1
+  #define ORIG_TEMP_3_PIN     -1
 #endif
 
 #if ENABLED(X_STOP_PIN)

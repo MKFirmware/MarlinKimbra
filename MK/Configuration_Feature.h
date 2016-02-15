@@ -21,6 +21,7 @@
  * - Dangerous extrution prevention
  * - Single nozzle
  * - BariCUDA paste extruder
+ * - Color Mixing Extruder
  * - Multiextruder MKR4
  * - Multiextruder NPr2
  * - Multiextruder DONDOLO
@@ -49,7 +50,6 @@
  * - Filament diameter sensor
  * - Filament Runout sensor
  * - Power consumption sensor
- * - RFID card sensor
  * ADDON FEATURES:
  * - EEPROM
  * - SDCARD
@@ -388,6 +388,7 @@
 //#define SINGLENOZZLE
 /***********************************************************************/
 
+
 /***********************************************************************
  *********************** BariCUDA paste extruder ***********************
  ***********************************************************************
@@ -396,6 +397,20 @@
  *                                                                     *
  ***********************************************************************/
 //#define BARICUDA
+/***********************************************************************/
+
+
+/***********************************************************************
+ ********************** COLOR MIXING EXTRUDER **************************
+ ***********************************************************************
+ *                                                                     *
+ * Extends G0/G1 with mixing factors ABCDHI for up to 6 steppers.      *
+ * Adds a new code, M223, to set the current mix factors.              *
+ * Extends the stepping routines to move multiple steppers in          *
+ * proportion to the mix.                                              *
+ *                                                                     *
+ ***********************************************************************/
+//#define COLOR_MIXING_EXTRUDER
 /***********************************************************************/
 
 
