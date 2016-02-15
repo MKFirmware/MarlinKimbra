@@ -598,9 +598,16 @@ float junction_deviation = 0.1;
   if (block->step_event_count <= DROP_SEGMENTS) return;
 
   block->fan_speed = fanSpeed;
+
   #if ENABLED(BARICUDA)
     block->valve_pressure = ValvePressure;
     block->e_to_p_pressure = EtoPPressure;
+  #endif
+
+  // For a mixing extruder, get steps for each
+  #if ENABLED(COLOR_MIXING_EXTRUDER)
+    for (int8_t e = 0; e < DRIVER_EXTRUDERS; e++)
+      block->mix_steps[e] = block->steps[E_AXIS] * mixing_factor[e];
   #endif
 
   // Add update block variables for LASER BEAM control 

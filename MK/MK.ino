@@ -131,6 +131,7 @@
  * M220 - Set speed factor override percentage: S<factor in percent>
  * M221 - Set extrude factor override percentage: S<factor in percent>
  * M222 - Set density extrusion percentage for purge: S<factor in percent>
+ * M223 - Set the mix factors for a mixing extruder: <ABCDHI>
  * M226 - Wait until the specified pin reaches the state required: P<pin number> S<pin state>
  * M240 - Trigger a camera to take a photograph
  * M250 - Set LCD contrast C<contrast value> (value 0..63)

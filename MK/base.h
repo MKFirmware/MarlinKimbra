@@ -49,7 +49,7 @@
 #include "module/temperature/temperature.h"
 #include "module/temperature/thermistortables.h"
 #include "module/lcd/ultralcd.h"
-#include "module/nextion/nextion_lcd.h"
+#include "module/nextion/Nextion_lcd.h"
 #include "module/sd/cardreader.h"
 
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)

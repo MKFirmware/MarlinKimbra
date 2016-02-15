@@ -43,6 +43,18 @@
   #define E3_ENABLE_PIN ORIG_E3_ENABLE_PIN
 #endif
 
+#if DRIVER_EXTRUDERS > 4
+  #define E4_STEP_PIN   ORIG_E4_STEP_PIN
+  #define E4_DIR_PIN    ORIG_E4_DIR_PIN
+  #define E4_ENABLE_PIN ORIG_E4_ENABLE_PIN
+#endif
+
+#if DRIVER_EXTRUDERS > 5
+  #define E5_STEP_PIN   ORIG_E5_STEP_PIN
+  #define E5_DIR_PIN    ORIG_E5_DIR_PIN
+  #define E5_ENABLE_PIN ORIG_E5_ENABLE_PIN
+#endif
+
 // ENDSTOP pin
 #define X_MIN_PIN       ORIG_X_MIN_PIN
 #define X_MAX_PIN       ORIG_X_MAX_PIN

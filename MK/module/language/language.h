@@ -100,6 +100,9 @@
 #define SERIAL_ACTIVE_DRIVER                    "Active Driver: "
 #define SERIAL_ACTIVE_EXTRUDER                  "Active Extruder: "
 #define SERIAL_ACTIVE_COLOR                     "Active Color: "
+#define MSG_COUNT_X                             " Count X:"
+#define MSG_COUNT_A                             " Count A:"
+#define MSG_COUNT_ALPHA                         " Count Alpha: "
 #define SERIAL_X_MIN                            "x_min: "
 #define SERIAL_X_MAX                            "x_max: "
 #define SERIAL_Y_MIN                            "y_min: "
@@ -117,6 +120,8 @@
 #define SERIAL_HOTEND_OFFSET                    "Hotend offsets:"
 #define SERIAL_EMPTY_PLANE                      "Autolevel can only be execute on an actual plane, make sure width and height are not 0!"
 #define SERIAL_FILRUNOUT_PIN                    "filament_runout_pin: "
+
+// SD Card
 #define SERIAL_SD_ERRORCODE                     "SD errorCode:"
 #define SERIAL_SD_CANT_OPEN_SUBDIR              "Cannot open subdir"
 #define SERIAL_SD_INIT_FAIL                     "SD init fail"

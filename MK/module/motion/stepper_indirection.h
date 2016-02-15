@@ -152,6 +152,32 @@
 #define E3_ENABLE_WRITE(STATE) WRITE(E3_ENABLE_PIN,STATE)
 #define E3_ENABLE_READ READ(E3_ENABLE_PIN)
 
+// E4 motor
+#define E4_STEP_INIT SET_OUTPUT(E4_STEP_PIN)
+#define E4_STEP_WRITE(STATE) WRITE(E4_STEP_PIN,STATE)
+#define E4_STEP_READ READ(E4_STEP_PIN)
+
+#define E4_DIR_INIT SET_OUTPUT(E4_DIR_PIN)
+#define E4_DIR_WRITE(STATE) WRITE(E4_DIR_PIN,STATE)
+#define E4_DIR_READ READ(E4_DIR_PIN)
+
+#define E4_ENABLE_INIT SET_OUTPUT(E4_ENABLE_PIN)
+#define E4_ENABLE_WRITE(STATE) WRITE(E4_ENABLE_PIN,STATE)
+#define E4_ENABLE_READ READ(E4_ENABLE_PIN)
+
+// E5 motor
+#define E5_STEP_INIT SET_OUTPUT(E5_STEP_PIN)
+#define E5_STEP_WRITE(STATE) WRITE(E5_STEP_PIN,STATE)
+#define E5_STEP_READ READ(E5_STEP_PIN)
+
+#define E5_DIR_INIT SET_OUTPUT(E5_DIR_PIN)
+#define E5_DIR_WRITE(STATE) WRITE(E5_DIR_PIN,STATE)
+#define E5_DIR_READ READ(E5_DIR_PIN)
+
+#define E5_ENABLE_INIT SET_OUTPUT(E5_ENABLE_PIN)
+#define E5_ENABLE_WRITE(STATE) WRITE(E5_ENABLE_PIN,STATE)
+#define E5_ENABLE_READ READ(E5_ENABLE_PIN)
+
 #if ENABLED(DUAL_X_CARRIAGE) && HAS(X_ENABLE) && HAS(X2_ENABLE)
   #define  enable_x() do { X_ENABLE_WRITE( X_ENABLE_ON); X2_ENABLE_WRITE( X_ENABLE_ON); } while (0)
   #define disable_x() do { X_ENABLE_WRITE(!X_ENABLE_ON); X2_ENABLE_WRITE(!X_ENABLE_ON); axis_known_position[X_AXIS] = false; } while (0)
@@ -159,7 +185,7 @@
   #define  enable_x() X_ENABLE_WRITE( X_ENABLE_ON)
   #define disable_x() { X_ENABLE_WRITE(!X_ENABLE_ON); axis_known_position[X_AXIS] = false; }
 #else
-  #define enable_x() ;
+  #define  enable_x() ;
   #define disable_x() ;
 #endif
 
@@ -172,7 +198,7 @@
     #define disable_y() { Y_ENABLE_WRITE(!Y_ENABLE_ON); axis_known_position[Y_AXIS] = false; }
   #endif
 #else
-  #define enable_y() ;
+  #define  enable_y() ;
   #define disable_y() ;
 #endif
 
@@ -185,43 +211,93 @@
     #define disable_z() { Z_ENABLE_WRITE(!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }
   #endif
 #else
-  #define enable_z() ;
+  #define  enable_z() ;
   #define disable_z() ;
 #endif
 
-#if HAS(E0_ENABLE)
-  #define enable_e0()  E0_ENABLE_WRITE( E_ENABLE_ON)
-  #define disable_e0() E0_ENABLE_WRITE(!E_ENABLE_ON)
-#else
-  #define enable_e0()  /* nothing */
-  #define disable_e0() /* nothing */
+#if ENABLED(COLOR_MIXING_EXTRUDER)
+
+  #if MIXING_EXTRUDER > 5
+    #define  enable_e0() { E0_ENABLE_WRITE( E_ENABLE_ON); E1_ENABLE_WRITE( E_ENABLE_ON); E2_ENABLE_WRITE( E_ENABLE_ON); E3_ENABLE_WRITE( E_ENABLE_ON); E4_ENABLE_WRITE( E_ENABLE_ON); E5_ENABLE_WRITE( E_ENABLE_ON); }
+    #define disable_e0() { E0_ENABLE_WRITE(!E_ENABLE_ON); E1_ENABLE_WRITE(!E_ENABLE_ON); E2_ENABLE_WRITE(!E_ENABLE_ON); E3_ENABLE_WRITE(!E_ENABLE_ON); E4_ENABLE_WRITE(!E_ENABLE_ON); E5_ENABLE_WRITE(!E_ENABLE_ON); }
+  #elif MIXING_EXTRUDER > 4
+    #define  enable_e0() { E0_ENABLE_WRITE( E_ENABLE_ON); E1_ENABLE_WRITE( E_ENABLE_ON); E2_ENABLE_WRITE( E_ENABLE_ON); E3_ENABLE_WRITE( E_ENABLE_ON); E4_ENABLE_WRITE( E_ENABLE_ON); }
+    #define disable_e0() { E0_ENABLE_WRITE(!E_ENABLE_ON); E1_ENABLE_WRITE(!E_ENABLE_ON); E2_ENABLE_WRITE(!E_ENABLE_ON); E3_ENABLE_WRITE(!E_ENABLE_ON); E4_ENABLE_WRITE(!E_ENABLE_ON); }
+  #elif MIXING_EXTRUDER > 3
+    #define  enable_e0() { E0_ENABLE_WRITE( E_ENABLE_ON); E1_ENABLE_WRITE( E_ENABLE_ON); E2_ENABLE_WRITE( E_ENABLE_ON); E3_ENABLE_WRITE( E_ENABLE_ON); }
+    #define disable_e0() { E0_ENABLE_WRITE(!E_ENABLE_ON); E1_ENABLE_WRITE(!E_ENABLE_ON); E2_ENABLE_WRITE(!E_ENABLE_ON); E3_ENABLE_WRITE(!E_ENABLE_ON); }
+  #elif MIXING_EXTRUDER > 2
+    #define  enable_e0() { E0_ENABLE_WRITE( E_ENABLE_ON); E1_ENABLE_WRITE( E_ENABLE_ON); E2_ENABLE_WRITE( E_ENABLE_ON); }
+    #define disable_e0() { E0_ENABLE_WRITE(!E_ENABLE_ON); E1_ENABLE_WRITE(!E_ENABLE_ON); E2_ENABLE_WRITE(!E_ENABLE_ON); }
+  #else
+    #define  enable_e0() { E0_ENABLE_WRITE( E_ENABLE_ON); E1_ENABLE_WRITE( E_ENABLE_ON); }
+    #define disable_e0() { E0_ENABLE_WRITE(!E_ENABLE_ON); E1_ENABLE_WRITE(!E_ENABLE_ON); }
+  #endif
+
+  #define  enable_e1() ;
+  #define disable_e1() ;
+  #define  enable_e2() ;
+  #define disable_e2() ;
+  #define  enable_e3() ;
+  #define disable_e3() ;
+  #define  enable_e4() ;
+  #define disable_e4() ;
+  #define  enable_e5() ;
+  #define disable_e5() ;
+
+#else // !COLOR_MIXING_EXTRUDER
+
+  #if HAS(E0_ENABLE)
+    #define  enable_e0() E0_ENABLE_WRITE( E_ENABLE_ON)
+    #define disable_e0() E0_ENABLE_WRITE(!E_ENABLE_ON)
+  #else
+    #define  enable_e0() /* nothing */
+    #define disable_e0() /* nothing */
+  #endif
+
+  #if (DRIVER_EXTRUDERS > 1) && HAS(E1_ENABLE)
+    #define  enable_e1() E1_ENABLE_WRITE( E_ENABLE_ON)
+    #define disable_e1() E1_ENABLE_WRITE(!E_ENABLE_ON)
+  #else
+    #define  enable_e1() /* nothing */
+    #define disable_e1() /* nothing */
+  #endif
+
+  #if (DRIVER_EXTRUDERS > 2) && HAS(E2_ENABLE)
+    #define  enable_e2() E2_ENABLE_WRITE( E_ENABLE_ON)
+    #define disable_e2() E2_ENABLE_WRITE(!E_ENABLE_ON)
+  #else
+    #define  enable_e2() /* nothing */
+    #define disable_e2() /* nothing */
+  #endif
+
+  #if (DRIVER_EXTRUDERS > 3) && HAS(E3_ENABLE)
+    #define  enable_e3() E3_ENABLE_WRITE( E_ENABLE_ON)
+    #define disable_e3() E3_ENABLE_WRITE(!E_ENABLE_ON)
+  #else
+    #define  enable_e3() /* nothing */
+    #define disable_e3() /* nothing */
+  #endif
+
+  #if (DRIVER_EXTRUDERS > 4) && HAS(E4_ENABLE)
+    #define  enable_e4() E4_ENABLE_WRITE( E_ENABLE_ON)
+    #define disable_e4() E4_ENABLE_WRITE(!E_ENABLE_ON)
+  #else
+    #define  enable_e4() /* nothing */
+    #define disable_e4() /* nothing */
+  #endif
+
+  #if (DRIVER_EXTRUDERS > 5) && HAS(E5_ENABLE)
+    #define  enable_e5() E5_ENABLE_WRITE( E_ENABLE_ON)
+    #define disable_e5() E5_ENABLE_WRITE(!E_ENABLE_ON)
+  #else
+    #define  enable_e5() /* nothing */
+    #define disable_e5() /* nothing */
+  #endif
+
 #endif
 
-#if (DRIVER_EXTRUDERS > 1) && HAS(E1_ENABLE)
-  #define enable_e1()  E1_ENABLE_WRITE( E_ENABLE_ON)
-  #define disable_e1() E1_ENABLE_WRITE(!E_ENABLE_ON)
-#else
-  #define enable_e1()  /* nothing */
-  #define disable_e1() /* nothing */
-#endif
-
-#if (DRIVER_EXTRUDERS > 2) && HAS(E2_ENABLE)
-  #define enable_e2()  E2_ENABLE_WRITE( E_ENABLE_ON)
-  #define disable_e2() E2_ENABLE_WRITE(!E_ENABLE_ON)
-#else
-  #define enable_e2()  /* nothing */
-  #define disable_e2() /* nothing */
-#endif
-
-#if (DRIVER_EXTRUDERS > 3) && HAS(E3_ENABLE)
-  #define enable_e3()  E3_ENABLE_WRITE( E_ENABLE_ON)
-  #define disable_e3() E3_ENABLE_WRITE(!E_ENABLE_ON)
-#else
-  #define enable_e3()  /* nothing */
-  #define disable_e3() /* nothing */
-#endif
-
-#define disable_e() {disable_e0(); disable_e1(); disable_e2(); disable_e3();}
+#define disable_e() { disable_e0(); disable_e1(); disable_e2(); disable_e3(); disable_e4(); disable_e5(); }
 
 //////////////////////////////////
 // Pin redefines for TMC drivers. 

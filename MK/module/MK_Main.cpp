@@ -233,6 +233,10 @@ double printer_usage_filament;
   static bool filrunoutEnqueued = false;
 #endif
 
+#if ENABLED(COLOR_MIXING_EXTRUDER)
+  float mixing_factor[DRIVER_EXTRUDERS] = { 1.0 / DRIVER_EXTRUDERS };
+#endif
+
 #if ENABLED(SDSUPPORT)
   static bool fromsd[BUFSIZE];
   #if ENABLED(SD_SETTINGS)
@@ -2506,6 +2510,29 @@ static void clean_up_after_endstop_move() {
 
 #endif //DELTA
 
+#if ENABLED(COLOR_MIXING_EXTRUDER)
+  // Get mixing parameters from the GCode
+  // Factors that are left out are set to 0
+  // The total "must" be 1.0 (but it will be normalized)
+  void gcode_get_mix() {
+    const char* mixing_codes = "ABCDHI";
+    float mix_total = 0.0;
+    for (int8_t e = 0; e < DRIVER_EXTRUDERS; e++) {
+      float v = code_seen(mixing_codes[e]) ? code_value() : 0;
+      mixing_factor[e] = v;
+      mix_total += v;
+    }
+
+    // Scale values if they don't add up to ~1.0
+    if (mix_total < 0.9999 || mix_total > 1.0001) {
+      ECHO_EM("Warning: Mix factors must add up to 1.0. Scaling.");
+      float mix_scale = 1.0 / mix_total;
+      for (int8_t e = 0; e < DRIVER_EXTRUDERS; e++)
+        mixing_factor[e] *= mix_scale;
+    }
+  }
+#endif
+
 #if ENABLED(IDLE_OOZING_PREVENT)
   void IDLE_OOZING_retract(bool retracting) {  
     if (retracting && !IDLE_OOZING_retracted[active_extruder]) {
@@ -2791,6 +2818,11 @@ void gcode_get_destination() {
   if (code_seen('P')) {
     destination[E_AXIS] = (code_value() * density_multiplier[previous_extruder] / 100) + current_position[E_AXIS];
   }
+
+  // Get ABCDHI mixing factors
+  #if ENABLED(COLOR_MIXING_EXTRUDER)
+    gcode_get_mix();
+  #endif
 
   printer_usage_filament += (destination[E_AXIS] - current_position[E_AXIS]);
 
@@ -3127,7 +3159,7 @@ inline void gcode_G28() {
             refresh_cmd_timeout();
 
             enable_endstops(true);
-            for(int8_t i=0; i < NUM_AXIS; i++) {
+            for(int8_t i = 0; i < NUM_AXIS; i++) {
               destination[i] = current_position[i];
             }
             feedrate = 0.0;
@@ -5586,6 +5618,23 @@ inline void gcode_M222() {
   if (code_seen('S')) density_multiplier[target_extruder] = code_value();
 }
 
+#if ENABLED(COLOR_MIXING_EXTRUDER)
+  /**
+   * M223: Set the mix factors for a mixing extruder.
+   *       Factors that are left out will be set to 0.
+   *       All factors together must add up to 1.0.
+   *
+   *   A[factor] Mix factor for extruder stepper 1
+   *   B[factor] Mix factor for extruder stepper 2
+   *   C[factor] Mix factor for extruder stepper 3
+   *   D[factor] Mix factor for extruder stepper 4
+   *   H[factor] Mix factor for extruder stepper 5
+   *   I[factor] Mix factor for extruder stepper 6
+   *
+   */
+  inline void gcode_M223() { gcode_get_mix(); }
+#endif
+
 /**
  * M226: Wait until the specified pin reaches the state required (M226 P<pin> S<state>)
  */
@@ -7146,6 +7195,12 @@ void process_next_command() {
         gcode_M221(); break;
       case 222: // M222 T<extruder> S<factor in percent> - set density extrude factor percentage for purge
         gcode_M222(); break;
+
+      #if ENABLED(COLOR_MIXING_EXTRUDER)
+        case 223: // M223 Set the mix factors for a mixing extruder
+          gcode_M223; break;
+      #endif
+
       case 226: // M226 P<pin number> S<pin state>- Wait until the specified pin reaches the state required
         gcode_M226(); break;
 

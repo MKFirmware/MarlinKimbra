@@ -29,12 +29,18 @@
 typedef struct {
   // Fields used by the bresenham algorithm for tracing the line
   long steps[NUM_AXIS];                     // Step count along each axis
+
+  #if ENABLED(COLOR_MIXING_EXTRUDER)
+    float mix_steps[DRIVER_EXTRUDERS];      // Step count for each stepper in a mixing extruder
+  #endif
+
   unsigned long step_event_count;           // The number of step events required to complete this block
   long accelerate_until;                    // The index of the step event on which to stop acceleration
   long decelerate_after;                    // The index of the step event on which to start decelerating
   long acceleration_rate;                   // The acceleration rate used for acceleration calculation
   unsigned char direction_bits;             // The direction bit set for this block (refers to *_DIRECTION_BIT in config.h)
   unsigned char active_driver;              // Selects the active driver
+
   #if ENABLED(ADVANCE)
     long advance_rate;
     volatile long initial_advance;
@@ -58,13 +64,16 @@ typedef struct {
   unsigned long final_rate;                          // The minimal rate at exit
   unsigned long acceleration_st;                     // acceleration steps/sec^2
   unsigned long fan_speed;
+
   #if ENABLED(BARICUDA)
     unsigned long valve_pressure;
     unsigned long e_to_p_pressure;
   #endif
+
   #if ENABLED(LASERBEAM)
     unsigned long laser_ttlmodulation;
   #endif
+
   volatile char busy;
 } block_t;
 
