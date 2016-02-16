@@ -180,10 +180,10 @@
 
 #if ENABLED(DUAL_X_CARRIAGE) && HAS(X_ENABLE) && HAS(X2_ENABLE)
   #define  enable_x() do { X_ENABLE_WRITE( X_ENABLE_ON); X2_ENABLE_WRITE( X_ENABLE_ON); } while (0)
-  #define disable_x() do { X_ENABLE_WRITE(!X_ENABLE_ON); X2_ENABLE_WRITE(!X_ENABLE_ON); axis_known_position[X_AXIS] = false; } while (0)
+  #define disable_x() do { X_ENABLE_WRITE(!X_ENABLE_ON); X2_ENABLE_WRITE(!X_ENABLE_ON); BITCLR(axis_known_position, X_AXIS); } while (0)
 #elif HAS(X_ENABLE)
   #define  enable_x() X_ENABLE_WRITE( X_ENABLE_ON)
-  #define disable_x() { X_ENABLE_WRITE(!X_ENABLE_ON); axis_known_position[X_AXIS] = false; }
+  #define disable_x() { X_ENABLE_WRITE(!X_ENABLE_ON); BITCLR(axis_known_position, X_AXIS); }
 #else
   #define  enable_x() ;
   #define disable_x() ;
@@ -192,10 +192,10 @@
 #if HAS(Y_ENABLE)
   #if ENABLED(Y_DUAL_STEPPER_DRIVERS)
     #define  enable_y() { Y_ENABLE_WRITE( Y_ENABLE_ON); Y2_ENABLE_WRITE(Y_ENABLE_ON); }
-    #define disable_y() { Y_ENABLE_WRITE(!Y_ENABLE_ON); Y2_ENABLE_WRITE(!Y_ENABLE_ON); axis_known_position[Y_AXIS] = false; }
+    #define disable_y() { Y_ENABLE_WRITE(!Y_ENABLE_ON); Y2_ENABLE_WRITE(!Y_ENABLE_ON); BITCLR(axis_known_position, Y_AXIS); }
   #else
     #define  enable_y() Y_ENABLE_WRITE( Y_ENABLE_ON)
-    #define disable_y() { Y_ENABLE_WRITE(!Y_ENABLE_ON); axis_known_position[Y_AXIS] = false; }
+    #define disable_y() { Y_ENABLE_WRITE(!Y_ENABLE_ON); BITCLR(axis_known_position, Y_AXIS); }
   #endif
 #else
   #define  enable_y() ;
@@ -205,10 +205,10 @@
 #if HAS(Z_ENABLE)
   #if ENABLED(Z_DUAL_STEPPER_DRIVERS)
     #define  enable_z() { Z_ENABLE_WRITE( Z_ENABLE_ON); Z2_ENABLE_WRITE(Z_ENABLE_ON); }
-    #define disable_z() { Z_ENABLE_WRITE(!Z_ENABLE_ON); Z2_ENABLE_WRITE(!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }
+    #define disable_z() { Z_ENABLE_WRITE(!Z_ENABLE_ON); Z2_ENABLE_WRITE(!Z_ENABLE_ON); BITCLR(axis_known_position, Z_AXIS); }
   #else
     #define  enable_z() Z_ENABLE_WRITE( Z_ENABLE_ON)
-    #define disable_z() { Z_ENABLE_WRITE(!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }
+    #define disable_z() { Z_ENABLE_WRITE(!Z_ENABLE_ON); BITCLR(axis_known_position, Z_AXIS); }
   #endif
 #else
   #define  enable_z() ;

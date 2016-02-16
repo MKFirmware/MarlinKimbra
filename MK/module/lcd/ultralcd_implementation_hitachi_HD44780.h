@@ -104,7 +104,7 @@
     #define BLEN_REPRAPWORLD_KEYPAD_MIDDLE 5
     #define BLEN_REPRAPWORLD_KEYPAD_DOWN 3
     #define BLEN_REPRAPWORLD_KEYPAD_LEFT 7
-    
+
     #define REPRAPWORLD_BTN_OFFSET 0 // bit offset into buttons for shift register values
 
     #define EN_REPRAPWORLD_KEYPAD_F3 BIT((BLEN_REPRAPWORLD_KEYPAD_F3+REPRAPWORLD_BTN_OFFSET))
@@ -235,6 +235,11 @@
 #endif
 
 #include "utf_mapper.h"
+
+#if ENABLED(SHOW_BOOTSCREEN)
+  static void bootscreen();
+  static bool show_bootscreen = true;
+#endif
 
 #if ENABLED(LCD_PROGRESS_BAR)
   static millis_t progress_bar_ms = 0;
@@ -425,6 +430,10 @@ static void lcd_implementation_init(
     lcd.begin(LCD_WIDTH, LCD_HEIGHT);
   #endif
 
+  #if ENABLED(SHOW_BOOTSCREEN)
+    if (show_bootscreen) bootscreen();
+  #endif
+
   lcd_set_custom_characters(
     #if ENABLED(LCD_PROGRESS_BAR)
       progress_bar_set
@@ -451,6 +460,98 @@ char lcd_print(char* str) {
 }
 
 unsigned lcd_print(char c) { return charset_mapper(c); }
+
+#if ENABLED(SHOW_BOOTSCREEN)
+  void lcd_erase_line(int line) {
+    lcd.setCursor(0, 3);
+    for (int i = 0; i < LCD_WIDTH; i++)
+      lcd_print(' ');
+  }
+
+  // Scroll the PSTR 'text' in a 'len' wide field for 'time' milliseconds at position col,line
+  void lcd_scroll(int col, int line, const char* text, int len, int time) {
+    char tmp[LCD_WIDTH + 1] = {0};
+    int n = max(lcd_strlen_P(text) - len, 0);
+    for (int i = 0; i <= n; i++) {
+      strncpy_P(tmp, text + i, min(len, LCD_WIDTH));
+      lcd.setCursor(col, line);
+      lcd_print(tmp);
+      delay(time / max(n, 1));
+    }
+  }
+
+  static void bootscreen() {
+    show_bootscreen = false;
+    byte top_left[8] = {
+      B00000,
+      B00000,
+      B00000,
+      B00000,
+      B00001,
+      B00010,
+      B00100,
+      B00100
+    };
+    byte top_right[8] = {
+      B00000,
+      B00000,
+      B00000,
+      B11100,
+      B11100,
+      B01100,
+      B00100,
+      B00100
+    };
+    byte botom_left[8] = {
+      B00100,
+      B00010,
+      B00001,
+      B00000,
+      B00000,
+      B00000,
+      B00000,
+      B00000
+    };
+    byte botom_right[8] = {
+      B00100,
+      B01000,
+      B10000,
+      B00000,
+      B00000,
+      B00000,
+      B00000,
+      B00000
+    };
+    lcd.createChar(0, top_left);
+    lcd.createChar(1, top_right);
+    lcd.createChar(2, botom_left);
+    lcd.createChar(3, botom_right);
+
+    lcd.clear();
+
+    #define TEXT_SCREEN_LOGO_SHIFT ((LCD_WIDTH/2) - 7)
+    lcd.setCursor(TEXT_SCREEN_LOGO_SHIFT, 0); lcd.print('\x00'); lcd_printPGM(PSTR( "------------" ));  lcd.print('\x01');
+    lcd.setCursor(TEXT_SCREEN_LOGO_SHIFT, 1);                    lcd_printPGM(PSTR("|MarlinKimbra|"));
+    lcd.setCursor(TEXT_SCREEN_LOGO_SHIFT, 2); lcd.print('\x02'); lcd_printPGM(PSTR( "------------" ));  lcd.print('\x03');
+
+    delay(1000);
+
+    #ifdef STRING_SPLASH_LINE1
+      lcd_erase_line(3);
+      lcd_scroll(0, 3, PSTR(STRING_SPLASH_LINE1), LCD_WIDTH, 3000);
+    #endif
+
+    #ifdef STRING_SPLASH_LINE2
+      lcd_erase_line(3);
+      lcd_scroll(0, 3, PSTR(STRING_SPLASH_LINE2), LCD_WIDTH, 3000);
+    #endif
+
+    #ifdef FIRMWARE_URL
+      lcd_erase_line(3);
+      lcd_scroll(0, 3, PSTR(FIRMWARE_URL), LCD_WIDTH, 5000);
+    #endif
+  }
+#endif // SHOW_BOOTSCREEN
 
 /*
 Possible status screens:
@@ -561,6 +662,12 @@ static void lcd_implementation_status_screen() {
 
       lcd.setCursor(0, 1);
 
+      //
+      // Print XYZ Coordinates
+      // If the axis was not homed, show "---"
+      // If the position is untrusted, show "?"
+      //
+
       #if HOTENDS > 1 && TEMP_SENSOR_BED != 0
 
         // If we both have a 2nd hotend and a heated bed,
@@ -570,14 +677,14 @@ static void lcd_implementation_status_screen() {
 
       #else
 
-        lcd.print('X');
-        if (axis_known_position[X_AXIS])
+        lcd.print(TEST(axis_known_position, X_AXIS) || !TEST(axis_was_homed, X_AXIS) ? 'X' : '?');
+        if (TEST(axis_was_homed, X_AXIS))
           lcd.print(ftostr4sign(current_position[X_AXIS]));
         else
           lcd_printPGM(PSTR(" ---"));
 
-        lcd_printPGM(PSTR(" Y"));
-        if (axis_known_position[Y_AXIS])
+        lcd_printPGM(TEST(axis_known_position, Y_AXIS) || !TEST(axis_was_homed, Y_AXIS) ? PSTR(" Y") : PSTR(" ?"));
+        if (TEST(axis_was_homed, Y_AXIS))
           lcd.print(ftostr4sign(current_position[Y_AXIS]));
         else
           lcd_printPGM(PSTR(" ---"));
@@ -587,8 +694,8 @@ static void lcd_implementation_status_screen() {
     #endif // LCD_WIDTH >= 20
 
     lcd.setCursor(LCD_WIDTH - 8, 1);
-    lcd_printPGM(PSTR("Z "));
-    if (axis_known_position[Z_AXIS])
+    lcd_printPGM(TEST(axis_known_position, Z_AXIS) || !TEST(axis_was_homed, Z_AXIS) ? PSTR("Z ") : PSTR("? "));
+    if (TEST(axis_was_homed, Z_AXIS))
       lcd.print(ftostr32sp(current_position[Z_AXIS] + 0.00001));
     else
       lcd_printPGM(PSTR("---.--"));
