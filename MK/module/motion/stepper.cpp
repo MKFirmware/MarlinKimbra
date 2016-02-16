@@ -580,26 +580,7 @@ void set_stepper_direction(bool onlye) {
     }
   }
 
-  #if DISABLED(ADVANCE) && ENABLED(DONDOLO)
-    if (TEST(out_bits, E_AXIS)) {
-      switch(active_extruder) {
-        case 0:
-          REV_E_DIR(); break;
-        case 1:
-          NORM_E_DIR(); break;
-      }
-      count_direction[E_AXIS] = -1;
-    }
-    else {
-      switch(active_extruder) {
-        case 0:
-          NORM_E_DIR(); break;
-        case 1:
-          REV_E_DIR(); break;
-      }
-      count_direction[E_AXIS] = 1;
-    }
-  #elif DISABLED(ADVANCE)
+  #if DISABLED(ADVANCE)
     if (TEST(out_bits, E_AXIS)) {
       REV_E_DIR();
       count_direction[E_AXIS] = -1;
@@ -671,7 +652,7 @@ ISR(TIMER1_COMPA_vect) {
       counter_x = counter_y = counter_z = counter_e = new_count;
 
       #if ENABLED(COLOR_MIXING_EXTRUDER)
-        for (int8_t e = 0; e < DRIVER_EXTRUDERS; e++) counter_m[e] = new_count;
+        for (int8_t i = 0; i < DRIVER_EXTRUDERS; i++) counter_m[i] = new_count;
       #endif
 
       step_events_completed = 0;
@@ -731,7 +712,10 @@ ISR(TIMER1_COMPA_vect) {
 
       #define STEP_START(axis, AXIS) \
         _COUNTER(axis) += current_block->steps[_AXIS(AXIS)]; \
-        if (_COUNTER(axis) > 0) { _APPLY_STEP(AXIS)(!_INVERT_STEP_PIN(AXIS),0); }
+        if (_COUNTER(axis) > 0) { \
+        _APPLY_STEP(AXIS)(!_INVERT_STEP_PIN(AXIS),0); \
+        _COUNTER(axis) -= current_block->step_event_count; \
+        count_position[_AXIS(AXIS)] += count_direction[_AXIS(AXIS)]; }
 
       STEP_START(x, X);
       STEP_START(y, Y);
@@ -739,9 +723,13 @@ ISR(TIMER1_COMPA_vect) {
       #if DISABLED(ADVANCE)
         #if ENABLED(COLOR_MIXING_EXTRUDER)
           counter_e += current_block->steps[E_AXIS];
-          for (uint8_t j = 0; j < DRIVER_EXTRUDERS; j++) {
-            counter_m[j] += current_block->mix_steps[j];
-            if (counter_m[j] > 0) En_STEP_WRITE(j, !INVERT_E_STEP_PIN);
+          if (counter_e > 0) {
+            for (int8_t j = 0; j < DRIVER_EXTRUDERS; j++) {
+              counter_m[j] += current_block->mix_steps[j];
+              if (counter_m[j] > 0) En_STEP_WRITE(j, !INVERT_E_STEP_PIN);
+            }
+            counter_e -= current_block->step_event_count;
+            count_position[E_AXIS] += count_direction[E_AXIS];
           }
         #else
           STEP_START(e, E);
@@ -752,23 +740,13 @@ ISR(TIMER1_COMPA_vect) {
         delayMicroseconds(STEPPER_HIGH_LOW_DELAY);
       #endif
 
-      #define STEP_END(axis, AXIS) \
-        if (_COUNTER(axis) > 0) { \
-          _COUNTER(axis) -= current_block->step_event_count; \
-          count_position[_AXIS(AXIS)] += count_direction[_AXIS(AXIS)]; \
-          _APPLY_STEP(AXIS)(_INVERT_STEP_PIN(AXIS),0); \
-        }
+      #define STEP_END(axis, AXIS) _APPLY_STEP(AXIS)(_INVERT_STEP_PIN(AXIS),0)
 
       STEP_END(x, X);
       STEP_END(y, Y);
       STEP_END(z, Z);
       #if DISABLED(ADVANCE)
-        #if ENABLED(MIXING_EXTRUDER_FEATURE)
-          // Always count the single E axis
-          if (counter_e > 0) {
-            counter_e -= current_block->step_event_count;
-            count_position[E_AXIS] += count_direction[E_AXIS];
-          }
+        #if ENABLED(COLOR_MIXING_EXTRUDER)
           for (int8_t j = 0; j < DRIVER_EXTRUDERS; j++) {
             if (counter_m[j] > 0) {
               counter_m[j] -= current_block->step_event_count;
