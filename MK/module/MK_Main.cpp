@@ -30,6 +30,10 @@
 
 #include "../base.h"
 
+#if ENABLED(RFID_MODULE)
+  MFRC522 RFID522;
+#endif
+
 #if ENABLED(M100_FREE_MEMORY_WATCHER)
   void gcode_M100();
 #endif
@@ -123,6 +127,13 @@ double printer_usage_filament;
 
 #if ENABLED(NPR2)
   int old_color = 99;
+#endif
+
+#if ENABLED(RFID_MODULE)
+  bool RFID_ON = false;
+  unsigned long Spool_ID[EXTRUDERS] = ARRAY_BY_EXTRUDERS (0);
+  bool Spool_must_read[EXTRUDERS]   = ARRAY_BY_EXTRUDERS (false);
+  bool Spool_must_write[EXTRUDERS]  = ARRAY_BY_EXTRUDERS (false);
 #endif
 
 #if HAS(SERVO_ENDSTOPS)
@@ -655,6 +666,12 @@ void setup() {
 
   #if ENABLED(TEMP_STAT_LEDS)
     setup_statled();
+  #endif
+
+  #if ENABLED(RFID_MODULE)
+    RFID_ON = RFID522.init();
+    if (RFID_ON)
+      ECHO_LM(INFO, "RFID CONNECT");
   #endif
 
   #if ENABLED(FIRMWARE_TEST)
@@ -2518,7 +2535,7 @@ static void clean_up_after_endstop_move() {
     const char* mixing_codes = "ABCDHI";
     float mix_total = 0.0;
     for (int8_t e = 0; e < DRIVER_EXTRUDERS; e++) {
-      float v = code_seen(mixing_codes[e]) ? code_value() : 0;
+      float v = code_seen(mixing_codes[e]) ? code_value() : mixing_factor[e];
       mixing_factor[e] = v;
       mix_total += v;
     }
@@ -2825,6 +2842,10 @@ void gcode_get_destination() {
   #endif
 
   printer_usage_filament += (destination[E_AXIS] - current_position[E_AXIS]);
+
+  #if ENABLED(RFID_MODULE)
+    RFID522.RfidData[active_extruder].data.lenght -= (destination[E_AXIS] - current_position[E_AXIS]);
+  #endif
 
   #if ENABLED(NEXTION) && ENABLED(NEXTION_GFX)
     if((code_seen(axis_codes[X_AXIS]) || code_seen(axis_codes[Y_AXIS])) && code_seen(axis_codes[E_AXIS]))
@@ -5615,7 +5636,12 @@ inline void gcode_M221() {
 inline void gcode_M222() {
   if (setTargetedExtruder(222)) return;
 
-  if (code_seen('S')) density_multiplier[target_extruder] = code_value();
+  if (code_seen('S')) {
+    density_multiplier[target_extruder] = code_value();
+    #if ENABLED(RFID_MODULE)
+      RFID522.RfidData[target_extruder].data.density = density_multiplier[target_extruder];
+    #endif
+  }
 }
 
 #if ENABLED(COLOR_MIXING_EXTRUDER)
@@ -6191,6 +6217,31 @@ inline void gcode_M502() {
 inline void gcode_M503() {
   Config_PrintSettings(code_seen('S') && code_value() == 0);
 }
+
+#if ENABLED(RFID_MODULE)
+  /**
+   * M522: Read or Write on card. M522 T<extruders> R<read> or W<write> L<list>
+   */
+  inline void gcode_M522() {
+    if (setTargetedExtruder(522)) return;
+    if (!RFID_ON) return;
+
+    if (code_seen('R')) {
+      ECHO_LM(DB, "Put RFID on tag!");
+      Spool_must_read[target_extruder] = true;
+    }
+    if (code_seen('W')) {
+      if (Spool_ID[target_extruder] != 0) {
+        ECHO_LM(DB, "Put RFID on tag!");
+        Spool_must_write[target_extruder] = true;
+      }
+      else
+        ECHO_LM(ER, "You have not read this Spool!");
+    }
+
+    if (code_seen('L')) RFID522.printInfo(target_extruder);
+  }
+#endif // RFID_MODULE
 
 #if ENABLED(ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED)
 
@@ -7198,7 +7249,7 @@ void process_next_command() {
 
       #if ENABLED(COLOR_MIXING_EXTRUDER)
         case 223: // M223 Set the mix factors for a mixing extruder
-          gcode_M223; break;
+          gcode_M223(); break;
       #endif
 
       case 226: // M226 P<pin number> S<pin state>- Wait until the specified pin reaches the state required
@@ -7301,6 +7352,11 @@ void process_next_command() {
         gcode_M502(); break;
       case 503: // M503 print settings currently in memory
         gcode_M503(); break;
+
+      #if ENABLED(RFID_MODULE)
+        case 522: // M422 Read or Write on card. M522 T<extruders> R<read> or W<write>
+          gcode_M522(); break;
+      #endif
 
       #if ENABLED(ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED)
         case 540:
@@ -8048,6 +8104,38 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
         }
         else if ((millis() - axis_last_activity) >  IDLE_OOZING_SECONDS * 1000UL) {
           IDLE_OOZING_retract(true);
+        }
+      }
+    }
+  #endif
+
+  #if ENABLED(RFID_MODULE)
+    for (int8_t e = 0; e < EXTRUDERS; e++) {
+      if (Spool_must_read[e]) {
+        if (RFID522.getID(e)) {
+          Spool_ID[e] = RFID522.RfidDataID[e].Spool_ID;
+          delay(200);
+          if (RFID522.readBlock(e)) {
+            Spool_must_read[e] = false;
+            density_multiplier[e] = RFID522.RfidData[e].data.density;
+            filament_size[e] = RFID522.RfidData[e].data.size;
+            calculate_volumetric_multipliers();
+            RFID522.printInfo(e);
+          }
+        }
+      }
+
+      if (Spool_must_write[e]) {
+        if (RFID522.getID(e)) {
+          if (Spool_ID[e] == RFID522.RfidDataID[e].Spool_ID) {
+            delay(200);
+            if (RFID522.writeBlock(e)) {
+              Spool_must_write[e] = false;
+              ECHO_SMV(INFO, "Spool on E", e);
+              ECHO_EM(" writed!");
+              RFID522.printInfo(e);
+            }
+          }
         }
       }
     }
