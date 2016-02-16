@@ -696,7 +696,7 @@ ISR(TIMER1_COMPA_vect) {
 
         #if ENABLED(COLOR_MIXING_EXTRUDER)
           long dir = TEST(out_bits, E_AXIS) ? -1 : 1;
-          for (uint8_t j = 0; j < DRIVER_EXTRUDERS; j++) {
+          for (int8_t j = 0; j < DRIVER_EXTRUDERS; j++) {
             counter_m[j] += current_block->mix_steps[j];
             if (counter_m[j] > 0) {
               counter_m[j] -= current_block->step_event_count;
@@ -713,9 +713,9 @@ ISR(TIMER1_COMPA_vect) {
       #define STEP_START(axis, AXIS) \
         _COUNTER(axis) += current_block->steps[_AXIS(AXIS)]; \
         if (_COUNTER(axis) > 0) { \
-        _APPLY_STEP(AXIS)(!_INVERT_STEP_PIN(AXIS),0); \
-        _COUNTER(axis) -= current_block->step_event_count; \
-        count_position[_AXIS(AXIS)] += count_direction[_AXIS(AXIS)]; }
+          _APPLY_STEP(AXIS)(!_INVERT_STEP_PIN(AXIS),0); \
+          _COUNTER(axis) -= current_block->step_event_count; \
+          count_position[_AXIS(AXIS)] += count_direction[_AXIS(AXIS)]; }
 
       STEP_START(x, X);
       STEP_START(y, Y);

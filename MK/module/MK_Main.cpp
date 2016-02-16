@@ -50,7 +50,8 @@ uint8_t debugLevel = DEBUG_ERRORS;
 static float feedrate = 1500.0, saved_feedrate;
 float current_position[NUM_AXIS] = { 0.0 };
 float destination[NUM_AXIS] = { 0.0 };
-bool axis_known_position[3] = { false };
+uint8_t axis_known_position = 0;
+uint8_t axis_was_homed = 0;
 
 bool pos_saved = false;
 float stored_position[NUM_POSITON_SLOTS][NUM_AXIS];
@@ -913,6 +914,7 @@ void get_command() {
 bool code_has_value() {
   int i = 1;
   char c = seen_pointer[i];
+  while (c == ' ') c = seen_pointer[++i];
   if (c == '-' || c == '+') c = seen_pointer[++i];
   if (c == '.') c = seen_pointer[++i];
   return (c >= '0' && c <= '9');
@@ -1358,7 +1360,7 @@ static void clean_up_after_endstop_move() {
     #if HAS(SERVO_ENDSTOPS) && HASNT(Z_PROBE_SLED)
       void raise_z_for_servo() {
         float zpos = current_position[Z_AXIS], z_dest = Z_RAISE_BEFORE_PROBING;
-        z_dest += axis_known_position[Z_AXIS] ? zprobe_zoffset : zpos;
+        z_dest += TEST(axis_was_homed, Z_AXIS) ? zprobe_zoffset : zpos;
         if (zpos < z_dest) do_blocking_move_to_z(z_dest); // also updates current_position
       }
     #endif
@@ -1480,7 +1482,8 @@ static void clean_up_after_endstop_move() {
       destination[axis] = current_position[axis];
       feedrate = 0.0;
       endstops_hit_on_purpose(); // clear endstop hit flags
-      axis_known_position[axis] = true;
+      BITSET(axis_was_homed, axis);
+      BITSET(axis_known_position, axis);
 
       #if ENABLED(Z_PROBE_SLED)
         // bring probe back
@@ -1589,7 +1592,8 @@ static void clean_up_after_endstop_move() {
       destination[axis] = current_position[axis];
       feedrate = 0.0;
       endstops_hit_on_purpose(); // clear endstop hit flags
-      axis_known_position[axis] = true;
+      BITSET(axis_was_homed, axis);
+      BITSET(axis_known_position, axis);
     }
   }
   #define HOMEAXIS(LETTER) homeaxis(LETTER##_AXIS)
@@ -2534,9 +2538,9 @@ static void clean_up_after_endstop_move() {
   void gcode_get_mix() {
     const char* mixing_codes = "ABCDHI";
     float mix_total = 0.0;
-    for (int8_t e = 0; e < DRIVER_EXTRUDERS; e++) {
-      float v = code_seen(mixing_codes[e]) ? code_value() : mixing_factor[e];
-      mixing_factor[e] = v;
+    for (int8_t i = 0; i < DRIVER_EXTRUDERS; i++) {
+      float v = code_seen(mixing_codes[i]) ? code_value() : mixing_factor[i];
+      mixing_factor[i] = v;
       mix_total += v;
     }
 
@@ -2544,8 +2548,8 @@ static void clean_up_after_endstop_move() {
     if (mix_total < 0.9999 || mix_total > 1.0001) {
       ECHO_EM("Warning: Mix factors must add up to 1.0. Scaling.");
       float mix_scale = 1.0 / mix_total;
-      for (int8_t e = 0; e < DRIVER_EXTRUDERS; e++)
-        mixing_factor[e] *= mix_scale;
+      for (int8_t i = 0; i < DRIVER_EXTRUDERS; i++)
+        mixing_factor[i] *= mix_scale;
     }
   }
 #endif
@@ -2587,7 +2591,6 @@ static void clean_up_after_endstop_move() {
     set_destination_to_current();
 
     if (retracting) {
-
       feedrate = retract_feedrate * 60;
       current_position[E_AXIS] += (swapping ? retract_length_swap : retract_length) / volumetric_multiplier[active_extruder];
       plan_set_e_position(current_position[E_AXIS]);
@@ -2604,7 +2607,6 @@ static void clean_up_after_endstop_move() {
       }
     }
     else {
-
       if (retract_zlift > 0.01) {
         current_position[Z_AXIS] += retract_zlift;
         #if MECH(DELTA) || MECH(SCARA)
@@ -2644,7 +2646,7 @@ static void clean_up_after_endstop_move() {
     if (debugLevel & DEBUG_INFO)
       ECHO_LMV(INFO, "dock_sled", dock);
 
-    if (!axis_known_position[X_AXIS] || !axis_known_position[Y_AXIS]) {
+    if (axis_known_position & (BIT(X_AXIS)|BIT(Y_AXIS)) != BIT(X_AXIS)|BIT(Y_AXIS)) {
       LCD_MESSAGEPGM(MSG_POSITION_UNKNOWN);
       ECHO_LM(DB, MSG_POSITION_UNKNOWN);
       return;
@@ -3303,7 +3305,7 @@ inline void gcode_G28() {
         else if (homeZ) { // Don't need to Home Z twice
 
           // Let's see if X and Y are homed
-          if (axis_known_position[X_AXIS] && axis_known_position[Y_AXIS]) {
+          if (axis_was_homed & (BIT(X_AXIS)|BIT(Y_AXIS)) == BIT(X_AXIS)|BIT(Y_AXIS)) {
 
             // Make sure the probe is within the physical limits
             // NOTE: This doesn't necessarily ensure the probe is also within the bed!
@@ -3348,7 +3350,7 @@ inline void gcode_G28() {
         if (home_all_axis || homeZ) {
 
           // Let's see if X and Y are homed
-          if (axis_known_position[X_AXIS] && axis_known_position[Y_AXIS]) {
+          if (axis_was_homed & (BIT(X_AXIS)|BIT(Y_AXIS)) == BIT(X_AXIS)|BIT(Y_AXIS)) {
             current_position[Z_AXIS] = 0;
             sync_plan_position();
 
@@ -3477,7 +3479,7 @@ inline void gcode_G28() {
       ECHO_LM(INFO, "gcode_G29 >>>");
 
     // Don't allow auto-leveling without homing first
-    if (!axis_known_position[X_AXIS] || !axis_known_position[Y_AXIS]) {
+    if (axis_known_position & (BIT(X_AXIS)|BIT(Y_AXIS)) != BIT(X_AXIS)|BIT(Y_AXIS)) {
       LCD_MESSAGEPGM(MSG_POSITION_UNKNOWN);
       ECHO_LM(ER, MSG_POSITION_UNKNOWN);
       return;
@@ -6151,7 +6153,7 @@ inline void gcode_M428() {
   memcpy(new_pos, current_position, sizeof(new_pos));
   memcpy(new_offs, home_offset, sizeof(new_offs));
   for (int8_t i = X_AXIS; i <= Z_AXIS; i++) {
-    if (axis_known_position[i]) {
+    if (TEST(axis_known_position, i)) {
       #if MECH(DELTA)
         float base = (new_pos[i] > (min_pos[i] + max_pos[i]) / 2) ? base_home_pos[i] : 0,
       #else
