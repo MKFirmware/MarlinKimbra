@@ -297,7 +297,7 @@ void checkHitEndstops() {
           card.sdprinting = false;
           card.closeFile();
         #endif
-        for (int i = 0; i < 3; i++) axis_known_position[i] = false; // not homed anymore
+        for (int i = 0; i < 3; i++) BITCLR(axis_known_position, i); // not homed anymore
         quickStop(); // kill the planner buffer
         Stop();      // restart by M999
       }
