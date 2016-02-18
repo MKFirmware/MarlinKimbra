@@ -1,6 +1,6 @@
 <img align="right" src="Documentation/Logo/MarlinKimbra%20Logo%20GitHub.png" />
 # MK 3D Printer Firmware for Arduino
-## Version 4.2.5 dev
+## Version 4.2.6 dev
 
 ### Special thanks
 * all Marlin8bit-developers.
@@ -32,8 +32,9 @@ This version of Marlin was made to accommodate some requests made by the communi
 The new features are:
 A single Firmware for all types of printers; Cartesian, Delta, SCARA, CoreXY & CoreXZ.
 The possibility of having only one hotend independently from the extruders that you have.
-The addition of the 4th extruder.
-System Management MKr4 for 4 extruders with just two drivers or only driver.
+The addition of the 6th extruder.
+Management Color Mixing Extruder
+System Management MKr4 for 6 extruders with just two drivers or only driver.
 Management Multyextruder NPr2, 4/6 extruders with only two engines.
 Management Dual Extruder DONDOLO.
 Adding commands to facilitate purging of hotend. 

@@ -40,6 +40,7 @@ NEED UPGRADE
 *   Setting step for unit and feedrate for extruders
 *   Setting PID for any extruder
 *   Real-time filament diameter measurement and control
+*   COLOR MIXING EXTRUDE
 *   MKR4 suppport for 4 extruder but width only one driver
 *   Singlenozzle support
 *   NPr2 support, multiextruder by NicolaP http://www.3dmakerlab.it/extruder-npr2.html
@@ -173,6 +174,13 @@ I put in a single firmware all the firmware that I found online for the various 
 If have one hotend and more extruder define SINGLENOZZLE for unique temperature.
 * Uncomment below to enable SINGLENOZZLE (One Hotend)
 * \#define SINGLENOZZLE //This is used for singlenozzled multiple extrusion configuration
+
+
+### COLOR MIXING EXTRUDER
+Support is added for the [Repetier Host compatible](http://reprap.org/wiki/Repetier_Color_Mixing) GCode M163 Sn Pn which sets a single mix factor at a time. For example M163 S0 P0.5 and M163 S1 P0.5 would be used to set a mix of half color 1 plus half color 2.
+A shorthand gcode M165 is proposed to set the mixing parameters globally using parameters ABCDHI as a shortcut over multiple M163. For example, M165 A0.5 B0.5 would be used to set a mix of half color 1 plus half color 2.
+If MIXING_VIRTUAL_TOOLS is set to 2 or greater the Repetier Host compatible M164 Sn command is also made available to save the current mix factors as a virtual tool that can be recalled later. This option changes the behavior of the gcode_T() function so it restores a saved mixture rather than setting a new extruder.
+Following Pia Taubert's proposal, the G1 command is extended to accept up to 6 mixing parameters (ABCDHI). For example G1 A0.25 B0.6 C0.15 X10.0 Y99.2 E12.34 F9000 will set a mixture for 3 channels starting with the current move. The mix parameters must add up to 1.0. If they don't they will be normalized – scaled up or down to add up to 1.0. The mix is persistent, so further moves will continue to use the same mix.
 
 
 ### MKR4 System
