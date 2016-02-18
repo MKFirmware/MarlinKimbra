@@ -405,12 +405,16 @@
  ***********************************************************************
  *                                                                     *
  * Extends G0/G1 with mixing factors ABCDHI for up to 6 steppers.      *
- * Adds a new code, M223, to set the current mix factors.              *
+ * Adds a new code, M165, to set the current mix factors.              *
+ * Optional support for Repetier Host M163, M164, and virtual tools.   *
  * Extends the stepping routines to move multiple steppers in          *
  * proportion to the mix.                                              *
  *                                                                     *
  ***********************************************************************/
 //#define COLOR_MIXING_EXTRUDER
+
+// Use the Virtual Tool method with M163 and M164
+#define MIXING_VIRTUAL_TOOLS 16
 /***********************************************************************/
 
 
@@ -1077,7 +1081,7 @@
  
 #define SHOW_BOOTSCREEN
 #define STRING_SPLASH_LINE1 "v" SHORT_BUILD_VERSION       // will be shown during bootup in line 1
-//#define STRING_SPLASH_LINE2 STRING_DISTRIBUTION_DATE    // will be shown during bootup in line 2
+#define STRING_SPLASH_LINE2 STRING_DISTRIBUTION_DATE      // will be shown during bootup in line 2
 #define SPLASH_SCREEN_DURATION 5000                       // SPLASH SCREEN duration in millisecond
 
 //#define LCD_SCREEN_ROT_90    //Rotate screen orientation for graphics display by 90 degree clockwise

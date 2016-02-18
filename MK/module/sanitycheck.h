@@ -271,6 +271,18 @@
     #endif
   #endif
 
+  #if ENABLED(COLOR_MIXING_EXTRUDER)
+    #if EXTRUDERS > 1
+      #error COLOR_MIXING_EXTRUDER supports plus one extruder.
+    #endif
+    #if DRIVER_EXTRUDERS < 2
+      #error You must set DRIVER_EXTRUDERS >= 2 for a mixing extruder.
+    #endif
+    #if ENABLED(FILAMENT_SENSOR)
+      #error COLOR_MIXING_EXTRUDER is incompatible with FILAMENT_SENSOR. Comment out this line to use it anyway.
+    #endif
+  #endif
+
   #if ENABLED(NPR2)
     #if DISABLED(COLOR_STEP)
       #error DEPENDENCY ERROR: Missing setting COLOR_STEP
