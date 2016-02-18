@@ -2669,7 +2669,7 @@ static void clean_up_after_endstop_move() {
     if (debugLevel & DEBUG_INFO)
       ECHO_LMV(INFO, "dock_sled", dock);
 
-    if (axis_known_position & (BIT(X_AXIS)|BIT(Y_AXIS)) != BIT(X_AXIS)|BIT(Y_AXIS)) {
+    if (axis_known_position & (BIT(X_AXIS)|BIT(Y_AXIS)) != (BIT(X_AXIS)|BIT(Y_AXIS))) {
       LCD_MESSAGEPGM(MSG_POSITION_UNKNOWN);
       ECHO_LM(DB, MSG_POSITION_UNKNOWN);
       return;
@@ -3328,7 +3328,7 @@ inline void gcode_G28() {
         else if (homeZ) { // Don't need to Home Z twice
 
           // Let's see if X and Y are homed
-          if (axis_was_homed & (BIT(X_AXIS)|BIT(Y_AXIS)) == BIT(X_AXIS)|BIT(Y_AXIS)) {
+          if (axis_was_homed & (BIT(X_AXIS)|BIT(Y_AXIS)) == (BIT(X_AXIS)|BIT(Y_AXIS))) {
 
             // Make sure the probe is within the physical limits
             // NOTE: This doesn't necessarily ensure the probe is also within the bed!
@@ -3373,7 +3373,7 @@ inline void gcode_G28() {
         if (home_all_axis || homeZ) {
 
           // Let's see if X and Y are homed
-          if (axis_was_homed & (BIT(X_AXIS)|BIT(Y_AXIS)) == BIT(X_AXIS)|BIT(Y_AXIS)) {
+          if (axis_was_homed & (BIT(X_AXIS)|BIT(Y_AXIS)) == (BIT(X_AXIS)|BIT(Y_AXIS))) {
             current_position[Z_AXIS] = 0;
             sync_plan_position();
 
@@ -3502,7 +3502,7 @@ inline void gcode_G28() {
       ECHO_LM(INFO, "gcode_G29 >>>");
 
     // Don't allow auto-leveling without homing first
-    if (axis_known_position & (BIT(X_AXIS)|BIT(Y_AXIS)) != BIT(X_AXIS)|BIT(Y_AXIS)) {
+    if (axis_known_position & (BIT(X_AXIS)|BIT(Y_AXIS)) != (BIT(X_AXIS)|BIT(Y_AXIS))) {
       LCD_MESSAGEPGM(MSG_POSITION_UNKNOWN);
       ECHO_LM(ER, MSG_POSITION_UNKNOWN);
       return;
