@@ -89,7 +89,7 @@ void refresh_cmd_timeout();
 extern void delay_ms(millis_t ms);
 
 #if ENABLED(FAST_PWM_FAN)
-  void setPwmFrequency(uint8_t pin, int val);
+  void setPwmFrequency(uint8_t pin, uint8_t val);
 #endif
 
 extern float homing_feedrate[];
@@ -120,7 +120,7 @@ extern uint8_t axis_was_homed;
 #endif
 
 #if ENABLED(NPR2)
-  extern int old_color; // old color for system NPR2
+  extern uint8_t old_color; // old color for system NPR2
 #endif
 
 #if MECH(DELTA)

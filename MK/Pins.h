@@ -816,27 +816,27 @@
 ****************************************************************************************/
 #if MB(RAMPS_13_HFB)
   #define KNOWN_BOARD 1
-  
+
   #if !defined(__AVR_ATmega1280__) && !defined(__AVR_ATmega2560__)
     #error Oops!  Make sure you have 'Arduino Mega' selected from the 'Tools -> Boards' menu.
   #endif
-  
+
   #define LARGE_FLASH true
-  
+
   // X axis pins
   #define ORIG_X_STEP_PIN         54
   #define ORIG_X_DIR_PIN          55
   #define ORIG_X_ENABLE_PIN       38
   #define ORIG_X_MIN_PIN          3
   #define ORIG_X_MAX_PIN          2
-  
+
   // Y axis pins
   #define ORIG_Y_STEP_PIN         60
   #define ORIG_Y_DIR_PIN          61
   #define ORIG_Y_ENABLE_PIN       56
   #define ORIG_Y_MIN_PIN          14
   #define ORIG_Y_MAX_PIN          15
-  
+
   #define Y2_STEP_PIN             36
   #define Y2_DIR_PIN              34
   #define Y2_ENABLE_PIN           30
@@ -860,14 +860,14 @@
   #define ORIG_E1_STEP_PIN        36
   #define ORIG_E1_DIR_PIN         34
   #define ORIG_E1_ENABLE_PIN      30
-  
+
   #define SDPOWER                 -1
   #define SDSS                    53
   #define LED_PIN                 13
-  
+
   #define ORIG_FAN_PIN            9
   #define ORIG_PS_ON_PIN          12
-  
+
   #define ORIG_HEATER_0_PIN       10  // Hotend 1
   #define ORIG_HEATER_1_PIN       -1
   #define ORIG_HEATER_2_PIN       -1
@@ -877,7 +877,7 @@
   #define ORIG_TEMP_1_PIN         15  // ANALOG NUMBERING
   #define ORIG_TEMP_2_PIN         -1  // ANALOG NUMBERING
   #define ORIG_TEMP_3_PIN         -1  // ANALOG NUMBERING
-  
+
   #define ORIG_HEATER_BED_PIN     8   // BED
   #define ORIG_TEMP_BED_PIN       14  // ANALOG NUMBERING
 
@@ -917,7 +917,7 @@
         #define LCD_PINS_D6       27
         #define LCD_PINS_D7       29
       #endif // PANEL_ONE
-  
+
       #if ENABLED(REPRAP_DISCOUNT_SMART_CONTROLLER)
         #define ORIG_BEEPER_PIN   37
 
@@ -971,7 +971,7 @@
           #define BTN_EN2         35
           #define BTN_ENC         31  // the click
         #endif
-  
+
         #if ENABLED(G3D_PANEL)
           #define SD_DETECT_PIN   49
         #else
@@ -979,7 +979,7 @@
         #endif
 
       #endif
-  
+
     #else // old style panel with shift register
       // arduino pin witch triggers an piezo beeper
       #define ORIG_BEEPER_PIN     33  // No Beeper added
@@ -990,7 +990,7 @@
       //#define SHIFT_LD          42
       //#define SHIFT_OUT         40
       //#define SHIFT_EN          17
-  
+
       #define LCD_PINS_RS         16
       #define LCD_PINS_ENABLE     17
       #define LCD_PINS_D4         23

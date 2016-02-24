@@ -102,7 +102,7 @@
 #define SERIAL_ACTIVE_COLOR                     "Active Color: "
 #define MSG_COUNT_X                             " Count X:"
 #define MSG_COUNT_A                             " Count A:"
-#define MSG_COUNT_ALPHA                         " Count Alpha: "
+#define MSG_COUNT_ALPHA                         " Count Alpha:"
 #define SERIAL_X_MIN                            "x_min: "
 #define SERIAL_X_MAX                            "x_max: "
 #define SERIAL_Y_MIN                            "y_min: "

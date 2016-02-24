@@ -120,7 +120,8 @@
     #define EN_B BIT(BLEN_B)
     #define EN_A BIT(BLEN_A)
 
-    #define LCD_CLICKED ((buttons&B_MI)||(buttons&B_ST))
+    #define LCD_CLICKED (buttons&(B_MI|B_ST))
+
   #endif//NEWPANEL
 
   char* itostr2(const uint8_t& x);

@@ -2084,7 +2084,7 @@ void lcd_reset_alert_level() { lcd_status_message_level = 0; }
         WRITE(SHIFT_LD, HIGH);
         for (int8_t i = 0; i < 8; i++) {
           newbutton_reprapworld_keypad >>= 1;
-          if (READ(SHIFT_OUT)) newbutton_reprapworld_keypad |= BIT(7);
+          if (READ(SHIFT_OUT)) BITSET(newbutton_reprapworld_keypad, 7);
           WRITE(SHIFT_CLK, HIGH);
           WRITE(SHIFT_CLK, LOW);
         }
@@ -2097,7 +2097,7 @@ void lcd_reset_alert_level() { lcd_status_message_level = 0; }
       unsigned char tmp_buttons = 0;
       for (int8_t i = 0; i < 8; i++) {
         newbutton >>= 1;
-        if (READ(SHIFT_OUT)) newbutton |= BIT(7);
+        if (READ(SHIFT_OUT)) BITSET(newbutton, 7);
         WRITE(SHIFT_CLK, HIGH);
         WRITE(SHIFT_CLK, LOW);
       }
