@@ -205,11 +205,10 @@ FORCE_INLINE float max_allowable_speed(float acceleration, float target_velocity
 // "Junction jerk" in this context is the immediate change in speed at the junction of two blocks.
 // This method will calculate the junction jerk as the euclidean distance between the nominal
 // velocities of the respective blocks.
-//inline float junction_jerk(block_t *before, block_t *after) {
+// inline float junction_jerk(block_t *before, block_t *after) {
 //  return sqrt(
 //    pow((before->speed_x-after->speed_x), 2)+pow((before->speed_y-after->speed_y), 2));
 //}
-
 
 // The kernel called by planner_recalculate() when scanning the plan from last to first entry.
 void planner_reverse_pass_kernel(block_t* previous, block_t* current, block_t* next) {
@@ -359,7 +358,6 @@ void plan_init() {
   previous_nominal_speed = 0.0;
 }
 
-
 #if ENABLED(AUTOTEMP)
   void getHighESpeed() {
     static float oldt = 0;
@@ -478,7 +476,6 @@ void check_axes_activity() {
     analogWrite(LASER_TTL_PIN, tail_laser_ttl_modulation);
   #endif
 }
-
 
 float junction_deviation = 0.1;
 // Add a new linear movement to the buffer. steps[X_AXIS], _y and _z is the absolute position in
@@ -606,7 +603,7 @@ float junction_deviation = 0.1;
 
   // For a mixing extruder, get steps for each
   #if ENABLED(COLOR_MIXING_EXTRUDER)
-    for (int8_t i = 0; i < DRIVER_EXTRUDERS; i++)
+    for (uint8_t i = 0; i < DRIVER_EXTRUDERS; i++)
       block->mix_steps[i] = block->steps[E_AXIS] * mixing_factor[i];
   #endif
 
@@ -618,23 +615,23 @@ float junction_deviation = 0.1;
   // Compute direction bits for this block 
   uint8_t dirb = 0;
   #if MECH(COREXY)
-    if (dx < 0) dirb |= BIT(X_HEAD); // Save the real Extruder (head) direction in X Axis
-    if (dy < 0) dirb |= BIT(Y_HEAD); // ...and Y
-    if (dz < 0) dirb |= BIT(Z_AXIS);
-    if (da < 0) dirb |= BIT(A_AXIS); // Motor A direction
-    if (db < 0) dirb |= BIT(B_AXIS); // Motor B direction
+    if (dx < 0) BITSET(dirb, X_HEAD); // Save the real Extruder (head) direction in X Axis
+    if (dy < 0) BITSET(dirb, Y_HEAD); // ...and Y
+    if (dz < 0) BITSET(dirb, Z_AXIS);
+    if (da < 0) BITSET(dirb, A_AXIS); // Motor A direction
+    if (db < 0) BITSET(dirb, B_AXIS); // Motor B direction
   #elif MECH(COREXZ)
-    if (dx < 0) dirb |= BIT(X_HEAD); // Save the real Extruder (head) direction in X Axis
-    if (dy < 0) dirb |= BIT(Y_AXIS);
-    if (dz < 0) dirb |= BIT(Z_HEAD); // ...and Z
-    if (da < 0) dirb |= BIT(A_AXIS); // Motor A direction
-    if (dc < 0) dirb |= BIT(C_AXIS); // Motor B direction
+    if (dx < 0) BITSET(dirb, X_HEAD); // Save the real Extruder (head) direction in X Axis
+    if (dy < 0) BITSET(dirb, Y_AXIS);
+    if (dz < 0) BITSET(dirb, Z_HEAD); // ...and Z
+    if (da < 0) BITSET(dirb, A_AXIS); // Motor A direction
+    if (dc < 0) BITSET(dirb, C_AXIS); // Motor B direction
   #else
-    if (dx < 0) dirb |= BIT(X_AXIS);
-    if (dy < 0) dirb |= BIT(Y_AXIS); 
-    if (dz < 0) dirb |= BIT(Z_AXIS);
+    if (dx < 0) BITSET(dirb, X_AXIS);
+    if (dy < 0) BITSET(dirb, Y_AXIS); 
+    if (dz < 0) BITSET(dirb, Z_AXIS);
   #endif
-  if (de < 0) dirb |= BIT(E_AXIS); 
+  if (de < 0) BITSET(dirb, E_AXIS); 
   block->direction_bits = dirb;
 
   block->active_driver = driver;
@@ -875,14 +872,14 @@ float junction_deviation = 0.1;
          ys1 = axis_segment_time[Y_AXIS][1],
          ys2 = axis_segment_time[Y_AXIS][2];
 
-    if ((direction_change & BIT(X_AXIS)) != 0) {
+    if (TEST(direction_change, X_AXIS)) {
       xs2 = axis_segment_time[X_AXIS][2] = xs1;
       xs1 = axis_segment_time[X_AXIS][1] = xs0;
       xs0 = 0;
     }
     xs0 = axis_segment_time[X_AXIS][0] = xs0 + segment_time;
 
-    if ((direction_change & BIT(Y_AXIS)) != 0) {
+    if (TEST(direction_change, Y_AXIS)) {
       ys2 = axis_segment_time[Y_AXIS][2] = axis_segment_time[Y_AXIS][1];
       ys1 = axis_segment_time[Y_AXIS][1] = axis_segment_time[Y_AXIS][0];
       ys0 = 0;
@@ -1058,7 +1055,7 @@ float junction_deviation = 0.1;
 
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
   vector_3 plan_get_position() {
-    vector_3 position = vector_3(st_get_position_mm(X_AXIS), st_get_position_mm(Y_AXIS), st_get_position_mm(Z_AXIS));
+    vector_3 position = vector_3(st_get_axis_position_mm(X_AXIS), st_get_axis_position_mm(Y_AXIS), st_get_axis_position_mm(Z_AXIS));
 
     //position.debug("in plan_get position");
     //plan_bed_level_matrix.debug("in plan_get_position");
@@ -1076,21 +1073,21 @@ float junction_deviation = 0.1;
 #else
   void plan_set_position(const float& x, const float& y, const float& z, const float& e)
 #endif // AUTO_BED_LEVELING_FEATURE
-  {
-    #if ENABLED(AUTO_BED_LEVELING_FEATURE)
-      apply_rotation_xyz(plan_bed_level_matrix, x, y, z);
-    #endif
+{
+  #if ENABLED(AUTO_BED_LEVELING_FEATURE)
+    apply_rotation_xyz(plan_bed_level_matrix, x, y, z);
+  #endif
 
-    long  nx = position[X_AXIS] = lround(x * axis_steps_per_unit[X_AXIS]),
-          ny = position[Y_AXIS] = lround(y * axis_steps_per_unit[Y_AXIS]),
-          nz = position[Z_AXIS] = lround(z * axis_steps_per_unit[Z_AXIS]),
-          ne = position[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + active_extruder]);
-    last_extruder = active_extruder;
-    st_set_position(nx, ny, nz, ne);
-    previous_nominal_speed = 0.0; // Resets planner junction speeds. Assumes start from rest.
+  long  nx = position[X_AXIS] = lround(x * axis_steps_per_unit[X_AXIS]),
+        ny = position[Y_AXIS] = lround(y * axis_steps_per_unit[Y_AXIS]),
+        nz = position[Z_AXIS] = lround(z * axis_steps_per_unit[Z_AXIS]),
+        ne = position[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + active_extruder]);
+  last_extruder = active_extruder;
+  st_set_position(nx, ny, nz, ne);
+  previous_nominal_speed = 0.0; // Resets planner junction speeds. Assumes start from rest.
 
-    for (int i = 0; i < NUM_AXIS; i++) previous_speed[i] = 0.0;
-  }
+  for (uint8_t i = 0; i < NUM_AXIS; i++) previous_speed[i] = 0.0;
+}
 
 void plan_set_e_position(const float& e) {
   position[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + active_extruder]);
@@ -1100,6 +1097,6 @@ void plan_set_e_position(const float& e) {
 
 // Calculate the steps/s^2 acceleration rates, based on the mm/s^s
 void reset_acceleration_rates() {
-  for (int i = 0; i < 3 + EXTRUDERS; i++)
+  for (uint8_t i = 0; i < 3 + EXTRUDERS; i++)
     axis_steps_per_sqr_second[i] = max_acceleration_units_per_sq_second[i] * axis_steps_per_unit[i];
 }
