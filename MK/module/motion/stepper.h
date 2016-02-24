@@ -117,12 +117,12 @@ void st_set_e_position(const long &e);
 long st_get_position(uint8_t axis);
 
 // Get current position in mm
-float st_get_position_mm(AxisEnum axis);
+float st_get_axis_position_mm(AxisEnum axis);
 
 // The stepper subsystem goes to sleep when it runs out of things to execute. Call this
 // to notify the subsystem that it is time to go to work.
 void st_wake_up();
-  
+
 void checkHitEndstops(); //call from somewhere to create an serial error message with the locations the endstops where hit, in case they were triggered
 void endstops_hit_on_purpose(); //avoid creation of the message, i.e. after homing and before a routine call of checkHitEndstops();
 

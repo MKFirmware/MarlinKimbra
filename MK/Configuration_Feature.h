@@ -561,8 +561,7 @@
 //#define ADVANCE
 
 #define EXTRUDER_ADVANCE_K .0
-#define D_FILAMENT 2.85
-#define STEPS_MM_E 836
+#define D_FILAMENT 1.75
 /*****************************************************************************************/
 
 

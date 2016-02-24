@@ -234,6 +234,7 @@
  */
 #if ENABLED(DONDOLO)
   #undef SINGLENOZZLE
+  #undef ADVANCE
   #undef DRIVER_EXTRUDERS
   #define DRIVER_EXTRUDERS 1
 #endif

@@ -265,26 +265,26 @@ void checkHitEndstops() {
       ECHO_SM(DB, SERIAL_ENDSTOPS_HIT);
     #endif
 
-    if (endstop_hit_bits & BIT(X_MIN)) {
+    if (TEST(endstop_hit_bits, X_MIN)) {
       ECHO_MV(SERIAL_ENDSTOP_X, (float)endstops_trigsteps[X_AXIS] / axis_steps_per_unit[X_AXIS]);
       LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_XS);
     }
-    if (endstop_hit_bits & BIT(Y_MIN)) {
+    if (TEST(endstop_hit_bits, Y_MIN)) {
       ECHO_MV(SERIAL_ENDSTOP_Y, (float)endstops_trigsteps[Y_AXIS] / axis_steps_per_unit[Y_AXIS]);
       LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_YS);
     }
-    if (endstop_hit_bits & BIT(Z_MIN)) {
+    if (TEST(endstop_hit_bits, Z_MIN)) {
       ECHO_MV(SERIAL_ENDSTOP_Z, (float)endstops_trigsteps[Z_AXIS] / axis_steps_per_unit[Z_AXIS]);
       LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_ZS);
     }
     #if ENABLED(Z_PROBE_ENDSTOP)
-      if (endstop_hit_bits & BIT(Z_PROBE)) {
+      if (TEST(endstop_hit_bits, Z_PROBE)) {
         ECHO_MV(SERIAL_ENDSTOP_PROBE, (float)endstops_trigsteps[Z_AXIS] / axis_steps_per_unit[Z_AXIS]);
         LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_ZPS);
       }
     #endif
     #if ENABLED(NPR2)
-      if (endstop_hit_bits & BIT(E_MIN)) {
+      if (TEST(endstop_hit_bits, E_MIN)) {
         ECHO_MV(SERIAL_ENDSTOP_E, (float)endstops_trigsteps[E_AXIS] / axis_steps_per_unit[E_AXIS]);
         LCD_MESSAGEPGM(MSG_ENDSTOPS_HIT MSG_ENDSTOP_ES);
       }
@@ -307,6 +307,14 @@ void checkHitEndstops() {
   }
 }
 
+#if ENABLED(COREXY) || ENABLED(COREXZ)
+  #if ENABLED(COREXY)
+    #define CORE_AXIS_2 B_AXIS
+  #else
+    #define CORE_AXIS_2 C_AXIS
+  #endif
+#endif
+
 void enable_endstops(bool check) { check_endstops = check; }
 
 // Check endstops
@@ -322,7 +330,7 @@ inline void update_endstops() {
   #define _ENDSTOP_PIN(AXIS, MINMAX) AXIS ##_## MINMAX ##_PIN
   #define _ENDSTOP_INVERTING(AXIS, MINMAX) AXIS ##_## MINMAX ##_ENDSTOP_INVERTING
   #define _AXIS(AXIS) AXIS ##_AXIS
-  #define _ENDSTOP_HIT(AXIS) endstop_hit_bits |= BIT(_ENDSTOP(AXIS, MIN))
+  #define _ENDSTOP_HIT(AXIS) BITSET(endstop_hit_bits, _ENDSTOP(AXIS, MIN))
   #define _ENDSTOP(AXIS, MINMAX) AXIS ##_## MINMAX
 
   // SET_ENDSTOP_BIT: set the current endstop bits for an endstop to its status
@@ -332,23 +340,38 @@ inline void update_endstops() {
   // TEST_ENDSTOP: test the old and the current status of an endstop
   #define TEST_ENDSTOP(ENDSTOP) (TEST(current_endstop_bits, ENDSTOP) && TEST(old_endstop_bits, ENDSTOP))
 
-  #define UPDATE_ENDSTOP(AXIS,MINMAX) \
-    SET_ENDSTOP_BIT(AXIS, MINMAX); \
-    if (TEST_ENDSTOP(_ENDSTOP(AXIS, MINMAX))  && (current_block->steps[_AXIS(AXIS)] > 0)) { \
-      endstops_trigsteps[_AXIS(AXIS)] = count_position[_AXIS(AXIS)]; \
-      _ENDSTOP_HIT(AXIS); \
-      step_events_completed = current_block->step_event_count; \
-    }
+  #if ENABLED(COREXY) || ENABLED(COREXZ)
 
-  #if MECH(COREXY)
-    // Head direction in -X axis for CoreXY bots.
-    // If DeltaX == -DeltaY, the movement is only in Y axis
-    if ((current_block->steps[A_AXIS] != current_block->steps[B_AXIS]) || (TEST(out_bits, A_AXIS) == TEST(out_bits, B_AXIS))) {
-      if (TEST(out_bits, X_HEAD))
-  #elif MECH(COREXZ)
-    // Head direction in -X axis for CoreXZ bots.
-    // If DeltaX == -DeltaZ, the movement is only in Z axis
-    if ((current_block->steps[A_AXIS] != current_block->steps[C_AXIS]) || (TEST(out_bits, A_AXIS) == TEST(out_bits, C_AXIS))) {
+    #define _SET_TRIGSTEPS(AXIS) do { \
+        CRITICAL_SECTION_START; \
+        float axis_pos = count_position[_AXIS(AXIS)]; \
+        if (_AXIS(AXIS) == A_AXIS) \
+          axis_pos = (axis_pos + count_position[CORE_AXIS_2]) / 2; \
+        else if (_AXIS(AXIS) == CORE_AXIS_2) \
+          axis_pos = (count_position[A_AXIS] - axis_pos) / 2; \
+        CRITICAL_SECTION_END; \
+        endstops_trigsteps[_AXIS(AXIS)] = axis_pos; \
+      } while(0)
+
+  #else
+
+    #define _SET_TRIGSTEPS(AXIS) endstops_trigsteps[_AXIS(AXIS)] = count_position[_AXIS(AXIS)]
+
+  #endif // COREXY || COREXZ
+
+  #define UPDATE_ENDSTOP(AXIS,MINMAX) do { \
+      SET_ENDSTOP_BIT(AXIS, MINMAX); \
+      if (TEST_ENDSTOP(_ENDSTOP(AXIS, MINMAX)) && current_block->steps[_AXIS(AXIS)] > 0) { \
+        _SET_TRIGSTEPS(AXIS); \
+        _ENDSTOP_HIT(AXIS); \
+        step_events_completed = current_block->step_event_count; \
+      } \
+    } while(0)
+
+  #if ENABLED(COREXY) || ENABLED(COREXZ)
+    // Head direction in -X axis for CoreXY and CoreXZ bots.
+    // If Delta1 == -Delta2, the movement is only in Y or Z axis
+    if ((current_block->steps[A_AXIS] != current_block->steps[CORE_AXIS_2]) || (TEST(out_bits, A_AXIS) == TEST(out_bits, CORE_AXIS_2))) {
       if (TEST(out_bits, X_HEAD))
   #else
     if (TEST(out_bits, X_AXIS))   // stepping along -X axis (regular Cartesian bot)
@@ -424,7 +447,7 @@ inline void update_endstops() {
 
             if (z_test && current_block->steps[Z_AXIS] > 0) { // z_test = Z_MIN || Z2_MIN
               endstops_trigsteps[Z_AXIS] = count_position[Z_AXIS];
-              endstop_hit_bits |= BIT(Z_MIN);
+              BITSET(endstop_hit_bits, Z_MIN);
               if (!performing_homing || (z_test == 0x3))  //if not performing home or if both endstops were trigged during homing...
                 step_events_completed = current_block->step_event_count;
             }
@@ -440,7 +463,7 @@ inline void update_endstops() {
 
           if (TEST_ENDSTOP(Z_PROBE)) {
             endstops_trigsteps[Z_AXIS] = count_position[Z_AXIS];
-            endstop_hit_bits |= BIT(Z_PROBE);
+            BITSET(endstop_hit_bits, Z_PROBE);
           }
         #endif
       }
@@ -460,7 +483,7 @@ inline void update_endstops() {
 
             if (z_test && current_block->steps[Z_AXIS] > 0) {  // t_test = Z_MAX || Z2_MAX
               endstops_trigsteps[Z_AXIS] = count_position[Z_AXIS];
-              endstop_hit_bits |= BIT(Z_MIN);
+              BITSET(endstop_hit_bits, Z_MIN);
               if (!performing_homing || (z_test == 0x3))  //if not performing home or if both endstops were trigged during homing...
                 step_events_completed = current_block->step_event_count;
             }
@@ -551,33 +574,20 @@ FORCE_INLINE unsigned short calc_timer(unsigned short step_rate) {
  */
 void set_stepper_direction(bool onlye) {
 
+  #define SET_STEP_DIR(AXIS) \
+    if (TEST(out_bits, AXIS ##_AXIS)) { \
+      AXIS ##_APPLY_DIR(INVERT_## AXIS ##_DIR, false); \
+      count_direction[AXIS ##_AXIS] = -1; \
+    } \
+    else { \
+      AXIS ##_APPLY_DIR(!INVERT_## AXIS ##_DIR, false); \
+      count_direction[AXIS ##_AXIS] = 1; \
+    }
+
   if (!onlye) {
-    if (TEST(out_bits, X_AXIS)) { // A_AXIS
-      X_APPLY_DIR(INVERT_X_DIR, 0);
-      count_direction[X_AXIS] = -1;
-    }
-    else {
-      X_APPLY_DIR(!INVERT_X_DIR, 0);
-      count_direction[X_AXIS] = 1;
-    }
-
-    if (TEST(out_bits, Y_AXIS)) { // B_AXIS
-      Y_APPLY_DIR(INVERT_Y_DIR, 0);
-      count_direction[Y_AXIS] = -1;
-    }
-    else {
-      Y_APPLY_DIR(!INVERT_Y_DIR, 0);
-      count_direction[Y_AXIS] = 1;
-    }
-
-    if (TEST(out_bits, Z_AXIS)) { // C_AXIS
-      Z_APPLY_DIR(INVERT_Z_DIR, 0);
-      count_direction[Z_AXIS] = -1;
-    }
-    else {
-      Z_APPLY_DIR(!INVERT_Z_DIR, 0);
-      count_direction[Z_AXIS] = 1;
-    }
+    SET_STEP_DIR(X); // A
+    SET_STEP_DIR(Y); // B
+    SET_STEP_DIR(Z); // C
   }
 
   #if DISABLED(ADVANCE)
@@ -836,110 +846,39 @@ ISR(TIMER1_COMPA_vect) {
   ISR(TIMER0_COMPA_vect) {
     old_OCR0A += 52; // ~10kHz interrupt (250000 / 26 = 9615kHz)
     OCR0A = old_OCR0A;
-    // Set E direction (Depends on E direction + advance)
-    for (unsigned char i = 0; i < 4; i++) {
-      if (e_steps[0] != 0) {
-        E0_STEP_WRITE(INVERT_E_STEP_PIN);
-        if (e_steps[0] < 0) {
-          #if ENABLED(DONDOLO)
-            if (active_extruder == 0)
-              E0_DIR_WRITE(INVERT_E0_DIR);
-            else
-              E0_DIR_WRITE(!INVERT_E0_DIR);
-          #else
-            E0_DIR_WRITE(INVERT_E0_DIR);
-          #endif
-          e_steps[0]++;
-          E0_STEP_WRITE(!INVERT_E_STEP_PIN);
-        }
-        else if (e_steps[0] > 0) {
-          #if ENABLED(DONDOLO)
-            if (active_extruder == 0)
-              E0_DIR_WRITE(!INVERT_E0_DIR);
-            else
-              E0_DIR_WRITE(INVERT_E0_DIR);
-          #else
-            E0_DIR_WRITE(!INVERT_E0_DIR);
-          #endif
-          e_steps[0]--;
-          E0_STEP_WRITE(!INVERT_E_STEP_PIN);
-        }
+
+    #define STEP_E_ONCE(INDEX) \
+      if (e_steps[INDEX] != 0) { \
+        E## INDEX ##_STEP_WRITE(INVERT_E_STEP_PIN); \
+        if (e_steps[INDEX] < 0) { \
+          E## INDEX ##_DIR_WRITE(INVERT_E## INDEX ##_DIR); \
+          e_steps[INDEX]++; \
+        } \
+        else if (e_steps[INDEX] > 0) { \
+          E## INDEX ##_DIR_WRITE(!INVERT_E## INDEX ##_DIR); \
+          e_steps[INDEX]--; \
+        } \
+        E## INDEX ##_STEP_WRITE(!INVERT_E_STEP_PIN); \
       }
+
+    // Step all E steppers that have steps, up to 4 steps per interrupt
+    for (uint8_t i = 0; i < 4; i++) {
+      STEP_E_ONCE(0);
       #if DRIVER_EXTRUDERS > 1
-        if (e_steps[1] != 0) {
-          E1_STEP_WRITE(INVERT_E_STEP_PIN);
-          if (e_steps[1] < 0) {
-            E1_DIR_WRITE(INVERT_E1_DIR);
-            e_steps[1]++;
-            E1_STEP_WRITE(!INVERT_E_STEP_PIN);
-          }
-          else if (e_steps[1] > 0) {
-            E1_DIR_WRITE(!INVERT_E1_DIR);
-            e_steps[1]--;
-            E1_STEP_WRITE(!INVERT_E_STEP_PIN);
-          }
-        }
-      #endif
-      #if DRIVER_EXTRUDERS > 2
-        if (e_steps[2] != 0) {
-          E2_STEP_WRITE(INVERT_E_STEP_PIN);
-          if (e_steps[2] < 0) {
-            E2_DIR_WRITE(INVERT_E2_DIR);
-            e_steps[2]++;
-            E2_STEP_WRITE(!INVERT_E_STEP_PIN);
-          }
-          else if (e_steps[2] > 0) {
-            E2_DIR_WRITE(!INVERT_E2_DIR);
-            e_steps[2]--;
-            E2_STEP_WRITE(!INVERT_E_STEP_PIN);
-          }
-        }
-      #endif
-      #if DRIVER_EXTRUDERS > 3
-        if (e_steps[3] != 0) {
-          E3_STEP_WRITE(INVERT_E_STEP_PIN);
-          if (e_steps[3] < 0) {
-            E3_DIR_WRITE(INVERT_E3_DIR);
-            e_steps[3]++;
-            E3_STEP_WRITE(!INVERT_E_STEP_PIN);
-          }
-          else if (e_steps[3] > 0) {
-            E3_DIR_WRITE(!INVERT_E3_DIR);
-            e_steps[3]--;
-            E3_STEP_WRITE(!INVERT_E_STEP_PIN);
-          }
-        }
-      #endif
-      #if DRIVER_EXTRUDERS > 4
-        if (e_steps[4] != 0) {
-          E4_STEP_WRITE(INVERT_E_STEP_PIN);
-          if (e_steps[4] < 0) {
-            E4_DIR_WRITE(INVERT_E4_DIR);
-            e_steps[4]++;
-            E4_STEP_WRITE(!INVERT_E_STEP_PIN);
-          }
-          else if (e_steps[4] > 0) {
-            E4_DIR_WRITE(!INVERT_E4_DIR);
-            e_steps[4]--;
-            E4_STEP_WRITE(!INVERT_E_STEP_PIN);
-          }
-        }
-      #endif
-      #if DRIVER_EXTRUDERS > 5
-        if (e_steps[5] != 0) {
-          E5_STEP_WRITE(INVERT_E_STEP_PIN);
-          if (e_steps[5] < 0) {
-            E5_DIR_WRITE(INVERT_E5_DIR);
-            e_steps[5]++;
-            E5_STEP_WRITE(!INVERT_E_STEP_PIN);
-          }
-          else if (e_steps[5] > 0) {
-            E5_DIR_WRITE(!INVERT_E5_DIR);
-            e_steps[5]--;
-            E5_STEP_WRITE(!INVERT_E_STEP_PIN);
-          }
-        }
-      #endif
+        STEP_E_ONCE(1);
+        #if DRIVER_EXTRUDERS > 2
+          STEP_E_ONCE(2);
+          #if DRIVER_EXTRUDERS > 3
+            STEP_E_ONCE(3);
+            #if DRIVER_EXTRUDERS > 4
+              STEP_E_ONCE(4);
+              #if DRIVER_EXTRUDERS > 5
+                STEP_E_ONCE(5);
+              #endif // DRIVER_EXTRUDERS > 5
+            #endif // DRIVER_EXTRUDERS > 4
+          #endif // DRIVER_EXTRUDERS > 3
+        #endif // DRIVER_EXTRUDERS > 2
+      #endif // DRIVER_EXTRUDERS > 1
     }
   }
 #endif // ADVANCE
@@ -1248,14 +1187,32 @@ void st_set_e_position(const long& e) {
 }
 
 long st_get_position(uint8_t axis) {
-  long count_pos;
   CRITICAL_SECTION_START;
-  count_pos = count_position[axis];
+  long count_pos = count_position[axis];
   CRITICAL_SECTION_END;
   return count_pos;
 }
 
-float st_get_position_mm(AxisEnum axis) { return st_get_position(axis) / axis_steps_per_unit[axis]; }
+float st_get_axis_position_mm(AxisEnum axis) {
+  float axis_pos;
+  #if ENABLED(COREXY) | ENABLED(COREXZ)
+    if (axis == X_AXIS || axis == CORE_AXIS_2) {
+      CRITICAL_SECTION_START;
+      long  pos1 = count_position[A_AXIS],
+            pos2 = count_position[CORE_AXIS_2];
+      CRITICAL_SECTION_END;
+      // ((a1+a2)+(a1-a2))/2 -> (a1+a2+a1-a2)/2 -> (a1+a1)/2 -> a1
+      // ((a1+a2)-(a1-a2))/2 -> (a1+a2-a1+a2)/2 -> (a2+a2)/2 -> a2
+      axis_pos = (pos1 + ((axis == X_AXIS) ? pos2 : -pos2)) / 2.0f;
+    }
+    else
+      axis_pos = st_get_position(axis);
+  #else
+    axis_pos = st_get_position(axis);
+  #endif
+
+  return axis_pos / axis_steps_per_unit[axis];
+}
 
 void enable_all_steppers() {
   enable_x();

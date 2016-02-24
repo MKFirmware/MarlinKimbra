@@ -1006,9 +1006,9 @@ void tp_init() {
   #endif // HEATER_0_USES_MAX6675
 
   #ifdef DIDR2
-    #define ANALOG_SELECT(pin) do{ if (pin < 8) DIDR0 |= BIT(pin); else DIDR2 |= BIT(pin - 8); }while(0)
+    #define ANALOG_SELECT(pin) do{ if (pin < 8) BITSET(DIDR0, pin); else BITSET(DIDR2, pin - 8); }while(0)
   #else
-    #define ANALOG_SELECT(pin) do{ DIDR0 |= BIT(pin); }while(0)
+    #define ANALOG_SELECT(pin) do{ BITSET(DIDR0, pin); }while(0)
   #endif
 
   // Set analog inputs
@@ -1084,10 +1084,10 @@ void tp_init() {
   // Use timer0 for temperature measurement
   // Interleave temperature interrupt with millies interrupt
   OCR0B = 128;
-  TIMSK0 |= BIT(OCIE0B);
+  BITSET(TIMSK0, OCIE0B);
 
   // Wait for temperature measurement to settle
-  delay_ms(250);
+  delay(250);
 
   #define TEMP_MIN_ROUTINE(NR) \
     minttemp[NR] = HEATER_ ## NR ## _MINTEMP; \
@@ -1279,9 +1279,9 @@ void disable_all_heaters() {
     max6675_temp = 0;
 
     #ifdef PRR
-      PRR &= ~BIT(PRSPI);
+      BITCLR(PRR, PRSPI);
     #elif defined(PRR0)
-      PRR0 &= ~BIT(PRSPI);
+      BITCLR(PRR0, PRSPI);
     #endif
 
     SPCR = BIT(MSTR) | BIT(SPE) | BIT(SPR0);
@@ -1295,13 +1295,13 @@ void disable_all_heaters() {
 
     // read MSB
     SPDR = 0;
-    for (; (SPSR & BIT(SPIF)) == 0;);
+    for (; !TEST(SPSR, SPIF););
     max6675_temp = SPDR;
     max6675_temp <<= 8;
 
     // read LSB
     SPDR = 0;
-    for (; (SPSR & BIT(SPIF)) == 0;);
+    for (; !TEST(SPSR, SPIF););
     max6675_temp |= SPDR;
 
     // disable TT_MAX6675
@@ -1649,7 +1649,7 @@ ISR(TIMER0_COMPB_vect) {
 
   #endif // SLOW_PWM_HEATERS
 
-  #define SET_ADMUX_ADCSRA(pin) ADMUX = BIT(REFS0) | (pin & 0x07); ADCSRA |= BIT(ADSC)
+  #define SET_ADMUX_ADCSRA(pin) ADMUX = BIT(REFS0) | (pin & 0x07); BITSET(ADCSRA, ADSC)
   #ifdef MUX5
     #define START_ADC(pin) if (pin > 7) ADCSRB = BIT(MUX5); else ADCSRB = 0; SET_ADMUX_ADCSRA(pin)
   #else
