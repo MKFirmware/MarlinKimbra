@@ -142,7 +142,7 @@ static void lcd_status_screen();
     encoderRateMultiplierEnabled = false; \
     if (encoderPosition > 0x8000) encoderPosition = 0; \
     uint8_t encoderLine = encoderPosition / ENCODER_STEPS_PER_MENU_ITEM; \
-    if (encoderLine < currentMenuViewOffset) currentMenuViewOffset = encoderLine; \
+    NOMORE(currentMenuViewOffset, encoderLine); \
     uint8_t _lineNr = currentMenuViewOffset, _menuItemNr; \
     bool wasClicked = LCD_CLICKED, itemSelected; \
     bool wasBackClicked = LCD_BACK_CLICKED; \
@@ -157,7 +157,7 @@ static void lcd_status_screen();
     encoderRateMultiplierEnabled = false; \
     if (encoderPosition > 0x8000) encoderPosition = 0; \
     uint8_t encoderLine = encoderPosition / ENCODER_STEPS_PER_MENU_ITEM; \
-    if (encoderLine < currentMenuViewOffset) currentMenuViewOffset = encoderLine; \
+    NOMORE(currentMenuViewOffset, encoderLine); \
     uint8_t _lineNr = currentMenuViewOffset, _menuItemNr; \
     bool wasClicked = LCD_CLICKED, itemSelected; \
     for (uint8_t _drawLineNr = 0; _drawLineNr < LCD_HEIGHT; _drawLineNr++, _lineNr++) { \
@@ -957,8 +957,8 @@ static void _lcd_move(const char* name, AxisEnum axis, int min, int max) {
   if (encoderPosition != 0) {
     refresh_cmd_timeout();
     current_position[axis] += float((int)encoderPosition) * move_menu_scale;
-    if (SOFTWARE_MIN_ENDSTOPS && current_position[axis] < min) current_position[axis] = min;
-    if (SOFTWARE_MAX_ENDSTOPS && current_position[axis] > max) current_position[axis] = max;
+    if (SOFTWARE_MIN_ENDSTOPS) NOLESS(current_position[axis], min);
+    if (SOFTWARE_MAX_ENDSTOPS) NOMORE(current_position[axis], max);
     encoderPosition = 0;
     line_to_current(manual_feedrate[axis]);
     lcdDrawUpdate = 1;

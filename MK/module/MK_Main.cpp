@@ -3715,9 +3715,8 @@ inline void gcode_G28() {
 
             apply_rotation_xyz(plan_bed_level_matrix, x_tmp, y_tmp, z_tmp);
 
-            if (eqnBVector[ind] - z_tmp < min_diff)
-              min_diff = eqnBVector[ind] - z_tmp;
-              
+            NOMORE(min_diff, eqnBVector[ind] - z_tmp);
+
             if (diff >= 0.0)
               ECHO_M(" +");   // Include + for column alignment
             else
@@ -6138,7 +6137,7 @@ inline void gcode_M400() { st_synchronize(); }
    */
   inline void gcode_M405() {
     if (code_seen('D')) meas_delay_cm = code_value();
-    if (meas_delay_cm > MAX_MEASUREMENT_DELAY) meas_delay_cm = MAX_MEASUREMENT_DELAY;
+    NOMORE(meas_delay_cm, MAX_MEASUREMENT_DELAY);
 
     if (delay_index2 == -1) { //initialize the ring buffer if it has not been done since startup
       int temp_ratio = widthFil_to_size_ratio();
