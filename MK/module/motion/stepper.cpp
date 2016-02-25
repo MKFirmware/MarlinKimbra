@@ -307,8 +307,8 @@ void checkHitEndstops() {
   }
 }
 
-#if ENABLED(COREXY) || ENABLED(COREXZ)
-  #if ENABLED(COREXY)
+#if MECH(COREXY) || MECH(COREXZ)
+  #if MECH(COREXY)
     #define CORE_AXIS_2 B_AXIS
   #else
     #define CORE_AXIS_2 C_AXIS
@@ -340,7 +340,7 @@ inline void update_endstops() {
   // TEST_ENDSTOP: test the old and the current status of an endstop
   #define TEST_ENDSTOP(ENDSTOP) (TEST(current_endstop_bits, ENDSTOP) && TEST(old_endstop_bits, ENDSTOP))
 
-  #if ENABLED(COREXY) || ENABLED(COREXZ)
+  #if MECH(COREXY) || MECH(COREXZ)
 
     #define _SET_TRIGSTEPS(AXIS) do { \
         CRITICAL_SECTION_START; \
@@ -368,7 +368,7 @@ inline void update_endstops() {
       } \
     } while(0)
 
-  #if ENABLED(COREXY) || ENABLED(COREXZ)
+  #if MECH(COREXY) || MECH(COREXZ)
     // Head direction in -X axis for CoreXY and CoreXZ bots.
     // If Delta1 == -Delta2, the movement is only in Y or Z axis
     if ((current_block->steps[A_AXIS] != current_block->steps[CORE_AXIS_2]) || (TEST(out_bits, A_AXIS) == TEST(out_bits, CORE_AXIS_2))) {
@@ -690,7 +690,7 @@ ISR(TIMER1_COMPA_vect) {
     if (check_endstops) update_endstops();
 
     // Take multiple steps per interrupt (For high speed moves)
-    for (int8_t i = 0; i < step_loops; i++) {
+    for (uint8_t i = 0; i < step_loops; i++) {
 
         MKSERIAL.checkRx(); // Check for serial chars.
 
@@ -706,7 +706,7 @@ ISR(TIMER1_COMPA_vect) {
 
         #if ENABLED(COLOR_MIXING_EXTRUDER)
           long dir = TEST(out_bits, E_AXIS) ? -1 : 1;
-          for (int8_t j = 0; j < DRIVER_EXTRUDERS; j++) {
+          for (uint8_t j = 0; j < DRIVER_EXTRUDERS; j++) {
             counter_m[j] += current_block->mix_steps[j];
             if (counter_m[j] > 0) {
               counter_m[j] -= current_block->step_event_count;
@@ -734,7 +734,7 @@ ISR(TIMER1_COMPA_vect) {
         #if ENABLED(COLOR_MIXING_EXTRUDER)
           counter_e += current_block->steps[E_AXIS];
           if (counter_e > 0) {
-            for (int8_t j = 0; j < DRIVER_EXTRUDERS; j++) {
+            for (uint8_t j = 0; j < DRIVER_EXTRUDERS; j++) {
               counter_m[j] += current_block->mix_steps[j];
               if (counter_m[j] > 0) En_STEP_WRITE(j, !INVERT_E_STEP_PIN);
             }
@@ -757,7 +757,7 @@ ISR(TIMER1_COMPA_vect) {
       STEP_END(z, Z);
       #if DISABLED(ADVANCE)
         #if ENABLED(COLOR_MIXING_EXTRUDER)
-          for (int8_t j = 0; j < DRIVER_EXTRUDERS; j++) {
+          for (uint8_t j = 0; j < DRIVER_EXTRUDERS; j++) {
             if (counter_m[j] > 0) {
               counter_m[j] -= current_block->step_event_count;
               En_STEP_WRITE(j, INVERT_E_STEP_PIN);
