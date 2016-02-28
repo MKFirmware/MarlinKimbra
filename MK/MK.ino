@@ -154,6 +154,7 @@
  * M405 - Turn on Filament Sensor extrusion control.  Optional D<delay in cm> to set delay in centimeters between sensor and extruder
  * M406 - Turn off Filament Sensor extrusion control
  * M407 - Display measured filament diameter
+ * M408 - Report JSON-style response
  * M410 - Quickstop. Abort all the planned moves
  * M428 - Set the home_offset logically based on the current_position
  * M500 - Store parameters in EEPROM
@@ -166,6 +167,7 @@
  * M600 - Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
  * M605 - Set dual x-carriage movement mode: S<mode> [ X<duplication x-offset> R<duplication temp offset> ]
  * M666 - Set z probe offset or Endstop and delta geometry adjustment
+ * M906 - Set motor currents XYZ T0-4 E
  * M907 - Set digital trimpot motor current using axis codes.
  * M908 - Control digital trimpot directly.
  *
@@ -205,9 +207,6 @@
   #else
     #include <LiquidCrystal.h> // library for character LCD
   #endif
-#endif
-#if ENABLED(NEXTION)
-  #include <Nextion.h>
 #endif
 #if HAS(DIGIPOTSS)
   #include <SPI.h>

@@ -677,11 +677,11 @@ uint8_t SdBaseFile::lsRecursive(SdBaseFile* parent, uint8_t level, char* findFil
           ECHO_T(fullName);
           ECHO_C('/');
         }
-        #if JSON_OUTPUT
+        #ifdef JSON_OUTPUT
           if (isJson) {
             if (!firstFile) ECHO_C(',');
             ECHO_C('"'); ECHO_C('*');
-            SDCard::printEscapeChars(tempLongFilename);
+            CardReader::printEscapeChars(tempLongFilename);
             ECHO_C('"');
             firstFile = false;
           }
@@ -731,11 +731,11 @@ uint8_t SdBaseFile::lsRecursive(SdBaseFile* parent, uint8_t level, char* findFil
           ECHO_T(fullName);
           ECHO_C('/');
         }
-        #if JSON_OUTPUT
+        #ifdef JSON_OUTPUT
           if (isJson) {
             if (!firstFile) ECHO_C(',');
             ECHO_C('"');
-            SDCard::printEscapeChars(tempLongFilename);
+            CardReader::printEscapeChars(tempLongFilename);
             ECHO_C('"');
             firstFile = false;
           }
@@ -779,7 +779,7 @@ void SdBaseFile::ls(uint8_t flags, uint8_t indent) {
   lsRecursive(&parent, 0, NULL, NULL, false);
 }
 
-#if JSON_OUTPUT
+#ifdef JSON_OUTPUT
 void SdBaseFile::lsJSON() {
   SdBaseFile parent;
   rewind();

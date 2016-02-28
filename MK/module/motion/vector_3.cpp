@@ -52,9 +52,9 @@ void vector_3::normalize() {
 }
 
 void vector_3::apply_rotation(matrix_3x3 matrix) {
-  float resultX = x * matrix.matrix[3 * 0 + 0] + y * matrix.matrix[3 * 1 + 0] + z * matrix.matrix[3 * 2 + 0];
-  float resultY = x * matrix.matrix[3 * 0 + 1] + y * matrix.matrix[3 * 1 + 1] + z * matrix.matrix[3 * 2 + 1];
-  float resultZ = x * matrix.matrix[3 * 0 + 2] + y * matrix.matrix[3 * 1 + 2] + z * matrix.matrix[3 * 2 + 2];
+  float resultX = x * matrix.matrix[0][0] + y * matrix.matrix[1][0] + z * matrix.matrix[2][0];
+  float resultY = x * matrix.matrix[0][1] + y * matrix.matrix[1][1] + z * matrix.matrix[2][1];
+  float resultZ = x * matrix.matrix[0][2] + y * matrix.matrix[1][2] + z * matrix.matrix[2][2];
   x = resultX;
   y = resultY;
   z = resultZ;
@@ -80,17 +80,17 @@ matrix_3x3 matrix_3x3::create_from_rows(vector_3 row_0, vector_3 row_1, vector_3
   //row_1.debug("row_1");
   //row_2.debug("row_2");
   matrix_3x3 new_matrix;
-  new_matrix.matrix[0] = row_0.x; new_matrix.matrix[1] = row_0.y; new_matrix.matrix[2] = row_0.z;
-  new_matrix.matrix[3] = row_1.x; new_matrix.matrix[4] = row_1.y; new_matrix.matrix[5] = row_1.z;
-  new_matrix.matrix[6] = row_2.x; new_matrix.matrix[7] = row_2.y; new_matrix.matrix[8] = row_2.z;
+  new_matrix.matrix[0][0] = row_0.x; new_matrix.matrix[0][1] = row_0.y; new_matrix.matrix[0][2] = row_0.z;
+  new_matrix.matrix[1][0] = row_1.x; new_matrix.matrix[1][1] = row_1.y; new_matrix.matrix[1][2] = row_1.z;
+  new_matrix.matrix[2][0] = row_2.x; new_matrix.matrix[2][1] = row_2.y; new_matrix.matrix[2][2] = row_2.z;
   //new_matrix.debug("new_matrix");
   return new_matrix;
 }
 
 void matrix_3x3::set_to_identity() {
-  matrix[0] = 1; matrix[1] = 0; matrix[2] = 0;
-  matrix[3] = 0; matrix[4] = 1; matrix[5] = 0;
-  matrix[6] = 0; matrix[7] = 0; matrix[8] = 1;
+  matrix[0][0] = 1; matrix[0][1] = 0; matrix[0][2] = 0;
+  matrix[1][0] = 0; matrix[1][1] = 1; matrix[1][2] = 0;
+  matrix[2][0] = 0; matrix[2][1] = 0; matrix[2][2] = 1;
 }
 
 matrix_3x3 matrix_3x3::create_look_at(vector_3 target) {
@@ -111,22 +111,20 @@ matrix_3x3 matrix_3x3::create_look_at(vector_3 target) {
 
 matrix_3x3 matrix_3x3::transpose(matrix_3x3 original) {
   matrix_3x3 new_matrix;
-  new_matrix.matrix[0] = original.matrix[0]; new_matrix.matrix[1] = original.matrix[3]; new_matrix.matrix[2] = original.matrix[6];
-  new_matrix.matrix[3] = original.matrix[1]; new_matrix.matrix[4] = original.matrix[4]; new_matrix.matrix[5] = original.matrix[7];
-  new_matrix.matrix[6] = original.matrix[2]; new_matrix.matrix[7] = original.matrix[5]; new_matrix.matrix[8] = original.matrix[8];
+  new_matrix.matrix[0][0] = original.matrix[0][0]; new_matrix.matrix[0][1] = original.matrix[1][0]; new_matrix.matrix[0][2] = original.matrix[2][0];
+  new_matrix.matrix[1][0] = original.matrix[0][1]; new_matrix.matrix[1][1] = original.matrix[1][1]; new_matrix.matrix[1][2] = original.matrix[2][1];
+  new_matrix.matrix[2][0] = original.matrix[0][2]; new_matrix.matrix[2][1] = original.matrix[1][2]; new_matrix.matrix[2][2] = original.matrix[2][2];
   return new_matrix;
 }
 
 void matrix_3x3::debug(const char title[]) {
   ECHO_LT(DB, title);
-  int count = 0;
-  for (int i = 0; i < 3; i++) {
+  for (uint8_t i = 0; i < 3; i++) {
     ECHO_S(DB);
-    for (int j = 0; j < 3; j++) {
-      if (matrix[count] >= 0.0) ECHO_C('+');
-      ECHO_V(matrix[count], 6);
+    for (uint8_t j = 0; j < 3; j++) {
+      if (matrix[i][j] >= 0.0) ECHO_C('+');
+      ECHO_V(matrix[i][j], 6);
       ECHO_C(' ');
-      count++;
     }
     ECHO_E;
   }

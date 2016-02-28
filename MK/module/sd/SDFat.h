@@ -1985,7 +1985,7 @@ class SdBaseFile {
   static bool remove(SdBaseFile& dirFile, const char* path)  // NOLINT
     __attribute__((error("use remove(&dirFile, path)")));
 #endif  // ALLOW_DEPRECATED_FUNCTIONS
-#if JSON_OUTPUT
+#ifdef JSON_OUTPUT
 	void lsJSON();
 #endif
 };

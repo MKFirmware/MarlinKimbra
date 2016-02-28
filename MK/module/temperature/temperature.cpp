@@ -1087,7 +1087,7 @@ void tp_init() {
   BITSET(TIMSK0, OCIE0B);
 
   // Wait for temperature measurement to settle
-  delay(250);
+  delay_ms(250);
 
   #define TEMP_MIN_ROUTINE(NR) \
     minttemp[NR] = HEATER_ ## NR ## _MINTEMP; \

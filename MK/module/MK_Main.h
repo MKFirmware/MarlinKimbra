@@ -217,6 +217,10 @@ extern uint8_t active_extruder;
 extern uint8_t previous_extruder;
 extern uint8_t active_driver;
 
+#if MB(ALLIGATOR)
+  extern float motor_current[DRIVER_EXTRUDERS + 3];
+#endif
+
 #if ENABLED(DIGIPOT_I2C)
   extern void digipot_i2c_set_current( int channel, float current );
   extern void digipot_i2c_init();
