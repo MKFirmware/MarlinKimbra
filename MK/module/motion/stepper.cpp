@@ -722,10 +722,7 @@ ISR(TIMER1_COMPA_vect) {
 
       #define STEP_START(axis, AXIS) \
         _COUNTER(axis) += current_block->steps[_AXIS(AXIS)]; \
-        if (_COUNTER(axis) > 0) { \
-          _APPLY_STEP(AXIS)(!_INVERT_STEP_PIN(AXIS),0); \
-          _COUNTER(axis) -= current_block->step_event_count; \
-          count_position[_AXIS(AXIS)] += count_direction[_AXIS(AXIS)]; }
+        if (_COUNTER(axis) > 0) { _APPLY_STEP(AXIS)(!_INVERT_STEP_PIN(AXIS),0); }
 
       STEP_START(x, X);
       STEP_START(y, Y);
@@ -750,7 +747,12 @@ ISR(TIMER1_COMPA_vect) {
         delayMicroseconds(STEPPER_HIGH_LOW_DELAY);
       #endif
 
-      #define STEP_END(axis, AXIS) _APPLY_STEP(AXIS)(_INVERT_STEP_PIN(AXIS),0)
+      #define STEP_END(axis, AXIS) \
+        if (_COUNTER(axis) > 0) { \
+          _COUNTER(axis) -= current_block->step_event_count; \
+          count_position[_AXIS(AXIS)] += count_direction[_AXIS(AXIS)]; \
+          _APPLY_STEP(AXIS)(_INVERT_STEP_PIN(AXIS),0); \
+        }
 
       STEP_END(x, X);
       STEP_END(y, Y);
