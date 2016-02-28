@@ -98,7 +98,8 @@
  *
  *  M???  S               IDLE_OOZING_enabled
  *
- *
+ * ALLIGATOR:
+ *  M906  XYZ T0-4 E      Motor current
  *
  */
 
@@ -256,6 +257,10 @@ void Config_StoreSettings() {
     EEPROM_WRITE_VAR(i, IDLE_OOZING_enabled);
   #endif
 
+  #if MB(ALLIGATOR)
+    EEPROM_WRITE_VAR(i, motor_current);
+  #endif
+
   char ver2[4] = EEPROM_VERSION;
   int j = EEPROM_OFFSET;
   EEPROM_WRITE_VAR(j, ver2); // validate data
@@ -406,6 +411,10 @@ void Config_RetrieveSettings() {
       EEPROM_READ_VAR(i, IDLE_OOZING_enabled);
     #endif
 
+    #if MB(ALLIGATOR)
+      EEPROM_READ_VAR(i, motor_current);
+    #endif
+
     // Call updatePID (similar to when we have processed M301)
     updatePID();
 
@@ -446,6 +455,10 @@ void Config_ResetDefault() {
     float tmp10[] = {0};
     float tmp11[] = {0};
     float tmp12[] = {0};
+  #endif
+
+  #if MB(ALLIGATOR)
+    float tmp13[] = MOTOR_CURRENT;
   #endif
 
   for (int8_t i = 0; i < 3 + EXTRUDERS; i++) {
@@ -494,6 +507,13 @@ void Config_ResetDefault() {
           hotend_offset[Z_AXIS][i] = 0;
       #endif // HOTENDS > 1
     }
+    #if MB(ALLIGATOR)
+      max_i = sizeof(tmp13) / sizeof(*tmp13);
+      if(i < max_i)
+        motor_current[i] = tmp13[i];
+      else
+        motor_current[i] = tmp13[max_i - 1];
+    #endif
   }
 
   #if MECH(SCARA)
@@ -767,15 +787,15 @@ void Config_ResetDefault() {
       if (!forReplay) {
         ECHO_LM(CFG, "Material heatup parameters:");
       }
-      ECHO_SMV(CFG, "  M145 M0 H", plaPreheatHotendTemp);
+      ECHO_SMV(CFG, "  M145 S0 H", plaPreheatHotendTemp);
       ECHO_MV(" B", plaPreheatHPBTemp);
       ECHO_MV(" F", plaPreheatFanSpeed);
       ECHO_EM(" (Material PLA)");
-      ECHO_SMV(CFG, "  M145 M1 H", absPreheatHotendTemp);
+      ECHO_SMV(CFG, "  M145 S1 H", absPreheatHotendTemp);
       ECHO_MV(" B", absPreheatHPBTemp);
       ECHO_MV(" F", absPreheatFanSpeed);
       ECHO_EM(" (Material ABS)");
-      ECHO_SMV(CFG, "  M145 M2 H", gumPreheatHotendTemp);
+      ECHO_SMV(CFG, "  M145 S2 H", gumPreheatHotendTemp);
       ECHO_MV(" B", gumPreheatHPBTemp);
       ECHO_MV(" F", gumPreheatFanSpeed);
       ECHO_EM(" (Material GUM)");
@@ -786,7 +806,7 @@ void Config_ResetDefault() {
         ECHO_LM(CFG, "PID settings:");
       }
       #if ENABLED(PIDTEMP)
-        for (int8_t h = 0; h < HOTENDS; h++) {
+        for (uint8_t h = 0; h < HOTENDS; h++) {
           ECHO_SMV(CFG, "  M301 H", h);
           ECHO_MV(" P", PID_PARAM(Kp, h));
           ECHO_MV(" I", unscalePID_i(PID_PARAM(Ki, h)));
@@ -857,6 +877,22 @@ void Config_ResetDefault() {
         ECHO_LM(CFG, "Filament settings: Disabled");
       }
     }
+
+    #if MB(ALLIGATOR)
+      if (!forReplay) {
+        ECHO_LM(CFG, "Current:");
+      }
+      ECHO_SMV(CFG, "  M906 X", motor_current[X_AXIS]);
+      ECHO_MV(" Y", motor_current[Y_AXIS]);
+      ECHO_MV(" Z", motor_current[Z_AXIS]);
+      ECHO_EMV(" E", motor_current[E_AXIS]);
+      #if DRIVER_EXTRUDERS > 1
+        for (uint8_t i = 1; i < DRIVER_EXTRUDERS; i++) {
+          ECHO_SMV(CFG, "  M906 T", i);
+          ECHO_EMV(" E", motor_current[E_AXIS + i]);
+        }
+      #endif // DRIVER_EXTRUDERS > 1
+    #endif // ALLIGATOR
 
     ConfigSD_PrintSettings(forReplay);
 

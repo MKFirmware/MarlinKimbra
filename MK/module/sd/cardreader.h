@@ -9,6 +9,7 @@
 /** Total size of the buffer used to store the long filenames */
 #define LONG_FILENAME_LENGTH (FILENAME_LENGTH * MAX_VFAT_ENTRIES + 1)
 #define SHORT_FILENAME_LENGTH 14
+#define GENBY_SIZE 16
 
 extern char tempLongFilename[LONG_FILENAME_LENGTH + 1];
 extern char fullName[LONG_FILENAME_LENGTH * SD_MAX_FOLDER_DEPTH + SD_MAX_FOLDER_DEPTH + 1];
@@ -54,28 +55,37 @@ public:
 
   FORCE_INLINE void setIndex(uint32_t newpos) { sdpos = newpos; file.seekSet(sdpos); }
   FORCE_INLINE bool isFileOpen() { return file.isOpen(); }
-  FORCE_INLINE bool eof() { return sdpos >= filesize; }
+  FORCE_INLINE bool eof() { return sdpos >= fileSize; }
   FORCE_INLINE int16_t get() { sdpos = file.curPosition(); return (int16_t)file.read(); }
-  FORCE_INLINE uint8_t percentDone() { return (isFileOpen() && filesize) ? sdpos / ((filesize + 99) / 100) : 0; }
+  FORCE_INLINE uint8_t percentDone() { return (isFileOpen() && fileSize) ? sdpos / ((fileSize + 99) / 100) : 0; }
   FORCE_INLINE char* getWorkDirName() { workDir.getFilename(fullName); return fullName; }
 
   //files init.g on the sd card are performed in a row
   //this is to delay autostart and hence the initialisaiton of the sd card to some seconds after the normal init, so the device is available quick after a reset
   void checkautostart(bool x);
 
-public:
   bool saving, sdprinting, cardOK, filenameIsDir;
+  uint32_t fileSize, sdpos;
+  float objectHeight, firstlayerHeight, layerHeight, filamentNeeded;
+  char generatedBy[GENBY_SIZE];
+
+  static void printEscapeChars(const char* s);
+
 private:
   SdBaseFile root, *curDir, workDir, lastDir, workDirParents[SD_MAX_FOLDER_DEPTH];
   Sd2Card card;
   uint16_t workDirDepth;
-  uint32_t filesize;
   millis_t next_autostart_ms;
-  uint32_t sdpos;
   uint16_t nrFiles; // counter for the files in the current directory and recycled as position counter for getting the nrFiles'th name in the directory.
   LsAction lsAction; //stored for recursion.
   bool autostart_stilltocheck; //the sd start is delayed, because otherwise the serial cannot answer fast enought to make contact with the hostsoftware.
   void lsDive(SdBaseFile parent, const char* const match = NULL);
+  void parsejson(SdBaseFile &file);
+  bool findGeneratedBy(char* buf, char* genBy);
+  bool findFirstLayerHeight(char* buf, float& firstlayerHeight);
+  bool findLayerHeight(char* buf, float& layerHeight);
+  bool findFilamentNeed(char* buf, float& filament);
+  bool findTotalHeight(char* buf, float& objectHeight);
 };
 
 extern CardReader card;

@@ -12,11 +12,11 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  * About Marlin
  *
@@ -163,7 +163,7 @@ double printer_usage_filament;
 
 #endif // FWRETRACT
 
-#if (ENABLED(ULTIPANEL) || ENABLED(NEXTION)) && HAS(POWER_SWITCH)
+#if HAS(POWER_SWITCH)
   bool powersupply = 
     #if ENABLED(PS_DEFAULT_OFF)
       false
@@ -243,6 +243,10 @@ double printer_usage_filament;
 
 #if HAS(FILRUNOUT)
   static bool filrunoutEnqueued = false;
+#endif
+
+#if MB(ALLIGATOR)
+  float motor_current[DRIVER_EXTRUDERS + 3];
 #endif
 
 #if ENABLED(COLOR_MIXING_EXTRUDER)
@@ -429,7 +433,7 @@ bool enqueuecommand(const char* cmd) {
     // Init Expansion Port Voltage logic Selector
     SET_OUTPUT(EXP_VOLTAGE_LEVEL_PIN);
     WRITE(EXP_VOLTAGE_LEVEL_PIN, UI_VOLTAGE_LEVEL);
-    ExternalDac::begin(); //initialize ExternalDac
+    ExternalDac::begin(); // Initialize ExternalDac
     #if HAS(BUZZER)
       buzz(10,10);
     #endif
@@ -886,6 +890,7 @@ void get_command() {
 
     while (!card.eof() && commands_in_queue < BUFSIZE && !stop_buffering) {
       int16_t n = card.get();
+      card.sdpos++;
       serial_char = (char)n;
       if (serial_char == '\n' || serial_char == '\r' ||
           ((serial_char == '#' || serial_char == ':') && !comment_mode) ||
@@ -4727,12 +4732,11 @@ inline void gcode_M42() {
 #endif
 
 #if HAS(POWER_SWITCH)
-
   /**
    * M80: Turn on Power Supply
    */
   inline void gcode_M80() {
-    OUT_WRITE(PS_ON_PIN, PS_ON_AWAKE); //GND
+    OUT_WRITE(PS_ON_PIN, PS_ON_AWAKE); // GND
 
     // If you have a switch on suicide pin, this is useful
     // if you want to start another print with suicide feature after
@@ -4741,8 +4745,9 @@ inline void gcode_M42() {
       OUT_WRITE(SUICIDE_PIN, HIGH);
     #endif
 
+    powersupply = true;
+
     #if ENABLED(ULTIPANEL) || ENABLED(NEXTION)
-      powersupply = true;
       LCD_MESSAGEPGM(WELCOME_MSG);
       lcd_update();
     #endif
@@ -4766,11 +4771,9 @@ inline void gcode_M81() {
     suicide();
   #elif HAS(POWER_SWITCH)
     OUT_WRITE(PS_ON_PIN, PS_ON_ASLEEP);
+    powersupply = false;
   #endif
   #if ENABLED(ULTIPANEL)
-    #if HAS(POWER_SWITCH)
-      powersupply = false;
-    #endif
     LCD_MESSAGEPGM(MACHINE_NAME " " MSG_OFF ".");
     lcd_update();
   #endif
@@ -6168,6 +6171,248 @@ inline void gcode_M400() { st_synchronize(); }
 
 #endif // FILAMENT_SENSOR
 
+#if ENABLED(JSON_OUTPUT)
+  /**
+   * M408: JSON STATUS OUTPUT
+   */
+  inline void gcode_M408() {
+    bool firstOccurrence;
+    uint8_t type = 0;
+
+    if (code_seen('S')) type = code_value();
+
+    ECHO_M("{\"status\":\"");
+    #if ENABLED(SDSUPPORT)
+      if (!Printing && !card.sdprinting) ECHO_M("I"); // IDLING
+      else if (card.sdprinting) ECHO_M("P");          // SD PRINTING
+      else ECHO_M("B");                               // SOMETHING ELSE, BUT SOMETHIG
+    #else
+      if (!Printing) ECHO_M("I");                     // IDLING
+      else ECHO_M("B");                               // SOMETHING ELSE, BUT SOMETHIG
+    #endif
+
+    ECHO_M("\",\"coords\": {");
+    ECHO_M("\"axesHomed\":[");
+    if (axis_was_homed & (BIT(X_AXIS)|BIT(Y_AXIS)|BIT(Z_AXIS)) == (BIT(X_AXIS)|BIT(Y_AXIS)|BIT(Z_AXIS)))
+      ECHO_M("1, 1, 1");
+    else
+      ECHO_M("0, 0, 0");
+
+    ECHO_MV("],\"extr\":[", current_position[E_AXIS]);
+    ECHO_MV("],\"xyz\":[", current_position[X_AXIS]); // X
+    ECHO_MV(",", current_position[Y_AXIS]); // Y
+    ECHO_MV(",", current_position[Z_AXIS]); // Z
+
+    ECHO_MV("]},\"currentTool\":", active_extruder);
+
+    #if HAS(POWER_SWITCH)
+      ECHO_M(",\"params\": {\"atxPower\":");
+      ECHO_M(powersupply ? "1" : "0");
+    #else
+      ECHO_M(",\"params\": {\"NormPower\":");
+    #endif
+
+    ECHO_M(",\"fanPercent\":[");
+    ECHO_V(fanSpeed);
+
+    ECHO_MV("],\"speedFactor\":", feedrate_multiplier);
+
+    ECHO_M(",\"extrFactors\":[");
+    firstOccurrence = true;
+    for (uint8_t i = 0; i < EXTRUDERS; i++) {
+      if (!firstOccurrence) ECHO_M(",");
+      ECHO_V(extruder_multiplier[i]); // Really *100? 100 is normal
+      firstOccurrence = false;
+    }
+    ECHO_EM("]},");
+
+    ECHO_M("\"temps\": {");
+    #if HAS(TEMP_BED)
+      ECHO_MV("\"bed\": {\"current\":", degBed(), 1);
+      ECHO_MV(",\"active\":", degTargetBed(), 1);
+      ECHO_M(",\"state\":");
+      ECHO_M(degTargetBed() > 0 ? "2" : "1");
+      ECHO_MV("},");
+    #endif
+    ECHO_M("\"heads\": {\"current\":[");
+    firstOccurrence = true;
+    for (uint8_t h = 0; h < HOTENDS; h++) {
+        if (!firstOccurrence) ECHO_M(",");
+        ECHO_V(degHotend(h), 1);
+        firstOccurrence = false;
+    }
+    ECHO_M("],\"active\":[");
+    firstOccurrence = true;
+    for (uint8_t h = 0; h < HOTENDS; h++) {
+        if (!firstOccurrence) ECHO_M(",");
+        ECHO_V(degTargetHotend(h), 1);
+        firstOccurrence = false;
+    }
+    ECHO_M("],\"state\":[");
+    firstOccurrence = true;
+    for (uint8_t h = 0; h < HOTENDS; h++) {
+        if (!firstOccurrence) ECHO_M(",");
+        ECHO_M(degTargetHotend(h) > EXTRUDER_AUTO_FAN_TEMPERATURE ? "2" : "1");
+        firstOccurrence = false;
+    }
+
+    ECHO_MV("]}},\"time\":", HAL::timeInMilliseconds());
+
+    switch (type) {
+      case 0:
+      case 1:
+        break;
+      case 2:
+        ECHO_EM(",");
+        ECHO_M("\"coldExtrudeTemp\":0,\"coldRetractTemp\":0.0,\"geometry\":\"");
+        #if MECH(CARTESIAN)
+          ECHO_M("cartesian");
+        #elif MECH(COREXY)
+          ECHO_M("coreXY");
+        #elif MECH(COREXZ)
+          ECHO_M("coreXZ");
+        #elif MECH(DELTA)
+          ECHO_M("delta");
+        #endif
+        ECHO_M("\",\"name\":\"");
+        ECHO_T(CUSTOM_MACHINE_NAME);
+        ECHO_M("\",\"tools\":[");
+        firstOccurrence = true;
+        for (uint8_t i = 0; i < EXTRUDERS; i++) {
+          if (!firstOccurrence) ECHO_M(",");
+          ECHO_MV("{\"number\":", i + 1);
+          #if HOTENDS > 1
+            ECHO_MV(",\"heaters\":[", i + 1);
+            ECHO_M("],");
+          #else
+            ECHO_M(",\"heaters\":[1],");
+          #endif
+          #if DRIVER_EXTRUDERS > 1
+            ECHO_MV("\"drives\":[", i);
+            ECHO_M("]");
+          #else
+            ECHO_M("\"drives\":[0]");
+          #endif
+          ECHO_M("}");
+          firstOccurrence = false;
+        }
+        break;
+      case 3:
+        ECHO_EM(",");
+        ECHO_M("\"currentLayer\":");
+        #if ENABLED(SDSUPPORT)
+          if (card.sdprinting && card.layerHeight > 0) { // ONLY CAN TELL WHEN SD IS PRINTING
+            ECHO_V((int) (current_position[Z_AXIS] / card.layerHeight));
+          }
+          else ECHO_V(0);
+        #else
+          ECHO_V(-1);
+        #endif
+        ECHO_M(",\"extrRaw\":[");
+        firstOccurrence = true;
+        for (uint8_t i = 0; i < EXTRUDERS; i++) {
+          if (!firstOccurrence) ECHO_M(",");
+          ECHO_V(current_position[E_AXIS] * extruder_multiplier[i]);
+          firstOccurrence = false;
+        }
+        ECHO_M("],");
+        #if ENABLED(SDSUPPORT)
+          if (card.sdprinting) {
+            ECHO_M("\"fractionPrinted\":");
+            float fractionprinted;
+            if (card.fileSize < 2000000) {
+              fractionprinted = (float)card.sdpos / (float)card.fileSize;
+            }
+            else fractionprinted = (float)(card.sdpos >> 8) / (float)(card.fileSize >> 8);
+            ECHO_V((float) floorf(fractionprinted * 1000) / 1000);
+            ECHO_M(",");
+          }
+        #endif
+        ECHO_M("\"firstLayerHeight\":");
+        #if ENABLED(SDSUPPORT)
+          if (card.sdprinting) ECHO_V(card.firstlayerHeight);
+          else ECHO_M("0");
+        #else
+          ECHO_M("0");
+        #endif
+        break;
+      case 4:
+      case 5:
+        ECHO_EM(",");
+        ECHO_M("\"axisMins\":[");
+        ECHO_V((int) X_MIN_POS);
+        ECHO_M(",");
+        ECHO_V((int) Y_MIN_POS);
+        ECHO_M(",");
+        ECHO_V((int) Z_MIN_POS);
+        ECHO_M("],\"axisMaxes\":[");
+        ECHO_V((int) X_MAX_POS);
+        ECHO_M(",");
+        ECHO_V((int) Y_MAX_POS);
+        ECHO_M(",");
+        ECHO_V((int) Z_MAX_POS);
+        ECHO_M("],\"accelerations\":[");
+        ECHO_V(max_acceleration_units_per_sq_second[X_AXIS]);
+        ECHO_M(",");
+        ECHO_V(max_acceleration_units_per_sq_second[Y_AXIS]);
+        ECHO_M(",");
+        ECHO_V(max_acceleration_units_per_sq_second[Z_AXIS]);
+        for (uint8_t i = 0; i < EXTRUDERS; i++) {
+            ECHO_M(",");
+            ECHO_V(max_acceleration_units_per_sq_second[E_AXIS + i]);
+        }
+        ECHO_M("],\"currents\":[");
+        ECHO_V(motor_current[X_AXIS]);
+        ECHO_M(",");
+        ECHO_V(motor_current[Y_AXIS]);
+        ECHO_M(",");
+        ECHO_V(motor_current[Z_AXIS]);
+        for (uint8_t i = 0; i < DRIVER_EXTRUDERS; i++) {
+            ECHO_M(",");
+            ECHO_V(motor_current[E_AXIS + i]);
+        }
+        ECHO_EM("],");
+
+        ECHO_M("\"firmwareElectronics\":\"");
+        #if MB(RAMPS_13_HFB) || MB(RAMPS_13_HHB) || MB(RAMPS_13_HFF) || MB(RAMPS_13_HHF) || MB(RAMPS_13_HHH)
+          ECHO_M("RAMPS");
+        #elif MB(ALLIGATOR)
+          ECHO_M("ALLIGATOR");
+        #elif MB(RADDS) || MB(RAMPS_FD_V1) || MB(RAMPS_FD_V2) || MB(SMART_RAMPS) || MB(RAMPS4DUE)
+          ECHO_M("Arduino due");
+        #elif MB(ULTRATRONICS)
+          ECHO_M("ULTRATRONICS");
+        #else
+          ECHO_M("AVR");
+        #endif
+        ECHO_M("\",\"firmwareName\":\"");
+        ECHO_M(FIRMWARE_NAME);
+        ECHO_M(",\"firmwareVersion\":\"");
+        ECHO_M(SHORT_BUILD_VERSION);
+        ECHO_M("\",\"firmwareDate\":\"");
+        ECHO_M(STRING_DISTRIBUTION_DATE);
+
+        ECHO_M("\",\"minFeedrates\":[0,0,0");
+        for (uint8_t i = 0; i < EXTRUDERS; i++) {
+          ECHO_M(",0");
+        }
+        ECHO_M("],\"maxFeedrates\":[");
+        ECHO_V(max_feedrate[X_AXIS]);
+        ECHO_M(",");
+        ECHO_V(max_feedrate[Y_AXIS]);
+        ECHO_M(",");
+        ECHO_V(max_feedrate[Z_AXIS]);
+        for (uint8_t i = 0; i < EXTRUDERS; i++) {
+          ECHO_M(",");
+          ECHO_V(max_feedrate[E_AXIS + i]);
+        }
+        ECHO_M("]");
+        break;
+    }
+    ECHO_EM("}");
+  }
+#endif // JSON_OUTPUT
+
 /**
  * M410: Quickstop - Abort all planned moves
  *
@@ -6627,15 +6872,32 @@ inline void gcode_M503() {
   }
 #endif
 
+#if MB(ALLIGATOR)
+  /**
+   * M906: Set motor currents
+   */
+  inline void gcode_M906() {
+    if (setTargetedExtruder(906)) return;
+    for (uint8_t i = 0; i < 3 + DRIVER_EXTRUDERS; i++) {
+      if (code_seen(axis_codes[i])) {
+        if (i == E_AXIS)
+          motor_current[i + target_extruder] = code_value();
+        else
+          motor_current[i] = code_value();
+      }
+    }
+  }
+#endif // ALLIGATOR
+
 /**
  * M907: Set digital trimpot motor current using axis codes X, Y, Z, E, B, S
  */
 inline void gcode_M907() {
   #if HAS(DIGIPOTSS)
-    for (int i=0;i<NUM_AXIS;i++)
+    for (uint8_t i = 0; i < NUM_AXIS; i++)
       if (code_seen(axis_codes[i])) digipot_current(i, code_value());
     if (code_seen('B')) digipot_current(4, code_value());
-    if (code_seen('S')) for (int i=0; i<=4; i++) digipot_current(i, code_value());
+    if (code_seen('S')) for (uint8_t i = 0; i <= 4; i++) digipot_current(i, code_value());
   #endif
   #if ENABLED(MOTOR_CURRENT_PWM_XY_PIN)
     if (code_seen('X')) digipot_current(0, code_value());
@@ -6648,9 +6910,9 @@ inline void gcode_M907() {
   #endif
   #if ENABLED(DIGIPOT_I2C)
     // this one uses actual amps in floating point
-    for (int i=0;i<NUM_AXIS;i++) if(code_seen(axis_codes[i])) digipot_i2c_set_current(i, code_value());
+    for (uint8_t i = 0; i < NUM_AXIS; i++) if(code_seen(axis_codes[i])) digipot_i2c_set_current(i, code_value());
     // for each additional extruder (named B,C,D,E..., channels 4,5,6,7...)
-    for (int i=NUM_AXIS;i<DIGIPOT_I2C_NUM_CHANNELS;i++) if(code_seen('B'+i-NUM_AXIS)) digipot_i2c_set_current(i, code_value());
+    for (uint8_t i = NUM_AXIS; i < DIGIPOT_I2C_NUM_CHANNELS; i++) if(code_seen('B'+i-NUM_AXIS)) digipot_i2c_set_current(i, code_value());
   #endif
 }
 
@@ -7403,6 +7665,11 @@ void process_next_command() {
           gcode_M407(); break;
       #endif // FILAMENT_SENSOR
 
+      #if ENABLED(JSON_OUTPUT)
+        case 408: // M408 JSON STATUS OUTPUT
+          gcode_M408(); break;
+      #endif // JSON_OUTPUT
+
       case 410: // M410 quickstop - Abort all the planned moves.
         gcode_M410(); break;
 
@@ -7446,6 +7713,11 @@ void process_next_command() {
       #if ENABLED(AUTO_BED_LEVELING_FEATURE) || MECH(DELTA)
         case 666: // M666 Set Z probe offset or set delta endstop and geometry adjustment
           gcode_M666(); break;
+      #endif
+
+      #if MB(ALLIGATOR)
+        case 906: // M906 Set motor currents XYZ T0-4 E
+          gcode_M906(); break;
       #endif
 
       case 907: // M907 Set digital trimpot motor current using axis codes.

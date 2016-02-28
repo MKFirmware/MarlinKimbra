@@ -70,6 +70,7 @@
  * - L6470 motor drivers
  * ADVANCED FEATURES:
  * - Buffer stuff
+ * - Report JSON-style response
  * - Whatchdog
  * - Start / Stop Gcode
  *
@@ -1525,6 +1526,27 @@
 #define M100_FREE_MEMORY_DUMPER       // Comment out to remove Dump sub-command
 #define M100_FREE_MEMORY_CORRUPTOR    // Comment out to remove Corrupt sub-command
 /****************************************************************************************/
+
+
+/*****************************************************************************************
+ ************************************* JSON OUTPUT ***************************************
+ *****************************************************************************************
+ *                                                                                       *
+ * M408: Report JSON-style response                                                      *
+ * Report a JSON-style response by specifying the desired type using the 'S' parameter.  *
+ * The following response types are supported:                                           *
+ * Type 0 is a short-form response.                                                      *
+ * Type 1 is like type 0 except that static values are also included.                    *
+ * Type 2 is similar to the response provided by the web server for Duet Web Control.    *
+ * Type 3 is an extended version of type 2 which includes some additional parameters     *
+ * that aren't expected to change very frequently.                                       *
+ * Type 4 is an extended version of type 2 which may be used to poll for current         *
+ * printer statistics.                                                                   *
+ * Type 5 reports the current machine configuration.                                     *
+ *                                                                                       *
+ *****************************************************************************************/
+//#define JSON_OUTPUT
+/*****************************************************************************************/
 
 
 /*****************************************************************************************
