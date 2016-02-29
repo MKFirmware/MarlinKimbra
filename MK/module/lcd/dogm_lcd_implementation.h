@@ -154,7 +154,7 @@ static unsigned char blink = 0; // Variable for visualization of fan rotation in
 static char currentfont = 0;
 
 static void lcd_setFont(char font_nr) {
-  switch (font_nr) {
+  switch(font_nr) {
     case FONT_STATUSMENU : {u8g.setFont(FONT_STATUSMENU_NAME); currentfont = FONT_STATUSMENU;}; break;
     case FONT_MENU       : {u8g.setFont(FONT_MENU_NAME); currentfont = FONT_MENU;}; break;
     case FONT_SPECIAL    : {u8g.setFont(FONT_SPECIAL_NAME); currentfont = FONT_SPECIAL;}; break;
@@ -468,7 +468,6 @@ static void lcd_implementation_drawmenu_generic(bool isSelected, uint8_t row, co
     pstr++;
   }
   while (n--) lcd_print(' ');
-  lcd_print(pre_char);
   u8g.setPrintPos(LCD_PIXEL_WIDTH - DOG_CHAR_WIDTH, (row + 1) * DOG_CHAR_HEIGHT);
   lcd_print(post_char);
   lcd_print(' ');
