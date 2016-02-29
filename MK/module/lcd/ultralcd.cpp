@@ -519,10 +519,10 @@ static void lcd_tune_fixstep() {
   #endif
 }
 
+/**
+ * Watch temperature callbacks
+ */
 #if ENABLED(THERMAL_PROTECTION_HOTENDS)
-  /**
-   * Watch temperature callbacks
-   */
   #if TEMP_SENSOR_0 != 0
     void watch_temp_callback_E0() { start_watching_heater(0); }
   #endif
@@ -1728,10 +1728,7 @@ static void menu_action_function(menuFunc_t func) { (*func)(); }
 
 #endif // SDSUPPORT
 
-static void menu_action_setting_edit_bool(const char* pstr, bool* ptr) {
-  *ptr = !(*ptr);
-}
-
+static void menu_action_setting_edit_bool(const char* pstr, bool* ptr) { *ptr = !(*ptr); }
 static void menu_action_setting_edit_callback_bool(const char* pstr, bool* ptr, menuFunc_t callback) {
   menu_action_setting_edit_bool(pstr, ptr);
   (*callback)();
