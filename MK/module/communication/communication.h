@@ -6,6 +6,7 @@
   #define ER          "Error: "             // error for host
   #define WT          "Wait"                // wait for host
   #define DB          "Echo: "              // message for user
+  #define DEB         "Debug: "             // message for debug
   #define CFG         "Config: "            // config for host
   #define INFO        "Info: "              // info for host
   #define RESEND      "Resend: "            // resend for host

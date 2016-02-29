@@ -1,6 +1,8 @@
 ### Version 4.2.7
 * Add M906 Set motor Currents for ALLIGATOR board
 * Add M408 JSON OUTPUT
+* Add Cartesian Correction Hysteresis and Zwooble
+* Bug fix
 
 ### Version 4.2.6
 * Bug Fix

@@ -35,8 +35,8 @@ static void ST7920_SWSPI_SND_8BIT(uint8_t val) {
   }
 }
 
-#define ST7920_CS()              {WRITE(ST7920_CS_PIN,1);u8g_10MicroDelay();}
-#define ST7920_NCS()             {WRITE(ST7920_CS_PIN,0);}
+#define ST7920_CS()              {WRITE(ST7920_CS_PIN, 1); u8g_10MicroDelay();}
+#define ST7920_NCS()             {WRITE(ST7920_CS_PIN, 0);}
 #define ST7920_SET_CMD()         {ST7920_SWSPI_SND_8BIT(0xf8);u8g_10MicroDelay();}
 #define ST7920_SET_DAT()         {ST7920_SWSPI_SND_8BIT(0xfa);u8g_10MicroDelay();}
 #define ST7920_WRITE_BYTE(a)     {ST7920_SWSPI_SND_8BIT((uint8_t)((a)&0xf0u));ST7920_SWSPI_SND_8BIT((uint8_t)((a)<<4u));u8g_10MicroDelay();}

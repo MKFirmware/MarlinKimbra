@@ -487,6 +487,16 @@ float junction_deviation = 0.1;
   void plan_buffer_line(const float& x, const float& y, const float& z, const float& e, float feed_rate, const uint8_t extruder, const uint8_t driver)
 #endif  // AUTO_BED_LEVELING_FEATURE
 {
+
+  #if ENABLED(ZWOBBLE)
+    // Calculate ZWobble
+    zwobble.InsertCorrection(z);
+  #endif
+  #if ENABLED(HYSTERESIS)
+    // Calculate Hysteresis
+    hysteresis.InsertCorrection(x, y, z, e);
+  #endif
+
   // Calculate the buffer head after we push this byte
   int next_buffer_head = next_block_index(block_buffer_head);
 

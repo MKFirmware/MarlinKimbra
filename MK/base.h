@@ -46,37 +46,21 @@
 #include "module/motion/stepper.h"
 #include "module/motion/stepper_indirection.h"
 #include "module/motion/planner.h"
+#include "module/motion/vector_3.h"
+#include "module/motion/qr_solve.h"
+#include "module/motion/cartesian_correction.h"
 #include "module/temperature/temperature.h"
 #include "module/temperature/thermistortables.h"
 #include "module/lcd/ultralcd.h"
+#include "module/lcd/buzzer.h"
 #include "module/nextion/Nextion_lcd.h"
 #include "module/sd/cardreader.h"
-
-#if ENABLED(AUTO_BED_LEVELING_FEATURE)
-  #include "module/motion/vector_3.h"
-  #if ENABLED(AUTO_BED_LEVELING_GRID)
-    #include "module/motion/qr_solve.h"
-  #endif
-#endif
+#include "module/servo/servo.h"
+#include "module/watchdog/watchdog.h"
+#include "module/blinkm/blinkm.h"
 
 #if MB(ALLIGATOR)
   #include "module/alligator/external_dac.h"
-#endif
-
-#if ENABLED(USE_WATCHDOG)
-  #include "module/watchdog/watchdog.h"
-#endif
-
-#if HAS(BUZZER)
-  #include "module/lcd/buzzer.h"
-#endif
-
-#if ENABLED(BLINKM)
-  #include "module/blinkm/blinkm.h"
-#endif
-
-#if HAS(SERVOS)
-  #include "module/servo/servo.h"
 #endif
 
 #if HAS(DIGIPOTSS)
@@ -85,6 +69,10 @@
 
 #if ENABLED(FIRMWARE_TEST)
   #include "module/fwtest/firmware_test.h"
+#endif
+
+#if ENABLED(RFID_MODULE)
+  #include "module/mfrc522/MFRC522_serial.h"
 #endif
 
 #endif

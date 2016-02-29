@@ -140,6 +140,7 @@ extern float max_z_jerk;
 extern float max_e_jerk[EXTRUDERS];
 extern float mintravelfeedrate;
 extern unsigned long axis_steps_per_sqr_second[3 + EXTRUDERS];
+extern long position[NUM_AXIS];
 
 #if ENABLED(AUTOTEMP)
   extern bool autotemp_enabled;

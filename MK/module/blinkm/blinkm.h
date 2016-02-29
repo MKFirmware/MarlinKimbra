@@ -4,8 +4,10 @@
  */
 
 #ifndef BLINKM_H
-#define BLINKM_H
+  #define BLINKM_H
 
-void SendColors(byte red, byte grn, byte blu);
+  #if ENABLED(BLINKM)
+    void SendColors(byte red, byte grn, byte blu);
+  #endif
 
 #endif
