@@ -4843,6 +4843,51 @@ inline void gcode_M92() {
   plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 }
 
+#if ENABLED(ZWOBBLE)
+  /**
+   * M96: Print ZWobble value
+   */
+  inline void gcode_M96() {
+    zwobble.ReportToSerial();
+  }
+
+  /**
+   * M97: Set ZWobble value
+   */
+  inline void gcode_M97() {
+    float zVal = -1, hVal = -1, lVal = -1;
+
+    if (code_seen('A')) zwobble.setAmplitude(code_value());
+    if (code_seen('W')) zwobble.setPeriod(code_value());
+    if (code_seen('P')) zwobble.setPhase(code_value());
+    if (code_seen('Z')) zVal = code_value();
+    if (code_seen('H')) hVal = code_value();
+    if (code_seen('L')) lVal = code_value();
+    if (zVal >= 0 && hVal >= 0) zwobble.setSample(zVal, hVal);
+    if (zVal >= 0 && lVal >= 0) zwobble.setScaledSample(zVal, lVal);
+    if (lVal >  0 && hVal >  0) zwobble.setScalingFactor(hVal/lVal);
+  }
+#endif // ZWOBBLE
+
+#if ENABLED(HYSTERESIS)
+  /**
+   * M98: Print Hysteresis value
+   */
+  inline void gcode_M98() {
+    hysteresis.ReportToSerial();
+  }
+
+  /**
+   * M99: Set Hysteresis value
+   */
+  inline void gcode_M99() {
+    for(uint8_t i = 0; i < NUM_AXIS; i++) {
+      if (code_seen(axis_codes[i]))
+        hysteresis.SetAxis(i, code_value());
+    }
+  }
+#endif // HYSTERESIS
+
 /**
  * M100 Free Memory Watcher
  *
@@ -6470,7 +6515,7 @@ inline void gcode_M428() {
       sync_plan_position();
     #endif
     ECHO_LM(DB, "Offset applied.");
-    LCD_ALERTMESSAGEPGM("Offset applied.");
+    LCD_MESSAGEPGM("Offset applied.");
     #if HAS(BUZZER)
       enqueuecommands_P(PSTR("M300 S659 P200\nM300 S698 P200"));
     #endif
@@ -7455,6 +7500,26 @@ void process_next_command() {
         gcode_M85(); break;
       case 92: // M92 Set the steps-per-unit for one or more axes
         gcode_M92(); break;
+
+      #if ENABLED(ZWOBBLE)
+        case 96: // M96 Print ZWobble value
+          gcode_M96(); break;
+        case 97: // M97 Set ZWobble parameter
+          gcode_M97(); break;
+      #endif
+
+      #if ENABLED(HYSTERESIS)
+        case 98: // M98 Print Hysteresis value
+          gcode_M98(); break;
+        case 99: // M99 Set Hysteresis parameter
+          gcode_M99(); break;
+      #endif
+
+      #if ENABLED(M100_FREE_MEMORY_WATCHER)
+        case 100:
+          gcode_M100(); break;
+      #endif
+
       case 104: // M104
         gcode_M104(); break;
       case 105: // M105 Read current temperature
@@ -7469,12 +7534,6 @@ void process_next_command() {
 
       case 109: // M109 Wait for temperature
         gcode_M109(); break;
-
-      #if ENABLED(M100_FREE_MEMORY_WATCHER)
-        case 100:
-          gcode_M100(); break;
-      #endif
-
       case 110: break; // M110: Set line number - don't show "unknown command"
       case 111: // M111 Set debug level
         gcode_M111(); break;
