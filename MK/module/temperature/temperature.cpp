@@ -996,9 +996,6 @@ void tp_init() {
       OUT_WRITE(SCK_PIN, LOW);
       OUT_WRITE(MOSI_PIN, HIGH);
       OUT_WRITE(MISO_PIN, HIGH);
-    #else
-      pinMode(SS_PIN, OUTPUT);
-      digitalWrite(SS_PIN, HIGH);
     #endif
 
     OUT_WRITE(MAX6675_SS, HIGH);
@@ -1290,8 +1287,8 @@ void disable_all_heaters() {
     WRITE(MAX6675_SS, 0);
 
     // ensure 100ns delay - a bit extra is fine
-    asm("nop");//50ns on 20Mhz, 62.5ns on 16Mhz
-    asm("nop");//50ns on 20Mhz, 62.5ns on 16Mhz
+    asm("nop"); // 50ns on 20Mhz, 62.5ns on 16Mhz
+    asm("nop"); // 50ns on 20Mhz, 62.5ns on 16Mhz
 
     // read MSB
     SPDR = 0;
