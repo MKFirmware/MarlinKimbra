@@ -6282,23 +6282,23 @@ inline void gcode_M400() { st_synchronize(); }
     ECHO_M("\"heads\": {\"current\":[");
     firstOccurrence = true;
     for (uint8_t h = 0; h < HOTENDS; h++) {
-        if (!firstOccurrence) ECHO_M(",");
-        ECHO_V(degHotend(h), 1);
-        firstOccurrence = false;
+      if (!firstOccurrence) ECHO_M(",");
+      ECHO_V(degHotend(h), 1);
+      firstOccurrence = false;
     }
     ECHO_M("],\"active\":[");
     firstOccurrence = true;
     for (uint8_t h = 0; h < HOTENDS; h++) {
-        if (!firstOccurrence) ECHO_M(",");
-        ECHO_V(degTargetHotend(h), 1);
-        firstOccurrence = false;
+      if (!firstOccurrence) ECHO_M(",");
+      ECHO_V(degTargetHotend(h), 1);
+      firstOccurrence = false;
     }
     ECHO_M("],\"state\":[");
     firstOccurrence = true;
     for (uint8_t h = 0; h < HOTENDS; h++) {
-        if (!firstOccurrence) ECHO_M(",");
-        ECHO_M(degTargetHotend(h) > EXTRUDER_AUTO_FAN_TEMPERATURE ? "2" : "1");
-        firstOccurrence = false;
+      if (!firstOccurrence) ECHO_M(",");
+      ECHO_M(degTargetHotend(h) > EXTRUDER_AUTO_FAN_TEMPERATURE ? "2" : "1");
+      firstOccurrence = false;
     }
 
     ECHO_MV("]}},\"time\":", HAL::timeInMilliseconds());
@@ -6403,20 +6403,24 @@ inline void gcode_M400() { st_synchronize(); }
         ECHO_M(",");
         ECHO_V(max_acceleration_units_per_sq_second[Z_AXIS]);
         for (uint8_t i = 0; i < EXTRUDERS; i++) {
-            ECHO_M(",");
-            ECHO_V(max_acceleration_units_per_sq_second[E_AXIS + i]);
+          ECHO_M(",");
+          ECHO_V(max_acceleration_units_per_sq_second[E_AXIS + i]);
         }
-        ECHO_M("],\"currents\":[");
-        ECHO_V(motor_current[X_AXIS]);
-        ECHO_M(",");
-        ECHO_V(motor_current[Y_AXIS]);
-        ECHO_M(",");
-        ECHO_V(motor_current[Z_AXIS]);
-        for (uint8_t i = 0; i < DRIVER_EXTRUDERS; i++) {
+        ECHO_M("],");
+
+        #if MB(ALLIGATOR)
+          ECHO_M("\"currents\":[");
+          ECHO_V(motor_current[X_AXIS]);
+          ECHO_M(",");
+          ECHO_V(motor_current[Y_AXIS]);
+          ECHO_M(",");
+          ECHO_V(motor_current[Z_AXIS]);
+          for (uint8_t i = 0; i < DRIVER_EXTRUDERS; i++) {
             ECHO_M(",");
             ECHO_V(motor_current[E_AXIS + i]);
-        }
-        ECHO_EM("],");
+          }
+          ECHO_EM("],");
+        #endif
 
         ECHO_M("\"firmwareElectronics\":\"");
         #if MB(RAMPS_13_HFB) || MB(RAMPS_13_HHB) || MB(RAMPS_13_HFF) || MB(RAMPS_13_HHF) || MB(RAMPS_13_HHH)

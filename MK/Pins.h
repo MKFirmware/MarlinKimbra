@@ -2326,7 +2326,7 @@
 * Ramps - FD v1 & v2
 ****************************************************************************************/
 #if MB(RAMPS_FD_V1) || MB(RAMPS_FD_V2)
-#define KNOWN_BOARD 1
+#define KNOWN_BOARD
 
 #if MB(RAMPS_FD_V1)
   #define RAMPS_FD_V1
