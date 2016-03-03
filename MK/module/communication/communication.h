@@ -17,7 +17,7 @@
   #define RESUME      "//action:resume"     // command for host that support action
   #define DISCONNECT  "//action:disconnect" // command for host that support action
 
-  #define SERIAL_INIT(baud)           MKSERIAL.begin(baud), delay(1)
+  #define SERIAL_INIT(baud)           MKSERIAL.begin(baud), HAL::delayMilliseconds(1)
   #define SERIAL_WRITE(x)             MKSERIAL.write(x)
   #define SERIAL_PRINT(msg, args...)  MKSERIAL.print(msg, ##args)
   #define SERIAL_ENDL                 MKSERIAL.println()

@@ -177,6 +177,12 @@
         ::pinMode(pin,mode);
       }
 
+      static inline void delayMicroseconds(unsigned int delayUs) {
+        ::delayMicroseconds(delayUs);
+      }
+      static inline void delayMilliseconds(unsigned int delayMs) {
+        ::delay(delayMs);
+      }
       static inline unsigned long timeInMilliseconds() {
         return millis();
       }

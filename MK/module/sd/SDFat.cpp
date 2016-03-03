@@ -3094,7 +3094,7 @@ uint8_t Sd2Card::cardCommand(uint8_t cmd, uint32_t arg) {
   spiSend(cmd == CMD0 ? 0X95 : 0X87);
 #endif  // USE_SD_CRC
   // additional delay for CMD0
-  if (cmd == CMD0) delay(100);
+  if (cmd == CMD0) HAL::delayMilliseconds(100);
   // skip stuff byte for stop read
   if (cmd == CMD12) spiRec();
 
@@ -4271,28 +4271,6 @@ void SdFile::writeln_P(PGM_P str) {
 }
 
 // ================ SdFatUtil.cpp ===================
-
-//------------------------------------------------------------------------------
-/** Amount of free RAM
- * \return The number of free bytes.
- */
-int SdFatUtil::FreeRam() {
-  extern int  __bss_end;
-  extern int* __brkval;
-  int free_memory;
-  if (reinterpret_cast<int>(__brkval) == 0) {
-    // if no heap use from end of bss section
-    free_memory = reinterpret_cast<int>(&free_memory)
-                  - reinterpret_cast<int>(&__bss_end);
-  }
-  else {
-    // use from top of stack to heap
-    free_memory = reinterpret_cast<int>(&free_memory)
-                  - reinterpret_cast<int>(__brkval);
-  }
-  return free_memory;
-}
-//------------------------------------------------------------------------------
 
 //------------------------------------------------------------------------------
 /** %Print a string in flash memory to Serial.

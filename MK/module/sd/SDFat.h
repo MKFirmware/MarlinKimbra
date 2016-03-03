@@ -2011,7 +2011,6 @@ class SdFile : public SdBaseFile {
 };
 //------------------------------------------------------------------------------
 namespace SdFatUtil {
-  int FreeRam();
   void SerialPrint_P(PGM_P str);
   void SerialPrintln_P(PGM_P str);
 }

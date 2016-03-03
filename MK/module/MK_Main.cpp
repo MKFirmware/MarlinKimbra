@@ -344,7 +344,7 @@ bool setTargetedExtruder(int code);
       ECHO_V(n);
     else
       ECHO_V( (char) ('A'+n-10) );
-    delay(2);
+    HAL::delayMilliseconds(2);
   }
 
   void prt_hex_byte(unsigned int b) {
@@ -4945,12 +4945,12 @@ inline void gcode_M92() {
           for(i = 0; i < 16; i++) {     // and 16 data bytes
             prt_hex_byte( *(ptr+i));
             ECHO_M(" ");
-            delay(2);
+            HAL::delayMilliseconds(2);
           }
 
           ECHO_M("|");        // now show where non 0xE5's are
           for(i = 0; i < 16; i++) {
-            delay(2);
+            HAL::delayMilliseconds(2);
             if ( *(ptr+i)==0xe5)
               ECHO_M(" ");
             else
@@ -4959,7 +4959,7 @@ inline void gcode_M92() {
           ECHO_M("\n");
 
           ptr += 16;
-          delay(2);
+          HAL::delayMilliseconds(2);
         }
         ECHO_M("Done.\n");
         return;
@@ -5815,16 +5815,16 @@ inline void gcode_M226() {
       const float PULSE_LENGTH = 0.01524;
       for (int i = 0; i < NUM_PULSES; i++) {
         WRITE(PHOTOGRAPH_PIN, HIGH);
-        _delay_ms(PULSE_LENGTH);
+        HAL::delayMilliseconds(PULSE_LENGTH);
         WRITE(PHOTOGRAPH_PIN, LOW);
-        _delay_ms(PULSE_LENGTH);
+        HAL::delayMilliseconds(PULSE_LENGTH);
       }
-      delay(7.33);
+      HAL::delayMilliseconds(7.33);
       for (int i = 0; i < NUM_PULSES; i++) {
         WRITE(PHOTOGRAPH_PIN, HIGH);
-        _delay_ms(PULSE_LENGTH);
+        HAL::delayMilliseconds(PULSE_LENGTH);
         WRITE(PHOTOGRAPH_PIN, LOW);
-        _delay_ms(PULSE_LENGTH);
+        HAL::delayMilliseconds(PULSE_LENGTH);
       }
     #endif // HASNT(CHDK) && HAS(PHOTOGRAPH)
   }
@@ -8513,7 +8513,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
       if (Spool_must_read[e]) {
         if (RFID522.getID(e)) {
           Spool_ID[e] = RFID522.RfidDataID[e].Spool_ID;
-          delay(200);
+          HAL::delayMilliseconds(200);
           if (RFID522.readBlock(e)) {
             Spool_must_read[e] = false;
             density_multiplier[e] = RFID522.RfidData[e].data.density;
@@ -8527,7 +8527,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
       if (Spool_must_write[e]) {
         if (RFID522.getID(e)) {
           if (Spool_ID[e] == RFID522.RfidDataID[e].Spool_ID) {
-            delay(200);
+            HAL::delayMilliseconds(200);
             if (RFID522.writeBlock(e)) {
               Spool_must_write[e] = false;
               ECHO_SMV(INFO, "Spool on E", e);
@@ -8584,7 +8584,7 @@ void kill(const char* lcd_msg) {
 
   // FMC small patch to update the LCD before ending
   sei();   // enable interrupts
-  for (int i = 5; i--; lcd_update()) delay(200); // Wait a short time
+  for (int i = 5; i--; lcd_update()) HAL::delayMilliseconds(200); // Wait a short time
   cli();   // disable interrupts
   #if HAS(SUICIDE)
     suicide();

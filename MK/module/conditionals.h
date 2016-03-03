@@ -230,6 +230,18 @@
 #include "../Pins.h"
 
 /**
+ * SAM3X8E
+ */
+#ifdef __SAM3X8E__
+  #ifdef FAST_PWM_FAN
+    #undef FAST_PWM_FAN
+  #endif
+  #ifdef M100_FREE_MEMORY_WATCHER
+    #undef M100_FREE_MEMORY_WATCHER
+  #endif
+#endif
+    
+/**
  * DONDOLO
  */
 #if ENABLED(DONDOLO)

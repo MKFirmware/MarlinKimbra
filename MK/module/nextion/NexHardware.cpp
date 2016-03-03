@@ -14,9 +14,9 @@
  */
 #include "NexHardware.h"
 
-#define NEX_RET_CMD_FINISHED            (0x01)
-#define NEX_RET_EVENT_LAUNCHED          (0x88)
-#define NEX_RET_EVENT_UPGRADED          (0x89)
+#define NEX_RET_CMD_FINISHED                (0x01)
+#define NEX_RET_EVENT_LAUNCHED              (0x88)
+#define NEX_RET_EVENT_UPGRADED              (0x89)
 #define NEX_RET_EVENT_TOUCH_HEAD            (0x65)     
 #define NEX_RET_EVENT_POSITION_HEAD         (0x67)
 #define NEX_RET_EVENT_SLEEP_POSITION_HEAD   (0x68)
@@ -24,14 +24,14 @@
 #define NEX_RET_STRING_HEAD                 (0x70)
 #define NEX_RET_NUMBER_HEAD                 (0x71)
 #define NEX_RET_VALUE_HEAD                  (0x72)
-#define NEX_RET_INVALID_CMD             (0x00)
-#define NEX_RET_INVALID_COMPONENT_ID    (0x02)
-#define NEX_RET_INVALID_PAGE_ID         (0x03)
-#define NEX_RET_INVALID_PICTURE_ID      (0x04)
-#define NEX_RET_INVALID_FONT_ID         (0x05)
-#define NEX_RET_INVALID_BAUD            (0x11)
-#define NEX_RET_INVALID_VARIABLE        (0x1A)
-#define NEX_RET_INVALID_OPERATION       (0x1B)
+#define NEX_RET_INVALID_CMD                 (0x00)
+#define NEX_RET_INVALID_COMPONENT_ID        (0x02)
+#define NEX_RET_INVALID_PAGE_ID             (0x03)
+#define NEX_RET_INVALID_PICTURE_ID          (0x04)
+#define NEX_RET_INVALID_FONT_ID             (0x05)
+#define NEX_RET_INVALID_BAUD                (0x11)
+#define NEX_RET_INVALID_VARIABLE            (0x1A)
+#define NEX_RET_INVALID_OPERATION           (0x1B)
 
 /*
  * Receive uint32_t data. 
@@ -236,14 +236,14 @@ bool nexInit(void)
     if (ret1 && ret2) {
       sendCommand("baud=57600");
       nexSerial.end();
-      delay(1000);
+      HAL::delayMilliseconds(1000);
       nexSerial.begin(57600);
       return ret1 && ret2;
 
     // Else try to 57600 baudrate
     } else {
       nexSerial.end();
-      delay(1000);
+      HAL::delayMilliseconds(1000);
       nexSerial.begin(57600);
       sendCommand("");
       sendCommand("bkcmd=1");
@@ -263,7 +263,7 @@ void nexLoop(NexTouch *nex_listen_list[])
     
     while (nexSerial.available() > 0)
     {   
-        delay(10);
+        HAL::delayMilliseconds(10);
         c = nexSerial.read();
         
         if (NEX_RET_EVENT_TOUCH_HEAD == c)
@@ -306,7 +306,7 @@ bool sendCurrentPageId(uint8_t* pageId)
         goto __return;
     }
     sendCommand("sendme");
-    delay(50);
+    HAL::delayMilliseconds(50);
     nexSerial.setTimeout(100);
     if (sizeof(temp) != nexSerial.readBytes((char *)temp, sizeof(temp)))
     {
@@ -356,7 +356,7 @@ bool setCurrentBrightness(uint8_t dimValue)
     cmd += "dim=";
     cmd += buf;
     sendCommand(cmd.c_str());
-    delay(10);
+    HAL::delayMilliseconds(10);
 
     if(recvRetCommandFinished())
     {   
@@ -391,7 +391,7 @@ bool setDefaultBaudrate(uint32_t defaultBaudrate)
     cmd += "bauds=";
     cmd += buf;
     sendCommand(cmd.c_str());
-    delay(10);
+    HAL::delayMilliseconds(10);
 
     if(recvRetCommandFinished())
     {
