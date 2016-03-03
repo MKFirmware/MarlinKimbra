@@ -230,7 +230,8 @@
       #error DEPENDENCY ERROR: Missing setting THERMAL_PROTECTION_BED_HYSTERESIS
     #endif
   #endif
-  //fan
+
+  // Fan
   #if DISABLED(SOFT_PWM_SCALE)
     #error DEPENDENCY ERROR: Missing setting SOFT_PWM_SCALE
   #endif
@@ -259,7 +260,7 @@
     #endif
   #endif
 
-  //extruder
+  // Extruder
   #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
     #if DISABLED(EXTRUDE_MINTEMP)
       #error DEPENDENCY ERROR: Missing setting EXTRUDE_MINTEMP
@@ -373,9 +374,6 @@
     #endif
     #if DISABLED(D_FILAMENT)
       #error DEPENDENCY ERROR: Missing setting D_FILAMENT
-    #endif
-    #if DISABLED(STEPS_MM_E)
-      #error DEPENDENCY ERROR: Missing setting STEPS_MM_E
     #endif
   #endif
 

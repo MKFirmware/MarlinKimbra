@@ -2172,7 +2172,7 @@
 #define KNOWN_BOARD
 
 #ifndef __SAM3X8E__
-  #error Oops!  Make sure you have 'Arduino Due' selected from the 'Tools -> Boards' menu.
+  #error Oops! Make sure you have 'Arduino Due' selected from the 'Tools -> Boards' menu.
 #endif
 
 #define RADDS
@@ -2229,16 +2229,16 @@
 
 #define KILL_PIN                -1
 
-#define ORIG_HEATER_BED_PIN      7    // BED
+#define ORIG_HEATER_BED_PIN      7  // BED
 #define ORIG_HEATER_0_PIN       13
 #define ORIG_HEATER_1_PIN       12
 #define ORIG_HEATER_2_PIN       11
 
-#define ORIG_TEMP_BED_PIN        4   // ANALOG NUMBERING
-#define ORIG_TEMP_0_PIN          0   // ANALOG NUMBERING
-#define ORIG_TEMP_1_PIN         -1  // 1   // ANALOG NUMBERING
-#define ORIG_TEMP_2_PIN         -1  // 2   // ANALOG NUMBERING
-#define ORIG_TEMP_3_PIN         -1  // 3   // ANALOG NUMBERING
+#define ORIG_TEMP_BED_PIN        4  // ANALOG NUMBERING
+#define ORIG_TEMP_0_PIN          0  // ANALOG NUMBERING
+#define ORIG_TEMP_1_PIN          1  // ANALOG NUMBERING
+#define ORIG_TEMP_2_PIN          2  // ANALOG NUMBERING
+#define ORIG_TEMP_3_PIN          3  // ANALOG NUMBERING
 
 #if NUM_SERVOS > 0
   #define SERVO0_PIN           5
@@ -2286,11 +2286,6 @@
     #define BTN_EN2         52
     #define BTN_ENC         48
 
-    #if UI_VOLTAGE_LEVEL != 1
-      #undef UI_VOLTAGE_LEVEL
-      #define UI_VOLTAGE_LEVEL  1
-    #endif
-
   #elif ENABLED(SSD1306_OLED_I2C_CONTROLLER)
     #define BTN_EN1         50
     #define BTN_EN2         52
@@ -2327,6 +2322,10 @@
 ****************************************************************************************/
 #if MB(RAMPS_FD_V1) || MB(RAMPS_FD_V2)
 #define KNOWN_BOARD
+
+#ifndef __SAM3X8E__
+  #error Oops! Make sure you have 'Arduino Due' selected from the 'Tools -> Boards' menu.
+#endif
 
 #if MB(RAMPS_FD_V1)
   #define RAMPS_FD_V1
@@ -2385,27 +2384,27 @@
 #define KILL_PIN                -1
 
 
-#define ORIG_HEATER_BED_PIN      8    // BED
+#define ORIG_HEATER_BED_PIN      8  // BED
 
 #define ORIG_HEATER_0_PIN        9
 #define ORIG_HEATER_1_PIN       10
 #define ORIG_HEATER_2_PIN       11
 
-#define ORIG_TEMP_BED_PIN        7   // ANALOG NUMBERING
+#define ORIG_TEMP_BED_PIN        0  // ANALOG NUMBERING
 
-#define ORIG_TEMP_0_PIN          6   // ANALOG NUMBERING
-#define ORIG_TEMP_1_PIN          5   // 2    // ANALOG NUMBERING
-#define ORIG_TEMP_2_PIN          4   // 3     // ANALOG NUMBERING
-#define ORIG_TEMP_3_PIN          3   // ANALOG NUMBERING
+#define ORIG_TEMP_0_PIN          1  // ANALOG NUMBERING
+#define ORIG_TEMP_1_PIN          2  // ANALOG NUMBERING
+#define ORIG_TEMP_2_PIN          3  // ANALOG NUMBERING
+#define ORIG_TEMP_3_PIN          4  // ANALOG NUMBERING
 
 #if NUM_SERVOS > 0
-  #define SERVO0_PIN            11
+  #define SERVO0_PIN             7
   #if NUM_SERVOS > 1
     #define SERVO1_PIN           6
     #if NUM_SERVOS > 2
       #define SERVO2_PIN         5
       #if NUM_SERVOS > 3
-        #define SERVO3_PIN       4
+        #define SERVO3_PIN       3
       #endif
     #endif
   #endif
@@ -2449,6 +2448,10 @@
 #if MB(SMART_RAMPS)
 #define KNOWN_BOARD
 
+#ifndef __SAM3X8E__
+  #error Oops! Make sure you have 'Arduino Due' selected from the 'Tools -> Boards' menu.
+#endif
+
 #define ORIG_X_STEP_PIN       54
 #define ORIG_X_DIR_PIN        55
 #define ORIG_X_ENABLE_PIN     38
@@ -2471,9 +2474,9 @@
 #define ORIG_HEATER_1_PIN      9
 #define ORIG_HEATER_BED_PIN    8
 
-#define ORIG_TEMP_0_PIN        9  // Due analog pin #
-#define ORIG_TEMP_1_PIN        8  // Due analog pin #
-#define ORIG_TEMP_BED_PIN     10  // Due analog pin #
+#define ORIG_TEMP_0_PIN        9  // ANALOG NUMBERING
+#define ORIG_TEMP_1_PIN       10  // ANALOG NUMBERING
+#define ORIG_TEMP_BED_PIN     11  // ANALOG NUMBERING
 
 #define ORIG_E0_STEP_PIN      26
 #define ORIG_E0_DIR_PIN       28
