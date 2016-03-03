@@ -744,7 +744,7 @@ ISR(TIMER1_COMPA_vect) {
       #endif
 
       #if ENABLED(STEPPER_HIGH_LOW) && STEPPER_HIGH_LOW_DELAY > 0
-        delayMicroseconds(STEPPER_HIGH_LOW_DELAY);
+        HAL::delayMicroseconds(STEPPER_HIGH_LOW_DELAY);
       #endif
 
       #define STEP_END(axis, AXIS) \
@@ -1319,7 +1319,7 @@ void quickStop() {
           X_STEP_WRITE(!INVERT_X_STEP_PIN);
           Y_STEP_WRITE(!INVERT_Y_STEP_PIN);
           Z_STEP_WRITE(!INVERT_Z_STEP_PIN);
-          delayMicroseconds(2);
+          HAL::delayMicroseconds(1U);
           X_STEP_WRITE(INVERT_X_STEP_PIN);
           Y_STEP_WRITE(INVERT_Y_STEP_PIN);
           Z_STEP_WRITE(INVERT_Z_STEP_PIN);
@@ -1345,7 +1345,7 @@ void digitalPotWrite(int address, int value) {
     SPI.transfer(address); //  send in the address and value via SPI:
     SPI.transfer(value);
     digitalWrite(DIGIPOTSS_PIN, HIGH); // take the SS pin high to de-select the chip:
-    //delay(10);
+    //HAL::delayMilliseconds(10);
   #else
     UNUSED(address);
     UNUSED(value);
