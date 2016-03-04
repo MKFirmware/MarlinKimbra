@@ -2273,7 +2273,7 @@
     
     #undef SDSS
     #define SDSS            10
-    #define SDCARDDETECT    14
+    #define SD_DETECT_PIN   14
 
   #elif ENABLED(REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER)
     #define LCD_PINS_RS     46
@@ -2292,7 +2292,7 @@
     #define BTN_ENC         48
     #define BEEPER          41
     #define LCD_SDSS        10
-    #define SDCARDDETECT    14
+    #define SD_DETECT_PIN   14
     #define KILL_PIN        -1
 
   #elif ENABLED(SPARK_FULL_GRAPHICS)

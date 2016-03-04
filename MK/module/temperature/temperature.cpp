@@ -764,7 +764,7 @@ static float analog2temp(int raw, uint8_t h) {
     }
 
   #if ENABLED(HEATER_0_USES_MAX6675)
-    if (h == 0) return 0.25 * raw;
+    if (h == 0) return (float)raw / 4.0;
   #endif
 
   if (heater_ttbl_map[h] != NULL) {
@@ -1084,7 +1084,7 @@ void tp_init() {
   BITSET(TIMSK0, OCIE0B);
 
   // Wait for temperature measurement to settle
-  delay_ms(250);
+  HAL::delayMilliseconds(250);
 
   #define TEMP_MIN_ROUTINE(NR) \
     minttemp[NR] = HEATER_ ## NR ## _MINTEMP; \
