@@ -4756,6 +4756,7 @@ inline void gcode_M81() {
   disable_e();
   finishAndDisableSteppers();
   fanSpeed = 0;
+  laser_ttl_modulation = 0;
   delay_ms(1000); // Wait 1 second before switching off
   #if HAS(SUICIDE)
     st_synchronize();
