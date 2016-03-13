@@ -101,7 +101,6 @@ millis_t print_job_start_ms = 0; ///< Print job start time
 millis_t print_job_stop_ms = 0;  ///< Print job stop time
 static uint8_t target_extruder;
 bool no_wait_for_cooling = true;
-bool target_direction;
 bool software_endstops = true;
 
 unsigned long printer_usage_seconds;
@@ -1320,8 +1319,8 @@ static void clean_up_after_endstop_move() {
 
     enum ProbeAction {
       ProbeStay             = 0,
-      ProbeDeploy           = BIT(0),
-      ProbeStow             = BIT(1),
+      ProbeDeploy           = _BV(0),
+      ProbeStow             = _BV(1),
       ProbeDeployAndStow    = (ProbeDeploy | ProbeStow)
     };
 
@@ -1499,8 +1498,8 @@ static void clean_up_after_endstop_move() {
       destination[axis] = current_position[axis];
       feedrate = 0.0;
       endstops_hit_on_purpose(); // clear endstop hit flags
-      BITSET(axis_was_homed, axis);
-      BITSET(axis_known_position, axis);
+      SBI(axis_was_homed, axis);
+      SBI(axis_known_position, axis);
 
       #if ENABLED(Z_PROBE_SLED)
         // bring probe back
@@ -1606,8 +1605,8 @@ static void clean_up_after_endstop_move() {
       destination[axis] = current_position[axis];
       feedrate = 0.0;
       endstops_hit_on_purpose(); // clear endstop hit flags
-      BITSET(axis_was_homed, axis);
-      BITSET(axis_known_position, axis);
+      SBI(axis_was_homed, axis);
+      SBI(axis_known_position, axis);
     }
   }
   #define HOMEAXIS(LETTER) homeaxis(LETTER##_AXIS)
@@ -2680,7 +2679,7 @@ static void clean_up_after_endstop_move() {
   static void dock_sled(bool dock, int offset=0) {
     if (debugLevel & DEBUG_INFO) ECHO_LMV(INFO, "dock_sled", dock);
 
-    if (axis_known_position & (BIT(X_AXIS)|BIT(Y_AXIS)) != (BIT(X_AXIS)|BIT(Y_AXIS))) {
+    if (axis_known_position & (_BV(X_AXIS)|_BV(Y_AXIS)) != (_BV(X_AXIS)|_BV(Y_AXIS))) {
       LCD_MESSAGEPGM(MSG_POSITION_UNKNOWN);
       ECHO_LM(DB, MSG_POSITION_UNKNOWN);
       return;
@@ -2761,56 +2760,50 @@ static void clean_up_after_endstop_move() {
 #endif
 
 inline void wait_heater() {
-  millis_t temp_ms = millis();
-
-  /* See if we are heating up or cooling down */
-  target_direction = isHeatingHotend(target_extruder); // true if heating, false if cooling
-
-  cancel_heatup = false;
+  // Exit if the temperature is above target and not waiting for cooling
+  if (no_wait_for_cooling && !isHeatingHotend(target_extruder)) return;
 
   #if ENABLED(TEMP_RESIDENCY_TIME)
     long residency_start_ms = -1;
-    /* continue to loop until we have reached the target temp
-      _and_ until TEMP_RESIDENCY_TIME hasn't passed since we reached it */
-    while((!cancel_heatup)&&((residency_start_ms == -1) ||
-          (residency_start_ms >= 0 && (((millis_t) (millis() - residency_start_ms)) < (TEMP_RESIDENCY_TIME * 1000UL)))) )
+    // Loop until the temperature has stabilized
+    #define TEMP_CONDITIONS (residency_start_ms < 0 || now < residency_start_ms + TEMP_RESIDENCY_TIME * 1000UL)
   #else
-    while ( target_direction ? (isHeatingHotend(target_extruder)) : (isCoolingHotend(target_extruder)&&(no_wait_for_cooling==false)) )
+    // Loop until the temperature is exactly on target
+    #define TEMP_CONDITIONS (degHotend(target_extruder) != degTargetHotend(target_extruder))
   #endif // TEMP_RESIDENCY_TIME
 
-    { // while loop
-      if (millis() > temp_ms + 1000UL) { //Print temp & remaining time every 1s while waiting
-        #if HAS(TEMP_0) || HAS(TEMP_BED) || ENABLED(HEATER_0_USES_MAX6675)
-          print_heaterstates();
-        #endif
-        #if ENABLED(TEMP_RESIDENCY_TIME)
-          ECHO_M(" " SERIAL_W);
-          if (residency_start_ms > -1) {
-            temp_ms = ((TEMP_RESIDENCY_TIME * 1000UL) - (millis() - residency_start_ms)) / 1000UL;
-            ECHO_EV(temp_ms);
-          }
-          else {
-            ECHO_EM("?");
-          }
-        #else
-          ECHO_E;
-        #endif
-        temp_ms = millis();
-      }
-
-      idle();
-
+  cancel_heatup = false;
+  millis_t now = millis(), next_temp_ms = now + 1000UL;
+  while (!cancel_heatup && TEMP_CONDITIONS) {
+    now = millis();
+    if (now > next_temp_ms) { // Print temp & remaining time every 1s while waiting
+      next_temp_ms = now + 1000UL;
+      #if HAS(TEMP_0) || HAS(TEMP_BED) || ENABLED(HEATER_0_USES_MAX6675)
+        print_heaterstates();
+      #endif
       #if ENABLED(TEMP_RESIDENCY_TIME)
-        // start/restart the TEMP_RESIDENCY_TIME timer whenever we reach target temp for the first time
-        // or when current temp falls outside the hysteresis after target temp was reached
-        if ((residency_start_ms == -1 &&  target_direction && (degHotend(target_extruder) >= (degTargetHotend(target_extruder)-TEMP_WINDOW))) ||
-            (residency_start_ms == -1 && !target_direction && (degHotend(target_extruder) <= (degTargetHotend(target_extruder)+TEMP_WINDOW))) ||
-            (residency_start_ms > -1 && labs(degHotend(target_extruder) - degTargetHotend(target_extruder)) > TEMP_HYSTERESIS) )
-        {
-          residency_start_ms = millis();
+        ECHO_M(" " SERIAL_W);
+        if (residency_start_ms >= 0) {
+          long rem = ((TEMP_RESIDENCY_TIME * 1000UL) - (now - residency_start_ms)) / 1000UL;
+          ECHO_EV(rem);
         }
-      #endif // TEMP_RESIDENCY_TIME
+        else {
+          ECHO_EM("?");
+        }
+      #else
+        ECHO_E;
+      #endif
     }
+
+    idle();
+
+    #if ENABLED(TEMP_RESIDENCY_TIME)
+      // Start the TEMP_RESIDENCY_TIME timer when we reach target temp for the first time.
+      // Restart the timer whenever the temperature falls outside the hysteresis.
+      if (labs(degHotend(target_extruder) - degTargetHotend(target_extruder)) > ((residency_start_ms < 0) ? TEMP_WINDOW : TEMP_HYSTERESIS))
+        residency_start_ms = millis();
+    #endif // TEMP_RESIDENCY_TIME
+  } // while(!cancel_heatup && TEMP_CONDITIONS)
 
   LCD_MESSAGEPGM(MSG_HEATING_COMPLETE);
   refresh_cmd_timeout();
@@ -2818,19 +2811,17 @@ inline void wait_heater() {
 }
 
 inline void wait_bed() {
-  millis_t temp_ms = millis();
+  // Exit if the temperature is above target and not waiting for cooling
+  if (no_wait_for_cooling && !isHeatingBed()) return;
 
   cancel_heatup = false;
-  target_direction = isHeatingBed(); // true if heating, false if cooling
-
-  while ((target_direction && !cancel_heatup) ? isHeatingBed() : isCoolingBed() && !no_wait_for_cooling) {
-    millis_t ms = millis();
-    if (ms > temp_ms + 1000UL) { //Print Temp Reading every 1 second while heating up.
-      temp_ms = ms;
-      #if HAS(TEMP_0) || HAS(TEMP_BED) || ENABLED(HEATER_0_USES_MAX6675)
-        print_heaterstates();
-        ECHO_E;
-      #endif
+  millis_t now = millis(), next_temp_ms = now + 1000UL;
+  while (!cancel_heatup && degTargetBed() != degBed()) {
+    millis_t now = millis();
+    if (now > next_temp_ms) { // Print Temp Reading every 1 second while heating up.
+      next_temp_ms = now + 1000UL;
+      print_heaterstates();
+      ECHO_E;
     }
     idle();
   }
@@ -3336,7 +3327,7 @@ inline void gcode_G28() {
         else if (homeZ) { // Don't need to Home Z twice
 
           // Let's see if X and Y are homed
-          if (axis_was_homed & (BIT(X_AXIS)|BIT(Y_AXIS)) == (BIT(X_AXIS)|BIT(Y_AXIS))) {
+          if (axis_was_homed & (_BV(X_AXIS)|_BV(Y_AXIS)) == (_BV(X_AXIS)|_BV(Y_AXIS))) {
 
             // Make sure the probe is within the physical limits
             // NOTE: This doesn't necessarily ensure the probe is also within the bed!
@@ -3380,7 +3371,7 @@ inline void gcode_G28() {
         if (home_all_axis || homeZ) {
 
           // Let's see if X and Y are homed
-          if (axis_was_homed & (BIT(X_AXIS)|BIT(Y_AXIS)) == (BIT(X_AXIS)|BIT(Y_AXIS))) {
+          if (axis_was_homed & (_BV(X_AXIS)|_BV(Y_AXIS)) == (_BV(X_AXIS)|_BV(Y_AXIS))) {
             current_position[Z_AXIS] = 0;
             sync_plan_position();
 
@@ -3505,7 +3496,7 @@ inline void gcode_G28() {
     if (debugLevel & DEBUG_INFO) ECHO_LM(INFO, "gcode_G29 >>>");
 
     // Don't allow auto-leveling without homing first
-    if (axis_known_position & (BIT(X_AXIS)|BIT(Y_AXIS)) != (BIT(X_AXIS)|BIT(Y_AXIS))) {
+    if (axis_known_position & (_BV(X_AXIS)|_BV(Y_AXIS)) != (_BV(X_AXIS)|_BV(Y_AXIS))) {
       LCD_MESSAGEPGM(MSG_POSITION_UNKNOWN);
       ECHO_LM(ER, MSG_POSITION_UNKNOWN);
       return;
@@ -5116,7 +5107,8 @@ inline void gcode_M105() {
 #endif // HAS(FAN)
 
 /**
- * M109: Wait for extruder(s) to reach temperature
+ * M109: Sxxx Wait for extruder(s) to reach temperature. Waits only when heating.
+ *       Rxxx Wait for extruder(s) to reach temperature. Waits when heating and cooling.
  */
 inline void gcode_M109() {
   if (setTargetedExtruder(109)) return;
@@ -6238,7 +6230,7 @@ inline void gcode_M400() { st_synchronize(); }
 
     ECHO_M("\",\"coords\": {");
     ECHO_M("\"axesHomed\":[");
-    if (axis_was_homed & (BIT(X_AXIS)|BIT(Y_AXIS)|BIT(Z_AXIS)) == (BIT(X_AXIS)|BIT(Y_AXIS)|BIT(Z_AXIS)))
+    if (axis_was_homed & (_BV(X_AXIS)|_BV(Y_AXIS)|_BV(Z_AXIS)) == (_BV(X_AXIS)|_BV(Y_AXIS)|_BV(Z_AXIS)))
       ECHO_M("1, 1, 1");
     else
       ECHO_M("0, 0, 0");

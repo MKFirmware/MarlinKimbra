@@ -246,8 +246,8 @@ volatile signed char count_direction[NUM_AXIS] = { 1 };
 
 // Some useful constants
 
-#define ENABLE_STEPPER_DRIVER_INTERRUPT()  TIMSK1 |= BIT(OCIE1A)
-#define DISABLE_STEPPER_DRIVER_INTERRUPT() TIMSK1 &= ~BIT(OCIE1A)
+#define ENABLE_STEPPER_DRIVER_INTERRUPT()  SBI(TIMSK1, OCIE1A)
+#define DISABLE_STEPPER_DRIVER_INTERRUPT() CBI(TIMSK1, OCIE1A)
 
 void endstops_hit_on_purpose() {
   endstop_hit_bits = 0;
@@ -292,12 +292,12 @@ void checkHitEndstops() {
     ECHO_E;
 
     #if ENABLED(ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED)
-      if (abort_on_endstop_hit && !(endstop_hit_bits & BIT(Z_PROBE)) && !(endstop_hit_bits & BIT(E_MIN))) {
+      if (abort_on_endstop_hit && !(endstop_hit_bits & _BV(Z_PROBE)) && !(endstop_hit_bits & _BV(E_MIN))) {
         #if ENABLED(SDSUPPORT)
           card.sdprinting = false;
           card.closeFile();
         #endif
-        for (int i = 0; i < 3; i++) BITCLR(axis_known_position, i); // not homed anymore
+        for (int i = 0; i < 3; i++) CBI(axis_known_position, i); // not homed anymore
         quickStop(); // kill the planner buffer
         Stop();      // restart by M999
       }
@@ -307,17 +307,15 @@ void checkHitEndstops() {
   }
 }
 
-#if MECH(COREXY) || MECH(COREXZ)
-  #if MECH(COREXY)
-    #define CORE_AXIS_2 B_AXIS
-  #else
-    #define CORE_AXIS_2 C_AXIS
-  #endif
+#if MECH(COREXY)
+  #define CORE_AXIS_2 B_AXIS
+#elif MECH(COREXZ)
+  #define CORE_AXIS_2 C_AXIS
 #endif
 
 void enable_endstops(bool check) { check_endstops = check; }
 
-// Check endstops
+// Check endstops - Called from ISR!
 inline void update_endstops() {
 
   #if ENABLED(Z_DUAL_ENDSTOPS) || ENABLED(NPR2)
@@ -330,7 +328,7 @@ inline void update_endstops() {
   #define _ENDSTOP_PIN(AXIS, MINMAX) AXIS ##_## MINMAX ##_PIN
   #define _ENDSTOP_INVERTING(AXIS, MINMAX) AXIS ##_## MINMAX ##_ENDSTOP_INVERTING
   #define _AXIS(AXIS) AXIS ##_AXIS
-  #define _ENDSTOP_HIT(AXIS) BITSET(endstop_hit_bits, _ENDSTOP(AXIS, MIN))
+  #define _ENDSTOP_HIT(AXIS) SBI(endstop_hit_bits, _ENDSTOP(AXIS, MIN))
   #define _ENDSTOP(AXIS, MINMAX) AXIS ##_## MINMAX
 
   // SET_ENDSTOP_BIT: set the current endstop bits for an endstop to its status
@@ -343,13 +341,11 @@ inline void update_endstops() {
   #if MECH(COREXY) || MECH(COREXZ)
 
     #define _SET_TRIGSTEPS(AXIS) do { \
-        CRITICAL_SECTION_START; \
         float axis_pos = count_position[_AXIS(AXIS)]; \
         if (_AXIS(AXIS) == A_AXIS) \
           axis_pos = (axis_pos + count_position[CORE_AXIS_2]) / 2; \
         else if (_AXIS(AXIS) == CORE_AXIS_2) \
           axis_pos = (count_position[A_AXIS] - axis_pos) / 2; \
-        CRITICAL_SECTION_END; \
         endstops_trigsteps[_AXIS(AXIS)] = axis_pos; \
       } while(0)
 
@@ -447,7 +443,7 @@ inline void update_endstops() {
 
             if (z_test && current_block->steps[Z_AXIS] > 0) { // z_test = Z_MIN || Z2_MIN
               endstops_trigsteps[Z_AXIS] = count_position[Z_AXIS];
-              BITSET(endstop_hit_bits, Z_MIN);
+              SBI(endstop_hit_bits, Z_MIN);
               if (!performing_homing || (z_test == 0x3))  //if not performing home or if both endstops were trigged during homing...
                 step_events_completed = current_block->step_event_count;
             }
@@ -463,7 +459,7 @@ inline void update_endstops() {
 
           if (TEST_ENDSTOP(Z_PROBE)) {
             endstops_trigsteps[Z_AXIS] = count_position[Z_AXIS];
-            BITSET(endstop_hit_bits, Z_PROBE);
+            SBI(endstop_hit_bits, Z_PROBE);
           }
         #endif
       }
@@ -483,7 +479,7 @@ inline void update_endstops() {
 
             if (z_test && current_block->steps[Z_AXIS] > 0) {  // t_test = Z_MAX || Z2_MAX
               endstops_trigsteps[Z_AXIS] = count_position[Z_AXIS];
-              BITSET(endstop_hit_bits, Z_MIN);
+              SBI(endstop_hit_bits, Z_MIN);
               if (!performing_homing || (z_test == 0x3))  //if not performing home or if both endstops were trigged during homing...
                 step_events_completed = current_block->step_event_count;
             }
@@ -576,11 +572,11 @@ void set_stepper_direction(bool onlye) {
 
   #define SET_STEP_DIR(AXIS) \
     if (TEST(out_bits, AXIS ##_AXIS)) { \
-      AXIS ##_APPLY_DIR(INVERT_## AXIS ##_DIR, false); \
+      AXIS ##_APPLY_DIR(INVERT_## AXIS ##_DIR, 0); \
       count_direction[AXIS ##_AXIS] = -1; \
     } \
     else { \
-      AXIS ##_APPLY_DIR(!INVERT_## AXIS ##_DIR, false); \
+      AXIS ##_APPLY_DIR(!INVERT_## AXIS ##_DIR, 0); \
       count_direction[AXIS ##_AXIS] = 1; \
     }
 
@@ -1133,10 +1129,10 @@ void st_init() {
   #endif
 
   // waveform generation = 0100 = CTC
-  TCCR1B &= ~BIT(WGM13);
-  TCCR1B |=  BIT(WGM12);
-  TCCR1A &= ~BIT(WGM11);
-  TCCR1A &= ~BIT(WGM10);
+  CBI(TCCR1B, WGM13);
+  SBI(TCCR1B, WGM12);
+  CBI(TCCR1A, WGM11);
+  CBI(TCCR1A, WGM10);
 
   // output mode = 00 (disconnected)
   TCCR1A &= ~(3 << COM1A0);
@@ -1154,11 +1150,11 @@ void st_init() {
 
   #if ENABLED(ADVANCE)
     #if defined(TCCR0A) && defined(WGM01)
-      TCCR0A &= ~BIT(WGM01);
-      TCCR0A &= ~BIT(WGM00);
+      CBI(TCCR0A, WGM01);
+      CBI(TCCR0A, WGM00);
     #endif
     e_steps[0] = e_steps[1] = e_steps[2] = e_steps[3] = e_steps[4] = e_steps[5] = 0;
-    TIMSK0 |= BIT(OCIE0A);
+    SBI(TIMSK0, OCIE0A);
   #endif //ADVANCE
 
   enable_endstops(true); // Start with endstops active. After homing they can be disabled
@@ -1280,7 +1276,7 @@ void quickStop() {
         uint8_t old_pin = _READ_DIR(AXIS); \
         _APPLY_DIR(AXIS, _INVERT_DIR(AXIS)^direction^INVERT); \
         _APPLY_STEP(AXIS)(!_INVERT_STEP_PIN(AXIS), true); \
-        delayMicroseconds(2); \
+        HAL::delayMicroseconds(2); \
         _APPLY_STEP(AXIS)(_INVERT_STEP_PIN(AXIS), true); \
         _APPLY_DIR(AXIS, old_pin); \
       }

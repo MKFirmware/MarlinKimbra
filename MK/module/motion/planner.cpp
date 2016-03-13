@@ -625,23 +625,23 @@ float junction_deviation = 0.1;
   // Compute direction bits for this block 
   uint8_t dirb = 0;
   #if MECH(COREXY)
-    if (dx < 0) BITSET(dirb, X_HEAD); // Save the real Extruder (head) direction in X Axis
-    if (dy < 0) BITSET(dirb, Y_HEAD); // ...and Y
-    if (dz < 0) BITSET(dirb, Z_AXIS);
-    if (da < 0) BITSET(dirb, A_AXIS); // Motor A direction
-    if (db < 0) BITSET(dirb, B_AXIS); // Motor B direction
+    if (dx < 0) SBI(dirb, X_HEAD); // Save the real Extruder (head) direction in X Axis
+    if (dy < 0) SBI(dirb, Y_HEAD); // ...and Y
+    if (dz < 0) SBI(dirb, Z_AXIS);
+    if (da < 0) SBI(dirb, A_AXIS); // Motor A direction
+    if (db < 0) SBI(dirb, B_AXIS); // Motor B direction
   #elif MECH(COREXZ)
-    if (dx < 0) BITSET(dirb, X_HEAD); // Save the real Extruder (head) direction in X Axis
-    if (dy < 0) BITSET(dirb, Y_AXIS);
-    if (dz < 0) BITSET(dirb, Z_HEAD); // ...and Z
-    if (da < 0) BITSET(dirb, A_AXIS); // Motor A direction
-    if (dc < 0) BITSET(dirb, C_AXIS); // Motor B direction
+    if (dx < 0) SBI(dirb, X_HEAD); // Save the real Extruder (head) direction in X Axis
+    if (dy < 0) SBI(dirb, Y_AXIS);
+    if (dz < 0) SBI(dirb, Z_HEAD); // ...and Z
+    if (da < 0) SBI(dirb, A_AXIS); // Motor A direction
+    if (dc < 0) SBI(dirb, C_AXIS); // Motor B direction
   #else
-    if (dx < 0) BITSET(dirb, X_AXIS);
-    if (dy < 0) BITSET(dirb, Y_AXIS); 
-    if (dz < 0) BITSET(dirb, Z_AXIS);
+    if (dx < 0) SBI(dirb, X_AXIS);
+    if (dy < 0) SBI(dirb, Y_AXIS); 
+    if (dz < 0) SBI(dirb, Z_AXIS);
   #endif
-  if (de < 0) BITSET(dirb, E_AXIS); 
+  if (de < 0) SBI(dirb, E_AXIS); 
   block->direction_bits = dirb;
 
   block->active_driver = driver;

@@ -15,20 +15,20 @@
           int i = duration * freq / 1000;
           while (i--) {
             WRITE(BEEPER_PIN, HIGH);
-            delayMicroseconds(delay);
+            HAL::delayMicroseconds(delay);
             WRITE(BEEPER_PIN, LOW);
-            delayMicroseconds(delay);
+            HAL::delayMicroseconds(delay);
           }
         #else // buzzer has its own resonator - needs a DC
           tone(BEEPER_PIN, freq, duration);
-          delay(1 + duration);
+          HAL::delayMilliseconds(1 + duration);
         #endif
       #else
-        delay(duration);
+        HAL::delayMilliseconds(duration);
       #endif
     }
     else {
-      delay(duration);
+      HAL::delayMilliseconds(duration);
     }
   }
 #endif

@@ -5,11 +5,13 @@
 #define UNUSED(x) (void) (x)
 
 // Macros for bit masks
-#define BIT(b) (1<<(b))
-#define TEST(n,b) (((n)&BIT(b))!=0)
-#define BITSET(n,b) n |= BIT(b)
-#define BITCLR(n,b) n &= ~BIT(b)
-#define SET_BIT(n,b,value) (n) ^= ((-value)^(n)) & (BIT(b))
+#ifndef _BV
+  #define _BV(b) (1<<(b))
+#endif
+#define TEST(n,b) (((n)&_BV(b))!=0)
+#define SBI(n,b) (n |= _BV(b))
+#define CBI(n,b) (n &= ~_BV(b))
+#define SET_BIT(n,b,value) (n) ^= ((-value)^(n)) & (_BV(b))
 
 // Macros for maths shortcuts
 #ifndef M_PI 
