@@ -227,7 +227,7 @@
   #endif
 #endif
 
-#include "../Pins.h"
+#include "pins.h"
 
 /**
  * SAM3X8E

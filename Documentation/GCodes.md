@@ -61,7 +61,8 @@
 *  M105 - Read current temp
 *  M106 - Fan on
 *  M107 - Fan off
-*  M109 - S[xxx] Wait for extruder current temp to reach target temp. Waits only when heating - R[xxx] Wait for extruder current temp to reach target temp. Waits when heating and cooling
+*  M109 - S[xxx] Wait for extruder current temp to reach target temp. Waits only when heating
+        - R[xxx] Wait for extruder current temp to reach target temp. Waits when heating and cooling
 *  M111 - Debug Dryrun Repetier
 *  M112 - Emergency stop
 *  M114 - Output current position to serial port, (V)erbose for user
@@ -81,7 +82,8 @@
 *  M163 - Set a single proportion for a mixing extruder. Requires COLOR_MIXING_EXTRUDER.
 *  M164 - Save the mix as a virtual extruder. Requires COLOR_MIXING_EXTRUDER and MIXING_VIRTUAL_TOOLS.
 *  M165 - Set the proportions for a mixing extruder. Use parameters ABCDHI to set the mixing factors. Requires COLOR_MIXING_EXTRUDER.
-*  M190 - S[xxx] Wait for bed current temp to reach target temp. Waits only when heating - R[xxx] Wait for bed current temp to reach target temp. Waits when heating and cooling
+*  M190 - S[xxx] Wait for bed current temp to reach target temp. Waits only when heating
+        - R[xxx] Wait for bed current temp to reach target temp. Waits when heating and cooling
 *  M200 - D[millimeters]- set filament diameter and set E axis units to cubic millimeters (use S0 to set back to millimeters).
 *  M201 - Set max acceleration in units/s^2 for print moves (M201 X1000 Y1000 Z1000 E0 S1000 E1 S1000 E2 S1000 E3 S1000) in mm/sec^2
 *  M203 - Set maximum feedrate that your machine can sustain (M203 X200 Y200 Z300 E0 S1000 E1 S1000 E2 S1000 E3 S1000) in mm/sec

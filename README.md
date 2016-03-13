@@ -1,12 +1,12 @@
 <img align="right" src="Documentation/Logo/MarlinKimbra%20Logo%20GitHub.png" />
-# MK 3D Printer Firmware for Arduino
-## Version 4.2.6 dev
+# MarlinKimbra 3D Printer Firmware for Arduino
+## Version 4.2.8 dev
 
 ### Special thanks
 * all Marlin8bit-developers.
 
 ---
-# MK 3D Printer Firmware
+# MarlinKimbra 3D Printer Firmware
   * [Configuration & Compilation](/Documentation/Compilation.md)
   * Supported
     * [Features](/Documentation/Features.md)
@@ -38,12 +38,13 @@ System Management MKr4 for 6 extruders with just two drivers or only driver.
 Management Multyextruder NPr2, 4/6 extruders with only two engines.
 Management Dual Extruder DONDOLO.
 Adding commands to facilitate purging of hotend. 
-Step per unit varied for each extruder as well as the feedrate.
-The addition of a different feedrate for retraction. 
+Step per unit varied for each extruder as well as the feedrate and the acceleration.
 Adding Debug Dryrun used by repetier.
 Added total Power on time writed in SD CARD.
 Added total Power consumption writed in SD CARD.
+Added total filament printed writed in SD CARD.
 Added anti extruder idle oozing system.
+Added Hysteresis and Z-Wobble correction (only cartesian printers).
 
 ## Credits
 

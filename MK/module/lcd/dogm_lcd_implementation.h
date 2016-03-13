@@ -24,9 +24,9 @@
   #define BLEN_A 0
   #define BLEN_B 1
   #define BLEN_C 2
-  #define EN_A BIT(BLEN_A)
-  #define EN_B BIT(BLEN_B)
-  #define EN_C BIT(BLEN_C)
+  #define EN_A (_BV(BLEN_A))
+  #define EN_B (_BV(BLEN_B))
+  #define EN_C (_BV(BLEN_C))
   #if ENABLED(INVERT_CLICK_BUTTON)
     #define LCD_CLICKED !(buttons&EN_C)
   #else
@@ -254,7 +254,7 @@ static void lcd_implementation_init() {
     } while (u8g.nextPage());
 
     if (show_bootscreen) {
-      delay(SPLASH_SCREEN_DURATION);
+      HAL::delayMilliseconds(SPLASH_SCREEN_DURATION);
       show_bootscreen = false;
     }
   #endif

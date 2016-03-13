@@ -838,7 +838,7 @@ static void lcd_prepare_menu() {
   // Level Bed
   //
   #if ENABLED(AUTO_BED_LEVELING_FEATURE)
-    if (axis_known_position & (BIT(X_AXIS)|BIT(Y_AXIS)) == (BIT(X_AXIS)|BIT(Y_AXIS)))
+    if (axis_known_position & (_BV(X_AXIS)|_BV(Y_AXIS)) == (_BV(X_AXIS)|_BV(Y_AXIS)))
       MENU_ITEM(gcode, MSG_LEVEL_BED, PSTR("G29"));
   #elif !MECH(DELTA) && DISABLED(Z_SAFE_HOMING) && Z_HOME_DIR < 0
     MENU_ITEM(submenu, MSG_MBL_SETTING, config_lcd_level_bed);
@@ -1695,7 +1695,7 @@ void lcd_quick_feedback() {
     #if DISABLED(LCD_FEEDBACK_FREQUENCY_DURATION_MS)
       #define LCD_FEEDBACK_FREQUENCY_DURATION_MS 2
     #endif
-    delay(LCD_FEEDBACK_FREQUENCY_DURATION_MS);
+    HAL::delayMilliseconds(LCD_FEEDBACK_FREQUENCY_DURATION_MS);
   #endif
 }
 
@@ -2481,7 +2481,7 @@ char* ftostr52(const float& x) {
         {
           LCD_Printpos(0, 0); lcd_printPGM(PSTR(MSG_MBL_6));
           LCD_Printpos(0, 1); lcd_printPGM(PSTR("                  "));
-          delay(5000);
+          HAL::delayMilliseconds(5000);
           enqueuecommands_P(PSTR("G28"));
           lcd_goto_menu(lcd_prepare_menu);
         }

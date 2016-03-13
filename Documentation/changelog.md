@@ -1,3 +1,10 @@
+### Version 4.2.8
+* Add board folder with files of various board containing the pins
+* Rewrite macros
+* Fix M109 so it won't wait for cooling
+* Clear code
+* Bug fix
+
 ### Version 4.2.7
 * Add M906 Set motor Currents for ALLIGATOR board
 * Add M408 JSON OUTPUT
