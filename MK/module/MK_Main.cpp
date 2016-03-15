@@ -96,7 +96,7 @@ const int sensitive_pins[] = SENSITIVE_PINS; ///< Sensitive pin list for M42
 // Inactivity shutdown
 millis_t previous_cmd_ms = 0;
 static millis_t max_inactive_time = 0;
-static millis_t stepper_inactive_time = DEFAULT_STEPPER_DEACTIVE_TIME * 1000UL;
+static millis_t stepper_inactive_time = (DEFAULT_STEPPER_DEACTIVE_TIME) * 1000UL;
 millis_t print_job_start_ms = 0; ///< Print job start time
 millis_t print_job_stop_ms = 0;  ///< Print job stop time
 static uint8_t target_extruder;
@@ -1338,11 +1338,11 @@ static void clean_up_after_endstop_move() {
       do_blocking_move_to_z(z_before); // this also updates current_position
 
       if (debugLevel & DEBUG_INFO) {
-        ECHO_SMV(INFO, "> do_blocking_move_to_xy ", x - X_PROBE_OFFSET_FROM_EXTRUDER);
+        ECHO_SMV(INFO, "> do_blocking_move_to_xy ", x - (X_PROBE_OFFSET_FROM_EXTRUDER));
         ECHO_EMV(", ", y - Y_PROBE_OFFSET_FROM_EXTRUDER);
       }
 
-      do_blocking_move_to_xy(x - X_PROBE_OFFSET_FROM_EXTRUDER, y - Y_PROBE_OFFSET_FROM_EXTRUDER); // this also updates current_position
+      do_blocking_move_to_xy(x - X_PROBE_OFFSET_FROM_EXTRUDER, y - (Y_PROBE_OFFSET_FROM_EXTRUDER)); // this also updates current_position
 
       #if HASNT(Z_PROBE_SLED)
         if (probe_action & ProbeDeploy) {
@@ -2723,14 +2723,14 @@ static void clean_up_after_endstop_move() {
     #if HAS(TEMP_BED)
       ECHO_M(" " SERIAL_BAT);
       #if ENABLED(BED_WATTS)
-        ECHO_VM((BED_WATTS * getHeaterPower(-1)) / 127, "W");
+        ECHO_VM(((BED_WATTS) * getHeaterPower(-1)) / 127, "W");
       #else
         ECHO_V(getHeaterPower(-1));
       #endif
     #endif
     ECHO_M(" " SERIAL_AT ":");
     #if ENABLED(HOTEND_WATTS)
-      ECHO_VM((HOTEND_WATTS * getHeaterPower(target_extruder)) / 127, "W");
+      ECHO_VM(((HOTEND_WATTS) * getHeaterPower(target_extruder)) / 127, "W");
     #else
       ECHO_V(getHeaterPower(target_extruder));
     #endif
@@ -2739,7 +2739,7 @@ static void clean_up_after_endstop_move() {
         ECHO_MV(" " SERIAL_AT, h);
         ECHO_C(':');
         #if ENABLED(HOTEND_WATTS)
-          ECHO_VM((HOTEND_WATTS * getHeaterPower(h)) / 127, "W");
+          ECHO_VM(((HOTEND_WATTS) * getHeaterPower(h)) / 127, "W");
         #else
           ECHO_V(getHeaterPower(h));
         #endif
@@ -2766,7 +2766,7 @@ inline void wait_heater() {
   #if ENABLED(TEMP_RESIDENCY_TIME)
     long residency_start_ms = -1;
     // Loop until the temperature has stabilized
-    #define TEMP_CONDITIONS (residency_start_ms < 0 || now < residency_start_ms + TEMP_RESIDENCY_TIME * 1000UL)
+    #define TEMP_CONDITIONS (residency_start_ms < 0 || now < residency_start_ms + (TEMP_RESIDENCY_TIME) * 1000UL)
   #else
     // Loop until the temperature is exactly on target
     #define TEMP_CONDITIONS (degHotend(target_extruder) != degTargetHotend(target_extruder))
@@ -3048,7 +3048,7 @@ inline void gcode_G28() {
     sync_plan_position();
 
     // Move all carriages up together until the first endstop is hit.
-    for (int i = X_AXIS; i <= Z_AXIS; i++) destination[i] = 3 * Z_MAX_LENGTH;
+    for (int i = X_AXIS; i <= Z_AXIS; i++) destination[i] = 3 * (Z_MAX_LENGTH);
     feedrate = 1.732 * homing_feedrate[X_AXIS];
     line_to_destination();
     st_synchronize();
@@ -3084,7 +3084,7 @@ inline void gcode_G28() {
       #elif DISABLED(Z_SAFE_HOMING) && ENABLED(AUTO_BED_LEVELING_FEATURE) && Z_RAISE_BEFORE_HOMING > 0
 
         // Raise Z before homing any other axes
-        destination[Z_AXIS] = -Z_RAISE_BEFORE_HOMING * home_dir(Z_AXIS); // Set destination away from bed
+        destination[Z_AXIS] = -(Z_RAISE_BEFORE_HOMING) * home_dir(Z_AXIS); // Set destination away from bed
         if (debugLevel & DEBUG_INFO) {
           ECHO_SMV(INFO, "Raise Z (before homing) by ", (float)Z_RAISE_BEFORE_HOMING);
           print_xyz(" > (home_all_axis || homeZ) > destination", destination);
@@ -3303,9 +3303,9 @@ inline void gcode_G28() {
           //
           // NOTE: If current_position[X_AXIS] or current_position[Y_AXIS] were set above
           // then this may not work as expected.
-          destination[X_AXIS] = round(Z_SAFE_HOMING_X_POINT - X_PROBE_OFFSET_FROM_EXTRUDER);
-          destination[Y_AXIS] = round(Z_SAFE_HOMING_Y_POINT - Y_PROBE_OFFSET_FROM_EXTRUDER);
-          destination[Z_AXIS] = -Z_RAISE_BEFORE_HOMING * home_dir(Z_AXIS);
+          destination[X_AXIS] = round(Z_SAFE_HOMING_X_POINT - (X_PROBE_OFFSET_FROM_EXTRUDER));
+          destination[Y_AXIS] = round(Z_SAFE_HOMING_Y_POINT - (Y_PROBE_OFFSET_FROM_EXTRUDER));
+          destination[Z_AXIS] = -(Z_RAISE_BEFORE_HOMING) * home_dir(Z_AXIS);  // Set destination away from bed
           feedrate = xy_travel_speed;
 
           if (debugLevel & DEBUG_INFO) {
@@ -3332,16 +3332,16 @@ inline void gcode_G28() {
             // Make sure the probe is within the physical limits
             // NOTE: This doesn't necessarily ensure the probe is also within the bed!
             float cpx = current_position[X_AXIS], cpy = current_position[Y_AXIS];
-            if (   cpx >= X_MIN_POS - X_PROBE_OFFSET_FROM_EXTRUDER
-                && cpx <= X_MAX_POS - X_PROBE_OFFSET_FROM_EXTRUDER
-                && cpy >= Y_MIN_POS - Y_PROBE_OFFSET_FROM_EXTRUDER
-                && cpy <= Y_MAX_POS - Y_PROBE_OFFSET_FROM_EXTRUDER) {
+            if (   cpx >= X_MIN_POS - (X_PROBE_OFFSET_FROM_EXTRUDER)
+                && cpx <= X_MAX_POS - (X_PROBE_OFFSET_FROM_EXTRUDER)
+                && cpy >= Y_MIN_POS - (Y_PROBE_OFFSET_FROM_EXTRUDER)
+                && cpy <= Y_MAX_POS - (Y_PROBE_OFFSET_FROM_EXTRUDER)) {
               // Set the plan current position to X, Y, 0
               current_position[Z_AXIS] = 0;
               plan_set_position(cpx, cpy, 0, current_position[E_AXIS]);
 
               // Set Z destination away from bed and raise the axis
-              destination[Z_AXIS] = -Z_RAISE_BEFORE_HOMING * home_dir(Z_AXIS);    // Set destination away from bed
+              destination[Z_AXIS] = -(Z_RAISE_BEFORE_HOMING) * home_dir(Z_AXIS);    // Set destination away from bed
               feedrate = max_feedrate[Z_AXIS] * 60;
 
               if (debugLevel & DEBUG_INFO) {
@@ -3534,30 +3534,30 @@ inline void gcode_G28() {
           back_probe_bed_position = code_seen('B') ? code_value_short() : BACK_PROBE_BED_POSITION;
 
       bool left_out_l = left_probe_bed_position < MIN_PROBE_X,
-           left_out = left_out_l || left_probe_bed_position > right_probe_bed_position - MIN_PROBE_EDGE,
+           left_out = left_out_l || left_probe_bed_position > right_probe_bed_position - (MIN_PROBE_EDGE),
            right_out_r = right_probe_bed_position > MAX_PROBE_X,
-           right_out = right_out_r || right_probe_bed_position < left_probe_bed_position + MIN_PROBE_EDGE,
+           right_out = right_out_r || right_probe_bed_position < left_probe_bed_position + (MIN_PROBE_EDGE),
            front_out_f = front_probe_bed_position < MIN_PROBE_Y,
-           front_out = front_out_f || front_probe_bed_position > back_probe_bed_position - MIN_PROBE_EDGE,
+           front_out = front_out_f || front_probe_bed_position > back_probe_bed_position - (MIN_PROBE_EDGE),
            back_out_b = back_probe_bed_position > MAX_PROBE_Y,
-           back_out = back_out_b || back_probe_bed_position < front_probe_bed_position + MIN_PROBE_EDGE;
+           back_out = back_out_b || back_probe_bed_position < front_probe_bed_position + (MIN_PROBE_EDGE);
 
       if (left_out || right_out || front_out || back_out) {
         if (left_out) {
           out_of_range_error(PSTR("(L)eft"));
-          left_probe_bed_position = left_out_l ? MIN_PROBE_X : right_probe_bed_position - MIN_PROBE_EDGE;
+          left_probe_bed_position = left_out_l ? MIN_PROBE_X : right_probe_bed_position - (MIN_PROBE_EDGE);
         }
         if (right_out) {
           out_of_range_error(PSTR("(R)ight"));
-          right_probe_bed_position = right_out_r ? MAX_PROBE_X : left_probe_bed_position + MIN_PROBE_EDGE;
+          right_probe_bed_position = right_out_r ? MAX_PROBE_X : left_probe_bed_position + (MIN_PROBE_EDGE);
         }
         if (front_out) {
           out_of_range_error(PSTR("(F)ront"));
-          front_probe_bed_position = front_out_f ? MIN_PROBE_Y : back_probe_bed_position - MIN_PROBE_EDGE;
+          front_probe_bed_position = front_out_f ? MIN_PROBE_Y : back_probe_bed_position - (MIN_PROBE_EDGE);
         }
         if (back_out) {
           out_of_range_error(PSTR("(B)ack"));
-          back_probe_bed_position = back_out_b ? MAX_PROBE_Y : front_probe_bed_position + MIN_PROBE_EDGE;
+          back_probe_bed_position = back_out_b ? MAX_PROBE_Y : front_probe_bed_position + (MIN_PROBE_EDGE);
         }
         return;
       }
@@ -4525,7 +4525,7 @@ inline void gcode_M42() {
     bool deploy_probe_for_each_reading = code_seen('E') || code_seen('e');
 
     if (code_seen('X') || code_seen('x')) {
-      X_probe_location = code_value() - X_PROBE_OFFSET_FROM_EXTRUDER;
+      X_probe_location = code_value() - (X_PROBE_OFFSET_FROM_EXTRUDER);
       if (X_probe_location < X_MIN_POS || X_probe_location > X_MAX_POS) {
         out_of_range_error(PSTR("X"));
         return;
@@ -4533,7 +4533,7 @@ inline void gcode_M42() {
     }
 
     if (code_seen('Y') || code_seen('y')) {
-      Y_probe_location = code_value() -  Y_PROBE_OFFSET_FROM_EXTRUDER;
+      Y_probe_location = code_value() -  (Y_PROBE_OFFSET_FROM_EXTRUDER);
       if (Y_probe_location < Y_MIN_POS || Y_probe_location > Y_MAX_POS) {
         out_of_range_error(PSTR("Y"));
         return;
@@ -4599,7 +4599,7 @@ inline void gcode_M42() {
 
       if (n_legs) {
         millis_t ms = millis();
-        double radius = ms % (X_MAX_LENGTH / 4),       // limit how far out to go
+        double radius = ms % ((X_MAX_LENGTH) / 4),       // limit how far out to go
                theta = RADIANS(ms % 360L);
         float dir = (ms & 0x0001) ? 1 : -1;            // clockwise or counter clockwise
 
@@ -6953,7 +6953,7 @@ inline void gcode_M907() {
     // this one uses actual amps in floating point
     for (uint8_t i = 0; i < NUM_AXIS; i++) if(code_seen(axis_codes[i])) digipot_i2c_set_current(i, code_value());
     // for each additional extruder (named B,C,D,E..., channels 4,5,6,7...)
-    for (uint8_t i = NUM_AXIS; i < DIGIPOT_I2C_NUM_CHANNELS; i++) if(code_seen('B'+i-NUM_AXIS)) digipot_i2c_set_current(i, code_value());
+    for (uint8_t i = NUM_AXIS; i < DIGIPOT_I2C_NUM_CHANNELS; i++) if(code_seen('B' + i - (NUM_AXIS))) digipot_i2c_set_current(i, code_value());
   #endif
 }
 
@@ -8068,7 +8068,7 @@ void plan_arc(
   
   float mm_of_travel = hypot(angular_travel*radius, fabs(linear_travel));
   if (mm_of_travel < 0.001) { return; }
-  uint16_t segments = floor(mm_of_travel / MM_PER_ARC_SEGMENT);
+  uint16_t segments = floor(mm_of_travel / (MM_PER_ARC_SEGMENT));
   if (segments == 0) segments = 1;
   
   float theta_per_segment = angular_travel/segments;
@@ -8414,61 +8414,62 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
   #endif
 
   #if ENABLED(EXTRUDER_RUNOUT_PREVENT)
-    if (ms > previous_cmd_ms + EXTRUDER_RUNOUT_SECONDS * 1000)
-    if (degHotend(active_extruder) > EXTRUDER_RUNOUT_MINTEMP) {
-      bool oldstatus;
-      switch(active_extruder) {
-        case 0:
-          oldstatus = E0_ENABLE_READ;
-          enable_e0();
-          break;
-        #if EXTRUDERS > 1
-          case 1:
-            oldstatus = E1_ENABLE_READ;
-            enable_e1();
+    if (ms > previous_cmd_ms + (EXTRUDER_RUNOUT_SECONDS) * 1000) {
+      if (degHotend(active_extruder) > EXTRUDER_RUNOUT_MINTEMP) {
+        bool oldstatus;
+        switch(active_extruder) {
+          case 0:
+            oldstatus = E0_ENABLE_READ;
+            enable_e0();
             break;
-          #if EXTRUDERS > 2
-            case 2:
-              oldstatus = E2_ENABLE_READ;
-              enable_e2();
+          #if EXTRUDERS > 1
+            case 1:
+              oldstatus = E1_ENABLE_READ;
+              enable_e1();
               break;
-            #if EXTRUDERS > 3
-              case 3:
-                oldstatus = E3_ENABLE_READ;
-                enable_e3();
+            #if EXTRUDERS > 2
+              case 2:
+                oldstatus = E2_ENABLE_READ;
+                enable_e2();
                 break;
+              #if EXTRUDERS > 3
+                case 3:
+                  oldstatus = E3_ENABLE_READ;
+                  enable_e3();
+                  break;
+              #endif
             #endif
           #endif
-        #endif
-      }
-      float oldepos = current_position[E_AXIS], oldedes = destination[E_AXIS];
-      plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS],
-                      destination[E_AXIS] + EXTRUDER_RUNOUT_EXTRUDE * EXTRUDER_RUNOUT_ESTEPS / axis_steps_per_unit[E_AXIS],
-                      EXTRUDER_RUNOUT_SPEED / 60. * EXTRUDER_RUNOUT_ESTEPS / axis_steps_per_unit[E_AXIS], active_extruder, active_driver);
-      current_position[E_AXIS] = oldepos;
-      destination[E_AXIS] = oldedes;
-      plan_set_e_position(oldepos);
-      previous_cmd_ms = ms; // refresh_cmd_timeout()
-      st_synchronize();
-      switch(active_extruder) {
-        case 0:
-          E0_ENABLE_WRITE(oldstatus);
-          break;
-        #if EXTRUDERS > 1
-          case 1:
-            E1_ENABLE_WRITE(oldstatus);
+        }
+        float oldepos = current_position[E_AXIS], oldedes = destination[E_AXIS];
+        plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS],
+                        destination[E_AXIS] + (EXTRUDER_RUNOUT_EXTRUDE) * (EXTRUDER_RUNOUT_ESTEPS) / axis_steps_per_unit[E_AXIS],
+                        (EXTRUDER_RUNOUT_SPEED) / 60. * (EXTRUDER_RUNOUT_ESTEPS) / axis_steps_per_unit[E_AXIS], active_extruder, active_driver);
+        current_position[E_AXIS] = oldepos;
+        destination[E_AXIS] = oldedes;
+        plan_set_e_position(oldepos);
+        previous_cmd_ms = ms; // refresh_cmd_timeout()
+        st_synchronize();
+        switch(active_extruder) {
+          case 0:
+            E0_ENABLE_WRITE(oldstatus);
             break;
-          #if EXTRUDERS > 2
-            case 2:
-              E2_ENABLE_WRITE(oldstatus);
+          #if EXTRUDERS > 1
+            case 1:
+              E1_ENABLE_WRITE(oldstatus);
               break;
-            #if EXTRUDERS > 3
-              case 3:
-                E3_ENABLE_WRITE(oldstatus);
+            #if EXTRUDERS > 2
+              case 2:
+                E2_ENABLE_WRITE(oldstatus);
                 break;
+              #if EXTRUDERS > 3
+                case 3:
+                  E3_ENABLE_WRITE(oldstatus);
+                  break;
+              #endif
             #endif
           #endif
-        #endif
+        }
       }
     }
   #endif
