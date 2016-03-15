@@ -323,7 +323,7 @@ void planner_recalculate_trapezoids() {
   // Last/newest block in buffer. Exit speed is set with MINIMUM_PLANNER_SPEED. Always recalculated.
   if (next) {
     float nom = next->nominal_speed;
-    calculate_trapezoid_for_block(next, next->entry_speed / nom, MINIMUM_PLANNER_SPEED / nom);
+    calculate_trapezoid_for_block(next, next->entry_speed / nom, (MINIMUM_PLANNER_SPEED) / nom);
     next->recalculate_flag = false;
   }
 }
@@ -380,8 +380,8 @@ void plan_init() {
     float t = autotemp_min + high * autotemp_factor;
     t = constrain(t, autotemp_min, autotemp_max);
     if (oldt > t) {
-      t *= (1 - AUTOTEMP_OLDWEIGHT);
-      t += AUTOTEMP_OLDWEIGHT * oldt;
+      t *= (1 - (AUTOTEMP_OLDWEIGHT));
+      t += (AUTOTEMP_OLDWEIGHT) * oldt;
     }
     oldt = t;
     setTargetHotend0(t);
@@ -447,7 +447,7 @@ void check_axes_activity() {
         }
     #endif //FAN_KICKSTART_TIME
     #if ENABLED(FAN_MIN_PWM)
-      #define CALC_FAN_SPEED (tail_fan_speed ? ( FAN_MIN_PWM + (tail_fan_speed * (255 - FAN_MIN_PWM)) / 255 ) : 0)
+      #define CALC_FAN_SPEED (tail_fan_speed ? ( FAN_MIN_PWM + (tail_fan_speed * (255 - (FAN_MIN_PWM))) / 255 ) : 0)
     #else
       #define CALC_FAN_SPEED tail_fan_speed
     #endif // FAN_MIN_PWM
@@ -554,7 +554,7 @@ float junction_deviation = 0.1;
         }
 
       #if ENABLED(PREVENT_LENGTHY_EXTRUDE)
-        if (labs(de) > axis_steps_per_unit[E_AXIS + extruder] * EXTRUDE_MAXLENGTH) {
+        if (labs(de) > axis_steps_per_unit[E_AXIS + extruder] * (EXTRUDE_MAXLENGTH)) {
           #if ENABLED(EASY_LOAD)
             if (!allow_lengthy_extrude_once) {
           #endif
@@ -680,13 +680,19 @@ float junction_deviation = 0.1;
         switch(extruder) {
           case 0:
             enable_e0();
-            g_uc_extruder_last_move[0] = BLOCK_BUFFER_SIZE * 2;
+            g_uc_extruder_last_move[0] = (BLOCK_BUFFER_SIZE) * 2;
             #if EXTRUDERS > 1
               if (g_uc_extruder_last_move[1] == 0) disable_e1();
               #if EXTRUDERS > 2
                 if (g_uc_extruder_last_move[2] == 0) disable_e2();
                 #if EXTRUDERS > 3
                   if (g_uc_extruder_last_move[3] == 0) disable_e3();
+                  #if EXTRUDERS > 4
+                    if (g_uc_extruder_last_move[4] == 0) disable_e4();
+                    #if EXTRUDERS > 5
+                      if (g_uc_extruder_last_move[5] == 0) disable_e5();
+                    #endif
+                  #endif
                 #endif
               #endif
             #endif
@@ -694,33 +700,75 @@ float junction_deviation = 0.1;
           #if EXTRUDERS > 1
             case 1:
               enable_e1();
-              g_uc_extruder_last_move[1] = BLOCK_BUFFER_SIZE*2;
+              g_uc_extruder_last_move[1] = (BLOCK_BUFFER_SIZE) * 2;
               if (g_uc_extruder_last_move[0] == 0) disable_e0();
               #if EXTRUDERS > 2
                 if (g_uc_extruder_last_move[2] == 0) disable_e2();
                 #if EXTRUDERS > 3
                   if (g_uc_extruder_last_move[3] == 0) disable_e3();
+                  #if EXTRUDERS > 4
+                    if (g_uc_extruder_last_move[4] == 0) disable_e4();
+                    #if EXTRUDERS > 5
+                      if (g_uc_extruder_last_move[5] == 0) disable_e5();
+                    #endif
+                  #endif
                 #endif
               #endif
             break;
             #if EXTRUDERS > 2
               case 2:
                 enable_e2();
-                g_uc_extruder_last_move[2] = BLOCK_BUFFER_SIZE*2;
+                g_uc_extruder_last_move[2] = (BLOCK_BUFFER_SIZE) * 2;
                 if (g_uc_extruder_last_move[0] == 0) disable_e0();
                 if (g_uc_extruder_last_move[1] == 0) disable_e1();
                 #if EXTRUDERS > 3
                   if (g_uc_extruder_last_move[3] == 0) disable_e3();
+                  #if EXTRUDERS > 4
+                    if (g_uc_extruder_last_move[4] == 0) disable_e4();
+                    #if EXTRUDERS > 5
+                      if (g_uc_extruder_last_move[5] == 0) disable_e5();
+                    #endif
+                  #endif
                 #endif
               break;
               #if EXTRUDERS > 3
                 case 3:
                   enable_e3();
-                  g_uc_extruder_last_move[3] = BLOCK_BUFFER_SIZE*2;
+                  g_uc_extruder_last_move[3] = (BLOCK_BUFFER_SIZE) * 2;
                   if (g_uc_extruder_last_move[0] == 0) disable_e0();
                   if (g_uc_extruder_last_move[1] == 0) disable_e1();
                   if (g_uc_extruder_last_move[2] == 0) disable_e2();
+                  #if EXTRUDERS > 4
+                    if (g_uc_extruder_last_move[4] == 0) disable_e4();
+                    #if EXTRUDERS > 5
+                      if (g_uc_extruder_last_move[5] == 0) disable_e5();
+                    #endif
+                  #endif
                 break;
+                #if EXTRUDERS > 4
+                  case 4:
+                    enable_e4();
+                    g_uc_extruder_last_move[4] = (BLOCK_BUFFER_SIZE) * 2;
+                    if (g_uc_extruder_last_move[0] == 0) disable_e0();
+                    if (g_uc_extruder_last_move[1] == 0) disable_e1();
+                    if (g_uc_extruder_last_move[2] == 0) disable_e2();
+                    if (g_uc_extruder_last_move[3] == 0) disable_e3();
+                    #if EXTRUDERS > 5
+                      if (g_uc_extruder_last_move[5] == 0) disable_e5();
+                    #endif
+                  break;
+                  #if EXTRUDERS > 5
+                    case 4:
+                      enable_e5();
+                      g_uc_extruder_last_move[5] = (BLOCK_BUFFER_SIZE) * 2;
+                      if (g_uc_extruder_last_move[0] == 0) disable_e0();
+                      if (g_uc_extruder_last_move[1] == 0) disable_e1();
+                      if (g_uc_extruder_last_move[2] == 0) disable_e2();
+                      if (g_uc_extruder_last_move[3] == 0) disable_e3();
+                      if (g_uc_extruder_last_move[4] == 0) disable_e4();
+                    break;
+                  #endif // EXTRUDERS > 5
+                #endif // EXTRUDERS > 4
               #endif // EXTRUDERS > 3
             #endif // EXTRUDERS > 2
           #endif // EXTRUDERS > 1
@@ -732,6 +780,8 @@ float junction_deviation = 0.1;
         enable_e1();
         enable_e2();
         enable_e3();
+        enable_e4();
+        enable_e5();
       }
     #else //MKR4 or NPr2
       switch(extruder)
@@ -810,13 +860,13 @@ float junction_deviation = 0.1;
 
   // Slow down when the buffer starts to empty, rather than wait at the corner for a buffer refill
   #if ENABLED(OLD_SLOWDOWN) || ENABLED(SLOWDOWN)
-    bool mq = moves_queued > 1 && moves_queued < BLOCK_BUFFER_SIZE / 2;
+    bool mq = moves_queued > 1 && moves_queued < (BLOCK_BUFFER_SIZE) / 2;
     #if ENABLED(OLD_SLOWDOWN)
-      if (mq) feed_rate *= 2.0 * moves_queued / BLOCK_BUFFER_SIZE;
+      if (mq) feed_rate *= 2.0 * moves_queued / (BLOCK_BUFFER_SIZE);
     #endif
     #if ENABLED(SLOWDOWN)
       //  segment time im micro seconds
-      unsigned long segment_time = lround(1000000.0/inverse_second);
+      unsigned long segment_time = lround(1000000.0 / inverse_second);
       if (mq) {
         if (segment_time < minsegmenttime) {
           // buffer is draining, add extra time.  The amount of time added increases if the buffer is still emptied more.
@@ -900,7 +950,7 @@ float junction_deviation = 0.1;
          max_y_segment_time = max(ys0, max(ys1, ys2)),
          min_xy_segment_time = min(max_x_segment_time, max_y_segment_time);
     if (min_xy_segment_time < MAX_FREQ_TIME) {
-      float low_sf = speed_factor * min_xy_segment_time / MAX_FREQ_TIME;
+      float low_sf = speed_factor * min_xy_segment_time / (MAX_FREQ_TIME);
       speed_factor = min(speed_factor, low_sf);
     }
   #endif // XY_FREQUENCY_LIMIT
@@ -939,7 +989,7 @@ float junction_deviation = 0.1;
   block->acceleration = acc_st / steps_per_mm;
 
   #ifdef __SAM3X8E__
-    block->acceleration_rate = (long)(acc_st * ( 4294967296.0 / HAL_TIMER_RATE));
+    block->acceleration_rate = (long)(acc_st * (4294967296.0 / (HAL_TIMER_RATE)));
   #else
     block->acceleration_rate = (long)(acc_st * 16777216.0 / (F_CPU / 8.0));
   #endif

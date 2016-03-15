@@ -556,7 +556,7 @@
  * Bernoulli's principle says:  v ^ 2 / 2 + g . h + pressure / density = constant        *
  * so: v ^ 2 is proportional to number of steps we advance the extruder                  *
  *                                                                                       *
- * This feature is obsolate needs update                                                 *
+ * This feature is obsolete needs update                                                 *
  * Uncomment ADVANCE to enable this feature                                              *
  *                                                                                       *
  *****************************************************************************************/
@@ -564,6 +564,7 @@
 
 #define EXTRUDER_ADVANCE_K .0
 #define D_FILAMENT 1.75
+#define STEPS_PER_CUBIC_MM_E 0.85
 /*****************************************************************************************/
 
 

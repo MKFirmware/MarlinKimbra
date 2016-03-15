@@ -7,13 +7,6 @@
 #ifndef SANITYCHECK_H
   #define SANITYCHECK_H
 
-  // Version & processor
-  #if defined(__SAM3X8E__) && (FIRMWARE_BIT_BOARDS == 8)
-    #error FIRMWARE ERROR: This firmware is only for 8-bit board
-  #elif !defined(__SAM3X8E__) && (FIRMWARE_BIT_BOARDS == 32)
-    #error FIRMWARE ERROR: This firmware is only for 32-bit board
-  #endif
-
   // Start check
   #if DISABLED(SERIAL_PORT)
     #error DEPENDENCY ERROR: Missing setting SERIAL_PORT

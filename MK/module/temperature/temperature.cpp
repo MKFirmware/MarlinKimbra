@@ -50,8 +50,8 @@ float current_temperature_bed = 0.0;
 
 #if ENABLED(PIDTEMPBED)
   float bedKp = DEFAULT_bedKp;
-  float bedKi = (DEFAULT_bedKi * PID_dT);
-  float bedKd = (DEFAULT_bedKd / PID_dT);
+  float bedKi = ((DEFAULT_bedKi) * (PID_dT));
+  float bedKd = ((DEFAULT_bedKd) / (PID_dT));
 #endif //PIDTEMPBED
   
 #if ENABLED(FAN_SOFT_PWM)
