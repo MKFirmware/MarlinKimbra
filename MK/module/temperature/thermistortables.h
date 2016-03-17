@@ -4,7 +4,6 @@
 #define OVERSAMPLENR 16
 
 #if (THERMISTORHEATER_0 == 1) || (THERMISTORHEATER_1 == 1)  || (THERMISTORHEATER_2 == 1) || (THERMISTORHEATER_3 == 1) || (THERMISTORBED == 1) //100k bed thermistor
-
 const short temptable_1[][2] PROGMEM = {
   {23 * OVERSAMPLENR, 300},
   {25 * OVERSAMPLENR, 295},
@@ -69,6 +68,7 @@ const short temptable_1[][2] PROGMEM = {
   {1008 * OVERSAMPLENR, 0} //safety
 };
 #endif
+
 #if (THERMISTORHEATER_0 == 2) || (THERMISTORHEATER_1 == 2) || (THERMISTORHEATER_2 == 2) || (THERMISTORHEATER_3 == 2) || (THERMISTORBED == 2) //200k bed thermistor
 const short temptable_2[][2] PROGMEM = {
   //200k ATC Semitec 204GT-2
@@ -109,6 +109,7 @@ const short temptable_2[][2] PROGMEM = {
 };
 
 #endif
+
 #if (THERMISTORHEATER_0 == 3) || (THERMISTORHEATER_1 == 3) || (THERMISTORHEATER_2 == 3) || (THERMISTORHEATER_3 == 3) || (THERMISTORBED == 3) //mendel-parts
 const short temptable_3[][2] PROGMEM = {
   {1 * OVERSAMPLENR, 864},
@@ -140,8 +141,8 @@ const short temptable_3[][2] PROGMEM = {
   {1008 * OVERSAMPLENR, 0},
   {1018 * OVERSAMPLENR, -20}
 };
-
 #endif
+
 #if (THERMISTORHEATER_0 == 4) || (THERMISTORHEATER_1 == 4) || (THERMISTORHEATER_2 == 4) || (THERMISTORHEATER_3 == 4) || (THERMISTORBED == 4) //10k thermistor
 const short temptable_4[][2] PROGMEM = {
   {1 * OVERSAMPLENR, 430},
@@ -166,6 +167,7 @@ const short temptable_4[][2] PROGMEM = {
   {1008 * OVERSAMPLENR, -35}
 };
 #endif
+
 #if (THERMISTORHEATER_0 == 5) || (THERMISTORHEATER_1 == 5) || (THERMISTORHEATER_2 == 5) || (THERMISTORHEATER_3 == 5) || (THERMISTORBED == 5) //100k ParCan thermistor (104GT-2)
 const short temptable_5[][2] PROGMEM = {
   // ATC Semitec 104GT-2 (Used in ParCan)
@@ -205,6 +207,7 @@ const short temptable_5[][2] PROGMEM = {
   {1010 * OVERSAMPLENR, 0}
 };
 #endif
+
 #if (THERMISTORHEATER_0 == 6) || (THERMISTORHEATER_1 == 6) || (THERMISTORHEATER_2 == 6) || (THERMISTORHEATER_3 == 6) || (THERMISTORBED == 6) // 100k Epcos thermistor
 const short temptable_6[][2] PROGMEM = {
   {1 * OVERSAMPLENR, 350},
@@ -247,6 +250,7 @@ const short temptable_6[][2] PROGMEM = {
   {1023 * OVERSAMPLENR, 0} //to allow internal 0 degrees C
 };
 #endif
+
 #if (THERMISTORHEATER_0 == 7) || (THERMISTORHEATER_1 == 7) || (THERMISTORHEATER_2 == 7) || (THERMISTORHEATER_3 == 7) || (THERMISTORBED == 7) // 100k Honeywell 135-104LAG-J01
 const short temptable_7[][2] PROGMEM = {
   {1 * OVERSAMPLENR, 941},
@@ -309,6 +313,7 @@ const short temptable_7[][2] PROGMEM = {
   {1023 * OVERSAMPLENR, 0} //to allow internal 0 degrees C
 };
 #endif
+
 #if (THERMISTORHEATER_0 == 71) || (THERMISTORHEATER_1 == 71) || (THERMISTORHEATER_2 == 71) || (THERMISTORHEATER_3 == 71) || (THERMISTORBED == 71) // 100k Honeywell 135-104LAF-J01
 // R0 = 100000 Ohm
 // T0 = 25 °C
@@ -459,6 +464,7 @@ const short temptable_71[][2] PROGMEM = {
   {1010 * OVERSAMPLENR, 0},
 };
 #endif
+
 #if (THERMISTORHEATER_0 == 8) || (THERMISTORHEATER_1 == 8) || (THERMISTORHEATER_2 == 8) || (THERMISTORHEATER_3 == 8) || (THERMISTORBED == 8)
 // 100k 0603 SMD Vishay NTCS0603E3104FXT (4.7k pullup)
 const short temptable_8[][2] PROGMEM = {
@@ -484,6 +490,7 @@ const short temptable_8[][2] PROGMEM = {
   {1008 * OVERSAMPLENR, 0}
 };
 #endif
+
 #if (THERMISTORHEATER_0 == 9) || (THERMISTORHEATER_1 == 9) || (THERMISTORHEATER_2 == 9) || (THERMISTORHEATER_3 == 9) || (THERMISTORBED == 9)
 // 100k GE Sensing AL03006-58.2K-97-G1 (4.7k pullup)
 const short temptable_9[][2] PROGMEM = {
@@ -520,6 +527,7 @@ const short temptable_9[][2] PROGMEM = {
   {1016 * OVERSAMPLENR, 0}
 };
 #endif
+
 #if (THERMISTORHEATER_0 == 10) || (THERMISTORHEATER_1 == 10) || (THERMISTORHEATER_2 == 10) || (THERMISTORHEATER_3 == 10) || (THERMISTORBED == 10)
 // 100k RS thermistor 198-961 (4.7k pullup)
 const short temptable_10[][2] PROGMEM = {
@@ -556,9 +564,9 @@ const short temptable_10[][2] PROGMEM = {
   {1016 * OVERSAMPLENR, 0}
 };
 #endif
+
 #if (THERMISTORHEATER_0 == 11) || (THERMISTORHEATER_1 == 11) || (THERMISTORHEATER_2 == 11) || (THERMISTORHEATER_3 == 11) || (THERMISTORBED == 11)
 // QU-BD silicone bed QWG-104F-3950 thermistor
-
 const short temptable_11[][2] PROGMEM = {
   {1 * OVERSAMPLENR,        938},
   {31 * OVERSAMPLENR,       314},
@@ -612,9 +620,9 @@ const short temptable_11[][2] PROGMEM = {
   {1021 * OVERSAMPLENR,     -27}
 };
 #endif
+
 #if (THERMISTORHEATER_0 == 13) || (THERMISTORHEATER_1 == 13) || (THERMISTORHEATER_2 == 13) || (THERMISTORHEATER_3 == 13) || (THERMISTORBED == 13)
 // Hisens thermistor B25/50 =3950 +/-1%
-
 const short temptable_13[][2] PROGMEM = {
   { 20.04 * OVERSAMPLENR, 300 },
   { 23.19 * OVERSAMPLENR, 290 },
@@ -642,7 +650,8 @@ const short temptable_13[][2] PROGMEM = {
 
 };
 #endif
-#if (THERMISTORHEATER_0 == 20) || (THERMISTORHEATER_1 == 20) || (THERMISTORHEATER_2 == 20) || (THERMISTORBED == 20) // PT100 with INA826 amp on Ultimaker v2.0 electronics
+
+#if (THERMISTORHEATER_0 == 20) || (THERMISTORHEATER_1 == 20) || (THERMISTORHEATER_2 == 20) || (THERMISTORHEATER_3 == 20) || (THERMISTORBED == 20) // PT100 with INA826 amp on Ultimaker v2.0 electronics
 /* The PT100 in the Ultimaker v2.0 electronics has a high sample value for a high temperature.
 This does not match the normal thermistor behaviour so we need to set the following defines */
 #if (THERMISTORHEATER_0 == 20)
@@ -717,6 +726,50 @@ const short temptable_20[][2] PROGMEM = {
   {968 * OVERSAMPLENR, 1100}
 };
 #endif
+
+#if (THERMISTORHEATER_0 == 40) || (THERMISTORHEATER_1 == 40) || (THERMISTORHEATER_2 == 40) || (THERMISTORHEATER_3 == 40) || (THERMISTORBED == 40)
+// 10k Carel NTC015WH01 or ELIWELL SN8T6A1502 (4.7k pullup)
+// roughly calculated using datasheet ( 10k at 25 celsius ), my body temp ( 35.9 celsius, 6.66k ) and my freezer ( -21 celsius, 56k )
+// Unbelivable, seems to be pretty precise.
+const short temptable_40[][2] PROGMEM = {
+    {1*OVERSAMPLENR, 170 }, 
+    {2*OVERSAMPLENR, 165 }, 
+    {3*OVERSAMPLENR, 160 }, 
+    {4*OVERSAMPLENR, 155 }, 
+    {6*OVERSAMPLENR, 150 }, 
+    {9*OVERSAMPLENR, 145 }, 
+    {13*OVERSAMPLENR, 140 }, 
+    {18*OVERSAMPLENR, 135 }, 
+    {24*OVERSAMPLENR, 130 }, 
+    {31*OVERSAMPLENR, 125 }, 
+    {40*OVERSAMPLENR, 120 }, 
+    {51*OVERSAMPLENR, 115 }, 
+    {65*OVERSAMPLENR, 110 },
+    {81*OVERSAMPLENR, 105 }, 
+    {100*OVERSAMPLENR, 100 }, 
+    {122*OVERSAMPLENR,  95 }, 
+    {147*OVERSAMPLENR,  90 }, 
+    {176*OVERSAMPLENR,  85 }, 
+    {208*OVERSAMPLENR,  80 }, 
+    {244*OVERSAMPLENR,  75 }, 
+    {283*OVERSAMPLENR,  70 }, 
+    {325*OVERSAMPLENR,  65 }, 
+    {370*OVERSAMPLENR,  60 }, 
+    {417*OVERSAMPLENR,  55 }, 
+    {465*OVERSAMPLENR,  50 }, 
+    {514*OVERSAMPLENR,  45 }, 
+    {562*OVERSAMPLENR,  40 }, 
+    {609*OVERSAMPLENR,  35 }, 
+    {654*OVERSAMPLENR,  30 }, 
+    {697*OVERSAMPLENR,  25 }, 
+    {737*OVERSAMPLENR,  20 }, 
+    {773*OVERSAMPLENR,  15 }, 
+    {807*OVERSAMPLENR,  10 }, 
+    {837*OVERSAMPLENR,   5 }, 
+    {864*OVERSAMPLENR,   0 }  
+};
+#endif
+
 #if (THERMISTORHEATER_0 == 51) || (THERMISTORHEATER_1 == 51) || (THERMISTORHEATER_2 == 51) || (THERMISTORHEATER_3 == 51) || (THERMISTORBED == 51)
 // 100k EPCOS (WITH 1kohm RESISTOR FOR PULLUP, R9 ON SANGUINOLOLU! NOT FOR 4.7kohm PULLUP! THIS IS NOT NORMAL!)
 // Verified by linagee.
@@ -945,6 +998,7 @@ const short temptable_60[][2] PROGMEM = {
   {1008 * OVERSAMPLENR, 0},
 };
 #endif
+
 #if (THERMISTORHEATER_0 == 12) || (THERMISTORHEATER_1 == 12) || (THERMISTORHEATER_2 == 12) || (THERMISTORHEATER_3 == 12) || (THERMISTORBED == 12)
 //100k 0603 SMD Vishay NTCS0603E3104FXT (4.7k pullup) (calibrated for Makibox hot bed)
 const short temptable_12[][2] PROGMEM = {
@@ -1004,6 +1058,7 @@ const short temptable_110[][2] PROGMEM = {
   PtLine(300, 100, 1000)
 };
 #endif
+
 #if (THERMISTORHEATER_0 == 147) || (THERMISTORHEATER_1 == 147) || (THERMISTORHEATER_2 == 147) || (THERMISTORHEATER_3 == 147) || (THERMISTORBED == 147) // Pt100 with 4k7 pullup
 const short temptable_147[][2] PROGMEM = {
   // only few values are needed as the curve is very flat
@@ -1016,6 +1071,7 @@ const short temptable_147[][2] PROGMEM = {
   PtLine(300, 100, 4700)
 };
 #endif
+
 #if (THERMISTORHEATER_0 == 1010) || (THERMISTORHEATER_1 == 1010) || (THERMISTORHEATER_2 == 1010) || (THERMISTORHEATER_3 == 1010) || (THERMISTORBED == 1010) // Pt1000 with 1k0 pullup
 const short temptable_1010[][2] PROGMEM = {
   PtLine(0, 1000, 1000)
@@ -1033,6 +1089,7 @@ const short temptable_1010[][2] PROGMEM = {
   PtLine(300, 1000, 1000)
 };
 #endif
+
 #if (THERMISTORHEATER_0 == 1047) || (THERMISTORHEATER_1 == 1047) || (THERMISTORHEATER_2 == 1047) || (THERMISTORHEATER_3 == 1047) || (THERMISTORBED == 1047) // Pt1000 with 4k7 pullup
 const short temptable_1047[][2] PROGMEM = {
   // only few values are needed as the curve is very flat
