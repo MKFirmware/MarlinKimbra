@@ -99,7 +99,7 @@
 #define BOARD_DUEMILANOVE_328P  4     // Duemilanove w/ ATMega328P pin assignments
 #define BOARD_MKS_BASE          40    // MKS BASE 1.0
 #define BOARD_MKS_MINI          41    // MKS MINI 1.0
-#define BOARD_RADDS             402   // RADDS ARM 32
+#define BOARD_RADDS             401   // RADDS ARM 32
 #define BOARD_RAMPS_FD_V1       403   // RAMPS-FD V1 ARM 32
 #define BOARD_RAMPS_FD_V2       404   // RAMPS-FD V2 ARM 32
 #define BOARD_SMART_RAMPS       408   // SMART RAMPS ARM 32
