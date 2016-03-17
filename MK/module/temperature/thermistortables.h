@@ -717,6 +717,48 @@ const short temptable_20[][2] PROGMEM = {
   {968 * OVERSAMPLENR, 1100}
 };
 #endif
+#if (THERMISTORHEATER_0 == 40) || (THERMISTORHEATER_1 == 40) || (THERMISTORHEATER_2 == 40) || (THERMISTORBED == 40)
+// 10k Carel NTC015WH01 or ELIWELL SN8T6A1502 (4.7k pullup)
+// roughly calculated using datasheet ( 10k at 25 celsius ), my body temp ( 35.9 celsius, 6.66k ) and my freezer ( -21 celsius, 56k )
+// Unbelivable, seems to be pretty precise.
+const short temptable_40[][2] PROGMEM = {
+    {1*OVERSAMPLENR, 170 }, 
+    {2*OVERSAMPLENR, 165 }, 
+    {3*OVERSAMPLENR, 160 }, 
+    {4*OVERSAMPLENR, 155 }, 
+    {6*OVERSAMPLENR, 150 }, 
+    {9*OVERSAMPLENR, 145 }, 
+    {13*OVERSAMPLENR, 140 }, 
+    {18*OVERSAMPLENR, 135 }, 
+    {24*OVERSAMPLENR, 130 }, 
+    {31*OVERSAMPLENR, 125 }, 
+    {40*OVERSAMPLENR, 120 }, 
+    {51*OVERSAMPLENR, 115 }, 
+    {65*OVERSAMPLENR, 110 },
+    {81*OVERSAMPLENR, 105 }, 
+    {100*OVERSAMPLENR, 100 }, 
+    {122*OVERSAMPLENR,  95 }, 
+    {147*OVERSAMPLENR,  90 }, 
+    {176*OVERSAMPLENR,  85 }, 
+    {208*OVERSAMPLENR,  80 }, 
+    {244*OVERSAMPLENR,  75 }, 
+    {283*OVERSAMPLENR,  70 }, 
+    {325*OVERSAMPLENR,  65 }, 
+    {370*OVERSAMPLENR,  60 }, 
+    {417*OVERSAMPLENR,  55 }, 
+    {465*OVERSAMPLENR,  50 }, 
+    {514*OVERSAMPLENR,  45 }, 
+    {562*OVERSAMPLENR,  40 }, 
+    {609*OVERSAMPLENR,  35 }, 
+    {654*OVERSAMPLENR,  30 }, 
+    {697*OVERSAMPLENR,  25 }, 
+    {737*OVERSAMPLENR,  20 }, 
+    {773*OVERSAMPLENR,  15 }, 
+    {807*OVERSAMPLENR,  10 }, 
+    {837*OVERSAMPLENR,   5 }, 
+    {864*OVERSAMPLENR,   0 }  
+};
+#endif
 #if (THERMISTORHEATER_0 == 51) || (THERMISTORHEATER_1 == 51) || (THERMISTORHEATER_2 == 51) || (THERMISTORHEATER_3 == 51) || (THERMISTORBED == 51)
 // 100k EPCOS (WITH 1kohm RESISTOR FOR PULLUP, R9 ON SANGUINOLOLU! NOT FOR 4.7kohm PULLUP! THIS IS NOT NORMAL!)
 // Verified by linagee.
