@@ -173,7 +173,11 @@
     PageInfo = true;
 
     #if ENABLED(NEXTION_GFX)
-      gfx_clear(X_MAX_POS, Y_MAX_POS, Z_MAX_POS);
+      #if MECH(DELTA)
+        gfx_clear((X_MAX_POS) * 2, (Y_MAX_POS) * 2, Z_MAX_POS);
+      #else
+        gfx_clear(X_MAX_POS, Y_MAX_POS, Z_MAX_POS);
+      #endif
     #endif
 
     #if HAS_TEMP_0

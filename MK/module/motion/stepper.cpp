@@ -572,11 +572,11 @@ void set_stepper_direction(bool onlye) {
 
   #define SET_STEP_DIR(AXIS) \
     if (TEST(out_bits, AXIS ##_AXIS)) { \
-      AXIS ##_APPLY_DIR(INVERT_## AXIS ##_DIR, 0); \
+      AXIS ##_APPLY_DIR(INVERT_## AXIS ##_DIR, false); \
       count_direction[AXIS ##_AXIS] = -1; \
     } \
     else { \
-      AXIS ##_APPLY_DIR(!INVERT_## AXIS ##_DIR, 0); \
+      AXIS ##_APPLY_DIR(!INVERT_## AXIS ##_DIR, false); \
       count_direction[AXIS ##_AXIS] = 1; \
     }
 

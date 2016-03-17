@@ -2875,10 +2875,17 @@ void gcode_get_destination() {
   #endif
 
   #if ENABLED(NEXTION) && ENABLED(NEXTION_GFX)
-    if((code_seen(axis_codes[X_AXIS]) || code_seen(axis_codes[Y_AXIS])) && code_seen(axis_codes[E_AXIS]))
-      gfx_line_to(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS]);
-    else
-      gfx_cursor_to(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS]);
+    #if MECH(DELTA)
+      if((code_seen(axis_codes[X_AXIS]) || code_seen(axis_codes[Y_AXIS])) && code_seen(axis_codes[E_AXIS]))
+        gfx_line_to(destination[X_AXIS] + (X_MAX_POS), destination[Y_AXIS] + (Y_MAX_POS), destination[Z_AXIS]);
+      else
+        gfx_cursor_to(destination[X_AXIS] + (X_MAX_POS), destination[Y_AXIS] + (Y_MAX_POS), destination[Z_AXIS]);
+    #else
+      if((code_seen(axis_codes[X_AXIS]) || code_seen(axis_codes[Y_AXIS])) && code_seen(axis_codes[E_AXIS]))
+        gfx_line_to(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS]);
+      else
+        gfx_cursor_to(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS]);
+    #endif
   #endif
 }
 
@@ -3230,7 +3237,7 @@ inline void gcode_G28() {
 
             sync_plan_position();
 
-            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], Z_MIN_POS + 5);
+            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], (Z_MIN_POS) + 5);
 
             // PROBE FIRST POINT
             set_pageShowInfo(1);
@@ -3242,43 +3249,43 @@ inline void gcode_G28() {
 
             // PROBE SECOND POINT
             set_pageShowInfo(2);
-            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS + 5);
+            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], (Z_MIN_POS) + 5);
             do_blocking_move_to(RIGHT_PROBE_BED_POSITION, FRONT_PROBE_BED_POSITION, current_position[Z_AXIS]);
-            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS);
+            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], Z_MIN_POS);
             while(!lcd_clicked()) {
               idle(true);
             }
 
             // PROBE THIRD POINT
             set_pageShowInfo(3);
-            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS + 5);
+            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], (Z_MIN_POS) + 5);
             do_blocking_move_to(RIGHT_PROBE_BED_POSITION, BACK_PROBE_BED_POSITION, current_position[Z_AXIS]);
-            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS);
+            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], Z_MIN_POS);
             while(!lcd_clicked()) {
               idle(true);
             }     
 
             // PROBE FOURTH POINT
             set_pageShowInfo(4);
-            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS + 5);
+            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], (Z_MIN_POS) + 5);
             do_blocking_move_to(LEFT_PROBE_BED_POSITION, BACK_PROBE_BED_POSITION, current_position[Z_AXIS]);
-            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS);
+            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], Z_MIN_POS);
             while(!lcd_clicked()) {
               idle(true);
             }
 
             // PROBE CENTER
             set_pageShowInfo(5);
-            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS + 5);
-            do_blocking_move_to((X_MAX_POS-X_MIN_POS)/2, (Y_MAX_POS-Y_MIN_POS)/2, current_position[Z_AXIS]);
-            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS);
+            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], (Z_MIN_POS) + 5);
+            do_blocking_move_to(((X_MAX_POS) - (X_MIN_POS)) / 2, ((Y_MAX_POS) - (Y_MIN_POS)) / 2, current_position[Z_AXIS]);
+            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], Z_MIN_POS);
             while(!lcd_clicked()) {
               idle(true);
             }
 
             // FINISH MANUAL BED LEVEL
             set_pageShowInfo(6);
-            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS],Z_MIN_POS + 5);
+            do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], (Z_MIN_POS) + 5);
             enqueuecommands_P(PSTR("G28"));
           #endif // ULTIPANEL
         }
@@ -3441,8 +3448,13 @@ inline void gcode_G28() {
   }
 
   #if ENABLED(NEXTION) && ENABLED(NEXTION_GFX)
-    gfx_clear(X_MAX_POS, Y_MAX_POS, Z_MAX_POS);
-    gfx_cursor_to(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS]);
+    #if MECH(DELTA)
+      gfx_clear((X_MAX_POS) * 2, (Y_MAX_POS) * 2, Z_MAX_POS);
+      gfx_cursor_to(current_position[X_AXIS] + (X_MAX_POS), current_position[Y_AXIS] + (Y_MAX_POS), current_position[Z_AXIS]);
+    #else
+      gfx_clear(X_MAX_POS, Y_MAX_POS, Z_MAX_POS);
+      gfx_cursor_to(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS]);
+    #endif
   #endif
 
   if (debugLevel & DEBUG_INFO) ECHO_LM(INFO, "<<< gcode_G28");
