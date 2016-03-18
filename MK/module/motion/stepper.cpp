@@ -799,12 +799,14 @@ ISR(TIMER1_COMPA_vect) {
     else if (step_events_completed > (unsigned long)current_block->decelerate_after) {
       MultiU24X32toH16(step_rate, deceleration_time, current_block->acceleration_rate);
 
-      if (step_rate <= acc_step_rate) { // Still decelerating?
-        step_rate = acc_step_rate - step_rate;
+      if (step_rate <= acc_step_rate) {
+        step_rate = acc_step_rate - step_rate; // Decelerate from acceleration end point.
+        // lower limit
         NOLESS(step_rate, current_block->final_rate);
       }
-      else
+      else {
         step_rate = current_block->final_rate;
+      }
 
       // step_rate to timer interval
       timer = calc_timer(step_rate);
