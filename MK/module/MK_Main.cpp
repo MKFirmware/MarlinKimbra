@@ -6284,7 +6284,7 @@ inline void gcode_M400() { st_synchronize(); }
       ECHO_MV(",\"active\":", degTargetBed(), 1);
       ECHO_M(",\"state\":");
       ECHO_M(degTargetBed() > 0 ? "2" : "1");
-      ECHO_MV("},");
+      ECHO_M("},");
     #endif
     ECHO_M("\"heads\": {\"current\":[");
     firstOccurrence = true;
