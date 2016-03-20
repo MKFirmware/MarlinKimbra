@@ -17,6 +17,7 @@
 *  35 BOARD_RAMPS_13_HFF - RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Fan, Fan)
 *  36 BOARD_RAMPS_13_HHF - RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Fan)
 *  37 BOARD_RAMPS_13_HHH - RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Hotend2)
+*  39 BOARD_SAINSMART_2IN1 - SainSmart 2 in 1
 * 301 BOARD_RAMBO - Rambo
 * 302 BOARD_MINIRAMBO - Mini Rambo
 * 316 BOARD_PIBOT - PiBot Controller Rev2.0 
@@ -92,6 +93,7 @@
 #define BOARD_RAMPS_13_HFF      35    // RAMPS 1.3 / 1.4 (Power outputs: Hotend, Fan, Fan)
 #define BOARD_RAMPS_13_HHF      36    // RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Fan)
 #define BOARD_RAMPS_13_HHH      37    // RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Hotend2)
+#define BOARD_SAINSMART_2IN1    39    // SainSmart 2 in 1
 #define BOARD_RAMBO             301   // Rambo
 #define BOARD_MINIRAMBO         302   // Mini-Rambo
 #define BOARD_PIBOT             316   // PiBot Controller Rev2.0
