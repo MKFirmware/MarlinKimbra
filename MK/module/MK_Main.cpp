@@ -2863,11 +2863,6 @@ void gcode_get_destination() {
     destination[E_AXIS] = (code_value() * density_multiplier[previous_extruder] / 100) + current_position[E_AXIS];
   }
 
-  // Get ABCDHI mixing factors
-  #if ENABLED(COLOR_MIXING_EXTRUDER)
-    gcode_get_mix();
-  #endif
-
   printer_usage_filament += (destination[E_AXIS] - current_position[E_AXIS]);
 
   #if ENABLED(RFID_MODULE)
