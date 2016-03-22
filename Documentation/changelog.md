@@ -1,5 +1,6 @@
 ### Version 4.2.8
 * Add board folder with files of various board containing the pins
+* Add End time on Graphics display when SD print
 * Rewrite macros
 * Fix M109 so it won't wait for cooling
 * Clear code

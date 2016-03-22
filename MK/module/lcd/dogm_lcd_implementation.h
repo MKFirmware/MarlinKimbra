@@ -308,28 +308,56 @@ static void lcd_implementation_status_screen() {
       u8g.drawBox(55, 50, (unsigned int)(71.f * card.percentDone() / 100.f), 2 - TALL_FONT_CORRECTION);
     }
 
-    u8g.setPrintPos(80, 48);
+    u8g.setPrintPos(53, 47);
     if (print_job_start_ms != 0) {
       #if HAS(LCD_POWER_SENSOR)
         if (millis() < print_millis + 1000) {
           uint16_t time = (millis() - print_job_start_ms) / 60000;
+          uint16_t end_time = (time * (100 - card.percentDone())) / card.percentDone();
+          lcd_print('S');
           lcd_print(itostr2(time/60));
           lcd_print(':');
           lcd_print(itostr2(time%60));
+
+          u8g.setPrintPos(90,47);
+
+          if (end_time > 1380 || end_time == 0)
+            u8g.print('E--:--');
+          else if (end_time > 0) {
+            u8g.print('E');
+            u8g.print(itostr2(end_time / 60));
+            u8g.print(':');
+            u8g.print(itostr2(end_time %60));
+          }
         }
         else {
-          lcd_print(itostr4(power_consumption_hour-startpower));
+          lcd_print(itostr4(power_consumption_hour - startpower));
           lcd_print((char*)"Wh");
         }
       #else
         uint16_t time = (millis() - print_job_start_ms) / 60000;
+        uint16_t end_time = (time * (100 - card.percentDone())) / card.percentDone();
+        lcd_print('S');
         lcd_print(itostr2(time / 60));
         lcd_print(':');
-        lcd_print(itostr2(time % 60));
+        lcd_print(itostr2(time %60));
+
+        u8g.setPrintPos(90,47);
+
+        if (end_time > (60 * 23))
+          u8g.print('E--:--');
+        else if (end_time >= 0) {
+          u8g.print('E');
+          u8g.print(itostr2(end_time / 60));
+          u8g.print(':');
+          u8g.print(itostr2(end_time %60));
+        }
       #endif
     }
     else {
-      lcd_printPGM(PSTR("--:--"));
+      lcd_printPGM(PSTR("S--:--"));
+      u8g.setPrintPos(90,47);
+      lcd_printPGM(PSTR("E--:--"));
     }
   #endif
 
