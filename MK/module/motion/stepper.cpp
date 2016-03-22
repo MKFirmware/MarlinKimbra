@@ -658,7 +658,8 @@ ISR(TIMER1_COMPA_vect) {
       counter_x = counter_y = counter_z = counter_e = new_count;
 
       #if ENABLED(COLOR_MIXING_EXTRUDER)
-        for (int8_t i = 0; i < DRIVER_EXTRUDERS; i++) counter_m[i] = new_count;
+        for (uint8_t i = 0; i < DRIVER_EXTRUDERS; i++)
+          counter_m[i] = -(current_block->mix_event_count[i] >> 1);
       #endif
 
       step_events_completed = 0;
@@ -703,9 +704,9 @@ ISR(TIMER1_COMPA_vect) {
         #if ENABLED(COLOR_MIXING_EXTRUDER)
           long dir = TEST(out_bits, E_AXIS) ? -1 : 1;
           for (uint8_t j = 0; j < DRIVER_EXTRUDERS; j++) {
-            counter_m[j] += current_block->mix_steps[j];
+            counter_m[j] += current_block->steps[E_AXIS];
             if (counter_m[j] > 0) {
-              counter_m[j] -= current_block->step_event_count;
+              counter_m[j] -= current_block->mix_event_count[j];
               e_steps[j] += dir;
             }
           }
@@ -726,13 +727,9 @@ ISR(TIMER1_COMPA_vect) {
       #if DISABLED(ADVANCE)
         #if ENABLED(COLOR_MIXING_EXTRUDER)
           counter_e += current_block->steps[E_AXIS];
-          if (counter_e > 0) {
-            for (uint8_t j = 0; j < DRIVER_EXTRUDERS; j++) {
-              counter_m[j] += current_block->mix_steps[j];
-              if (counter_m[j] > 0) En_STEP_WRITE(j, !INVERT_E_STEP_PIN);
-            }
-            counter_e -= current_block->step_event_count;
-            count_position[E_AXIS] += count_direction[E_AXIS];
+          for (uint8_t j = 0; j < DRIVER_EXTRUDERS; j++) {
+            counter_m[j] += current_block->steps[E_AXIS];
+            if (counter_m[j] > 0) En_STEP_WRITE(j, !INVERT_E_STEP_PIN);
           }
         #else
           STEP_START(e, E);
@@ -755,6 +752,11 @@ ISR(TIMER1_COMPA_vect) {
       STEP_END(z, Z);
       #if DISABLED(ADVANCE)
         #if ENABLED(COLOR_MIXING_EXTRUDER)
+          // Always count the single E axis
+          if (counter_e > 0) {
+            counter_e -= current_block->step_event_count;
+            count_position[E_AXIS] += count_direction[E_AXIS];
+          }
           for (uint8_t j = 0; j < DRIVER_EXTRUDERS; j++) {
             if (counter_m[j] > 0) {
               counter_m[j] -= current_block->step_event_count;
@@ -791,7 +793,14 @@ ISR(TIMER1_COMPA_vect) {
         //NOLESS(advance, current_block->advance);
 
         // Do E steps + advance steps
-        e_steps[current_block->active_driver] += ((advance >> 8) - old_advance);
+        #if ENABLED(COLOR_MIXING_EXTRUDER)
+          // Move mixing steppers proportionally
+          for (uint8_t j = 0; j < DRIVER_EXTRUDERS; j++)
+            e_steps[j] += ((advance >> 8) - old_advance) * current_block->step_event_count / current_block->mix_event_count[j];
+        #else
+          e_steps[current_block->active_driver] += ((advance >> 8) - old_advance);
+        #endif
+
         old_advance = advance >> 8;
 
       #endif // ADVANCE
@@ -819,7 +828,14 @@ ISR(TIMER1_COMPA_vect) {
 
         // Do E steps + advance steps
         uint32_t advance_whole = advance >> 8;
-        e_steps[current_block->active_driver] += advance_whole - old_advance;
+
+        #if ENABLED(MIXING_EXTRUDER_FEATURE)
+          for (uint8_t j = 0; j < DRIVER_EXTRUDERS; j++)
+            e_steps[current_block->active_driver] += (advance_whole - old_advance) * current_block->mix_factor[j];
+        #else
+          e_steps[current_block->active_driver] += advance_whole - old_advance;
+        #endif
+
         old_advance = advance_whole;
       #endif //ADVANCE
     }

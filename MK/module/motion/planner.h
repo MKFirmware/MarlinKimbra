@@ -31,7 +31,7 @@ typedef struct {
   long steps[NUM_AXIS];                     // Step count along each axis
 
   #if ENABLED(COLOR_MIXING_EXTRUDER)
-    float mix_steps[DRIVER_EXTRUDERS];      // Step count for each stepper in a mixing extruder
+    unsigned long mix_event_count[DRIVER_EXTRUDERS];  // Step count for each stepper in a mixing extruder
   #endif
 
   unsigned long step_event_count;           // The number of step events required to complete this block
