@@ -614,7 +614,7 @@ float junction_deviation = 0.1;
   // For a mixing extruder, get steps for each
   #if ENABLED(COLOR_MIXING_EXTRUDER)
     for (uint8_t i = 0; i < DRIVER_EXTRUDERS; i++)
-      block->mix_event_count[i] = (mixing_factor[i] < 0.0001) ? 9999999999999999 : block->step_event_count / mixing_factor[i];
+      block->mix_event_count[i] = block->steps[E_AXIS] * mixing_factor[i];
   #endif
 
   // Add update block variables for LASER BEAM control 

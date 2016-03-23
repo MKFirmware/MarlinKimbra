@@ -655,7 +655,7 @@ ISR(TIMER1_COMPA_vect) {
 
       #if ENABLED(COLOR_MIXING_EXTRUDER)
         for (uint8_t i = 0; i < DRIVER_EXTRUDERS; i++)
-          counter_m[i] = -(current_block->mix_event_count[i] >> 1);
+          counter_m[i] = new_count;
       #endif
 
       step_events_completed = 0;
@@ -724,7 +724,7 @@ ISR(TIMER1_COMPA_vect) {
         #if ENABLED(COLOR_MIXING_EXTRUDER)
           counter_e += current_block->steps[E_AXIS];
           for (uint8_t j = 0; j < DRIVER_EXTRUDERS; j++) {
-            counter_m[j] += current_block->steps[E_AXIS];
+            counter_m[j] += current_block->mix_event_count[j];
             if (counter_m[j] > 0) En_STEP_WRITE(j, !INVERT_E_STEP_PIN);
           }
         #else
@@ -755,7 +755,7 @@ ISR(TIMER1_COMPA_vect) {
           }
           for (uint8_t j = 0; j < DRIVER_EXTRUDERS; j++) {
             if (counter_m[j] > 0) {
-              counter_m[j] -= current_block->mix_event_count[j];
+              counter_m[j] -= current_block->step_event_count;
               En_STEP_WRITE(j, INVERT_E_STEP_PIN);
             }
           }
