@@ -30,7 +30,7 @@
   NexPage Psdcard       = NexPage(4, 0, "sdcard");
   NexPage Psetup        = NexPage(5, 0, "setup");
   NexPage Pmove         = NexPage(6, 0, "move");
-  NexPage Pfeed         = NexPage(7, 0, "feed");
+  NexPage Pspeed        = NexPage(7, 0, "speed");
 
   // Page 0 Start
   NexTimer startimer    = NexTimer(0,  1, "tm0");  
@@ -61,7 +61,8 @@
   NexPicture NStop      = NexPicture(1, 25, "p8");
   NexVar SD             = NexVar(1, 26, "sd");
   NexVar RFID           = NexVar(1, 27, "rfid");
-  NexPicture Feedpic    = NexPicture(1, 18, "p9");
+  NexPicture Speedpic   = NexPicture(1, 28, "p9");
+  NexVar VSpeed         = NexVar(1, 29, "vspeed");
 
   // Page 2 Temp
   NexText set0          = NexText(2,  2,  "set0");
@@ -112,8 +113,7 @@
   NexText LedCoord6     = NexText(6, 19, "mcoord");
 
   // Page 7 Feed
-  NexVar  Feedrate      = NexVar(7, 1, "feedrate");
-  NexPicture Feedok     = NexPicture(7, 3,  "p0");
+  NexPicture SpeedOk    = NexPicture(7, 2,  "p0");
 
   NexTouch *nex_listen_list[] =
   {
@@ -125,7 +125,7 @@
     &MSD6,
     &MSetup,
     &Fanpic,
-    &Feedpic,
+    &Speedpic,
     &NPlay,
     &NStop,
     &hot0,
@@ -155,7 +155,7 @@
     &ZHome,
     &ZUp,
     &ZDown,
-    &Feedok,
+    &SpeedOk,
     NULL
   };
 
@@ -206,7 +206,7 @@
         Hotend21.setText("BED");
       #endif
 
-      Feedrate.setValue(100);
+      VSpeed.setValue(100);
 
       #if HAS(FAN)
         Fan.setValue(1);
@@ -433,9 +433,9 @@
       NextionPage = 5;
       Psetup.show();
     }
-    else if (ptr == &Feedpic) {
+    else if (ptr == &Speedpic) {
       NextionPage = 7;
-      Pfeed.show();
+      Pspeed.show();
     }
   }
 
@@ -523,7 +523,7 @@
 
       Menu.attachPop(setpagePopCallback,    &Menu);
       MSetup.attachPop(setpagePopCallback,  &MSetup);
-      Feedpic.attachPop(setpagePopCallback, &Feedpic);
+      Speedpic.attachPop(setpagePopCallback, &Speedpic);
       Fanpic.attachPop(setfanPopCallback,   &Fanpic);
       m11.attachPop(sethotPopCallback,      &m11);
       tup.attachPop(settempPopCallback,     &tup);
@@ -536,7 +536,7 @@
       ZHome.attachPop(setmovePopCallback);
       ZUp.attachPop(setmovePopCallback);
       ZDown.attachPop(setmovePopCallback);
-      Feedok.attachPop(ExitPopCallback);
+      SpeedOk.attachPop(ExitPopCallback);
 
       startimer.enable();
     }
@@ -610,8 +610,8 @@
         if (fanSpeed > 0) fantimer.enable();
         else fantimer.disable();
 
-        uint32_t* temp_feedrate;
-        Feedrate.getValue(temp_feedrate);
+        uint32_t temp_feedrate = 0;
+        VSpeed.getValue(&temp_feedrate);
         feedrate_multiplier = (int)temp_feedrate;
 
         #if HAS(TEMP_0)

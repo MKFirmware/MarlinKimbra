@@ -675,12 +675,12 @@ void setup() {
     setup_statled();
   #endif
 
-  #if ENABLED(MIXING_EXTRUDER_FEATURE) && MIXING_VIRTUAL_TOOLS > 1
+  #if ENABLED(COLOR_MIXING_EXTRUDER) && MIXING_VIRTUAL_TOOLS > 1
     // Initialize mixing to 100% color 1
     for (uint8_t i = 0; i < DRIVER_EXTRUDERS; i++) {
       mixing_factor[i] = (i == 0) ? 1 : 0;
     }
-    for (uint8_t t = 0; t < EXTRUDERS; t++) {
+    for (uint8_t t = 0; t < MIXING_VIRTUAL_TOOLS; t++) {
       for (uint8_t i = 0; i < DRIVER_EXTRUDERS; i++) {
         mixing_virtual_tool_mix[t][i] = mixing_factor[i];
       }
@@ -2555,7 +2555,7 @@ static void clean_up_after_endstop_move() {
     }
   }
 
-#endif //DELTA
+#endif // DELTA
 
 #if ENABLED(COLOR_MIXING_EXTRUDER)
   void normalize_mix() {
