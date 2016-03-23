@@ -161,7 +161,9 @@ volatile signed char count_direction[NUM_AXIS] = { 1 };
   #define Z_APPLY_STEP(v,Q) Z_STEP_WRITE(v)
 #endif
 
-#define E_APPLY_STEP(v,Q) E_STEP_WRITE(v)
+#if DISABLED(COLOR_MIXING_EXTRUDER)
+  #define E_APPLY_STEP(v,Q) E_STEP_WRITE(v)
+#endif
 
 // intRes = intIn1 * intIn2 >> 16
 // uses:
@@ -611,13 +613,7 @@ FORCE_INLINE void trapezoid_generator_reset() {
     advance = current_block->initial_advance;
     final_advance = current_block->final_advance;
     // Do E steps + advance steps
-    #if ENABLED(COLOR_MIXING_EXTRUDER)
-      // Move mixing steppers proportionally
-      for (int8_t j = 0; j < DRIVER_EXTRUDERS; j++)
-        e_steps[j] += ((advance >> 8) - old_advance) * current_block->mix_steps[j] / current_block->step_event_count;
-    #else
-      e_steps[current_block->active_driver] += ((advance >> 8) - old_advance);
-    #endif
+    e_steps[current_block->active_driver] += ((advance >> 8) - old_advance);
     old_advance = advance >>8;
   #endif
   deceleration_time = 0;
@@ -759,7 +755,7 @@ ISR(TIMER1_COMPA_vect) {
           }
           for (uint8_t j = 0; j < DRIVER_EXTRUDERS; j++) {
             if (counter_m[j] > 0) {
-              counter_m[j] -= current_block->step_event_count;
+              counter_m[j] -= current_block->mix_event_count[j];
               En_STEP_WRITE(j, INVERT_E_STEP_PIN);
             }
           }
