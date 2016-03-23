@@ -19,7 +19,7 @@ void FirmwareTest() {
   ECHO_EV(MSG_FWTEST_YES_NO);
   serial_answer = ' ';
   while (serial_answer!='y' && serial_answer!='Y' && serial_answer!='n' && serial_answer!='N') {
-    serial_answer = MYSERIAL.read();
+    serial_answer = MKSERIAL.read();
   }
   if (serial_answer=='y' || serial_answer=='Y') {
     ECHO_EV(MSG_FWTEST_03);
@@ -55,7 +55,7 @@ void FirmwareTest() {
       ECHO_EV(MSG_FWTEST_YES);
       serial_answer = ' ';
       while (serial_answer!='y' && serial_answer!='Y' && !(READ(X_MIN_PIN)^X_MIN_ENDSTOP_INVERTING)) {
-        serial_answer = MYSERIAL.read();
+        serial_answer = MKSERIAL.read();
       }
       if (READ(X_MIN_PIN)^X_MIN_ENDSTOP_INVERTING) {
         ECHO_M("MIN ENDSTOP X: ");
@@ -95,7 +95,7 @@ void FirmwareTest() {
       ECHO_EV(MSG_FWTEST_YES);
       serial_answer = ' ';
       while (serial_answer!='y' && serial_answer!='Y' && !(READ(X_MAX_PIN)^X_MAX_ENDSTOP_INVERTING)) {
-        serial_answer = MYSERIAL.read();
+        serial_answer = MKSERIAL.read();
       }
       if (READ(X_MAX_PIN)^X_MAX_ENDSTOP_INVERTING) {
         ECHO_M("MAX ENDSTOP X: ");
@@ -149,7 +149,7 @@ void FirmwareTest() {
       ECHO_EV(MSG_FWTEST_YES);
       serial_answer = ' ';
       while (serial_answer!='y' && serial_answer!='Y' && !(READ(Y_MIN_PIN)^Y_MIN_ENDSTOP_INVERTING)) {
-        serial_answer = MYSERIAL.read();
+        serial_answer = MKSERIAL.read();
       }
       if (READ(Y_MIN_PIN)^Y_MIN_ENDSTOP_INVERTING) {
         ECHO_M("MIN ENDSTOP Y: ");
@@ -189,7 +189,7 @@ void FirmwareTest() {
       ECHO_EV(MSG_FWTEST_YES);
       serial_answer = ' ';
       while (serial_answer!='y' && serial_answer!='Y' && !(READ(Y_MAX_PIN)^Y_MAX_ENDSTOP_INVERTING)) {
-        serial_answer = MYSERIAL.read();
+        serial_answer = MKSERIAL.read();
       }
       if (READ(Y_MAX_PIN)^Y_MAX_ENDSTOP_INVERTING) {
         ECHO_M("MAX ENDSTOP Y: ");
@@ -243,7 +243,7 @@ void FirmwareTest() {
       ECHO_EV(MSG_FWTEST_YES);
       serial_answer = ' ';
       while (serial_answer!='y' && serial_answer!='Y' && !(READ(Z_MIN_PIN)^Z_MIN_ENDSTOP_INVERTING)) {
-        serial_answer = MYSERIAL.read();
+        serial_answer = MKSERIAL.read();
       }
       if (READ(Z_MIN_PIN)^Z_MIN_ENDSTOP_INVERTING) {
         ECHO_M("MIN ENDSTOP Z: ");
@@ -283,7 +283,7 @@ void FirmwareTest() {
       ECHO_EV(MSG_FWTEST_YES);
       serial_answer = ' ';
       while (serial_answer!='y' && serial_answer!='Y' && !(READ(Z_MAX_PIN)^Z_MAX_ENDSTOP_INVERTING)) {
-        serial_answer = MYSERIAL.read();
+        serial_answer = MKSERIAL.read();
       }
       if (READ(Z_MAX_PIN)^Z_MAX_ENDSTOP_INVERTING) {
         ECHO_M("MAX ENDSTOP Z: ");
@@ -326,7 +326,7 @@ void FirmwareTest() {
   ECHO_EV(MSG_FWTEST_YES);
   serial_answer = ' ';
   while (serial_answer!='y' && serial_answer!='Y') {
-    serial_answer = MYSERIAL.read();
+    serial_answer = MKSERIAL.read();
   }
   ECHO_EV(MSG_FWTEST_04);
   ECHO_EM(" ");
@@ -339,7 +339,7 @@ void FirmwareTest() {
   ECHO_EV(MSG_FWTEST_YES_NO);
   serial_answer = ' ';
   while (serial_answer!='y' && serial_answer!='Y' && serial_answer!='n' && serial_answer!='N') {
-    serial_answer = MYSERIAL.read();
+    serial_answer = MKSERIAL.read();
   }
   if (serial_answer=='y' || serial_answer=='Y') {
     ECHO_EM("MOTOR X ");
@@ -371,7 +371,7 @@ void FirmwareTest() {
   ECHO_EV(MSG_FWTEST_YES_NO);
   serial_answer = ' ';
   while (serial_answer!='y' && serial_answer!='Y' && serial_answer!='n' && serial_answer!='N') {
-    serial_answer = MYSERIAL.read();
+    serial_answer = MKSERIAL.read();
   }
   if (serial_answer=='y' || serial_answer=='Y') {
     ECHO_EM("MOTOR Y ");
@@ -403,7 +403,7 @@ void FirmwareTest() {
   ECHO_EV(MSG_FWTEST_YES_NO);
   serial_answer = ' ';
   while (serial_answer!='y' && serial_answer!='Y' && serial_answer!='n' && serial_answer!='N') {
-    serial_answer = MYSERIAL.read();
+    serial_answer = MKSERIAL.read();
   }
   if (serial_answer=='y' || serial_answer=='Y') {
     ECHO_EM("MOTOR Z ");
