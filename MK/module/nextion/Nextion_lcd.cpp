@@ -31,6 +31,7 @@
   NexPage Psetup        = NexPage(5, 0, "setup");
   NexPage Pmove         = NexPage(6, 0, "move");
   NexPage Pspeed        = NexPage(7, 0, "speed");
+  NexPage Pgcode        = NexPage(8, 0, "gcode");
 
   // Page 0 Start
   NexTimer startimer    = NexTimer(0,  1, "tm0");  
@@ -115,6 +116,10 @@
   // Page 7 Feed
   NexPicture SpeedOk    = NexPicture(7, 2,  "p0");
 
+  // Page 8 Gcode
+  NexText Tgcode        = NexText(8, 1, "tgcode");
+  NexButton Benter      = NexButton(8, 41, "benter");
+
   NexTouch *nex_listen_list[] =
   {
     &Pstart,
@@ -156,6 +161,7 @@
     &ZUp,
     &ZDown,
     &SpeedOk,
+    &Benter,
     NULL
   };
 
@@ -424,6 +430,13 @@
     setpageInfo();
   }
 
+  void setgcodePopCallback(void *ptr) {
+    memset(buffer, 0, sizeof(buffer));
+    Tgcode.getText(buffer, sizeof(buffer));
+    enqueuecommands_P(buffer);
+    Pmenu.show();
+  }
+
   void setpagePopCallback(void *ptr) {
     if (ptr == &Menu) {
       NextionPage = 3;
@@ -537,6 +550,7 @@
       ZUp.attachPop(setmovePopCallback);
       ZDown.attachPop(setmovePopCallback);
       SpeedOk.attachPop(ExitPopCallback);
+      Benter.attachPop(setgcodePopCallback);
 
       startimer.enable();
     }
@@ -639,7 +653,7 @@
             if(IS_SD_PRINTING) {
               // Progress bar solid part
               sdbar.setValue(card.percentDone());
-              NPlay.setPic(15);
+              NPlay.setPic(17);
 
               // Estimate End Time
               uint16_t time = (millis() - print_job_start_ms) / 60000;
@@ -654,7 +668,7 @@
               }
             }
             else {
-              NPlay.setPic(14);
+              NPlay.setPic(16);
             }
           }
           else if (card.cardOK && SDstatus != 1) {
