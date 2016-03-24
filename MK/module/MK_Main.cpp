@@ -66,7 +66,7 @@ static char command_queue[BUFSIZE][MAX_CMD_SIZE];
 
 float homing_feedrate[] = HOMING_FEEDRATE;
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
-int feedrate_multiplier = 100; //100->1 200->2
+int feedrate_multiplier = 100; // 100->1 200->2
 int saved_feedrate_multiplier;
 int extruder_multiplier[EXTRUDERS] = ARRAY_BY_EXTRUDERS(100);
 int density_multiplier[EXTRUDERS] = ARRAY_BY_EXTRUDERS(100);

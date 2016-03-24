@@ -11,6 +11,7 @@
     void settempPopCallback(void *ptr);
     void setfanPopCallback(void *ptr);
     void setmovePopCallback(void *ptr);
+    void setgcodePopCallback(void *ptr);
     void lcd_update();
     void lcd_init();
     void lcd_setstatus(const char* message, const bool persist = false);
