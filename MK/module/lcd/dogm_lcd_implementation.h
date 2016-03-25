@@ -44,7 +44,6 @@
   #undef USE_BIG_EDIT_FONT
 #endif
 
-
 #if ENABLED(USE_SMALL_INFOFONT)
   #include "dogm_font_data_6x9_marlin.h"
   #define FONT_STATUSMENU_NAME u8g_font_6x9
@@ -265,23 +264,55 @@ static void lcd_implementation_clear() { } // Automatically cleared by Picture L
 static void _draw_heater_status(int x, int heater) {
   bool isBed = heater < 0;
   int y = 17 + (isBed ? 1 : 0);
-
   lcd_setFont(FONT_STATUSMENU);
-  u8g.setPrintPos(x, 7);
-  lcd_print(itostr3(int((heater >= 0 ? degTargetHotend(heater) : degTargetBed()) + 0.5)));
-  lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
-  u8g.setPrintPos(x, 28);
-  lcd_print(itostr3(int(heater >= 0 ? degHotend(heater) : degBed()) + 0.5));
 
-  lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
-  if (heater >= 0 ? !isHeatingHotend(heater) : !isHeatingBed()) {
-    u8g.drawBox(x + 7, y, 2, 2);
-  }
-  else {
-    u8g.setColorIndex(0); // white on black
-    u8g.drawBox(x + 7, y, 2, 2);
-    u8g.setColorIndex(1); // black on white
-  }
+  #ifdef COLOR_MIXING_EXTRUDER
+    if (isBed) {
+      u8g.setPrintPos(x, 7);
+      lcd_print(itostr3(int(degTargetBed()) + 0.5));
+      lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
+      u8g.setPrintPos(x, 28);
+      lcd_print(itostr3(int(degBed()) + 0.5));
+
+      lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
+		  if (!isHeatingBed()) {
+        u8g.drawBox(x + 7, y, 2, 2);
+		  }
+		  else {
+        u8g.setColorIndex(0); // white on black
+        u8g.drawBox(x + 7, y, 2, 2);
+        u8g.setColorIndex(1); // black on white
+		  }
+	  }
+    else {
+      u8g.setPrintPos(0, 7);
+      lcd_print('T');
+      lcd_printPGM(PSTR(LCD_STR_DEGREE));
+      lcd_print(':');
+      lcd_print(itostr3(int(degHotend(heater)) + 0.5));
+      lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
+      u8g.setPrintPos(44, 7);
+      lcd_print('/');
+      lcd_print(itostr3(int(degTargetHotend(heater)) + 0.5));
+      lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
+    }
+  #else
+    u8g.setPrintPos(x, 7);
+    lcd_print(itostr3(int((heater >= 0 ? degTargetHotend(heater) : degTargetBed()) + 0.5)));
+    lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
+    u8g.setPrintPos(x, 28);
+    lcd_print(itostr3(int(heater >= 0 ? degHotend(heater) : degBed()) + 0.5));
+
+    lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
+    if (heater >= 0 ? !isHeatingHotend(heater) : !isHeatingBed()) {
+      u8g.drawBox(x + 7, y, 2, 2);
+    }
+    else {
+      u8g.setColorIndex(0); // white on black
+      u8g.drawBox(x + 7, y, 2, 2);
+      u8g.setColorIndex(1); // black on white
+    }
+  #endif
 }
 
 static void lcd_implementation_status_screen() {
@@ -342,11 +373,11 @@ static void lcd_implementation_status_screen() {
         lcd_print(':');
         lcd_print(itostr2(time %60));
 
-        u8g.setPrintPos(90,47);
+        u8g.setPrintPos(90, 47);
 
-        if (end_time > (60 * 23))
+        if (end_time > 1380 || end_time == 0)
           u8g.print('E--:--');
-        else if (end_time >= 0) {
+        else if (end_time > 0) {
           u8g.print('E');
           u8g.print(itostr2(end_time / 60));
           u8g.print(':');
@@ -356,7 +387,7 @@ static void lcd_implementation_status_screen() {
     }
     else {
       lcd_printPGM(PSTR("S--:--"));
-      u8g.setPrintPos(90,47);
+      u8g.setPrintPos(90, 47);
       lcd_printPGM(PSTR("E--:--"));
     }
   #endif

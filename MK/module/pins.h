@@ -274,22 +274,56 @@
 /****************************************************************************************/
 
 // List of pins which to ignore when asked to change by gcode, 0 and 1 are RX and TX, do not mess with those!
-#define _E0_PINS E0_STEP_PIN, E0_DIR_PIN, E0_ENABLE_PIN, HEATER_0_PIN, analogInputToDigitalPin(TEMP_0_PIN),
+#if HOTENDS > 0
+  #define _H0_PINS HEATER_0_PIN, analogInputToDigitalPin(TEMP_0_PIN),
+#else
+  #define _H0_PINS
+#endif
+#if HOTENDS > 1
+  #define _H1_PINS HEATER_1_PIN, analogInputToDigitalPin(TEMP_1_PIN),
+#else
+  #define _H1_PINS
+#endif
+#if HOTENDS > 2
+  #define _H2_PINS HEATER_2_PIN, analogInputToDigitalPin(TEMP_2_PIN),
+#else
+  #define _H2_PINS
+#endif
+#if HOTENDS > 3
+  #define _H3_PINS HEATER_3_PIN, analogInputToDigitalPin(TEMP_3_PIN),
+#else
+  #define _H3_PINS
+#endif
 
+#if DRIVER_EXTRUDERS > 0
+  #define _E0_PINS E0_STEP_PIN, E0_DIR_PIN, E0_ENABLE_PIN,
+#else
+  #define _E0_PINS
+#endif
 #if DRIVER_EXTRUDERS > 1
-  #define _E1_PINS E1_STEP_PIN, E1_DIR_PIN, E1_ENABLE_PIN, HEATER_1_PIN, analogInputToDigitalPin(TEMP_1_PIN),
+  #define _E1_PINS E1_STEP_PIN, E1_DIR_PIN, E1_ENABLE_PIN,
 #else
   #define _E1_PINS
 #endif
 #if DRIVER_EXTRUDERS  > 2
-  #define _E2_PINS E2_STEP_PIN, E2_DIR_PIN, E2_ENABLE_PIN, HEATER_2_PIN, analogInputToDigitalPin(TEMP_2_PIN),
+  #define _E2_PINS E2_STEP_PIN, E2_DIR_PIN, E2_ENABLE_PIN,
 #else
   #define _E2_PINS
 #endif
 #if DRIVER_EXTRUDERS > 3
-  #define _E3_PINS E3_STEP_PIN, E3_DIR_PIN, E3_ENABLE_PIN, HEATER_3_PIN, analogInputToDigitalPin(TEMP_3_PIN),
+  #define _E3_PINS E3_STEP_PIN, E3_DIR_PIN, E3_ENABLE_PIN,
 #else
   #define _E3_PINS
+#endif
+#if DRIVER_EXTRUDERS > 4
+  #define _E4_PINS E4_STEP_PIN, E4_DIR_PIN, E4_ENABLE_PIN,
+#else
+  #define _E4_PINS
+#endif
+#if DRIVER_EXTRUDERS > 5
+  #define _E5_PINS E5_STEP_PIN, E5_DIR_PIN, E5_ENABLE_PIN,
+#else
+  #define _E5_PINS
 #endif
 
 #define SENSITIVE_PINS { 0, 1, \
@@ -297,7 +331,8 @@
                         Y_STEP_PIN, Y_DIR_PIN, Y_ENABLE_PIN, Y_MIN_PIN, Y_MAX_PIN, \
                         Z_STEP_PIN, Z_DIR_PIN, Z_ENABLE_PIN, Z_MIN_PIN, Z_MAX_PIN, Z_PROBE_PIN, \
                         PS_ON_PIN, HEATER_BED_PIN, FAN_PIN, \
-                        _E0_PINS _E1_PINS _E2_PINS _E3_PINS \
+                        _H0_PINS _H1_PINS _H2_PINS _H3_PINS \
+                        _E0_PINS _E1_PINS _E2_PINS _E3_PINS _E4_PINS _E5_PINS \
                         analogInputToDigitalPin(TEMP_BED_PIN) \
                        }
 

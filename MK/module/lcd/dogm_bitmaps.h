@@ -93,7 +93,16 @@
       224, 0, 0, 0, 0, 0, 0, 0, 0, 1, 255, 255, 128, 0,
       0, 0
     };
+
+    #define STATUS_HOTENDWIDTH       5 //Width in pixels
+    #define STATUS_HOTENDHEIGHT     12 //Height in pixels
+    #define STATUS_HOTENDBYTEWIDTH   1 //Width in bytes
+    const unsigned char hot_nozzle_bmp[] PROGMEM = {
+      16, 16, 48, 32, 0, 32, 32, 112, 120, 216, 248, 112
+    };
+
   #else // no COLOR_MIXING_EXTRUDER
+
     #define STATUS_SCREENWIDTH     115 //Width in pixels
     #define STATUS_SCREENHEIGHT     19 //Height in pixels
     #define STATUS_SCREENBYTEWIDTH  15 //Width in bytes
