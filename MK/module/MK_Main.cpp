@@ -1830,6 +1830,7 @@ static void clean_up_after_endstop_move() {
       }
       max_pos[Z_AXIS] -= high_endstop;
     }
+    /*
     else if (low_endstop < 0) {
       ECHO_LMV(DB, "Increment Build height by ", abs(low_endstop));
       for(uint8_t i = 0; i < 3; i++) {
@@ -1837,6 +1838,7 @@ static void clean_up_after_endstop_move() {
       }
       max_pos[Z_AXIS] -= low_endstop;
     }
+    */
 
     set_delta_constants();
 
@@ -1922,10 +1924,12 @@ static void clean_up_after_endstop_move() {
       }
     }
 
+    /*
     // Two tower errors
     if ((t1_err == true) and (t2_err == true) and (t3_err == false)) err_tower = 3;
     if ((t1_err == true) and (t2_err == false) and (t3_err == true)) err_tower = 2;
     if ((t1_err == false) and (t2_err == true) and (t3_err == true)) err_tower = 1;
+    */
 
     // Single tower error
     if ((t1_err == true) and (t2_err == false) and (t3_err == false)) err_tower = 1;
@@ -1944,25 +1948,9 @@ static void clean_up_after_endstop_move() {
       ECHO_LM(DB, "Tower geometry OK");
     }
     else {
-      // If a tower has been adjusted previously.. continue to correct by adjusting that tower! (but only if the difference between the opp points is still large)
-      if (high_opp - low_opp  > ac_prec * 2) {
-        if ((tower_adj[0] != 0) or (tower_adj[3] != 0)) {
-          ECHO_LM(DB, "Tower 1 has already been adjusted");
-          err_tower = 1;
-        }
-        if ((tower_adj[1] != 0) or (tower_adj[4] != 0)) {
-          ECHO_LM(DB, "Tower 2 has already been adjusted");
-          err_tower = 2;
-        }
-        if ((tower_adj[2] != 0) or (tower_adj[5] != 0)) {
-          ECHO_LM(DB, "Tower 3 has already been adjusted");
-          err_tower = 3;
-        }
-      }
       ECHO_SMV(DB, "Tower", int(err_tower));
       ECHO_EM(" Error: Adjusting");
       adj_tower_radius(err_tower);
-      //adj_tower_delta(err_tower);
     }
 
     //Set return value to indicate if anything has been changed (0 = no change)
@@ -2079,7 +2067,7 @@ static void clean_up_after_endstop_move() {
         temp = (bed_level_ox - target) / 2;
         adj_target = target + temp;
         if (((bed_level_ox < adj_target) and (adj_t1_Radius > 0)) or ((bed_level_ox > adj_target) and (adj_t1_Radius < 0))) adj_t1_Radius = -(adj_t1_Radius / 2);
-        if (bed_level_ox == adj_target) t1_done = true;
+        if (Equal_AB(bed_level_ox, adj_target, ac_prec)) t1_done = true;
         if (Equal_AB(bed_level_ox, prev_bed_level) and Equal_AB(adj_target, prev_target)) nochange_count ++;
         if (nochange_count > 1) {
           ECHO_LM(DB, "Stuck in Loop.. Exiting");
@@ -2106,7 +2094,7 @@ static void clean_up_after_endstop_move() {
         temp = (bed_level_oy - target) / 2;
         adj_target = target + temp;
         if (((bed_level_oy < adj_target) and (adj_t2_Radius > 0)) or ((bed_level_oy > adj_target) and (adj_t2_Radius < 0))) adj_t2_Radius = -(adj_t2_Radius / 2);
-        if (bed_level_oy == adj_target) t2_done = true;
+        if (Equal_AB(bed_level_oy, adj_target, ac_prec)) t2_done = true;
         if (Equal_AB(bed_level_oy, prev_bed_level) and Equal_AB(adj_target, prev_target)) nochange_count ++;
         if (nochange_count > 1) {
           ECHO_LM(DB, "Stuck in Loop.. Exiting");
@@ -2133,7 +2121,7 @@ static void clean_up_after_endstop_move() {
         temp = (bed_level_oz - target) / 2;
         adj_target = target + temp;
         if (((bed_level_oz < adj_target) and (adj_t3_Radius > 0)) or ((bed_level_oz > adj_target) and (adj_t3_Radius < 0))) adj_t3_Radius = -(adj_t3_Radius / 2);
-        if (bed_level_oz == adj_target) t3_done = true;
+        if (Equal_AB(bed_level_oz, adj_target, ac_prec)) t3_done = true;
         if (Equal_AB(bed_level_oz, prev_bed_level) and Equal_AB(adj_target, prev_target)) nochange_count ++;
         if (nochange_count > 1) {
           ECHO_LM(DB, "Stuck in Loop.. Exiting");
@@ -2337,7 +2325,7 @@ static void clean_up_after_endstop_move() {
 
   float probe_bed(float x, float y) {
     //Probe bed at specified location and return z height of bed
-    uint8_t probe_count = 5;
+    uint8_t probe_count = PROBE_COUNT;
     float probe_z, probe_bed_array[probe_count], probe_bed_mean = 0;
 
     destination[X_AXIS] = x - z_probe_offset[X_AXIS];
