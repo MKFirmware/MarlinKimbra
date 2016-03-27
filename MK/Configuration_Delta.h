@@ -114,6 +114,9 @@
 // Precision for G30 delta autocalibration function
 #define AUTOCALIBRATION_PRECISION 0.1 // mm
 
+// Precision probe. Number of probe for the mean
+#define PROBE_COUNT 3
+
 // Z-Probe variables
 // X, Y, Z, E distance between hotend nozzle and deployed bed leveling probe.
 #define Z_PROBE_OFFSET {0, 0, -1}
