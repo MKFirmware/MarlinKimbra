@@ -75,4 +75,12 @@
   #include "module/mfrc522/MFRC522_serial.h"
 #endif
 
+#if ENABLED(LASER)
+  #include "Configuration_Laser.h"
+  #if ENABLED(LASER_RASTER)
+    #include "module/base64/Base64.h"
+  #endif
+  #include "module/laser/laser.h"
+#endif
+
 #endif

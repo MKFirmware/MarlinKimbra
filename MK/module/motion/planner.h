@@ -69,6 +69,18 @@ typedef struct {
     unsigned long valve_pressure;
     unsigned long e_to_p_pressure;
   #endif
+  
+  #if ENABLED(LASER)
+    uint8_t laser_mode; // CONTINUOUS, PULSED, RASTER
+    bool laser_status; // LASER_OFF, LASER_ON
+    float laser_ppm; // pulses per millimeter, for pulsed and raster firing modes
+    unsigned long laser_duration; // laser firing duration in microseconds, for pulsed and raster firing modes
+    long steps_l; // step count between firings of the laser, for pulsed firing mode
+    int laser_intensity; // Laser firing instensity in clock cycles for the PWM timer
+    #if ENABLED(LASER_RASTER)
+      unsigned char laser_raster_data[LASER_MAX_RASTER_LINE];
+    #endif
+  #endif 
 
   #if ENABLED(LASERBEAM)
     unsigned long laser_ttlmodulation;

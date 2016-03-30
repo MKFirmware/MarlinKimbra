@@ -1721,6 +1721,10 @@
     #error DEPENDENCY ERROR: You have to set LASER_PWR_PIN and LASER_TTL_PIN to a valid pin if you enable LASERBEAM
   #endif
 
+  #if ENABLED(LASERBEAM) && ENABLED(LASER)
+    #error DEPENDENCY ERROR: You must enable only one of LASERBEAM or LASER, not both!
+  #endif
+
   #if ENABLED(FILAMENT_RUNOUT_SENSOR) && !PIN_EXISTS(FILRUNOUT)
     #error DEPENDENCY ERROR: You have to set FILRUNOUT_PIN to a valid pin if you enable FILAMENT_RUNOUT_SENSOR
   #endif
@@ -1759,6 +1763,10 @@
   
   #if ENABLED(Z_PROBE_SLED) && !PIN_EXISTS(SLED)
     #error DEPENDENCY ERROR: You have to set SLED_PIN to a valid pin if you enable Z_PROBE_SLED
+  #endif
+
+  #if ENABLED(LASERBEAM) && ENABLED(LASER)
+    #error DEPENDENCY ERROR: You have to select only one of LASER or LASERBEAM
   #endif
 
 #endif //SANITYCHECK_H

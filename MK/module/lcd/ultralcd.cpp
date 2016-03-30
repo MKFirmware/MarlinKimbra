@@ -48,6 +48,30 @@ char lcd_status_message[3 * LCD_WIDTH + 1] = WELCOME_MSG; // worst case is kana 
   #define LCD_Printpos(x, y)  lcd.setCursor(x, y)
 #endif
 
+#if ENABLED(LASER)
+   static void lcd_laser_focus_menu();
+   static void lcd_laser_menu();
+   static void lcd_laser_test_fire_menu();
+   static void laser_test_fire(uint8_t power, uint8_t dwell);
+   static void laser_set_focus(float f_length);
+   static void action_laser_focus_custom();
+   static void action_laser_focus_1mm();
+   static void action_laser_focus_2mm();
+   static void action_laser_focus_3mm();
+   static void action_laser_focus_4mm();
+   static void action_laser_focus_5mm();
+   static void action_laser_focus_6mm();
+   static void action_laser_focus_7mm();
+   static void action_laser_test_20_50ms();
+   static void action_laser_test_20_100ms();
+   static void action_laser_test_100_50ms();
+   static void action_laser_test_100_100ms();
+   static void action_laser_test_warm();
+   static void action_laser_acc_on();
+   static void action_laser_acc_off();
+
+#endif
+
 // The main status screen
 static void lcd_status_screen();
 
@@ -441,6 +465,11 @@ static void lcd_return_to_status() { lcd_goto_menu(lcd_status_screen); }
 static void lcd_main_menu() {
   START_MENU(lcd_status_screen);
   MENU_ITEM(back, MSG_WATCH, lcd_status_screen);
+  #if ENABLED(LASER)
+    if (!(movesplanned() || IS_SD_PRINTING)) {
+      MENU_ITEM(submenu, "Laser Functions", lcd_laser_menu);
+    }
+  #endif
   if (movesplanned() || IS_SD_PRINTING) {
     MENU_ITEM(submenu, MSG_TUNE, lcd_tune_menu);
   }
@@ -567,6 +596,13 @@ static void lcd_tune_menu() {
   // Speed:
   //
   MENU_ITEM_EDIT(int3, MSG_SPEED, &feedrate_multiplier, 10, 999);
+
+  //
+  // Laser:
+  //
+  #if ENABLED(LASER)
+    MENU_ITEM_EDIT(int3, MSG_NOZZLE, &target_temperature[0], 0, HEATER_0_MAXTEMP - 15);
+  #endif
 
   //
   // Nozzle:
@@ -826,7 +862,11 @@ static void lcd_prepare_menu() {
   //
   // Auto Home
   //
-  MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
+  #if ENABLED(LASER)
+    MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28 X Y F2000"));
+  #else
+    MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
+  #endif
 
   //
   // Set Home Offsets
@@ -859,7 +899,7 @@ static void lcd_prepare_menu() {
   // Preheat ABS
   // Preheat GUM
   //
-  #if TEMP_SENSOR_0 != 0
+  #if TEMP_SENSOR_0 != 0 && DISABLED(LASER)
     #if TEMP_SENSOR_1 != 0 || TEMP_SENSOR_2 != 0 || TEMP_SENSOR_3 != 0 || TEMP_SENSOR_BED != 0
       MENU_ITEM(submenu, MSG_PREHEAT_PLA, lcd_preheat_pla_menu);
       MENU_ITEM(submenu, MSG_PREHEAT_ABS, lcd_preheat_abs_menu);
@@ -1096,8 +1136,12 @@ static void lcd_control_menu() {
   START_MENU(lcd_main_menu);
   MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
   MENU_ITEM(submenu, MSG_TEMPERATURE, lcd_control_temperature_menu);
-  MENU_ITEM(submenu, MSG_MOTION, lcd_control_motion_menu);
-  MENU_ITEM(submenu, MSG_FILAMENT, lcd_control_volumetric_menu);
+  #if ENABLED(LASER)
+    MENU_ITEM(submenu, MSG_TEMPERATURE, lcd_control_temperature_menu);
+  #else
+    MENU_ITEM(submenu, MSG_MOTION, lcd_control_motion_menu);
+    MENU_ITEM(submenu, MSG_FILAMENT, lcd_control_volumetric_menu);
+  #endif
 
   #if HAS(LCD_CONTRAST)
     //MENU_ITEM_EDIT(int3, MSG_CONTRAST, &lcd_contrast, 0, 63);
@@ -1178,6 +1222,7 @@ static void lcd_stats_menu() {
  * "Control" > "Temperature" submenu
  *
  */
+#if DISABLED(LASER)
 static void lcd_control_temperature_menu() {
   START_MENU(lcd_control_menu);
 
@@ -1297,12 +1342,15 @@ static void lcd_control_temperature_menu() {
   MENU_ITEM(submenu, MSG_PREHEAT_GUM_SETTINGS, lcd_control_temperature_preheat_gum_settings_menu);
   END_MENU();
 }
+#endif
+
 
 /**
  *
  * "Temperature" > "Preheat PLA conf" submenu
  *
  */
+#if DISABLED(LASER)
 static void lcd_control_temperature_preheat_pla_settings_menu() {
   START_MENU(lcd_control_temperature_menu);
   MENU_ITEM(back, MSG_TEMPERATURE, lcd_control_temperature_menu);
@@ -1318,12 +1366,14 @@ static void lcd_control_temperature_preheat_pla_settings_menu() {
   #endif
   END_MENU();
 }
+#endif
 
 /**
  *
  * "Temperature" > "Preheat ABS conf" submenu
  *
  */
+#if DISABLED(LASER)
 static void lcd_control_temperature_preheat_abs_settings_menu() {
   START_MENU(lcd_control_temperature_menu);
   MENU_ITEM(back, MSG_TEMPERATURE, lcd_control_temperature_menu);
@@ -1339,12 +1389,13 @@ static void lcd_control_temperature_preheat_abs_settings_menu() {
   #endif
   END_MENU();
 }
-
+#endif
 /**
  *
  * "Temperature" > "Preheat GUM conf" submenu
  *
  */
+#if DISABLED(LASER)
 static void lcd_control_temperature_preheat_gum_settings_menu() {
   START_MENU(lcd_control_temperature_menu);
   MENU_ITEM(back, MSG_TEMPERATURE, lcd_control_temperature_menu);
@@ -1360,7 +1411,7 @@ static void lcd_control_temperature_preheat_gum_settings_menu() {
   #endif
   END_MENU();
 }
-
+#endif
 /**
  *
  * "Control" > "Motion" submenu
@@ -1431,6 +1482,7 @@ static void lcd_control_motion_menu() {
  * "Control" > "Filament" submenu
  *
  */
+#if DISABLED(LASER)
 static void lcd_control_volumetric_menu() {
   START_MENU(lcd_control_menu);
   MENU_ITEM(back, MSG_CONTROL, lcd_control_menu);
@@ -1454,6 +1506,7 @@ static void lcd_control_volumetric_menu() {
 
   END_MENU();
 }
+#endif
 
 /**
  *
@@ -1509,6 +1562,127 @@ static void lcd_control_volumetric_menu() {
     END_MENU();
   }
 #endif // FWRETRACT
+
+#if ENABLED(LASER)
+static void lcd_laser_menu()
+{
+   START_MENU();
+   MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
+   MENU_ITEM(submenu, "Set Focus", lcd_laser_focus_menu);
+   MENU_ITEM(submenu, "Test Fire", lcd_laser_test_fire_menu);
+   #ifdef LASER_PERIPHERALS
+   if (laser_peripherals_ok()) {
+      MENU_ITEM(function, "Turn On Pumps/Fans", action_laser_acc_on);
+   } else if (!(movesplanned() || IS_SD_PRINTING)) {
+      MENU_ITEM(function, "Turn Off Pumps/Fans", action_laser_acc_off);
+   }
+   #endif // LASER_PERIPHERALS
+   END_MENU();
+}
+
+static void lcd_laser_test_fire_menu() {
+   START_MENU();
+   MENU_ITEM(back, "Laser Functions", lcd_laser_menu);
+   MENU_ITEM(function, " 20%  50ms", action_laser_test_20_50ms);
+   MENU_ITEM(function, " 20% 100ms", action_laser_test_20_100ms);
+   MENU_ITEM(function, "100%  50ms", action_laser_test_100_50ms);
+   MENU_ITEM(function, "100% 100ms", action_laser_test_100_100ms);
+   MENU_ITEM(function, "Warm-up Laser 2sec", action_laser_test_warm);
+   END_MENU();
+}
+
+
+static void action_laser_acc_on() {
+   enquecommand_P(PSTR("M80"));
+}
+
+static void action_laser_acc_off() {
+   enquecommand_P(PSTR("M81"));
+}
+static void action_laser_test_20_50ms() {
+   laser_test_fire(20, 50);
+}
+
+static void action_laser_test_20_100ms() {
+   laser_test_fire(20, 100);
+}
+
+static void action_laser_test_100_50ms() {
+   laser_test_fire(100, 50);
+}
+
+static void action_laser_test_100_100ms() {
+   laser_test_fire(100, 100);
+}
+
+static void action_laser_test_warm() {
+   laser_test_fire(15, 2000);
+}
+
+static void laser_test_fire(uint8_t power, uint8_t dwell) {
+   enquecommand_P(PSTR("M80"));  // Enable laser accessories since we don't know if its been done (and there's no penalty for doing it again).
+    laser_fire(power);
+   delay(dwell);
+   laser_extinguish();
+}
+float focalLength = 0;
+static void lcd_laser_focus_menu() {
+   START_MENU();
+   MENU_ITEM(back, "Laser Functions", lcd_laser_menu);
+   MENU_ITEM(function, "1mm", action_laser_focus_1mm);
+   MENU_ITEM(function, "2mm", action_laser_focus_2mm);
+   MENU_ITEM(function, "3mm - 1/8in", action_laser_focus_3mm);
+   MENU_ITEM(function, "4mm", action_laser_focus_4mm);
+   MENU_ITEM(function, "5mm", action_laser_focus_5mm);
+   MENU_ITEM(function, "6mm - 1/4in", action_laser_focus_6mm);
+   MENU_ITEM(function, "7mm", action_laser_focus_7mm);
+   MENU_ITEM_EDIT_CALLBACK(float32, "Custom", &focalLength, 0, LASER_FOCAL_HEIGHT, action_laser_focus_custom);
+   END_MENU();
+}
+
+static void action_laser_focus_custom() {
+   laser_set_focus(focalLength);
+}
+
+static void action_laser_focus_1mm() {
+   laser_set_focus(1);
+}
+static void action_laser_focus_2mm() {
+   laser_set_focus(2);
+}
+
+static void action_laser_focus_3mm() {
+   laser_set_focus(3);
+}
+
+static void action_laser_focus_4mm() {
+   laser_set_focus(4);
+}
+
+static void action_laser_focus_5mm() {
+   laser_set_focus(5);
+}
+
+static void action_laser_focus_6mm() {
+   laser_set_focus(6);
+}
+
+static void action_laser_focus_7mm() {
+   laser_set_focus(7);
+}
+static void laser_set_focus(float f_length) {
+   if (!has_axis_homed[Z_AXIS]) {
+      enquecommand_P(PSTR("G28 Z F150"));
+   }
+   focalLength = f_length;
+   float focus = LASER_FOCAL_HEIGHT - f_length;
+   char cmd[20];
+
+   sprintf_P(cmd, PSTR("G0 Z%s F150"), ftostr52(focus));
+   enquecommand(cmd);
+}
+
+#endif // LASER
 
 #if ENABLED(SDSUPPORT)
 
