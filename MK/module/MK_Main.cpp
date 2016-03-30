@@ -586,7 +586,7 @@ bool enqueuecommand(const char* cmd) {
  *    • watchdog
  *    • stepper
  *    • photo pin
- *    • laserbeam
+ *    • laserbeam, laser and laser_raster
  *    • servos
  *    • LCD controller
  *    • Digipot I2C
@@ -675,6 +675,10 @@ void setup() {
     setup_statled();
   #endif
 
+  #if ENABLED(LASER)
+    laser_init();
+  #endif
+
   #if ENABLED(MIXING_EXTRUDER_FEATURE) && MIXING_VIRTUAL_TOOLS > 1
     // Initialize mixing to 100% color 1
     for (uint8_t i = 0; i < DRIVER_EXTRUDERS; i++) {
@@ -696,6 +700,7 @@ void setup() {
   #if ENABLED(FIRMWARE_TEST)
     FirmwareTest();
   #endif
+
 }
 
 /**
@@ -1115,13 +1120,21 @@ inline void line_to_z(float zPosition) {
   plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], zPosition, current_position[E_AXIS], feedrate/60, active_extruder, active_driver);
 }
 inline void line_to_destination(float mm_m) {
-  plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], mm_m/60, active_extruder, active_driver);
+  #if ENABLED(LASER) && ENABLED(MUVE_Z_PEEL)
+    plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[Z_AXIS], mm_m/60, active_extruder, active_driver);
+  #else
+    plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], mm_m/60, active_extruder, active_driver);
+  #endif
 }
 inline void line_to_destination() {
   line_to_destination(feedrate);
 }
 inline void sync_plan_position() {
-  plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+  #if ENABLED(LASER) && ENABLED(MUVE_Z_PEEL)
+    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[Z_AXIS]);
+  #else
+    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+  #endif
 }
 #if MECH(DELTA) || MECH(SCARA)
   inline void sync_plan_position_delta() {
@@ -1402,6 +1415,7 @@ static void clean_up_after_endstop_move() {
 
       // Set the axis position as setup for the move
       current_position[axis] = 0;
+
       sync_plan_position();
 
       #if HAS(Z_PROBE_SLED)
@@ -2889,7 +2903,7 @@ void unknown_command_error() {
 /**
  * G0, G1: Coordinated movement of X Y Z E axes
  */
-inline void gcode_G0_G1() {
+inline void gcode_G0_G1(bool lfire) {
   if (IsRunning()) {
     gcode_get_destination(); // For X Y Z E F
 
@@ -2905,8 +2919,27 @@ inline void gcode_G0_G1() {
         }
       }
     #endif //FWRETRACT
+    #if ENABLED(LASER) && ENABLED(LASER_FIRE_G1)
+      if(lfire) {
+         if (code_seen('S') && IsRunning()) laser.intensity = (float) code_value();
+         if (code_seen('L') && IsRunning()) laser.duration = (unsigned long) labs(code_value());
+         if (code_seen('P') && IsRunning()) laser.ppm = (float) code_value();
+         if (code_seen('D') && IsRunning()) laser.diagnostics = (bool) code_value();
+         if (code_seen('B') && IsRunning()) laser_set_mode((int) code_value());
+
+         laser.status = LASER_ON;
+         laser.fired = LASER_FIRE_G1;
+      }
+    #endif
 
     prepare_move();
+
+    #if ENABLED(LASER) && ENABLED(LASER_FIRE_G1)
+      if(lfire) {
+         laser.status = LASER_OFF;
+      }
+    #endif
+
   }
 }
 
@@ -2924,6 +2957,20 @@ inline void gcode_G2_G3(bool clockwise) {
 
     gcode_get_destination();
 
+    #if ENABLED(LASER) && ENABLED(LASER_FIRE_G1)
+      if(lfire) {
+         if (code_seen('S') && IsRunning()) laser.intensity = (float) code_value();
+         if (code_seen('L') && IsRunning()) laser.duration = (unsigned long) labs(code_value());
+         if (code_seen('P') && IsRunning()) laser.ppm = (float) code_value();
+         if (code_seen('D') && IsRunning()) laser.diagnostics = (bool) code_value();
+         if (code_seen('B') && IsRunning()) laser_set_mode((int) code_value());
+
+         laser.status = LASER_ON;
+         laser.fired = LASER_FIRE_G1;
+      }
+    #endif
+
+
     #if ENABLED(SF_ARC_FIX)
       relative_mode = relative_mode_backup;
     #endif
@@ -2938,6 +2985,12 @@ inline void gcode_G2_G3(bool clockwise) {
     plan_arc(destination, arc_offset, clockwise);
 
     refresh_cmd_timeout();
+    #if ENABLED(LASER) && ENABLED(LASER_FIRE_G1)
+      if(lfire) {
+         laser.status = LASER_OFF;
+      }
+    #endif
+
   }
 }
 
@@ -2979,6 +3032,142 @@ inline void gcode_G4() {
   }
 
 #endif //FWRETRACT
+
+#if ENABLED(G5_BEZIER)
+inline void gcode_G5() {
+  float p[4][2] = {{0.0,0.0},{0.0,0.0},{0.0,0.0},{0.0,0.0}};
+  int steps = 10;
+  float stepsPerUnit = 1;
+  float f[2]={0,0};
+  float fd[2]={0,0};
+  float fdd[2]={0,0};
+  float fddd[2]={0,0};
+  float fdd_per_2[2]={0,0};
+  float fddd_per_2[2]={0,0};
+  float fddd_per_6[2]={0,0};
+  float t = (1.0);
+  float temp;
+  // get coordinates
+  //---------------------------------------
+  // start point
+  p[0][0] = current_position[0];
+  p[0][1] = current_position[1];
+  // control point 1
+  if(code_seen('I')) p[1][0] = (float)code_value() + (axis_relative_modes[0] || relative_mode)*current_position[0];
+  if(code_seen('J')) p[1][1] = (float)code_value() + (axis_relative_modes[1] || relative_mode)*current_position[1];
+
+  // control point 2
+  if(code_seen('K')) p[2][0] = (float)code_value() + (axis_relative_modes[0] || relative_mode)*current_position[0];
+  if(code_seen('L')) p[2][1] = (float)code_value() + (axis_relative_modes[1] || relative_mode)*current_position[1];
+  // end point
+  if(code_seen(axis_codes[0])) p[3][0] = (float)code_value() + (axis_relative_modes[0] || relative_mode)*current_position[0];
+  if(code_seen(axis_codes[1])) p[3][1] = (float)code_value() + (axis_relative_modes[1] || relative_mode)*current_position[1];
+
+  #ifdef DEBUG
+    log_float("CX", p[0][0]);
+    log_float("CY", p[0][1]);
+    log_float("I", p[1][0]);
+    log_float("J", p[1][1]);
+    log_float("K", p[2][0]);
+    log_float("L", p[2][1]);
+    log_float("X", p[3][0]);
+    log_float("Y", p[3][1]);
+  #endif
+  // calc num steps
+  float maxD = 0, sqrD = 0;
+  for (int i=1; i<4; i++) {
+    sqrD = (p[i][0] - p[i-1][0])*(p[i][0] - p[i-1][0]) + (p[i][1] - p[i-1][1])*(p[i][1] - p[i-1][1]);
+    if (sqrD > maxD) {maxD = sqrD; };
+  }
+  maxD = sqrt(maxD);
+  if (maxD > 0) {
+    steps = round((3 * maxD * stepsPerUnit));
+  }
+  if (steps < 1) steps = 1;
+  if (steps > 200) steps = 200;
+  #ifdef DEBUG
+    log_float("maxD",maxD);
+    log_int("steps", steps);
+  #endif
+  // init Forward Differencing algo
+  //---------------------------------------
+  t = 1.0 / steps;
+  temp = t*t;
+  for (int i=0; i<2; i++) {
+    f[i] = p[0][i];
+    fd[i] = 3 * (p[1][i] - p[0][i]) * t;
+    fdd_per_2[i] = 3 * (p[0][i] - 2 * p[1][i] + p[2][i]) * temp;
+    fddd_per_2[i] = 3 * (3 * (p[1][i] - p[2][i]) + p[3][i] - p[0][i]) * temp * t;
+
+    fddd[i] = fddd_per_2[i] + fddd_per_2[i];
+    fdd[i] = fdd_per_2[i] + fdd_per_2[i];
+    fddd_per_6[i] = (fddd_per_2[i] * (1.0 / 3));
+  }
+  // prep destination
+  for(int i=0; i < NUM_AXIS; i++) {
+    destination[i] = current_position[i];
+  }
+  // iterate through curve
+  //---------------------------------------
+  for (int loop=0; loop < steps; loop++) {
+    destination[0] = f[0];
+    destination[1] = f[1];
+    #ifdef DEBUG
+      log_float("X",f[0]);
+      log_float("Y",f[1]);
+    #endif
+  prepare_move();
+  previous_millis_cmd = millis();
+
+  // update f
+  for (int i=0; i<2; i++) {
+    f[i] = f[i] + fd[i] + fdd_per_2[i] + fddd_per_6[i];
+    fd[i] = fd[i] + fdd[i] + fddd_per_2[i];
+    fdd[i] = fdd[i] + fddd[i];
+    fdd_per_2[i] = fdd_per_2[i] + fddd_per_2[i];
+    }
+  }
+  // Move to final position
+  destination[0] = p[3][0];
+  destination[1] = p[3][1];
+  prepare_move();
+  previous_millis_cmd = millis();
+
+}
+#endif
+
+#if ENABLED(LASER) && ENABLED(LASER_RASTER)
+inline void gcode_G7() {
+  if (code_seen('L')) laser.raster_raw_length = int(code_value());
+  if (code_seen('$')) {
+    laser.raster_direction = (bool)code_value();
+    destination[Y_AXIS] = current_position[Y_AXIS] + (laser.raster_mm_per_pulse * laser.raster_aspect_ratio); // increment Y axis
+  }
+  if (code_seen('D')) laser.raster_num_pixels = base64_decode(laser.raster_data, &cmdbuffer[bufindr][strchr_pointer - cmdbuffer[bufindr] + 1], laser.raster_raw_length);
+  if (!laser.raster_direction) {
+    destination[X_AXIS] = current_position[X_AXIS] - (laser.raster_mm_per_pulse * laser.raster_num_pixels);
+    if (laser.diagnostics) {
+      SERIAL_ECHO_START;
+      SERIAL_ECHOLN("Negative Raster Line");
+    }
+  } else {
+    destination[X_AXIS] = current_position[X_AXIS] + (laser.raster_mm_per_pulse * laser.raster_num_pixels);
+    if (laser.diagnostics) {
+      SERIAL_ECHO_START;
+      SERIAL_ECHOLN("Positive Raster Line");
+    }
+  }
+
+  laser.ppm = 1 / laser.raster_mm_per_pulse; //number of pulses per millimetre
+  laser.duration = (1000000 / ( feedrate / 60)) / laser.ppm; // (1 second in microseconds / (time to move 1mm in microseconds)) / (pulses per mm) = Duration of pulse, taking into account feedrate as speed and ppm
+  
+  laser.mode = RASTER;
+  laser.status = LASER_ON;
+  laser.fired = RASTER;
+  prepare_move();
+
+}
+#endif
 
 /**
  * G28: Home all axes according to settings
@@ -4193,10 +4382,13 @@ inline void gcode_G92() {
   for (int i = 0; i < NUM_AXIS; i++) {
     if (code_seen(axis_codes[i])) {
       float v = current_position[i] = code_value();
-      if (i == E_AXIS)
+      if (i == E_AXIS) {
+        #if DISABLED(MUVE_Z_PEEL)
         plan_set_e_position(v);
-      else
+        #endif
+      } else {
         didXYZ = true;
+      }
     }
   }
   if (didXYZ) {
@@ -4256,33 +4448,63 @@ inline void gcode_G92() {
   }
 #endif //ULTIPANEL
 
-#if ENABLED(LASERBEAM)
+#if ENABLED(LASERBEAM) || (ENABLED(LASER) && ENABLED(LASER_SPINDLE))
   /**
-   * M3: S - Setting laser beam
+   * M3: S - Setting laser beam or fire laser 
    */
   inline void gcode_M3() {
+    #if ENABLED(LASERBEAM)
     if (code_seen('S')) {
       laser_ttl_modulation = constrain(code_value(), 0, 255);
     }
     else {
       laser_ttl_modulation = 0;
     }
+    #endif
+    #if ENABLED(LASER) && ENABLED(LASER_SPINDLE)
+    if (code_seen('S') && IsRunning()) laser.intensity = (float) code_value();
+    if (code_seen('L') && IsRunning()) laser.duration = (unsigned long) labs(code_value());
+    if (code_seen('P') && IsRunning()) laser.ppm = (float) code_value();
+    if (code_seen('D') && IsRunning()) laser.diagnostics = (bool) code_value();
+    if (code_seen('B') && IsRunning()) laser_set_mode((int) code_value());
+
+    laser.status = LASER_ON;
+    laser.fired = LASER_FIRE_SPINDLE;
+
+    lcd_update();
+
+    prepare_move();
+
+    #endif
   }
 
   /**
    * M4: Turn on laser beam
    */
   inline void gcode_M4() {
+    #if ENABLED(LASERBEAM)
     WRITE(LASER_PWR_PIN, HIGH);
     laser_ttl_modulation = 0;
+    #endif
+    #if ENABLED(LASER) && ENABLED(LASER_SPINDLE)
+      gcode_M3();
+    #endif
+
   }
 
   /**
    * M5: Turn off laser beam
    */
   inline void gcode_M5() {
+    #if ENABLED(LASERBEAM)
     WRITE(LASER_PWR_PIN, LOW);
     laser_ttl_modulation = 0;
+    #endif
+    #if ENABLED(LASER) && ENABLED(LASER_SPINDLE)
+      laser.status = LASER_OFF;
+      lcd_update();
+      prepare_move();
+    #endif
   }
 #endif //LASERBEAM
 
@@ -4741,6 +4963,10 @@ inline void gcode_M42() {
     #if ENABLED(ULTIPANEL) || ENABLED(NEXTION)
       LCD_MESSAGEPGM(WELCOME_MSG);
       lcd_update();
+    #endif
+    #if ENABLED(LASER_PERIPHERALS)
+      laser_peripherals_on();
+      laser_wait_for_peripherals();
     #endif
   }
 #endif // HAS(POWER_SWITCH)
@@ -6812,6 +7038,63 @@ inline void gcode_M503() {
   }
 #endif // DUAL_X_CARRIAGE
 
+#if ENABLED(LASER)
+  // M649 set laser options
+  inline void gcode_M649() {
+    if (code_seen('S') && IsRunning()) {
+      laser.intensity = (float) code_value();
+      laser.rasterlaserpower =  laser.intensity;
+    }
+    if (code_seen('L') && IsRunning()) laser.duration = (unsigned long) labs(code_value());
+    if (code_seen('P') && IsRunning()) laser.ppm = (float) code_value();
+    if (code_seen('D') && IsRunning()) laser.diagnostics = (bool) code_value();
+    if (code_seen('B') && IsRunning()) laser_set_mode((int) code_value());
+    if (code_seen('R') && IsRunning()) laser.raster_mm_per_pulse = ((float) code_value());
+    if (code_seen('F')) {
+      next_feedrate = code_value();
+      if(next_feedrate > 0.0) feedrate = next_feedrate;
+    }
+  }
+  #if ENABLED(MUVE_Z_PEEL)
+  // M650 set peel distance
+  inline void gcode_M650() {
+    st_synchronize();
+    laser.peel_distance=2.0;
+    laser.peel_speed=2.0;
+    laser.peel_pause=0.0;
+    if(code_seen('D')) laser.peel_distance = (float) code_value();
+    if(code_seen('S')) laser.peel_speed = (float) code_value();
+    if(code_seen('P')) laser.peel_pause = (float) code_value();
+
+  }
+
+  // M651 run peel move
+  inline void gcode_M651() {
+    if(laser.peel_distance > 0) {
+      plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS] + laser.peel_distance, destination[Z_AXIS], laser.peel_speed, active_extruder);
+      plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS] + laser.peel_distance, destination[Z_AXIS] + laser.peel_distance, laser.peel_speed, active_extruder);
+      st_synchronize();
+    }
+    if(laser.peel_pause > 0) {
+      st_synchronize();
+      codenum = laser.peel_pause;
+      codenum += millis();  // keep track of when we started waiting
+      previous_millis_cmd = millis();
+      while(millis()  < codenum ){
+        manage_heater();
+        manage_inactivity();
+        lcd_update();
+      }
+      plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[Z_AXIS], 30, active_extruder);
+      st_synchronize();
+
+    }
+
+  }
+  #endif
+
+#endif
+
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
   //M666: Set Z probe offset
   inline void gcode_M666() {
@@ -7362,7 +7645,7 @@ void process_next_command() {
       // G0 -> G1
       case 0:
       case 1:
-        gcode_G0_G1(); break;
+        gcode_G0_G1(codenum==1); break;
 
       // G2, G3
       #if !MECH(SCARA)
@@ -7374,6 +7657,18 @@ void process_next_command() {
       // G4 Dwell
       case 4:
         gcode_G4(); break;
+
+      // G5 Bezier curve - from http://forums.reprap.org/read.php?147,93577
+      #if ENABLED(G5_BEZIER)
+        case 5:
+          gcode_G5(); break;
+      #endif
+
+      // G7 Execute laser raster line
+      #if ENABLED(LASER) && ENABLED(LASER_RASTER)
+        case 7:
+          gcode_G7(); break;
+      #endif
 
       #if ENABLED(FWRETRACT)
         case 10: // G10: retract
@@ -7425,7 +7720,7 @@ void process_next_command() {
           gcode_M0_M1(); break;
       #endif //ULTIPANEL
 
-      #if ENABLED(LASERBEAM)
+      #if ENABLED(LASERBEAM) || (ENABLED(LASER) && ENABLED(LASER_FIRE_SPINDLE))
         case 3: // M03 S - Setting laser beam
           gcode_M3(); break;
         case 4: // M04 - Turn on laser beam
@@ -7768,6 +8063,21 @@ void process_next_command() {
           gcode_M605(); break;
       #endif
 
+      #if ENABLED(LASER)
+        case 649: // M649 set laser options
+          gcode_M649(); break;
+
+        #if ENABLED(MUVE_Z_PEEL)
+          case 650:
+            gcode_M650(); break;
+
+          case 651:
+            gcode_M651(); break;
+        #endif
+
+
+      #endif 
+
       #if ENABLED(AUTO_BED_LEVELING_FEATURE) || MECH(DELTA)
         case 666: // M666 Set Z probe offset or set delta endstop and geometry adjustment
           gcode_M666(); break;
@@ -7992,9 +8302,21 @@ void clamp_to_software_endstops(float target[3]) {
 #if MECH(CARTESIAN) || MECH(COREXY) || MECH(COREXZ)
 
   inline bool prepare_move_cartesian() {
+    #if ENABLED(LASER) && ENABLED(LASER_FIRE_E)
+      if (current_position[E_AXIS] != destination[E_AXIS] && ((current_position[X_AXIS] != destination [X_AXIS]) || (current_position[Y_AXIS] != destination [Y_AXIS]))){
+        laser.status = LASER_ON;
+        laser.fired = LASER_FIRE_E;
+      }
+      if (current_position[E_AXIS] == destination[E_AXIS] && laser.fired == LASER_FIRE_E){
+        laser.status = LASER_OFF;
+      }
+    #endif
     // Do not use feedrate_multiplier for E or Z only moves
     if (current_position[X_AXIS] == destination[X_AXIS] && current_position[Y_AXIS] == destination[Y_AXIS]) {
       line_to_destination();
+      #if ENABLED(LASER) && ENABLED(MUVE_Z_PEEL)
+        current_position[E_AXIS] = current_position[Z_AXIS];
+      #endif
     }
     else {
       line_to_destination(feedrate * feedrate_multiplier / 100.0);
@@ -8368,6 +8690,17 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
     #if DISABLE_E == true
       disable_e();
     #endif
+    #if ENABLED(LASER)
+      if (laser.time / 60000 > 0) {
+        laser.lifetime += laser.time / 60000; // convert to minutes
+        laser.time = 0;
+        Config_StoreSettings();
+      }
+      laser_init();
+      #if ENABLED(LASER_PERIPHERALS)
+        laser_peripherals_off();
+      #endif
+    #endif
   }
 
   #if HAS(CHDK) // Check if pin should be set to LOW after M240 set it to HIGH
@@ -8572,6 +8905,14 @@ void kill(const char* lcd_msg) {
   disable_all_heaters();
   disable_all_steppers();
 
+  #if ENABLED(LASER)
+    laser_init();
+  #endif
+
+  #if ENABLED(LASER_PERIPHERALS)
+    laser_peripherals_off();
+  #endif
+
   #if HAS(POWER_SWITCH)
     SET_INPUT(PS_ON_PIN);
   #endif
@@ -8668,6 +9009,14 @@ void kill(const char* lcd_msg) {
 
 void Stop() {
   disable_all_heaters();
+  #ifdef LASER
+    if (laser.diagnostics) SERIAL_ECHOLN("Laser set to off, stop() called");
+    laser_extinguish();
+  #endif
+  #ifdef LASER_PERIPHERALS
+    laser_peripherals_off();
+  #endif
+
   if (IsRunning()) {
     Running = false;
     ECHO_LM(ER, SERIAL_ERR_STOPPED);
