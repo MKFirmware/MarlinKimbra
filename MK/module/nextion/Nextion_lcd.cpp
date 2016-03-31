@@ -640,7 +640,7 @@
           temptoLCD(2, degBed(), degTargetBed());
         #endif
 
-        coordtoLCD();
+        //coordtoLCD();
 
         #if ENABLED(SDSUPPORT)
           if (card.isFileOpen()) {
