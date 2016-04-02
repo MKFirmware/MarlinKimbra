@@ -2,11 +2,13 @@
 
 ## G Codes
 
-*  G0  -> G1
-*  G1  - Coordinated Movement X Y Z E F(feedrate) P(Purge)
+*  G0  -> G1 except for laser where G0 is "move without firing"
+*  G1  - Coordinated Movement X Y Z E F(feedrate) P(Purge), for laser move by firing
 *  G2  - CW ARC
 *  G3  - CCW ARC
 *  G4  - Dwell S[seconds] or P[milliseconds], delay in Second or Millisecond
+*  G5  - Bezier curve - from http://forums.reprap.org/read.php?147,93577
+*  G7  - execute raster (base64) line (LASER)
 *  G10 - retract filament according to settings of M207
 *  G11 - retract recover filament according to settings of M208
 *  G28 - X0 Y0 Z0 Home all Axis. G28 M for bed manual setting with LCD.
@@ -124,6 +126,9 @@
 *  M595 - Set hotend AD595 offset and gain
 *  M600 - Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
 *  M605 - Set dual x-carriage movement mode: Smode [ X<duplication x-offset> Rduplication temp offset ]
+*  M649 - laser set options
+*  M650 - mUVe peel set peel distance
+*  M651 - mUVe peel run peel move
 *  M666 - Set z probe offset or Endstop and delta geometry adjustment. M666 L for list command
 *  M906 - Set motor currents XYZ T0-4 E
 *  M907 - Set digital trimpot motor current using axis codes.
