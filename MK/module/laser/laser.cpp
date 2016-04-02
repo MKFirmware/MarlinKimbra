@@ -123,7 +123,7 @@ void laser_fire(int intensity = 100.0){
     #endif
 
     if (laser.diagnostics) {
-	  SERIAL_ECHOLN("Laser fired");
+	  ECHO_LM(INFO, "Laser fired");
 	}
 }
 void laser_extinguish(){
@@ -135,7 +135,7 @@ void laser_extinguish(){
 	  laser.time += millis() - (laser.last_firing / 1000);
 
 	  if (laser.diagnostics) {
-	    SERIAL_ECHOLN("Laser extinguished");
+	    ECHO_LM(INFO, "Laser extinguished");
 	  }
 	}
 }
@@ -159,30 +159,26 @@ bool laser_peripherals_ok(){
 void laser_peripherals_on(){
 	digitalWrite(LASER_PERIPHERALS_PIN, LOW);
 	if (laser.diagnostics) {
-	  SERIAL_ECHO_START;
-	  SERIAL_ECHOLNPGM("Laser Peripherals Enabled");
+	  ECHO_LM(INFO, "Laser Peripherals Enabled");
     }
 }
 void laser_peripherals_off(){
 	if (!digitalRead(LASER_PERIPHERALS_STATUS_PIN)) {
 	  digitalWrite(LASER_PERIPHERALS_PIN, HIGH);
 	  if (laser.diagnostics) {
-	    SERIAL_ECHO_START;
-	    SERIAL_ECHOLNPGM("Laser Peripherals Disabled");
+	    ECHO_LM(INFO, "Laser Peripherals Disabled");
       }
     }
 }
 void laser_wait_for_peripherals() {
 	unsigned long timeout = millis() + LASER_PERIPHERALS_TIMEOUT;
 	if (laser.diagnostics) {
-	  SERIAL_ECHO_START;
-	  SERIAL_ECHOLNPGM("Waiting for peripheral control board signal...");
+	  ECHO_LM(INFO, "Waiting for peripheral control board signal...");
 	}
 	while(!laser_peripherals_ok()) {
 		if (millis() > timeout) {
 			if (laser.diagnostics) {
-			  SERIAL_ERROR_START;
-			  SERIAL_ERRORLNPGM("Peripheral control board failed to respond");
+			  ECHO_LM(ERR, "Peripheral control board failed to respond");
 			}
 			Stop();
 			break;

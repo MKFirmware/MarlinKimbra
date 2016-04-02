@@ -2940,16 +2940,14 @@ inline void gcode_G2_G3(bool clockwise) {
     gcode_get_destination();
 
     #if ENABLED(LASER) && ENABLED(LASER_FIRE_G1)
-      if(lfire) {
-         if (code_seen('S') && IsRunning()) laser.intensity = (float) code_value();
-         if (code_seen('L') && IsRunning()) laser.duration = (unsigned long) labs(code_value());
-         if (code_seen('P') && IsRunning()) laser.ppm = (float) code_value();
-         if (code_seen('D') && IsRunning()) laser.diagnostics = (bool) code_value();
-         if (code_seen('B') && IsRunning()) laser_set_mode((int) code_value());
+       if (code_seen('S') && IsRunning()) laser.intensity = (float) code_value();
+       if (code_seen('L') && IsRunning()) laser.duration = (unsigned long) labs(code_value());
+       if (code_seen('P') && IsRunning()) laser.ppm = (float) code_value();
+       if (code_seen('D') && IsRunning()) laser.diagnostics = (bool) code_value();
+       if (code_seen('B') && IsRunning()) laser_set_mode((int) code_value());
 
-         laser.status = LASER_ON;
-         laser.fired = LASER_FIRE_G1;
-      }
+       laser.status = LASER_ON;
+       laser.fired = LASER_FIRE_G1;
     #endif
 
 
@@ -2968,9 +2966,7 @@ inline void gcode_G2_G3(bool clockwise) {
 
     refresh_cmd_timeout();
     #if ENABLED(LASER) && ENABLED(LASER_FIRE_G1)
-      if(lfire) {
-         laser.status = LASER_OFF;
-      }
+      laser.status = LASER_OFF;
     #endif
 
   }
@@ -3125,18 +3121,16 @@ inline void gcode_G7() {
     laser.raster_direction = (bool)code_value();
     destination[Y_AXIS] = current_position[Y_AXIS] + (laser.raster_mm_per_pulse * laser.raster_aspect_ratio); // increment Y axis
   }
-  if (code_seen('D')) laser.raster_num_pixels = base64_decode(laser.raster_data, &cmdbuffer[bufindr][strchr_pointer - cmdbuffer[bufindr] + 1], laser.raster_raw_length);
+  if (code_seen('D')) laser.raster_num_pixels = base64_decode(laser.raster_data, seen_pointer+1, laser.raster_raw_length);
   if (!laser.raster_direction) {
     destination[X_AXIS] = current_position[X_AXIS] - (laser.raster_mm_per_pulse * laser.raster_num_pixels);
     if (laser.diagnostics) {
-      SERIAL_ECHO_START;
-      SERIAL_ECHOLN("Negative Raster Line");
+      ECHO_LM(INFO, "Negative Raster Line");
     }
   } else {
     destination[X_AXIS] = current_position[X_AXIS] + (laser.raster_mm_per_pulse * laser.raster_num_pixels);
     if (laser.diagnostics) {
-      SERIAL_ECHO_START;
-      SERIAL_ECHOLN("Positive Raster Line");
+      ECHO_LM(INFO, "Positive Raster Line");
     }
   }
 
@@ -4435,7 +4429,7 @@ inline void gcode_G92() {
   }
 #endif //ULTIPANEL
 
-#if ENABLED(LASERBEAM) || (ENABLED(LASER) && ENABLED(LASER_SPINDLE))
+#if (ENABLED(LASERBEAM) || ENABLED(LASER) && ENABLED(LASER_FIRE_SPINDLE))
   /**
    * M3: S - Setting laser beam or fire laser 
    */
@@ -4448,7 +4442,7 @@ inline void gcode_G92() {
       laser_ttl_modulation = 0;
     }
     #endif
-    #if ENABLED(LASER) && ENABLED(LASER_SPINDLE)
+    #if ENABLED(LASER) && ENABLED(LASER_FIRE_SPINDLE)
     if (code_seen('S') && IsRunning()) laser.intensity = (float) code_value();
     if (code_seen('L') && IsRunning()) laser.duration = (unsigned long) labs(code_value());
     if (code_seen('P') && IsRunning()) laser.ppm = (float) code_value();
@@ -4473,7 +4467,7 @@ inline void gcode_G92() {
     WRITE(LASER_PWR_PIN, HIGH);
     laser_ttl_modulation = 0;
     #endif
-    #if ENABLED(LASER) && ENABLED(LASER_SPINDLE)
+    #if ENABLED(LASER) && ENABLED(LASER_FIRE_SPINDLE)
       gcode_M3();
     #endif
 
@@ -4487,7 +4481,7 @@ inline void gcode_G92() {
     WRITE(LASER_PWR_PIN, LOW);
     laser_ttl_modulation = 0;
     #endif
-    #if ENABLED(LASER) && ENABLED(LASER_SPINDLE)
+    #if ENABLED(LASER) && ENABLED(LASER_FIRE_SPINDLE)
       laser.status = LASER_OFF;
       lcd_update();
       prepare_move();
@@ -7038,7 +7032,7 @@ inline void gcode_M503() {
     if (code_seen('B') && IsRunning()) laser_set_mode((int) code_value());
     if (code_seen('R') && IsRunning()) laser.raster_mm_per_pulse = ((float) code_value());
     if (code_seen('F')) {
-      next_feedrate = code_value();
+      float next_feedrate = code_value();
       if(next_feedrate > 0.0) feedrate = next_feedrate;
     }
   }
@@ -7632,7 +7626,7 @@ void process_next_command() {
       // G0 -> G1
       case 0:
       case 1:
-        gcode_G0_G1(codenum==1); break;
+        gcode_G0_G1(codenum == 1); break;
 
       // G2, G3
       #if !MECH(SCARA)
@@ -8997,7 +8991,7 @@ void kill(const char* lcd_msg) {
 void Stop() {
   disable_all_heaters();
   #ifdef LASER
-    if (laser.diagnostics) SERIAL_ECHOLN("Laser set to off, stop() called");
+    if (laser.diagnostics) ECHO_LM(INFO, "Laser set to off, stop() called");
     laser_extinguish();
   #endif
   #ifdef LASER_PERIPHERALS
