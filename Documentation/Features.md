@@ -45,6 +45,9 @@ NEED UPGRADE
 *   Singlenozzle support
 *   NPr2 support, multiextruder by NicolaP http://www.3dmakerlab.it/extruder-npr2.html
 *   Laserbeam support
+*   Laser for RAMPS buildlog based 3d laser cutter (like modified chinese K40) with both vectorial and raster support
+    compatible with inkscape plugin at https://github.com/TurnkeyTyranny/laser-gcode-exporter-inkscape-plugin
+*   Laser pheripherals (water cooling, air assisted lasering) 
 *   Firmware test
 *   Support for a filament diameter sensor, which adjusts extrusion volume
 *   Support for a hall effect sensor for calucalte Wh. Example sensor ACS712 20A range Current Sensor Module. http://i.ebayimg.com/images/i/310506962976-0-1/s-l1000.jpg
