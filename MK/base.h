@@ -34,6 +34,14 @@
 #include "Configuration_Feature.h"
 #include "Configuration_Overall.h"
 
+#if ENABLED(LASER)
+  #include "Configuration_Laser.h"
+  #if ENABLED(LASER_RASTER)
+    #include "module/base64/Base64.h"
+  #endif
+  #include "module/laser/laser.h"
+#endif
+
 #include "module/conditionals.h"
 #include "module/sanitycheck.h"
 #include "module/HAL/HAL.h"
@@ -73,14 +81,6 @@
 
 #if ENABLED(RFID_MODULE)
   #include "module/mfrc522/MFRC522_serial.h"
-#endif
-
-#if ENABLED(LASER)
-  #include "Configuration_Laser.h"
-  #if ENABLED(LASER_RASTER)
-    #include "module/base64/Base64.h"
-  #endif
-  #include "module/laser/laser.h"
 #endif
 
 #endif

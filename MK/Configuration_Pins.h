@@ -114,15 +114,19 @@
       #define LASER_INTENSITY_PIN 6 // Digital pins 2, 3, 5, 6, 7, 8 are attached to timers we can use
       #define LASER_FIRING_PIN   5
    #endif
-   #ifdef LASER_POWER_DOWN
+   #if ENABLED(LASER_POWER_DOWN)
       #define LASER_POWER_PIN 9 // This is currently hard-coded to timer2 which services pins 9, 10
    #endif // LASER_POWER_DOWN
-   #ifdef LASER_PERIPHERALS
-      #define LASER_PERIPHERALS_PIN       4
-      #define LASER_PERIPHERALS_STATUS_PIN      11
+   #if ENABLED(LASER_PERIPHERALS)
+      #define LASER_PERIPHERALS_PIN       11
+      #define LASER_PERIPHERALS_STATUS_PIN      32
    #endif // LASER_PERIPHERALS
-
+   #if ENABLED(LASER_WATER_COOLING)
+      #define LASER_WATER_COOLING_PIN 4
+   #endif
 #endif
+
+
 
 #if ENABLED(FILAMENT_RUNOUT_SENSOR)
   #define FILRUNOUT_PIN -1
