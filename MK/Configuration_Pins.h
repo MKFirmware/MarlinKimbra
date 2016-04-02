@@ -119,11 +119,11 @@
    #endif // LASER_POWER_DOWN
    #if ENABLED(LASER_PERIPHERALS)
       #define LASER_PERIPHERALS_PIN       11
-      #define LASER_PERIPHERALS_STATUS_PIN      32
+      #define LASER_PERIPHERALS_STATUS_PIN      4
    #endif // LASER_PERIPHERALS
    #if ENABLED(LASER_WATER_COOLING)
-      #define LASER_WATER_COOLING_PIN 4
-   #endif
+      #define LASER_WATER_COOLING_PIN 1
+   #endif // LASER WATER_COOLING
 #endif
 
 

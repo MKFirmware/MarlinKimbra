@@ -21,6 +21,9 @@
 #define LASER_WATER_COOLING
 #define LASER_WATER_MAXTEMP 25
 
+// Uncomment the following to enable LASER_WATER_COOLING PWM instead of bang-bang
+#define LASER_PWM
+#define LASER_PWM_FREQUENCY 1000 // Frequency in Hz
 
 //// The following defines select which G codes tell the laser to fire.  It's OK to uncomment more than one.
 #define LASER_FIRE_G1 10 // fire the laser on a G1 move, extinguish when the move ends

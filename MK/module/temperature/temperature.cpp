@@ -990,6 +990,12 @@ void tp_init() {
     #endif
   #endif
 
+  #if ENABLED(LASER_WATER_COOLING)
+     SET_OUTPUT(LASER_WATER_COOLING_PIN);
+     setPwmFrequency(LASER_WATER_COOLING_PIN, 1);
+     analogWrite(LASER_WATER_COOLING_PIN, 128);
+  #endif
+
   #if ENABLED(HEATER_0_USES_MAX6675)
 
     #if DISABLED(SDSUPPORT)
