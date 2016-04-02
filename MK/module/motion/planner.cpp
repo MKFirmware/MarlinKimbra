@@ -889,8 +889,7 @@ float junction_deviation = 0.1;
 
     if (laser.diagnostics) {
       if (block->laser_status == LASER_ON) {
-        SERIAL_ECHO_START;
-         SERIAL_ECHOLNPGM("Laser firing enabled");
+         ECHO_LM(INFO, "Laser firing enabled");
        }
     }
   #endif // LASER

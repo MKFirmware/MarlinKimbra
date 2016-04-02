@@ -655,7 +655,7 @@ ISR(TIMER1_COMPA_vect) {
 
   #if ENABLED(LASER)
     if (laser.dur != 0 && (laser.last_firing + laser.dur < micros())) {
-      if (laser.diagnostics) SERIAL_ECHOLN("Laser firing duration elapsed, in interrupt handler");
+      if (laser.diagnostics) ECHO_LM(INFO,"Laser firing duration elapsed, in interrupt handler");
      laser_extinguish();
   #endif
 
@@ -717,7 +717,7 @@ ISR(TIMER1_COMPA_vect) {
          laser_fire(current_block->laser_intensity);
       }
       if (current_block->laser_status == LASER_OFF) {
-         if (laser.diagnostics) SERIAL_ECHOLN("Laser status set to off, in interrupt handler");
+         if (laser.diagnostics) ECHO_LM(INFO,"Laser status set to off, in interrupt handler");
          laser_extinguish();
       }
     #endif

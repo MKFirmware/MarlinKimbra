@@ -178,7 +178,7 @@ void laser_wait_for_peripherals() {
 	while(!laser_peripherals_ok()) {
 		if (millis() > timeout) {
 			if (laser.diagnostics) {
-			  ECHO_LM(ERR, "Peripheral control board failed to respond");
+			  ECHO_LM(ER, "Peripheral control board failed to respond");
 			}
 			Stop();
 			break;
