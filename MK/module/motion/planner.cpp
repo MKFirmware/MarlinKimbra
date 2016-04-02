@@ -885,7 +885,8 @@ float junction_deviation = 0.1;
     } else {
         block->steps_l = 0;
     }
-    block->step_event_count = max(block->steps_x, max(block->steps_y, max(block->steps_z, max(block->steps_e, block->steps_l))));
+    // NEXTIME
+    block->step_event_count = max(block->steps[X_AXIS], max(block->steps[Y_AXIS], max(block->steps[Z_AXIS], max(block->steps[E_AXIS], block->steps_l))));
 
     if (laser.diagnostics) {
       if (block->laser_status == LASER_ON) {

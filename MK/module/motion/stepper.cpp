@@ -657,6 +657,7 @@ ISR(TIMER1_COMPA_vect) {
     if (laser.dur != 0 && (laser.last_firing + laser.dur < micros())) {
       if (laser.diagnostics) ECHO_LM(INFO,"Laser firing duration elapsed, in interrupt handler");
      laser_extinguish();
+    }
   #endif
 
   // If there is no current block, attempt to pop one from the buffer
@@ -808,9 +809,9 @@ ISR(TIMER1_COMPA_vect) {
           if (current_block->laser_mode == PULSED && current_block->laser_status == LASER_ON) { // Pulsed Firing Mode
             laser_fire(current_block->laser_intensity);
             if (laser.diagnostics) {
-              SERIAL_ECHOPAIR("X: ", counter_x);
-              SERIAL_ECHOPAIR("Y: ", counter_y);
-              SERIAL_ECHOPAIR("L: ", counter_l);
+              ECHO_MV("X: ", counter_x);
+              ECHO_MV("Y: ", counter_y);
+              ECHO_MV("L: ", counter_l);
             }
           }
           #if ENABLED(LASER_RASTER)
@@ -819,7 +820,7 @@ ISR(TIMER1_COMPA_vect) {
               // going from darkened paper to burning through paper.
               laser_fire(current_block->laser_raster_data[counter_raster]); 
               if (laser.diagnostics) {
-                SERIAL_ECHOPAIR("Pixel: ", (float)current_block->laser_raster_data[counter_raster]);
+                ECHO_MV("Pixel: ", (float)current_block->laser_raster_data[counter_raster]);
               }
               counter_raster++;
             }
@@ -827,7 +828,7 @@ ISR(TIMER1_COMPA_vect) {
           counter_l -= current_block->step_event_count;
         }
         if (current_block->laser_duration != 0 && (laser.last_firing + current_block->laser_duration < micros())) {
-          if (laser.diagnostics) SERIAL_ECHOLN("Laser firing duration elapsed, in interrupt fast loop");
+          if (laser.diagnostics) ECHO_LM(INFO, "Laser firing duration elapsed, in interrupt fast loop");
           laser_extinguish();
         }
       #endif // LASER
