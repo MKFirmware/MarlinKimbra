@@ -21,7 +21,7 @@
 #define LASER_H
 
 #include <inttypes.h>
-#include "Configuration.h"
+#include "../../base.h"
 
 // split into planned and status
 typedef struct {

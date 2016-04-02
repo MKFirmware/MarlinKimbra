@@ -17,13 +17,11 @@
   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 */
 
-#include "laser.h"
-#include "Configuration.h"
-#include "ConfigurationStore.h"
-#include "pins.h"
+#include "../../base.h"
 #include <avr/interrupt.h>
 #include <Arduino.h>
-#include "Marlin.h"
+
+#if ENABLED(LASER)
 
 laser_t laser;
 
@@ -192,3 +190,5 @@ void laser_wait_for_peripherals() {
 	}
 }
 #endif // LASER_PERIPHERALS
+
+#endif // LASER

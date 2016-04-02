@@ -193,9 +193,8 @@
  * T0-T3 - Select a tool by index (usually an extruder) [ F<mm/min> ]
  *
  */
- 
-#include "base.h"
 
+#include "base.h"
 #if ENABLED(DIGIPOT_I2C) || ENABLED(BLINKM)
   #include <Wire.h>
 #endif
