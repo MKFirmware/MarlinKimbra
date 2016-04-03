@@ -85,9 +85,9 @@
 #define ORIG_TEMP_2_PIN        3 // PA22, analog pin on piggy
 #define ORIG_TEMP_3_PIN        4 // PA6, analog on piggy
 
-#define LED_PWM1_PIN          40 // PC8
-#define LED_PWM2_PIN          41 // PC9
-#define LED_PWM3_PIN          36 // PC4
+#define LED_PWM1_PIN          36 // PC4
+#define LED_PWM2_PIN          40 // PC8
+#define LED_PWM3_PIN          41 // PC9
 
 #define EXP_VOLTAGE_LEVEL_PIN 65
 

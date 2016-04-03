@@ -23,7 +23,11 @@
   #include "Configuration_Cartesian.h"
 #elif MECH(COREXY)
   #include "Configuration_Core.h"
+#elif MECH(COREYX)
+  #include "Configuration_Core.h"
 #elif MECH(COREXZ)
+  #include "Configuration_Core.h"
+#elif MECH(COREZX)
   #include "Configuration_Core.h"
 #elif MECH(DELTA)
   #include "Configuration_Delta.h"

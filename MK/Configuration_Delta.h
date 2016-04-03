@@ -118,8 +118,21 @@
 #define PROBE_COUNT 3
 
 // Z-Probe variables
-// X, Y, Z, E distance between hotend nozzle and deployed bed leveling probe.
-#define Z_PROBE_OFFSET {0, 0, -1}
+// Offsets to the probe relative to the extruder tip (Hotend - Probe)
+// X and Y offsets MUST be INTEGERS
+//
+//    +-- BACK ---+
+//    |           |
+//  L |    (+) P  | R <-- probe (10,10)
+//  E |           | I
+//  F | (-) N (+) | G <-- nozzle (0,0)
+//  T |           | H
+//    |  P (-)    | T <-- probe (-10,-10)
+//    |           |
+//    O-- FRONT --+
+#define X_PROBE_OFFSET_FROM_EXTRUDER  0     // X offset: -left  [of the nozzle] +right
+#define Y_PROBE_OFFSET_FROM_EXTRUDER  0     // Y offset: -front [of the nozzle] +behind
+#define Z_PROBE_OFFSET_FROM_EXTRUDER -1     // Z offset: -below [of the nozzle] (always negative!)
 
 // Start and end location values are used to deploy/retract the probe (will move from start to end and back again)
 #define Z_PROBE_DEPLOY_START_LOCATION {0, 0, 20}   // X, Y, Z, E start location for z-probe deployment sequence
@@ -377,9 +390,9 @@
  * For the other hotends it is their distance from the hotend 0.                         *
  *                                                                                       *
  *****************************************************************************************/
-//#define HOTEND_OFFSET_X {0.0, 5.0, 0.0, 0.0} // (in mm) for each hotend, offset of the hotend on the X axis
-//#define HOTEND_OFFSET_Y {0.0, 5.0, 0.0, 0.0} // (in mm) for each hotend, offset of the hotend on the Y axis
-//#define HOTEND_OFFSET_Z {0.0, 0.0, 0.0, 0.0} // (in mm) for each hotend, offset of the hotend on the Z axis
+#define HOTEND_OFFSET_X {0.0, 0.0, 0.0, 0.0} // (in mm) for each hotend, offset of the hotend on the X axis
+#define HOTEND_OFFSET_Y {0.0, 0.0, 0.0, 0.0} // (in mm) for each hotend, offset of the hotend on the Y axis
+#define HOTEND_OFFSET_Z {0.0, 0.0, 0.0, 0.0} // (in mm) for each hotend, offset of the hotend on the Z axis
 /*****************************************************************************************/
 
 #endif

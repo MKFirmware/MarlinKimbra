@@ -74,6 +74,7 @@ bool volumetric_enabled = false;
 float filament_size[EXTRUDERS] = ARRAY_BY_EXTRUDERS(DEFAULT_NOMINAL_FILAMENT_DIA);
 float volumetric_multiplier[EXTRUDERS] = ARRAY_BY_EXTRUDERS(1.0);
 float home_offset[3] = { 0 };
+float hotend_offset[3][HOTENDS];
 float min_pos[3] = { X_MIN_POS, Y_MIN_POS, Z_MIN_POS };
 float max_pos[3] = { X_MAX_POS, Y_MAX_POS, Z_MAX_POS };
 
@@ -115,11 +116,6 @@ double printer_usage_filament;
   float z_endstop_adj = 0;
 #endif
 
-// Hotend offset
-#if HOTENDS > 1
-  float hotend_offset[3][HOTENDS];
-#endif
-
 #if HEATER_USES_AD595
   float ad595_offset[HOTENDS] = ARRAY_BY_HOTENDS1(TEMP_SENSOR_AD595_OFFSET);
   float ad595_gain[HOTENDS] = ARRAY_BY_HOTENDS1(TEMP_SENSOR_AD595_GAIN);
@@ -134,6 +130,10 @@ double printer_usage_filament;
   unsigned long Spool_ID[EXTRUDERS] = ARRAY_BY_EXTRUDERS (0);
   bool Spool_must_read[EXTRUDERS]   = ARRAY_BY_EXTRUDERS (false);
   bool Spool_must_write[EXTRUDERS]  = ARRAY_BY_EXTRUDERS (false);
+#endif
+
+#if HAS(SERVOS)
+  Servo servo[NUM_SERVOS];
 #endif
 
 #if HAS(SERVO_ENDSTOPS)
@@ -173,6 +173,11 @@ double printer_usage_filament;
 #endif
 
 #if MECH(DELTA)
+
+  #define TOWER_1 X_AXIS
+  #define TOWER_2 Y_AXIS
+  #define TOWER_3 Z_AXIS
+
   float delta[3] = { 0.0 };
   float delta_tmp[3] = { 0.0 };
   float endstop_adj[3] = { 0 };
@@ -191,7 +196,7 @@ double printer_usage_filament;
   float base_max_pos[3] = {X_MAX_POS, Y_MAX_POS, Z_MAX_POS};
   float base_home_pos[3] = {X_HOME_POS, Y_HOME_POS, Z_HOME_POS};
   float max_length[3] = {X_MAX_LENGTH, Y_MAX_LENGTH, Z_MAX_LENGTH};
-  float z_probe_offset[3] = Z_PROBE_OFFSET;
+  float z_probe_offset[3];
   float bed_level[AUTO_BED_LEVELING_GRID_POINTS][AUTO_BED_LEVELING_GRID_POINTS];
   int delta_grid_spacing[2] = { 0, 0 };
   const float bed_radius = DELTA_PROBABLE_RADIUS;
@@ -293,10 +298,6 @@ double printer_usage_filament;
   bool allow_lengthy_extrude_once; // for load/unload
 #endif
 
-#if HAS(SERVOS)
-  Servo servo[NUM_SERVOS];
-#endif
-
 #if HAS(CHDK)
   unsigned long chdkHigh = 0;
   boolean chdkActive = false;
@@ -319,8 +320,6 @@ void delay_ms(millis_t ms) {
 void process_next_command();
 
 void plan_arc(float target[NUM_AXIS], float* offset, uint8_t clockwise);
-
-bool setTargetedExtruder(int code);
 
 #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
   float extrude_min_temp = EXTRUDE_MINTEMP;
@@ -973,7 +972,7 @@ DEFINE_PGM_READ_ANY(signed char, byte);
   static inline type array(int axis)          \
   { return pgm_read_any(&array##_P[axis]); }
 
-#if MECH(CARTESIAN) || MECH(COREXY) || MECH(COREXZ) || MECH(SCARA)
+#if MECH(CARTESIAN) || MECH(COREXY) || MECH(COREYX) || MECH(COREXZ) || MECH(COREZX) || MECH(SCARA)
   XYZ_CONSTS_FROM_CONFIG(float, base_max_pos,  MAX_POS);
   XYZ_CONSTS_FROM_CONFIG(float, base_home_pos, HOME_POS);
   XYZ_CONSTS_FROM_CONFIG(float, max_length,    MAX_LENGTH);
@@ -1126,7 +1125,7 @@ inline void sync_plan_position() {
 #if MECH(DELTA) || MECH(SCARA)
   inline void sync_plan_position_delta() {
     calculate_delta(current_position);
-    plan_set_position(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS]);
+    plan_set_position(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], current_position[E_AXIS]);
   }
 #endif
 inline void set_current_to_destination() { memcpy(current_position, destination, sizeof(current_position)); }
@@ -1150,7 +1149,7 @@ static void clean_up_after_endstop_move() {
   endstops_hit_on_purpose(); // clear endstop hit flags
 }
 
-#if MECH(CARTESIAN) || MECH(COREXY) || MECH(COREXZ) || MECH(SCARA)
+#if MECH(CARTESIAN) || MECH(COREXY) || MECH(COREYX) || MECH(COREXZ) || MECH(COREZX) || MECH(SCARA)
 
   /**
    *  Plan a move to (X, Y, Z) and set the current_position
@@ -1534,7 +1533,7 @@ static void clean_up_after_endstop_move() {
     }
   }
   #define HOMEAXIS(LETTER) homeaxis(LETTER##_AXIS)
-#endif // CARTESIAN || COREXY || COREXZ || SCARA
+#endif // CARTESIAN || COREXY || COREYX || COREXZ || COREZX || SCARA
 
 #if MECH(DELTA)
   static void homeaxis(AxisEnum axis) {
@@ -1610,11 +1609,6 @@ static void clean_up_after_endstop_move() {
     }
   }
   #define HOMEAXIS(LETTER) homeaxis(LETTER##_AXIS)
-
-  void set_default_z_probe_offset() {
-    float default_z_probe_offset[] = Z_PROBE_OFFSET;
-    memcpy(z_probe_offset, default_z_probe_offset, sizeof(z_probe_offset));
-  }
 
   void set_delta_constants() {
     max_length[Z_AXIS]    = max_pos[Z_AXIS] - Z_MIN_POS;
@@ -1758,7 +1752,7 @@ static void clean_up_after_endstop_move() {
     endstop_adj[Z_AXIS] += z_endstop;
 
     calculate_delta(current_position);
-    plan_set_position(delta[X_AXIS] - (endstop_adj[X_AXIS] - saved_endstop_adj[X_AXIS]) , delta[Y_AXIS] - (endstop_adj[Y_AXIS] - saved_endstop_adj[Y_AXIS]), delta[Z_AXIS] - (endstop_adj[Z_AXIS] - saved_endstop_adj[Z_AXIS]), current_position[E_AXIS]);  
+    plan_set_position(delta[TOWER_1] - (endstop_adj[X_AXIS] - saved_endstop_adj[X_AXIS]) , delta[TOWER_2] - (endstop_adj[Y_AXIS] - saved_endstop_adj[Y_AXIS]), delta[TOWER_3] - (endstop_adj[Z_AXIS] - saved_endstop_adj[Z_AXIS]), current_position[E_AXIS]);  
     st_synchronize();
   }
 
@@ -2477,20 +2471,20 @@ static void clean_up_after_endstop_move() {
     }
     refresh_cmd_timeout();
     calculate_delta(destination);
-    plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], destination[E_AXIS], feedrate * feedrate_multiplier / 60 / 100.0, active_extruder, active_driver);
+    plan_buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], destination[E_AXIS], feedrate * feedrate_multiplier / 60 / 100.0, active_extruder, active_driver);
     set_current_to_destination();
   }
 
   void calculate_delta(float cartesian[3]) {
-    delta[X_AXIS] = sqrt(delta_diagonal_rod_1
+    delta[TOWER_1] = sqrt(delta_diagonal_rod_1
                          - sq(delta_tower1_x - cartesian[X_AXIS])
                          - sq(delta_tower1_y - cartesian[Y_AXIS])
                          ) + cartesian[Z_AXIS];
-    delta[Y_AXIS] = sqrt(delta_diagonal_rod_2
+    delta[TOWER_2] = sqrt(delta_diagonal_rod_2
                          - sq(delta_tower2_x - cartesian[X_AXIS])
                          - sq(delta_tower2_y - cartesian[Y_AXIS])
                          ) + cartesian[Z_AXIS];
-    delta[Z_AXIS] = sqrt(delta_diagonal_rod_3
+    delta[TOWER_3] = sqrt(delta_diagonal_rod_3
                          - sq(delta_tower3_x - cartesian[X_AXIS])
                          - sq(delta_tower3_y - cartesian[Y_AXIS])
                          ) + cartesian[Z_AXIS];
@@ -2514,9 +2508,9 @@ static void clean_up_after_endstop_move() {
           right = (1 - ratio_y) * z3 + ratio_y * z4,
           offset = (1 - ratio_x) * left + ratio_x * right;
 
-    delta[X_AXIS] += offset;
-    delta[Y_AXIS] += offset;
-    delta[Z_AXIS] += offset;
+    delta[TOWER_1] += offset;
+    delta[TOWER_2] += offset;
+    delta[TOWER_3] += offset;
 
     if (debugLevel & DEBUG_DEBUG) {
       ECHO_SMV(DEB, "grid_x=", grid_x);
@@ -2730,10 +2724,10 @@ static void clean_up_after_endstop_move() {
         ECHO_MV("    ADC B:", degBed(), 1);
         ECHO_MV("C->", rawBedTemp() / OVERSAMPLENR, 0);
       #endif
-      for (uint8_t cur_hotend = 0; cur_hotend < HOTENDS; ++cur_hotend) {
-        ECHO_MV("  T", cur_hotend);
-        ECHO_MV(":", degHotend(cur_hotend), 1);
-        ECHO_MV("C->", rawHotendTemp(cur_hotend) / OVERSAMPLENR, 0);
+      for (uint8_t h = 0; h < HOTENDS; ++h) {
+        ECHO_MV("  T", h);
+        ECHO_MV(":", degHotend(h), 1);
+        ECHO_MV("C->", rawHotendTemp(h) / OVERSAMPLENR, 0);
       }
     #endif
   }
@@ -2827,7 +2821,7 @@ void gcode_get_destination() {
 
   for (int i = 0; i < NUM_AXIS; i++) {
     if (code_seen(axis_codes[i])) {
-      destination[i] = code_value() + (axis_relative_modes[i] || relative_mode ? current_position[i] : 0);
+      destination[i] = code_value() + (axis_relative_modes[i] || relative_mode ? current_position[i] : -hotend_offset[i][active_extruder]);
     }
     else {
       destination[i] = current_position[i];
@@ -5167,7 +5161,7 @@ inline void gcode_M114() {
         zpos = count_position[Z_AXIS];
   CRITICAL_SECTION_END;
 
-  #if MECH(COREXY) || MECH(COREXZ)
+  #if MECH(COREXY) || MECH(COREYX) || MECH(COREXZ) || MECH(COREZX)
     ECHO_M(MSG_COUNT_A);
   #elif MECH(DELTA)
     ECHO_M(MSG_COUNT_ALPHA);
@@ -5176,7 +5170,7 @@ inline void gcode_M114() {
   #endif
   ECHO_V(xpos);
 
-  #if ENABLED(COREXY)
+  #if MECH(COREXY) || MECH(COREYX)
     ECHO_M(" B:");
   #elif MECH(DELTA)
     ECHO_M(" Beta:");
@@ -5185,7 +5179,7 @@ inline void gcode_M114() {
   #endif
   ECHO_V(ypos);
 
-  #if ENABLED(COREXZ)
+  #if MECH(COREXZ) || MECH(COREZX)
     ECHO_M(" C:");
   #elif MECH(DELTA)
     ECHO_M(" Teta:");
@@ -5685,27 +5679,24 @@ inline void gcode_M206() {
   }
 #endif // FWRETRACT
 
-#if HOTENDS > 1
+/**
+ * M218 - set hotend offset (in mm), H<hotend_number> X<offset_on_X> Y<offset_on_Y> Z<offset_on_Z>
+ */
+inline void gcode_M218() {
+  if (setTargetedHotend(218)) return;
 
-  /**
-   * M218 - set hotend offset (in mm), T<extruder_number> X<offset_on_X> Y<offset_on_Y>
-   */
-  inline void gcode_M218() {
-    if (setTargetedExtruder(218)) return;
+  if (code_seen('X')) hotend_offset[X_AXIS][target_extruder] = code_value();
+  if (code_seen('Y')) hotend_offset[Y_AXIS][target_extruder] = code_value();
+  if (code_seen('Z')) hotend_offset[Z_AXIS][target_extruder] = code_value();
 
-    if (code_seen('X')) hotend_offset[X_AXIS][target_extruder] = code_value();
-    if (code_seen('Y')) hotend_offset[Y_AXIS][target_extruder] = code_value();
-    if (code_seen('Z')) hotend_offset[Z_AXIS][target_extruder] = code_value();
-
-    ECHO_SM(DB, SERIAL_HOTEND_OFFSET);
-    for (int e = 0; e < HOTENDS; e++) {
-      ECHO_MV(" ", hotend_offset[X_AXIS][e]);
-      ECHO_MV(",", hotend_offset[Y_AXIS][e]);
-      ECHO_MV(",", hotend_offset[Z_AXIS][e]);
-    }
-    ECHO_E;
+  ECHO_SM(DB, SERIAL_HOTEND_OFFSET);
+  for (uint8_t h = 0; h < HOTENDS; h++) {
+    ECHO_MV(" ", hotend_offset[X_AXIS][h]);
+    ECHO_MV(",", hotend_offset[Y_AXIS][h]);
+    ECHO_MV(",", hotend_offset[Z_AXIS][h]);
   }
-#endif // HOTENDS > 1
+  ECHO_E;
+}
 
 /**
  * M220: Set speed percentage factor, aka "Feed Rate" (M220 S95)
@@ -5898,25 +5889,25 @@ inline void gcode_M226() {
 
     // multi-hotend PID patch: M301 updates or prints a single hotend's PID values
     // default behaviour (omitting E parameter) is to update for hotend 0 only
-    int e = code_seen('H') ? code_value() : 0; // hotend being updated
+    int h = code_seen('H') ? code_value() : 0; // hotend being updated
 
-    if (e < HOTENDS) { // catch bad input value
-      if (code_seen('P')) PID_PARAM(Kp, e) = code_value();
-      if (code_seen('I')) PID_PARAM(Ki, e) = scalePID_i(code_value());
-      if (code_seen('D')) PID_PARAM(Kd, e) = scalePID_d(code_value());
+    if (h < HOTENDS) { // catch bad input value
+      if (code_seen('P')) PID_PARAM(Kp, h) = code_value();
+      if (code_seen('I')) PID_PARAM(Ki, h) = scalePID_i(code_value());
+      if (code_seen('D')) PID_PARAM(Kd, h) = scalePID_d(code_value());
       #if ENABLED(PID_ADD_EXTRUSION_RATE)
-        if (code_seen('C')) PID_PARAM(Kc, e) = code_value();
+        if (code_seen('C')) PID_PARAM(Kc, h) = code_value();
         if (code_seen('L')) lpq_len = code_value();
         NOMORE(lpq_len, LPQ_MAX_LEN);
       #endif
 
       updatePID();
-      ECHO_SMV(OK, "e:", e);
-      ECHO_MV(" p:", PID_PARAM(Kp, e));
-      ECHO_MV(" i:", unscalePID_i(PID_PARAM(Ki, e)));
-      ECHO_MV(" d:", unscalePID_d(PID_PARAM(Kd, e)));
+      ECHO_SMV(OK, "H:", h);
+      ECHO_MV(" p:", PID_PARAM(Kp, h));
+      ECHO_MV(" i:", unscalePID_i(PID_PARAM(Ki, h)));
+      ECHO_MV(" d:", unscalePID_d(PID_PARAM(Kd, h)));
       #if ENABLED(PID_ADD_EXTRUSION_RATE)
-        ECHO_MV(" c:", PID_PARAM(Kc, e));
+        ECHO_MV(" c:", PID_PARAM(Kc, h));
       #endif
       ECHO_E;
     }
@@ -6295,9 +6286,13 @@ inline void gcode_M400() { st_synchronize(); }
         #if MECH(CARTESIAN)
           ECHO_M("cartesian");
         #elif MECH(COREXY)
-          ECHO_M("coreXY");
+          ECHO_M("corexy");
+        #elif MECH(COREYX)
+          ECHO_M("coreyx");
         #elif MECH(COREXZ)
-          ECHO_M("coreXZ");
+          ECHO_M("corexz");
+        #elif MECH(COREZX)
+          ECHO_M("corezx");
         #elif MECH(DELTA)
           ECHO_M("delta");
         #endif
@@ -6574,21 +6569,21 @@ inline void gcode_M503() {
 
 #if HEATER_USES_AD595
   /**
-   * M595 - set Hotend AD595 offset & Gain T<hotend_number> O<offset> S<gain>
+   * M595 - set Hotend AD595 offset & Gain H<hotend_number> O<offset> S<gain>
    */
   inline void gcode_M595() {
-    if (setTargetedExtruder(595)) return;
+    if (setTargetedHotend(595)) return;
 
     if (code_seen('O')) ad595_offset[target_extruder] = code_value();
     if (code_seen('S')) ad595_gain[target_extruder] = code_value();
 
-    for (int h = 0; h < HOTENDS; h++) {
+    for (uint8_t h = 0; h < HOTENDS; h++) {
       // if gain == 0 you get MINTEMP!
       if (ad595_gain[h] == 0) ad595_gain[h]= 1;
     }
 
     ECHO_LM(DB, MSG_AD595);
-    for (int h = 0; h < HOTENDS; h++) {
+    for (uint8_t h = 0; h < HOTENDS; h++) {
       ECHO_SMV(DB, "T", h);
       ECHO_MV(" Offset: ", ad595_offset[h]);
       ECHO_EMV(", Gain: ", ad595_gain[h]);
@@ -6625,7 +6620,7 @@ inline void gcode_M503() {
     #if MECH(DELTA)
 			float fr60 = feedrate / 60;
       #define RUNPLAN calculate_delta(destination); \
-                      plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], destination[E_AXIS], fr60, active_extruder, active_driver);
+                      plan_buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], destination[E_AXIS], fr60, active_extruder, active_driver);
     #else
       #define RUNPLAN line_to_destination();
     #endif
@@ -6739,8 +6734,8 @@ inline void gcode_M503() {
     #if MECH(DELTA)
       // Move XYZ to starting position, then E
       calculate_delta(lastpos);
-      plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], destination[E_AXIS], fr60, active_extruder, active_driver);
-      plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], lastpos[E_AXIS], fr60, active_extruder, active_driver);
+      plan_buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], destination[E_AXIS], fr60, active_extruder, active_driver);
+      plan_buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], lastpos[E_AXIS], fr60, active_extruder, active_driver);
     #else
       // Move XY to starting position, then Z, then E
       destination[X_AXIS] = lastpos[X_AXIS];
@@ -7046,14 +7041,6 @@ inline void gcode_T(uint8_t tmp_extruder) {
               st_synchronize();
             }
 
-            // apply Y & Z extruder offset (x offset is already used in determining home pos)
-            current_position[Y_AXIS] = current_position[Y_AXIS] -
-                          hotend_offset[Y_AXIS][active_extruder] +
-                          hotend_offset[Y_AXIS][target_extruder];
-            current_position[Z_AXIS] = current_position[Z_AXIS] -
-                          hotend_offset[Z_AXIS][active_extruder] +
-                          hotend_offset[Z_AXIS][target_extruder];
-
             active_extruder = target_extruder;
 
             // This function resets the max/min values - the current position may be overwritten below.
@@ -7080,11 +7067,6 @@ inline void gcode_T(uint8_t tmp_extruder) {
               delayed_move_time = 0;
             }
           #else // !DUAL_X_CARRIAGE
-            // Offset hotend (XYZ)
-            #if HOTENDS > 1
-              for (int i = X_AXIS; i <= Z_AXIS; i++)
-                current_position[i] += hotend_offset[i][target_extruder] - hotend_offset[i][active_extruder];
-            #endif // HOTENDS > 1
 
             #if ENABLED(MKR4)
               #if (EXTRUDERS == 4) && HAS(E0E2) && HAS(E1E3) && (DRIVER_EXTRUDERS == 2)
@@ -7613,11 +7595,8 @@ void process_next_command() {
           gcode_M209(); break;
       #endif // FWRETRACT
 
-      #if HOTENDS > 1
-        case 218: // M218 - set hotend offset (in mm), T<extruder_number> X<offset_on_X> Y<offset_on_Y>
-          gcode_M218(); break;
-      #endif
-
+      case 218: // M218 - set hotend offset (in mm), T<extruder_number> X<offset_on_X> Y<offset_on_Y>
+        gcode_M218(); break;
       case 220: // M220 S<factor in percent> - set speed factor override percentage
         gcode_M220(); break;
       case 221: // M221 T<extruder> S<factor in percent> - set extrude factor override percentage
@@ -7922,12 +7901,12 @@ void clamp_to_software_endstops(float target[3]) {
         ECHO_LMV(DEB, "target[X_AXIS]=", target[X_AXIS]);
         ECHO_LMV(DEB, "target[Y_AXIS]=", target[Y_AXIS]);
         ECHO_LMV(DEB, "target[Z_AXIS]=", target[Z_AXIS]);
-        ECHO_LMV(DEB, "delta[X_AXIS]=", delta[X_AXIS]);
-        ECHO_LMV(DEB, "delta[Y_AXIS]=", delta[Y_AXIS]);
-        ECHO_LMV(DEB, "delta[Z_AXIS]=", delta[Z_AXIS]);
+        ECHO_LMV(DEB, "delta[TOWER_1]=", delta[TOWER_1]);
+        ECHO_LMV(DEB, "delta[TOWER_2]=", delta[TOWER_2]);
+        ECHO_LMV(DEB, "delta[TOWER_3]=", delta[TOWER_3]);
       }
 
-      plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], target[E_AXIS], frfm, active_extruder, active_driver);
+      plan_buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], target[E_AXIS], frfm, active_extruder, active_driver);
     }
     return true;
   }
@@ -7976,7 +7955,7 @@ void clamp_to_software_endstops(float target[3]) {
 
 #endif // DUAL_X_CARRIAGE
 
-#if MECH(CARTESIAN) || MECH(COREXY) || MECH(COREXZ)
+#if MECH(CARTESIAN) || MECH(COREXY) || MECH(COREYX) || MECH(COREXZ) || MECH(COREZX)
 
   inline bool prepare_move_cartesian() {
     // Do not use feedrate_multiplier for E or Z only moves
@@ -7989,7 +7968,7 @@ void clamp_to_software_endstops(float target[3]) {
     return true;
   }
 
-#endif // CARTESIAN || COREXY || COREXZ
+#endif // CARTESIAN || COREXY || COREYX || COREXZ || COREZX
 
 /**
  * Prepare a single move and get ready for the next one
@@ -8015,7 +7994,7 @@ void prepare_move() {
     if (!prepare_move_dual_x_carriage()) return;
   #endif
 
-  #if MECH(CARTESIAN) || MECH(COREXY) || MECH(COREXZ)
+  #if MECH(CARTESIAN) || MECH(COREXY) || MECH(COREYX) || MECH(COREXZ) || MECH(COREZX)
     if (!prepare_move_cartesian()) return;
   #endif
 
@@ -8138,7 +8117,7 @@ void plan_arc(
     #if MECH(DELTA) || MECH(SCARA)
       calculate_delta(arc_target);
       adjust_delta(arc_target);
-      plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], arc_target[E_AXIS], feed_rate, active_extruder, active_driver);
+      plan_buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], arc_target[E_AXIS], feed_rate, active_extruder, active_driver);
     #else
       plan_buffer_line(arc_target[X_AXIS], arc_target[Y_AXIS], arc_target[Z_AXIS], arc_target[E_AXIS], feed_rate, active_extruder, active_driver);
     #endif
@@ -8148,7 +8127,7 @@ void plan_arc(
   #if MECH(DELTA) || MECH(SCARA)
     calculate_delta(target);
     adjust_delta(target);
-    plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], target[E_AXIS], feed_rate, active_extruder, active_driver);
+    plan_buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], target[E_AXIS], feed_rate, active_extruder, active_driver);
   #else
     plan_buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feed_rate, active_extruder, active_driver);
   #endif
@@ -8290,8 +8269,8 @@ void plan_arc(
     float max_temp = 0.0;
     if (millis() > next_status_led_update_ms) {
       next_status_led_update_ms += 500; // Update every 0.5s
-      for (uint8_t cur_hotend = 0; cur_hotend < HOTENDS; ++cur_hotend)
-         max_temp = max(max(max_temp, degHotend(cur_hotend)), degTargetHotend(cur_hotend));
+      for (uint8_t h = 0; h < HOTENDS; ++h)
+         max_temp = max(max(max_temp, degHotend(h)), degTargetHotend(h));
       #if HAS(TEMP_BED)
         max_temp = max(max(max_temp, degTargetBed()), degBed());
       #endif
@@ -8671,6 +8650,19 @@ bool setTargetedExtruder(int code) {
     if (target_extruder >= EXTRUDERS) {
       ECHO_SMV(ER, "M", code);
       ECHO_EMV(" " SERIAL_INVALID_EXTRUDER, target_extruder);
+      return true;
+    }
+  }
+  return false;
+}
+
+bool setTargetedHotend(int code) {
+  target_extruder = active_extruder;
+  if (code_seen('H')) {
+    target_extruder = code_value_short();
+    if (target_extruder >= HOTENDS) {
+      ECHO_SMV(ER, "M", code);
+      ECHO_EMV(" " SERIAL_INVALID_HOTEND, target_extruder);
       return true;
     }
   }

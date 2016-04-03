@@ -1190,7 +1190,7 @@
       #error DEPENDENCY ERROR: Missing setting MANUAL_Z_HOME_POS
     #endif
   #endif
-  #if MECH(COREXY) || MECH(COREXZ)
+  #if MECH(COREXY) || MECH(COREYX) || MECH(COREXZ) || MECH(COREZX)
     #if DISABLED(COREX_YZ_FACTOR)
       #error DEPENDENCY ERROR: Missing setting COREX_YZ_FACTOR
     #endif
@@ -1280,8 +1280,14 @@
     #if DISABLED(TOWER_C_DIAGROD_ADJ)
       #error DEPENDENCY ERROR: Missing setting TOWER_C_DIAGROD_ADJ
     #endif
-    #if DISABLED(Z_PROBE_OFFSET)
-      #error DEPENDENCY ERROR: Missing setting Z_PROBE_OFFSET
+    #if DISABLED(X_PROBE_OFFSET_FROM_EXTRUDER)
+      #error DEPENDENCY ERROR: Missing setting X_PROBE_OFFSET_FROM_EXTRUDER
+    #endif
+    #if DISABLED(Y_PROBE_OFFSET_FROM_EXTRUDER)
+      #error DEPENDENCY ERROR: Missing setting Y_PROBE_OFFSET_FROM_EXTRUDER
+    #endif
+    #if DISABLED(Z_PROBE_OFFSET_FROM_EXTRUDER)
+      #error DEPENDENCY ERROR: Missing setting Z_PROBE_OFFSET_FROM_EXTRUDER
     #endif
     #if DISABLED(Z_PROBE_DEPLOY_START_LOCATION)
       #error DEPENDENCY ERROR: Missing setting Z_PROBE_DEPLOY_START_LOCATION
@@ -1346,8 +1352,11 @@
    * Babystepping
    */
   #if ENABLED(BABYSTEPPING)
-    #if MECH(COREXY) && ENABLED(BABYSTEP_XY)
+    #if (MECH(COREXY) || MECH(COREYX)) && ENABLED(BABYSTEP_XY)
       #error CONFLICT ERROR: BABYSTEPPING only implemented for Z axis on CoreXY.
+    #endif
+    #if (MECH(COREXZ) || MECH(COREZX))
+      #error CONFLICT ERROR: BABYSTEPPING not implemented for CoreXZ or CoreZX.
     #endif
     #if MECH(SCARA)
       #error CONFLICT ERROR: BABYSTEPPING is not implemented for SCARA yet.

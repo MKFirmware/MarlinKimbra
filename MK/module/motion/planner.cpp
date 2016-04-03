@@ -511,7 +511,7 @@ float junction_deviation = 0.1;
   // The target position of the tool in absolute steps
   // Calculate target position in absolute steps
   //this should be done after the wait, because otherwise a M92 code within the gcode disrupts this calculation somehow
-  long target[NUM_AXIS];
+  int32_t target[NUM_AXIS];
   target[X_AXIS] = lround(x * axis_steps_per_unit[X_AXIS]);
   target[Y_AXIS] = lround(y * axis_steps_per_unit[Y_AXIS]);
   target[Z_AXIS] = lround(z * axis_steps_per_unit[Z_AXIS]);
@@ -528,16 +528,22 @@ float junction_deviation = 0.1;
     }
   #endif
 
-  long  dx = target[X_AXIS] - position[X_AXIS],
-        dy = target[Y_AXIS] - position[Y_AXIS],
-        dz = target[Z_AXIS] - position[Z_AXIS],
-        de = target[E_AXIS] - position[E_AXIS];
+  int32_t dx = target[X_AXIS] - position[X_AXIS],
+          dy = target[Y_AXIS] - position[Y_AXIS],
+          dz = target[Z_AXIS] - position[Z_AXIS],
+          de = target[E_AXIS] - position[E_AXIS];
   #if MECH(COREXY)
-    long da = dx + COREX_YZ_FACTOR * dy;
-    long db = dx - COREX_YZ_FACTOR * dy;
+    int32_t da = dx + COREX_YZ_FACTOR * dy;
+    int32_t db = dx - COREX_YZ_FACTOR * dy;
+  #elif MECH(COREYX)
+    int32_t da = dy + COREX_YZ_FACTOR * dx;
+    int32_t db = dy - COREX_YZ_FACTOR * dx;
   #elif MECH(COREXZ)
-    long da = dx + COREX_YZ_FACTOR * dz;
-    long dc = dx - COREX_YZ_FACTOR * dz;
+    int32_t da = dx + COREX_YZ_FACTOR * dz;
+    int32_t dc = dx - COREX_YZ_FACTOR * dz;
+  #elif MECH(COREZX)
+    int32_t da = dz + COREX_YZ_FACTOR * dx;
+    int32_t dc = dz - COREX_YZ_FACTOR * dx;
   #endif
 
   #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
@@ -577,13 +583,12 @@ float junction_deviation = 0.1;
   block->busy = false;
 
   // Number of steps for each axis
-  #if MECH(COREXY)
+  #if MECH(COREXY) || MECH(COREYX)
     // corexy planning
-    // these equations follow the form of the dA and dB equations on http://www.corexy.com/theory.html
     block->steps[A_AXIS] = labs(da);
     block->steps[B_AXIS] = labs(db);
     block->steps[Z_AXIS] = labs(dz);
-  #elif MECH(COREXZ)
+  #elif MECH(COREXZ) || MECH(COREZX)
     // corexz planning
     block->steps[A_AXIS] = labs(da);
     block->steps[Y_AXIS] = labs(dy);
@@ -624,13 +629,13 @@ float junction_deviation = 0.1;
 
   // Compute direction bits for this block 
   uint8_t dirb = 0;
-  #if MECH(COREXY)
+  #if MECH(COREXY) || MECH(COREYX)
     if (dx < 0) SBI(dirb, X_HEAD); // Save the real Extruder (head) direction in X Axis
     if (dy < 0) SBI(dirb, Y_HEAD); // ...and Y
     if (dz < 0) SBI(dirb, Z_AXIS);
     if (da < 0) SBI(dirb, A_AXIS); // Motor A direction
     if (db < 0) SBI(dirb, B_AXIS); // Motor B direction
-  #elif MECH(COREXZ)
+  #elif MECH(COREXZ) || MECH(COREZX)
     if (dx < 0) SBI(dirb, X_HEAD); // Save the real Extruder (head) direction in X Axis
     if (dy < 0) SBI(dirb, Y_AXIS);
     if (dz < 0) SBI(dirb, Z_HEAD); // ...and Z
@@ -647,7 +652,7 @@ float junction_deviation = 0.1;
   block->active_driver = driver;
 
   // Enable active axes
-  #if MECH(COREXY)
+  #if MECH(COREXY) || MECH(COREYX)
     if (block->steps[A_AXIS] || block->steps[B_AXIS]) {
       enable_x();
       enable_y();
@@ -655,7 +660,7 @@ float junction_deviation = 0.1;
     #if DISABLED(Z_LATE_ENABLE)
       if (block->steps[Z_AXIS]) enable_z();
     #endif
-  #elif MECH(COREXZ)
+  #elif MECH(COREXZ) || MECH(COREZX)
     if (block->steps[A_AXIS] || block->steps[C_AXIS]) {
       enable_x();
       enable_z();
@@ -815,14 +820,14 @@ float junction_deviation = 0.1;
    * So we need to create other 2 "AXIS", named X_HEAD and Y_HEAD, meaning the real displacement of the Head.
    * Having the real displacement of the head, we can calculate the total movement length and apply the desired speed.
    */
-  #if MECH(COREXY)
+  #if MECH(COREXY) || MECH(COREYX)
     float delta_mm[6];
     delta_mm[X_HEAD] = dx / axis_steps_per_unit[A_AXIS];
     delta_mm[Y_HEAD] = dy / axis_steps_per_unit[B_AXIS];
     delta_mm[Z_AXIS] = dz / axis_steps_per_unit[Z_AXIS];
     delta_mm[A_AXIS] = da / axis_steps_per_unit[A_AXIS];
     delta_mm[B_AXIS] = db / axis_steps_per_unit[B_AXIS];
-  #elif MECH(COREXZ)
+  #elif MECH(COREXZ) || MECH(COREZX)
     float delta_mm[6];
     delta_mm[X_HEAD] = dx / axis_steps_per_unit[A_AXIS];
     delta_mm[Y_AXIS] = dy / axis_steps_per_unit[Y_AXIS];
@@ -842,9 +847,9 @@ float junction_deviation = 0.1;
   }
   else {
     block->millimeters = sqrt(
-      #if MECH(COREXY)
+      #if MECH(COREXY) || MECH(COREYX)
         square(delta_mm[X_HEAD]) + square(delta_mm[Y_HEAD]) + square(delta_mm[Z_AXIS])
-      #elif MECH(COREXZ)
+      #elif MECH(COREXZ) || MECH(COREZX)
         square(delta_mm[X_HEAD]) + square(delta_mm[Y_AXIS]) + square(delta_mm[Z_HEAD])
       #else
         square(delta_mm[X_AXIS]) + square(delta_mm[Y_AXIS]) + square(delta_mm[Z_AXIS])

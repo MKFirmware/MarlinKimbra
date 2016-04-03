@@ -16,6 +16,9 @@ void manage_inactivity(bool ignore_stepper_queue = false);
 void FlushSerialRequestResend();
 void ok_to_send();
 
+bool setTargetedExtruder(int code);
+bool setTargetedHotend(int code);
+
 #if MECH(DELTA)
   float probe_bed(float x, float y);
   void set_delta_constants();
@@ -24,7 +27,6 @@ void ok_to_send();
   void home_delta_axis();
   void calibration_report();
   void bed_probe_all();
-  void set_default_z_probe_offset();
   void set_delta_constants();
   void save_carriage_positions(int position_num);
   void calculate_delta(float cartesian[3]);
@@ -44,6 +46,7 @@ void ok_to_send();
   extern float delta_radius;
   extern float delta_diagonal_rod;
 #endif
+
 #if MECH(SCARA)
   void calculate_delta(float cartesian[3]);
   void calculate_SCARA_forward_Transform(float f_scara[3]);
@@ -103,16 +106,12 @@ extern float volumetric_multiplier[EXTRUDERS];  // reciprocal of cross-sectional
 extern float current_position[NUM_AXIS];
 extern float destination[NUM_AXIS];
 extern float home_offset[3];
+extern float hotend_offset[3][HOTENDS];
 extern float min_pos[3];
 extern float max_pos[3];
 extern float zprobe_zoffset;
 extern uint8_t axis_known_position;
 extern uint8_t axis_was_homed;
-
-// Hotend offset
-#if HOTENDS > 1
-  extern float hotend_offset[3][HOTENDS];
-#endif // HOTENDS > 1
 
 #if HEATER_USES_AD595
   extern float ad595_offset[HOTENDS];
@@ -123,13 +122,7 @@ extern uint8_t axis_was_homed;
   extern uint8_t old_color; // old color for system NPR2
 #endif
 
-#if MECH(DELTA)
-  extern float z_probe_offset[3];
-  extern float endstop_adj[3];
-  extern float tower_adj[6];
-  extern float delta_radius;
-  extern float delta_diagonal_rod;
-#elif ENABLED(Z_DUAL_ENDSTOPS)
+#if ENABLED(Z_DUAL_ENDSTOPS)
   extern float z_endstop_adj;
 #endif
 
