@@ -992,8 +992,9 @@ void tp_init() {
 
   #if ENABLED(LASER_WATER_COOLING)
      SET_OUTPUT(LASER_WATER_COOLING_PIN);
-     setPwmFrequency(LASER_WATER_COOLING_PIN, 1);
-     analogWrite(LASER_WATER_COOLING_PIN, 128);
+     setPwmFrequency(LASER_WATER_COOLING_PIN, 2); // No prescaling. Pwm frequency = F_CPU/256/64
+     digitalWrite(LASER_WATER_COOLING_PIN,50);
+     analogWrite(LASER_WATER_COOLING_PIN, 50);
   #endif
 
   #if ENABLED(HEATER_0_USES_MAX6675)

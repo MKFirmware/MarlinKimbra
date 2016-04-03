@@ -122,7 +122,7 @@
       #define LASER_PERIPHERALS_STATUS_PIN      4
    #endif // LASER_PERIPHERALS
    #if ENABLED(LASER_WATER_COOLING)
-      #define LASER_WATER_COOLING_PIN 1
+      #define LASER_WATER_COOLING_PIN 2 // Digital pins 2, 3, 5, 6, 7, 8 are attached to timers we can use
    #endif // LASER WATER_COOLING
 #endif
 

@@ -328,7 +328,7 @@ static void lcd_implementation_status_screen() {
         u8g.drawBitmapP(29,4, LASERENABLE_BYTEWIDTH, LASERENABLE_HEIGHT, laserenable_bmp);
       }
     #endif
-    u8g.setFont(FONT_STATUSMENU);
+    lcd_setFont(FONT_STATUSMENU);
     u8g.setColorIndex(1);
     u8g.setPrintPos(3,6);
     if (current_block->laser_status == LASER_ON) {
@@ -400,7 +400,7 @@ static void lcd_implementation_status_screen() {
         u8g.setPrintPos(90, 47);
 
         if (end_time > 1380 || end_time == 0)
-          u8g.print('E--:--');
+          lcd_printPGM(PSTR("E--:--"));
         else if (end_time > 0) {
           u8g.print('E');
           u8g.print(itostr2(end_time / 60));

@@ -52,7 +52,7 @@ char lcd_status_message[3 * LCD_WIDTH + 1] = WELCOME_MSG; // worst case is kana 
    static void lcd_laser_focus_menu();
    static void lcd_laser_menu();
    static void lcd_laser_test_fire_menu();
-   static void laser_test_fire(uint8_t power, uint8_t dwell);
+   static void laser_test_fire(uint8_t power, int dwell);
    static void laser_set_focus(float f_length);
    static void action_laser_focus_custom();
    static void action_laser_focus_1mm();
@@ -87,12 +87,16 @@ static void lcd_status_screen();
   static void lcd_move_menu();
   static void lcd_control_menu();
   static void lcd_stats_menu();
-  static void lcd_control_temperature_menu();
-  static void lcd_control_temperature_preheat_pla_settings_menu();
-  static void lcd_control_temperature_preheat_abs_settings_menu();
-  static void lcd_control_temperature_preheat_gum_settings_menu();
+  #if DISABLED(LASER)
+    static void lcd_control_temperature_menu();
+    static void lcd_control_temperature_preheat_pla_settings_menu();
+    static void lcd_control_temperature_preheat_abs_settings_menu();
+    static void lcd_control_temperature_preheat_gum_settings_menu();
+  #endif
   static void lcd_control_motion_menu();
-  static void lcd_control_volumetric_menu();
+  #if DISABLED(LASER)
+    static void lcd_control_volumetric_menu();
+  #endif
   #if HAS(LCD_CONTRAST)
     static void lcd_set_contrast();
   #endif
@@ -1135,12 +1139,12 @@ static void lcd_move_menu() {
 static void lcd_control_menu() {
   START_MENU(lcd_main_menu);
   MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
-  MENU_ITEM(submenu, MSG_TEMPERATURE, lcd_control_temperature_menu);
-  #if ENABLED(LASER)
+  #if DISABLED(LASER)
     MENU_ITEM(submenu, MSG_TEMPERATURE, lcd_control_temperature_menu);
-  #else
-    MENU_ITEM(submenu, MSG_MOTION, lcd_control_motion_menu);
-    MENU_ITEM(submenu, MSG_FILAMENT, lcd_control_volumetric_menu);
+  #endif
+  MENU_ITEM(submenu, MSG_MOTION, lcd_control_motion_menu);
+  #if DISABLED(LASER)
+   MENU_ITEM(submenu, MSG_FILAMENT, lcd_control_volumetric_menu);
   #endif
 
   #if HAS(LCD_CONTRAST)
@@ -1326,6 +1330,7 @@ static void lcd_control_temperature_menu() {
     MENU_ITEM_EDIT(bool, MSG_IDLEOOZING, &IDLE_OOZING_enabled);
   #endif
 
+  #if DISABLED(LASER)
   //
   // Preheat PLA conf
   //
@@ -1340,6 +1345,7 @@ static void lcd_control_temperature_menu() {
   // Preheat GUM conf
   //
   MENU_ITEM(submenu, MSG_PREHEAT_GUM_SETTINGS, lcd_control_temperature_preheat_gum_settings_menu);
+  #endif
   END_MENU();
 }
 #endif
@@ -1593,11 +1599,11 @@ static void lcd_laser_test_fire_menu() {
 
 
 static void action_laser_acc_on() {
-   enquecommand_P(PSTR("M80"));
+   enqueuecommands_P(PSTR("M80"));
 }
 
 static void action_laser_acc_off() {
-   enquecommand_P(PSTR("M81"));
+   enqueuecommands_P(PSTR("M81"));
 }
 static void action_laser_test_20_50ms() {
    laser_test_fire(20, 50);
@@ -1619,8 +1625,8 @@ static void action_laser_test_warm() {
    laser_test_fire(15, 2000);
 }
 
-static void laser_test_fire(uint8_t power, uint8_t dwell) {
-   enquecommand_P(PSTR("M80"));  // Enable laser accessories since we don't know if its been done (and there's no penalty for doing it again).
+static void laser_test_fire(uint8_t power, int dwell) {
+   enqueuecommands_P(PSTR("M80"));  // Enable laser accessories since we don't know if its been done (and there's no penalty for doing it again).
     laser_fire(power);
    delay(dwell);
    laser_extinguish();
@@ -1671,15 +1677,15 @@ static void action_laser_focus_7mm() {
    laser_set_focus(7);
 }
 static void laser_set_focus(float f_length) {
-   if (!has_axis_homed[Z_AXIS]) {
-      enquecommand_P(PSTR("G28 Z F150"));
+   if (!TEST(axis_was_homed, Z_AXIS)) {
+      enqueuecommands_P(PSTR("G28 Z F150"));
    }
    focalLength = f_length;
    float focus = LASER_FOCAL_HEIGHT - f_length;
    char cmd[20];
 
    sprintf_P(cmd, PSTR("G0 Z%s F150"), ftostr52(focus));
-   enquecommand(cmd);
+   enqueuecommands_P(cmd);
 }
 
 #endif // LASER

@@ -88,8 +88,9 @@ void refresh_cmd_timeout();
 
 extern void delay_ms(millis_t ms);
 
-#if ENABLED(FAST_PWM_FAN)
-  void setPwmFrequency(uint8_t pin, uint8_t val);
+#if ENABLED(FAST_PWM_FAN) || ENABLED(LASER_WATER_COOLING)
+
+  void setPwmFrequency(uint8_t pin, int val);
 #endif
 
 extern float homing_feedrate[];
