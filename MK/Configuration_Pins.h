@@ -56,12 +56,19 @@
 #endif
 
 // ENDSTOP pin
-#define X_MIN_PIN       ORIG_X_MIN_PIN
-#define X_MAX_PIN       ORIG_X_MAX_PIN
-#define Y_MIN_PIN       ORIG_Y_MIN_PIN
-#define Y_MAX_PIN       ORIG_Y_MAX_PIN
-#define Z_MIN_PIN       ORIG_Z_MIN_PIN
-#define Z_MAX_PIN       ORIG_Z_MAX_PIN
+//#define X_MIN_PIN       ORIG_X_MIN_PIN
+//#define X_MAX_PIN       ORIG_X_MAX_PIN
+//#define Y_MIN_PIN       ORIG_Y_MIN_PIN
+//#define Y_MAX_PIN       ORIG_Y_MAX_PIN
+//#define Z_MIN_PIN       ORIG_Z_MIN_PIN
+//#define Z_MAX_PIN       ORIG_Z_MAX_PIN
+#define X_MIN_PIN        ORIG_X_MIN_PIN
+#define X_MAX_PIN        -1 //ORIG_X_MAX_PIN
+#define Y_MIN_PIN        ORIG_X_MAX_PIN //ORIG_Y_MIN_PIN
+#define Y_MAX_PIN        -1 //ORIG_Y_MAX_PIN
+#define Z_MIN_PIN        ORIG_Y_MIN_PIN //ORIG_Z_MIN_PIN
+#define Z_MAX_PIN        -1 //ORIG_Z_MAX_PIN
+
 
 // HEATER pin
 #define HEATER_0_PIN    ORIG_HEATER_0_PIN
