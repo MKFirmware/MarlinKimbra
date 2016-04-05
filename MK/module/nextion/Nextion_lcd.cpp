@@ -598,7 +598,7 @@
     else
       strcat(buffer, "---");
 
-    strcat(buffer, TEST(axis_known_position, Z_AXIS) || !TEST(axis_was_homed, Z_AXIS) ?  "Z" : " ? ");
+    strcat(buffer, TEST(axis_known_position, Z_AXIS) || !TEST(axis_was_homed, Z_AXIS) ?  " Z" : " ?");
     if (TEST(axis_was_homed, Z_AXIS)) {
       valuetemp = ftostr32sp(current_position[Z_AXIS] + 0.00001);
       strcat(buffer, valuetemp);
