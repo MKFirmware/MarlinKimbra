@@ -2819,14 +2819,17 @@ void gcode_get_destination() {
     if(code_seen(axis_codes[E_AXIS])) IDLE_OOZING_retract(false);
   #endif
 
-  for (int i = 0; i < NUM_AXIS; i++) {
-    if (code_seen(axis_codes[i])) {
+  for (int i = 0; i < Z_AXIS; i++) {
+    if (code_seen(axis_codes[i]))
       destination[i] = code_value() + (axis_relative_modes[i] || relative_mode ? current_position[i] : -hotend_offset[i][active_extruder]);
-    }
-    else {
+    else
       destination[i] = current_position[i];
-    }
   }
+
+  if(code_seen(axis_codes[E_AXIS]))
+    destination[E_AXIS] = code_value() + (axis_relative_modes[E_AXIS] || relative_mode ? current_position[E_AXIS] : 0);
+  else
+    destination[E_AXIS] = current_position[E_AXIS];
 
   if (code_seen('F')) {
     float next_feedrate = code_value();
