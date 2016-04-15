@@ -72,10 +72,22 @@
 
 /***********************************************************************
  *************************** Mechanism type ****************************
+ ***********************************************************************
+ *                                                                     *
+ * CARTESIAN  - Prusa, Mendel, etc                                     *
+ * COREXY     - H-Bot/Core XY (x_motor = x+y, y_motor = x-y)           *
+ * COREYX     - H-Bot/Core XY (x_motor = y+x, y_motor = y-x)           *
+ * COREXZ     - H-Bot/Core XZ (x_motor = x+z, z_motor = x-z)           *
+ * COREZX     - H-Bot/Core XZ (x_motor = z+x, z_motor = z-x)           *
+ * DELTA      - Rostock, Kossel, RostockMax, Cerberus, etc             *
+ * SCARA      - SCARA                                                  *
+ *                                                                     *
  ***********************************************************************/
 #define MECHANISM MECH_CARTESIAN
 //#define MECHANISM MECH_COREXY
+//#define MECHANISM MECH_COREYX
 //#define MECHANISM MECH_COREXZ
+//#define MECHANISM MECH_COREZX
 //#define MECHANISM MECH_DELTA
 //#define MECHANISM MECH_SCARA
 /***********************************************************************/

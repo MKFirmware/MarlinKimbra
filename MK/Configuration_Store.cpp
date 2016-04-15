@@ -16,10 +16,10 @@
  *
  */
 
-#define EEPROM_VERSION "V25"
+#define EEPROM_VERSION "MKV428"
 
 /**
- * V25 EEPROM Layout:
+ * MKV428 EEPROM Layout:
  *
  *  ver
  *  M92   XYZ E0 ...      axis_steps_per_unit X,Y,Z,E0 ... (per extruder)
@@ -33,15 +33,13 @@
  *  M205  B               minsegmenttime
  *  M205  X               max_xy_jerk
  *  M205  Z               max_z_jerk
- *  M205  E  E0 ...       max_e_jerk (per extruder)
+ *  M205  E   E0 ...      max_e_jerk (per extruder)
  *  M206  XYZ             home_offset (x3)
+ *  M218  T   XY          hotend_offset (x4) (T0..3)
  *  M666  P               zprobe_zoffset
  *
- * HOTENDS OFFSET:
- *  M218 T  XY            hotend_offset (x4) (T0..3)
- *
  * HOTENDS AD595:
- *  M595 T O G            Hotend AD595 Offset & Gain
+ *  M595  H OS            Hotend AD595 Offset & Gain
  *
  * DELTA:
  *  M666  XYZ             endstop_adj (x3)
@@ -137,7 +135,7 @@ void _EEPROM_readData(int& pos, uint8_t* value, uint8_t size) {
 
 void Config_StoreSettings() {
   float dummy = 0.0f;
-  char ver[4] = "000";
+  char ver[7] = "000000";
   int i = EEPROM_OFFSET;
   EEPROM_WRITE_VAR(i, ver); // invalidate data first
   EEPROM_WRITE_VAR(i, axis_steps_per_unit);
@@ -153,13 +151,10 @@ void Config_StoreSettings() {
   EEPROM_WRITE_VAR(i, max_z_jerk);
   EEPROM_WRITE_VAR(i, max_e_jerk);
   EEPROM_WRITE_VAR(i, home_offset);
+  EEPROM_WRITE_VAR(i, hotend_offset);
 
   #if !MECH(DELTA)
     EEPROM_WRITE_VAR(i, zprobe_zoffset);
-  #endif
-
-  #if HOTENDS > 1
-    EEPROM_WRITE_VAR(i, hotend_offset);
   #endif
 
   #if HEATER_USES_AD595
@@ -248,11 +243,9 @@ void Config_StoreSettings() {
   EEPROM_WRITE_VAR(i, volumetric_enabled);
 
   // Save filament sizes
-  for (int q = 0; q < 4; q++) {
-    if (q < EXTRUDERS) dummy = filament_size[q];
-    EEPROM_WRITE_VAR(i, dummy);
-  }
-  
+  for (int e = 0; e < EXTRUDERS; e++)
+    EEPROM_WRITE_VAR(i, filament_size[e]);
+
   #if ENABLED(IDLE_OOZING_PREVENT)
     EEPROM_WRITE_VAR(i, IDLE_OOZING_enabled);
   #endif
@@ -261,7 +254,7 @@ void Config_StoreSettings() {
     EEPROM_WRITE_VAR(i, motor_current);
   #endif
 
-  char ver2[4] = EEPROM_VERSION;
+  char ver2[7] = EEPROM_VERSION;
   int j = EEPROM_OFFSET;
   EEPROM_WRITE_VAR(j, ver2); // validate data
 
@@ -276,12 +269,12 @@ void Config_StoreSettings() {
 void Config_RetrieveSettings() {
 
   int i = EEPROM_OFFSET;
-  char stored_ver[4];
-  char ver[4] = EEPROM_VERSION;
-  EEPROM_READ_VAR(i, stored_ver); //read stored version
-  //  ECHO_EM("Version: [" << ver << "] Stored version: [" << stored_ver << "]");
+  char stored_ver[7];
+  char ver[7] = EEPROM_VERSION;
+  EEPROM_READ_VAR(i, stored_ver); // read stored version
+  //ECHO_EM("Version: [" << ver << "] Stored version: [" << stored_ver << "]");
 
-  if (strncmp(ver, stored_ver, 3) != 0) {
+  if (strncmp(ver, stored_ver, 6) != 0) {
     Config_ResetDefault();
   }
   else {
@@ -305,13 +298,10 @@ void Config_RetrieveSettings() {
     EEPROM_READ_VAR(i, max_z_jerk);
     EEPROM_READ_VAR(i, max_e_jerk);
     EEPROM_READ_VAR(i, home_offset);
+    EEPROM_READ_VAR(i, hotend_offset);
 
     #if !MECH(DELTA)
       EEPROM_READ_VAR(i, zprobe_zoffset);
-    #endif
-
-    #if HOTENDS > 1
-      EEPROM_READ_VAR(i, hotend_offset);
     #endif
 
     #if HEATER_USES_AD595
@@ -400,10 +390,8 @@ void Config_RetrieveSettings() {
 
     EEPROM_READ_VAR(i, volumetric_enabled);
 
-    for (int8_t q = 0; q < 4; q++) {
-      EEPROM_READ_VAR(i, dummy);
-      if (q < EXTRUDERS) filament_size[q] = dummy;
-    }
+    for (int8_t e = 0; e < EXTRUDERS; e++)
+      EEPROM_READ_VAR(i, filament_size[e]);
 
     calculate_volumetric_multipliers();
 
@@ -489,23 +477,21 @@ void Config_ResetDefault() {
         max_e_jerk[i] = tmp5[i];
       else
         max_e_jerk[i] = tmp5[max_i - 1];
-      #if HOTENDS > 1
-        max_i = sizeof(tmp10) / sizeof(*tmp10);
-        if(i < max_i)
-          hotend_offset[X_AXIS][i] = tmp10[i];
-        else
-          hotend_offset[X_AXIS][i] = 0;
-        max_i = sizeof(tmp11) / sizeof(*tmp11);
-        if(i < max_i)
-          hotend_offset[Y_AXIS][i] = tmp11[i];
-        else
-          hotend_offset[Y_AXIS][i] = 0;
-        max_i = sizeof(tmp12) / sizeof(*tmp12);
-        if(i < max_i)
-          hotend_offset[Z_AXIS][i] = tmp12[i];
-        else
-          hotend_offset[Z_AXIS][i] = 0;
-      #endif // HOTENDS > 1
+      max_i = sizeof(tmp10) / sizeof(*tmp10);
+      if(i < max_i)
+        hotend_offset[X_AXIS][i] = tmp10[i];
+      else
+        hotend_offset[X_AXIS][i] = 0;
+      max_i = sizeof(tmp11) / sizeof(*tmp11);
+      if(i < max_i)
+        hotend_offset[Y_AXIS][i] = tmp11[i];
+      else
+        hotend_offset[Y_AXIS][i] = 0;
+      max_i = sizeof(tmp12) / sizeof(*tmp12);
+      if(i < max_i)
+        hotend_offset[Z_AXIS][i] = tmp12[i];
+      else
+        hotend_offset[Z_AXIS][i] = 0;
     }
     #if MB(ALLIGATOR)
       max_i = sizeof(tmp13) / sizeof(*tmp13);
@@ -557,7 +543,9 @@ void Config_ResetDefault() {
     diagrod_adj[1] = TOWER_B_DIAGROD_ADJ;
     diagrod_adj[2] = TOWER_C_DIAGROD_ADJ;
     max_pos[2] = MANUAL_Z_HOME_POS;
-    set_default_z_probe_offset();
+    z_probe_offset[0] = X_PROBE_OFFSET_FROM_EXTRUDER;
+    z_probe_offset[1] = Y_PROBE_OFFSET_FROM_EXTRUDER;
+    z_probe_offset[2] = Z_PROBE_OFFSET_FROM_EXTRUDER;
     set_delta_constants();
   #endif
 
@@ -717,17 +705,15 @@ void Config_ResetDefault() {
     ECHO_MV(" Y", home_offset[Y_AXIS] );
     ECHO_EMV(" Z", home_offset[Z_AXIS] );
 
-    #if HOTENDS > 1
-      if (!forReplay) {
-        ECHO_LM(CFG, "Hotend offset (mm):");
-      }
-      for (int8_t h = 0; h < HOTENDS; h++) {
-        ECHO_SMV(CFG, "  M218 T", h);
-        ECHO_MV(" X", hotend_offset[X_AXIS][h]);
-        ECHO_MV(" Y", hotend_offset[Y_AXIS][h]);
-        ECHO_EMV(" Z", hotend_offset[Z_AXIS][h]);
-      }
-    #endif // HOTENDS > 1
+    if (!forReplay) {
+      ECHO_LM(CFG, "Hotend offset (mm):");
+    }
+    for (int8_t h = 0; h < HOTENDS; h++) {
+      ECHO_SMV(CFG, "  M218 T", h);
+      ECHO_MV(" X", hotend_offset[X_AXIS][h]);
+      ECHO_MV(" Y", hotend_offset[Y_AXIS][h]);
+      ECHO_EMV(" Z", hotend_offset[Z_AXIS][h]);
+    }
 
     #if HEATER_USES_AD595
       if (!forReplay) {
@@ -736,7 +722,7 @@ void Config_ResetDefault() {
       for (int8_t h = 0; h < HOTENDS; h++) {
         ECHO_SMV(CFG, "  M595 T", h);
         ECHO_MV(" O", ad595_offset[h]);
-        ECHO_EMV(", G", ad595_gain[h]);
+        ECHO_EMV(", S", ad595_gain[h]);
       }
     #endif // HEATER_USES_AD595
 

@@ -321,9 +321,9 @@ void checkHitEndstops() {
   }
 }
 
-#if MECH(COREXY)
+#if MECH(COREXY) || MECH(COREYX)
   #define CORE_AXIS_2 B_AXIS
-#elif MECH(COREXZ)
+#elif MECH(COREXZ) || MECH(COREZX)
   #define CORE_AXIS_2 C_AXIS
 #endif
 
@@ -352,7 +352,7 @@ inline void update_endstops() {
   // TEST_ENDSTOP: test the old and the current status of an endstop
   #define TEST_ENDSTOP(ENDSTOP) (TEST(current_endstop_bits, ENDSTOP) && TEST(old_endstop_bits, ENDSTOP))
 
-  #if MECH(COREXY) || MECH(COREXZ)
+  #if MECH(COREXY) || MECH(COREYX)|| MECH(COREXZ) || MECH(COREZX)
 
     #define _SET_TRIGSTEPS(AXIS) do { \
         float axis_pos = count_position[_AXIS(AXIS)]; \
@@ -367,7 +367,7 @@ inline void update_endstops() {
 
     #define _SET_TRIGSTEPS(AXIS) endstops_trigsteps[_AXIS(AXIS)] = count_position[_AXIS(AXIS)]
 
-  #endif // COREXY || COREXZ
+  #endif // COREXY || COREYX || COREXZ || COREZX
 
   #define UPDATE_ENDSTOP(AXIS,MINMAX) do { \
       SET_ENDSTOP_BIT(AXIS, MINMAX); \
@@ -378,7 +378,7 @@ inline void update_endstops() {
       } \
     } while(0)
 
-  #if MECH(COREXY) || MECH(COREXZ)
+  #if MECH(COREXY) || MECH(COREYX)|| MECH(COREXZ) || MECH(COREZX)
     // Head direction in -X axis for CoreXY and CoreXZ bots.
     // If Delta1 == -Delta2, the movement is only in Y or Z axis
     if ((current_block->steps[A_AXIS] != current_block->steps[CORE_AXIS_2]) || (TEST(out_bits, A_AXIS) == TEST(out_bits, CORE_AXIS_2))) {
@@ -408,11 +408,11 @@ inline void update_endstops() {
             #endif
           }
       }
-  #if MECH(COREXY) || MECH(COREXZ)
+  #if MECH(COREXY) || MECH(COREYX)|| MECH(COREXZ) || MECH(COREZX)
     }
   #endif
 
-  #if MECH(COREXY)
+  #if MECH(COREXY) || MECH(COREYX)
     // Head direction in -Y axis for CoreXY bots.
     // If DeltaX == DeltaY, the movement is only in X axis
     if ((current_block->steps[A_AXIS] != current_block->steps[B_AXIS]) || (TEST(out_bits, A_AXIS) != TEST(out_bits, B_AXIS))) {
@@ -430,11 +430,11 @@ inline void update_endstops() {
           UPDATE_ENDSTOP(Y, MAX);
         #endif
       }
-  #if MECH(COREXY)
+  #if MECH(COREXY) || MECH(COREYX)
     }
   #endif
 
-  #if MECH(COREXZ)
+  #if MECH(COREXZ) || MECH(COREZX)
     // Head direction in -Z axis for CoreXZ bots.
     // If DeltaX == DeltaZ, the movement is only in X axis
     if ((current_block->steps[A_AXIS] != current_block->steps[C_AXIS]) || (TEST(out_bits, A_AXIS) != TEST(out_bits, C_AXIS))) {
@@ -505,7 +505,7 @@ inline void update_endstops() {
           #endif // !Z_DUAL_ENDSTOPS
         #endif // Z_MAX_PIN
       }
-  #if MECH(COREXZ)
+  #if MECH(COREXZ) || MECH(COREZX)
     }
   #endif
   #if ENABLED(NPR2)
@@ -579,8 +579,8 @@ FORCE_INLINE unsigned short calc_timer(unsigned short step_rate) {
 /**
  * Set the stepper direction of each axis
  *
- *   X_AXIS=A_AXIS and Y_AXIS=B_AXIS for COREXY
- *   X_AXIS=A_AXIS and Z_AXIS=C_AXIS for COREXZ
+ *   X_AXIS=A_AXIS and Y_AXIS=B_AXIS for COREXY or COREYX
+ *   X_AXIS=A_AXIS and Z_AXIS=C_AXIS for COREXZ or COREZX
  */
 void set_stepper_direction(bool onlye) {
 
@@ -1277,7 +1277,7 @@ long st_get_position(uint8_t axis) {
 
 float st_get_axis_position_mm(AxisEnum axis) {
   float axis_pos;
-  #if ENABLED(COREXY) | ENABLED(COREXZ)
+  #if MECH(COREXY) || MECH(COREYX) || MECH(COREXZ) || MECH(COREZX)
     if (axis == X_AXIS || axis == CORE_AXIS_2) {
       CRITICAL_SECTION_START;
       long  pos1 = count_position[A_AXIS],
