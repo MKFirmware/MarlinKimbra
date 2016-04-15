@@ -43,6 +43,11 @@ int current_temperature_raw[4] = { 0 };
 float current_temperature[4] = { 0.0 };
 int current_temperature_bed_raw = 0;
 float current_temperature_bed = 0.0;
+#if ENABLED(LASER_WATER_COOLING)
+int current_temperature_water_raw = 0;
+float current_temperature_water = 0.0;
+#endif
+
 #if ENABLED(TEMP_SENSOR_1_AS_REDUNDANT)
   int redundant_temperature_raw = 0;
   float redundant_temperature = 0.0;
@@ -53,7 +58,13 @@ float current_temperature_bed = 0.0;
   float bedKi = ((DEFAULT_bedKi) * (PID_dT));
   float bedKd = ((DEFAULT_bedKd) / (PID_dT));
 #endif //PIDTEMPBED
-  
+ 
+#if ENABLED(PIDTEMPWATER)
+  float waterKp = DEFAULT_waterKp;
+  float waterKi = ((DEFAULT_waterKi) * (PID_dT));
+  float waterKd = ((DEFAULT_waterKd) / (PID_dT));
+#endif
+
 #if ENABLED(FAN_SOFT_PWM)
   unsigned char fanSpeedSoftPwm = 0;
   #if HAS(AUTO_FAN)
@@ -993,8 +1004,6 @@ void tp_init() {
   #if ENABLED(LASER_WATER_COOLING)
      SET_OUTPUT(LASER_WATER_COOLING_PIN);
      setPwmFrequency(LASER_WATER_COOLING_PIN, 2); // No prescaling. Pwm frequency = F_CPU/256/64
-     digitalWrite(LASER_WATER_COOLING_PIN,50);
-     analogWrite(LASER_WATER_COOLING_PIN, 50);
   #endif
 
   #if ENABLED(HEATER_0_USES_MAX6675)
