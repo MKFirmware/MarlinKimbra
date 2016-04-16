@@ -6167,19 +6167,38 @@ inline void gcode_M226() {
   }
 #endif
 
-#if ENABLED(PIDTEMPBED)
+#if ENABLED(PIDTEMPBED) || ENABLED(PIDTEMPWATER)
   // M304: Set bed PID parameters P I and D
   inline void gcode_M304() {
-    if (code_seen('P')) bedKp = code_value();
-    if (code_seen('I')) bedKi = scalePID_i(code_value());
-    if (code_seen('D')) bedKd = scalePID_d(code_value());
+    #if ENABLED(PIDTEMPWATER)
+    if (code_seen('L')) {
+      if (code_seen('P')) waterKp = code_value();
+      if (code_seen('I')) waterKi = scalePID_i(code_value());
+      if (code_seen('D')) waterKd = scalePID_d(code_value());
 
-    updatePID();
-    ECHO_SMV(OK, "p:", bedKp);
-    ECHO_MV(" i:", unscalePID_i(bedKi));
-    ECHO_EMV(" d:", unscalePID_d(bedKd));
+      updatePID();
+      ECHO_SMV(OK, " L p:", waterKp);
+      ECHO_MV(" i:", unscalePID_i(waterKi));
+      ECHO_EMV(" d:", unscalePID_d(waterKd));
+
+    }
+    #endif
+    #if ENABLED(PIDTEMPWATER) && ENABLED(PIDTEMPBED)
+    else {
+    #endif
+      if (code_seen('P')) bedKp = code_value();
+      if (code_seen('I')) bedKi = scalePID_i(code_value());
+      if (code_seen('D')) bedKd = scalePID_d(code_value());
+
+      updatePID();
+      ECHO_SMV(OK, "p:", bedKp);
+      ECHO_MV(" i:", unscalePID_i(bedKi));
+      ECHO_EMV(" d:", unscalePID_d(bedKd));
+    #if ENABLED(PIDTEMPWATER) && ENABLED(PIDTEMPBED)
+    }
+    #endif
   }
-#endif // PIDTEMPBED
+#endif // PIDTEMPBED || PIDTEMPWATER
 
 #if HAS(MICROSTEPS)
   // M350 Set microstepping mode. Warning: Steps per unit remains unchanged. S code sets stepping mode for all drivers.
@@ -7933,7 +7952,7 @@ void process_next_command() {
           gcode_M303(); break;
       #endif
 
-      #if ENABLED(PIDTEMPBED)
+      #if ENABLED(PIDTEMPBED) || ENABLED(PIDTEMPWATER)
         case 304: // M304
           gcode_M304(); break;
       #endif // PIDTEMPBED

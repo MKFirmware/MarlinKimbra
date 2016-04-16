@@ -105,7 +105,7 @@
 *  M301 - Set PID parameters P I and D
 *  M302 - Allow cold extrudes
 *  M303 - PID relay autotune S<temperature> sets the target temperature (default target temperature = 150C). H<hotend> C<cycles>
-*  M304 - Set bed PID parameters P I and D
+*  M304 - Set bed PID parameters P I and D or Water Cooling if L parameter
 *  M350 - Set microstepping mode.
 *  M351 - Toggle MS1 MS2 pins directly.
 *  M400 - Finish all moves

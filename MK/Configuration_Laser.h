@@ -67,4 +67,45 @@
 
 
 
+/***********************************************************************
+ ************************ PID Settings - WATER ***************************
+ ***********************************************************************
+ *                                                                     *
+ * PID Tuning Guide here: http://reprap.org/wiki/PID_Tuning            *
+ * Select PID or bang-bang with PIDTEMPWATER.                            *
+ * If bang-bang, WATER_LIMIT_SWITCHING will enable hysteresis            *
+ *                                                                     *
+ ***********************************************************************/
+// Uncomment this to enable PID on the bed. It uses the same frequency PWM as the extruder.
+// If your PID_dT is the default, and correct for your hardware/configuration, that means 7.689Hz,
+// which is fine for driving a square wave into a resistive load and does not significantly impact you FET heating.
+// This also works fine on a Fotek SSR-10DA Solid State Relay into a 250W heater.
+// If your configuration is significantly different than this and you don't understand the issues involved, you probably
+// shouldn't use bed PID until someone else verifies your hardware works.
+// If this is enabled, find your own PID constants below.
+#define PIDTEMPWATER
+
+//#define WATER_LIMIT_SWITCHING
+#define WATER_HYSTERESIS 2 //only disable heating if T<target-WATER_HYSTERESIS and enable heating if T<target+WATER_HYSTERESIS (works only if WATER_LIMIT_SWITCHING is enabled)
+#define WATER_CHECK_INTERVAL 5000 //ms between checks in bang-bang control
+
+// This sets the max power delivered to the bed.
+// all forms of bed control obey this (PID, bang-bang, bang-bang with hysteresis)
+// setting this to anything other than 255 enables a form of PWM to the bed,
+// so you shouldn't use it unless you are OK with PWM on your bed.  (see the comment on enabling PIDTEMPWATER)
+#define MAX_WATER_POWER 255 // limits duty cycle to bed; 255=full current
+
+#define PID_WATER_INTEGRAL_DRIVE_MAX MAX_WATER_POWER // limit for the integral term
+// 120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
+// from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
+#define DEFAULT_waterKp 10.00
+#define DEFAULT_waterKi .023
+#define DEFAULT_waterKd 305.4
+
+// FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
+
+//#define PID_WATER_DEBUG // Sends debug data to the serial port.
+/***********************************************************************/
+
+
 #endif

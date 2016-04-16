@@ -16,7 +16,7 @@
  *
  */
 
-#define EEPROM_VERSION "MKV428"
+#define EEPROM_VERSION "MKV429"
 
 /**
  * MKV428 EEPROM Layout:
@@ -73,6 +73,7 @@
  *
  * PIDTEMPBED:
  *  M304      PID         bedKp, bedKi, bedKd
+ *  M304  L   PID         waterKp, waterKi, waterKd
  *
  * DOGLCD:
  *  M250  C               lcd_contrast
@@ -208,6 +209,12 @@ void Config_StoreSettings() {
     EEPROM_WRITE_VAR(i, bedKp);
     EEPROM_WRITE_VAR(i, bedKi);
     EEPROM_WRITE_VAR(i, bedKd);
+  #endif
+
+  #if ENABLED(PIDTEMPWATER)
+    EEPROM_WRITE_VAR(i, waterKp);
+    EEPROM_WRITE_VAR(i, waterKi);
+    EEPROM_WRITE_VAR(i, waterKd);
   #endif
 
   #if HASNT(LCD_CONTRAST)
@@ -358,6 +365,13 @@ void Config_RetrieveSettings() {
       EEPROM_READ_VAR(i, bedKi);
       EEPROM_READ_VAR(i, bedKd);
     #endif
+
+    #if ENABLED(PIDTEMPWATER)
+      EEPROM_READ_VAR(i, waterKp);
+      EEPROM_READ_VAR(i, waterKi);
+      EEPROM_READ_VAR(i, waterKd);
+    #endif
+
 
     #if HASNT(LCD_CONTRAST)
       int lcd_contrast;
@@ -585,6 +599,13 @@ void Config_ResetDefault() {
     bedKd = scalePID_d(DEFAULT_bedKd);
   #endif
 
+  #if ENABLED(PIDTEMPWATER)
+    waterKp = DEFAULT_waterKp;
+    waterKi = scalePID_i(DEFAULT_waterKi);
+    waterKd = scalePID_d(DEFAULT_waterKd);
+  #endif
+
+
   #if ENABLED(FWRETRACT)
     autoretract_enabled = false;
     retract_length = RETRACT_LENGTH;
@@ -787,7 +808,7 @@ void Config_ResetDefault() {
       ECHO_EM(" (Material GUM)");
     #endif // ULTIPANEL
 
-    #if ENABLED(PIDTEMP) || ENABLED(PIDTEMPBED)
+    #if ENABLED(PIDTEMP) || ENABLED(PIDTEMPBED) || ENABLED(PIDTEMPWATER)
       if (!forReplay) {
         ECHO_LM(CFG, "PID settings:");
       }
@@ -811,6 +832,12 @@ void Config_ResetDefault() {
         ECHO_MV(" I", unscalePID_i(bedKi));
         ECHO_EMV(" D", unscalePID_d(bedKd));
       #endif
+      #if ENABLED(PIDTEMPWATER)
+        ECHO_SMV(CFG, "  M304 L P", waterKp); // for compatibility with hosts, only echos values for E0
+        ECHO_MV(" I", unscalePID_i(waterKi));
+        ECHO_EMV(" D", unscalePID_d(waterKd));
+      #endif
+
     #endif
 
     #if ENABLED(FWRETRACT)

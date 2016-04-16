@@ -201,6 +201,21 @@
       #error DEPENDENCY ERROR: Missing setting DEFAULT_bedKd
     #endif
   #endif
+  #if ENABLED(PIDTEMPWATER)
+    #if DISABLED(PID_WATER_INTEGRAL_DRIVE_MAX)
+       #error DEPENDENCY ERROR: Missing setting PID_WATER_INTEGRAL_DRIVE_MAX
+    #endif
+    #if DISABLED(DEFAULT_waterKp)
+      #error DEPENDENCY ERROR: Missing setting DEFAULT_waterKp
+    #endif
+    #if DISABLED(DEFAULT_waterKi)
+      #error DEPENDENCY ERROR: Missing setting DEFAULT_waterKi
+    #endif
+    #if DISABLED(DEFAULT_waterKd)
+      #error DEPENDENCY ERROR: Missing setting DEFAULT_waterKd
+    #endif
+
+  #endif
   #if ENABLED(BED_LIMIT_SWITCHING)
     #if DISABLED(BED_HYSTERESIS)
       #error DEPENDENCY ERROR: Missing setting BED_HYSTERESIS
