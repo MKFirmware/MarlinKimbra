@@ -1388,7 +1388,7 @@ void digipot_init() {
   #if MB(ALLIGATOR)
     unsigned int digipot_motor = 0;
     for (uint8_t i = 0; i < 3 + DRIVER_EXTRUDERS; i++) {
-      digipot_motor = 255 * (motor_current[i] / 2.5);
+      digipot_motor = 255 * motor_current[i] / 3.3;
       ExternalDac::setValue(i, digipot_motor);
     }
   #endif//MB(ALLIGATOR)
