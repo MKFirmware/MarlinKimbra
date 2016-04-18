@@ -21,6 +21,7 @@
 #include "NexConfig.h"
 #include "NexTouch.h"
 #include "NexHardware.h"
+#include "NexDownload.h"
 
 #include "NexButton.h"
 //#include "NexCrop.h"

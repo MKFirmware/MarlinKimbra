@@ -16,6 +16,7 @@
 
   #if ENABLED(SDSUPPORT)
     uint8_t SDstatus    = 0; // 0 SD not insert, 1 SD insert, 2 SD printing
+    NexDownload Firmware(NEXTION_FIRMWARE_FILE, 57600);
   #endif
 
   #if ENABLED(NEXTION_GFX)
@@ -34,7 +35,7 @@
   NexPage Pgcode        = NexPage(8, 0, "gcode");
 
   // Page 0 Start
-  NexTimer startimer    = NexTimer(0,  1, "tm0");  
+  NexTimer startimer    = NexTimer(0,  1, "tm0");
 
   // Page 1 Info
   NexText Hotend0       = NexText(1,  2,  "t0");
@@ -43,9 +44,7 @@
   NexText Hotend2       = NexText(1,  6,  "t2");
   NexText LedStatus     = NexText(1,  7,  "status");
   NexText LedCoord1     = NexText(1,  8,  "icoord");
-  NexPicture Menu       = NexPicture(1,  9, "p0");
   NexPicture MSD1       = NexPicture(1, 10, "p1");
-  NexPicture MSetup     = NexPicture(1, 11, "p2");
   NexPicture Hend0      = NexPicture(1, 12, "p3");
   NexHotspot hot0       = NexHotspot(1, 13, "hot0");
   NexPicture Hend1      = NexPicture(1, 14, "p4");
@@ -123,12 +122,10 @@
   NexTouch *nex_listen_list[] =
   {
     &Pstart,
-    &Menu,
     &MSD1,
     &MSD3,
     &MSD5,
     &MSD6,
-    &MSetup,
     &Fanpic,
     &Speedpic,
     &NPlay,
@@ -222,7 +219,6 @@
     }
 
     Pinfo.show();
-    NextionPage = 1;
 
     #if ENABLED(NEXTION_GFX)
       #if MECH(DELTA)
@@ -291,7 +287,6 @@
     }
 
     void setpageSDPopCallback(void *ptr) {
-      NextionPage = 4;
       Psdcard.show();
       uint16_t fileCnt = card.getnrfilenames();
 
@@ -360,6 +355,14 @@
       card.updir();
       setpageSDPopCallback(&MSD1);
     }
+    
+    void DownloadNewFirmware() {
+      if(IS_SD_INSERTED || card.cardOK) {
+        Firmware.startDownload();
+        nexSerial.end();
+        lcd_init();
+      }
+    }
   #endif
 
   void ExitPopCallback(void *ptr) {
@@ -372,7 +375,6 @@
 
   void hotPopCallback(void *ptr) {
     Ptemp.show();
-    NextionPage = 2;
     memset(buffer, 0, sizeof(buffer));
     if (ptr == &hot0) {
       if (degTargetHotend(0) != 0) {
@@ -437,24 +439,15 @@
     Pmenu.show();
   }
 
-  void setpagePopCallback(void *ptr) {
-    if (ptr == &Menu) {
-      NextionPage = 3;
-      Pmenu.show();
-    }
-    else if (ptr == &MSetup) {
-      NextionPage = 5;
-      Psetup.show();
-    }
-    else if (ptr == &Speedpic) {
-      NextionPage = 7;
-      Pspeed.show();
-    }
-  }
-
   void setfanPopCallback(void *ptr) {
-    if (fanSpeed) fanSpeed = 0;
-    else fanSpeed = 255;
+    if (fanSpeed) {
+      fanSpeed = 0;
+      fantimer.disable();
+    }
+    else {
+      fanSpeed = 255;
+      fantimer.enable();
+    }
   }
 
   void setmovePopCallback(void *ptr) {
@@ -463,7 +456,6 @@
     enqueuecommands_P(PSTR("G91"));
     enqueuecommands_P(buffer);
     enqueuecommands_P(PSTR("G90"));
-    NextionPage = 6;
   }
 
   #if ENABLED(SDSUPPORT)
@@ -534,9 +526,6 @@
         hot2.attachPop(hotPopCallback,      &hot2);
       #endif
 
-      Menu.attachPop(setpagePopCallback,    &Menu);
-      MSetup.attachPop(setpagePopCallback,  &MSetup);
-      Speedpic.attachPop(setpagePopCallback, &Speedpic);
       Fanpic.attachPop(setfanPopCallback,   &Fanpic);
       m11.attachPop(sethotPopCallback,      &m11);
       tup.attachPop(settempPopCallback,     &tup);
@@ -619,8 +608,10 @@
     millis_t ms = millis();
 
     if (ms > next_lcd_update_ms) {
-      if (NextionPage == 1) {
 
+      sendCurrentPageId(&NextionPage);
+
+      if (NextionPage == 1) {
         if (fanSpeed > 0) fantimer.enable();
         else fantimer.disable();
 
