@@ -148,7 +148,7 @@
           cmd += ",";
           cmd += buf2;
           cmd += ",";
-          cmd +=buf3;
+          cmd += buf3;
           cmd += ",";
           cmd += buf4;
           sendCommand(cmd.c_str());

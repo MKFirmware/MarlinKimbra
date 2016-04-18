@@ -3,9 +3,9 @@
 
   #if ENABLED(NEXTION)
     #define LCD_UPDATE_INTERVAL 4000
+    #define NEXTION_FIRMWARE_FILE "marlinkimbra.tft"
 
     void ExitPopCallback(void *ptr);
-    void setpagePopCallback(void *ptr);
     void hotPopCallback(void *ptr);
     void sethotPopCallback(void *ptr);
     void settempPopCallback(void *ptr);
@@ -33,6 +33,7 @@
       void sdfolderUpPopCallback(void *ptr);
       void PlayPausePopCallback(void *ptr);
       void StopPopCallback(void *ptr);
+      void DownloadNewFirmware();
     #endif
 
     FORCE_INLINE bool lcd_hasstatus() { return false; }

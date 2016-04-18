@@ -70,6 +70,12 @@
 #define ORIG_HEATER_BED_PIN      8   // BED
 #define ORIG_TEMP_BED_PIN       14   // ANALOG NUMBERING
 
+#if ENABLED(REPRAP_DISCOUNT_SMART_CONTROLLER) || ENABLED(G3D_PANEL)
+  #define KILL_PIN              41
+#else
+  #define KILL_PIN              -1
+#endif
+
 #if NUM_SERVOS > 0
   #define SERVO0_PIN            11
   #if NUM_SERVOS > 1

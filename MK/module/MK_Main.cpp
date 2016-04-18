@@ -4424,6 +4424,15 @@ inline void gcode_M17() {
       card.mount();
     }
   }
+
+  #if ENABLED(NEXTION)
+    /**
+     * M35: Download Firmware Nextion
+     */
+    inline void gcode_M35() {
+      DownloadNewFirmware();
+    }
+  #endif
 #endif
 
 /**
@@ -7438,6 +7447,10 @@ void process_next_command() {
           gcode_M31(); break;
         case 32: // M32 - Make directory
           gcode_M32(); break;
+        #if ENABLED(NEXTION)
+          case 35: // M35 - Download Firmware Nextion
+            gcode_M35(); break;
+        #endif
       #endif //SDSUPPORT
 
       case 42: // M42 -Change pin status via gcode
@@ -7526,7 +7539,7 @@ void process_next_command() {
         gcode_M120(); break;
       case 121: // M121 Disable endstops
         gcode_M121(); break;
-      case 122: // M121 Disable or enable software endstops
+      case 122: // M122 Disable or enable software endstops
         gcode_M122(); break;
 
       #if ENABLED(BARICUDA)
