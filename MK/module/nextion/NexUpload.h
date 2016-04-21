@@ -1,7 +1,7 @@
 /**
- * @file NexDownload.h
+ * @file NexUpload.h
  *
- * The definition of class NexDownload. 
+ * The definition of class NexUpload. 
  *
  * @author Chen Zengpeng (email:<zengpeng.chen@itead.cc>)
  * @date 2016/3/29
@@ -14,8 +14,8 @@
  * the License, or (at your option) any later version.
  */
 
-#ifndef __NEXDOWNLOAD_H__
-  #define __NEXDOWNLOAD_H__
+#ifndef __NEXUPLOAD_H__
+  #define __NEXUPLOAD_H__
 
   #include "NexHardware.h"
 
@@ -26,9 +26,9 @@
 
   /**
    *
-   * Provides the API for nextion to download the ftf file.
+   * Provides the API for nextion to upload the ftf file.
    */
-  class NexDownload
+  class NexUpload
   {
   public: /* methods */
 
@@ -36,31 +36,31 @@
      * Constructor. 
      * 
      * @param file_name - tft file name. 
-     * @download_baudrate - set download baudrate.
+     * @upload_baudrate - set upload baudrate.
      */
-    NexDownload(const char *file_name, uint32_t download_baudrate);
+    NexUpload(const char *file_name, uint32_t upload_baudrate);
     
     /**
      * Constructor. 
      * 
      * @param file_name - tft file name. 
      * @param SD_chip_select - sd chip select pin.
-     * @download_baudrate - set download baudrate.
+     * @upload_baudrate - set upload baudrate.
      */
-    NexDownload(const String file_Name, uint32_t download_baudrate); 
+    NexUpload(const String file_Name, uint32_t upload_baudrate); 
     
     /**
      * destructor. 
      * 
      */
-    ~NexDownload(){}
+    ~NexUpload(){}
     
     /*
-     * start download.
+     * start upload.
      *
      * @return none.
      */
-    void startDownload();
+    void startUpload(void);
 
   private: /* methods */
 
@@ -89,20 +89,20 @@
     bool _searchBaudrate(uint32_t baudrate);
 
     /*
-     * set download baudrate.
+     * set upload baudrate.
      *
-     * @param baudrate - set download baudrate.
+     * @param baudrate - set upload baudrate.
      *   
      * @return true if success, false for failure. 
      */
-    bool _setDownloadBaudrate(uint32_t baudrate);
+    bool _setUploadBaudrate(uint32_t baudrate);
     
     /**
      * start dowload tft file to nextion. 
      * 
      * @return none. 
      */
-    bool _downloadTftFile(void);
+    bool _uploadTftFile(void);
     
     /*
      * Send command to Nextion.
@@ -128,8 +128,8 @@
   private: /* data */ 
     uint32_t _baudrate; /*nextion serail baudrate*/
     const char *_file_name; /*nextion tft file name*/
-    uint32_t _undownloadByte; /*undownload byte of tft file*/
-    uint32_t _download_baudrate; /*download baudrate*/
+    uint32_t _unuploadByte; /*unupload byte of tft file*/
+    uint32_t _upload_baudrate; /*upload baudrate*/
   };
 
 #endif /* #ifndef __NEXDOWNLOAD_H__ */

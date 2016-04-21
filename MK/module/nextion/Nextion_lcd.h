@@ -33,7 +33,7 @@
       void sdfolderUpPopCallback(void *ptr);
       void PlayPausePopCallback(void *ptr);
       void StopPopCallback(void *ptr);
-      void DownloadNewFirmware();
+      void UploadNewFirmware();
     #endif
 
     FORCE_INLINE bool lcd_hasstatus() { return false; }

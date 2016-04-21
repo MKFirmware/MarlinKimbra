@@ -16,7 +16,7 @@
 
   #if ENABLED(SDSUPPORT)
     uint8_t SDstatus    = 0; // 0 SD not insert, 1 SD insert, 2 SD printing
-    NexDownload Firmware(NEXTION_FIRMWARE_FILE, 57600);
+    NexUpload Firmware(NEXTION_FIRMWARE_FILE, 57600);
   #endif
 
   #if ENABLED(NEXTION_GFX)
@@ -356,9 +356,9 @@
       setpageSDPopCallback(&MSD1);
     }
     
-    void DownloadNewFirmware() {
+    void UploadNewFirmware() {
       if(IS_SD_INSERTED || card.cardOK) {
-        Firmware.startDownload();
+        Firmware.startUpload();
         nexSerial.end();
         lcd_init();
       }

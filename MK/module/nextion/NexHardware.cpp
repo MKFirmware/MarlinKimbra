@@ -240,7 +240,8 @@ bool nexInit(void)
       return ret1 && ret2;
 
     // Else try to 115200 baudrate
-    } else {
+    }
+    else {
       nexSerial.end();
       HAL::delayMilliseconds(1000);
       nexSerial.begin(115200);

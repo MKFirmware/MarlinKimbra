@@ -1,7 +1,7 @@
 ### Version 4.2.8
 * Add board folder with files of various board containing the pins
 * Add End time on Graphics display when SD print
-* Add M35 for download firmware nextion from SD
+* Add M35 for upload firmware to Nextion from SD
 * Rewrite macros
 * Fix M109 so it won't wait for cooling
 * Clear code

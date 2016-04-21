@@ -43,7 +43,7 @@
 *  M30  - Delete file from SD (M30 filename.g)
 *  M31  - Output time since last M109 or SD card start to serial
 *  M32  - Make directory
-*  M35  - Download Firmware Nextion from SD
+*  M35  - Upload Firmware to Nextion from SD
 *  M42  - Change pin status via gcode Use M42 Px Sy to set pin x to value y, when omitting Px the onboard led will be used.
 *  M49  - Z probe repetability test
 *  M80  - Turn on Power Supply
