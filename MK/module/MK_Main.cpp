@@ -2,8 +2,8 @@
  * MK Firmware
  *
  * Based on Marlin, Sprinter and grbl
- * Copyright (C) 2013 MagoKimbra
  * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2013 - 2016 Alberto Cotronei @MagoKimbra
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -4427,10 +4427,10 @@ inline void gcode_M17() {
 
   #if ENABLED(NEXTION)
     /**
-     * M35: Download Firmware Nextion
+     * M35: Upload Firmware to Nextion from SD
      */
     inline void gcode_M35() {
-      DownloadNewFirmware();
+      UploadNewFirmware();
     }
   #endif
 #endif
@@ -7448,7 +7448,7 @@ void process_next_command() {
         case 32: // M32 - Make directory
           gcode_M32(); break;
         #if ENABLED(NEXTION)
-          case 35: // M35 - Download Firmware Nextion
+          case 35: // M35 - Upload Firmware to Nextion from SD
             gcode_M35(); break;
         #endif
       #endif //SDSUPPORT

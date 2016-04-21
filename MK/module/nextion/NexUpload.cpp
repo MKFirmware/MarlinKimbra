@@ -1,7 +1,7 @@
 /**
- * @file NexDownload.cpp
+ * @file NexUpload.cpp
  *
- * The implementation of download tft file for nextion. 
+ * The implementation of upload tft file for nextion. 
  *
  * @author  Chen Zengpeng (email:<zengpeng.chen@itead.cc>)
  * @date    2016/3/29
@@ -13,20 +13,20 @@
  * the License, or (at your option) any later version.
  */
 
-#include "NexDownload.h"
+#include "NexUpload.h"
 
 #if ENABLED(SDSUPPORT)
 
-  NexDownload::NexDownload(const char *file_name, uint32_t download_baudrate) {
+  NexUpload::NexUpload(const char *file_name, uint32_t upload_baudrate) {
     _file_name = file_name;
-    _download_baudrate = download_baudrate;
+    _upload_baudrate = upload_baudrate;
   }
 
-  NexDownload::NexDownload(const String file_Name, uint32_t download_baudrate) {
-    NexDownload(file_Name.c_str(), download_baudrate);
+  NexUpload::NexUpload(const String file_Name, uint32_t upload_baudrate) {
+    NexUpload(file_Name.c_str(), upload_baudrate);
   }
 
-  void NexDownload::startDownload(void) {
+  void NexUpload::startUpload(void) {
     if (!_checkFile()) {
       ECHO_LM(ER, "The file is error");
       return;
@@ -35,19 +35,19 @@
       ECHO_LM(ER, "baudrate error");
       return;
     }
-    if (!_setDownloadBaudrate(_download_baudrate)) {
+    if (!_setUploadBaudrate(_upload_baudrate)) {
       ECHO_LM(ER, "modify baudrate error");
       return;
     }
-    if (!_downloadTftFile()) {
-      ECHO_LM(ER, "download file error");
+    if (!_uploadTftFile()) {
+      ECHO_LM(ER, "upload file error");
       return;
     }
     card.closeFile();
-    ECHO_LM(DB, "download ok");
+    ECHO_LM(DB, "upload ok");
   }
 
-  uint16_t NexDownload::_getBaudrate(void) {
+  uint16_t NexUpload::_getBaudrate(void) {
     uint32_t baudrate_array[7] = {115200, 57600, 38400, 19200, 9600, 4800, 2400};
     for (uint8_t i = 0; i < 7; i++) {
       if (_searchBaudrate(baudrate_array[i])) {
@@ -58,17 +58,17 @@
     return _baudrate;
   }
 
-  bool NexDownload::_checkFile(void) {
-    ECHO_LM(DB, "start _checkFile");
+  bool NexUpload::_checkFile(void) {
+    ECHO_LMT(DB, "Start checkFile ", _file_name);
     if (!card.selectFile(_file_name)) {
       ECHO_LM(ER, "file is not exit");
       return 0;
     }
-    _undownloadByte = card.fileSize;
+    _unuploadByte = card.fileSize;
     return 1;
   }
 
-  bool NexDownload::_searchBaudrate(uint32_t baudrate) {
+  bool NexUpload::_searchBaudrate(uint32_t baudrate) {
     String string = String("");
     nexSerial.end();
     HAL::delayMilliseconds(100);
@@ -83,7 +83,7 @@
     return 0;
   }
 
-  void NexDownload::sendCommand(const char* cmd) {
+  void NexUpload::sendCommand(const char* cmd) {
     while (nexSerial.available())
       nexSerial.read();
 
@@ -93,7 +93,7 @@
     nexSerial.write(0xFF);
   }
 
-  uint16_t NexDownload::recvRetString(String &string, uint32_t timeout,bool recv_flag) {
+  uint16_t NexUpload::recvRetString(String &string, uint32_t timeout,bool recv_flag) {
     uint16_t ret = 0;
     uint8_t c = 0;
     long start;
@@ -117,11 +117,11 @@
     return ret;
   }
 
-  bool NexDownload::_setDownloadBaudrate(uint32_t baudrate) {
+  bool NexUpload::_setUploadBaudrate(uint32_t baudrate) {
     String string = String("");
     String cmd = String("");
 
-    String filesize_str = String(_undownloadByte, 10);
+    String filesize_str = String(_unuploadByte, 10);
     String baudrate_str = String(baudrate, 10);
     cmd = "whmi-wri " + filesize_str + "," + baudrate_str + ",0";
 
@@ -136,13 +136,13 @@
     return 0;
   }
 
-  bool NexDownload::_downloadTftFile(void) {
+  bool NexUpload::_uploadTftFile(void) {
     uint8_t c;
     uint16_t send_timer = 0;
     uint16_t last_send_num = 0;
     String string = String("");
-    send_timer = _undownloadByte / 4096 + 1;
-    last_send_num = _undownloadByte % 4096;
+    send_timer = _unuploadByte / 4096 + 1;
+    last_send_num = _unuploadByte % 4096;
 
     while(send_timer) {
       if(send_timer == 1) {
