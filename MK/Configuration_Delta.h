@@ -66,17 +66,17 @@
 //                 /       \
 //                A         B
 //
-//    |___| DELTA_CARRIAGE_OFFSET
+//    |___| DELTA CARRIAGE OFFSET
 //    |   \
 //    |    \
-//    |     \  DELTA_DIAGONAL_ROD
+//    |     \  DELTA DIAGONAL ROD
 //    |      \
 //    |       \   | Effector is at printer center!
 //    |        \__|__/
-//    |        |--| DELTA_EFFECTOR_OFFSET
-//        |----|    DELTA_RADIUS Calculated in fw (DELTA_SMOOTH_ROD_OFFSET - DELTA_EFFECTOR_OFFSET - DELTA_CARRIAGE_OFFSET)
-//      |---------| DELTA_PRINTABLE_RADIUS
-//    |-----------| DELTA_SMOOTH_ROD_OFFSET
+//    |        |--| DELTA EFFECTOR OFFSET
+//        |----|    DELTA RADIUS Calculated in fw (DELTA_SMOOTH_ROD_OFFSET - DELTA_EFFECTOR_OFFSET - DELTA_CARRIAGE_OFFSET)
+//      |---------| DELTA PRINTABLE RADIUS
+//    |-----------| DELTA SMOOTH ROD OFFSET
   
 // Center-to-center distance of the holes in the diagonal push rods.
 #define DELTA_DIAGONAL_ROD 220.0            // mm
