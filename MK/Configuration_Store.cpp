@@ -529,7 +529,7 @@ void Config_ResetDefault() {
 
   #if MECH(DELTA)
     delta_radius = DEFAULT_DELTA_RADIUS;
-    delta_diagonal_rod = DEFAULT_DELTA_DIAGONAL_ROD;
+    delta_diagonal_rod = DELTA_DIAGONAL_ROD;
     endstop_adj[0] = TOWER_A_ENDSTOP_ADJ;
     endstop_adj[1] = TOWER_B_ENDSTOP_ADJ;
     endstop_adj[2] = TOWER_C_ENDSTOP_ADJ;
