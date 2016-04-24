@@ -2689,8 +2689,9 @@ static void clean_up_after_endstop_move() {
     #endif
     #if HOTENDS > 1
       for (uint8_t h = 0; h < HOTENDS; ++h) {
-        ECHO_MV(" T", h);
-        ECHO_MV(":", degHotend(h), 1);
+        ECHO_MV(" T", (int)h);
+        ECHO_C(':');
+        ECHO_V(degHotend(h), 1);
         ECHO_MV(" /", degTargetHotend(h), 1);
       }
     #endif
@@ -2710,7 +2711,7 @@ static void clean_up_after_endstop_move() {
     #endif
     #if HOTENDS > 1
       for (uint8_t h = 0; h < HOTENDS; ++h) {
-        ECHO_MV(" " SERIAL_AT, h);
+        ECHO_MV(" " SERIAL_AT, (int)h);
         ECHO_C(':');
         #if ENABLED(HOTEND_WATTS)
           ECHO_VM(((HOTEND_WATTS) * getHeaterPower(h)) / 127, "W");
@@ -2725,8 +2726,9 @@ static void clean_up_after_endstop_move() {
         ECHO_MV("C->", rawBedTemp() / OVERSAMPLENR, 0);
       #endif
       for (uint8_t h = 0; h < HOTENDS; ++h) {
-        ECHO_MV("  T", h);
-        ECHO_MV(":", degHotend(h), 1);
+        ECHO_MV("  T", (int)h);
+        ECHO_C(':');
+        ECHO_V(degHotend(h), 1);
         ECHO_MV("C->", rawHotendTemp(h) / OVERSAMPLENR, 0);
       }
     #endif
@@ -3805,6 +3807,9 @@ inline void gcode_G28() {
     // Sled assembly for Cartesian bots
     #if HAS(Z_PROBE_SLED)
       dock_sled(true); // dock the probe
+    #elif HASNT(SERVO_ENDSTOPS) && Z_RAISE_AFTER_PROBING > 0
+      // Raise Z axis for non servo based probes
+      raise_z_after_probing();
     #endif
 
     #if ENABLED(Z_PROBE_END_SCRIPT)
