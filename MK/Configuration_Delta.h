@@ -74,7 +74,7 @@
 //    |       \   | Effector is at printer center!
 //    |        \__|__/
 //    |        |--| DELTA EFFECTOR OFFSET
-//        |----|    DELTA RADIUS Calculated in fw (DELTA_SMOOTH_ROD_OFFSET - DELTA_EFFECTOR_OFFSET - DELTA_CARRIAGE_OFFSET)
+//        |----|    DELTA RADIUS Calculated in fw (DELTA SMOOTH ROD OFFSET - DELTA EFFECTOR OFFSET - DELTA CARRIAGE OFFSET)
 //      |---------| DELTA PRINTABLE RADIUS
 //    |-----------| DELTA SMOOTH ROD OFFSET
   
