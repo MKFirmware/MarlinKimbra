@@ -967,7 +967,7 @@ static void _lcd_move(const char* name, AxisEnum axis, int min, int max) {
 }
 
 #if MECH(DELTA)
-  static float delta_clip_radius_2 =  BED_PRINTER_RADIUS * BED_PRINTER_RADIUS;
+  static float delta_clip_radius_2 =  DELTA_PRINTABLE_RADIUS * DELTA_PRINTABLE_RADIUS;
   static int delta_clip( float a ) { return sqrt(delta_clip_radius_2 - a * a); }
   static void lcd_move_x() { int clip = delta_clip(current_position[Y_AXIS]); _lcd_move(PSTR(MSG_MOVE_X), X_AXIS, max(X_MIN_POS, -clip), min(X_MAX_POS, clip)); }
   static void lcd_move_y() { int clip = delta_clip(current_position[X_AXIS]); _lcd_move(PSTR(MSG_MOVE_X), X_AXIS, max(X_MIN_POS, -clip), min(X_MAX_POS, clip)); }

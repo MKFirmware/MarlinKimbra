@@ -50,8 +50,36 @@
 // if you want use new function comment this (using // at the start of the line)
 #define DELTA_SEGMENTS_PER_SECOND 200
 
+// NOTE: All following values for DELTA_* MUST be floating point,
+// so always have a decimal point in them.
+//
+// Towers and rod nomenclature for the following defines:
+//
+//                     C, Y-axis
+//                     |
+// DELTA_ALPHA_CA=120° |  DELTA_ALPHA_CB=120°
+//                     |
+//                     |______ X-axis
+//                    / \
+//                   /   \
+//                  /     \
+//                 /       \
+//                A         B
+//
+//    |___| DELTA_CARRIAGE_OFFSET
+//    |   \
+//    |    \
+//    |     \  DELTA_DIAGONAL_ROD
+//    |      \
+//    |       \   | Effector is at printer center!
+//    |        \__|__/
+//    |        |--| DELTA_EFFECTOR_OFFSET
+//        |----|    DELTA_RADIUS Calculated in fw (DELTA_SMOOTH_ROD_OFFSET - DELTA_EFFECTOR_OFFSET - DELTA_CARRIAGE_OFFSET)
+//      |---------| DELTA_PRINTABLE_RADIUS
+//    |-----------| DELTA_SMOOTH_ROD_OFFSET
+  
 // Center-to-center distance of the holes in the diagonal push rods.
-#define DEFAULT_DELTA_DIAGONAL_ROD 220.0    // mm
+#define DELTA_DIAGONAL_ROD 220.0            // mm
 
 // Horizontal offset from middle of printer to smooth rod center.
 #define DELTA_SMOOTH_ROD_OFFSET 150.0       // mm
@@ -62,8 +90,8 @@
 // Horizontal offset of the universal joints on the carriages.
 #define DELTA_CARRIAGE_OFFSET 20.0          // mm
 
-// Bed Printer radius
-#define BED_PRINTER_RADIUS 75               // mm
+// Delta Printable radius
+#define DELTA_PRINTABLE_RADIUS 75.0         // mm
 
 //Endstop Offset Adjustment - All values are in mm and must be negative (to move down away from endstop switches) 
 #define TOWER_A_ENDSTOP_ADJ 0 // Front Left Tower
@@ -80,7 +108,7 @@
 #define TOWER_B_RADIUS_ADJ 0 //Front Right Tower
 #define TOWER_C_RADIUS_ADJ 0 //Rear Tower
 
-//Diagonal Rod Adjustment - Adj diag rod for Tower by x mm from DEFAULT_DELTA_DIAGONAL_ROD value
+//Diagonal Rod Adjustment - Adj diag rod for Tower by x mm from DELTA_DIAGONAL_ROD value
 #define TOWER_A_DIAGROD_ADJ 0 //Front Left Tower
 #define TOWER_B_DIAGROD_ADJ 0 //Front Right Tower
 #define TOWER_C_DIAGROD_ADJ 0 //Rear Tower
@@ -298,10 +326,10 @@
  * Travel limits after homing (units are in mm)                                          *
  *                                                                                       *
  *****************************************************************************************/
-#define X_MAX_POS BED_PRINTER_RADIUS
-#define X_MIN_POS -BED_PRINTER_RADIUS
-#define Y_MAX_POS BED_PRINTER_RADIUS
-#define Y_MIN_POS -BED_PRINTER_RADIUS
+#define X_MAX_POS DELTA_PRINTABLE_RADIUS
+#define X_MIN_POS -DELTA_PRINTABLE_RADIUS
+#define Y_MAX_POS DELTA_PRINTABLE_RADIUS
+#define Y_MIN_POS -DELTA_PRINTABLE_RADIUS
 #define Z_MAX_POS MANUAL_Z_HOME_POS
 #define Z_MIN_POS 0
 #define E_MIN_POS 0
