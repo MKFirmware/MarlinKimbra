@@ -3385,7 +3385,7 @@ inline void gcode_G28() {
           #if ENABLED(ULTIPANEL)
             ECHO_LM(DB, "--LEVEL PLATE SCRIPT--");
             while(!lcd_clicked()) {
-              idle(true);
+              idle();
             }
             saved_feedrate = feedrate;
             saved_feedrate_multiplier = feedrate_multiplier;
@@ -3425,7 +3425,7 @@ inline void gcode_G28() {
             do_blocking_move_to(LEFT_PROBE_BED_POSITION, FRONT_PROBE_BED_POSITION, current_position[Z_AXIS]);
             do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], Z_MIN_POS);
             while(!lcd_clicked()) {          
-              idle(true);
+              idle();
             }
 
             // PROBE SECOND POINT
@@ -3434,7 +3434,7 @@ inline void gcode_G28() {
             do_blocking_move_to(RIGHT_PROBE_BED_POSITION, FRONT_PROBE_BED_POSITION, current_position[Z_AXIS]);
             do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], Z_MIN_POS);
             while(!lcd_clicked()) {
-              idle(true);
+              idle();
             }
 
             // PROBE THIRD POINT
@@ -3443,7 +3443,7 @@ inline void gcode_G28() {
             do_blocking_move_to(RIGHT_PROBE_BED_POSITION, BACK_PROBE_BED_POSITION, current_position[Z_AXIS]);
             do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], Z_MIN_POS);
             while(!lcd_clicked()) {
-              idle(true);
+              idle();
             }     
 
             // PROBE FOURTH POINT
@@ -3452,7 +3452,7 @@ inline void gcode_G28() {
             do_blocking_move_to(LEFT_PROBE_BED_POSITION, BACK_PROBE_BED_POSITION, current_position[Z_AXIS]);
             do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], Z_MIN_POS);
             while(!lcd_clicked()) {
-              idle(true);
+              idle();
             }
 
             // PROBE CENTER
@@ -3461,7 +3461,7 @@ inline void gcode_G28() {
             do_blocking_move_to(((X_MAX_POS) - (X_MIN_POS)) / 2, ((Y_MAX_POS) - (Y_MIN_POS)) / 2, current_position[Z_AXIS]);
             do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], Z_MIN_POS);
             while(!lcd_clicked()) {
-              idle(true);
+              idle();
             }
 
             // FINISH MANUAL BED LEVEL
@@ -6978,7 +6978,7 @@ inline void gcode_M503() {
     KEEPALIVE_STATE(PAUSED_FOR_USER);
     LCD_ALERTMESSAGEPGM(MSG_FILAMENTCHANGE);
     while (!lcd_clicked()) {
-      idle(true);
+      idle();
       if ((millis() - last_set > 60000) && cnt <= FILAMENTCHANGE_PRINTEROFF) beep = true;
       if (cnt >= FILAMENTCHANGE_PRINTEROFF && !sleep) {
         disable_all_heaters();

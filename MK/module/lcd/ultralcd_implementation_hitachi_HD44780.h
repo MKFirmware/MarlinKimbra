@@ -726,11 +726,11 @@ static void lcd_implementation_status_screen() {
     #endif // LCD_WIDTH > 19 && SDSUPPORT
 
     lcd.setCursor(LCD_WIDTH - 6, 2);
-    if(print_job_start_ms != 0) {
+    uint16_t time = print_job_timer.duration() / 60;
+    if(time != 0) {
       #if HAS(LCD_POWER_SENSOR)
         if (millis() < print_millis + 1000) {
           lcd.print(LCD_STR_CLOCK[0]);
-          uint16_t time = millis()/60000 - print_job_start_ms/60000;
           lcd.print(itostr2(time/60));
           lcd.print(':');
           lcd.print(itostr2(time%60));
@@ -741,7 +741,6 @@ static void lcd_implementation_status_screen() {
         }
       #else
         lcd.print(LCD_STR_CLOCK[0]);
-        uint16_t time = millis()/60000 - print_job_start_ms/60000;
         lcd.print(itostr2(time/60));
         lcd.print(':');
         lcd.print(itostr2(time%60));

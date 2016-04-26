@@ -1716,7 +1716,7 @@ static void menu_action_function(menuFunc_t func) { (*func)(); }
     char* c;
     sprintf_P(cmd, PSTR("M23 %s"), longFilename);
     for (c = &cmd[4]; *c; c++) *c = tolower(*c);
-    enqueuecommand(cmd);
+    enqueue_and_echo_command(cmd);
     enqueue_and_echo_commands_P(PSTR("M24"));
     lcd_return_to_status();
   }

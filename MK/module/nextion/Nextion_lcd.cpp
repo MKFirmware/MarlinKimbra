@@ -276,7 +276,7 @@
       char* c;
       sprintf_P(cmd, PSTR("M23 %s"), filename);
       for(c = &cmd[4]; *c; c++) *c = tolower(*c);
-      enqueuecommand(cmd);
+      enqueue_and_echo_command(cmd);
       enqueue_and_echo_commands_P(PSTR("M24"));
       setpageInfo();
     }
@@ -647,7 +647,7 @@
               NPlay.setPic(17);
 
               // Estimate End Time
-              uint16_t time = (millis() - print_job_start_ms) / 60000;
+              uint16_t time = print_job_timer.duration() / 60;
               uint16_t end_time = (time * (100 - card.percentDone())) / card.percentDone();
               if (end_time > (60 * 23)) {
                 lcd_setstatus("End --:--");
