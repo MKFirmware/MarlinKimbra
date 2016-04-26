@@ -552,7 +552,7 @@ float junction_deviation = 0.1;
         if (extruder != 1)
       #endif
         {
-          if (degHotend(extruder) < extrude_min_temp && !(debugLevel & DEBUG_DRYRUN)) {
+          if (degHotend(extruder) < extrude_min_temp && !(DEBUGGING(DRYRUN))) {
             position[E_AXIS] = target[E_AXIS]; //behave as if the move really took place, but ignore E part
             de = 0; // no difference
             ECHO_LM(ER, SERIAL_ERR_COLD_EXTRUDE_STOP);

@@ -490,7 +490,7 @@ static void lcd_main_menu() {
  */
 void lcd_set_home_offsets() {
   // M428 Command
-  enqueuecommands_P(PSTR("M428"));
+  enqueue_and_echo_commands_P(PSTR("M428"));
   lcd_return_to_status();
 }
 
@@ -513,9 +513,9 @@ void lcd_set_home_offsets() {
 
 static void lcd_tune_fixstep() {
   #if MECH(DELTA)
-    enqueuecommands_P(PSTR("G28 B"));
+    enqueue_and_echo_commands_P(PSTR("G28 B"));
   #else
-    enqueuecommands_P(PSTR("G28 X Y B"));
+    enqueue_and_echo_commands_P(PSTR("G28 X Y B"));
   #endif
 }
 
@@ -1654,7 +1654,7 @@ menu_edit_type(unsigned long, long5, ftostr5, 0.01)
     lcd_move_y();
   }
   static void reprapworld_keypad_move_home() {
-    enqueuecommands_P((PSTR("G28"))); // move all axis home
+    enqueue_and_echo_commands_P((PSTR("G28"))); // move all axis home
   }
 #endif // REPRAPWORLD_KEYPAD
 
@@ -1706,7 +1706,7 @@ void lcd_quick_feedback() {
  */
 static void menu_action_back(menuFunc_t func) { lcd_goto_menu(func); }
 static void menu_action_submenu(menuFunc_t func) { lcd_goto_menu(func); }
-static void menu_action_gcode(const char* pgcode) { enqueuecommands_P(pgcode); }
+static void menu_action_gcode(const char* pgcode) { enqueue_and_echo_commands_P(pgcode); }
 static void menu_action_function(menuFunc_t func) { (*func)(); }
 
 #if ENABLED(SDSUPPORT)
@@ -1716,8 +1716,8 @@ static void menu_action_function(menuFunc_t func) { (*func)(); }
     char* c;
     sprintf_P(cmd, PSTR("M23 %s"), longFilename);
     for (c = &cmd[4]; *c; c++) *c = tolower(*c);
-    enqueuecommand(cmd);
-    enqueuecommands_P(PSTR("M24"));
+    enqueue_and_echo_command(cmd);
+    enqueue_and_echo_commands_P(PSTR("M24"));
     lcd_return_to_status();
   }
 
@@ -2482,7 +2482,7 @@ char* ftostr52(const float& x) {
           LCD_Printpos(0, 0); lcd_printPGM(PSTR(MSG_MBL_6));
           LCD_Printpos(0, 1); lcd_printPGM(PSTR("                  "));
           HAL::delayMilliseconds(5000);
-          enqueuecommands_P(PSTR("G28"));
+          enqueue_and_echo_commands_P(PSTR("G28"));
           lcd_goto_menu(lcd_prepare_menu);
         }
       break;
@@ -2491,7 +2491,7 @@ char* ftostr52(const float& x) {
 
   static void config_lcd_level_bed() {
     ECHO_EM(MSG_MBL_SETTING);
-    enqueuecommands_P(PSTR("G28 M"));
+    enqueue_and_echo_commands_P(PSTR("G28 M"));
     pageShowInfo = 0;
     lcd_goto_menu(lcd_level_bed);
   }

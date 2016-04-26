@@ -276,8 +276,8 @@
       char* c;
       sprintf_P(cmd, PSTR("M23 %s"), filename);
       for(c = &cmd[4]; *c; c++) *c = tolower(*c);
-      enqueuecommand(cmd);
-      enqueuecommands_P(PSTR("M24"));
+      enqueue_and_echo_command(cmd);
+      enqueue_and_echo_commands_P(PSTR("M24"));
       setpageInfo();
     }
 
@@ -428,14 +428,14 @@
   void sethotPopCallback(void *ptr) {
     memset(buffer, 0, sizeof(buffer));
     set1.getText(buffer, sizeof(buffer));
-    enqueuecommands_P(buffer);
+    enqueue_and_echo_commands_P(buffer);
     setpageInfo();
   }
 
   void setgcodePopCallback(void *ptr) {
     memset(buffer, 0, sizeof(buffer));
     Tgcode.getText(buffer, sizeof(buffer));
-    enqueuecommands_P(buffer);
+    enqueue_and_echo_commands_P(buffer);
     Pmenu.show();
   }
 
@@ -453,9 +453,9 @@
   void setmovePopCallback(void *ptr) {
     memset(buffer, 0, sizeof(buffer));
     movecmd.getText(buffer, sizeof(buffer));
-    enqueuecommands_P(PSTR("G91"));
-    enqueuecommands_P(buffer);
-    enqueuecommands_P(PSTR("G90"));
+    enqueue_and_echo_commands_P(PSTR("G91"));
+    enqueue_and_echo_commands_P(buffer);
+    enqueue_and_echo_commands_P(PSTR("G90"));
   }
 
   #if ENABLED(SDSUPPORT)
@@ -647,7 +647,7 @@
               NPlay.setPic(17);
 
               // Estimate End Time
-              uint16_t time = (millis() - print_job_start_ms) / 60000;
+              uint16_t time = print_job_timer.duration() / 60;
               uint16_t end_time = (time * (100 - card.percentDone())) / card.percentDone();
               if (end_time > (60 * 23)) {
                 lcd_setstatus("End --:--");

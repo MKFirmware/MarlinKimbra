@@ -1,5 +1,5 @@
 /**
- * MK Firmware
+ * MK 3D Printer Firmware
  *
  * Based on Marlin, Sprinter and grbl
  * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
@@ -45,7 +45,7 @@
 bool Running = true;
 bool Printing = false;
 
-uint8_t debugLevel = DEBUG_ERRORS;
+uint8_t mk_debug_flags = DEBUG_NONE;
 
 static float feedrate = 1500.0, saved_feedrate;
 float current_position[NUM_AXIS] = { 0.0 };
@@ -83,24 +83,34 @@ uint8_t previous_extruder = 0;
 uint8_t active_driver = 0;
 
 int fanSpeed = 0;
-bool cancel_heatup = false;
 
 const char axis_codes[NUM_AXIS] = {'X', 'Y', 'Z', 'E'};
 
-static bool relative_mode = false;  //Determines Absolute or Relative Coordinates
-static char serial_char;
+// Relative Mode. Enable with G91, disable with G90.
+static bool relative_mode = false;
+
+bool cancel_heatup = false;
+
 static int serial_count = 0;
-static boolean comment_mode = false;
-static char* seen_pointer; // < A pointer to find chars in the command string (X, Y, Z, E, etc.)
-const char* queued_commands_P = NULL; /* pointer to the current line in the active sequence of commands, or NULL when none */
+
+// GCode parameter pointer used by code_seen(), code_value(), etc.
+static char* seen_pointer;
+
+// Next Immediate GCode Command pointer. NULL if none.
+const char* queued_commands_P = NULL;
+
 const int sensitive_pins[] = SENSITIVE_PINS; ///< Sensitive pin list for M42
+
 // Inactivity shutdown
 millis_t previous_cmd_ms = 0;
 static millis_t max_inactive_time = 0;
 static millis_t stepper_inactive_time = (DEFAULT_STEPPER_DEACTIVE_TIME) * 1000UL;
-millis_t print_job_start_ms = 0; ///< Print job start time
-millis_t print_job_stop_ms = 0;  ///< Print job stop time
+
+// Print Job Timer
+Stopwatch print_job_timer = Stopwatch();
+
 static uint8_t target_extruder;
+
 bool no_wait_for_cooling = true;
 bool software_endstops = true;
 
@@ -142,8 +152,8 @@ double printer_usage_filament;
 #endif
 
 #if ENABLED(BARICUDA)
-  int ValvePressure = 0;
-  int EtoPPressure = 0;
+  int baricuda_valve_pressure = 0;
+  int baricuda_e_to_p_pressure = 0;
 #endif
 
 #if ENABLED(FWRETRACT)
@@ -298,6 +308,8 @@ double printer_usage_filament;
   bool allow_lengthy_extrude_once; // for load/unload
 #endif
 
+static bool send_ok[BUFSIZE];
+
 #if HAS(CHDK)
   unsigned long chdkHigh = 0;
   boolean chdkActive = false;
@@ -307,17 +319,43 @@ double printer_usage_filament;
   int lpq_len = 20;
 #endif
 
-//===========================================================================
-//================================ Functions ================================
-//===========================================================================
+#if ENABLED(HOST_KEEPALIVE_FEATURE)
+  // States for managing MK and host communication
+  // MK sends messages if blocked or busy
+  enum MKBusyState {
+    NOT_BUSY,           // Not in a handler
+    IN_HANDLER,         // Processing a GCode
+    IN_PROCESS,         // Known to be blocking command input (as in G29)
+    PAUSED_FOR_USER,    // Blocking pending any input
+    PAUSED_FOR_INPUT    // Blocking pending text input (concept)
+  };
+
+  static MKBusyState busy_state = NOT_BUSY;
+  static millis_t next_busy_signal_ms = 0;
+  uint8_t host_keepalive_interval = DEFAULT_KEEPALIVE_INTERVAL;
+  #define KEEPALIVE_STATE(n) do{ busy_state = n; }while(0)
+#else
+  #define host_keepalive() ;
+  #define KEEPALIVE_STATE(n) ;
+#endif // HOST_KEEPALIVE_FEATURE
+
+/**
+ * ***************************************************************************
+ * ******************************** FUNCTIONS ********************************
+ * ***************************************************************************
+ */
+
+void stop();
+
+void get_available_commands();
+void process_next_command();
+
 inline void refresh_cmd_timeout() { previous_cmd_ms = millis(); }
 
 void delay_ms(millis_t ms) {
   ms += millis();
   while (millis() < ms) idle();
 }
-
-void process_next_command();
 
 void plan_arc(float target[NUM_AXIS], float* offset, uint8_t clockwise);
 
@@ -375,25 +413,21 @@ void plan_arc(float target[NUM_AXIS], float* offset, uint8_t clockwise);
  * Return false only if no command was pending
  */
 static bool drain_queued_commands_P() {
-  if (!queued_commands_P) return false;
-
-  // Get the next 30 chars from the sequence of gcodes to run
-  char cmd[30];
-  strncpy_P(cmd, queued_commands_P, sizeof(cmd) - 1);
-  cmd[sizeof(cmd) - 1] = '\0';
-
-  // Look for the end of line, or the end of sequence
-  size_t i = 0;
-  char c;
-  while((c = cmd[i]) && c != '\n') i++; // find the end of this gcode command
-  cmd[i] = '\0';
-  if (enqueuecommand(cmd)) {      // buffer was not full (else we will retry later)
-    if (c)
-      queued_commands_P += i + 1; // move to next command
-    else
-      queued_commands_P = NULL;   // will have no more commands in the sequence
+  if (queued_commands_P != NULL) {
+    size_t i = 0;
+    char c, cmd[30];
+    strncpy_P(cmd, queued_commands_P, sizeof(cmd) - 1);
+    cmd[sizeof(cmd) - 1] = '\0';
+    while ((c = cmd[i]) && c != '\n') i++; // find the end of this gcode command
+    cmd[i] = '\0';
+    if (enqueue_and_echo_command(cmd)) {   // success?
+      if (c)                               // newline char?
+        queued_commands_P += i + 1;        // advance to the next command
+      else
+        queued_commands_P = NULL;          // nul char? no more commands
+    }
   }
-  return true;
+  return (queued_commands_P != NULL);      // return whether any more remain
 }
 
 /**
@@ -401,29 +435,46 @@ static bool drain_queued_commands_P() {
  * Aborts the current queue, if any.
  * Note: drain_queued_commands_P() must be called repeatedly to drain the commands afterwards
  */
-void enqueuecommands_P(const char* pgcode) {
+void enqueue_and_echo_commands_P(const char* pgcode) {
   queued_commands_P = pgcode;
   drain_queued_commands_P(); // first command executed asap (when possible)
 }
 
 /**
- * Copy a command directly into the main command buffer, from RAM.
- *
- * This is done in a non-safe way and needs a rework someday.
- * Returns false if it doesn't add any command
+ * Once a new command is in the ring buffer, call this to commit it
  */
-bool enqueuecommand(const char* cmd) {
-
-  if (*cmd == ';' || commands_in_queue >= BUFSIZE) return false;
-
-  // This is dangerous if a mixing of serial and this happens
-  char* command = command_queue[cmd_queue_index_w];
-  strcpy(command, cmd);
-  ECHO_SMT(DB, SERIAL_ENQUEUEING, command);
-  ECHO_EM("\"");
+inline void _commit_command(bool say_ok) {
+  send_ok[cmd_queue_index_w] = say_ok;
   cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
   commands_in_queue++;
+}
+
+/**
+ * Copy a command directly into the main command buffer, from RAM.
+ * Returns true if successfully adds the command
+ */
+inline bool _enqueuecommand(const char* cmd, bool say_ok = false) {
+  if (*cmd == ';' || commands_in_queue >= BUFSIZE) return false;
+  strcpy(command_queue[cmd_queue_index_w], cmd);
+  _commit_command(say_ok);
   return true;
+}
+
+void enqueue_and_echo_command_now(const char* cmd) {
+  while (!enqueue_and_echo_command(cmd)) idle();
+}
+
+/**
+ * Enqueue with Serial Echo
+ */
+bool enqueue_and_echo_command(const char* cmd, bool say_ok/*=false*/) {
+  if (_enqueuecommand(cmd, say_ok)) {
+    ECHO_SM(DB, SERIAL_ENQUEUEING);
+    ECHO_T(cmd);
+    ECHO_EM("\"");
+    return true;
+  }
+  return false;
 }
 
 #if MB(ALLIGATOR)
@@ -708,7 +759,7 @@ void setup() {
  *  - Call LCD update
  */
 void loop() {
-  if (commands_in_queue < BUFSIZE - 1) get_command();
+  if (commands_in_queue < BUFSIZE - 1) get_available_commands();
 
   #if ENABLED(SDSUPPORT)
     card.checkautostart(false);
@@ -754,85 +805,82 @@ void gcode_line_error(const char* err, bool doFlush = true) {
   serial_count = 0;
 }
 
-/**
- * Add to the circular command queue the next command from:
- *  - The command-injection queue (queued_commands_P)
- *  - The active serial input (usually USB)
- *  - The SD card file being actively printed
- */
-void get_command() {
+inline void get_serial_commands() {
+  static char serial_line_buffer[MAX_CMD_SIZE];
+  static boolean serial_comment_mode = false;
 
-  if (drain_queued_commands_P()) return; // priority is given to non-serial commands
-
-  #if ENABLED(NO_TIMEOUTS)
+  // If the command buffer is empty for too long,
+  // send "wait" to indicate Marlin is still waiting.
+  #if defined(NO_TIMEOUTS) && NO_TIMEOUTS > 0
     static millis_t last_command_time = 0;
     millis_t ms = millis();
-
-    if (!MKSERIAL.available() && commands_in_queue == 0 && ms - last_command_time > 1000UL) {
+    if (!MKSERIAL.available() && commands_in_queue == 0 && ELAPSED(ms, last_command_time + NO_TIMEOUTS)) {
       ECHO_L(WT);
       last_command_time = ms;
     }
   #endif
 
-  //
-  // Loop while serial characters are incoming and the queue is not full
-  //
+  /**
+   * Loop while serial characters are incoming and the queue is not full
+   */
   while (MKSERIAL.available() > 0 && commands_in_queue < BUFSIZE) {
 
-    #if ENABLED(NO_TIMEOUTS)
-      last_command_time = ms;
-    #endif
+    char serial_char = MKSERIAL.read();
 
-    serial_char = MKSERIAL.read();
+    /**
+     * If the character ends the line
+     */
+    if (serial_char == '\n' || serial_char == '\r') {
 
-    //
-    // If the character ends the line, or the line is full...
-    //
-    if (serial_char == '\n' || serial_char == '\r' || serial_count >= MAX_CMD_SIZE - 1) {
+      serial_comment_mode = false; // end of line == end of comment
 
-      // end of line == end of comment
-      comment_mode = false;
+      if (!serial_count) return; // skip empty lines
 
-      if (!serial_count) return; // empty lines just exit
+      serial_line_buffer[serial_count] = 0; // terminate string
+      serial_count = 0; //reset buffer
 
-      char* command = command_queue[cmd_queue_index_w];
-      command[serial_count] = 0; // terminate string
-
-      // this item in the queue is not from sd
-      #if ENABLED(SDSUPPORT)
-        fromsd[cmd_queue_index_w] = false;
-      #endif
+      char* command = serial_line_buffer;
 
       while (*command == ' ') command++; // skip any leading spaces
       char* npos = (*command == 'N') ? command : NULL; // Require the N parameter to start the line
       char* apos = strchr(command, '*');
 
       if (npos) {
+
         boolean M110 = strstr_P(command, PSTR("M110")) != NULL;
+
         if (M110) {
           char* n2pos = strchr(command + 4, 'N');
           if (n2pos) npos = n2pos;
         }
+
         gcode_N = strtol(npos + 1, NULL, 10);
+
         if (gcode_N != gcode_LastN + 1 && !M110) {
           gcode_line_error(PSTR(SERIAL_ERR_LINE_NO));
           return;
         }
+
         if (apos) {
           byte checksum = 0, count = 0;
           while (command[count] != '*') checksum ^= command[count++];
+
           if (strtol(apos + 1, NULL, 10) != checksum) {
             gcode_line_error(PSTR(SERIAL_ERR_CHECKSUM_MISMATCH));
             return;
           }
           // if no errors, continue parsing
-        } else if (npos == command) {
+        }
+        else {
           gcode_line_error(PSTR(SERIAL_ERR_NO_CHECKSUM));
           return;
         }
+
         gcode_LastN = gcode_N;
         // if no errors, continue parsing
-      } else if (apos) { // No '*' without 'N'
+
+      }
+      else if (apos) { // No '*' without 'N'
         gcode_line_error(PSTR(SERIAL_ERR_NO_LINENUMBER_WITH_CHECKSUM), false);
         return;
       }
@@ -843,13 +891,13 @@ void get_command() {
         if (gpos) {
           int codenum = strtol(gpos + 1, NULL, 10);
           switch (codenum) {
-          case 0:
-          case 1:
-          case 2:
-          case 3:
-            ECHO_LM(ER, SERIAL_ERR_STOPPED);
-            LCD_MESSAGEPGM(MSG_STOPPED);
-            break;
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+              ECHO_LM(ER, SERIAL_ERR_STOPPED);
+              LCD_MESSAGEPGM(MSG_STOPPED);
+              break;
           }
         }
       }
@@ -857,48 +905,63 @@ void get_command() {
       // If command was e-stop process now
       if (strcmp(command, "M112") == 0) kill(PSTR(MSG_KILLED));
 
-      cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
-      commands_in_queue += 1;
+      #if defined(NO_TIMEOUTS) && NO_TIMEOUTS > 0
+        last_command_time = ms;
+      #endif
 
-      serial_count = 0; //clear buffer
+      // Add the command to the queue
+      _enqueuecommand(serial_line_buffer, true);
+    }
+    else if (serial_count >= MAX_CMD_SIZE - 1) {
+      // Keep fetching, but ignore normal characters beyond the max length
+      // The command will be injected when EOL is reached
     }
     else if (serial_char == '\\') { // Handle escapes
-      if (MKSERIAL.available() > 0 && commands_in_queue < BUFSIZE) {
+      if (MKSERIAL.available() > 0) {
         // if we have one more character, copy it over
         serial_char = MKSERIAL.read();
-        command_queue[cmd_queue_index_w][serial_count++] = serial_char;
+        if (!serial_comment_mode) serial_line_buffer[serial_count++] = serial_char;
       }
       // otherwise do nothing
     }
     else { // its not a newline, carriage return or escape char
-      if (serial_char == ';') comment_mode = true;
-      if (!comment_mode) command_queue[cmd_queue_index_w][serial_count++] = serial_char;
+      if (serial_char == ';') serial_comment_mode = true;
+      if (!serial_comment_mode) serial_line_buffer[serial_count++] = serial_char;
     }
-  }
+  } // queue has space, serial has data
+}
 
-  #if ENABLED(SDSUPPORT)
-    if (!card.sdprinting || serial_count) return;
+#if ENABLED(SDSUPPORT)
+  inline void get_sdcard_commands() {
+    static bool stop_buffering = false,
+                sd_comment_mode = false;
 
-    // '#' stops reading from SD to the buffer prematurely, so procedural macro calls are possible
-    // if it occurs, stop_buffering is triggered and the buffer is ran dry.
-    // this character _can_ occur in serial com, due to checksums. however, no checksums are used in SD printing
+    if (!card.sdprinting) return;
 
-    static bool stop_buffering = false;
+    /**
+     * '#' stops reading from SD to the buffer prematurely, so procedural
+     * macro calls are possible. If it occurs, stop_buffering is triggered
+     * and the buffer is run dry; this character _can_ occur in serial com
+     * due to checksums, however, no checksums are used in SD printing.
+     */
+
     if (commands_in_queue == 0) stop_buffering = false;
 
-    while (!card.eof() && commands_in_queue < BUFSIZE && !stop_buffering) {
+    uint16_t sd_count = 0;
+    bool card_eof = card.eof();
+    while (commands_in_queue < BUFSIZE && !card_eof && !stop_buffering) {
       int16_t n = card.get();
-      card.sdpos++;
-      serial_char = (char)n;
-      if (serial_char == '\n' || serial_char == '\r' ||
-          ((serial_char == '#' || serial_char == ':') && !comment_mode) ||
-          serial_count >= (MAX_CMD_SIZE - 1) || n == -1
+      char sd_char = (char)n;
+      card_eof = card.eof();
+      if (card_eof || n == -1
+          || sd_char == '\n' || sd_char == '\r'
+          || ((sd_char == '#' || sd_char == ':') && !sd_comment_mode)
       ) {
-        if (card.eof()) {
+        if (card_eof) {
           ECHO_EM(SERIAL_FILE_PRINTED);
-          print_job_stop_ms = millis();
+          print_job_timer.stop();
           char time[30];
-          millis_t t = (print_job_stop_ms - print_job_start_ms) / 1000;
+          millis_t t = print_job_timer.duration();
           int hours = t / 60 / 60, minutes = (t / 60) % 60;
           sprintf_P(time, PSTR("%i " MSG_END_HOUR " %i " MSG_END_MINUTE), hours, minutes);
           ECHO_LT(DB, time);
@@ -906,27 +969,47 @@ void get_command() {
           card.printingHasFinished();
           card.checkautostart(true);
         }
-        if (serial_char == '#') stop_buffering = true;
+        if (sd_char == '#') stop_buffering = true;
 
-        if (!serial_count) {
-          comment_mode = false; //for new command
-          return; //if empty line
-        }
-        command_queue[cmd_queue_index_w][serial_count] = 0; //terminate string
-        // if (!comment_mode) {
-        fromsd[cmd_queue_index_w] = true;
-        commands_in_queue += 1;
-        cmd_queue_index_w = (cmd_queue_index_w + 1) % BUFSIZE;
-        // }
-        comment_mode = false; //for new command
-        serial_count = 0; //clear buffer
+        sd_comment_mode = false; // for new command
+
+        if (!sd_count) continue; // skip empty lines
+
+        command_queue[cmd_queue_index_w][sd_count] = '\0'; // terminate string
+        sd_count = 0; // clear buffer
+
+        _commit_command(false);
+      }
+      else if (sd_count >= MAX_CMD_SIZE - 1) {
+        /**
+         * Keep fetching, but ignore normal characters beyond the max length
+         * The command will be injected when EOL is reached
+         */
       }
       else {
-        if (serial_char == ';') comment_mode = true;
-        if (!comment_mode) command_queue[cmd_queue_index_w][serial_count++] = serial_char;
+        if (sd_char == ';') sd_comment_mode = true;
+        if (!sd_comment_mode) command_queue[cmd_queue_index_w][sd_count++] = sd_char;
       }
     }
-  #endif // SDSUPPORT
+  }
+#endif // SDSUPPORT
+
+/**
+ * Add to the circular command queue the next command from:
+ *  - The command-injection queue (queued_commands_P)
+ *  - The active serial input (usually USB)
+ *  - The SD card file being actively printed
+ */
+void get_available_commands() {
+
+  // if any immediate commands remain, don't get other commands yet
+  if (drain_queued_commands_P()) return;
+
+  get_serial_commands();
+
+  #if ENABLED(SDSUPPORT)
+    get_sdcard_commands();
+  #endif
 }
 
 bool code_has_value() {
@@ -935,7 +1018,7 @@ bool code_has_value() {
   while (c == ' ') c = seen_pointer[++i];
   if (c == '-' || c == '+') c = seen_pointer[++i];
   if (c == '.') c = seen_pointer[++i];
-  return (c >= '0' && c <= '9');
+  return NUMERIC(c);
 }
 
 float code_value() {
@@ -945,7 +1028,8 @@ float code_value() {
     *e = 0;
     ret = strtod(seen_pointer + 1, NULL);
     *e = 'E';
-  } else
+  }
+  else
     ret = strtod(seen_pointer + 1, NULL);
   return ret;
 }
@@ -957,6 +1041,48 @@ int16_t code_value_short() { return (int16_t)strtol(seen_pointer + 1, NULL, 10);
 bool code_seen(char code) {
   seen_pointer = strchr(current_command_args, code);
   return (seen_pointer != NULL); // Return TRUE if the code-letter was found
+}
+
+/**
+ * Set target_extruder from the T parameter or the active_extruder
+ *
+ * Returns TRUE if the target is invalid
+ */
+bool setTargetedExtruder(int code) {
+  if (code_seen('T')) {
+    short t = code_value_short();
+    if (t >= EXTRUDERS) {
+      ECHO_SMV(ER, "M", code);
+      ECHO_EMV(" " SERIAL_INVALID_EXTRUDER, t);
+      return true;
+    }
+    target_extruder = t;
+  }
+  else
+    target_extruder = active_extruder;
+
+  return false;
+}
+
+/**
+ * Set target_Hotend from the T parameter or the active_extruder
+ *
+ * Returns TRUE if the target is invalid
+ */
+bool setTargetedHotend(int code) {
+  if (code_seen('H')) {
+    short h = code_value_short();
+    if (h >= HOTENDS) {
+      ECHO_SMV(ER, "M", code);
+      ECHO_EMV(" " SERIAL_INVALID_HOTEND, h);
+      return true;
+    }
+    target_extruder = h;
+  }
+  else
+    target_extruder = active_extruder;
+
+  return false;
 }
 
 #define DEFINE_PGM_READ_ANY(type, reader)       \
@@ -1088,7 +1214,7 @@ static void set_axis_is_at_home(AxisEnum axis) {
     if (axis == Z_AXIS) current_position[Z_AXIS] -= zprobe_zoffset;
   #endif
 
-  if (debugLevel & DEBUG_INFO) {
+  if (DEBUGGING(INFO)) {
     ECHO_SMV(INFO, "set_axis_is_at_home ", (unsigned long)axis);
     ECHO_MV(" > (home_offset[axis]==", home_offset[axis]);
     print_xyz(") > current_position", current_position);
@@ -1159,7 +1285,7 @@ static void clean_up_after_endstop_move() {
     float oldFeedRate = feedrate;
     feedrate = homing_feedrate[Z_AXIS];
 
-    if (debugLevel & DEBUG_INFO) {
+    if (DEBUGGING(INFO)) {
       ECHO_S(INFO);
       print_xyz("do_blocking_move_to", x, y, z);
     }
@@ -1201,7 +1327,7 @@ static void clean_up_after_endstop_move() {
         current_position[Y_AXIS] = corrected_position.y;
         current_position[Z_AXIS] = corrected_position.z;
 
-        if (debugLevel & DEBUG_INFO) {
+        if (DEBUGGING(INFO)) {
           ECHO_S(INFO);
           print_xyz("set_bed_level_equation_lsq > current_position", current_position);
         }
@@ -1231,7 +1357,7 @@ static void clean_up_after_endstop_move() {
         current_position[Y_AXIS] = corrected_position.y;
         current_position[Z_AXIS] = corrected_position.z;
 
-        if (debugLevel & DEBUG_INFO) {
+        if (DEBUGGING(INFO)) {
           ECHO_S(INFO);
           print_xyz("set_bed_level_equation_3pts > current_position", current_position);
         }
@@ -1273,14 +1399,14 @@ static void clean_up_after_endstop_move() {
       current_position[Z_AXIS] = st_get_axis_position_mm(Z_AXIS);
       sync_plan_position();
 
-      if (debugLevel & DEBUG_INFO) {
+      if (DEBUGGING(INFO)) {
         ECHO_S(INFO);
         print_xyz("run_z_probe > current_position", current_position);
       }
     }
 
     static void deploy_z_probe() {
-      if (debugLevel & DEBUG_INFO) {
+      if (DEBUGGING(INFO)) {
         ECHO_S(INFO);
         print_xyz("deploy_z_probe > current_position", current_position);
       }
@@ -1291,7 +1417,7 @@ static void clean_up_after_endstop_move() {
     }
 
     static void stow_z_probe(bool doRaise = true) {
-      if (debugLevel & DEBUG_INFO) {
+      if (DEBUGGING(INFO)) {
         ECHO_S(INFO);
         print_xyz("stow_z_probe > current_position", current_position);
       }
@@ -1301,7 +1427,7 @@ static void clean_up_after_endstop_move() {
 
           #if Z_RAISE_AFTER_PROBING > 0
             if (doRaise) {
-              if (debugLevel & DEBUG_INFO) {
+              if (DEBUGGING(INFO)) {
                 ECHO_LMV(INFO, "Raise Z (after) by ", (float)Z_RAISE_AFTER_PROBING);
                 ECHO_LMV(INFO, "> SERVO_ENDSTOPS > do_blocking_move_to_z ", current_position[Z_AXIS] + Z_RAISE_AFTER_PROBING);
               }
@@ -1325,7 +1451,7 @@ static void clean_up_after_endstop_move() {
 
     // Probe bed height at position (x,y), returns the measured z value
     static float probe_pt(float x, float y, float z_before, ProbeAction probe_action = ProbeDeployAndStow, int verbose_level = 1) {
-      if (debugLevel & DEBUG_INFO) {
+      if (DEBUGGING(INFO)) {
         ECHO_LM(INFO, "probe_pt >>>");
         ECHO_SMV(INFO, "> ProbeAction:", (unsigned long)probe_action);
         print_xyz(" > current_position", current_position);
@@ -1336,7 +1462,7 @@ static void clean_up_after_endstop_move() {
       // Move Z up to the z_before height, then move the probe to the given XY
       do_blocking_move_to_z(z_before); // this also updates current_position
 
-      if (debugLevel & DEBUG_INFO) {
+      if (DEBUGGING(INFO)) {
         ECHO_SMV(INFO, "> do_blocking_move_to_xy ", x - (X_PROBE_OFFSET_FROM_EXTRUDER));
         ECHO_EMV(", ", y - Y_PROBE_OFFSET_FROM_EXTRUDER);
       }
@@ -1345,7 +1471,7 @@ static void clean_up_after_endstop_move() {
 
       #if HASNT(Z_PROBE_SLED)
         if (probe_action & ProbeDeploy) {
-          if (debugLevel & DEBUG_INFO) ECHO_LM(INFO, "> ProbeDeploy");
+          if (DEBUGGING(INFO)) ECHO_LM(INFO, "> ProbeDeploy");
           deploy_z_probe();
         }
       #endif
@@ -1355,7 +1481,7 @@ static void clean_up_after_endstop_move() {
 
       #if HASNT(Z_PROBE_SLED)
         if (probe_action & ProbeStow) {
-          if (debugLevel & DEBUG_INFO) ECHO_LM(INFO, "> ProbeStow (stow_z_probe will do Z Raise)");
+          if (DEBUGGING(INFO)) ECHO_LM(INFO, "> ProbeStow (stow_z_probe will do Z Raise)");
           stow_z_probe();
         }
       #endif
@@ -1367,7 +1493,7 @@ static void clean_up_after_endstop_move() {
         ECHO_EMV(SERIAL_BED_LEVELLING_Z, measured_z, 3);
       }
 
-      if (debugLevel & DEBUG_INFO) ECHO_LM(INFO, "<<< probe_pt");
+      if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< probe_pt");
 
       return measured_z;
     }
@@ -1386,7 +1512,7 @@ static void clean_up_after_endstop_move() {
   #define HOMEAXIS_DO(LETTER) \
     ((LETTER##_MIN_PIN > -1 && LETTER##_HOME_DIR==-1) || (LETTER##_MAX_PIN > -1 && LETTER##_HOME_DIR==1))
 
-    if (debugLevel & DEBUG_INFO) {
+    if (DEBUGGING(INFO)) {
       ECHO_SMV(INFO, ">>> homeaxis(", (unsigned long)axis);
       ECHO_EM(")");
     }
@@ -1455,7 +1581,7 @@ static void clean_up_after_endstop_move() {
       line_to_destination();
       st_synchronize();
 
-      if (debugLevel & DEBUG_INFO) {
+      if (DEBUGGING(INFO)) {
         ECHO_S(INFO);
         print_xyz("> TRIGGER ENDSTOP > current_position", current_position);
       }
@@ -1489,7 +1615,7 @@ static void clean_up_after_endstop_move() {
       set_axis_is_at_home(axis);
       sync_plan_position();
 
-      if (debugLevel & DEBUG_INFO) {
+      if (DEBUGGING(INFO)) {
         ECHO_S(INFO);
         print_xyz("> AFTER set_axis_is_at_home > current_position", current_position);
       }
@@ -1511,7 +1637,7 @@ static void clean_up_after_endstop_move() {
         // Deploy a probe if there is one, and homing towards the bed
         if (axis == Z_AXIS) {
           if (axis_home_dir < 0) {
-            if (debugLevel & DEBUG_INFO) ECHO_LM(INFO, "> SERVO_LEVELING > stow_z_probe");
+            if (DEBUGGING(INFO)) ECHO_LM(INFO, "> SERVO_LEVELING > stow_z_probe");
             stow_z_probe();
           }
         }
@@ -1521,13 +1647,13 @@ static void clean_up_after_endstop_move() {
         #if HAS(SERVO_ENDSTOPS)
           // Retract Servo endstop if enabled
           if (servo_endstop_id[axis] >= 0) {
-            if (debugLevel & DEBUG_INFO) ECHO_LM(INFO, "> SERVO_ENDSTOPS > Stow with servo.move()");
+            if (DEBUGGING(INFO)) ECHO_LM(INFO, "> SERVO_ENDSTOPS > Stow with servo.move()");
             servo[servo_endstop_id[axis]].move(servo_endstop_angle[axis][1]);
           }
         #endif
       }
     }
-    if (debugLevel & DEBUG_INFO) {
+    if (DEBUGGING(INFO)) {
       ECHO_SMV(INFO, "<<< homeaxis(", (unsigned long)axis);
       ECHO_EM(")");
     }
@@ -1581,7 +1707,7 @@ static void clean_up_after_endstop_move() {
         enable_endstops(false); // Disable endstops while moving away
         sync_plan_position();
         destination[axis] = endstop_adj[axis];
-        if (debugLevel & DEBUG_INFO) {
+        if (DEBUGGING(INFO)) {
           ECHO_SMV(INFO, "> endstop_adj = ", endstop_adj[axis]);
           print_xyz(" > destination", destination);
         }
@@ -1590,13 +1716,13 @@ static void clean_up_after_endstop_move() {
         enable_endstops(true); // Enable endstops for next homing move
       }
 
-      if (debugLevel & DEBUG_INFO) ECHO_LMV(INFO, "> endstop_adj * axis_home_dir = ", endstop_adj[axis] * axis_home_dir);
+      if (DEBUGGING(INFO)) ECHO_LMV(INFO, "> endstop_adj * axis_home_dir = ", endstop_adj[axis] * axis_home_dir);
 
       // Set the axis position to its home position (plus home offsets)
       set_axis_is_at_home(axis);
       sync_plan_position();
 
-      if (debugLevel & DEBUG_INFO) {
+      if (DEBUGGING(INFO)) {
         ECHO_S(INFO);
         print_xyz("> AFTER set_axis_is_at_home > current_position", current_position);
       }
@@ -1679,7 +1805,7 @@ static void clean_up_after_endstop_move() {
 
   // Reset calibration results to zero.
   void reset_bed_level() {
-    if (debugLevel & DEBUG_INFO) ECHO_LM(INFO, "reset_bed_level");
+    if (DEBUGGING(INFO)) ECHO_LM(INFO, "reset_bed_level");
     for (int y = 0; y < AUTO_BED_LEVELING_GRID_POINTS; y++) {
       for (int x = 0; x < AUTO_BED_LEVELING_GRID_POINTS; x++) {
         bed_level[x][y] = 0.0;
@@ -1807,7 +1933,7 @@ static void clean_up_after_endstop_move() {
 
     float high_endstop = max(max(endstop_adj[0], endstop_adj[1]), endstop_adj[2]);
 
-    if (debugLevel & DEBUG_INFO) {
+    if (DEBUGGING(INFO)) {
       ECHO_LMV(INFO, "High endstop: ", high_endstop, 4);
     }
 
@@ -2328,7 +2454,7 @@ static void clean_up_after_endstop_move() {
 
     probe_z = probe_bed_mean / probe_count;
 
-    if (debugLevel & DEBUG_INFO) {
+    if (DEBUGGING(INFO)) {
       ECHO_SM(INFO, "Bed probe heights: ");
       for(int i = 0; i < probe_count; i++) {
         if (probe_bed_array[i] >= 0) ECHO_M(" ");
@@ -2465,7 +2591,7 @@ static void clean_up_after_endstop_move() {
   }
 
   void prepare_move_raw() {
-    if (debugLevel & DEBUG_DEBUG) {
+    if (DEBUGGING(DEBUG)) {
       ECHO_S(DEB);
       print_xyz("prepare_move_raw > destination", destination);
     }
@@ -2512,7 +2638,7 @@ static void clean_up_after_endstop_move() {
     delta[TOWER_2] += offset;
     delta[TOWER_3] += offset;
 
-    if (debugLevel & DEBUG_DEBUG) {
+    if (DEBUGGING(DEBUG)) {
       ECHO_SMV(DEB, "grid_x=", grid_x);
       ECHO_MV(" grid_y=", grid_y);
       ECHO_MV(" floor_x=", floor_x);
@@ -2651,7 +2777,7 @@ static void clean_up_after_endstop_move() {
    * offset[in]   The additional distance to move to adjust docking location
    */
   static void dock_sled(bool dock, int offset=0) {
-    if (debugLevel & DEBUG_INFO) ECHO_LMV(INFO, "dock_sled", dock);
+    if (DEBUGGING(INFO)) ECHO_LMV(INFO, "dock_sled", dock);
 
     if (axis_known_position & (_BV(X_AXIS)|_BV(Y_AXIS)) != (_BV(X_AXIS)|_BV(Y_AXIS))) {
       LCD_MESSAGEPGM(MSG_POSITION_UNKNOWN);
@@ -2736,30 +2862,36 @@ static void clean_up_after_endstop_move() {
 #endif
 
 inline void wait_heater() {
-  // Exit if the temperature is above target and not waiting for cooling
-  if (no_wait_for_cooling && !isHeatingHotend(target_extruder)) return;
+  bool wants_to_cool = isCoolingHotend(target_extruder);
+
+  // Exit if S<lower>, continue if S<higher>, R<lower>, or R<higher>
+  if (no_wait_for_cooling && wants_to_cool) return;
+
+  // Prevents a wait-forever situation if R is misused i.e. M109 R0
+  // Try to calculate a ballpark safe margin by halving EXTRUDE_MINTEMP
+  if (wants_to_cool && degTargetHotend(target_extruder) < (EXTRUDE_MINTEMP)/2) return;
 
   #if ENABLED(TEMP_RESIDENCY_TIME)
     long residency_start_ms = -1;
     // Loop until the temperature has stabilized
-    #define TEMP_CONDITIONS (residency_start_ms < 0 || now < residency_start_ms + (TEMP_RESIDENCY_TIME) * 1000UL)
+    #define TEMP_CONDITIONS (!residency_start_ms || PENDING(now, residency_start_ms + (TEMP_RESIDENCY_TIME) * 1000UL))
   #else
     // Loop until the temperature is exactly on target
-    #define TEMP_CONDITIONS (degHotend(target_extruder) != degTargetHotend(target_extruder))
+    #define TEMP_CONDITIONS (wants_to_cool ? isCoolingHotend(target_extruder) : isHeatingHotend(target_extruder))
   #endif // TEMP_RESIDENCY_TIME
 
   cancel_heatup = false;
-  millis_t now = millis(), next_temp_ms = now + 1000UL;
-  while (!cancel_heatup && TEMP_CONDITIONS) {
+  millis_t now, next_temp_ms = 0;
+  do {
     now = millis();
-    if (now > next_temp_ms) { // Print temp & remaining time every 1s while waiting
+    if (ELAPSED(now, next_temp_ms)) { //Print temp & remaining time every 1s while waiting
       next_temp_ms = now + 1000UL;
       #if HAS(TEMP_0) || HAS(TEMP_BED) || ENABLED(HEATER_0_USES_MAX6675)
         print_heaterstates();
       #endif
-      #if ENABLED(TEMP_RESIDENCY_TIME)
+      #if TEMP_RESIDENCY_TIME > 0
         ECHO_M(" " SERIAL_W);
-        if (residency_start_ms >= 0) {
+        if (residency_start_ms) {
           long rem = ((TEMP_RESIDENCY_TIME * 1000UL) - (now - residency_start_ms)) / 1000UL;
           ECHO_EV(rem);
         }
@@ -2772,38 +2904,84 @@ inline void wait_heater() {
     }
 
     idle();
+    refresh_cmd_timeout(); // to prevent stepper_inactive_time from running out
 
-    #if ENABLED(TEMP_RESIDENCY_TIME)
-      // Start the TEMP_RESIDENCY_TIME timer when we reach target temp for the first time.
-      // Restart the timer whenever the temperature falls outside the hysteresis.
-      if (labs(degHotend(target_extruder) - degTargetHotend(target_extruder)) > ((residency_start_ms < 0) ? TEMP_WINDOW : TEMP_HYSTERESIS))
+    #if TEMP_RESIDENCY_TIME > 0
+      float temp_diff = fabs(degTargetHotend(target_extruder) - degHotend(target_extruder));
+
+      if (!residency_start_ms) {
+        // Start the TEMP_RESIDENCY_TIME timer when we reach target temp for the first time.
+        if (temp_diff < TEMP_WINDOW) residency_start_ms = millis();
+      }
+      else if (temp_diff > TEMP_HYSTERESIS) {
+        // Restart the timer whenever the temperature falls outside the hysteresis.
         residency_start_ms = millis();
-    #endif // TEMP_RESIDENCY_TIME
-  } // while(!cancel_heatup && TEMP_CONDITIONS)
+      }
+    #endif //TEMP_RESIDENCY_TIME > 0
+
+  } while(!cancel_heatup && TEMP_CONDITIONS);
 
   LCD_MESSAGEPGM(MSG_HEATING_COMPLETE);
-  refresh_cmd_timeout();
-  print_job_start_ms = previous_cmd_ms;
 }
 
 inline void wait_bed() {
+  bool wants_to_cool = isCoolingBed();
+
   // Exit if the temperature is above target and not waiting for cooling
-  if (no_wait_for_cooling && !isHeatingBed()) return;
+  if (no_wait_for_cooling && wants_to_cool) return;
+
+  #if TEMP_BED_RESIDENCY_TIME > 0
+    millis_t residency_start_ms = 0;
+    // Loop until the temperature has stabilized
+    #define TEMP_BED_CONDITIONS (!residency_start_ms || PENDING(now, residency_start_ms + (TEMP_BED_RESIDENCY_TIME) * 1000UL))
+  #else
+    // Loop until the temperature is very close target
+    #define TEMP_BED_CONDITIONS (wants_to_cool ? isCoolingBed() : isHeatingBed())
+  #endif // TEMP_BED_RESIDENCY_TIME > 0
 
   cancel_heatup = false;
-  millis_t now = millis(), next_temp_ms = now + 1000UL;
-  while (!cancel_heatup && degTargetBed() != degBed()) {
-    millis_t now = millis();
-    if (now > next_temp_ms) { // Print Temp Reading every 1 second while heating up.
+  millis_t now, next_temp_ms = 0;
+
+  // Wait for temperature to come close enough
+  do {
+    now = millis();
+    if (ELAPSED(now, next_temp_ms)) { //Print Temp Reading every 1 second while heating up.
       next_temp_ms = now + 1000UL;
       print_heaterstates();
-      ECHO_E;
+      #if TEMP_BED_RESIDENCY_TIME > 0
+        ECHO_M(" " SERIAL_W);
+        if (residency_start_ms) {
+          long rem = (((TEMP_BED_RESIDENCY_TIME) * 1000UL) - (now - residency_start_ms)) / 1000UL;
+          ECHO_EV(rem);
+        }
+        else {
+          ECHO_EM("?");
+        }
+      #else
+        ECHO_E;
+      #endif
     }
+
     idle();
-  }
+    refresh_cmd_timeout(); // to prevent stepper_inactive_time from running out
+
+    #if TEMP_BED_RESIDENCY_TIME > 0
+      float temp_diff = fabs(degBed() - degTargetBed());
+
+      if (!residency_start_ms) {
+        // Start the TEMP_BED_RESIDENCY_TIME timer when we reach target temp for the first time.
+        if (temp_diff < TEMP_BED_WINDOW) residency_start_ms = millis();
+      }
+      else if (temp_diff > TEMP_BED_HYSTERESIS) {
+        // Restart the timer whenever the temperature falls outside the hysteresis.
+        residency_start_ms = millis();
+      }
+    #endif //TEMP_BED_RESIDENCY_TIME > 0
+
+  } while (!cancel_heatup && TEMP_BED_CONDITIONS);
   LCD_MESSAGEPGM(MSG_BED_DONE);
-  refresh_cmd_timeout();
 }
+
 
 /******************************************************************************
 ***************************** G-Code Functions ********************************
@@ -2866,6 +3044,35 @@ void gcode_get_destination() {
 void unknown_command_error() {
   ECHO_LMV(ER, SERIAL_UNKNOWN_COMMAND, current_command);
 }
+
+#if ENABLED(HOST_KEEPALIVE_FEATURE)
+  /**
+   * Output a "busy" message at regular intervals
+   * while the machine is not accepting commands.
+   */
+  void host_keepalive() {
+    millis_t ms = millis();
+    if (host_keepalive_interval && busy_state != NOT_BUSY) {
+      if (PENDING(ms, next_busy_signal_ms)) return;
+      switch (busy_state) {
+        case IN_HANDLER:
+        case IN_PROCESS:
+          ECHO_LM(BUSY, SERIAL_BUSY_PROCESSING);
+          break;
+        case PAUSED_FOR_USER:
+          ECHO_LM(BUSY, SERIAL_BUSY_PAUSED_FOR_USER);
+          break;
+        case PAUSED_FOR_INPUT:
+          ECHO_LM(BUSY, SERIAL_BUSY_PAUSED_FOR_INPUT);
+          break;
+        default:
+          break;
+      }
+    }
+    next_busy_signal_ms = ms + host_keepalive_interval * 1000UL;
+  }
+
+#endif //HOST_KEEPALIVE_FEATURE
 
 /**
  * G0, G1: Coordinated movement of X Y Z E axes
@@ -2977,7 +3184,7 @@ inline void gcode_G4() {
  *
  */
 inline void gcode_G28() {
-  if (debugLevel & DEBUG_INFO) ECHO_LM(INFO, "gcode_G28 >>>");
+  if (DEBUGGING(INFO)) ECHO_LM(INFO, "gcode_G28 >>>");
 
   // Wait for planner moves to finish!
   st_synchronize();
@@ -3045,7 +3252,7 @@ inline void gcode_G28() {
 
     sync_plan_position_delta();
 
-    if (debugLevel & DEBUG_INFO) {
+    if (DEBUGGING(INFO)) {
       ECHO_S(INFO);
       print_xyz("(DELTA) > current_position", current_position);
     }
@@ -3057,7 +3264,7 @@ inline void gcode_G28() {
       #if Z_HOME_DIR > 0  // If homing away from BED do Z first
 
         HOMEAXIS(Z);
-        if (debugLevel & DEBUG_INFO) {
+        if (DEBUGGING(INFO)) {
           ECHO_S(INFO);
           print_xyz("> HOMEAXIS(Z) > current_position", current_position);
         }
@@ -3066,7 +3273,7 @@ inline void gcode_G28() {
 
         // Raise Z before homing any other axes
         destination[Z_AXIS] = -(Z_RAISE_BEFORE_HOMING) * home_dir(Z_AXIS); // Set destination away from bed
-        if (debugLevel & DEBUG_INFO) {
+        if (DEBUGGING(INFO)) {
           ECHO_SMV(INFO, "Raise Z (before homing) by ", (float)Z_RAISE_BEFORE_HOMING);
           print_xyz(" > (home_all_axis || homeZ) > destination", destination);
         }
@@ -3106,7 +3313,7 @@ inline void gcode_G28() {
         set_axis_is_at_home(Y_AXIS);
         sync_plan_position();
 
-        if (debugLevel & DEBUG_INFO) {
+        if (DEBUGGING(INFO)) {
           ECHO_S(INFO);
           print_xyz("> QUICK_HOME > current_position 1", current_position);
         }
@@ -3124,7 +3331,7 @@ inline void gcode_G28() {
           current_position[Z_AXIS] = destination[Z_AXIS];
         #endif
 
-        if (debugLevel & DEBUG_INFO) {
+        if (DEBUGGING(INFO)) {
           ECHO_S(INFO);
           print_xyz("> QUICK_HOME > current_position 2", current_position);
         }
@@ -3153,7 +3360,7 @@ inline void gcode_G28() {
       #else
         HOMEAXIS(X);
       #endif
-      if (debugLevel & DEBUG_INFO) {
+      if (DEBUGGING(INFO)) {
         ECHO_S(INFO);
         print_xyz("> homeX", current_position);
       }
@@ -3163,7 +3370,7 @@ inline void gcode_G28() {
       // Home Y
       if (home_all_axis || homeY) {
         HOMEAXIS(Y);
-        if (debugLevel & DEBUG_INFO) {
+        if (DEBUGGING(INFO)) {
           ECHO_S(INFO);
           print_xyz("> homeY", current_position);
         }
@@ -3176,9 +3383,9 @@ inline void gcode_G28() {
         if (code_seen('M') && !(homeX || homeY)) {
           // Manual G28 bed level
           #if ENABLED(ULTIPANEL)
-            ECHO_LM(DB, " --LEVEL PLATE SCRIPT--");
+            ECHO_LM(DB, "--LEVEL PLATE SCRIPT--");
             while(!lcd_clicked()) {
-              idle(true);
+              idle();
             }
             saved_feedrate = feedrate;
             saved_feedrate_multiplier = feedrate_multiplier;
@@ -3218,7 +3425,7 @@ inline void gcode_G28() {
             do_blocking_move_to(LEFT_PROBE_BED_POSITION, FRONT_PROBE_BED_POSITION, current_position[Z_AXIS]);
             do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], Z_MIN_POS);
             while(!lcd_clicked()) {          
-              idle(true);
+              idle();
             }
 
             // PROBE SECOND POINT
@@ -3227,7 +3434,7 @@ inline void gcode_G28() {
             do_blocking_move_to(RIGHT_PROBE_BED_POSITION, FRONT_PROBE_BED_POSITION, current_position[Z_AXIS]);
             do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], Z_MIN_POS);
             while(!lcd_clicked()) {
-              idle(true);
+              idle();
             }
 
             // PROBE THIRD POINT
@@ -3236,7 +3443,7 @@ inline void gcode_G28() {
             do_blocking_move_to(RIGHT_PROBE_BED_POSITION, BACK_PROBE_BED_POSITION, current_position[Z_AXIS]);
             do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], Z_MIN_POS);
             while(!lcd_clicked()) {
-              idle(true);
+              idle();
             }     
 
             // PROBE FOURTH POINT
@@ -3245,7 +3452,7 @@ inline void gcode_G28() {
             do_blocking_move_to(LEFT_PROBE_BED_POSITION, BACK_PROBE_BED_POSITION, current_position[Z_AXIS]);
             do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], Z_MIN_POS);
             while(!lcd_clicked()) {
-              idle(true);
+              idle();
             }
 
             // PROBE CENTER
@@ -3254,25 +3461,25 @@ inline void gcode_G28() {
             do_blocking_move_to(((X_MAX_POS) - (X_MIN_POS)) / 2, ((Y_MAX_POS) - (Y_MIN_POS)) / 2, current_position[Z_AXIS]);
             do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], Z_MIN_POS);
             while(!lcd_clicked()) {
-              idle(true);
+              idle();
             }
 
             // FINISH MANUAL BED LEVEL
             set_pageShowInfo(6);
             do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], (Z_MIN_POS) + 5);
-            enqueuecommands_P(PSTR("G28"));
+            enqueue_and_echo_commands_P(PSTR("G28"));
           #endif // ULTIPANEL
         }
         else if (home_all_axis || homeZ) {
           HOMEAXIS(Z);
-          if (debugLevel & DEBUG_INFO) {
+          if (DEBUGGING(INFO)) {
             ECHO_S(INFO);
             print_xyz("> (home_all_axis || homeZ) > final", current_position);
           }
         }
       #elif ENABLED(Z_SAFE_HOMING) && ENABLED(AUTO_BED_LEVELING_FEATURE)// Z Safe mode activated.
 
-        if (debugLevel & DEBUG_INFO) ECHO_LM(INFO, "> Z_SAFE_HOMING >>>");
+        if (DEBUGGING(INFO)) ECHO_LM(INFO, "> Z_SAFE_HOMING >>>");
 
         if (home_all_axis) {
 
@@ -3289,7 +3496,7 @@ inline void gcode_G28() {
           destination[Z_AXIS] = -(Z_RAISE_BEFORE_HOMING) * home_dir(Z_AXIS);  // Set destination away from bed
           feedrate = xy_travel_speed;
 
-          if (debugLevel & DEBUG_INFO) {
+          if (DEBUGGING(INFO)) {
             ECHO_SMV(INFO, "Raise Z (before homing) by ", (float)Z_RAISE_BEFORE_HOMING);
             print_xyz(" > home_all_axis > current_position", current_position, false);
             print_xyz(" > home_all_axis > destination", destination);
@@ -3325,7 +3532,7 @@ inline void gcode_G28() {
               destination[Z_AXIS] = -(Z_RAISE_BEFORE_HOMING) * home_dir(Z_AXIS);    // Set destination away from bed
               feedrate = max_feedrate[Z_AXIS] * 60;
 
-              if (debugLevel & DEBUG_INFO) {
+              if (DEBUGGING(INFO)) {
                 ECHO_SMV(INFO, "Raise Z (before homing) by ", (float)Z_RAISE_BEFORE_HOMING);
                 print_xyz(" > homeZ > current_position", current_position, false);
                 print_xyz(" > homeZ > destination", destination);
@@ -3347,7 +3554,7 @@ inline void gcode_G28() {
             ECHO_LM(DB, MSG_POSITION_UNKNOWN);
           }
         }
-        if (debugLevel & DEBUG_INFO) ECHO_LM(INFO, "<<< Z_SAFE_HOMING");
+        if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< Z_SAFE_HOMING");
       #elif ENABLED(Z_SAFE_HOMING)
         if (home_all_axis || homeZ) {
 
@@ -3361,7 +3568,7 @@ inline void gcode_G28() {
             destination[Z_AXIS] = current_position[Z_AXIS] = 0;
             feedrate = xy_travel_speed;
 
-            if (debugLevel & DEBUG_INFO) {
+            if (DEBUGGING(INFO)) {
               ECHO_SMV(INFO, "Raise Z (before homing) by ", (float)Z_RAISE_BEFORE_HOMING);
               print_xyz(" > home_all_axis > current_position", current_position, false);
               print_xyz(" > home_all_axis > destination", destination);
@@ -3381,7 +3588,7 @@ inline void gcode_G28() {
             ECHO_LM(ER, MSG_POSITION_UNKNOWN);
           }
         }
-        if (debugLevel & DEBUG_INFO) ECHO_LM(INFO, "<<< Z_SAFE_HOMING");
+        if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< Z_SAFE_HOMING");
       #endif // Z_SAFE_HOMING
     #endif // Z_HOME_DIR < 0
 
@@ -3431,7 +3638,7 @@ inline void gcode_G28() {
     #endif
   #endif
 
-  if (debugLevel & DEBUG_INFO) ECHO_LM(INFO, "<<< gcode_G28");
+  if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< gcode_G28");
 }
 
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
@@ -3479,7 +3686,7 @@ inline void gcode_G28() {
    *
    */
   inline void gcode_G29() {
-    if (debugLevel & DEBUG_INFO) ECHO_LM(INFO, "gcode_G29 >>>");
+    if (DEBUGGING(INFO)) ECHO_LM(INFO, "gcode_G29 >>>");
 
     // Don't allow auto-leveling without homing first
     if (axis_known_position & (_BV(X_AXIS)|_BV(Y_AXIS)) != (_BV(X_AXIS)|_BV(Y_AXIS))) {
@@ -3619,7 +3826,7 @@ inline void gcode_G28() {
           float measured_z,
                 z_before = probePointCounter ? Z_RAISE_BETWEEN_PROBINGS + current_position[Z_AXIS] : Z_RAISE_BEFORE_PROBING + current_position[Z_AXIS];
 
-          if (debugLevel & DEBUG_INFO) {
+          if (DEBUGGING(INFO)) {
             if (probePointCounter)
               ECHO_LMV(INFO, "z_before = (between) ", (float)(Z_RAISE_BETWEEN_PROBINGS + current_position[Z_AXIS]));
             else
@@ -3651,7 +3858,7 @@ inline void gcode_G28() {
         } // xProbe
       } // yProbe
 
-      if (debugLevel & DEBUG_INFO) {
+      if (DEBUGGING(INFO)) {
         ECHO_S(INFO);
         print_xyz("> probing complete > current_position", current_position);
       }
@@ -3676,12 +3883,17 @@ inline void gcode_G28() {
 
       // Show the Topography map if enabled
       if (do_topography_map) {
-        ECHO_LM(DB, "Bed Height Topography:");
-        ECHO_LM(DB, "+-----------+");
-        ECHO_LM(DB, "|...Back....|");
-        ECHO_LM(DB, "|Left..Right|");
-        ECHO_LM(DB, "|...Front...|");
-        ECHO_LM(DB, "+-----------+");
+        ECHO_EM(" Bed Height Topography:");
+        ECHO_EM("   +--- BACK --+");
+        ECHO_EM("   |           |");
+        ECHO_EM(" L |    (+)    | R");
+        ECHO_EM(" E |           | I");
+        ECHO_EM(" F | (-) N (+) | G");
+        ECHO_EM(" T |           | H");
+        ECHO_EM("   |    (-)    | T");
+        ECHO_EM("   |           |");
+        ECHO_EM("   O-- FRONT --+");
+        ECHO_EM(" (0,0)");
 
         float min_diff = 999;
 
@@ -3736,7 +3948,7 @@ inline void gcode_G28() {
 
     #else // !AUTO_BED_LEVELING_GRID
 
-      if (debugLevel & DEBUG_INFO) ECHO_LM(INFO, "> 3-point Leveling");
+      if (DEBUGGING(INFO)) ECHO_LM(INFO, "> 3-point Leveling");
 
       // Actions for each probe
       ProbeAction p1, p2, p3;
@@ -3766,7 +3978,7 @@ inline void gcode_G28() {
             z_tmp = current_position[Z_AXIS],
             real_z = st_get_axis_position_mm(Z_AXIS);  //get the real Z (since plan_get_position is now correcting the plane)
 
-      if (debugLevel & DEBUG_INFO) {
+      if (DEBUGGING(INFO)) {
         ECHO_LMV(INFO, "> BEFORE apply_rotation_xyz > z_tmp  = ", z_tmp);
         ECHO_LMV(INFO, "> BEFORE apply_rotation_xyz > real_z = ", real_z);
       }
@@ -3789,7 +4001,7 @@ inline void gcode_G28() {
       //      adjust for inaccurate endstops, not for reasonably accurate probes. If it were
       //      added here, it could be seen as a compensating factor for the Z probe.
       //
-      if (debugLevel & DEBUG_INFO)
+      if (DEBUGGING(INFO))
         ECHO_LMV(INFO, "> AFTER apply_rotation_xyz > z_tmp  = ", z_tmp);
 
       current_position[Z_AXIS] = -zprobe_zoffset + (z_tmp - real_z)
@@ -3800,7 +4012,7 @@ inline void gcode_G28() {
       // current_position[Z_AXIS] += home_offset[Z_AXIS]; // The Z probe determines Z=0, not "Z home"
       sync_plan_position();
 
-      if (debugLevel & DEBUG_INFO)
+      if (DEBUGGING(INFO))
         print_xyz("> corrected Z in G29", current_position);
     }
 
@@ -3813,15 +4025,17 @@ inline void gcode_G28() {
     #endif
 
     #if ENABLED(Z_PROBE_END_SCRIPT)
-      if (debugLevel & DEBUG_INFO) {
+      if (DEBUGGING(INFO)) {
         ECHO_SM(INFO, "Z Probe End Script: ");
         ECHO_EM(Z_PROBE_END_SCRIPT);
       }
-      enqueuecommands_P(PSTR(Z_PROBE_END_SCRIPT));
+      enqueue_and_echo_commands_P(PSTR(Z_PROBE_END_SCRIPT));
       st_synchronize();
     #endif
 
-    if (debugLevel & DEBUG_INFO) ECHO_LM(INFO, "<<< gcode_G29");
+    KEEPALIVE_STATE(IN_HANDLER);
+
+    if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< gcode_G29");
   }
 
   #if HASNT(Z_PROBE_SLED)
@@ -3829,7 +4043,7 @@ inline void gcode_G28() {
      * G30: Do a single Z probe at the current XY
      */
     inline void gcode_G30() {
-      if (debugLevel & DEBUG_INFO) ECHO_LM(INFO, "gcode_G30 >>>");
+      if (DEBUGGING(INFO)) ECHO_LM(INFO, "gcode_G30 >>>");
 
       #if HAS(SERVO_ENDSTOPS)
         raise_z_for_servo();
@@ -3857,7 +4071,7 @@ inline void gcode_G28() {
 
       stow_z_probe(); // Retract Z Servo endstop if available
 
-      if (debugLevel & DEBUG_INFO) ECHO_LM(INFO, "<<< gcode_G30");
+      if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< gcode_G30");
     }
   #endif // !Z_PROBE_SLED
 #endif // AUTO_BED_LEVELING_FEATURE
@@ -3869,7 +4083,7 @@ inline void gcode_G28() {
    */
   inline void gcode_G29() {
 
-    if (debugLevel & DEBUG_INFO) ECHO_LM(INFO, "gcode_G29 >>>");
+    if (DEBUGGING(INFO)) ECHO_LM(INFO, "gcode_G29 >>>");
 
     if (code_seen('D')) {
       print_bed_level();
@@ -3886,7 +4100,9 @@ inline void gcode_G28() {
     retract_z_probe();
     clean_up_after_endstop_move();
 
-    if (debugLevel & DEBUG_INFO) ECHO_LM(INFO, "<<< gcode_G29");
+    KEEPALIVE_STATE(IN_HANDLER);
+
+    if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< gcode_G29");
   }
 
   /* G30: Delta AutoCalibration
@@ -3896,7 +4112,7 @@ inline void gcode_G28() {
    *
    */
   inline void gcode_G30() {
-    if (debugLevel & DEBUG_INFO) ECHO_LM(INFO, "gcode_G30 >>>");
+    if (DEBUGGING(INFO)) ECHO_LM(INFO, "gcode_G30 >>>");
 
     // Zero the bed level array
     reset_bed_level();
@@ -3925,7 +4141,7 @@ inline void gcode_G28() {
       ECHO_MV(" Y:", y);
       ECHO_EMV(" = ", probe_value, 4);
 
-      if (debugLevel & DEBUG_INFO) {
+      if (DEBUGGING(INFO)) {
         ECHO_SMV(INFO, "Carriage Positions: [", saved_position[X_AXIS]);
         ECHO_MV(", ", saved_position[Y_AXIS]);
         ECHO_MV(", ", saved_position[Z_AXIS]);
@@ -4036,7 +4252,7 @@ inline void gcode_G28() {
           else
             dr_adjusted = false;
 
-          if (debugLevel & DEBUG_DEBUG) {
+          if (DEBUGGING(DEBUG)) {
             ECHO_LMV(DEB, "bed_level_c=", bed_level_c, 4);
             ECHO_LMV(DEB, "bed_level_x=", bed_level_x, 4);
             ECHO_LMV(DEB, "bed_level_y=", bed_level_y, 4);
@@ -4074,7 +4290,7 @@ inline void gcode_G28() {
           calibration_report();
         }
 
-        if (debugLevel & DEBUG_DEBUG) {
+        if (DEBUGGING(DEBUG)) {
           ECHO_LMV(DEB, "bed_level_c=", bed_level_c, 4);
           ECHO_LMV(DEB, "bed_level_x=", bed_level_x, 4);
           ECHO_LMV(DEB, "bed_level_y=", bed_level_y, 4);
@@ -4101,7 +4317,9 @@ inline void gcode_G28() {
 
     clean_up_after_endstop_move();
 
-    if (debugLevel & DEBUG_INFO) ECHO_LM(INFO, "<<< gcode_G30");
+    KEEPALIVE_STATE(IN_HANDLER);
+
+    if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< gcode_G30");
   }
 #endif // DELTA && Z_PROBE_ENDSTOP
 
@@ -4230,13 +4448,17 @@ inline void gcode_G92() {
     st_synchronize();
     refresh_cmd_timeout();
     if (codenum > 0) {
-      codenum += previous_cmd_ms;  // keep track of when we started waiting
-      while(millis() < codenum && !lcd_clicked()) idle();
+      codenum += previous_cmd_ms;  // wait until this time for a click
+      KEEPALIVE_STATE(PAUSED_FOR_USER);
+      while (PENDING(millis(), codenum) && !lcd_clicked()) idle();
+      KEEPALIVE_STATE(IN_HANDLER);
       lcd_ignore_click(false);
     }
     else {
       if (!lcd_detected()) return;
+      KEEPALIVE_STATE(PAUSED_FOR_USER);
       while (!lcd_clicked()) idle();
+      KEEPALIVE_STATE(IN_HANDLER);
     }
     if (IS_SD_PRINTING)
       LCD_MESSAGEPGM(MSG_RESUMING);
@@ -4283,7 +4505,7 @@ inline void gcode_M11() {
     Printing = false;
     ECHO_LM(DB, "Stop Printing");
     #if ENABLED(STOP_GCODE)
-      enqueuecommands_P(PSTR(STOP_PRINTING_SCRIPT));
+      enqueue_and_echo_commands_P(PSTR(STOP_PRINTING_SCRIPT));
     #endif
     #if HAS(FILRUNOUT)
       filrunoutEnqueued = false;
@@ -4294,7 +4516,7 @@ inline void gcode_M11() {
     Printing = true;
     ECHO_LM(DB, "Start Printing");
     #if ENABLED(START_GCODE)
-      enqueuecommands_P(PSTR(START_PRINTING_SCRIPT));
+      enqueue_and_echo_commands_P(PSTR(START_PRINTING_SCRIPT));
     #endif
     #if HAS(FILRUNOUT)
       filrunoutEnqueued = false;
@@ -4353,7 +4575,7 @@ inline void gcode_M17() {
    */
   inline void gcode_M24() {
     card.startPrint();
-    print_job_start_ms = millis();
+    print_job_timer.start();
     #if HAS(POWER_CONSUMPTION_SENSOR)
       startpower = power_consumption_hour;
     #endif
@@ -4410,8 +4632,7 @@ inline void gcode_M17() {
    * M31: Get the time since the start of SD Print (or last M109)
    */
   inline void gcode_M31() {
-    print_job_stop_ms = millis();
-    millis_t t = (print_job_stop_ms - print_job_start_ms) / 1000;
+    millis_t t = print_job_timer.duration();
     int min = t / 60, sec = t % 60;
     char time[30];
     sprintf_P(time, PSTR("%i min, %i sec"), min, sec);
@@ -4489,7 +4710,7 @@ inline void gcode_M42() {
    * regenerated.
    */
   inline void gcode_M48() {
-    if (debugLevel & DEBUG_INFO) ECHO_LM(INFO, "gcode_M48 >>>");
+    if (DEBUGGING(INFO)) ECHO_LM(INFO, "gcode_M48 >>>");
 
     double sum = 0.0, mean = 0.0, sigma = 0.0, sample_set[50];
     uint8_t verbose_level = 1, n_samples = 10, n_legs = 0;
@@ -4687,13 +4908,12 @@ inline void gcode_M42() {
     if (verbose_level > 0) ECHO_EMV("Mean: ", mean, 6);
     ECHO_EMV("Standard Deviation: ", sigma, 6);
 
-    if (debugLevel & DEBUG_INFO) ECHO_LM(INFO, "<<< gcode_M28");
+    if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< gcode_M28");
   }
 
 #endif // AUTO_BED_LEVELING_FEATURE && Z_PROBE_REPEATABILITY_TEST
 
 #if HAS(POWER_CONSUMPTION_SENSOR)
-
   /**
    * M70 - Power consumption sensor calibration
    *
@@ -4719,6 +4939,27 @@ inline void gcode_M42() {
     }
   }
 #endif
+
+/**
+ * M75: Start print timer
+ */
+inline void gcode_M75() {
+  print_job_timer.start();
+}
+
+/**
+ * M76: Pause print timer
+ */
+inline void gcode_M76() {
+  print_job_timer.pause();
+}
+
+/**
+ * M77: Stop print timer
+ */
+inline void gcode_M77() {
+  print_job_timer.stop();
+}
 
 #if HAS(POWER_SWITCH)
   /**
@@ -5062,7 +5303,7 @@ inline void gcode_M92() {
  */
 inline void gcode_M104() {
   if (setTargetedExtruder(104)) return;
-  if (debugLevel & DEBUG_DRYRUN) return;
+  if (DEBUGGING(DRYRUN)) return;
 
   #if HOTENDS == 1
     if (target_extruder != active_extruder) return;
@@ -5113,7 +5354,7 @@ inline void gcode_M105() {
  */
 inline void gcode_M109() {
   if (setTargetedExtruder(109)) return;
-  if (debugLevel & DEBUG_DRYRUN) return;
+  if (DEBUGGING(DRYRUN)) return;
 
   #if HOTENDS == 1
     if (target_extruder != active_extruder) return;
@@ -5129,6 +5370,24 @@ inline void gcode_M109() {
       if (dual_x_carriage_mode == DXC_DUPLICATION_MODE && target_extruder == 0)
         setTargetHotend1(temp == 0.0 ? 0.0 : temp + duplicate_extruder_temp_offset);
     #endif
+
+    /**
+     * We use half EXTRUDE_MINTEMP here to allow nozzles to be put into hot
+     * stand by mode, for instance in a dual extruder setup, without affecting
+     * the running print timer.
+     */
+    if (temp <= (EXTRUDE_MINTEMP)/2) {
+      print_job_timer.stop();
+      LCD_MESSAGEPGM(WELCOME_MSG);
+    }
+    /**
+     * We do not check if the timer is already running because this check will
+     * be done for us inside the Stopwatch::start() method thus a running timer
+     * will not restart.
+     */
+    else print_job_timer.start();
+
+    if (temp > degHotend(target_extruder)) LCD_MESSAGEPGM(MSG_HEATING);
   }
 
   #if ENABLED(AUTOTEMP)
@@ -5145,22 +5404,39 @@ inline void gcode_M109() {
  * M111: Debug mode Repetier Host compatibile
  */
 inline void gcode_M111() {
-  debugLevel = code_seen('S') ? code_value_short() : DEBUG_INFO|DEBUG_COMMUNICATION;
+  mk_debug_flags = code_seen('S') ? code_value_short() : DEBUG_INFO|DEBUG_COMMUNICATION;
 
-  if (debugLevel & DEBUG_ECHO) ECHO_LM(DB, SERIAL_DEBUG_ECHO);
-  if (debugLevel & DEBUG_INFO) ECHO_LM(DB, SERIAL_DEBUG_INFO);
-  //if (debugLevel & DEBUG_ERRORS) ECHO_LM(DB, SERIAL_DEBUG_ERRORS);
-  if (debugLevel & DEBUG_DRYRUN) {
+  if (DEBUGGING(ECHO)) ECHO_LM(DB, SERIAL_DEBUG_ECHO);
+  if (DEBUGGING(INFO)) ECHO_LM(DB, SERIAL_DEBUG_INFO);
+  //if (mk_debug_flags & DEBUG_ERRORS) ECHO_LM(DB, SERIAL_DEBUG_ERRORS);
+  if (DEBUGGING(DRYRUN)) {
     ECHO_LM(DB, SERIAL_DEBUG_DRYRUN);
     disable_all_heaters();
   }
-  if (debugLevel & DEBUG_DEBUG) ECHO_LM(DB, SERIAL_DEBUG);
+  if (DEBUGGING(DEBUG)) ECHO_LM(DB, SERIAL_DEBUG);
 }
 
 /**
  * M112: Emergency Stop
  */
 inline void gcode_M112() { kill(PSTR(MSG_KILLED)); }
+
+#if ENABLED(HOST_KEEPALIVE_FEATURE)
+  /**
+   * M113: Get or set Host Keepalive interval (0 to disable)
+   *
+   *   S<seconds> Optional. Set the keepalive interval.
+   */
+  inline void gcode_M113() {
+    if (code_seen('S')) {
+      host_keepalive_interval = (uint8_t)code_value_short();
+      NOMORE(host_keepalive_interval, 60);
+    }
+    else {
+      ECHO_LMV(DB, "M113 S", (unsigned long)host_keepalive_interval);
+    }
+  }
+#endif
 
 /**
  * M114: Output current position to serial port
@@ -5304,22 +5580,22 @@ inline void gcode_M122() {
     /**
      * M126: Heater 1 valve open
      */
-    inline void gcode_M126() { ValvePressure = code_seen('S') ? constrain(code_value(), 0, 255) : 255; }
+    inline void gcode_M126() { baricuda_valve_pressure = code_seen('S') ? constrain(code_value(), 0, 255) : 255; }
     /**
      * M127: Heater 1 valve close
      */
-    inline void gcode_M127() { ValvePressure = 0; }
+    inline void gcode_M127() { baricuda_valve_pressure = 0; }
   #endif
 
   #if HAS(HEATER_2)
     /**
      * M128: Heater 2 valve open
      */
-    inline void gcode_M128() { EtoPPressure = code_seen('S') ? constrain(code_value(), 0, 255) : 255; }
+    inline void gcode_M128() { baricuda_e_to_p_pressure = code_seen('S') ? constrain(code_value(), 0, 255) : 255; }
     /**
      * M129: Heater 2 valve close
      */
-    inline void gcode_M129() { EtoPPressure = 0; }
+    inline void gcode_M129() { baricuda_e_to_p_pressure = 0; }
   #endif
 #endif //BARICUDA
 
@@ -5327,7 +5603,7 @@ inline void gcode_M122() {
  * M140: Set bed temperature
  */
 inline void gcode_M140() {
-  if (debugLevel & DEBUG_DRYRUN) return;
+  if (DEBUGGING(DRYRUN)) return;
   if (code_seen('S')) setTargetBed(code_value());
 }
 
@@ -5481,12 +5757,11 @@ inline void gcode_M140() {
    *       Rxxx Wait for bed current temp to reach target temp. Waits when heating and cooling
    */
   inline void gcode_M190() {
-    if (debugLevel & DEBUG_DRYRUN) return;
+    if (DEBUGGING(DRYRUN)) return;
 
     LCD_MESSAGEPGM(MSG_BED_HEATING);
     no_wait_for_cooling = code_seen('S');
-    if (no_wait_for_cooling || code_seen('R'))
-      setTargetBed(code_value());
+    if (no_wait_for_cooling || code_seen('R')) setTargetBed(code_value());
 
     wait_bed();
   }
@@ -5919,7 +6194,7 @@ inline void gcode_M226() {
       #endif
 
       updatePID();
-      ECHO_SMV(OK, "H:", h);
+      ECHO_SMV(DB, "H:", h);
       ECHO_MV(" p:", PID_PARAM(Kp, h));
       ECHO_MV(" i:", unscalePID_i(PID_PARAM(Ki, h)));
       ECHO_MV(" d:", unscalePID_d(PID_PARAM(Kd, h)));
@@ -5957,7 +6232,12 @@ inline void gcode_M226() {
     int c = code_seen('C') ? code_value_short() : 5;
     float temp = code_seen('S') ? code_value() : (h < 0 ? 70.0 : 150.0);
     if (h >= 0 && h < HOTENDS) target_extruder = h;
+
+    KEEPALIVE_STATE(NOT_BUSY); // don't send "busy: processing" messages during autotune output
+
     PID_autotune(temp, h, c);
+    
+    KEEPALIVE_STATE(IN_HANDLER);
   }
 #endif
 
@@ -5969,7 +6249,7 @@ inline void gcode_M226() {
     if (code_seen('D')) bedKd = scalePID_d(code_value());
 
     updatePID();
-    ECHO_SMV(OK, "p:", bedKp);
+    ECHO_SMV(DB, "p:", bedKp);
     ECHO_MV(" i:", unscalePID_i(bedKi));
     ECHO_EMV(" d:", unscalePID_d(bedKd));
   }
@@ -6025,7 +6305,7 @@ inline void gcode_M226() {
    * M360: SCARA calibration: Move to cal-position ThetaA (0 deg calibration)
    */
   inline bool gcode_M360() {
-    ECHO_LM(DB, " Cal: Theta 0 ");
+    ECHO_LM(DB, "Cal: Theta 0 ");
     return SCARA_move_to_cal(0, 120);
   }
 
@@ -6033,7 +6313,7 @@ inline void gcode_M226() {
    * M361: SCARA calibration: Move to cal-position ThetaB (90 deg calibration - steps per degree)
    */
   inline bool gcode_M361() {
-    ECHO_LM(DB, " Cal: Theta 90 ");
+    ECHO_LM(DB, "Cal: Theta 90 ");
     return SCARA_move_to_cal(90, 130);
   }
 
@@ -6041,7 +6321,7 @@ inline void gcode_M226() {
    * M362: SCARA calibration: Move to cal-position PsiA (0 deg calibration)
    */
   inline bool gcode_M362() {
-    ECHO_LM(DB, " Cal: Psi 0 ");
+    ECHO_LM(DB, "Cal: Psi 0 ");
     return SCARA_move_to_cal(60, 180);
   }
 
@@ -6049,7 +6329,7 @@ inline void gcode_M226() {
    * M363: SCARA calibration: Move to cal-position PsiB (90 deg calibration - steps per degree)
    */
   inline bool gcode_M363() {
-    ECHO_LM(DB," Cal: Psi 90 ");
+    ECHO_LM(DB,"Cal: Psi 90 ");
     return SCARA_move_to_cal(50, 90);
   }
 
@@ -6057,7 +6337,7 @@ inline void gcode_M226() {
    * M364: SCARA calibration: Move to cal-position PSIC (90 deg to Theta calibration position)
    */
   inline bool gcode_M364() {
-    ECHO_LM(DB, " Cal: Theta-Psi 90 ");
+    ECHO_LM(DB, "Cal: Theta-Psi 90 ");
     return SCARA_move_to_cal(45, 135);
   }
 
@@ -6496,7 +6776,7 @@ inline void gcode_M428() {
         ECHO_LM(ER, SERIAL_ERR_M428_TOO_FAR);
         LCD_ALERTMESSAGEPGM("Err: Too far!");
         #if HAS(BUZZER)
-          enqueuecommands_P(PSTR("M300 S40 P200"));
+          enqueue_and_echo_commands_P(PSTR("M300 S40 P200"));
         #endif
         err = true;
         break;
@@ -6515,7 +6795,7 @@ inline void gcode_M428() {
     ECHO_LM(DB, "Offset applied.");
     LCD_MESSAGEPGM("Offset applied.");
     #if HAS(BUZZER)
-      enqueuecommands_P(PSTR("M300 S659 P200\nM300 S698 P200"));
+      enqueue_and_echo_commands_P(PSTR("M300 S659 P200\nM300 S698 P200"));
     #endif
   }
 }
@@ -6695,9 +6975,10 @@ inline void gcode_M503() {
     millis_t last_set = millis();
     
     PRESSBUTTON:
+    KEEPALIVE_STATE(PAUSED_FOR_USER);
     LCD_ALERTMESSAGEPGM(MSG_FILAMENTCHANGE);
     while (!lcd_clicked()) {
-      idle(true);
+      idle();
       if ((millis() - last_set > 60000) && cnt <= FILAMENTCHANGE_PRINTEROFF) beep = true;
       if (cnt >= FILAMENTCHANGE_PRINTEROFF && !sleep) {
         disable_all_heaters();
@@ -6715,7 +6996,7 @@ inline void gcode_M503() {
         ++cnt;
       }
     } // while(!lcd_clicked)
-
+    KEEPALIVE_STATE(IN_HANDLER);
     lcd_quick_feedback();     // click sound feedback
     lcd_reset_alert_level();  //reset LCD alert message
 
@@ -7303,7 +7584,7 @@ inline void gcode_T(uint8_t tmp_extruder) {
 void process_next_command() {
   current_command = command_queue[cmd_queue_index_r];
 
-  if ((debugLevel & DEBUG_ECHO)) {
+  if (DEBUGGING(ECHO)) {
     ECHO_LT(DB, current_command);
   }
 
@@ -7312,38 +7593,45 @@ void process_next_command() {
   //  - Bypass N[-0-9][0-9]*[ ]*
   //  - Overwrite * with nul to mark the end
   while (*current_command == ' ') ++current_command;
-  if ((*current_command == 'N' || *current_command == 'n') && ((current_command[1] >= '0' && current_command[1] <= '9') || current_command[1] == '-')) {
+  if (*current_command == 'N' && NUMERIC_SIGNED(current_command[1])) {
     current_command += 2; // skip N[-0-9]
-    while (*current_command >= '0' && *current_command <= '9') ++current_command; // skip [0-9]*
+    while (NUMERIC(*current_command)) ++current_command; // skip [0-9]*
     while (*current_command == ' ') ++current_command; // skip [ ]*
   }
   char* starpos = strchr(current_command, '*');  // * should always be the last parameter
   if (starpos) while (*starpos == ' ' || *starpos == '*') *starpos-- = '\0'; // nullify '*' and ' '
 
+  char *cmd_ptr = current_command;
+
   // Get the command code, which must be G, M, or T
-  char command_code = *current_command;
+  char command_code = *cmd_ptr++;
 
-  // The code must have a numeric value
-  bool code_is_good = (current_command[1] >= '0' && current_command[1] <= '9');
+  // Skip spaces to get the numeric part
+  while (*cmd_ptr == ' ') cmd_ptr++;
 
-  int codenum; // define ahead of goto
+  uint16_t codenum = 0; // define ahead of goto
 
   // Bail early if there's no code
+  bool code_is_good = NUMERIC(*cmd_ptr);
   if (!code_is_good) goto ExitUnknownCommand;
 
-  // Args pointer optimizes code_seen, especially those taking XYZEF
-  // This wastes a little cpu on commands that expect no arguments.
-  current_command_args = current_command;
-  while (*current_command_args && *current_command_args != ' ') ++current_command_args;
-  while (*current_command_args == ' ') ++current_command_args;
+  // Get and skip the code number
+  do {
+    codenum = (codenum * 10) + (*cmd_ptr - '0');
+    cmd_ptr++;
+  } while (NUMERIC(*cmd_ptr));
 
-  // Interpret the code int
-  seen_pointer = current_command;
-  codenum = code_value_short();
+  // Skip all spaces to get to the first argument, or nul
+  while (*cmd_ptr == ' ') cmd_ptr++;
+
+  // The command's arguments (if any) start here, for sure!
+  current_command_args = cmd_ptr;
+
+  KEEPALIVE_STATE(IN_HANDLER);
 
   // Handle a known G, M, or T
   switch(command_code) {
-    case 'G': case 'g': switch (codenum) {
+    case 'G': switch (codenum) {
 
       // G0 -> G1
       case 0:
@@ -7403,7 +7691,7 @@ void process_next_command() {
     }
     break;
 
-    case 'M': case 'm': switch (codenum) {
+    case 'M': switch (codenum) {
 
       #if ENABLED(ULTIPANEL)
         case 0: // M0 - Unconditional stop - Wait for user button press on LCD
@@ -7471,6 +7759,15 @@ void process_next_command() {
           gcode_M70(); break;
       #endif
       
+      case 75: // Start print timer
+        gcode_M75(); break;
+
+      case 76: // Pause print timer
+        gcode_M76(); break;
+
+      case 77: // Stop print timer
+        gcode_M77(); break;
+
       #if HAS(POWER_SWITCH)
         case 80: // M80 - Turn on Power Supply
           gcode_M80(); break;
@@ -7511,8 +7808,11 @@ void process_next_command() {
 
       case 104: // M104
         gcode_M104(); break;
+
       case 105: // M105 Read current temperature
-        gcode_M105(); return; // "ok" already printed
+        gcode_M105();
+        KEEPALIVE_STATE(NOT_BUSY);
+        return; // "ok" already printed
 
       #if HAS(FAN)
         case 106: //M106 Fan On
@@ -7523,13 +7823,23 @@ void process_next_command() {
 
       case 109: // M109 Wait for temperature
         gcode_M109(); break;
+
       case 110: break; // M110: Set line number - don't show "unknown command"
+
       case 111: // M111 Set debug level
         gcode_M111(); break;
+
       case 112: //  M112 Emergency Stop
         gcode_M112(); break;
+
       case 114: // M114 Report current position
         gcode_M114(); break;
+
+      #if ENABLED(HOST_KEEPALIVE_FEATURE)
+        case 113: // M113: Set Host Keepalive interval
+          gcode_M113(); break;
+      #endif
+
       case 115: // M115 Report capabilities
         gcode_M115(); break;
 
@@ -7783,12 +8093,14 @@ void process_next_command() {
     }
     break;
 
-    case 'T': case 't':
+    case 'T':
       gcode_T(codenum);
     break;
 
     default: code_is_good = false;
   }
+
+  KEEPALIVE_STATE(NOT_BUSY);
 
 ExitUnknownCommand:
 
@@ -7802,18 +8114,22 @@ void FlushSerialRequestResend() {
   //char command_queue[cmd_queue_index_r][100]="Resend:";
   MKSERIAL.flush();
   ECHO_LV(RESEND, (long)(gcode_LastN + 1));
-  ECHO_S(OK);
+  ok_to_send();
 }
 
 void ok_to_send() {
   refresh_cmd_timeout();
-  #if ENABLED(SDSUPPORT)
-    if (fromsd[cmd_queue_index_r]) return;
-  #endif
+  if (!send_ok[cmd_queue_index_r]) return;
   ECHO_S(OK);
   #if ENABLED(ADVANCED_OK)
-    ECHO_MV("N", gcode_LastN);
-    ECHO_MV(" P", (int(BLOCK_BUFFER_SIZE - movesplanned() - 1)));
+    char* p = command_queue[cmd_queue_index_r];
+    if (*p == 'N') {
+      ECHO_C(' ');
+      ECHO_C(*p++);
+      while (NUMERIC_SIGNED(*p))
+        ECHO_C(*p++);
+    }
+    ECHO_MV(" P", (int)(BLOCK_BUFFER_SIZE - movesplanned() - 1));
     ECHO_MV(" B", BUFSIZE - commands_in_queue);
   #endif
   ECHO_E;
@@ -7843,7 +8159,7 @@ void clamp_to_software_endstops(float target[3]) {
 
   FORCE_INLINE void prevent_dangerous_extrude(float &curr_e, float &dest_e) {
     float de = dest_e - curr_e;
-    if (debugLevel & DEBUG_DRYRUN) return;
+    if (DEBUGGING(DRYRUN)) return;
     if (de) {
       if (degHotend(active_extruder) < extrude_min_temp) {
         curr_e = dest_e; // Behave as if the move really took place, but ignore E part
@@ -7878,7 +8194,7 @@ void clamp_to_software_endstops(float target[3]) {
       float seconds = 6000 * cartesian_mm / feedrate / feedrate_multiplier;
       int steps = max(1, int(DELTA_SEGMENTS_PER_SECOND * seconds));
 
-      if (debugLevel & DEBUG_DEBUG) {
+      if (DEBUGGING(DEBUG)) {
         ECHO_SMV(DEB, "mm=", cartesian_mm);
         ECHO_MV(" seconds=", seconds);
         ECHO_EMV(" steps=", steps);
@@ -7918,7 +8234,7 @@ void clamp_to_software_endstops(float target[3]) {
       calculate_delta(target);
       adjust_delta(target);
 
-      if (debugLevel & DEBUG_DEBUG) {
+      if (DEBUGGING(DEBUG)) {
         ECHO_LMV(DEB, "target[X_AXIS]=", target[X_AXIS]);
         ECHO_LMV(DEB, "target[Y_AXIS]=", target[Y_AXIS]);
         ECHO_LMV(DEB, "target[Z_AXIS]=", target[Z_AXIS]);
@@ -8309,9 +8625,18 @@ void plan_arc(
 /**
  * Standard idle routine keeps the machine alive
  */
-void idle(bool ignore_stepper_queue/*=false*/) {
+void idle(
+  #if ENABLED(FILAMENTCHANGEENABLE)
+    bool no_stepper_sleep/*=false*/
+  #endif
+) {
   manage_heater();
-  manage_inactivity(ignore_stepper_queue);
+  manage_inactivity(
+    #if ENABLED(FILAMENTCHANGEENABLE)
+      no_stepper_sleep
+    #endif
+  );
+  host_keepalive();
   lcd_update();
 }
 
@@ -8336,13 +8661,14 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
       filrunout();
   #endif
 
-  if (commands_in_queue < BUFSIZE - 1) get_command();
+  if (commands_in_queue < BUFSIZE - 1) get_available_commands();
 
   millis_t ms = millis();
 
-  if (max_inactive_time && ms > previous_cmd_ms + max_inactive_time) kill(PSTR(MSG_KILLED));
+  if (max_inactive_time && ELAPSED(ms, previous_cmd_ms + max_inactive_time)) kill(PSTR(MSG_KILLED));
 
-  if (stepper_inactive_time && ms > previous_cmd_ms + stepper_inactive_time && !ignore_stepper_queue && !blocks_queued()) {
+  if (stepper_inactive_time && ELAPSED(ms, previous_cmd_ms + stepper_inactive_time)
+      && !ignore_stepper_queue && !blocks_queued()) {
     #if DISABLE_X == true
       disable_x();
     #endif
@@ -8358,7 +8684,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
   }
 
   #if HAS(CHDK) // Check if pin should be set to LOW after M240 set it to HIGH
-    if (chdkActive && ms > chdkHigh + CHDK_DELAY) {
+    if (chdkActive && PENDING(ms, chdkHigh + CHDK_DELAY)) {
       chdkActive = false;
       WRITE(CHDK_PIN, LOW);
     }
@@ -8389,7 +8715,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
     const int HOME_DEBOUNCE_DELAY = 750;
     if (!READ(HOME_PIN)) {
       if (!homeDebounceCount) {
-        enqueuecommands_P(PSTR("G28"));
+        enqueue_and_echo_commands_P(PSTR("G28"));
         LCD_MESSAGEPGM(MSG_AUTO_HOME);
       }
       if (homeDebounceCount < HOME_DEBOUNCE_DELAY)
@@ -8404,7 +8730,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
   #endif
 
   #if ENABLED(EXTRUDER_RUNOUT_PREVENT)
-    if (ms > previous_cmd_ms + (EXTRUDER_RUNOUT_SECONDS) * 1000) {
+    if (ELAPSED(ms, previous_cmd_ms + (EXTRUDER_RUNOUT_SECONDS) * 1000UL))
       if (degHotend(active_extruder) > EXTRUDER_RUNOUT_MINTEMP) {
         bool oldstatus;
         switch(active_extruder) {
@@ -8476,7 +8802,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
 
   #if ENABLED(IDLE_OOZING_PREVENT)
     if (blocks_queued()) axis_last_activity = millis();
-    if (degHotend(active_extruder) > IDLE_OOZING_MINTEMP && !(debugLevel & DEBUG_DRYRUN) && IDLE_OOZING_enabled) {
+    if (degHotend(active_extruder) > IDLE_OOZING_MINTEMP && !(DEBUGGING(DRYRUN)) && IDLE_OOZING_enabled) {
       #if ENABLED(FILAMENTCHANGEENABLE)
         if (!filament_changing)
       #endif
@@ -8579,7 +8905,7 @@ void kill(const char* lcd_msg) {
   void filrunout() {
     if (!filrunoutEnqueued) {
       filrunoutEnqueued = true;
-      enqueuecommands_P(PSTR(FILAMENT_RUNOUT_SCRIPT));
+      enqueue_and_echo_commands_P(PSTR(FILAMENT_RUNOUT_SCRIPT));
       st_synchronize();
     }
   }
@@ -8653,7 +8979,7 @@ void kill(const char* lcd_msg) {
   }
 #endif // FAST_PWM_FAN
 
-void Stop() {
+void stop() {
   disable_all_heaters();
   if (IsRunning()) {
     Running = false;
@@ -8662,32 +8988,6 @@ void Stop() {
     ECHO_E;
     LCD_MESSAGEPGM(MSG_STOPPED);
   }
-}
-
-bool setTargetedExtruder(int code) {
-  target_extruder = active_extruder;
-  if (code_seen('T')) {
-    target_extruder = code_value_short();
-    if (target_extruder >= EXTRUDERS) {
-      ECHO_SMV(ER, "M", code);
-      ECHO_EMV(" " SERIAL_INVALID_EXTRUDER, target_extruder);
-      return true;
-    }
-  }
-  return false;
-}
-
-bool setTargetedHotend(int code) {
-  target_extruder = active_extruder;
-  if (code_seen('H')) {
-    target_extruder = code_value_short();
-    if (target_extruder >= HOTENDS) {
-      ECHO_SMV(ER, "M", code);
-      ECHO_EMV(" " SERIAL_INVALID_HOTEND, target_extruder);
-      return true;
-    }
-  }
-  return false;
 }
 
 float calculate_volumetric_multiplier(float diameter) {
