@@ -9,15 +9,16 @@
 
 void get_command();
 
-void idle(bool ignore_stepper_queue = false);
+void idle(
+  #if ENABLED(FILAMENTCHANGEENABLE)
+    bool no_stepper_sleep=false  // pass true to keep steppers from disabling on timeout
+  #endif
+);
 
 void manage_inactivity(bool ignore_stepper_queue = false);
 
 void FlushSerialRequestResend();
 void ok_to_send();
-
-bool setTargetedExtruder(int code);
-bool setTargetedHotend(int code);
 
 #if MECH(DELTA)
   float probe_bed(float x, float y);
@@ -63,25 +64,27 @@ void Stop();
  * Debug flags - with repetier
  */
 enum DebugFlags {
-  DEBUG_ECHO          = _BV(0),
-  DEBUG_INFO          = _BV(1),
-  DEBUG_ERRORS        = _BV(2),
-  DEBUG_DRYRUN        = _BV(3),
-  DEBUG_COMMUNICATION = _BV(4),
-  DEBUG_DEBUG         = _BV(5)
+  DEBUG_NONE          = 0,
+  DEBUG_ECHO          = _BV(0), ///< Echo commands in order as they are processed
+  DEBUG_INFO          = _BV(1), ///< Print messages for code that has debug output
+  DEBUG_ERRORS        = _BV(2), ///< Not implemented
+  DEBUG_DRYRUN        = _BV(3), ///< Ignore temperature setting
+  DEBUG_COMMUNICATION = _BV(4), ///< Not implemented
+  DEBUG_DEBUG         = _BV(5)  ///< Print Debug
 };
+extern uint8_t mk_debug_flags;
+#define DEBUGGING(F) (mk_debug_flags & (DEBUG_## F))
 
 void clamp_to_software_endstops(float target[3]);
-
-extern uint8_t debugLevel;
 
 extern bool Running;
 inline bool IsRunning() { return  Running; }
 inline bool IsStopped() { return !Running; }
 extern bool Printing;
 
-bool enqueuecommand(const char *cmd); //put a single ASCII command at the end of the current buffer or return false when it is full
-void enqueuecommands_P(const char *cmd); //put one or many ASCII commands at the end of the current buffer, read from flash
+bool enqueue_and_echo_command(const char* cmd, bool say_ok = false); // put a single ASCII command at the end of the current buffer or return false when it is full
+void enqueue_and_echo_command_now(const char* cmd); // enqueue now, only return when the command has been enqueued
+void enqueue_and_echo_commands_P(const char* cmd);  // put one or many ASCII commands at the end of the current buffer, read from flash
 
 void prepare_arc_move(char isclockwise);
 void clamp_to_software_endstops(float target[3]);
@@ -139,11 +142,15 @@ extern double printer_usage_filament;
   extern float extrude_min_temp;
 #endif
 
+#if ENABLED(HOST_KEEPALIVE_FEATURE)
+  extern uint8_t host_keepalive_interval;
+#endif
+
 extern int fanSpeed;
 
 #if ENABLED(BARICUDA)
-  extern int ValvePressure;
-  extern int EtoPPressure;
+  extern int baricuda_valve_pressure;
+  extern int baricuda_e_to_p_pressure;
 #endif
 
 #if ENABLED(FAN_SOFT_PWM)
@@ -202,8 +209,8 @@ extern int fanSpeed;
   extern bool config_readed;
 #endif
 
-extern millis_t print_job_start_ms;
-extern millis_t print_job_stop_ms;
+// Print job timer
+extern Stopwatch print_job_timer;
 
 // Handling multiple extruders pins
 extern uint8_t active_extruder;

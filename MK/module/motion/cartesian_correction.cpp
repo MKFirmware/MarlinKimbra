@@ -242,7 +242,7 @@
 
   //===========================================================================
   void ZWobble::setSample(float zRod, float zActual) {
-    if (debugLevel & DEBUG_DEBUG) {
+    if (DEBUGGING(DEBUG)) {
       ECHO_SMV(DB, "New sample Rod: ", zRod);
       ECHO_EMV(" Act: ", zActual);
     }
@@ -446,7 +446,7 @@
 
     if (originZ < ZWOBBLE_MIN_Z || targetZ < ZWOBBLE_MIN_Z) return;
 
-    if (debugLevel & DEBUG_DEBUG) {
+    if (DEBUGGING(DEBUG)) {
       ECHO_SMV(DB, "Origin: ", originZ);
       ECHO_MV(" Target: ", targetZ);
     }
@@ -461,18 +461,18 @@
     else
       originZRod = findZRod(originZ);
     
-    if (debugLevel & DEBUG_DEBUG)
+    if (DEBUGGING(DEBUG))
       ECHO_MV(" Origin rod: ", originZRod);
 
     float targetZRod = findZRod(targetZ);
 
-    if (debugLevel & DEBUG_DEBUG)
+    if (DEBUGGING(DEBUG))
       ECHO_MV(" Target Rod: ", targetZRod);
 
     // difference in steps between the correct movement (originZRod->targetZRod) and the planned movement
     long stepDiff = lround((targetZRod - originZRod) * axis_steps_per_unit[Z_AXIS]) - (lround(targetZ * axis_steps_per_unit[Z_AXIS]) - position[Z_AXIS]);
 
-    if (debugLevel & DEBUG_DEBUG)
+    if (DEBUGGING(DEBUG))
       ECHO_EMV(" stepDiff: ", stepDiff);
 
     lastZ = targetZ;

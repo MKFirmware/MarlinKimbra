@@ -320,7 +320,7 @@ void CardReader::printingHasFinished() {
   sdprinting = false;
   if (SD_FINISHED_STEPPERRELEASE) {
     //finishAndDisableSteppers();
-    enqueuecommands_P(PSTR(SD_FINISHED_RELEASECOMMAND));
+    enqueue_and_echo_commands_P(PSTR(SD_FINISHED_RELEASECOMMAND));
   }
   autotempShutdown();
 }

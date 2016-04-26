@@ -25,11 +25,18 @@
 // Macros to support option testing
 #define ENABLED defined
 #define DISABLED !defined
+
 #define PIN_EXISTS(PN) (defined(PN##_PIN) && PN##_PIN >= 0)
+
 #define HAS(FE) (HAS_##FE)
 #define HASNT(FE) (!(HAS_##FE))
 
+#define PENDING(NOW,SOON) ((long)(NOW-(SOON))<0)
+#define ELAPSED(NOW,SOON) (!PENDING(NOW,SOON))
+
 // Macros to contrain values
+#define NUMERIC(a) ((a) >= '0' && '9' >= (a))
+#define NUMERIC_SIGNED(a) (NUMERIC(a) || (a) == '-')
 #define NOLESS(v,n) do{ if (v < n) v = n; }while(0)
 #define NOMORE(v,n) do{ if (v > n) v = n; }while(0)
 #define COUNT(a) (sizeof(a)/sizeof(*a))

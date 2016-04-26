@@ -2,15 +2,16 @@
   #define COMMUNICATION_H
 
   #define START       "start"               // start for host
-  #define OK          "ok "                 // ok answer for host
-  #define ER          "Error: "             // error for host
-  #define WT          "Wait"                // wait for host
-  #define DB          "Echo: "              // message for user
-  #define DEB         "Debug: "             // message for debug
-  #define CFG         "Config: "            // config for host
-  #define INFO        "Info: "              // info for host
-  #define RESEND      "Resend: "            // resend for host
-  #define WARNING     "Warning: "           // warning for host
+  #define OK          "ok"                  // ok answer for host
+  #define ER          "Error:"              // error for host
+  #define WT          "wait"                // wait for host
+  #define DB          "Echo:"               // message for user
+  #define DEB         "Debug:"              // message for debug
+  #define CFG         "Config:"             // config for host
+  #define INFO        "Info:"               // info for host
+  #define BUSY        "busy:"               // buys for host
+  #define RESEND      "Resend:"             // resend for host
+  #define WARNING     "Warning:"            // warning for host
   #define TNAN        "NAN"                 // NAN for host
   #define TINF        "INF"                 // INF for host
   #define PAUSE       "//action:pause"      // command for host that support action
