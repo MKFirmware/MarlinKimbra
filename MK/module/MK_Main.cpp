@@ -2,8 +2,8 @@
  * MK Firmware
  *
  * Based on Marlin, Sprinter and grbl
- * Copyright (C) 2013 MagoKimbra
  * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2013 - 2016 Alberto Cotronei @MagoKimbra
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -184,8 +184,8 @@ double printer_usage_filament;
   float diagrod_adj[3] = { 0 };
   float saved_endstop_adj[3] = { 0 };
   float tower_adj[6] = { 0 };
-  float delta_radius; // = DEFAULT_delta_radius;
-  float delta_diagonal_rod; // = DEFAULT_DELTA_DIAGONAL_ROD;
+  float delta_radius; // = delta_radius;
+  float delta_diagonal_rod; // = DELTA_DIAGONAL_ROD;
   float delta_diagonal_rod_1;
   float delta_diagonal_rod_2;
   float delta_diagonal_rod_3;
@@ -2703,8 +2703,9 @@ static void clean_up_after_endstop_move() {
     #endif
     #if HOTENDS > 1
       for (uint8_t h = 0; h < HOTENDS; ++h) {
-        ECHO_MV(" T", h);
-        ECHO_MV(":", degHotend(h), 1);
+        ECHO_MV(" T", (int)h);
+        ECHO_C(':');
+        ECHO_V(degHotend(h), 1);
         ECHO_MV(" /", degTargetHotend(h), 1);
       }
     #endif
@@ -2724,7 +2725,7 @@ static void clean_up_after_endstop_move() {
     #endif
     #if HOTENDS > 1
       for (uint8_t h = 0; h < HOTENDS; ++h) {
-        ECHO_MV(" " SERIAL_AT, h);
+        ECHO_MV(" " SERIAL_AT, (int)h);
         ECHO_C(':');
         #if ENABLED(HOTEND_WATTS)
           ECHO_VM(((HOTEND_WATTS) * getHeaterPower(h)) / 127, "W");
@@ -2739,8 +2740,9 @@ static void clean_up_after_endstop_move() {
         ECHO_MV("C->", rawBedTemp() / OVERSAMPLENR, 0);
       #endif
       for (uint8_t h = 0; h < HOTENDS; ++h) {
-        ECHO_MV("  T", h);
-        ECHO_MV(":", degHotend(h), 1);
+        ECHO_MV("  T", (int)h);
+        ECHO_C(':');
+        ECHO_V(degHotend(h), 1);
         ECHO_MV("C->", rawHotendTemp(h) / OVERSAMPLENR, 0);
       }
     #endif
@@ -2833,7 +2835,7 @@ void gcode_get_destination() {
     if(code_seen(axis_codes[E_AXIS])) IDLE_OOZING_retract(false);
   #endif
 
-  for (int i = 0; i < Z_AXIS; i++) {
+  for (int i = 0; i < 3; i++) {
     if (code_seen(axis_codes[i]))
       destination[i] = code_value() + (axis_relative_modes[i] || relative_mode ? current_position[i] : -hotend_offset[i][active_extruder]);
     else
@@ -3988,6 +3990,9 @@ inline void gcode_G28() {
     // Sled assembly for Cartesian bots
     #if HAS(Z_PROBE_SLED)
       dock_sled(true); // dock the probe
+    #elif HASNT(SERVO_ENDSTOPS) && Z_RAISE_AFTER_PROBING > 0
+      // Raise Z axis for non servo based probes
+      raise_z_after_probing();
     #endif
 
     #if ENABLED(Z_PROBE_END_SCRIPT)
@@ -4640,6 +4645,15 @@ inline void gcode_M17() {
       card.mount();
     }
   }
+
+  #if ENABLED(NEXTION)
+    /**
+     * M35: Upload Firmware to Nextion from SD
+     */
+    inline void gcode_M35() {
+      UploadNewFirmware();
+    }
+  #endif
 #endif
 
 /**
@@ -7746,6 +7760,10 @@ void process_next_command() {
           gcode_M31(); break;
         case 32: // M32 - Make directory
           gcode_M32(); break;
+        #if ENABLED(NEXTION)
+          case 35: // M35 - Upload Firmware to Nextion from SD
+            gcode_M35(); break;
+        #endif
       #endif //SDSUPPORT
 
       case 42: // M42 -Change pin status via gcode
@@ -7834,7 +7852,7 @@ void process_next_command() {
         gcode_M120(); break;
       case 121: // M121 Disable endstops
         gcode_M121(); break;
-      case 122: // M121 Disable or enable software endstops
+      case 122: // M122 Disable or enable software endstops
         gcode_M122(); break;
 
       #if ENABLED(BARICUDA)
