@@ -1,5 +1,5 @@
 /**
- * MK 3D Printer Firmware
+ * MK & MK4due 3D Printer Firmware
  *
  * Based on Marlin, Sprinter and grbl
  * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
@@ -2810,7 +2810,7 @@ static void clean_up_after_endstop_move() {
       ECHO_MV(" /", degTargetHotend(target_extruder), 1);
     #endif
     #if HAS(TEMP_BED)
-      ECHO_MV(" " SERIAL_B, degBed(), 1);
+      ECHO_MV(SERIAL_B, degBed(), 1);
       ECHO_MV(" /", degTargetBed(), 1);
     #endif
     #if HOTENDS > 1
@@ -2822,14 +2822,14 @@ static void clean_up_after_endstop_move() {
       }
     #endif
     #if HAS(TEMP_BED)
-      ECHO_M(" " SERIAL_BAT);
+      ECHO_M(SERIAL_BAT);
       #if ENABLED(BED_WATTS)
         ECHO_VM(((BED_WATTS) * getHeaterPower(-1)) / 127, "W");
       #else
         ECHO_V(getHeaterPower(-1));
       #endif
     #endif
-    ECHO_M(" " SERIAL_AT ":");
+    ECHO_M(SERIAL_AT ":");
     #if ENABLED(HOTEND_WATTS)
       ECHO_VM(((HOTEND_WATTS) * getHeaterPower(target_extruder)) / 127, "W");
     #else
@@ -2837,7 +2837,7 @@ static void clean_up_after_endstop_move() {
     #endif
     #if HOTENDS > 1
       for (uint8_t h = 0; h < HOTENDS; ++h) {
-        ECHO_MV(" " SERIAL_AT, (int)h);
+        ECHO_MV(SERIAL_AT, (int)h);
         ECHO_C(':');
         #if ENABLED(HOTEND_WATTS)
           ECHO_VM(((HOTEND_WATTS) * getHeaterPower(h)) / 127, "W");
@@ -2890,7 +2890,7 @@ inline void wait_heater() {
         print_heaterstates();
       #endif
       #if TEMP_RESIDENCY_TIME > 0
-        ECHO_M(" " SERIAL_W);
+        ECHO_M(SERIAL_W);
         if (residency_start_ms) {
           long rem = ((TEMP_RESIDENCY_TIME * 1000UL) - (now - residency_start_ms)) / 1000UL;
           ECHO_EV(rem);
@@ -2949,7 +2949,7 @@ inline void wait_bed() {
       next_temp_ms = now + 1000UL;
       print_heaterstates();
       #if TEMP_BED_RESIDENCY_TIME > 0
-        ECHO_M(" " SERIAL_W);
+        ECHO_M(SERIAL_W);
         if (residency_start_ms) {
           long rem = (((TEMP_BED_RESIDENCY_TIME) * 1000UL) - (now - residency_start_ms)) / 1000UL;
           ECHO_EV(rem);
@@ -5316,6 +5316,24 @@ inline void gcode_M104() {
       if (dual_x_carriage_mode == DXC_DUPLICATION_MODE && target_extruder == 0)
         setTargetHotend1(temp == 0.0 ? 0.0 : temp + duplicate_extruder_temp_offset);
     #endif
+
+    /**
+     * We use half EXTRUDE_MINTEMP here to allow nozzles to be put into hot
+     * stand by mode, for instance in a dual extruder setup, without affecting
+     * the running print timer.
+     */
+    if (temp <= (EXTRUDE_MINTEMP)/2) {
+      print_job_timer.stop();
+      LCD_MESSAGEPGM(WELCOME_MSG);
+    }
+    /**
+     * We do not check if the timer is already running because this check will
+     * be done for us inside the Stopwatch::start() method thus a running timer
+     * will not restart.
+     */
+    else print_job_timer.start();
+
+    if (temp > degHotend(target_extruder)) LCD_MESSAGEPGM(MSG_HEATING);
   }
 }
 
@@ -5404,16 +5422,33 @@ inline void gcode_M109() {
  * M111: Debug mode Repetier Host compatibile
  */
 inline void gcode_M111() {
-  mk_debug_flags = code_seen('S') ? code_value_short() : DEBUG_INFO|DEBUG_COMMUNICATION;
+  mk_debug_flags = code_seen('S') ? code_value_short() : DEBUG_NONE;
 
-  if (DEBUGGING(ECHO)) ECHO_LM(DB, SERIAL_DEBUG_ECHO);
-  if (DEBUGGING(INFO)) ECHO_LM(DB, SERIAL_DEBUG_INFO);
-  //if (mk_debug_flags & DEBUG_ERRORS) ECHO_LM(DB, SERIAL_DEBUG_ERRORS);
-  if (DEBUGGING(DRYRUN)) {
-    ECHO_LM(DB, SERIAL_DEBUG_DRYRUN);
-    disable_all_heaters();
+  const static char str_debug_1[]   PROGMEM = SERIAL_DEBUG_ECHO;
+  const static char str_debug_2[]   PROGMEM = SERIAL_DEBUG_INFO;
+  const static char str_debug_4[]   PROGMEM = SERIAL_DEBUG_ERRORS;
+  const static char str_debug_8[]   PROGMEM = SERIAL_DEBUG_DRYRUN;
+  const static char str_debug_16[]  PROGMEM = SERIAL_DEBUG_COMMUNICATION;
+  const static char str_debug_32[]  PROGMEM = SERIAL_DEBUG_DEBUG;
+
+  const static char* const debug_strings[] PROGMEM = {
+    str_debug_1, str_debug_2, str_debug_4, str_debug_8, str_debug_16, str_debug_32
+  };
+
+  ECHO_M(SERIAL_DEBUG_PREFIX);
+  if (mk_debug_flags) {
+    uint8_t comma = 0;
+    for (uint8_t i = 0; i < COUNT(debug_strings); i++) {
+      if (TEST(mk_debug_flags, i)) {
+        if (comma++) ECHO_C(',');
+        ECHO_T(debug_strings[i]);
+      }
+    }
   }
-  if (DEBUGGING(DEBUG)) ECHO_LM(DB, SERIAL_DEBUG);
+  else {
+    ECHO_M(SERIAL_DEBUG_OFF);
+  }
+  ECHO_E;
 }
 
 /**

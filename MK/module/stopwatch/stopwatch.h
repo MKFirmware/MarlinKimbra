@@ -1,5 +1,5 @@
 /**
- * MK 3D Printer Firmware
+ * MK & MK4due 3D Printer Firmware
  *
  * Based on Marlin, Sprinter and grbl
  * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
