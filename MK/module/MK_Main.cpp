@@ -5424,15 +5424,9 @@ inline void gcode_M109() {
 inline void gcode_M111() {
   mk_debug_flags = code_seen('S') ? code_value_short() : DEBUG_NONE;
 
-  const static char str_debug_1[]   PROGMEM = SERIAL_DEBUG_ECHO;
-  const static char str_debug_2[]   PROGMEM = SERIAL_DEBUG_INFO;
-  const static char str_debug_4[]   PROGMEM = SERIAL_DEBUG_ERRORS;
-  const static char str_debug_8[]   PROGMEM = SERIAL_DEBUG_DRYRUN;
-  const static char str_debug_16[]  PROGMEM = SERIAL_DEBUG_COMMUNICATION;
-  const static char str_debug_32[]  PROGMEM = SERIAL_DEBUG_DEBUG;
-
-  const static char* const debug_strings[] PROGMEM = {
-    str_debug_1, str_debug_2, str_debug_4, str_debug_8, str_debug_16, str_debug_32
+  const static char* const debug_strings[] {
+    SERIAL_DEBUG_ECHO, SERIAL_DEBUG_INFO, SERIAL_DEBUG_ERRORS,
+    SERIAL_DEBUG_DRYRUN, SERIAL_DEBUG_COMMUNICATION, SERIAL_DEBUG_DEBUG
   };
 
   ECHO_M(SERIAL_DEBUG_PREFIX);
@@ -5490,11 +5484,11 @@ inline void gcode_M114() {
   CRITICAL_SECTION_END;
 
   #if MECH(COREXY) || MECH(COREYX) || MECH(COREXZ) || MECH(COREZX)
-    ECHO_M(MSG_COUNT_A);
+    ECHO_M(SERIAL_COUNT_A);
   #elif MECH(DELTA)
-    ECHO_M(MSG_COUNT_ALPHA);
+    ECHO_M(SERIAL_COUNT_ALPHA);
   #else
-    ECHO_M(MSG_COUNT_X);
+    ECHO_M(SERIAL_COUNT_X);
   #endif
   ECHO_V(xpos);
 
@@ -6255,22 +6249,26 @@ inline void gcode_M226() {
   }
 #endif // PREVENT_DANGEROUS_EXTRUDE
 
-#if ENABLED(PIDTEMP) || ENABLED(PIDTEMPBED)
+#if HAS(PID_HEATING)
   /**
    * M303: PID relay autotune
    *       S<temperature> sets the target temperature. (default target temperature = 150C)
-   *       H<hotend> (-1 for the bed)
+   *       H<hotend> (-1 for the bed) (default 0)
    *       C<cycles>
+   *       U<bool> with a non-zero value will apply the result to current settings
    */
   inline void gcode_M303() {
     int h = code_seen('H') ? code_value_short() : 0;
     int c = code_seen('C') ? code_value_short() : 5;
+    bool u = code_seen('U') && code_value_short() != 0;
+
     float temp = code_seen('S') ? code_value() : (h < 0 ? 70.0 : 150.0);
+
     if (h >= 0 && h < HOTENDS) target_extruder = h;
 
     KEEPALIVE_STATE(NOT_BUSY); // don't send "busy: processing" messages during autotune output
 
-    PID_autotune(temp, h, c);
+    PID_autotune(temp, h, c, u);
     
     KEEPALIVE_STATE(IN_HANDLER);
   }
@@ -8002,7 +8000,7 @@ void process_next_command() {
           gcode_M302(); break;
       #endif // PREVENT_DANGEROUS_EXTRUDE
 
-      #if ENABLED(PIDTEMP) || ENABLED(PIDTEMPBED)
+      #if HAS(PID_HEATING)
         case 303: // M303 PID autotune
           gcode_M303(); break;
       #endif

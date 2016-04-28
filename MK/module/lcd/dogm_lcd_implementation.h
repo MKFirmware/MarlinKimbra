@@ -290,8 +290,13 @@ FORCE_INLINE void _draw_centered_temp(int temp, int x, int y) {
   lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
 }
 
-static void _draw_heater_status(int x, int heater) {
-  bool isBed = heater < 0;
+FORCE_INLINE void _draw_heater_status(int x, int heater) {
+  #if HAS(TEMP_BED)
+    bool isBed = heater < 0;
+  #else
+    const bool isBed = false;
+  #endif
+
   int y = 17 + (isBed ? 1 : 0);
   lcd_setFont(FONT_STATUSMENU);
 
@@ -650,7 +655,7 @@ void lcd_implementation_drawedit(const char* pstr, char* value) {
 
 #endif //SDSUPPORT
 
-#define lcd_implementation_drawmenu_back(sel, row, pstr, data) lcd_implementation_drawmenu_generic(sel, row, pstr, LCD_STR_UPLEVEL[0], LCD_STR_UPLEVEL[0])
+#define lcd_implementation_drawmenu_back(sel, row, pstr) lcd_implementation_drawmenu_generic(sel, row, pstr, LCD_STR_UPLEVEL[0], LCD_STR_UPLEVEL[0])
 #define lcd_implementation_drawmenu_submenu(sel, row, pstr, data) lcd_implementation_drawmenu_generic(sel, row, pstr, '>', LCD_STR_ARROW_RIGHT[0])
 #define lcd_implementation_drawmenu_gcode(sel, row, pstr, gcode) lcd_implementation_drawmenu_generic(sel, row, pstr, '>', ' ')
 #define lcd_implementation_drawmenu_function(sel, row, pstr, data) lcd_implementation_drawmenu_generic(sel, row, pstr, '>', ' ')
