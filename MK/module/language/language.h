@@ -237,11 +237,14 @@
 #define SERIAL_ENDSTOP_PROBE                    " PROBE="
 
 // Debug
-#define SERIAL_DEBUG_ECHO                       "DEBUG ECHO ENABLED"
-#define SERIAL_DEBUG_INFO                       "DEBUG INFO ENABLED"
-#define SERIAL_DEBUG_ERRORS                     "DEBUG ERRORS ENABLED"
-#define SERIAL_DEBUG_DRYRUN                     "DEBUG DRYRUN ENABLED"
-#define SERIAL_DEBUG                            "DEBUG ENABLED"
+#define SERIAL_DEBUG_PREFIX                     "DEBUG:"
+#define SERIAL_DEBUG_OFF                        "off"
+#define SERIAL_DEBUG_ECHO                       "ECHO"
+#define SERIAL_DEBUG_INFO                       "INFO"
+#define SERIAL_DEBUG_ERRORS                     "ERRORS"
+#define SERIAL_DEBUG_DRYRUN                     "DRYRUN"
+#define SERIAL_DEBUG_COMMUNICATION              "COMMUNICATION"
+#define SERIAL_DEBUG_DEBUG                      "DEBUG"
 
 //other
 #define SERIAL_ERR_HOMING_DIV                   "The Homing Bump Feedrate Divisor cannot be less than 1"
