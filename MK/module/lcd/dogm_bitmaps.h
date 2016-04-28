@@ -12,17 +12,20 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
-// BitMap for splashscreen
-// Generated with: http://www.digole.com/tools/PicturetoC_Hex_converter.php
-// Please note that using the high-res version takes 402Bytes of PROGMEM.
+/**
+ * BitMap for splashscreen
+ * Generated with: http://www.digole.com/tools/PicturetoC_Hex_converter.php
+ * Please note that using the high-res version takes 402Bytes of PROGMEM.
+ */
+
 #define START_BMPHIGH
 
 #if ENABLED(SHOW_BOOTSCREEN)

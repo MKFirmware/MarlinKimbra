@@ -226,8 +226,8 @@ void autotempShutdown() {
   #endif
 }
 
-#if ENABLED(PIDTEMP) || ENABLED(PIDTEMPBED)
-  void PID_autotune(float temp, int hotend, int ncycles) {
+#if  HAS(PID_HEATING)
+  void PID_autotune(float temp, int hotend, int ncycles, bool set_result/*=false*/) {
     float input = 0.0;
     int cycles = 0;
     bool heating = true;
@@ -237,7 +237,7 @@ void autotempShutdown() {
 
     long bias = 0, d = 0;
     float Ku = 0, Tu = 0;
-    float Kp_temp = 0, Ki_temp = 0, Kd_temp = 0;
+    float workKp = 0, workKi = 0, workKd = 0;
     float max = 0, min = 10000;
 
     #if HAS(AUTO_FAN)
@@ -323,23 +323,29 @@ void autotempShutdown() {
                 Tu = ((float)(t_low + t_high) / 1000.0);
                 ECHO_MV(SERIAL_KU, Ku);
                 ECHO_EMV(SERIAL_TU, Tu);
-                Kp_temp = 0.6 * Ku;
-                Ki_temp = 2 * Kp_temp / Tu;
-                Kd_temp = Kp_temp * Tu / 8;
+                workKp = 0.6 * Ku;
+                workKi = 2 * workKp / Tu;
+                workKd = workKp * Tu / 8;
                 
                 ECHO_EM(SERIAL_CLASSIC_PID);
-                ECHO_MV(SERIAL_KP, Kp_temp);
-                ECHO_MV(SERIAL_KI, Ki_temp);
-                ECHO_EMV(SERIAL_KD, Kd_temp);
+                ECHO_MV(SERIAL_KP, workKp);
+                ECHO_MV(SERIAL_KI, workKi);
+                ECHO_EMV(SERIAL_KD, workKd);
               }
               else {
                 ECHO_E;
               }
             }
-            if (hotend < 0)
-              soft_pwm_bed = (bias + d) >> 1;
-            else
+            #if HAS(PID_FOR_BOTH)
+              if (hotend < 0)
+                soft_pwm_bed = (bias + d) >> 1;
+              else
+                soft_pwm[hotend] = (bias + d) >> 1;
+            #elif ENABLED(PIDTEMP)
               soft_pwm[hotend] = (bias + d) >> 1;
+            #else
+              soft_pwm_bed = (bias + d) >> 1;
+            #endif
             cycles++;
             min = temp;
           }
@@ -351,7 +357,7 @@ void autotempShutdown() {
       }
 
       // Every 2 seconds...
-      if (ms > temp_ms + 2000) {
+      if (ELAPSED(ms, temp_ms + 2000UL)) {
         #if HAS(TEMP_0) || HAS(TEMP_BED) || ENABLED(HEATER_0_USES_MAX6675)
           print_heaterstates();
           ECHO_E;
@@ -367,23 +373,51 @@ void autotempShutdown() {
       }
       if (cycles > ncycles) {
         ECHO_LM(DB, SERIAL_PID_AUTOTUNE_FINISHED);
-        #if ENABLED(PIDTEMP)
+        #if HAS(PID_FOR_BOTH)
           if (hotend >= 0) {
-            PID_PARAM(Kp, hotend) = Kp_temp;
-            PID_PARAM(Ki, hotend) = scalePID_i(Ki_temp);
-            PID_PARAM(Kd, hotend) = scalePID_d(Kd_temp);
-            updatePID();
-
             ECHO_SMV(DB, SERIAL_KP, PID_PARAM(Kp, hotend));
             ECHO_MV(SERIAL_KI, unscalePID_i(PID_PARAM(Ki, hotend)));
             ECHO_EMV(SERIAL_KD, unscalePID_d(PID_PARAM(Kd, hotend)));
+            if (set_result) {
+              PID_PARAM(Kp, hotend) = workKp;
+              PID_PARAM(Ki, hotend) = scalePID_i(workKi);
+              PID_PARAM(Kd, hotend) = scalePID_d(workKd);
+              updatePID();
+            }
           }
           else {
-            ECHO_LMV(DB, "#define DEFAULT_bedKp ", Kp_temp);
-            ECHO_LMV(DB, "#define DEFAULT_bedKi ", unscalePID_i(Ki_temp));
-            ECHO_LMV(DB, "#define DEFAULT_bedKd ", unscalePID_d(Kd_temp));
+            ECHO_LMV(DB, "#define DEFAULT_bedKp ", workKp);
+            ECHO_LMV(DB, "#define DEFAULT_bedKi ", unscalePID_i(workKi));
+            ECHO_LMV(DB, "#define DEFAULT_bedKd ", unscalePID_d(workKd));
+            if (set_result) {
+              bedKp = workKp;
+              bedKi = scalePID_i(workKi);
+              bedKd = scalePID_d(workKd);
+              updatePID();
+            }
+          }
+        #elif ENABLED(PIDTEMP)
+          ECHO_SMV(DB, SERIAL_KP, PID_PARAM(Kp, hotend));
+          ECHO_MV(SERIAL_KI, unscalePID_i(PID_PARAM(Ki, hotend)));
+          ECHO_EMV(SERIAL_KD, unscalePID_d(PID_PARAM(Kd, hotend)));
+          if (set_result) {
+            PID_PARAM(Kp, hotend) = workKp;
+            PID_PARAM(Ki, hotend) = scalePID_i(workKi);
+            PID_PARAM(Kd, hotend) = scalePID_d(workKd);
+            updatePID();
+          }
+        #else
+          ECHO_LMV(DB, "#define DEFAULT_bedKp ", workKp);
+          ECHO_LMV(DB, "#define DEFAULT_bedKi ", unscalePID_i(workKi));
+          ECHO_LMV(DB, "#define DEFAULT_bedKd ", unscalePID_d(workKd));
+          if (set_result) {
+            bedKp = workKp;
+            bedKi = scalePID_i(workKi);
+            bedKd = scalePID_d(workKd);
+            updatePID();
           }
         #endif
+
         return;
       }
       lcd_update();
