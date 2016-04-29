@@ -50,7 +50,7 @@
 // the source g-code and may never actually be reached if acceleration management is active.
 typedef struct {
   // Fields used by the bresenham algorithm for tracing the line
-  long steps[NUM_AXIS];                     // Step count along each axis
+  unsigned long steps[NUM_AXIS];                      // Step count along each axis
 
   #if ENABLED(COLOR_MIXING_EXTRUDER)
     unsigned long mix_event_count[DRIVER_EXTRUDERS];  // Step count for each stepper in a mixing extruder

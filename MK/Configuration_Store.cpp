@@ -45,7 +45,7 @@
  *  M666  XYZ             endstop_adj (x3)
  *  M666  R               delta_radius
  *  M666  D               delta_diagonal_rod
- *  M666  H               Z max_pos
+ *  M666  H               Z sw_endstop_max
  *  M666  ABCIJK          tower_adj (x6)
  *  M666  UVW             diagrod_adj (x3)
  *  M666  P XYZ           XYZ probe_offset (x3)
@@ -166,7 +166,7 @@ void Config_StoreSettings() {
     EEPROM_WRITE_VAR(i, endstop_adj);
     EEPROM_WRITE_VAR(i, delta_radius);
     EEPROM_WRITE_VAR(i, delta_diagonal_rod);
-    EEPROM_WRITE_VAR(i, max_pos);
+    EEPROM_WRITE_VAR(i, sw_endstop_max);
     EEPROM_WRITE_VAR(i, tower_adj);
     EEPROM_WRITE_VAR(i, diagrod_adj);
     EEPROM_WRITE_VAR(i, z_probe_offset);
@@ -315,7 +315,7 @@ void Config_RetrieveSettings() {
       EEPROM_READ_VAR(i, endstop_adj);
       EEPROM_READ_VAR(i, delta_radius);
       EEPROM_READ_VAR(i, delta_diagonal_rod);
-      EEPROM_READ_VAR(i, max_pos);
+      EEPROM_READ_VAR(i, sw_endstop_max);
       EEPROM_READ_VAR(i, tower_adj);
       EEPROM_READ_VAR(i, diagrod_adj);
       EEPROM_READ_VAR(i, z_probe_offset);
@@ -542,7 +542,6 @@ void Config_ResetDefault() {
     diagrod_adj[0] = TOWER_A_DIAGROD_ADJ;
     diagrod_adj[1] = TOWER_B_DIAGROD_ADJ;
     diagrod_adj[2] = TOWER_C_DIAGROD_ADJ;
-    max_pos[2] = MANUAL_Z_HOME_POS;
     z_probe_offset[0] = X_PROBE_OFFSET_FROM_EXTRUDER;
     z_probe_offset[1] = Y_PROBE_OFFSET_FROM_EXTRUDER;
     z_probe_offset[2] = Z_PROBE_OFFSET_FROM_EXTRUDER;
@@ -741,7 +740,7 @@ void Config_ResetDefault() {
       ECHO_MV(" W", diagrod_adj[2], 3);
       ECHO_MV(" R", delta_radius);
       ECHO_MV(" D", delta_diagonal_rod);
-      ECHO_EMV(" H", max_pos[2]);
+      ECHO_EMV(" H", sw_endstop_max[2]);
 
       if (!forReplay) {
         ECHO_LM(CFG, "Endstop Offsets:");
