@@ -69,4 +69,8 @@
 // Macro for debugging
 #define DEBUGGING(F) (mk_debug_flags & (DEBUG_## F))
 
+// Macro for String
+#define STRINGIFY_(n) #n
+#define STRINGIFY(n) STRINGIFY_(n)
+
 #endif //__MACROS_H

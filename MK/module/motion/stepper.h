@@ -64,6 +64,11 @@
   // to notify the subsystem that it is time to go to work.
   void st_wake_up();
 
+  //
+  // Report the positions of the steppers, in steps
+  //
+  void report_positions();
+
   void checkHitEndstops(); //call from somewhere to create an serial error message with the locations the endstops where hit, in case they were triggered
   void endstops_hit_on_purpose(); //avoid creation of the message, i.e. after homing and before a routine call of checkHitEndstops();
 
