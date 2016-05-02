@@ -532,12 +532,13 @@ float junction_deviation = 0.1;
 
   // The target position of the tool in absolute steps
   // Calculate target position in absolute steps
-  //this should be done after the wait, because otherwise a M92 code within the gcode disrupts this calculation somehow
-  int32_t target[NUM_AXIS];
-  target[X_AXIS] = lround(x * axis_steps_per_unit[X_AXIS]);
-  target[Y_AXIS] = lround(y * axis_steps_per_unit[Y_AXIS]);
-  target[Z_AXIS] = lround(z * axis_steps_per_unit[Z_AXIS]);
-  target[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + extruder]);
+  // this should be done after the wait, because otherwise a M92 code within the gcode disrupts this calculation somehow
+  int32_t target[NUM_AXIS] = {
+    lround(x * axis_steps_per_unit[X_AXIS]),
+    lround(y * axis_steps_per_unit[Y_AXIS]),
+    lround(z * axis_steps_per_unit[Z_AXIS]),
+    lround(e * axis_steps_per_unit[E_AXIS + extruder])
+  };
 
   // If changing extruder have to recalculate current position based on 
   // the steps-per-mm value for the new extruder.

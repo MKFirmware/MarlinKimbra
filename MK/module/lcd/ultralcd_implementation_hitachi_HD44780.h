@@ -575,6 +575,21 @@ unsigned lcd_print(char c) { return charset_mapper(c); }
   }
 #endif // SHOW_BOOTSCREEN
 
+FORCE_INLINE void _draw_axis_label(AxisEnum axis, const char *pstr, bool blink) {
+  if (blink)
+    lcd_printPGM(pstr);
+  else {
+    if (!axis_homed[axis])
+      lcd_printPGM(PSTR("?"));
+    else {
+      if (!axis_known_position[axis])
+        lcd_printPGM(PSTR(" "));
+      else
+        lcd_printPGM(pstr);
+    }
+  }
+}
+
 /*
 Possible status screens:
 16x2   |000/000 B000/000|
@@ -668,6 +683,8 @@ static void lcd_implementation_status_screen() {
 
   #if LCD_HEIGHT > 2
 
+    bool blink = lcd_blink();
+
     #if LCD_WIDTH < 20
 
       #if ENABLED(SDSUPPORT)
@@ -684,12 +701,6 @@ static void lcd_implementation_status_screen() {
 
       lcd.setCursor(0, 1);
 
-      //
-      // Print XYZ Coordinates
-      // If the axis was not homed, show "---"
-      // If the position is untrusted, show "?"
-      //
-
       #if HOTENDS > 1 && TEMP_SENSOR_BED != 0
 
         // If we both have a 2nd hotend and a heated bed,
@@ -698,29 +709,25 @@ static void lcd_implementation_status_screen() {
         LCD_TEMP(degBed(), degTargetBed(), LCD_STR_BEDTEMP[0]);
 
       #else
+        // Before homing the axis letters are blinking 'X' <-> '?'.
+        // When axis is homed but axis_known_position is false the axis letters are blinking 'X' <-> ' '.
+        // When everything is ok you see a constant 'X'.
 
-        lcd.print(TEST(axis_known_position, X_AXIS) || !TEST(axis_was_homed, X_AXIS) ? 'X' : '?');
-        if (TEST(axis_was_homed, X_AXIS))
-          lcd.print(ftostr4sign(current_position[X_AXIS]));
-        else
-          lcd_printPGM(PSTR(" ---"));
+        _draw_axis_label(X_AXIS, PSTR(MSG_X), blink);
+        lcd.print(ftostr4sign(current_position[X_AXIS]));
 
-        lcd_printPGM(TEST(axis_known_position, Y_AXIS) || !TEST(axis_was_homed, Y_AXIS) ? PSTR(" Y") : PSTR(" ?"));
-        if (TEST(axis_was_homed, Y_AXIS))
-          lcd.print(ftostr4sign(current_position[Y_AXIS]));
-        else
-          lcd_printPGM(PSTR(" ---"));
+        lcd_printPGM(PSTR(" "));
+
+        _draw_axis_label(Y_AXIS, PSTR(MSG_Y), blink);
+        lcd.print(ftostr4sign(current_position[Y_AXIS]));
 
       #endif // HOTENDS > 1 || TEMP_SENSOR_BED != 0
 
     #endif // LCD_WIDTH >= 20
 
     lcd.setCursor(LCD_WIDTH - 8, 1);
-    lcd_printPGM(TEST(axis_known_position, Z_AXIS) || !TEST(axis_was_homed, Z_AXIS) ? PSTR("Z ") : PSTR("? "));
-    if (TEST(axis_was_homed, Z_AXIS))
-      lcd.print(ftostr32sp(current_position[Z_AXIS] + 0.00001));
-    else
-      lcd_printPGM(PSTR("---.--"));
+    _draw_axis_label(Z_AXIS, PSTR(MSG_Z), blink);
+    lcd.print(ftostr32sp(current_position[Z_AXIS] + 0.00001));
 
   #endif // LCD_HEIGHT > 2
 
@@ -807,12 +814,12 @@ static void lcd_implementation_status_screen() {
 
   //Display both Status message line and Filament display on the last line
   #if HAS(LCD_FILAMENT_SENSOR) || HAS(LCD_POWER_SENSOR)
-    if (millis() >= previous_lcd_status_ms + 5000) {
+    if (millis() >= previous_lcd_status_ms + 5000UL) {
       lcd_print(lcd_status_message);
     }
     #if HAS(LCD_POWER_SENSOR)
       #if HAS(LCD_FILAMENT_SENSOR)
-        else if (millis() < message_millis + 10000)
+        else if (millis() < message_millis + 10000UL)
       #else
         else
       #endif
@@ -829,7 +836,7 @@ static void lcd_implementation_status_screen() {
         lcd_printPGM(PSTR("Dia "));
         lcd.print(ftostr12ns(filament_width_meas));
         lcd_printPGM(PSTR(" V"));
-        lcd.print(itostr3(100.0*volumetric_multiplier[FILAMENT_SENSOR_EXTRUDER_NUM]));
+        lcd.print(itostr3(100.0 * volumetric_multiplier[FILAMENT_SENSOR_EXTRUDER_NUM]));
         lcd.print('%');
         return;
       }
@@ -900,17 +907,20 @@ static void lcd_implementation_drawmenu_setting_edit_generic_P(bool sel, uint8_t
 #define lcd_implementation_drawmenu_setting_edit_callback_long5(sel, row, pstr, pstr2, data, minValue, maxValue, callback) lcd_implementation_drawmenu_setting_edit_generic(sel, row, pstr, '>', ftostr5(*(data)))
 #define lcd_implementation_drawmenu_setting_edit_callback_bool(sel, row, pstr, pstr2, data, callback) lcd_implementation_drawmenu_setting_edit_generic_P(sel, row, pstr, '>', (*(data))?PSTR(MSG_ON):PSTR(MSG_OFF))
 
-void lcd_implementation_drawedit(const char* pstr, char* value) {
+void lcd_implementation_drawedit(const char* pstr, const char* value = NULL) {
   lcd.setCursor(1, 1);
   lcd_printPGM(pstr);
-  lcd.print(':');
-  lcd.setCursor(LCD_WIDTH - lcd_strlen(value), 1);
-  lcd_print(value);
+  if (value != NULL) {
+    lcd.print(':');
+    lcd.setCursor(LCD_WIDTH - lcd_strlen(value), 1);
+    lcd_print(value);
+  }
 }
 
 #if ENABLED(SDSUPPORT)
 
   static void lcd_implementation_drawmenu_sd(bool sel, uint8_t row, const char* pstr, const char* longFilename, uint8_t concat, char post_char) {
+    UNUSED(pstr);
     char c;
     uint8_t n = LCD_WIDTH - concat;
     lcd.setCursor(0, row);

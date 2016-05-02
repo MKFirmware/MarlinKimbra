@@ -188,7 +188,7 @@
 #define E5_ENABLE_READ READ(E5_ENABLE_PIN)
 
 #if ENABLED(COLOR_MIXING_EXTRUDER)
-  #define E_STEP_WRITE(v) ; /* not used for mixing extruders! */
+  #define E_STEP_WRITE(v) NOOP /* not used for mixing extruders! */
   #if DRIVER_EXTRUDERS > 5
     #define En_STEP_WRITE(n,v) { switch (n) { case 0: E0_STEP_WRITE(v); break; case 1: E1_STEP_WRITE(v); break; case 2: E2_STEP_WRITE(v); break; case 3: E3_STEP_WRITE(v); break; case 4: E4_STEP_WRITE(v); break; case 5: E5_STEP_WRITE(v); } }
     #define NORM_E_DIR() { E0_DIR_WRITE(!INVERT_E0_DIR); E1_DIR_WRITE(!INVERT_E1_DIR); E2_DIR_WRITE(!INVERT_E2_DIR); E3_DIR_WRITE(!INVERT_E3_DIR); E4_DIR_WRITE(!INVERT_E4_DIR); E5_DIR_WRITE(!INVERT_E5_DIR); }
@@ -254,7 +254,7 @@
   #define disable_x() do { X_ENABLE_WRITE(!X_ENABLE_ON); X2_ENABLE_WRITE(!X_ENABLE_ON); CBI(axis_known_position, X_AXIS); } while (0)
 #elif HAS(X_ENABLE)
   #define  enable_x() X_ENABLE_WRITE( X_ENABLE_ON)
-  #define disable_x() { X_ENABLE_WRITE(!X_ENABLE_ON); CBI(axis_known_position, X_AXIS); }
+  #define disable_x() { X_ENABLE_WRITE(!X_ENABLE_ON); axis_known_position[X_AXIS] = false; }
 #else
   #define  enable_x() ;
   #define disable_x() ;
@@ -266,7 +266,7 @@
     #define disable_y() { Y_ENABLE_WRITE(!Y_ENABLE_ON); Y2_ENABLE_WRITE(!Y_ENABLE_ON); CBI(axis_known_position, Y_AXIS); }
   #else
     #define  enable_y() Y_ENABLE_WRITE( Y_ENABLE_ON)
-    #define disable_y() { Y_ENABLE_WRITE(!Y_ENABLE_ON); CBI(axis_known_position, Y_AXIS); }
+    #define disable_y() { Y_ENABLE_WRITE(!Y_ENABLE_ON); axis_known_position[Y_AXIS] = false; }
   #endif
 #else
   #define  enable_y() ;
@@ -276,10 +276,10 @@
 #if HAS(Z_ENABLE)
   #if ENABLED(Z_DUAL_STEPPER_DRIVERS)
     #define  enable_z() { Z_ENABLE_WRITE( Z_ENABLE_ON); Z2_ENABLE_WRITE(Z_ENABLE_ON); }
-    #define disable_z() { Z_ENABLE_WRITE(!Z_ENABLE_ON); Z2_ENABLE_WRITE(!Z_ENABLE_ON); CBI(axis_known_position, Z_AXIS); }
+    #define disable_z() { Z_ENABLE_WRITE(!Z_ENABLE_ON); Z2_ENABLE_WRITE(!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }
   #else
     #define  enable_z() Z_ENABLE_WRITE( Z_ENABLE_ON)
-    #define disable_z() { Z_ENABLE_WRITE(!Z_ENABLE_ON); CBI(axis_known_position, Z_AXIS); }
+    #define disable_z() { Z_ENABLE_WRITE(!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }
   #endif
 #else
   #define  enable_z() ;
@@ -305,16 +305,16 @@
     #define disable_e0() { E0_ENABLE_WRITE(!E_ENABLE_ON); E1_ENABLE_WRITE(!E_ENABLE_ON); }
   #endif
 
-  #define  enable_e1() ;
-  #define disable_e1() ;
-  #define  enable_e2() ;
-  #define disable_e2() ;
-  #define  enable_e3() ;
-  #define disable_e3() ;
-  #define  enable_e4() ;
-  #define disable_e4() ;
-  #define  enable_e5() ;
-  #define disable_e5() ;
+  #define  enable_e1() NOOP
+  #define disable_e1() NOOP
+  #define  enable_e2() NOOP
+  #define disable_e2() NOOP
+  #define  enable_e3() NOOP
+  #define disable_e3() NOOP
+  #define  enable_e4() NOOP
+  #define disable_e4() NOOP
+  #define  enable_e5() NOOP
+  #define disable_e5() NOOP
 
 #else // !COLOR_MIXING_EXTRUDER
 
@@ -322,48 +322,48 @@
     #define  enable_e0() E0_ENABLE_WRITE( E_ENABLE_ON)
     #define disable_e0() E0_ENABLE_WRITE(!E_ENABLE_ON)
   #else
-    #define  enable_e0() /* nothing */
-    #define disable_e0() /* nothing */
+    #define  enable_e0() NOOP
+    #define disable_e0() NOOP
   #endif
 
   #if (DRIVER_EXTRUDERS > 1) && HAS(E1_ENABLE)
     #define  enable_e1() E1_ENABLE_WRITE( E_ENABLE_ON)
     #define disable_e1() E1_ENABLE_WRITE(!E_ENABLE_ON)
   #else
-    #define  enable_e1() /* nothing */
-    #define disable_e1() /* nothing */
+    #define  enable_e1() NOOP
+    #define disable_e1() NOOP
   #endif
 
   #if (DRIVER_EXTRUDERS > 2) && HAS(E2_ENABLE)
     #define  enable_e2() E2_ENABLE_WRITE( E_ENABLE_ON)
     #define disable_e2() E2_ENABLE_WRITE(!E_ENABLE_ON)
   #else
-    #define  enable_e2() /* nothing */
-    #define disable_e2() /* nothing */
+    #define  enable_e2() NOOP
+    #define disable_e2() NOOP
   #endif
 
   #if (DRIVER_EXTRUDERS > 3) && HAS(E3_ENABLE)
     #define  enable_e3() E3_ENABLE_WRITE( E_ENABLE_ON)
     #define disable_e3() E3_ENABLE_WRITE(!E_ENABLE_ON)
   #else
-    #define  enable_e3() /* nothing */
-    #define disable_e3() /* nothing */
+    #define  enable_e3() NOOP
+    #define disable_e3() NOOP
   #endif
 
   #if (DRIVER_EXTRUDERS > 4) && HAS(E4_ENABLE)
     #define  enable_e4() E4_ENABLE_WRITE( E_ENABLE_ON)
     #define disable_e4() E4_ENABLE_WRITE(!E_ENABLE_ON)
   #else
-    #define  enable_e4() /* nothing */
-    #define disable_e4() /* nothing */
+    #define  enable_e4() NOOP
+    #define disable_e4() NOOP
   #endif
 
   #if (DRIVER_EXTRUDERS > 5) && HAS(E5_ENABLE)
     #define  enable_e5() E5_ENABLE_WRITE( E_ENABLE_ON)
     #define disable_e5() E5_ENABLE_WRITE(!E_ENABLE_ON)
   #else
-    #define  enable_e5() /* nothing */
-    #define disable_e5() /* nothing */
+    #define  enable_e5() NOOP
+    #define disable_e5() NOOP
   #endif
 
 #endif

@@ -50,9 +50,6 @@
 // 18 Japanese utf
 // 19 Chinese
 
-#define STRINGIFY_(n) #n
-#define STRINGIFY(n) STRINGIFY_(n)
-
 #define PROTOCOL_VERSION "2.0"
 
 #if MB(ULTIMAKER)|| MB(ULTIMAKER_OLD)|| MB(ULTIMAIN_2)

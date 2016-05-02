@@ -48,7 +48,6 @@ void ok_to_send();
   void calibration_report();
   void bed_probe_all();
   void set_delta_constants();
-  void save_carriage_positions(int position_num);
   void calculate_delta(float cartesian[3]);
   void adjust_delta(float cartesian[3]);
   void adj_endstops();
@@ -71,7 +70,13 @@ void ok_to_send();
   void calculate_delta(float cartesian[3]);
   void calculate_SCARA_forward_Transform(float f_scara[3]);
 #endif
-void prepare_move();
+
+void prepare_move(
+  #if MECH(DELTA)
+    const bool delta_probe = false
+  #endif
+);
+
 void kill(const char *);
 void Stop();
 
@@ -130,9 +135,9 @@ extern float home_offset[3];
 extern float hotend_offset[3][HOTENDS];
 extern float sw_endstop_min[3];
 extern float sw_endstop_max[3];
+extern bool axis_known_position[3];
+extern bool axis_homed[3];
 extern float zprobe_zoffset;
-extern uint8_t axis_known_position;
-extern uint8_t axis_was_homed;
 
 #if HEATER_USES_AD595
   extern float ad595_offset[HOTENDS];

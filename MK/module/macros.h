@@ -48,13 +48,8 @@
 #define ENABLED defined
 #define DISABLED !defined
 
-#define PIN_EXISTS(PN) (defined(PN##_PIN) && PN##_PIN >= 0)
-
 #define HAS(FE) (HAS_##FE)
 #define HASNT(FE) (!(HAS_##FE))
-
-#define PENDING(NOW,SOON) ((long)(NOW-(SOON))<0)
-#define ELAPSED(NOW,SOON) (!PENDING(NOW,SOON))
 
 // Macros to contrain values
 #define NUMERIC(a) ((a) >= '0' && '9' >= (a))
@@ -72,5 +67,13 @@
 // Macro for String
 #define STRINGIFY_(n) #n
 #define STRINGIFY(n) STRINGIFY_(n)
+
+// Macro for varie
+#define PIN_EXISTS(PN) (defined(PN##_PIN) && PN##_PIN >= 0)
+
+#define PENDING(NOW,SOON) ((long)(NOW-(SOON))<0)
+#define ELAPSED(NOW,SOON) (!PENDING(NOW,SOON))
+
+#define NOOP do{}while(0)
 
 #endif //__MACROS_H
