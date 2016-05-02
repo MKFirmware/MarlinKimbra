@@ -305,7 +305,7 @@ void checkHitEndstops() {
           card.sdprinting = false;
           card.closeFile();
         #endif
-        for (int i = 0; i < 3; i++) CBI(axis_known_position, i); // not homed anymore
+        for (int i = 0; i < 3; i++) axis_known_position[i] = true; // not homed anymore
         quickStop(); // kill the planner buffer
         Stop();      // restart by M999
       }
@@ -656,12 +656,11 @@ ISR(TIMER1_COMPA_vect) {
       trapezoid_generator_reset();
 
       // Initialize Bresenham counters to 1/2 the ceiling
-      long new_count = -(current_block->step_event_count >> 1);
-      counter_X = counter_Y = counter_Z = counter_E = new_count;
+      counter_X = counter_Y = counter_Z = counter_E = -(current_block->step_event_count >> 1);
 
       #if ENABLED(COLOR_MIXING_EXTRUDER)
         for (uint8_t i = 0; i < DRIVER_EXTRUDERS; i++)
-          counter_m[i] = new_count;
+          counter_m[i] = -(current_block->step_event_count >> 1);
       #endif
 
       step_events_completed = 0;

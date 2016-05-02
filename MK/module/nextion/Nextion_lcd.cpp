@@ -612,30 +612,24 @@
     char* valuetemp;
 
     memset(buffer, 0, sizeof(buffer));
-    strcat(buffer, TEST(axis_known_position, X_AXIS) || !TEST(axis_was_homed, X_AXIS) ? "X" : "?");
-    if (TEST(axis_was_homed, X_AXIS)) {
+    strcat(buffer, (axis_known_position[X_AXIS] ? "X" : "?"));
+    if (axis_homed[X_AXIS]) {
       valuetemp = ftostr4sign(current_position[X_AXIS]);
       strcat(buffer, valuetemp);
     }
-    else
-      strcat(buffer, "---");
 
-    strcat(buffer, TEST(axis_known_position, Y_AXIS) || !TEST(axis_was_homed, Y_AXIS) ? PSTR(" Y") : PSTR(" ?"));
-    if (TEST(axis_was_homed, Y_AXIS)) {
+    strcat(buffer, (axis_known_position[Y_AXIS] ? " Y" : " ?"));
+    if (axis_homed[Y_AXIS]) {
       valuetemp = ftostr4sign(current_position[Y_AXIS]);
       strcat(buffer, valuetemp);
     }
-    else
-      strcat(buffer, "---");
 
-    strcat(buffer, TEST(axis_known_position, Z_AXIS) || !TEST(axis_was_homed, Z_AXIS) ? PSTR(" Z ") : PSTR("? "));
-    if (TEST(axis_was_homed, Z_AXIS)) {
+    strcat(buffer, (axis_known_position[Z_AXIS] ? " Z " : " ? "));
+    if (axis_homed[Z_AXIS]) {
       valuetemp = ftostr32sp(current_position[Z_AXIS] + 0.00001);
       strcat(buffer, valuetemp);
     }
-    else
-      strcat(buffer, "---");
-    
+
     LedCoord1.setText(buffer);
     LedCoord6.setText(buffer);
   }

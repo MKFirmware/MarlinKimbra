@@ -349,6 +349,21 @@ FORCE_INLINE void _draw_heater_status(int x, int heater) {
   #endif
 }
 
+FORCE_INLINE void _draw_axis_label(AxisEnum axis, const char *pstr, bool blink) {
+  if (blink)
+    lcd_printPGM(pstr);
+  else {
+    if (!axis_homed[axis])
+      lcd_printPGM(PSTR("?"));
+    else {
+      if (!axis_known_position[axis])
+        lcd_printPGM(PSTR(" "));
+      else
+        lcd_printPGM(pstr);
+    }
+  }
+}
+
 static void lcd_implementation_status_screen() {
   u8g.setColorIndex(1); // black on white
 
@@ -458,34 +473,20 @@ static void lcd_implementation_status_screen() {
   u8g.setColorIndex(0); // white on black
 
   u8g.setPrintPos(2, XYZ_BASELINE);
-  lcd_print(TEST(axis_known_position, X_AXIS) || !TEST(axis_was_homed, X_AXIS) ? 'X' : '?');
-  u8g.drawPixel(8, XYZ_BASELINE - 5);
-  u8g.drawPixel(8, XYZ_BASELINE - 3);
+  _draw_axis_label(X_AXIS, PSTR(MSG_X), blink);
   u8g.setPrintPos(10, XYZ_BASELINE);
-  if (TEST(axis_was_homed, X_AXIS))
-    lcd_print(ftostr31ns(current_position[X_AXIS]));
-  else
-    lcd_printPGM(PSTR("---"));
+  lcd_print(ftostr4sign(current_position[X_AXIS]));
 
   u8g.setPrintPos(43, XYZ_BASELINE);
-  lcd_print(TEST(axis_known_position, Y_AXIS) || !TEST(axis_was_homed, Y_AXIS) ? 'Y' : '?');
-  u8g.drawPixel(49, XYZ_BASELINE - 5);
-  u8g.drawPixel(49, XYZ_BASELINE - 3);
+  _draw_axis_label(Y_AXIS, PSTR(MSG_Y), blink);
   u8g.setPrintPos(51, XYZ_BASELINE);
-  if (TEST(axis_was_homed, Y_AXIS))
-    lcd_print(ftostr31ns(current_position[Y_AXIS]));
-  else
-    lcd_printPGM(PSTR("---"));
+  lcd_print(ftostr4sign(current_position[Y_AXIS]));
 
   u8g.setPrintPos(83, XYZ_BASELINE);
-  lcd_print(TEST(axis_known_position, Z_AXIS) || !TEST(axis_was_homed, Z_AXIS) ? 'Z' : '?');
-  u8g.drawPixel(89, XYZ_BASELINE - 5);
-  u8g.drawPixel(89, XYZ_BASELINE - 3);
+  _draw_axis_label(Z_AXIS, PSTR(MSG_Z), blink);
   u8g.setPrintPos(91, XYZ_BASELINE);
-   if (TEST(axis_was_homed, Z_AXIS))
-    lcd_print(ftostr32sp(current_position[Z_AXIS]));
-  else
-    lcd_printPGM(PSTR("---.--"));
+  lcd_print(ftostr32sp(current_position[Z_AXIS] + 0.00001));
+
   u8g.setColorIndex(1); // black on white
 
   // Feedrate
