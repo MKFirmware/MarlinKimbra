@@ -40,19 +40,18 @@ void FlushSerialRequestResend();
 void ok_to_send();
 
 #if MECH(DELTA)
-  float probe_bed(float x, float y);
   void set_delta_constants();
-  void adj_tower_delta(int tower);
-  void adj_tower_radius(int tower);
-  void home_delta_axis();
-  void calibration_report();
-  void bed_probe_all();
-  void set_delta_constants();
-  void calculate_delta(float cartesian[3]);
-  void adjust_delta(float cartesian[3]);
-  void adj_endstops();
-  void reset_bed_level();
-  void prepare_move_raw();
+  static float probe_bed(float x, float y);
+  static void adj_tower_delta(int tower);
+  static void adj_tower_radius(int tower);
+  static void home_delta_axis();
+  static void calibration_report();
+  static void bed_probe_all();
+  static void calculate_delta(float cartesian[3]);
+  static void adjust_delta(float cartesian[3]);
+  static void adj_endstops();
+  static void reset_bed_level();
+  static void prepare_move_raw();
   extern float delta[3];
   extern float delta_tmp[3];
   extern float delta_tower1_x, delta_tower1_y;
@@ -71,11 +70,7 @@ void ok_to_send();
   void calculate_SCARA_forward_Transform(float f_scara[3]);
 #endif
 
-void prepare_move(
-  #if MECH(DELTA)
-    const bool delta_probe = false
-  #endif
-);
+void prepare_move();
 
 void kill(const char *);
 void Stop();
@@ -113,7 +108,7 @@ void prepare_arc_move(char isclockwise);
 void clamp_to_software_endstops(float target[3]);
 
 extern millis_t previous_cmd_ms;
-void refresh_cmd_timeout();
+inline void refresh_cmd_timeout() { previous_cmd_ms = millis(); }
 
 extern void delay_ms(millis_t ms);
 
