@@ -1,11 +1,33 @@
 /**
+ * MK & MK4due 3D Printer Firmware
+ *
+ * Based on Marlin, Sprinter and grbl
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2013 - 2016 Alberto Cotronei @MagoKimbra
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+/**
  * cartesian_correction.cpp
  * A class that manages hysteresis by inserting extra plan_buffer_line when necessary
  * A class that manages ZWobble
  *
- * Copyright (c) 2016 MagoKimbra
- * Copyright (c) 2013 Francesco Santini
  * Copyright (c) 2012 Neil James Martin
+ * Copyright (c) 2013 Francesco Santini
+ * Copyright (c) 2016 MagoKimbra
  *
  * Grbl is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -242,7 +264,7 @@
 
   //===========================================================================
   void ZWobble::setSample(float zRod, float zActual) {
-    if (debugLevel & DEBUG_DEBUG) {
+    if (DEBUGGING(DEBUG)) {
       ECHO_SMV(DB, "New sample Rod: ", zRod);
       ECHO_EMV(" Act: ", zActual);
     }
@@ -446,7 +468,7 @@
 
     if (originZ < ZWOBBLE_MIN_Z || targetZ < ZWOBBLE_MIN_Z) return;
 
-    if (debugLevel & DEBUG_DEBUG) {
+    if (DEBUGGING(DEBUG)) {
       ECHO_SMV(DB, "Origin: ", originZ);
       ECHO_MV(" Target: ", targetZ);
     }
@@ -461,18 +483,18 @@
     else
       originZRod = findZRod(originZ);
     
-    if (debugLevel & DEBUG_DEBUG)
+    if (DEBUGGING(DEBUG))
       ECHO_MV(" Origin rod: ", originZRod);
 
     float targetZRod = findZRod(targetZ);
 
-    if (debugLevel & DEBUG_DEBUG)
+    if (DEBUGGING(DEBUG))
       ECHO_MV(" Target Rod: ", targetZRod);
 
     // difference in steps between the correct movement (originZRod->targetZRod) and the planned movement
     long stepDiff = lround((targetZRod - originZRod) * axis_steps_per_unit[Z_AXIS]) - (lround(targetZ * axis_steps_per_unit[Z_AXIS]) - position[Z_AXIS]);
 
-    if (debugLevel & DEBUG_DEBUG)
+    if (DEBUGGING(DEBUG))
       ECHO_EMV(" stepDiff: ", stepDiff);
 
     lastZ = targetZ;

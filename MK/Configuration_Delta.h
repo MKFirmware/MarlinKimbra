@@ -57,7 +57,7 @@
 //
 //                     C, Y-axis
 //                     |
-// DELTA_ALPHA_CA=120° |  DELTA_ALPHA_CB=120°
+// DELTA_ALPHA_CA=120Â° |  DELTA_ALPHA_CB=120Â°
 //                     |
 //                     |______ X-axis
 //                    / \

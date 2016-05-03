@@ -1,5 +1,5 @@
 /**
- * MK Firmware
+ * MK 3D Printer Firmware
  *
  * Based on Marlin, Sprinter and grbl
  * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
@@ -148,8 +148,8 @@
  * M300 - Play beep sound S<frequency Hz> P<duration ms>
  * M301 - Set PID parameters P I D and C
  * M302 - Allow cold extrudes, or set the minimum extrude S<temperature>.
- * M303 - PID relay autotune S<temperature> sets the target temperature (default target temperature = 150C). H<hotend> C<cycles>
- * M304 - Set bed PID parameters P I and D or Water cooling if L parameter 
+ * M303 - PID relay autotune S<temperature> sets the target temperature (default target temperature = 150C). H<hotend> C<cycles> U<Apply result>
+ * M304 - Set bed PID parameters P I and D or Water cooling if L parameter
  * M350 - Set microstepping mode.
  * M351 - Toggle MS1 MS2 pins directly.
  * M380 - Activate solenoid on active extruder

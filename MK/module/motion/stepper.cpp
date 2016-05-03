@@ -1,26 +1,30 @@
 /**
- * stepper.cpp - stepper motor driver: executes motion plans using stepper motors
- * Marlin Firmware
+ * MK & MK4due 3D Printer Firmware
  *
- * Derived from Grbl
- * Copyright (c) 2009-2011 Simen Svale Skogsrud
+ * Based on Marlin, Sprinter and grbl
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2013 - 2016 Alberto Cotronei @MagoKimbra
  *
- * Grbl is free software: you can redistribute it and/or modify
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * Grbl is distributed in the hope that it will be useful,
+ * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
  */
 
-/* The timer calculations of this module informed by the 'RepRap cartesian firmware' by Zack Smith
-   and Philipp Tiefenbacher. */
+/**
+ * stepper.cpp - stepper motor driver: executes motion plans using stepper motors
+ * The timer calculations of this module informed by the 'RepRap cartesian firmware' by Zack Smith
+ * and Philipp Tiefenbacher.
+ */
 
 #include "../../base.h"
 #include "stepper.h"
@@ -62,7 +66,7 @@ static int counter_raster;
 #endif
 
 // Counter variables for the Bresenham line tracer
-static long counter_x, counter_y, counter_z, counter_e;
+static long counter_X, counter_Y, counter_Z, counter_E;
 volatile static unsigned long step_events_completed; // The number of step events executed in the current block
 
 #if ENABLED(ADVANCE)
@@ -311,7 +315,7 @@ void checkHitEndstops() {
           card.sdprinting = false;
           card.closeFile();
         #endif
-        for (int i = 0; i < 3; i++) CBI(axis_known_position, i); // not homed anymore
+        for (int i = 0; i < 3; i++) axis_known_position[i] = true; // not homed anymore
         quickStop(); // kill the planner buffer
         Stop();      // restart by M999
       }
@@ -646,7 +650,7 @@ ISR(TIMER1_COMPA_vect) {
     current_block = NULL;
     plan_discard_current_block();
     #if ENABLED(SD_FINISHED_RELEASECOMMAND)
-      if ((cleaning_buffer_counter == 1) && (SD_FINISHED_STEPPERRELEASE)) enqueuecommands_P(PSTR(SD_FINISHED_RELEASECOMMAND));
+      if ((cleaning_buffer_counter == 1) && (SD_FINISHED_STEPPERRELEASE)) enqueue_and_echo_commands_P(PSTR(SD_FINISHED_RELEASECOMMAND));
     #endif
     cleaning_buffer_counter--;
     OCR1A = 200;
@@ -669,8 +673,7 @@ ISR(TIMER1_COMPA_vect) {
       trapezoid_generator_reset();
 
       // Initialize Bresenham counters to 1/2 the ceiling
-      long new_count = -(current_block->step_event_count >> 1);
-      counter_x = counter_y = counter_z = counter_e = new_count;
+      counter_X = counter_Y = counter_Z = counter_E = -(current_block->step_event_count >> 1);
       #if ENABLED(LASER)
          counter_l = counter_x;
          laser.dur = current_block->laser_duration;
@@ -678,7 +681,7 @@ ISR(TIMER1_COMPA_vect) {
 
       #if ENABLED(COLOR_MIXING_EXTRUDER)
         for (uint8_t i = 0; i < DRIVER_EXTRUDERS; i++)
-          counter_m[i] = new_count;
+          counter_m[i] = -(current_block->step_event_count >> 1);
       #endif
 
       step_events_completed = 0;
@@ -729,9 +732,9 @@ ISR(TIMER1_COMPA_vect) {
         MKSERIAL.checkRx(); // Check for serial chars.
 
       #if ENABLED(ADVANCE)
-        counter_e += current_block->steps[E_AXIS];
-        if (counter_e > 0) {
-          counter_e -= current_block->step_event_count;
+        counter_E += current_block->steps[E_AXIS];
+        if (counter_E > 0) {
+          counter_E -= current_block->step_event_count;
           #if DISABLED(COLOR_MIXING_EXTRUDER)
             // Don't step E for mixing extruder
             e_steps[current_block->active_driver] += TEST(out_bits, E_AXIS) ? -1 : 1;
@@ -750,13 +753,13 @@ ISR(TIMER1_COMPA_vect) {
         #endif // !COLOR_MIXING_EXTRUDER
       #endif // ADVANCE
 
-      #define _COUNTER(axis) counter_## axis
+      #define _COUNTER(AXIS) counter_## AXIS
       #define _APPLY_STEP(AXIS) AXIS ##_APPLY_STEP
       #define _INVERT_STEP_PIN(AXIS) INVERT_## AXIS ##_STEP_PIN
 
-      #define STEP_START(axis, AXIS) \
-        _COUNTER(axis) += current_block->steps[_AXIS(AXIS)]; \
-        if (_COUNTER(axis) > 0) _APPLY_STEP(AXIS)(!_INVERT_STEP_PIN(AXIS),0);
+      #define STEP_START(AXIS) \
+        _COUNTER(AXIS) += current_block->steps[_AXIS(AXIS)]; \
+        if (_COUNTER(AXIS) > 0) _APPLY_STEP(AXIS)(!_INVERT_STEP_PIN(AXIS),0);
 
       #define STEP_START_MIXING \
         for (uint8_t j = 0; j < DRIVER_EXTRUDERS; j++) {  \
@@ -764,9 +767,9 @@ ISR(TIMER1_COMPA_vect) {
           if (counter_m[j] > 0) En_STEP_WRITE(j, !INVERT_E_STEP_PIN); \
         }
 
-      #define STEP_END(axis, AXIS) \
-        if (_COUNTER(axis) > 0) { \
-          _COUNTER(axis) -= current_block->step_event_count; \
+      #define STEP_END(AXIS) \
+        if (_COUNTER(AXIS) > 0) { \
+          _COUNTER(AXIS) -= current_block->step_event_count; \
           count_position[_AXIS(AXIS)] += count_direction[_AXIS(AXIS)]; \
           _APPLY_STEP(AXIS)(_INVERT_STEP_PIN(AXIS),0); \
         }
@@ -779,11 +782,11 @@ ISR(TIMER1_COMPA_vect) {
           } \
         }
 
-      STEP_START(x, X);
-      STEP_START(y, Y);
-      STEP_START(z, Z);
+      STEP_START(X);
+      STEP_START(Y);
+      STEP_START(Z);
       #if DISABLED(ADVANCE)
-        STEP_START(e, E);
+        STEP_START(E);
         #if ENABLED(COLOR_MIXING_EXTRUDER)
           STEP_START_MIXING;
         #endif
@@ -793,11 +796,11 @@ ISR(TIMER1_COMPA_vect) {
         HAL::delayMicroseconds(STEPPER_HIGH_LOW_DELAY);
       #endif
 
-      STEP_END(x, X);
-      STEP_END(y, Y);
-      STEP_END(z, Z);
+      STEP_END(X);
+      STEP_END(Y);
+      STEP_END(Z);
       #if DISABLED(ADVANCE)
-        STEP_END(e, E);
+        STEP_END(E);
         #if ENABLED(COLOR_MIXING_EXTRUDER)
           STEP_END_MIXING;
         #endif
@@ -1253,11 +1256,45 @@ void st_init() {
  */
 void st_synchronize() { while (blocks_queued()) idle(); }
 
+/**
+ * Set the stepper positions directly in steps
+ *
+ * The input is based on the typical per-axis XYZ steps.
+ * For CORE machines XYZ needs to be translated to ABC.
+ *
+ * This allows get_axis_position_mm to correctly
+ * derive the current XYZ position later on.
+ */
 void st_set_position(const long& x, const long& y, const long& z, const long& e) {
   CRITICAL_SECTION_START;
-  count_position[X_AXIS] = x;
-  count_position[Y_AXIS] = y;
-  count_position[Z_AXIS] = z;
+
+  #if MECH(COREXY)
+    // corexy positioning
+    count_position[A_AXIS] = x + COREX_YZ_FACTOR * y;
+    count_position[B_AXIS] = x - COREX_YZ_FACTOR * y;
+    count_position[Z_AXIS] = z;
+  #elif MECH(COREYX)
+    // coreyx positioning
+    count_position[A_AXIS] = y + COREX_YZ_FACTOR * x;
+    count_position[B_AXIS] = y - COREX_YZ_FACTOR * x;
+    count_position[Z_AXIS] = z;
+  #elif MECH(COREXZ)
+    // corexz planning
+    count_position[A_AXIS] = x + COREX_YZ_FACTOR * z;
+    count_position[Y_AXIS] = y;
+    count_position[C_AXIS] = x - COREX_YZ_FACTOR * z;
+  #elif MECH(COREZX)
+    // corezx planning
+    count_position[A_AXIS] = z + COREX_YZ_FACTOR * x;
+    count_position[Y_AXIS] = y;
+    count_position[C_AXIS] = z - COREX_YZ_FACTOR * x;
+  #else
+    // default non-h-bot planning
+    count_position[X_AXIS] = x;
+    count_position[Y_AXIS] = y;
+    count_position[Z_AXIS] = z;
+  #endif
+
   count_position[E_AXIS] = e;
   CRITICAL_SECTION_END;
 }
@@ -1327,6 +1364,43 @@ void quickStop() {
   while (blocks_queued()) plan_discard_current_block();
   current_block = NULL;
   ENABLE_STEPPER_DRIVER_INTERRUPT();
+}
+
+void report_positions() {
+  CRITICAL_SECTION_START;
+  long xpos = count_position[X_AXIS],
+       ypos = count_position[Y_AXIS],
+       zpos = count_position[Z_AXIS];
+  CRITICAL_SECTION_END;
+
+  #if MECH(COREXY) || MECH(COREYX) || MECH(COREXZ) || MECH(COREZX)
+    ECHO_M(SERIAL_COUNT_A);
+  #elif MECH(DELTA)
+    ECHO_M(SERIAL_COUNT_ALPHA);
+  #else
+    ECHO_M(SERIAL_COUNT_X);
+  #endif
+  ECHO_V(xpos);
+
+  #if MECH(COREXY) || MECH(COREYX)
+    ECHO_M(" B:");
+  #elif MECH(DELTA)
+    ECHO_M(" Beta:");
+  #else
+    ECHO_M(" Y:");
+  #endif
+  ECHO_V(ypos);
+
+  #if MECH(COREXZ) || MECH(COREZX)
+    ECHO_M(" C:");
+  #elif MECH(DELTA)
+    ECHO_M(" Teta:");
+  #else
+    ECHO_M(" Z:");
+  #endif
+  ECHO_V(zpos);
+
+  ECHO_E;
 }
 
 #if ENABLED(NPR2)

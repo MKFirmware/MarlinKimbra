@@ -52,9 +52,14 @@
 //#define FIRMWARE_TEST
 
 // Some particular clients re-start sending commands only after receiving a 'wait' when there is a bad serial-connection.
-//#define NO_TIMEOUTS
+//#define NO_TIMEOUTS 1000 // Milliseconds
 // Uncomment to include more info in ok command
 //#define ADVANCED_OK
+
+// By default MarlinKimbra will send a busy status message to the host
+// every couple of seconds when it can't accept commands.
+// Enable this option if your host doesn't like keepalive messages.
+//#define DISABLE_HOST_KEEPALIVE
 /***********************************************************************/
 
 
@@ -192,10 +197,15 @@
 /***********************************************************************
  ************************* Temperature limits ***************************
  ***********************************************************************/
-// Actual temperature must be close to target for this long before M109 returns success
+// Hotend temperature must be close to target for this long before M109 returns success
 #define TEMP_RESIDENCY_TIME 10  // (seconds)
 #define TEMP_HYSTERESIS 3       // (degC) range of +/- temperatures considered "close" to the target one
 #define TEMP_WINDOW     1       // (degC) Window around target to start the residency timer x degC early.
+
+// Bed temperature must be close to target for this long before M190 returns success
+#define TEMP_BED_RESIDENCY_TIME 0   // (seconds)
+#define TEMP_BED_HYSTERESIS 3       // (degC) range of +/- temperatures considered "close" to the target one
+#define TEMP_BED_WINDOW     1       // (degC) Window around target to start the residency timer x degC early.
 
 // When temperature exceeds max temp, your heater will be switched off.
 // This feature exists to protect your hotend from overheating accidentally, but *NOT* from thermistor short/failure!

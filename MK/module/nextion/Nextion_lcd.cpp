@@ -1,3 +1,44 @@
+/**
+ * MK & MK4due 3D Printer Firmware
+ *
+ * Based on Marlin, Sprinter and grbl
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2013 - 2016 Alberto Cotronei @MagoKimbra
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+/**
+ * Nextion_lcd.cpp
+ *
+ * Copyright (c) 2014-2016 Alberto Cotronei @MagoKimbra
+ *
+ * Grbl is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Grbl is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "../../base.h"
 
 #if ENABLED(NEXTION)
@@ -276,8 +317,8 @@
       char* c;
       sprintf_P(cmd, PSTR("M23 %s"), filename);
       for(c = &cmd[4]; *c; c++) *c = tolower(*c);
-      enqueuecommand(cmd);
-      enqueuecommands_P(PSTR("M24"));
+      enqueue_and_echo_command(cmd);
+      enqueue_and_echo_commands_P(PSTR("M24"));
       setpageInfo();
     }
 
@@ -428,14 +469,14 @@
   void sethotPopCallback(void *ptr) {
     memset(buffer, 0, sizeof(buffer));
     set1.getText(buffer, sizeof(buffer));
-    enqueuecommands_P(buffer);
+    enqueue_and_echo_commands_P(buffer);
     setpageInfo();
   }
 
   void setgcodePopCallback(void *ptr) {
     memset(buffer, 0, sizeof(buffer));
     Tgcode.getText(buffer, sizeof(buffer));
-    enqueuecommands_P(buffer);
+    enqueue_and_echo_commands_P(buffer);
     Pmenu.show();
   }
 
@@ -453,9 +494,9 @@
   void setmovePopCallback(void *ptr) {
     memset(buffer, 0, sizeof(buffer));
     movecmd.getText(buffer, sizeof(buffer));
-    enqueuecommands_P(PSTR("G91"));
-    enqueuecommands_P(buffer);
-    enqueuecommands_P(PSTR("G90"));
+    enqueue_and_echo_commands_P(PSTR("G91"));
+    enqueue_and_echo_commands_P(buffer);
+    enqueue_and_echo_commands_P(PSTR("G90"));
   }
 
   #if ENABLED(SDSUPPORT)
@@ -571,30 +612,24 @@
     char* valuetemp;
 
     memset(buffer, 0, sizeof(buffer));
-    strcat(buffer, TEST(axis_known_position, X_AXIS) || !TEST(axis_was_homed, X_AXIS) ? "X" : "?");
-    if (TEST(axis_was_homed, X_AXIS)) {
+    strcat(buffer, (axis_known_position[X_AXIS] ? "X" : "?"));
+    if (axis_homed[X_AXIS]) {
       valuetemp = ftostr4sign(current_position[X_AXIS]);
       strcat(buffer, valuetemp);
     }
-    else
-      strcat(buffer, "---");
 
-    strcat(buffer, TEST(axis_known_position, Y_AXIS) || !TEST(axis_was_homed, Y_AXIS) ? PSTR(" Y") : PSTR(" ?"));
-    if (TEST(axis_was_homed, Y_AXIS)) {
+    strcat(buffer, (axis_known_position[Y_AXIS] ? " Y" : " ?"));
+    if (axis_homed[Y_AXIS]) {
       valuetemp = ftostr4sign(current_position[Y_AXIS]);
       strcat(buffer, valuetemp);
     }
-    else
-      strcat(buffer, "---");
 
-    strcat(buffer, TEST(axis_known_position, Z_AXIS) || !TEST(axis_was_homed, Z_AXIS) ? PSTR(" Z ") : PSTR("? "));
-    if (TEST(axis_was_homed, Z_AXIS)) {
+    strcat(buffer, (axis_known_position[Z_AXIS] ? " Z " : " ? "));
+    if (axis_homed[Z_AXIS]) {
       valuetemp = ftostr32sp(current_position[Z_AXIS] + 0.00001);
       strcat(buffer, valuetemp);
     }
-    else
-      strcat(buffer, "---");
-    
+
     LedCoord1.setText(buffer);
     LedCoord6.setText(buffer);
   }
@@ -647,7 +682,7 @@
               NPlay.setPic(17);
 
               // Estimate End Time
-              uint16_t time = (millis() - print_job_start_ms) / 60000;
+              uint16_t time = print_job_timer.duration() / 60;
               uint16_t end_time = (time * (100 - card.percentDone())) / card.percentDone();
               if (end_time > (60 * 23)) {
                 lcd_setstatus("End --:--");

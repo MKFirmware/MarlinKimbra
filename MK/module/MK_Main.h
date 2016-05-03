@@ -1,5 +1,24 @@
-// Tonokip RepRap firmware rewrite based off of Hydra-mmm firmware.
-// License: GPL
+/**
+ * MK & MK4due 3D Printer Firmware
+ *
+ * Based on Marlin, Sprinter and grbl
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2013 - 2016 Alberto Cotronei @MagoKimbra
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 
 #ifndef MK_H
 #define MK_H
@@ -9,15 +28,16 @@
 
 void get_command();
 
-void idle(bool ignore_stepper_queue = false);
+void idle(
+  #if ENABLED(FILAMENTCHANGEENABLE)
+    bool no_stepper_sleep=false  // pass true to keep steppers from disabling on timeout
+  #endif
+);
 
 void manage_inactivity(bool ignore_stepper_queue = false);
 
 void FlushSerialRequestResend();
 void ok_to_send();
-
-bool setTargetedExtruder(int code);
-bool setTargetedHotend(int code);
 
 #if MECH(DELTA)
   float probe_bed(float x, float y);
@@ -28,7 +48,6 @@ bool setTargetedHotend(int code);
   void calibration_report();
   void bed_probe_all();
   void set_delta_constants();
-  void save_carriage_positions(int position_num);
   void calculate_delta(float cartesian[3]);
   void adjust_delta(float cartesian[3]);
   void adj_endstops();
@@ -51,7 +70,13 @@ bool setTargetedHotend(int code);
   void calculate_delta(float cartesian[3]);
   void calculate_SCARA_forward_Transform(float f_scara[3]);
 #endif
-void prepare_move();
+
+void prepare_move(
+  #if MECH(DELTA)
+    const bool delta_probe = false
+  #endif
+);
+
 void kill(const char *);
 void Stop();
 
@@ -63,25 +88,26 @@ void Stop();
  * Debug flags - with repetier
  */
 enum DebugFlags {
-  DEBUG_ECHO          = _BV(0),
-  DEBUG_INFO          = _BV(1),
-  DEBUG_ERRORS        = _BV(2),
-  DEBUG_DRYRUN        = _BV(3),
-  DEBUG_COMMUNICATION = _BV(4),
-  DEBUG_DEBUG         = _BV(5)
+  DEBUG_NONE          = 0,
+  DEBUG_ECHO          = _BV(0), ///< Echo commands in order as they are processed
+  DEBUG_INFO          = _BV(1), ///< Print messages for code that has debug output
+  DEBUG_ERRORS        = _BV(2), ///< Not implemented
+  DEBUG_DRYRUN        = _BV(3), ///< Ignore temperature setting
+  DEBUG_COMMUNICATION = _BV(4), ///< Not implemented
+  DEBUG_DEBUG         = _BV(5)  ///< Print Debug
 };
+extern uint8_t mk_debug_flags;
 
 void clamp_to_software_endstops(float target[3]);
-
-extern uint8_t debugLevel;
 
 extern bool Running;
 inline bool IsRunning() { return  Running; }
 inline bool IsStopped() { return !Running; }
 extern bool Printing;
 
-bool enqueuecommand(const char *cmd); //put a single ASCII command at the end of the current buffer or return false when it is full
-void enqueuecommands_P(const char *cmd); //put one or many ASCII commands at the end of the current buffer, read from flash
+bool enqueue_and_echo_command(const char* cmd, bool say_ok = false); // put a single ASCII command at the end of the current buffer or return false when it is full
+void enqueue_and_echo_command_now(const char* cmd); // enqueue now, only return when the command has been enqueued
+void enqueue_and_echo_commands_P(const char* cmd);  // put one or many ASCII commands at the end of the current buffer, read from flash
 
 void prepare_arc_move(char isclockwise);
 void clamp_to_software_endstops(float target[3]);
@@ -108,11 +134,11 @@ extern float current_position[NUM_AXIS];
 extern float destination[NUM_AXIS];
 extern float home_offset[3];
 extern float hotend_offset[3][HOTENDS];
-extern float min_pos[3];
-extern float max_pos[3];
+extern float sw_endstop_min[3];
+extern float sw_endstop_max[3];
+extern bool axis_known_position[3];
+extern bool axis_homed[3];
 extern float zprobe_zoffset;
-extern uint8_t axis_known_position;
-extern uint8_t axis_was_homed;
 
 #if HEATER_USES_AD595
   extern float ad595_offset[HOTENDS];
@@ -140,11 +166,15 @@ extern double printer_usage_filament;
   extern float extrude_min_temp;
 #endif
 
+#if ENABLED(HOST_KEEPALIVE_FEATURE)
+  extern uint8_t host_keepalive_interval;
+#endif
+
 extern int fanSpeed;
 
 #if ENABLED(BARICUDA)
-  extern int ValvePressure;
-  extern int EtoPPressure;
+  extern int baricuda_valve_pressure;
+  extern int baricuda_e_to_p_pressure;
 #endif
 
 #if ENABLED(FAN_SOFT_PWM)
@@ -203,8 +233,8 @@ extern int fanSpeed;
   extern bool config_readed;
 #endif
 
-extern millis_t print_job_start_ms;
-extern millis_t print_job_stop_ms;
+// Print job timer
+extern Stopwatch print_job_timer;
 
 // Handling multiple extruders pins
 extern uint8_t active_extruder;
