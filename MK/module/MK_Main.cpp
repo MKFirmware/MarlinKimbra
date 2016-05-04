@@ -354,7 +354,28 @@ void delay_ms(millis_t ms) {
 
 void plan_arc(float target[NUM_AXIS], float* offset, uint8_t clockwise);
 
+void gcode_M114();
+
 static void report_current_position();
+
+void print_xyz(const char* prefix, const float x, const float y, const float z) {
+  ECHO_T(prefix);
+  ECHO_MV(": (", x);
+  ECHO_MV(", ", y);
+  ECHO_MV(", ", z);
+  ECHO_M(")");
+  ECHO_E;
+}
+
+void print_xyz(const char* prefix, const float xyz[]) {
+  print_xyz(prefix, xyz[X_AXIS], xyz[Y_AXIS], xyz[Z_AXIS]);
+}
+#if ENABLED(AUTO_BED_LEVELING_FEATURE)
+  void print_xyz(const char* prefix, const vector_3 &xyz) {
+    print_xyz(prefix, xyz.x, xyz.y, xyz.z);
+  }
+#endif
+#define DEBUG_POS(PREFIX, VAR) do{ ECHO_SM(INFO,PREFIX); print_xyz(" > " STRINGIFY(VAR), VAR); }while(0)
 
 #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
   float extrude_min_temp = EXTRUDE_MINTEMP;
@@ -1137,21 +1158,7 @@ XYZ_CONSTS_FROM_CONFIG(signed char, home_dir,  HOME_DIR);
 
 #endif //DUAL_X_CARRIAGE
 
-void print_xyz(const char* prefix, const float x, const float y, const float z) {
-  ECHO_T(prefix);
-  ECHO_MV(": (", x);
-  ECHO_MV(", ", y);
-  ECHO_MV(", ", z);
-  ECHO_M(")");
-  ECHO_E;
-}
 
-void print_xyz(const char* prefix, const float xyz[]) {
-  print_xyz(prefix, xyz[X_AXIS], xyz[Y_AXIS], xyz[Z_AXIS]);
-}
-
-#define DEBUG_POS(PREFIX, VAR) do{ ECHO_SM(INFO,PREFIX); print_xyz(" > " STRINGIFY(VAR), VAR); }while(0)
-  
 /**
  * Software endstops can be used to monitor the open end of
  * an axis that has a hardware endstop on the other end. Or
@@ -1587,7 +1594,11 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
     #if HAS(SERVO_ENDSTOPS) && HASNT(Z_PROBE_SLED)
       void raise_z_for_servo() {
         float zpos = current_position[Z_AXIS], z_dest = Z_RAISE_BEFORE_PROBING;
-        z_dest += TEST(axis_was_homed, Z_AXIS) ? zprobe_zoffset : zpos;
+        /**
+         * The zprobe_zoffset is negative any switch below the nozzle, so
+         * multiply by Z_HOME_DIR (-1) to move enough away from bed for the probe
+         */
+        z_dest += axis_homed[Z_AXIS] ? zprobe_zoffset * Z_HOME_DIR : zpos;
         if (zpos < z_dest) do_blocking_move_to_z(z_dest); // also updates current_position
       }
     #endif
