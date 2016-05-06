@@ -644,8 +644,8 @@ void Config_ResetDefault() {
       ECHO_LM(CFG, "Maximum feedrates (mm/s):");
     }
     ECHO_SMV(CFG, "  M203 X", max_feedrate[X_AXIS]);
-    ECHO_MV(" Y", max_feedrate[Y_AXIS] ); 
-    ECHO_MV(" Z", max_feedrate[Z_AXIS] ); 
+    ECHO_MV(" Y", max_feedrate[Y_AXIS] );
+    ECHO_MV(" Z", max_feedrate[Z_AXIS] );
     ECHO_EMV(" E", max_feedrate[E_AXIS]);
     #if EXTRUDERS > 1
       for (short i = 1; i < EXTRUDERS; i++) {
