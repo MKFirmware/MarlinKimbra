@@ -2542,10 +2542,17 @@ char* ftostr32sp(const float& x) {
   return conv;
 }
 
-// Convert int to lj string with +123.0 format
-char* itostr31(const int& x) {
-  conv[0] = x >= 0 ? '+' : '-';
-  int xx = abs(x);
+// Convert signed int to lj string with +012 / -012 format
+char* itostr3sign(const int& x) {
+  int xx;
+  if (x >= 0) {
+    conv[0] = '+';
+    xx = x;
+  }
+  else {
+    conv[0] = '-';
+    xx = -x;
+  }
   conv[1] = (xx / 100) % 10 + '0';
   conv[2] = (xx / 10) % 10 + '0';
   conv[3] = xx % 10 + '0';
