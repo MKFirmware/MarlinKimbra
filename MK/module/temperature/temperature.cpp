@@ -200,6 +200,11 @@ static void updateTemperaturesFromRawValues();
   millis_t watch_heater_next_ms[HOTENDS] = { 0 };
 #endif
 
+#if ENABLED(THERMAL_PROTECTION_BED)
+  int watch_target_bed_temp = 0;
+  millis_t watch_bed_next_ms = 0;
+#endif
+
 #if DISABLED(SOFT_PWM_SCALE)
   #define SOFT_PWM_SCALE 0
 #endif
@@ -286,12 +291,12 @@ void autotempShutdown() {
         #if HAS(AUTO_FAN)
           if (ms > next_auto_fan_check_ms) {
             checkExtruderAutoFans();
-            next_auto_fan_check_ms = ms + 2500;
+            next_auto_fan_check_ms = ms + 2500UL;
           }
         #endif
 
         if (heating && input > temp) {
-          if (ms > t2 + 5000) {
+          if (ms > t2 + 5000UL) {
             heating = false;
             if (hotend < 0)
               soft_pwm_bed = (bias - d) >> 1;
@@ -304,7 +309,7 @@ void autotempShutdown() {
         }
 
         if (!heating && input < temp) {
-          if (ms > t1 + 5000) {
+          if (ms > t1 + 5000UL) {
             heating = true;
             t2 = ms;
             t_low = t2 - t1;
@@ -699,7 +704,7 @@ void manage_heater() {
     if (ct < max(HEATER_0_MINTEMP, 0.01)) min_temp_error(0);
   #endif
 
-  #if ENABLED(THERMAL_PROTECTION_HOTENDS) || DISABLED(PIDTEMPBED) || HAS(AUTO_FAN)
+  #if ENABLED(THERMAL_PROTECTION_HOTENDS) || ENABLED(THERMAL_PROTECTION_BED) || DISABLED(PIDTEMPBED) || HAS(AUTO_FAN)
     millis_t ms = millis();
   #endif
 
@@ -733,9 +738,27 @@ void manage_heater() {
 
     #endif // THERMAL_PROTECTION_HOTENDS
 
+    // Check if the temperature is failing to increase
+    #if ENABLED(THERMAL_PROTECTION_BED)
+
+      // Is it time to check the bed?
+      if (watch_bed_next_ms && ELAPSED(ms, watch_bed_next_ms)) {
+        // Has it failed to increase enough?
+        if (degBed() < watch_target_bed_temp) {
+          // Stop!
+          _temp_error(-1, PSTR(SERIAL_T_HEATING_FAILED), PSTR(MSG_HEATING_FAILED_LCD));
+        }
+        else {
+          // Start again if the target is still far off
+          start_watching_bed();
+        }
+      }
+
+    #endif // THERMAL_PROTECTION_HOTENDS
+
     #if ENABLED(TEMP_SENSOR_1_AS_REDUNDANT)
       if (fabs(current_temperature[0] - redundant_temperature) > MAX_REDUNDANT_TEMP_SENSOR_DIFF) {
-        _temp_error(0, PSTR(MSG_EXTRUDER_SWITCHED_OFF), PSTR(MSG_ERR_REDUNDANT_TEMP));
+        _temp_error(0, PSTR(SERIAL_REDUNDANCY), PSTR(MSG_ERR_REDUNDANT_TEMP));
       }
     #endif
 
@@ -791,7 +814,7 @@ void manage_heater() {
         soft_pwm_bed = 0;
         WRITE_HEATER_BED(LOW);
       }
-    #else // BED_LIMIT_SWITCHING
+    #else // !PIDTEMPBED && !BED_LIMIT_SWITCHING
       // Check if temperature is within the correct range
       if (current_temperature_bed > BED_MINTEMP && current_temperature_bed < BED_MAXTEMP) {
         soft_pwm_bed = current_temperature_bed < target_temperature_bed ? MAX_BED_POWER >> 1 : 0;
@@ -1226,6 +1249,22 @@ void tp_init() {
   }
 #endif
 
+#if ENABLED(THERMAL_PROTECTION_BED)
+  /**
+   * Start Heating Sanity Check for bed that are below
+   * their target temperature by a configurable margin.
+   * This is called when the temperature is set. (M140, M190)
+   */
+  void start_watching_bed() {
+    if (degBed() < degTargetBed() - (WATCH_BED_TEMP_INCREASE + TEMP_BED_HYSTERESIS + 1)) {
+      watch_target_bed_temp = degBed() + WATCH_BED_TEMP_INCREASE;
+      watch_bed_next_ms = millis() + (WATCH_BED_TEMP_PERIOD) * 1000UL;
+    }
+    else
+      watch_bed_next_ms = 0;
+  }
+#endif
+
 #if ENABLED(THERMAL_PROTECTION_HOTENDS) || ENABLED(THERMAL_PROTECTION_BED)
 
   void thermal_runaway_protection(TRState* state, millis_t* timer, float temperature, float target_temperature, int heater_id, int period_seconds, int hysteresis_degc) {
@@ -1268,7 +1307,7 @@ void tp_init() {
         if (temperature >= tr_target_temperature[heater_index] - hysteresis_degc)
           *timer = millis();
         // If the timer goes too long without a reset, trigger shutdown
-        else if (millis() > *timer + period_seconds * 1000UL)
+        else if (ELAPSED(millis(), *timer + period_seconds * 1000UL))
           *state = TRRunaway;
         break;
       case TRRunaway:

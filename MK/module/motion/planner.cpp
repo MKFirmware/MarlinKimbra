@@ -1126,7 +1126,20 @@ float junction_deviation = 0.1;
     ECHO_SMV(OK, "advance :", block->advance/256);
     ECHO_EMV("advance rate :", block->advance_rate/256);
     */
-  #endif // ADVANCE
+  #elif ENABLED(ADVANCE_LPC) // ADVANCE_LPC
+    // bse == allsteps: A problem occurs when there's a very tiny move before a retract.
+    // In this case, the retract and the move will be executed together.
+    // This leads to an enormous number of advance steps due to a huge e_acceleration.
+    // The math is correct, but you don't want a retract move done with advance!
+    // So this situation is filtered out here.
+    if (!bse || (!bsx && !bsy && !bsz) || extruder_advance_k == 0 || bse == allsteps) {
+      block->use_advance_lead = false;
+    }
+    else {
+      block->use_advance_lead = true;
+      block->e_speed_multiplier8 = (block->steps[E_AXIS] << 8) / block->step_event_count;
+    }
+  #endif
 
   calculate_trapezoid_for_block(block, block->entry_speed / block->nominal_speed, safe_speed / block->nominal_speed);
 

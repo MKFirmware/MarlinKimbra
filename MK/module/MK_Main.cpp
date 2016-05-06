@@ -4185,7 +4185,7 @@ inline void gcode_G28() {
       home_delta_axis();
     deploy_z_probe();
     bed_safe_z = current_position[Z_AXIS];
-    
+
     if (code_seen('X') and code_seen('Y')) {
       // Probe specified X,Y point
       float x = code_seen('X') ? code_value():0.00;
@@ -5356,7 +5356,7 @@ inline void gcode_M92() {
 #endif
 
 /**
- * M104: Set hot end temperature
+ * M104: Set hotend temperature
  */
 inline void gcode_M104() {
   if (setTargetedExtruder(104)) return;
@@ -6368,7 +6368,7 @@ inline void gcode_M226() {
    * M363: SCARA calibration: Move to cal-position PsiB (90 deg calibration - steps per degree)
    */
   inline bool gcode_M363() {
-    ECHO_LM(DB,"Cal: Psi 90 ");
+    ECHO_LM(DB, "Cal: Psi 90 ");
     return SCARA_move_to_cal(50, 90);
   }
 
@@ -7230,6 +7230,17 @@ inline void gcode_M503() {
   }
 #endif
 
+#if ENABLED(ADVANCE_LPC)
+  /**
+   * M905: Set advance factor
+   */
+  inline void gcode_M905() {
+    st_synchronize();
+    if (code_seen('K')) extruder_advance_k = code_value();
+    ECHO_LMV(DB, "Advance factor = ", extruder_advance_k);
+  }
+#endif
+
 #if MB(ALLIGATOR)
   /**
    * M906: Set motor currents
@@ -7787,12 +7798,12 @@ void process_next_command() {
         case 48: // M48 Z-Probe repeatability
           gcode_M48(); break;
       #endif
-      
+
       #if HAS(POWER_CONSUMPTION_SENSOR)
         case 70: // M70 - Power consumption sensor calibration
           gcode_M70(); break;
       #endif
-      
+
       case 75: // Start print timer
         gcode_M75(); break;
 
@@ -7866,13 +7877,13 @@ void process_next_command() {
       case 112: //  M112 Emergency Stop
         gcode_M112(); break;
 
-      case 114: // M114 Report current position
-        gcode_M114(); break;
-
       #if ENABLED(HOST_KEEPALIVE_FEATURE)
         case 113: // M113: Set Host Keepalive interval
           gcode_M113(); break;
       #endif
+
+      case 114: // M114 Report current position
+        gcode_M114(); break;
 
       case 115: // M115 Report capabilities
         gcode_M115(); break;
@@ -8090,7 +8101,7 @@ void process_next_command() {
       #endif
 
       #if ENABLED(FILAMENTCHANGEENABLE)
-        case 600: //Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
+        case 600: // Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
           gcode_M600(); break;
       #endif
 
@@ -8102,6 +8113,11 @@ void process_next_command() {
       #if ENABLED(AUTO_BED_LEVELING_FEATURE) || MECH(DELTA)
         case 666: // M666 Set Z probe offset or set delta endstop and geometry adjustment
           gcode_M666(); break;
+      #endif
+
+      #if ENABLED(ADVANCE_LPC)
+        case 905: // M905 Set advance factor.
+          gcode_M905(); break;
       #endif
 
       #if MB(ALLIGATOR)

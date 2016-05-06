@@ -36,6 +36,10 @@ void idle(
 
 void manage_inactivity(bool ignore_stepper_queue = false);
 
+#if ENABLED(DUAL_X_CARRIAGE)
+  extern bool extruder_duplication_enabled;
+#endif
+
 void FlushSerialRequestResend();
 void ok_to_send();
 
@@ -133,6 +137,10 @@ extern float sw_endstop_max[3];
 extern bool axis_known_position[3];
 extern bool axis_homed[3];
 extern float zprobe_zoffset;
+
+#if ENABLED(ADVANCE_LPC)
+  extern int extruder_advance_k;
+#endif
 
 #if HEATER_USES_AD595
   extern float ad595_offset[HOTENDS];
