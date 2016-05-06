@@ -354,7 +354,28 @@ void delay_ms(millis_t ms) {
 
 void plan_arc(float target[NUM_AXIS], float* offset, uint8_t clockwise);
 
+void gcode_M114();
+
 static void report_current_position();
+
+void print_xyz(const char* prefix, const float x, const float y, const float z) {
+  ECHO_T(prefix);
+  ECHO_MV(": (", x);
+  ECHO_MV(", ", y);
+  ECHO_MV(", ", z);
+  ECHO_M(")");
+  ECHO_E;
+}
+
+void print_xyz(const char* prefix, const float xyz[]) {
+  print_xyz(prefix, xyz[X_AXIS], xyz[Y_AXIS], xyz[Z_AXIS]);
+}
+#if ENABLED(AUTO_BED_LEVELING_FEATURE)
+  void print_xyz(const char* prefix, const vector_3 &xyz) {
+    print_xyz(prefix, xyz.x, xyz.y, xyz.z);
+  }
+#endif
+#define DEBUG_POS(PREFIX, VAR) do{ ECHO_SM(INFO,PREFIX); print_xyz(" > " STRINGIFY(VAR), VAR); }while(0)
 
 #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
   float extrude_min_temp = EXTRUDE_MINTEMP;
@@ -1137,21 +1158,7 @@ XYZ_CONSTS_FROM_CONFIG(signed char, home_dir,  HOME_DIR);
 
 #endif //DUAL_X_CARRIAGE
 
-void print_xyz(const char* prefix, const float x, const float y, const float z) {
-  ECHO_T(prefix);
-  ECHO_MV(": (", x);
-  ECHO_MV(", ", y);
-  ECHO_MV(", ", z);
-  ECHO_M(")");
-  ECHO_E;
-}
 
-void print_xyz(const char* prefix, const float xyz[]) {
-  print_xyz(prefix, xyz[X_AXIS], xyz[Y_AXIS], xyz[Z_AXIS]);
-}
-
-#define DEBUG_POS(PREFIX, VAR) do{ ECHO_SM(INFO,PREFIX); print_xyz(" > " STRINGIFY(VAR), VAR); }while(0)
-  
 /**
  * Software endstops can be used to monitor the open end of
  * an axis that has a hardware endstop on the other end. Or
@@ -1587,7 +1594,11 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
     #if HAS(SERVO_ENDSTOPS) && HASNT(Z_PROBE_SLED)
       void raise_z_for_servo() {
         float zpos = current_position[Z_AXIS], z_dest = Z_RAISE_BEFORE_PROBING;
-        z_dest += TEST(axis_was_homed, Z_AXIS) ? zprobe_zoffset : zpos;
+        /**
+         * The zprobe_zoffset is negative any switch below the nozzle, so
+         * multiply by Z_HOME_DIR (-1) to move enough away from bed for the probe
+         */
+        z_dest += axis_homed[Z_AXIS] ? zprobe_zoffset * Z_HOME_DIR : zpos;
         if (zpos < z_dest) do_blocking_move_to_z(z_dest); // also updates current_position
       }
     #endif
@@ -4174,7 +4185,7 @@ inline void gcode_G28() {
       home_delta_axis();
     deploy_z_probe();
     bed_safe_z = current_position[Z_AXIS];
-    
+
     if (code_seen('X') and code_seen('Y')) {
       // Probe specified X,Y point
       float x = code_seen('X') ? code_value():0.00;
@@ -5345,7 +5356,7 @@ inline void gcode_M92() {
 #endif
 
 /**
- * M104: Set hot end temperature
+ * M104: Set hotend temperature
  */
 inline void gcode_M104() {
   if (setTargetedExtruder(104)) return;
@@ -6357,7 +6368,7 @@ inline void gcode_M226() {
    * M363: SCARA calibration: Move to cal-position PsiB (90 deg calibration - steps per degree)
    */
   inline bool gcode_M363() {
-    ECHO_LM(DB,"Cal: Psi 90 ");
+    ECHO_LM(DB, "Cal: Psi 90 ");
     return SCARA_move_to_cal(50, 90);
   }
 
@@ -7219,6 +7230,17 @@ inline void gcode_M503() {
   }
 #endif
 
+#if ENABLED(ADVANCE_LPC)
+  /**
+   * M905: Set advance factor
+   */
+  inline void gcode_M905() {
+    st_synchronize();
+    if (code_seen('K')) extruder_advance_k = code_value();
+    ECHO_LMV(DB, "Advance factor = ", extruder_advance_k);
+  }
+#endif
+
 #if MB(ALLIGATOR)
   /**
    * M906: Set motor currents
@@ -7776,12 +7798,12 @@ void process_next_command() {
         case 48: // M48 Z-Probe repeatability
           gcode_M48(); break;
       #endif
-      
+
       #if HAS(POWER_CONSUMPTION_SENSOR)
         case 70: // M70 - Power consumption sensor calibration
           gcode_M70(); break;
       #endif
-      
+
       case 75: // Start print timer
         gcode_M75(); break;
 
@@ -7855,13 +7877,13 @@ void process_next_command() {
       case 112: //  M112 Emergency Stop
         gcode_M112(); break;
 
-      case 114: // M114 Report current position
-        gcode_M114(); break;
-
       #if ENABLED(HOST_KEEPALIVE_FEATURE)
         case 113: // M113: Set Host Keepalive interval
           gcode_M113(); break;
       #endif
+
+      case 114: // M114 Report current position
+        gcode_M114(); break;
 
       case 115: // M115 Report capabilities
         gcode_M115(); break;
@@ -8079,7 +8101,7 @@ void process_next_command() {
       #endif
 
       #if ENABLED(FILAMENTCHANGEENABLE)
-        case 600: //Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
+        case 600: // Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
           gcode_M600(); break;
       #endif
 
@@ -8091,6 +8113,11 @@ void process_next_command() {
       #if ENABLED(AUTO_BED_LEVELING_FEATURE) || MECH(DELTA)
         case 666: // M666 Set Z probe offset or set delta endstop and geometry adjustment
           gcode_M666(); break;
+      #endif
+
+      #if ENABLED(ADVANCE_LPC)
+        case 905: // M905 Set advance factor.
+          gcode_M905(); break;
       #endif
 
       #if MB(ALLIGATOR)

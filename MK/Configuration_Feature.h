@@ -268,17 +268,37 @@
 #define THERMAL_PROTECTION_PERIOD    40     // Seconds
 #define THERMAL_PROTECTION_HYSTERESIS 4     // Degrees Celsius
 
-// Whenever an M104 or M109 increases the target temperature the firmware will wait for the
-// WATCH TEMP PERIOD to expire, and if the temperature hasn't increased by WATCH TEMP INCREASE
-// degrees, the machine is halted, requiring a hard reset. This test restarts with any M104/M109,
-//but only if the current temperature is far enough below the target for a reliable test.
-#define WATCH_TEMP_PERIOD  16               // Seconds
-#define WATCH_TEMP_INCREASE 4               // Degrees Celsius
+/**
+ * Whenever an M104 or M109 increases the target temperature the firmware will wait for the
+ * WATCH TEMP PERIOD to expire, and if the temperature hasn't increased by WATCH TEMP INCREASE
+ * degrees, the machine is halted, requiring a hard reset. This test restarts with any M104/M109,
+ * but only if the current temperature is far enough below the target for a reliable test.
+ *
+ * If you get false positives for "Heating failed" increase WATCH TEMP PERIOD and/or decrease WATCH TEMP INCREASE
+ * WATCH TEMP INCREASE should not be below 2.
+ */
+#define WATCH_TEMP_PERIOD  20               // Seconds
+#define WATCH_TEMP_INCREASE 2               // Degrees Celsius
 
+/**
+ * Thermal Protection parameters for the bed are just as above for hotends.
+ */
 //#define THERMAL_PROTECTION_BED 
 
 #define THERMAL_PROTECTION_BED_PERIOD    20 // Seconds
 #define THERMAL_PROTECTION_BED_HYSTERESIS 2 // Degrees Celsius
+
+/**
+ * Whenever an M140 or M190 increases the target temperature the firmware will wait for the
+ * WATCH BED TEMP PERIOD to expire, and if the temperature hasn't increased by WATCH BED TEMP INCREASE
+ * degrees, the machine is halted, requiring a hard reset. This test restarts with any M140/M190,
+ * but only if the current temperature is far enough below the target for a reliable test.
+ *
+ * If you get too many "Heating failed" errors, increase WATCH BED TEMP PERIOD and/or decrease
+ * WATCH BED TEMP INCREASE. (WATCH BED TEMP INCREASE should not be below 2.)
+ */
+#define WATCH_BED_TEMP_PERIOD  60           // Seconds
+#define WATCH_BED_TEMP_INCREASE 2           // Degrees Celsius
 /********************************************************************************/
 
 
@@ -563,9 +583,21 @@
  *****************************************************************************************/
 //#define ADVANCE
 
-#define EXTRUDER_ADVANCE_K .0
+#define EXTRUDER_ADVANCE_K 0.0
 #define D_FILAMENT 1.75
-#define STEPS_PER_CUBIC_MM_E 0.85
+/*****************************************************************************************/
+
+
+/*****************************************************************************************
+ ****************** Extruder Advance Linear Pressure Control *****************************
+ *****************************************************************************************
+ *                                                                                       *
+ * Assumption: advance = k * (delta velocity)                                            *
+ * K=0 means advance disabled. A good value for a gregs wade extruder will be around K=75*
+ *                                                                                       *
+ *****************************************************************************************/
+//#define ADVANCE_LPC
+#define ADVANCE_LPC_K 75
 /*****************************************************************************************/
 
 

@@ -221,7 +221,7 @@
 
 #define SERIAL_HEATER_BED                       "bed"
 #define SERIAL_STOPPED_HEATER                   ", system stopped! Heater_ID: "
-//#define SERIAL_REDUNDANCY                     "Heater switched off. Temperature difference between temp sensors is too high !"
+#define SERIAL_REDUNDANCY                       "Heater switched off. Temperature difference between temp sensors is too high !"
 #define SERIAL_T_HEATING_FAILED                 "Heating failed"
 #define SERIAL_T_THERMAL_RUNAWAY                "Thermal Runaway"
 #define SERIAL_T_MAXTEMP                        "MAXTEMP triggered"
