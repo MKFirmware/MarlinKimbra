@@ -73,6 +73,7 @@
 #define MSG_PID_P                           "PID-P"
 #define MSG_PID_I                           "PID-I"
 #define MSG_PID_D                           "PID-D"
+#define MSG_PID_C                           "PID-C"
 #define MSG_H1                              " H1"
 #define MSG_H2                              " H2"
 #define MSG_H3                              " H3"
