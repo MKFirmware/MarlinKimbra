@@ -2653,7 +2653,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
     set_current_to_destination();
   }
 
-  static void calculate_delta(float cartesian[3]) {
+  void calculate_delta(float cartesian[3]) {
     delta[TOWER_1] = sqrt(delta_diagonal_rod_1
                          - sq(delta_tower1_x - cartesian[X_AXIS])
                          - sq(delta_tower1_y - cartesian[Y_AXIS])

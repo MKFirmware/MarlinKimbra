@@ -45,13 +45,13 @@ void ok_to_send();
 
 #if MECH(DELTA)
   void set_delta_constants();
+  void calculate_delta(float cartesian[3]);
   static float probe_bed(float x, float y);
   static void adj_tower_delta(int tower);
   static void adj_tower_radius(int tower);
   static void home_delta_axis();
   static void calibration_report();
   static void bed_probe_all();
-  static void calculate_delta(float cartesian[3]);
   static void adjust_delta(float cartesian[3]);
   static void adj_endstops();
   static void reset_bed_level();
