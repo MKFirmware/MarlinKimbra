@@ -7048,11 +7048,9 @@ inline void gcode_M503() {
       enable_all_steppers(); // Enable all stepper
       for(uint8_t e = 0; e < HOTENDS; e++) {
         setTargetHotend(old_target_temperature[e], e);
-        no_wait_for_cooling = true;
         wait_heater();
       }
       setTargetBed(old_target_temperature_bed);
-      no_wait_for_cooling = true;
       wait_bed();
       sleep = false;
       beep = true;
