@@ -174,8 +174,8 @@
   #endif
 
   // Language
-  #if DISABLED(LANGUAGE_CHOICE)
-    #error DEPENDENCY ERROR: Missing setting LANGUAGE_CHOICE
+  #if DISABLED(LCD_LANGUAGE)
+    #error DEPENDENCY ERROR: Missing setting LCD_LANGUAGE
   #endif
 
   /// FEATURE
