@@ -296,11 +296,11 @@ FORCE_INLINE unsigned short calc_timer(unsigned short step_rate) {
   NOMORE(step_rate, MAX_STEP_FREQUENCY);
 
   if(step_rate > (2 * DOUBLE_STEP_FREQUENCY)) { // If steprate > 2*DOUBLE_STEP_FREQUENCY >> step 4 times
-    step_rate = (step_rate >> 2) & 0x3fff;
+    step_rate = (step_rate >> 2);
     step_loops = 4;
   }
   else if(step_rate > DOUBLE_STEP_FREQUENCY) { // If steprate > DOUBLE_STEP_FREQUENCY >> step 2 times
-    step_rate = (step_rate >> 1) & 0x7fff;
+    step_rate = (step_rate >> 1);
     step_loops = 2;
   }
   else {
