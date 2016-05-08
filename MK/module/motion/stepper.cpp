@@ -89,6 +89,7 @@ volatile long endstops_stepsTotal, endstops_stepsDone;
   #elif ENABLED(ADVANCE_LPC)
     int extruder_advance_k = ADVANCE_LPC_K;
     volatile int e_steps[EXTRUDERS] = ARRAY_BY_EXTRUDERS(0);
+    volatile unsigned char eISR_Rate = 200; // Keep the ISR at a low rate until needed
     static int final_estep_rate;
     static int current_estep_rate[EXTRUDERS]; // Actual extruder speed [steps/s]
     static int current_adv_steps[EXTRUDERS];
@@ -559,9 +560,14 @@ ISR(TIMER1_COMPA_vect) {
       step_events_completed++;
       if (step_events_completed >= current_block->step_event_count) break;
     }
+
+    #if ENABLED(ADVANCE_LPC)
+      // If we have esteps to execute, fire the next ISR "now"
+      if (e_steps[current_block->active_driver]) OCR0A = TCNT0 + 2;
+    #endif
+
     // Calculate new timer value
-    unsigned short timer;
-    unsigned short step_rate;
+    unsigned short timer, step_rate;
     if (step_events_completed <= (unsigned long)current_block->accelerate_until) {
 
       MultiU24X32toH16(acc_step_rate, acceleration_time, current_block->acceleration_rate);
@@ -595,6 +601,9 @@ ISR(TIMER1_COMPA_vect) {
           current_estep_rate[current_block->active_driver] = ((unsigned long)acc_step_rate * current_block->e_speed_multiplier8) >> 8;
       #endif
 
+      #if ENABLED(ADVANCE) || ENABLED(ADVANCE_LPC)
+        eISR_Rate = (timer >> 2) / e_steps[current_block->active_driver];
+      #endif
     }
     else if (step_events_completed > (unsigned long)current_block->decelerate_after) {
       MultiU24X32toH16(step_rate, deceleration_time, current_block->acceleration_rate);
@@ -632,12 +641,18 @@ ISR(TIMER1_COMPA_vect) {
         if (current_block->use_advance_lead)
           current_estep_rate[current_block->active_driver] = ((unsigned long)step_rate * current_block->e_speed_multiplier8) >> 8;
       #endif
+
+      #if ENABLED(ADVANCE) || ENABLED(ADVANCE_LPC)
+        eISR_Rate = (timer >> 2) / e_steps[current_block->active_driver];
+      #endif
     }
     else {
       #if ENABLED(ADVANCE_LPC)
         if (current_block->use_advance_lead)
           current_estep_rate[current_block->active_driver] = final_estep_rate;
+        eISR_Rate = (OCR1A_nominal >> 2) / e_steps[current_block->active_driver];
       #endif
+
       OCR1A = OCR1A_nominal;
       // ensure we're running at the correct step rate, even if we just came off an acceleration
       step_loops = step_loops_nominal;
@@ -659,19 +674,7 @@ ISR(TIMER1_COMPA_vect) {
   // Timer 0 is shared with millies
   ISR(TIMER0_COMPA_vect) {
 
-    byte maxesteps = 0;
-    for (unsigned char i = 0; i < EXTRUDERS; i++)
-      if (abs(e_steps[i]) > maxesteps) maxesteps = abs(e_steps[i]);
-
-    if (maxesteps > 3)
-      old_OCR0A += 13; // ~19kHz (250000/13 = 19230 Hz)
-    else if (maxesteps > 2)
-      old_OCR0A += 17; // ~15kHz (250000/17 = 14705 Hz)
-    else if (maxesteps > 1)
-      old_OCR0A += 26; // ~10kHz (250000/26 =  9615 Hz)
-    else
-      old_OCR0A += 52; //  ~5kHz (250000/52 =  4807 Hz)
-
+    old_OCR0A += eISR_Rate;
     OCR0A = old_OCR0A;
 
     #define STEP_E_ONCE(INDEX) \
