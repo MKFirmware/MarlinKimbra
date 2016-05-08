@@ -23,32 +23,9 @@
 #ifndef LANGUAGE_H
 #define LANGUAGE_H
 
-// NOTE: IF YOU CHANGE LANGUAGE FILES OR MERGE A FILE WITH CHANGES
-//
-//   ==> ALWAYS TRY TO COMPILE MARLIN WITH/WITHOUT "ULTIPANEL" / "ULTRALCD" / "SDSUPPORT" #define IN "Configuration_Basic.h"
-//   ==> ALSO TRY ALL AVAILABLE "LANGUAGE_CHOICE" OPTIONS
-// See also documentation/LCDLanguageFont.md
-
-// Languages
-// 1  English  // Language base
-// 2  Polish
-// 3  French
-// 4  German
-// 5  Spanish
-// 6  Russian
-// 7  Italian
-// 8  Portuguese
-// 9  Finnish
-// 10 Aragonese
-// 11 Dutch
-// 12 Danish
-// 13 Catalan
-// 14 Basque-Euskera
-// 15 Portuguese (Brazil)
-// 16 Bulgarian
-// 17 Japanese
-// 18 Japanese utf
-// 19 Chinese
+#ifndef LCD_LANGUAGE
+  #define LCD_LANGUAGE en
+#endif
 
 #define PROTOCOL_VERSION "2.0"
 
@@ -251,45 +228,13 @@
 #define SERIAL_BED_LEVELLING_Y                  " Y: "
 #define SERIAL_BED_LEVELLING_Z                  " Z: "
 
-#if   LANGUAGE_CHOICE == 1  // English
-  #include "language_en.h"
-#elif LANGUAGE_CHOICE == 2  // Polish
-  #include "language_pl.h"
-#elif LANGUAGE_CHOICE == 3  // French
-  #include "language_fr.h"
-#elif LANGUAGE_CHOICE == 4  // German
-  #include "language_de.h"
-#elif LANGUAGE_CHOICE == 5  // Spanish
-  #include "language_es.h"
-#elif LANGUAGE_CHOICE == 6  // Russian
-	#define MAPPER_D0D1       // For Cyrillic
-  #include "language_ru.h"
-#elif LANGUAGE_CHOICE == 7  // Italian
-  #include "language_it.h"
-#elif LANGUAGE_CHOICE == 8  // Portuguese
-  #include "language_pt.h"
-#elif LANGUAGE_CHOICE == 9  // Finnish
-  #include "language_fi.h"
-#elif LANGUAGE_CHOICE == 10 // Aragonese
-  #include "language_an.h"
-#elif LANGUAGE_CHOICE == 11 // Dutch
-  #include "language_nl.h"
-#elif LANGUAGE_CHOICE == 12 // Danish
-  #include "language_da.h"
-#elif LANGUAGE_CHOICE == 13 // Catalan
-  #include "language_ca.h"
-#elif LANGUAGE_CHOICE == 14 // Basque-Euskera
-  #include "language_eu.h"
-#elif LANGUAGE_CHOICE == 15 // Portuguese - Brasil
-  #include "language_pt-br.h"
-#elif LANGUAGE_CHOICE == 16 // Bulgarian
-  #include "language_bg.h"
-#elif LANGUAGE_CHOICE == 17 // Japanese
-  #include "language_kana.h"
-#elif LANGUAGE_CHOICE == 18 // Japanese utf
-  #include "language_kana_utf8.h"
-#elif LANGUAGE_CHOICE == 19 // Chinese
-  #include "language_cn.h"
-#endif
+// LCD Menu Messages
+
+#define LANGUAGE_INCL_(M) STRINGIFY_(language_##M.h)
+#define LANGUAGE_INCL(M) LANGUAGE_INCL_(M)
+#define INCLUDE_LANGUAGE LANGUAGE_INCL(LCD_LANGUAGE)
+
+#include "language_en.h"
+#include INCLUDE_LANGUAGE
 
 #endif //__LANGUAGE_H

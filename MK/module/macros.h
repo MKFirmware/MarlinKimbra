@@ -76,4 +76,6 @@
 
 #define NOOP do{}while(0)
 
+#define _AXIS(AXIS) AXIS ##_AXIS
+
 #endif //__MACROS_H
