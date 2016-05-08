@@ -120,7 +120,6 @@ Stopwatch print_job_timer = Stopwatch();
 
 static uint8_t target_extruder;
 
-bool no_wait_for_cooling = true;
 bool software_endstops = true;
 
 unsigned long printer_usage_seconds;
@@ -811,7 +810,7 @@ void loop() {
     commands_in_queue--;
     cmd_queue_index_r = (cmd_queue_index_r + 1) % BUFSIZE;
   }
-  checkHitEndstops();
+  endstops.report_state();
   idle();
 }
 
@@ -1338,17 +1337,17 @@ static void setup_for_endstop_move() {
   saved_feedrate_multiplier = feedrate_multiplier;
   feedrate_multiplier = 100;
   refresh_cmd_timeout();
-  enable_endstops(true);
+  endstops.enable();
 }
 
 static void clean_up_after_endstop_move() {
   #if ENABLED(ENDSTOPS_ONLY_FOR_HOMING)
-    enable_endstops(false);
+    if (DEBUGGING(INFO)) ECHO_LM(INFO, "clean_up_after_endstop_move > ENDSTOPS_ONLY_FOR_HOMING > endstops.not_homing()");
   #endif
+  endstops.not_homing();
   feedrate = saved_feedrate;
   feedrate_multiplier = saved_feedrate_multiplier;
   refresh_cmd_timeout();
-  endstops_hit_on_purpose(); // clear endstop hit flags
 }
 
 static void axis_unhomed_error() {
@@ -1466,6 +1465,12 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
     static void run_z_probe() {
 
+      /**
+       * To prevent stepper_inactive_time from running out and
+       * EXTRUDER_RUNOUT_PREVENT from extruding
+       */
+      refresh_cmd_timeout();
+
       plan_bed_level_matrix.set_to_identity();
       feedrate = homing_feedrate[Z_AXIS];
 
@@ -1482,7 +1487,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       zPosition += home_bump_mm(Z_AXIS);
       line_to_z(zPosition);
       st_synchronize();
-      endstops_hit_on_purpose(); // clear endstop hit flags
+      endstops.hit_on_purpose(); // clear endstop hit flags
 
       // move back down slowly to find bed
       set_homing_bump_feedrate(Z_AXIS);
@@ -1490,7 +1495,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       zPosition -= home_bump_mm(Z_AXIS) * 2;
       line_to_z(zPosition);
       st_synchronize();
-      endstops_hit_on_purpose(); // clear endstop hit flags
+      endstops.hit_on_purpose(); // clear endstop hit flags
 
       // Get the current stepper position after bumping an endstop
       current_position[Z_AXIS] = st_get_axis_position_mm(Z_AXIS);
@@ -1504,15 +1509,21 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       if (DEBUGGING(INFO))
         DEBUG_POS("deploy_z_probe", current_position);
 
+      if (endstops.z_probe_enabled) return;
+
       #if HAS(SERVO_ENDSTOPS)
         // Engage Z Servo endstop if enabled
         if (servo_endstop_id[Z_AXIS] >= 0) servo[servo_endstop_id[Z_AXIS]].move(servo_endstop_angle[Z_AXIS][0]);
       #endif
+
+      endstops.enable_z_probe();
     }
 
     static void stow_z_probe(bool doRaise = true) {
       if (DEBUGGING(INFO))
         DEBUG_POS("stow_z_probe", current_position);
+
+      if (!endstops.z_probe_enabled) return;
 
       #if HAS(SERVO_ENDSTOPS)
         // Retract Z Servo endstop if enabled
@@ -1533,6 +1544,8 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
           servo[servo_endstop_id[Z_AXIS]].move(servo_endstop_angle[Z_AXIS][1]);
         }
       #endif
+
+      endstops.enable_z_probe(false);
     }
 
     enum ProbeAction {
@@ -1661,14 +1674,14 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       current_position[axis] = 0;
       sync_plan_position();
 
-      enable_endstops(false); // Disable endstops while moving away
+      endstops.enable(false); // Disable endstops while moving away
 
       // Move away from the endstop by the axis HOME_BUMP_MM
       destination[axis] = -home_bump_mm(axis) * axis_home_dir;
       line_to_destination();
       st_synchronize();
 
-      enable_endstops(true); // Enable endstops for next homing move
+      endstops.enable(); // Enable endstops for next homing move
 
       // Slow down the feedrate for the next move
       set_homing_bump_feedrate(axis);
@@ -1715,7 +1728,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
       destination[axis] = current_position[axis];
       feedrate = 0.0;
-      endstops_hit_on_purpose(); // clear endstop hit flags
+      endstops.hit_on_purpose(); // clear endstop hit flags
       axis_known_position[axis] = true;
       axis_homed[axis] = true;
 
@@ -1778,14 +1791,14 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       current_position[axis] = 0;
       sync_plan_position();
 
-      enable_endstops(false); // Disable endstops while moving away
+      endstops.enable(false); // Disable endstops while moving away
 
       // Move away from the endstop by the axis HOME_BUMP_MM
       destination[axis] = -home_bump_mm(axis) * axis_home_dir;
       line_to_destination();
       st_synchronize();
 
-      enable_endstops(true); // Enable endstops for next homing move
+      endstops.enable(); // Enable endstops for next homing move
 
       // Slow down the feedrate for the next move
       set_homing_bump_feedrate(axis);
@@ -1797,7 +1810,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
       // retrace by the amount specified in endstop_adj
       if (endstop_adj[axis] * axis_home_dir < 0) {
-        enable_endstops(false); // Disable Endstops while moving away
+        endstops.enable(false); // Disable Endstops while moving away
         sync_plan_position();
         destination[axis] = endstop_adj[axis];
         if (DEBUGGING(INFO)) {
@@ -1806,7 +1819,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
         }
         line_to_destination();
         st_synchronize();
-        enable_endstops(true); // Enable Endstops for next homing move
+        endstops.enable(); // Enable Endstops for next homing move
       }
 
       if (DEBUGGING(INFO)) ECHO_LMV(INFO, " > endstop_adj * axis_home_dir = ", endstop_adj[axis] * axis_home_dir);
@@ -1820,7 +1833,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
       destination[axis] = current_position[axis];
       feedrate = 0.0;
-      endstops_hit_on_purpose(); // clear Endstop hit flags
+      endstops.hit_on_purpose(); // clear Endstop hit flags
       axis_known_position[axis] = true;
       axis_homed[axis] = true;
     }
@@ -1905,6 +1918,9 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
   }
 
   static void deploy_z_probe() {
+
+    if (endstops.z_probe_enabled) return;
+
     #if HAS(SERVO_ENDSTOPS)
       feedrate = homing_feedrate[Z_AXIS];
       do_blocking_move_to_z(  z_probe_deploy_start_location[Z_AXIS]);
@@ -1932,19 +1948,23 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
                           z_probe_deploy_start_location[Z_AXIS]);
     #endif
 
+    endstops.enable_z_probe();
     sync_plan_position_delta();
   }
 
   static void retract_z_probe() {
+
+    if (!endstops.z_probe_enabled) return;
+
     #if HAS(SERVO_ENDSTOPS)
+      // Retract Z Servo endstop if enabled
+      if (servo_endstop_id[Z_AXIS] >= 0)
+        servo[servo_endstop_id[Z_AXIS]].move(servo_endstop_angle[Z_AXIS][1]);
+
       feedrate = homing_feedrate[Z_AXIS];
       do_blocking_move_to(z_probe_retract_start_location[X_AXIS],
                           z_probe_retract_start_location[Y_AXIS],
                           z_probe_retract_start_location[Z_AXIS]);
-
-      // Retract Z Servo endstop if enabled
-      if (servo_endstop_id[Z_AXIS] >= 0)
-        servo[servo_endstop_id[Z_AXIS]].move(servo_endstop_angle[Z_AXIS][1]);
     #else
       feedrate = homing_feedrate[Z_AXIS];
       do_blocking_move_to(z_probe_retract_start_location[X_AXIS],
@@ -1963,13 +1983,14 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
                           z_probe_retract_start_location[Z_AXIS]);
     #endif
 
+    endstops.enable_z_probe(false);
     sync_plan_position_delta();
   }
 
   static void run_z_probe() {
     refresh_cmd_timeout();
 
-    enable_endstops(true);
+    endstops.enable();
     float start_z = current_position[Z_AXIS];
     long start_steps = st_get_position(Z_AXIS);
 
@@ -1977,9 +1998,9 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
     destination[Z_AXIS] = -20;
     prepare_move_raw();
     st_synchronize();
-    endstops_hit_on_purpose(); // clear endstop hit flags
+    endstops.hit_on_purpose(); // clear endstop hit flags
 
-    enable_endstops(false);
+    endstops.enable(false);
     long stop_steps = st_get_position(Z_AXIS);
     float mm = start_z - float(start_steps - stop_steps) / axis_steps_per_unit[Z_AXIS];
     current_position[Z_AXIS] = mm;
@@ -2606,7 +2627,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
     feedrate_multiplier = 100;
     refresh_cmd_timeout();
 
-    enable_endstops(true);
+    endstops.enable();
 
     set_destination_to_current();
 
@@ -2621,7 +2642,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
     feedrate = 1.732 * homing_feedrate[X_AXIS];
     line_to_destination();
     st_synchronize();
-    endstops_hit_on_purpose(); // clear endstop hit flags
+    endstops.hit_on_purpose(); // clear endstop hit flags
 
     // Destination reached
     set_current_to_destination();
@@ -2634,13 +2655,13 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
     sync_plan_position_delta();
 
     #if ENABLED(ENDSTOPS_ONLY_FOR_HOMING)
-      enable_endstops(false);
+      endstops.enable(false);
     #endif
 
     feedrate = saved_feedrate;
     feedrate_multiplier = saved_feedrate_multiplier;
     refresh_cmd_timeout();
-    endstops_hit_on_purpose(); // clear endstop hit flags
+    endstops.hit_on_purpose(); // clear endstop hit flags
   }
 
   static void prepare_move_raw() {
@@ -2779,12 +2800,12 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
     if (retracting) {
       feedrate = retract_feedrate * 60;
       current_position[E_AXIS] += (swapping ? retract_length_swap : retract_length) / volumetric_multiplier[active_extruder];
-      plan_set_e_position(current_position[E_AXIS]);
+      sync_plan_position_e();
       prepare_move();
 
       if (retract_zlift > 0.01) {
         current_position[Z_AXIS] -= retract_zlift;
-        #if MECH(DELTA) || MECH(SCARA)
+        #if MECH(DELTA)
           sync_plan_position_delta();
         #else
           sync_plan_position();
@@ -2795,12 +2816,11 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
     else {
       if (retract_zlift > 0.01) {
         current_position[Z_AXIS] += retract_zlift;
-        #if MECH(DELTA) || MECH(SCARA)
+        #if MECH(DELTA)
           sync_plan_position_delta();
         #else
           sync_plan_position();
         #endif
-        //prepare_move();
       }
 
       feedrate = retract_recover_feedrate * 60;
@@ -2813,8 +2833,8 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
     feedrate = oldFeedrate;
     retracted[active_extruder] = retracting;
 
-  } // retract()
-#endif //FWRETRACT
+  }
+#endif // FWRETRACT
 
 #if HAS(Z_PROBE_SLED)
 
@@ -2912,18 +2932,10 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
   }
 #endif
 
-inline void wait_heater() {
-  bool wants_to_cool = isCoolingHotend(target_extruder);
-
-  // Exit if S<lower>, continue if S<higher>, R<lower>, or R<higher>
-  if (no_wait_for_cooling && wants_to_cool) return;
-
-  // Prevents a wait-forever situation if R is misused i.e. M109 R0
-  // Try to calculate a ballpark safe margin by halving EXTRUDE_MINTEMP
-  if (wants_to_cool && degTargetHotend(target_extruder) < (EXTRUDE_MINTEMP)/2) return;
+inline void wait_heater(bool no_wait_for_cooling = true) {
 
   #if ENABLED(TEMP_RESIDENCY_TIME)
-    long residency_start_ms = -1;
+    millis_t residency_start_ms = -1;
     // Loop until the temperature has stabilized
     #define TEMP_CONDITIONS (!residency_start_ms || PENDING(now, residency_start_ms + (TEMP_RESIDENCY_TIME) * 1000UL))
   #else
@@ -2931,13 +2943,18 @@ inline void wait_heater() {
     #define TEMP_CONDITIONS (wants_to_cool ? isCoolingHotend(target_extruder) : isHeatingHotend(target_extruder))
   #endif // TEMP_RESIDENCY_TIME
 
+  float theTarget = -1;
+  bool wants_to_cool;
   cancel_heatup = false;
   millis_t now, next_temp_ms = 0;
+
+  KEEPALIVE_STATE(NOT_BUSY);
+
   do {
     now = millis();
     if (ELAPSED(now, next_temp_ms)) { //Print temp & remaining time every 1s while waiting
       next_temp_ms = now + 1000UL;
-      #if HAS(TEMP_0) || HAS(TEMP_BED) || ENABLED(HEATER_0_USES_MAX6675)
+      #if HAS(TEMP_HOTEND) || HAS(TEMP_BED)
         print_heaterstates();
       #endif
       #if TEMP_RESIDENCY_TIME > 0
@@ -2954,11 +2971,24 @@ inline void wait_heater() {
       #endif
     }
 
+    // Target temperature might be changed during the loop
+    if (theTarget != degTargetHotend(target_extruder)) {
+      wants_to_cool = isCoolingHotend(target_extruder);
+      theTarget = degTargetHotend(target_extruder);
+
+      // Exit if S<lower>, continue if S<higher>, R<lower>, or R<higher>
+      if (no_wait_for_cooling && wants_to_cool) break;
+
+      // Prevent a wait-forever situation if R is misused i.e. M109 R0
+      // Try to calculate a ballpark safe margin by halving EXTRUDE_MINTEMP
+      if (wants_to_cool && theTarget < (EXTRUDE_MINTEMP) / 2) break;
+    }
+
     idle();
     refresh_cmd_timeout(); // to prevent stepper_inactive_time from running out
 
     #if TEMP_RESIDENCY_TIME > 0
-      float temp_diff = fabs(degTargetHotend(target_extruder) - degHotend(target_extruder));
+      float temp_diff = fabs(theTarget - degHotend(target_extruder));
 
       if (!residency_start_ms) {
         // Start the TEMP_RESIDENCY_TIME timer when we reach target temp for the first time.
@@ -2973,13 +3003,10 @@ inline void wait_heater() {
   } while(!cancel_heatup && TEMP_CONDITIONS);
 
   LCD_MESSAGEPGM(MSG_HEATING_COMPLETE);
+  KEEPALIVE_STATE(IN_HANDLER);
 }
 
-inline void wait_bed() {
-  bool wants_to_cool = isCoolingBed();
-
-  // Exit if the temperature is above target and not waiting for cooling
-  if (no_wait_for_cooling && wants_to_cool) return;
+inline void wait_bed(bool no_wait_for_cooling = true) {
 
   #if TEMP_BED_RESIDENCY_TIME > 0
     millis_t residency_start_ms = 0;
@@ -2990,8 +3017,12 @@ inline void wait_bed() {
     #define TEMP_BED_CONDITIONS (wants_to_cool ? isCoolingBed() : isHeatingBed())
   #endif // TEMP_BED_RESIDENCY_TIME > 0
 
+  float theTarget = -1;
+  bool wants_to_cool;
   cancel_heatup = false;
   millis_t now, next_temp_ms = 0;
+
+  KEEPALIVE_STATE(NOT_BUSY);
 
   // Wait for temperature to come close enough
   do {
@@ -3013,11 +3044,24 @@ inline void wait_bed() {
       #endif
     }
 
+    // Target temperature might be changed during the loop
+    if (theTarget != degTargetBed()) {
+      wants_to_cool = isCoolingBed();
+      theTarget = degTargetBed();
+
+      // Exit if S<lower>, continue if S<higher>, R<lower>, or R<higher>
+      if (no_wait_for_cooling && wants_to_cool) break;
+
+      // Prevent a wait-forever situation if R is misused i.e. M190 R0
+      // Simply don't wait to cool a bed under 30C
+      if (wants_to_cool && theTarget < 30) break;
+    }
+
     idle();
     refresh_cmd_timeout(); // to prevent stepper_inactive_time from running out
 
     #if TEMP_BED_RESIDENCY_TIME > 0
-      float temp_diff = fabs(degBed() - degTargetBed());
+      float temp_diff = fabs(theTarget - degTargetBed());
 
       if (!residency_start_ms) {
         // Start the TEMP_BED_RESIDENCY_TIME timer when we reach target temp for the first time.
@@ -3031,6 +3075,7 @@ inline void wait_bed() {
 
   } while (!cancel_heatup && TEMP_BED_CONDITIONS);
   LCD_MESSAGEPGM(MSG_BED_DONE);
+  KEEPALIVE_STATE(IN_HANDLER);
 }
 
 
@@ -3297,7 +3342,7 @@ inline void gcode_G28() {
     feedrate = 1.732 * homing_feedrate[X_AXIS];
     line_to_destination();
     st_synchronize();
-    endstops_hit_on_purpose(); // clear endstop hit flags
+    endstops.hit_on_purpose(); // clear endstop hit flags
 
     // Destination reached
     for (int i = X_AXIS; i <= Z_AXIS; i++) current_position[i] = destination[i];
@@ -3376,7 +3421,7 @@ inline void gcode_G28() {
         line_to_destination();
         feedrate = 0.0;
         st_synchronize();
-        endstops_hit_on_purpose(); // clear endstop hit flags
+        endstops.hit_on_purpose(); // clear endstop hit flags
 
         current_position[X_AXIS] = destination[X_AXIS];
         current_position[Y_AXIS] = destination[Y_AXIS];
@@ -3445,7 +3490,7 @@ inline void gcode_G28() {
             feedrate_multiplier = 100;
             refresh_cmd_timeout();
 
-            enable_endstops(true);
+            endstops.enable();
             for(uint8_t i = 0; i < NUM_AXIS; i++) {
               destination[i] = current_position[i];
             }
@@ -3461,13 +3506,13 @@ inline void gcode_G28() {
             sync_plan_position();
 
             #if ENABLED(ENDSTOPS_ONLY_FOR_HOMING)
-              enable_endstops(false);
+              endstops.enable(false);
             #endif
 
             feedrate = saved_feedrate;
             feedrate_multiplier = saved_feedrate_multiplier;
             refresh_cmd_timeout();
-            endstops_hit_on_purpose(); // clear endstop hit flags
+            endstops.hit_on_purpose(); // clear endstop hit flags
 
             sync_plan_position();
 
@@ -5435,9 +5480,7 @@ inline void gcode_M109() {
     if (target_extruder != active_extruder) return;
   #endif
 
-  LCD_MESSAGEPGM(MSG_HEATING);
-
-  no_wait_for_cooling = code_seen('S');
+  bool no_wait_for_cooling = code_seen('S');
   if (no_wait_for_cooling || code_seen('R')) {
     float temp = code_value();
     setTargetHotend(temp, target_extruder);
@@ -5451,7 +5494,7 @@ inline void gcode_M109() {
      * stand by mode, for instance in a dual extruder setup, without affecting
      * the running print timer.
      */
-    if (temp <= (EXTRUDE_MINTEMP)/2) {
+    if (temp <= (EXTRUDE_MINTEMP) / 2) {
       print_job_timer.stop();
       LCD_MESSAGEPGM(WELCOME_MSG);
     }
@@ -5472,7 +5515,7 @@ inline void gcode_M109() {
     if (code_seen('B')) autotemp_max = code_value();
   #endif
 
-  wait_heater();
+  wait_heater(no_wait_for_cooling);
 }
 
 /**
@@ -5550,50 +5593,17 @@ inline void gcode_M115() {
 /**
  * M119: Output endstop states to serial output
  */
-inline void gcode_M119() {
-  ECHO_LM(DB, SERIAL_M119_REPORT);
-  #if HAS(X_MIN)
-    ECHO_EMT(SERIAL_X_MIN, ((READ(X_MIN_PIN)^X_MIN_ENDSTOP_INVERTING)?SERIAL_ENDSTOP_HIT:SERIAL_ENDSTOP_OPEN));
-  #endif
-  #if HAS(X_MAX)
-    ECHO_EMT(SERIAL_X_MAX, ((READ(X_MAX_PIN)^X_MAX_ENDSTOP_INVERTING)?SERIAL_ENDSTOP_HIT:SERIAL_ENDSTOP_OPEN));
-  #endif
-  #if HAS(Y_MIN)
-    ECHO_EMT(SERIAL_Y_MIN, ((READ(Y_MIN_PIN)^Y_MIN_ENDSTOP_INVERTING)?SERIAL_ENDSTOP_HIT:SERIAL_ENDSTOP_OPEN));
-  #endif
-  #if HAS(Y_MAX)
-    ECHO_EMT(SERIAL_Y_MAX, ((READ(Y_MAX_PIN)^Y_MAX_ENDSTOP_INVERTING)?SERIAL_ENDSTOP_HIT:SERIAL_ENDSTOP_OPEN));
-  #endif
-  #if HAS(Z_MIN)
-    ECHO_EMT(SERIAL_Z_MIN, ((READ(Z_MIN_PIN)^Z_MIN_ENDSTOP_INVERTING)?SERIAL_ENDSTOP_HIT:SERIAL_ENDSTOP_OPEN));
-  #endif
-  #if HAS(Z_MAX)
-    ECHO_EMT(SERIAL_Z_MAX, ((READ(Z_MAX_PIN)^Z_MAX_ENDSTOP_INVERTING)?SERIAL_ENDSTOP_HIT:SERIAL_ENDSTOP_OPEN));
-  #endif
-  #if HAS(Z2_MAX)
-    ECHO_EMT(SERIAL_Z2_MAX, ((READ(Z2_MAX_PIN)^Z2_MAX_ENDSTOP_INVERTING)?SERIAL_ENDSTOP_HIT:SERIAL_ENDSTOP_OPEN));
-  #endif
-  #if HAS(Z_PROBE)
-    ECHO_EMT(SERIAL_Z_PROBE, ((READ(Z_PROBE_PIN)^Z_PROBE_ENDSTOP_INVERTING)?SERIAL_ENDSTOP_HIT:SERIAL_ENDSTOP_OPEN));
-  #endif
-  #if HAS(E_MIN)
-    ECHO_EMT(SERIAL_E_MIN, ((READ(E_MIN_PIN)^E_MIN_ENDSTOP_INVERTING)?SERIAL_ENDSTOP_HIT:SERIAL_ENDSTOP_OPEN));
-  #endif
-  #if HAS(FILRUNOUT)
-    ECHO_EMT(SERIAL_FILRUNOUT_PIN, ((READ(FILRUNOUT_PIN)^FILRUNOUT_PIN_INVERTING)?SERIAL_ENDSTOP_HIT:SERIAL_ENDSTOP_OPEN));
-  #endif
-  ECHO_E;
-}
+inline void gcode_M119() { endstops.M119(); }
 
 /**
- * M120: Enable endstops
+ * M120: Enable endstops and set non-homing endstop state to "enabled"
  */
-inline void gcode_M120() { enable_endstops(true); }
+inline void gcode_M120() { endstops.enable_globally(true); }
 
 /**
- * M121: Disable endstops
+ * M121: Disable endstops and set non-homing endstop state to "disabled"
  */
-inline void gcode_M121() { enable_endstops(false); }
+inline void gcode_M121() { endstops.enable_globally(false); }
 
 /**
  * M122: Disable or enable software endstops
@@ -5792,10 +5802,10 @@ inline void gcode_M140() {
     if (DEBUGGING(DRYRUN)) return;
 
     LCD_MESSAGEPGM(MSG_BED_HEATING);
-    no_wait_for_cooling = code_seen('S');
+    bool no_wait_for_cooling = code_seen('S');
     if (no_wait_for_cooling || code_seen('R')) setTargetBed(code_value());
 
-    wait_bed();
+    wait_bed(no_wait_for_cooling);
   }
 #endif // HAS(TEMP_BED)
 
@@ -7329,6 +7339,7 @@ inline void gcode_M999() {
  */
 inline void gcode_T(uint8_t tmp_extruder) {
   bool good_extruder = false;
+  float stored_feedrate = feedrate;
 
   #if ENABLED(COLOR_MIXING_EXTRUDER) && MIXING_VIRTUAL_TOOLS > 1
 
@@ -7347,21 +7358,18 @@ inline void gcode_T(uint8_t tmp_extruder) {
       good_extruder = true;
       target_extruder = tmp_extruder;
 
-      #if ENABLED(DONDOLO)
-        bool make_move = true;
-      #else
-        bool make_move = false;
-      #endif
-
       if (code_seen('F')) {
-
-        #if EXTRUDERS > 1
-          make_move = true;
-        #endif
-
         float next_feedrate = code_value();
-        if (next_feedrate > 0.0) feedrate = next_feedrate;
+        if (next_feedrate > 0.0) stored_feedrate = feedrate = next_feedrate;
       }
+      else {
+        #if ENABLED(XY_TRAVEL_SPEED)
+          feedrate = XY_TRAVEL_SPEED;
+        #else
+          feedrate = min(max_feedrate[X_AXIS], max_feedrate[Y_AXIS]);
+        #endif
+      }
+
       #if EXTRUDERS > 1
         #if ENABLED(NPR2)
           if(target_extruder != old_color)
@@ -7603,7 +7611,7 @@ inline void gcode_T(uint8_t tmp_extruder) {
             sync_plan_position();
           #endif // !DELTA
           // Move to the old position if 'F' was in the parameters
-          if (make_move && IsRunning()) prepare_move();
+          if (IsRunning()) prepare_move();
         }
 
         #if ENABLED(EXT_SOLENOID)
@@ -7615,6 +7623,8 @@ inline void gcode_T(uint8_t tmp_extruder) {
       #endif // EXTRUDERS > 1
     }
   #endif // !COLOR_MIXING_EXTRUDER
+
+  feedrate = stored_feedrate;
 
   if (!good_extruder) {
     ECHO_SMV(DB, "T", (int)tmp_extruder);
@@ -8314,12 +8324,8 @@ static void report_current_position() {
       adjust_delta(target);
 
       if (DEBUGGING(DEBUG)) {
-        ECHO_LMV(DEB, "target[X_AXIS]=", target[X_AXIS]);
-        ECHO_LMV(DEB, "target[Y_AXIS]=", target[Y_AXIS]);
-        ECHO_LMV(DEB, "target[Z_AXIS]=", target[Z_AXIS]);
-        ECHO_LMV(DEB, "delta[TOWER_1]=", delta[TOWER_1]);
-        ECHO_LMV(DEB, "delta[TOWER_2]=", delta[TOWER_2]);
-        ECHO_LMV(DEB, "delta[TOWER_3]=", delta[TOWER_3]);
+        DEBUG_POS("prepare_move_delta", target);
+        DEBUG_POS("prepare_move_delta", delta);
       }
 
       plan_buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], target[E_AXIS], frfm, active_extruder, active_driver);
@@ -8404,13 +8410,10 @@ void prepare_move() {
     if (!prepare_move_scara(destination)) return;
   #elif MECH(DELTA)
     if (!prepare_move_delta(destination)) return;
-  #endif
-
-  #if ENABLED(DUAL_X_CARRIAGE)
-    if (!prepare_move_dual_x_carriage()) return;
-  #endif
-
-  #if MECH(CARTESIAN) || MECH(COREXY) || MECH(COREYX) || MECH(COREXZ) || MECH(COREZX)
+  #else
+    #if ENABLED(DUAL_X_CARRIAGE)
+      if (!prepare_move_dual_x_carriage()) return;
+    #endif
     if (!prepare_move_cartesian()) return;
   #endif
 

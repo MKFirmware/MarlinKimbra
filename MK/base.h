@@ -51,6 +51,7 @@
 #include "module/motion/planner.h"
 #include "module/motion/stepper_indirection.h"
 #include "module/motion/stepper.h"
+#include "module/motion/endstops.h"
 #include "module/motion/vector_3.h"
 #include "module/motion/qr_solve.h"
 #include "module/motion/cartesian_correction.h"

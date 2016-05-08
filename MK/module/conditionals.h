@@ -369,6 +369,17 @@
   #define Z_MAX_LENGTH (Z_MAX_POS - (Z_MIN_POS))
 
   /**
+   * CoreXY or CoreYX or CoreXZ or CoreZX
+   */
+  #if MECH(COREXY) || MECH(COREYX)
+    #define CORE_AXIS_2 B_AXIS
+    #define CORE_AXIS_3 Z_AXIS
+  #elif MECH(COREXZ) || MECH(COREZX)
+    #define CORE_AXIS_2 C_AXIS
+    #define CORE_AXIS_3 Y_AXIS
+  #endif
+
+  /**
    * SCARA
    */
   #if MECH(SCARA)
@@ -739,6 +750,10 @@
   #define HAS_SDSUPPORT (ENABLED(SDSUPPORT))
 
   #define HAS_DIGIPOTSS (PIN_EXISTS(DIGIPOTSS))
+
+  #define HAS_TEMP_HOTEND (HAS_TEMP_0 || ENABLED(HEATER_0_USES_MAX6675))
+
+  #define HAS_THERMALLY_PROTECTED_BED (HAS_TEMP_BED && HAS_HEATER_BED && ENABLED(THERMAL_PROTECTION_BED))
 
   /**
    * Shorthand for filament sensor and power sensor for ultralcd.cpp, dogm_lcd_implementation.h, ultralcd_implementation_hitachi_HD44780.h
