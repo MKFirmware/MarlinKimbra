@@ -18,12 +18,12 @@
 /// #define HIGH_TO_FIRE
 
 // Uncomment the following to enable the use of the PWM (the one for the extruder 0) to drive a peltier cell or any PWM driven cooler for the laser
-#define LASER_WATER_COOLING
-#define LASER_WATER_MAXTEMP 25
+#define COOLER
+#define COOLER_MAXTEMP 25
 
-// Uncomment the following to enable LASER_WATER_COOLING PWM instead of bang-bang
-#define LASER_PWM
-#define LASER_PWM_FREQUENCY 1000 // Frequency in Hz
+// Uncomment the following to enable COOLER PWM instead of bang-bang
+#define COOLER_PWM
+#define COOLER_PWM_FREQUENCY 1000 // Frequency in Hz
 
 //// The following defines select which G codes tell the laser to fire.  It's OK to uncomment more than one.
 #define LASER_FIRE_G1 10 // fire the laser on a G1 move, extinguish when the move ends
@@ -37,7 +37,7 @@
 #define LASER_RASTER_MM_PER_PULSE 0.2 //Can be overridden by providing an R value in M649 command : M649 S17 B2 D0 R0.1 F4000
 
 //// Uncomment the following if the laser cutter is equipped with a peripheral relay board
-//// to control power to an exhaust fan, water pump, laser power supply, etc.
+//// to control power to an exhaust fan, cooler pump, laser power supply, etc.
 //#define LASER_PERIPHERALS
 //#define LASER_PERIPHERALS_TIMEOUT 30000  // Number of milliseconds to wait for status signal from peripheral control board
 
@@ -68,12 +68,12 @@
 
 
 /***********************************************************************
- ************************ PID Settings - WATER ***************************
+ ************************ PID Settings - COOLER ************************
  ***********************************************************************
  *                                                                     *
  * PID Tuning Guide here: http://reprap.org/wiki/PID_Tuning            *
- * Select PID or bang-bang with PIDTEMPWATER.                            *
- * If bang-bang, WATER_LIMIT_SWITCHING will enable hysteresis            *
+ * Select PID or bang-bang with PIDTEMPCOOLER.                         *
+ * If bang-bang, COOLER_LIMIT_SWITCHING will enable hysteresis         *
  *                                                                     *
  ***********************************************************************/
 // Uncomment this to enable PID on the bed. It uses the same frequency PWM as the extruder.
@@ -83,28 +83,28 @@
 // If your configuration is significantly different than this and you don't understand the issues involved, you probably
 // shouldn't use bed PID until someone else verifies your hardware works.
 // If this is enabled, find your own PID constants below.
-#define PIDTEMPWATER
+#define PIDTEMPCOOLER
 
-//#define WATER_LIMIT_SWITCHING
-#define WATER_HYSTERESIS 2 //only disable heating if T<target-WATER_HYSTERESIS and enable heating if T<target+WATER_HYSTERESIS (works only if WATER_LIMIT_SWITCHING is enabled)
-#define WATER_CHECK_INTERVAL 5000 //ms between checks in bang-bang control
+//#define COOLER_LIMIT_SWITCHING
+#define COOLER_HYSTERESIS 2 //only disable heating if T<target-COOLER_HYSTERESIS and enable heating if T<target+COOLER_HYSTERESIS (works only if COOLER_LIMIT_SWITCHING is enabled)
+#define COOLER_CHECK_INTERVAL 5000 //ms between checks in bang-bang control
 
 // This sets the max power delivered to the bed.
 // all forms of bed control obey this (PID, bang-bang, bang-bang with hysteresis)
 // setting this to anything other than 255 enables a form of PWM to the bed,
-// so you shouldn't use it unless you are OK with PWM on your bed.  (see the comment on enabling PIDTEMPWATER)
-#define MAX_WATER_POWER 255 // limits duty cycle to bed; 255=full current
+// so you shouldn't use it unless you are OK with PWM on your bed.  (see the comment on enabling PIDTEMPCOOLER)
+#define MAX_COOLER_POWER 255 // limits duty cycle to bed; 255=full current
 
-#define PID_WATER_INTEGRAL_DRIVE_MAX MAX_WATER_POWER // limit for the integral term
+#define PID_COOLER_INTEGRAL_DRIVE_MAX MAX_COOLER_POWER // limit for the integral term
 // 120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
 // from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
-#define DEFAULT_waterKp 10.00
-#define DEFAULT_waterKi .023
-#define DEFAULT_waterKd 305.4
+#define DEFAULT_coolerKp 10.00
+#define DEFAULT_coolerKi .023
+#define DEFAULT_coolerKd 305.4
 
 // FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
 
-//#define PID_WATER_DEBUG // Sends debug data to the serial port.
+//#define PID_COOLER_DEBUG // Sends debug data to the serial port.
 /***********************************************************************/
 
 

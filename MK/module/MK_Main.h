@@ -117,7 +117,7 @@ void refresh_cmd_timeout();
 
 extern void delay_ms(millis_t ms);
 
-#if ENABLED(FAST_PWM_FAN) || ENABLED(LASER_WATER_COOLING)
+#if ENABLED(FAST_PWM_FAN) || ENABLED(COOLER_PWM)
 
   void setPwmFrequency(uint8_t pin, int val);
 #endif

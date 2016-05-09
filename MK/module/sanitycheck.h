@@ -223,18 +223,18 @@
       #error DEPENDENCY ERROR: Missing setting DEFAULT_bedKd
     #endif
   #endif
-  #if ENABLED(PIDTEMPWATER)
-    #if DISABLED(PID_WATER_INTEGRAL_DRIVE_MAX)
-       #error DEPENDENCY ERROR: Missing setting PID_WATER_INTEGRAL_DRIVE_MAX
+  #if ENABLED(PIDTEMPCOOLER)
+    #if DISABLED(PID_COOLER_INTEGRAL_DRIVE_MAX)
+       #error DEPENDENCY ERROR: Missing setting PID_COOLER_INTEGRAL_DRIVE_MAX
     #endif
-    #if DISABLED(DEFAULT_waterKp)
-      #error DEPENDENCY ERROR: Missing setting DEFAULT_waterKp
+    #if DISABLED(DEFAULT_coolerKp)
+      #error DEPENDENCY ERROR: Missing setting DEFAULT_coolerKp
     #endif
-    #if DISABLED(DEFAULT_waterKi)
-      #error DEPENDENCY ERROR: Missing setting DEFAULT_waterKi
+    #if DISABLED(DEFAULT_coolerKi)
+      #error DEPENDENCY ERROR: Missing setting DEFAULT_coolerKi
     #endif
-    #if DISABLED(DEFAULT_waterKd)
-      #error DEPENDENCY ERROR: Missing setting DEFAULT_waterKd
+    #if DISABLED(DEFAULT_coolerKd)
+      #error DEPENDENCY ERROR: Missing setting DEFAULT_coolerKd
     #endif
 
   #endif

@@ -191,8 +191,9 @@
 #define SERIAL_PID_AUTOTUNE                     "PID Autotune"
 #define SERIAL_PID_AUTOTUNE_START               SERIAL_PID_AUTOTUNE " start"
 #define SERIAL_PID_AUTOTUNE_FAILED              SERIAL_PID_AUTOTUNE " failed!"
-#define SERIAL_PID_BAD_EXTRUDER_NUM             SERIAL_PID_AUTOTUNE_FAILED " Bad extruder number"
+#define SERIAL_PID_BAD_TEMP_CONTROLLER_NUM      SERIAL_PID_AUTOTUNE_FAILED " Bad temperature controller number"
 #define SERIAL_PID_TEMP_TOO_HIGH                SERIAL_PID_AUTOTUNE_FAILED " Temperature too high"
+#define SERIAL_PID_TEMP_TOO_LOW                 SERIAL_PID_AUTOTUNE_FAILED " Temperature too low"
 #define SERIAL_PID_TIMEOUT                      SERIAL_PID_AUTOTUNE_FAILED " timeout"
 #define SERIAL_BIAS                             " bias: "
 #define SERIAL_D                                " d: "
@@ -221,6 +222,7 @@
 
 #define SERIAL_HEATER_BED                       "bed"
 #define SERIAL_STOPPED_HEATER                   ", system stopped! Heater_ID: "
+#define SERIAL_STOPPED_COOLER                   "system stopped! Cooler"
 //#define SERIAL_REDUNDANCY                     "Heater switched off. Temperature difference between temp sensors is too high !"
 #define SERIAL_T_HEATING_FAILED                 "Heating failed"
 #define SERIAL_T_THERMAL_RUNAWAY                "Thermal Runaway"

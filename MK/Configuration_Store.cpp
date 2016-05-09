@@ -73,7 +73,7 @@
  *
  * PIDTEMPBED:
  *  M304      PID         bedKp, bedKi, bedKd
- *  M304  L   PID         waterKp, waterKi, waterKd
+ *  M304  L   PID         coolerKp, coolerKi, coolerKd
  *
  * DOGLCD:
  *  M250  C               lcd_contrast
@@ -211,10 +211,10 @@ void Config_StoreSettings() {
     EEPROM_WRITE_VAR(i, bedKd);
   #endif
 
-  #if ENABLED(PIDTEMPWATER)
-    EEPROM_WRITE_VAR(i, waterKp);
-    EEPROM_WRITE_VAR(i, waterKi);
-    EEPROM_WRITE_VAR(i, waterKd);
+  #if ENABLED(PIDTEMPCOOLER)
+    EEPROM_WRITE_VAR(i, coolerKp);
+    EEPROM_WRITE_VAR(i, coolerKi);
+    EEPROM_WRITE_VAR(i, coolerKd);
   #endif
 
   #if HASNT(LCD_CONTRAST)
@@ -366,10 +366,10 @@ void Config_RetrieveSettings() {
       EEPROM_READ_VAR(i, bedKd);
     #endif
 
-    #if ENABLED(PIDTEMPWATER)
-      EEPROM_READ_VAR(i, waterKp);
-      EEPROM_READ_VAR(i, waterKi);
-      EEPROM_READ_VAR(i, waterKd);
+    #if ENABLED(PIDTEMPCOOLER)
+      EEPROM_READ_VAR(i, coolerKp);
+      EEPROM_READ_VAR(i, coolerKi);
+      EEPROM_READ_VAR(i, coolerKd);
     #endif
 
 
@@ -598,10 +598,10 @@ void Config_ResetDefault() {
     bedKd = scalePID_d(DEFAULT_bedKd);
   #endif
 
-  #if ENABLED(PIDTEMPWATER)
-    waterKp = DEFAULT_waterKp;
-    waterKi = scalePID_i(DEFAULT_waterKi);
-    waterKd = scalePID_d(DEFAULT_waterKd);
+  #if ENABLED(PIDTEMPCOOLER)
+    coolerKp = DEFAULT_coolerKp;
+    coolerKi = scalePID_i(DEFAULT_coolerKi);
+    coolerKd = scalePID_d(DEFAULT_coolerKd);
   #endif
 
 
@@ -807,7 +807,7 @@ void Config_ResetDefault() {
       ECHO_EM(" (Material GUM)");
     #endif // ULTIPANEL
 
-    #if ENABLED(PIDTEMP) || ENABLED(PIDTEMPBED) || ENABLED(PIDTEMPWATER)
+    #if ENABLED(PIDTEMP) || ENABLED(PIDTEMPBED) || ENABLED(PIDTEMPCOOLER)
       if (!forReplay) {
         ECHO_LM(CFG, "PID settings:");
       }
@@ -831,10 +831,10 @@ void Config_ResetDefault() {
         ECHO_MV(" I", unscalePID_i(bedKi));
         ECHO_EMV(" D", unscalePID_d(bedKd));
       #endif
-      #if ENABLED(PIDTEMPWATER)
-        ECHO_SMV(CFG, "  M304 L P", waterKp); // for compatibility with hosts, only echos values for E0
-        ECHO_MV(" I", unscalePID_i(waterKi));
-        ECHO_EMV(" D", unscalePID_d(waterKd));
+      #if ENABLED(PIDTEMPCOOLER)
+        ECHO_SMV(CFG, "  M304 L P", coolerKp); // for compatibility with hosts, only echos values for E0
+        ECHO_MV(" I", unscalePID_i(coolerKi));
+        ECHO_EMV(" D", unscalePID_d(coolerKd));
       #endif
 
     #endif

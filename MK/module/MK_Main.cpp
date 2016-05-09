@@ -6479,11 +6479,11 @@ inline void gcode_M226() {
   }
 #endif // PREVENT_DANGEROUS_EXTRUDE
 
-#if HAS(PID_HEATING)
+#if HAS(PID_HEATING) || HAS(PID_COOLING)
   /**
    * M303: PID relay autotune
    *       S<temperature> sets the target temperature. (default target temperature = 150C)
-   *       H<hotend> (-1 for the bed) (default 0)
+   *       H<hotend> (-1 for the bed, -2 for cooler) (default 0)
    *       C<cycles>
    *       U<bool> with a non-zero value will apply the result to current settings
    */
@@ -6504,23 +6504,23 @@ inline void gcode_M226() {
   }
 #endif
 
-#if ENABLED(PIDTEMPBED) || ENABLED(PIDTEMPWATER)
+#if ENABLED(PIDTEMPBED) || ENABLED(PIDTEMPCOOLER)
   // M304: Set bed PID parameters P I and D
   inline void gcode_M304() {
-    #if ENABLED(PIDTEMPWATER)
+    #if ENABLED(PIDTEMPCOOLER)
     if (code_seen('L')) {
-      if (code_seen('P')) waterKp = code_value();
-      if (code_seen('I')) waterKi = scalePID_i(code_value());
-      if (code_seen('D')) waterKd = scalePID_d(code_value());
+      if (code_seen('P')) coolerKp = code_value();
+      if (code_seen('I')) coolerKi = scalePID_i(code_value());
+      if (code_seen('D')) coolerKd = scalePID_d(code_value());
 
       updatePID();
-      ECHO_SMV(OK, " L p:", waterKp);
-      ECHO_MV(" i:", unscalePID_i(waterKi));
-      ECHO_EMV(" d:", unscalePID_d(waterKd));
+      ECHO_SMV(OK, " L p:", coolerKp);
+      ECHO_MV(" i:", unscalePID_i(coolerKi));
+      ECHO_EMV(" d:", unscalePID_d(coolerKd));
 
     }
     #endif
-    #if ENABLED(PIDTEMPWATER) && ENABLED(PIDTEMPBED)
+    #if ENABLED(PIDTEMPCOOLER) && ENABLED(PIDTEMPBED)
     else {
     #endif
       if (code_seen('P')) bedKp = code_value();
@@ -6531,11 +6531,11 @@ inline void gcode_M226() {
       ECHO_SMV(OK, "p:", bedKp);
       ECHO_MV(" i:", unscalePID_i(bedKi));
       ECHO_EMV(" d:", unscalePID_d(bedKd));
-    #if ENABLED(PIDTEMPWATER) && ENABLED(PIDTEMPBED)
+    #if ENABLED(PIDTEMPCOOLER) && ENABLED(PIDTEMPBED)
     }
     #endif
   }
-#endif // PIDTEMPBED || PIDTEMPWATER
+#endif // PIDTEMPBED || PIDTEMPCOOLER
 
 #if HAS(MICROSTEPS)
   // M350 Set microstepping mode. Warning: Steps per unit remains unchanged. S code sets stepping mode for all drivers.
@@ -8318,7 +8318,7 @@ void process_next_command() {
           gcode_M303(); break;
       #endif
 
-      #if ENABLED(PIDTEMPBED) || ENABLED(PIDTEMPWATER)
+      #if ENABLED(PIDTEMPBED) || ENABLED(PIDTEMPCOOLER)
         case 304: // M304
           gcode_M304(); break;
       #endif // PIDTEMPBED
@@ -9336,7 +9336,7 @@ void kill(const char* lcd_msg) {
   }
 #endif
 
-#if ENABLED(FAST_PWM_FAN) || ENABLED(LASER_WATER_COOLING)
+#if ENABLED(FAST_PWM_FAN) || ENABLED(LASER_COOLER_COOLING)
 
   void setPwmFrequency(uint8_t pin, int val) {
     val &= 0x07;
