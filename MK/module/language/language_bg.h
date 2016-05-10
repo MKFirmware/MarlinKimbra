@@ -1,4 +1,26 @@
 ﻿/**
+ * MK & MK4due 3D Printer Firmware
+ *
+ * Based on Marlin, Sprinter and grbl
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2013 - 2016 Alberto Cotronei @MagoKimbra
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+/**
  * Bulgarian
  *
  * LCD Menu Messages
@@ -13,9 +35,8 @@
 
 
 #define WELCOME_MSG                         MACHINE_NAME " Готов."
-#define MSG_SD                              "SD"
-#define MSG_SD_INSERTED                     MSG_SD " поставена"
-#define MSG_SD_REMOVED                      MSG_SD " извадена"
+#define MSG_SD_INSERTED                     "Картата е поставена"
+#define MSG_SD_REMOVED                      "Картата е извадена"
 #define MSG_MAIN                            "Меню"
 #define MSG_AUTOSTART                       "Автостарт"
 #define MSG_DISABLE_STEPPERS                "Изкл. двигатели"
@@ -155,7 +176,7 @@
 #define MSG_HEATING_FAILED_LCD              "Heating failed"
 #define MSG_ERR_REDUNDANT_TEMP              "REDUNDANT TEMP ERROR"
 #define MSG_THERMAL_RUNAWAY                 "THERMAL RUNAWAY"
-#define MSG_HOTEND_AD595                    "HOTEND AD595 Offset & Gain"
+#define MSG_AD595                           "AD595 Offset & Gain"
 #define MSG_ERR_MAXTEMP                     "MAXTEMP ERROR"
 #define MSG_ERR_MINTEMP                     "MINTEMP ERROR"
 #define MSG_ERR_MAXTEMP_BED                 "MAXTEMP BED ERROR"
@@ -212,9 +233,13 @@
 #if ENABLED(RFID_MODULE)
   #define MSG_RFID_SPOOL                    "Spool on E"
   #define MSG_RFID_BRAND                    "Brand: "
+  #define MSG_RFID_TYPE                     "Type: "
   #define MSG_RFID_COLOR                    "Color: "
   #define MSG_RFID_SIZE                     "Size: "
-  #define MSG_RFID_TEMPERATURE              "Temperature: "
+  #define MSG_RFID_TEMP_HOTEND              "Temperature Hotend: "
+  #define MSG_RFID_TEMP_BED                 "Temperature Bed: "
+  #define MSG_RFID_TEMP_USER_HOTEND         "User temperature Hotend: "
+  #define MSG_RFID_TEMP_USER_BED            "User temperatura Bed: "
   #define MSG_RFID_DENSITY                  "Density: "
   #define MSG_RFID_SPOOL_LENGHT             "Spool Lenght: "
 #endif
