@@ -9,7 +9,6 @@
  * - Extruders number
  * - Thermistor type
  * - Temperature limits
- * - UI Language
  *
  * Mechanisms-settings can be found in Configuration_Xxxxxx.h (where Xxxxxx can be: Cartesian - Delta - Core - Scara)
  * Feature-settings can be found in Configuration_Feature.h
@@ -244,34 +243,4 @@
 #define GUM_PREHEAT_FAN_SPEED   255   // Insert Value between 0 and 255
 /*****************************************************************************************************/
 
-
-/***********************************************************************
- *************************** UI Language  ******************************
- ***********************************************************************
- *                                                                     *
- * Select the language that you prefer and change LANGUAGE_CHOICE      *
- *                                                                     *
- * 1  English                                                          *
- * 2  Polish                                                           *
- * 3  French                                                           *
- * 4  German                                                           *
- * 5  Spanish                                                          *
- * 6  Russian                                                          *
- * 7  Italian                                                          *
- * 8  Portuguese                                                       *
- * 9  Finnish                                                          *
- * 10 Aragonese                                                        *
- * 11 Dutch                                                            *
- * 12 Danish                                                           *
- * 13 Catalan                                                          *
- * 14 Basque-Euskera                                                   *
- * 15 Portuguese (Brazil)                                              *
- * 16 Bulgarian                                                        *
- * 17 Japanese                                                         *
- * 18 Japanese utf                                                     *
- * 19 Chinese                                                          *
- *                                                                     *
- ***********************************************************************/
-#define LANGUAGE_CHOICE 1
-/***********************************************************************/
 #endif

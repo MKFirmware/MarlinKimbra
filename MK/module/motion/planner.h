@@ -49,25 +49,32 @@
 // This struct is used when buffering the setup for each linear movement "nominal" values are as specified in
 // the source g-code and may never actually be reached if acceleration management is active.
 typedef struct {
+
+  unsigned char active_driver;              // Selects the active driver
+
   // Fields used by the bresenham algorithm for tracing the line
   unsigned long steps[NUM_AXIS];                      // Step count along each axis
+  unsigned long step_event_count;           // The number of step events required to complete this block
 
   #if ENABLED(COLOR_MIXING_EXTRUDER)
     unsigned long mix_event_count[DRIVER_EXTRUDERS];  // Step count for each stepper in a mixing extruder
   #endif
 
-  unsigned long step_event_count;           // The number of step events required to complete this block
   long accelerate_until;                    // The index of the step event on which to stop acceleration
   long decelerate_after;                    // The index of the step event on which to start decelerating
   long acceleration_rate;                   // The acceleration rate used for acceleration calculation
-  unsigned char direction_bits;             // The direction bit set for this block (refers to *_DIRECTION_BIT in config.h)
-  unsigned char active_driver;              // Selects the active driver
 
+  unsigned char direction_bits;             // The direction bit set for this block (refers to *_DIRECTION_BIT in config.h)
+
+  // Advance extrusion
   #if ENABLED(ADVANCE)
     long advance_rate;
     volatile long initial_advance;
     volatile long final_advance;
     float advance;
+  #elif ENABLED(ADVANCE_LPC)
+    bool use_advance_lead;
+    int e_speed_multiplier8;
   #endif
 
   // Fields used by the motion planner to manage acceleration

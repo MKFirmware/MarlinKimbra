@@ -163,7 +163,7 @@
   #endif // NEWPANEL
 
   char* itostr2(const uint8_t& x);
-  char* itostr31(const int& xx);
+  char* itostr3sign(const int& x);
   char* itostr3(const int& xx);
   char* itostr3left(const int& xx);
   char* itostr4(const int& xx);
@@ -195,8 +195,8 @@
   FORCE_INLINE void lcd_reset_alert_level() {}
   FORCE_INLINE bool lcd_detected(void) { return true; }
 
-  #define LCD_MESSAGEPGM(x) do{}while(0)
-  #define LCD_ALERTMESSAGEPGM(x) do{}while(0)
+  #define LCD_MESSAGEPGM(x) NOOP
+  #define LCD_ALERTMESSAGEPGM(x) NOOP
 
 #endif //ULTRA_LCD
 

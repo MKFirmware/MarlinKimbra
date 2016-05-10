@@ -174,8 +174,8 @@
   #endif
 
   // Language
-  #if DISABLED(LANGUAGE_CHOICE)
-    #error DEPENDENCY ERROR: Missing setting LANGUAGE_CHOICE
+  #if DISABLED(LCD_LANGUAGE)
+    #error DEPENDENCY ERROR: Missing setting LCD_LANGUAGE
   #endif
 
   /// FEATURE
@@ -415,6 +415,12 @@
     #endif
   #endif
 
+  /**
+   * Advance Extrusion
+   */
+  #if ENABLED(ADVANCE) && ENABLED(ADVANCE_LPC)
+    #error You can enable ADVANCE or ADVANCE_LPC, but not both.
+  #endif
   #if ENABLED(ADVANCE)
     #if DISABLED(EXTRUDER_ADVANCE_K)
       #error DEPENDENCY ERROR: Missing setting EXTRUDER_ADVANCE_K

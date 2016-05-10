@@ -1,3 +1,7 @@
+### Version 4.2.81
+* Fix serial protocol for Repetier Host
+* Bug fix
+
 ### Version 4.2.8
 * Add board folder with files of various board containing the pins
 * Add End time on Graphics display when SD print
