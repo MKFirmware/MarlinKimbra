@@ -696,6 +696,10 @@ This does not match the normal thermistor behaviour so we need to set the follow
   #define HEATER_BED_RAW_HI_TEMP 16383
   #define HEATER_BED_RAW_LO_TEMP 0
 #endif
+#if (THERMISTORCOOLER == 20)
+  #define COOLER_RAW_HI_TEMP 16383
+  #define COOLER_RAW_LO_TEMP 0
+#endif
 const short temptable_20[][2] PROGMEM = {
   {0 * OVERSAMPLENR, 0},
   {227 * OVERSAMPLENR, 1},
@@ -1252,6 +1256,16 @@ const short temptable_1047[][2] PROGMEM = {
   #endif // BED_USES_THERMISTOR
 #endif
 
+#ifdef THERMISTORCOOLER
+  #define COOLERTEMPTABLE TT_NAME(THERMISTORCOOLER)
+  #define COOLERTEMPTABLE_LEN COUNT(COOLERTEMPTABLE)
+#else
+  #ifdef COOLER_USES_THERMISTOR
+    #error No Cooler thermistor table specified
+  #endif // COOLER_USES_THERMISTOR
+#endif
+
+
 //Set the high and low raw values for the heater, this indicates which raw value is a high or low temperature
 #ifndef HEATER_BED_RAW_HI_TEMP
   #ifdef BED_USES_THERMISTOR   //In case of a thermistor the highest temperature results in the lowest ADC value
@@ -1262,5 +1276,16 @@ const short temptable_1047[][2] PROGMEM = {
     #define HEATER_BED_RAW_LO_TEMP 0
   #endif
 #endif
+
+#ifndef COOLER_RAW_HI_TEMP
+  #ifdef COOLER_USES_THERMISTOR   //In case of a thermistor the highest temperature results in the lowest ADC value
+    #define COOLER_RAW_HI_TEMP 0 
+    #define COOLER_RAW_LO_TEMP 16383
+  #else                      //In case of an thermocouple the highest temperature results in the highest ADC value
+    #define COOLER_RAW_HI_TEMP 16383
+    #define COOLER_RAW_LO_TEMP 0
+  #endif
+#endif
+
 
 #endif //THERMISTORTABLES_H_

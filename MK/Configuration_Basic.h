@@ -178,6 +178,7 @@
 #define TEMP_SENSOR_2 0
 #define TEMP_SENSOR_3 0
 #define TEMP_SENSOR_BED 0
+#define TEMP_SENSOR_COOLER 0
 
 //These 2 defines help to calibrate the AD595 sensor in case you get wrong temperature measurements.
 //The measured temperature is defined as "actualTemp = (measuredTemp * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET"
@@ -208,6 +209,7 @@
 #define TEMP_BED_WINDOW     1       // (degC) Window around target to start the residency timer x degC early.
 
 // When temperature exceeds max temp, your heater will be switched off.
+// When temperature exceeds max temp, your cooler cannot be activaed.
 // This feature exists to protect your hotend from overheating accidentally, but *NOT* from thermistor short/failure!
 // You should use MINTEMP for thermistor short/failure protection.
 #define HEATER_0_MAXTEMP 275 // (degC)
@@ -215,8 +217,10 @@
 #define HEATER_2_MAXTEMP 275 // (degC)
 #define HEATER_3_MAXTEMP 275 // (degC)
 #define BED_MAXTEMP      150 // (degC)
+#define COOLER_MAXTEMP   25  // 
 
 // The minimal temperature defines the temperature below which the heater will not be enabled It is used
+// or, in case of cooler, it will switched off.
 // to check that the wiring to the thermistor is not broken.
 // Otherwise this would lead to the heater being powered on all the time.
 #define HEATER_0_MINTEMP 5 // (degC)
@@ -224,6 +228,7 @@
 #define HEATER_2_MINTEMP 5 // (degC)
 #define HEATER_3_MINTEMP 5 // (degC)
 #define BED_MINTEMP      5 // (degC)
+#define COOLER_MINTEMP  15 // (degC) 
 
 //Preheat Constants
 #define PLA_PREHEAT_HOTEND_TEMP 190

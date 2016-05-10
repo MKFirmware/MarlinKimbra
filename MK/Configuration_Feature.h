@@ -189,6 +189,47 @@
 #define DEFAULT_Kc {100, 100, 100, 100} // heating power = Kc * (e_speed)
 /***********************************************************************/
 
+/***********************************************************************
+ ************************ PID Settings - COOLER ************************
+ ***********************************************************************
+ *                                                                     *
+ * PID Tuning Guide here: http://reprap.org/wiki/PID_Tuning            *
+ * Select PID or bang-bang with PIDTEMPCOOLER.                         *
+ * If bang-bang, COOLER_LIMIT_SWITCHING will enable hysteresis         *
+ *                                                                     *
+ ***********************************************************************/
+// Uncomment this to enable PID on the cooler. It uses the same frequency PWM as the extruder
+// if you use a software PWM or the frequency you select if using an hardware PWM
+// If your PID_dT is the default, you use a software PWM, and correct for your hardware/configuration, that means 7.689Hz,
+// which is fine for driving a square wave into a resistive load and does not significantly impact you FET heating.
+// This also works fine on a Fotek SSR-10DA Solid State Relay into a 250W cooler.
+// If your configuration is significantly different than this and you don't understand the issues involved, you probably
+// shouldn't use bed PID until someone else verifies your hardware works.
+// If this is enabled, find your own PID constants below.
+//#define PIDTEMPCOOLER
+
+//#define COOLER_LIMIT_SWITCHING
+#define COOLER_HYSTERESIS 2 //only disable heating if T<target-COOLER_HYSTERESIS and enable heating if T<target+COOLER_HYSTERESIS (works only if COOLER_LIMIT_SWITCHING is enabled)
+#define COOLER_CHECK_INTERVAL 5000 //ms between checks in bang-bang control
+
+// This sets the max power delivered to the bed.
+// all forms of bed control obey this (PID, bang-bang, bang-bang with hysteresis)
+// setting this to anything other than 255 enables a form of PWM to the bed,
+// so you shouldn't use it unless you are OK with PWM on your bed.  (see the comment on enabling PIDTEMPCOOLER)
+#define MAX_COOLER_POWER 255 // limits duty cycle to bed; 255=full current
+
+#define PID_COOLER_INTEGRAL_DRIVE_MAX MAX_COOLER_POWER // limit for the integral term
+// 120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
+// from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
+#define DEFAULT_coolerKp 10.00
+#define DEFAULT_coolerKi .023
+#define DEFAULT_coolerKd 305.4
+
+// FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
+
+//#define PID_COOLER_DEBUG // Sends debug data to the serial port.
+/***********************************************************************/
+
 
 /***********************************************************************
  ************************ PID Settings - BED ***************************
@@ -246,13 +287,13 @@
  ************************ Thermal runaway protection ****************************
  ********************************************************************************
  *                                                                              *
- * This protects your printer from damage and fire if a thermistor              *
+ * This protects your device from damage and fire if a thermistor               *
  * falls out or temperature sensors fail in any way.                            *
  *                                                                              *
  * The issue: If a thermistor falls out or a temperature sensor fails,          *
  * Marlin can no longer sense the actual temperature. Since a                   *
  * disconnected thermistor reads as a low temperature, the firmware             *
- * will keep the heater on.                                                     *
+ * will keep the heater/cooler on.                                              *
  *                                                                              *
  * The solution: Once the temperature reaches the target, start                 *
  * observing. If the temperature stays too far below the                        *
@@ -261,6 +302,7 @@
  *                                                                              *
  * Uncomment THERMAL_PROTECTION_HOTENDS to enable this feature for all hotends. *
  * Uncomment THERMAL_PROTECTION_BED to enable this feature for the heated bed.  *
+ * Uncomment THERMAL_PROTECTION_COOLER to enable this feature for the cooler.   *
  *                                                                              *
  ********************************************************************************/
 //#define THERMAL_PROTECTION_HOTENDS
@@ -279,6 +321,25 @@
 
 #define THERMAL_PROTECTION_BED_PERIOD    20 // Seconds
 #define THERMAL_PROTECTION_BED_HYSTERESIS 2 // Degrees Celsius
+
+
+//#define THERMAL_PROTECTION_COOLER
+
+#define THERMAL_PROTECTION_BED_COOLER    30 // Seconds
+#define THERMAL_PROTECTION_COOLER_HYSTERESIS 3 // Degree Celsius
+
+// Using M141 to set cooling temperature the firmware will wait for the WATCH_COOLER_TEMP_PERIOD 
+// to expire, and if the temperature hasn't lowered by WATCH_TEMP_DECREASE degrees, 
+// the machine is halted, requiring a hard reset. This test restarts with any M141, 
+// but only if the current remperature is far enough exceeding the target for a reliable test
+// Enable this feature by uncomment THERMAL_PROTECTION_COOLER_WATCHDOG
+
+//#define THERMAL_PROTECTION_COOLER_WATCHDOG
+#define WATCH_TEMP_COOLER_PERIOD 60          // Seconds
+#define WATCH_TEMP_COOLER_DECREASE 1         // Degree Celsius
+
+
+
 /********************************************************************************/
 
 

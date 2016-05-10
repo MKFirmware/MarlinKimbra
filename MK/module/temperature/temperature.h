@@ -185,7 +185,7 @@ int getHeaterPower(int heater);
 int getCoolerPower(void);
 
 void disable_all_heaters(); 
-#define disable_all_coolers() setTargetCooler(0)
+void disable_all_coolers();
 void updatePID();
 
 #if  HAS(PID_HEATING) || HAS(PID_COOLING)

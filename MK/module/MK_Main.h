@@ -254,6 +254,10 @@ extern uint8_t active_driver;
   void print_heaterstates();
 #endif
 
+#if HAS(TEMP_COOLER)
+  void print_heaterstates();
+#endif
+
 #if ENABLED(FIRMWARE_TEST)
   void FirmwareTest();
 #endif

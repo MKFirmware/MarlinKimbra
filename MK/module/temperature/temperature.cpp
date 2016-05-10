@@ -99,6 +99,7 @@ float current_temperature_bed = 0.0;
 #endif
 
 unsigned char soft_pwm_bed;
+unsigned char soft_pwm_cooler;
 
 #if ENABLED(BABYSTEPPING)
   volatile int babystepsTodo[3] = { 0 };
@@ -179,6 +180,8 @@ static volatile bool temp_meas_ready = false;
   static float pid_error_cooler;
   static float temp_iState_min_cooler;
   static float temp_iState_max_cooler;
+#else
+  static millis_t  next_cooler_check_ms;
 #endif
 
 static unsigned char soft_pwm[HOTENDS];
@@ -213,10 +216,10 @@ static int maxttemp[HOTENDS] = ARRAY_BY_HOTENDS1(16383);
   static int bed_maxttemp_raw = HEATER_BED_RAW_HI_TEMP;
 #endif
 #if ENABLED(COOLER_MINTEMP)
-  static int cooler_minttemp_raw = COOLER_COOLER_RAW_LO_TEMP;
+  static int cooler_minttemp_raw = COOLER_RAW_LO_TEMP;
 #endif
 #if ENABLED(COOLER_MAXTEMP)
-  static int cooler_maxttemp_raw = COOLER_COOLER_RAW_HI_TEMP;
+  static int cooler_maxttemp_raw = COOLER_RAW_HI_TEMP;
 #endif
 
 #if ENABLED(TEMP_SENSOR_1_AS_REDUNDANT)
@@ -237,7 +240,7 @@ static void updateTemperaturesFromRawValues();
   millis_t watch_heater_next_ms[HOTENDS] = { 0 };
 #endif
 
-#if ENABLED(THERMAL_PROTECTION_COOLERS)
+#if ENABLED(THERMAL_PROTECTION_COOLER)
   int watch_target_temp_cooler = 0;
   millis_t watch_cooler_next_ms = 0;
 #endif
@@ -901,7 +904,7 @@ void manage_temp_controller() {
 
   #if DISABLED(PIDTEMPCOOLER)
     if (ms < next_cooler_check_ms) return;
-    next_cooler_check_ms = ms + BED_COOLER_INTERVAL;
+    next_cooler_check_ms = ms + COOLER_CHECK_INTERVAL;
   #endif
 
   #if TEMP_SENSOR_BED != 0
@@ -1064,7 +1067,7 @@ static float analog2tempBed(int raw) {
 
 
 static float analog2tempCooler(int raw) { 
-  #if ENABLED(BED_COOLER_THERMISTOR)
+  #if ENABLED(COOLER_USES_THERMISTOR)
     float celsius = 0;
     byte i;
 
@@ -1248,7 +1251,7 @@ void tp_init() {
   #if HAS(HEATER_BED)
     SET_OUTPUT(HEATER_BED_PIN);
   #endif
-  #if HAS(COOLER) 
+  #if HAS(COOLER_DEV) 
     SET_OUTPUT(COOLER_PIN)
     #if ENABLED(COOLER_PWM)
 	    setPwmFrequency(COOLER_PIN, 2); // No prescaling. Pwm frequency = F_CPU/256/64
@@ -1468,15 +1471,15 @@ void tp_init() {
   }
 #endif
 
-#if ENABLED(THERMAL_PROTECTION_COOLERS) 
+#if ENABLED(THERMAL_PROTECTION_COOLER) && ENABLED(THERMAL_PROTECTION_COOLER_WATCHDOG) 
   /**
    * Start Cooling Sanity Check for hotends that are below
    * their target temperature by a configurable margin.
    * This is called when the temperature is set. (M141)
    */
   void start_watching_cooler(void) {
-    if (degCooler() < degTargetCooler() - (WATCH_TEMP_COOLER_INCREASE + TEMP_COOLER_HYSTERESIS + 1)) {
-      watch_target_temp_cooler = degCooler() + WATCH_COOLER_TEMP_INCREASE;
+    if (degCooler() > degTargetCooler() - (WATCH_TEMP_COOLER_DECREASE - TEMP_COOLER_HYSTERESIS - 1)) {
+      watch_target_temp_cooler = degCooler() - WATCH_COOLER_TEMP_DECREASE;
       watch_cooler_next_ms = millis() + WATCH_TEMP_COOLER_PERIOD * 1000UL;
     }
     else
@@ -1589,6 +1592,18 @@ void disable_all_heaters() {
       WRITE_HEATER_BED(LOW);
     #endif
   #endif
+}
+
+void disable_all_coolers() {
+   setTargetCooler(0);
+
+   #if HAS(TEMP_COOLER)
+     target_temperature_cooler = 0;
+     soft_pwm_cooler = 0;
+     #if HAS(COOLER_DEV)
+        WRITE_COOLER(LOW);
+     #endif
+   #endif
 }
 
 #if ENABLED(HEATER_0_USES_MAX6675)
@@ -1741,7 +1756,7 @@ ISR(TIMER0_COMPB_vect) {
   #if HAS(HEATER_BED)
     ISR_STATICS(BED);
   #endif
-  #if HAS(COOLER)
+  #if HAS(COOLER_DEV)
     ISR_STATICS(COOLER_DEVICE);
   #endif
 
@@ -1777,7 +1792,7 @@ ISR(TIMER0_COMPB_vect) {
         soft_pwm_BED = soft_pwm_bed;
         WRITE_HEATER_BED(soft_pwm_BED > 0 ? 1 : 0);
       #endif
-      #if HAS(COOLER)
+      #if HAS(COOLER_DEV)
 		  soft_pwm_COOLER_DEVICE = soft_pwm_cooler;
         WRITE_COOLER(soft_pwm_COOLER_DEVICE > 0 ? 1 : 0);
       #endif 
@@ -1820,7 +1835,7 @@ ISR(TIMER0_COMPB_vect) {
     #if HAS(HEATER_BED)
       if (soft_pwm_BED < pwm_count) WRITE_HEATER_BED(0);
     #endif
-    #if HAS(COOLER)
+    #if HAS(COOLER_DEV)
       if (soft_pwm_COOLER_DEVICE < pwm_count ) WRITE_COOLER(0);
     #endif
 
@@ -1904,7 +1919,7 @@ ISR(TIMER0_COMPB_vect) {
       #if HAS(HEATER_BED)
         _SLOW_PWM_ROUTINE(BED, soft_pwm_bed); // BED
       #endif
-      #if HAS(COOLER)
+      #if HAS(COOLER_DEV)
         _SLOW_PWM_SOURINT(COOLER_DEVICE, soft_pwm_cooler); // COOLER
       #endif
 
@@ -1923,7 +1938,7 @@ ISR(TIMER0_COMPB_vect) {
     #if HAS(HEATER_BED)
       PWM_OFF_ROUTINE(BED); // BED
     #endif
-    #if HAS(COOLER)
+    #if HAS(COOLER_DEV)
       PWM_OFF_ROUTINE(COOLER_DEVICE); // COOLER
     #endif 
 
@@ -1995,7 +2010,7 @@ ISR(TIMER0_COMPB_vect) {
       #if HAS(HEATER_BED)
         if (state_timer_heater_BED > 0) state_timer_heater_BED--;
       #endif
-      #if HAS(COOLER)
+      #if HAS(COOLER_DEV)
         if(state_timer_heater_COOLER_DEVICE > 0) state_timer_heater_COOLER_DEVICE--;
       #endif 
     } // (pwm_count % 64) == 0
