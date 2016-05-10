@@ -321,7 +321,7 @@ void Endstops::update() {
           #endif // !Z_DUAL_ENDSTOPS
         #endif // HAS_Z_MIN
 
-        #if ENABLED(Z_PROBE_ENDSTOP)
+        #if HAS(Z_PROBE)
           if (z_probe_enabled) {
             UPDATE_ENDSTOP(Z, PROBE);
             if (TEST_ENDSTOP(Z_PROBE)) SBI(endstop_hit_bits, Z_PROBE);

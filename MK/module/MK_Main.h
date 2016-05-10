@@ -29,7 +29,7 @@
 void get_command();
 
 void idle(
-  #if ENABLED(FILAMENTCHANGEENABLE)
+  #if ENABLED(FILAMENT_CHANGE_FEATURE)
     bool no_stepper_sleep=false  // pass true to keep steppers from disabling on timeout
   #endif
 );
@@ -194,6 +194,15 @@ extern int fanSpeed;
   extern int delay_index1, delay_index2;  //ring buffer index. used by planner, temperature, and main code
   extern float delay_dist;                //delay distance counter
   extern int meas_delay_cm;               //delay distance
+#endif
+
+#if ENABLED(FILAMENT_CHANGE_FEATURE)
+  enum FilamentChangeMenuResponse {
+    FILAMENT_CHANGE_RESPONSE_WAIT_FOR,
+    FILAMENT_CHANGE_RESPONSE_EXTRUDE_MORE,
+    FILAMENT_CHANGE_RESPONSE_RESUME_PRINT
+  };
+  extern FilamentChangeMenuResponse filament_change_menu_response;
 #endif
 
 #if HAS(POWER_CONSUMPTION_SENSOR)

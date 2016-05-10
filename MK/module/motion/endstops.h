@@ -68,7 +68,7 @@ class Endstops {
     /**
      * Print an error message reporting the position when the endstops were last hit.
      */
-    void report_state(); //call from somewhere to create an serial error message with the locations the endstops where hit, in case they were triggered
+    void report_state(); // call from somewhere to create an serial error message with the locations the endstops where hit, in case they were triggered
 
     /**
      * Report endstop positions in response to M119

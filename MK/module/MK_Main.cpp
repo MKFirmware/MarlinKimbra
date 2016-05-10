@@ -229,6 +229,7 @@ double printer_usage_filament;
   static float bed_safe_z;
   static int loopcount;
   static bool home_all_axis = true;
+  static bool delta_leveling_in_progress = false;
 #else
   static bool home_all_axis = true;
 #endif
@@ -252,7 +253,11 @@ double printer_usage_filament;
 #endif
 
 #if HAS(FILRUNOUT)
-  static bool filrunoutEnqueued = false;
+  static bool filament_ran_out = false;
+#endif
+
+#if ENABLED(FILAMENT_CHANGE_FEATURE)
+  FilamentChangeMenuResponse filament_change_menu_response;
 #endif
 
 #if MB(ALLIGATOR)
@@ -272,10 +277,6 @@ double printer_usage_filament;
     millis_t config_last_update = 0;
     bool config_readed = false;
   #endif
-#endif
-
-#if ENABLED(FILAMENTCHANGEENABLE)
-  bool filament_changing = false;
 #endif
 
 #if ENABLED(IDLE_OOZING_PREVENT)
@@ -1337,6 +1338,7 @@ static void setup_for_endstop_move() {
   saved_feedrate_multiplier = feedrate_multiplier;
   feedrate_multiplier = 100;
   refresh_cmd_timeout();
+  if (DEBUGGING(INFO)) ECHO_LM(INFO, "setup_for_endstop_move > endstops.enable()");
   endstops.enable();
 }
 
@@ -1374,7 +1376,12 @@ static void do_blocking_move_to(float x, float y, float z) {
     destination[X_AXIS] = x;
     destination[Y_AXIS] = y;
     destination[Z_AXIS] = z;
-    prepare_move_raw(); // this will also set_current_to_destination
+
+    if (x == current_position[X_AXIS] && y == current_position[Y_AXIS])
+      prepare_move_raw(); // this will also set_current_to_destination
+    else
+      prepare_move();     // this will also set_current_to_destination
+
     st_synchronize();
 
   #else
@@ -2129,14 +2136,14 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
         endstop_adj[i] -= high_endstop;
       }
       sw_endstop_max[Z_AXIS] -= high_endstop;
-    }
+    }/*
     else if (high_endstop < 0) {
       ECHO_LMV(DB, "Increment Build height by ", abs(high_endstop));
       for(uint8_t i = 0; i < 3; i++) {
         endstop_adj[i] -= high_endstop;
       }
       sw_endstop_max[Z_AXIS] -= high_endstop;
-    }
+    }*/
 
     set_delta_constants();
   }
@@ -2578,7 +2585,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
   static void calibration_report() {
     // Display Report
-    ECHO_LM(DB, "|\tZ-Tower\t\t\tEndstop Offsets");
+    ECHO_LM(DB, "| \tZ-Tower\t\t\tEndstop Offsets");
 
     ECHO_SM(DB, "| \t");
     if (bed_level_z >= 0) ECHO_M(" ");
@@ -2622,12 +2629,6 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
   }
 
   static void home_delta_axis() {
-    saved_feedrate = feedrate;
-    saved_feedrate_multiplier = feedrate_multiplier;
-    feedrate_multiplier = 100;
-    refresh_cmd_timeout();
-
-    endstops.enable();
 
     set_destination_to_current();
 
@@ -2654,13 +2655,6 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
     sync_plan_position_delta();
 
-    #if ENABLED(ENDSTOPS_ONLY_FOR_HOMING)
-      endstops.enable(false);
-    #endif
-
-    feedrate = saved_feedrate;
-    feedrate_multiplier = saved_feedrate_multiplier;
-    refresh_cmd_timeout();
     endstops.hit_on_purpose(); // clear endstop hit flags
   }
 
@@ -3333,26 +3327,7 @@ inline void gcode_G28() {
      * all axis have to home at the same time
      */
 
-    // Pretend the current position is 0,0,0
-    for (int i = X_AXIS; i <= Z_AXIS; i++) current_position[i] = 0;
-    sync_plan_position();
-
-    // Move all carriages up together until the first endstop is hit.
-    for (int i = X_AXIS; i <= Z_AXIS; i++) destination[i] = 3 * (Z_MAX_LENGTH);
-    feedrate = 1.732 * homing_feedrate[X_AXIS];
-    line_to_destination();
-    st_synchronize();
-    endstops.hit_on_purpose(); // clear endstop hit flags
-
-    // Destination reached
-    for (int i = X_AXIS; i <= Z_AXIS; i++) current_position[i] = destination[i];
-
-    // take care of back off and rehome now we are all at the top
-    HOMEAXIS(X);
-    HOMEAXIS(Y);
-    HOMEAXIS(Z);
-
-    sync_plan_position_delta();
+    home_delta_axis();
 
     if (DEBUGGING(INFO))
       DEBUG_POS("(DELTA)", current_position);
@@ -4185,23 +4160,23 @@ inline void gcode_G28() {
       return;
     }
 
-    saved_feedrate = feedrate;
-    saved_feedrate_multiplier = feedrate_multiplier;
-    feedrate_multiplier = 100;
+    setup_for_endstop_move();
 
     if (!axis_homed[X_AXIS] || !axis_homed[Y_AXIS] || !axis_homed[Z_AXIS])
       home_delta_axis();
 
+    delta_leveling_in_progress = true;
     deploy_z_probe();
     bed_safe_z = current_position[Z_AXIS];
     calibrate_print_surface();
     retract_z_probe();
     clean_up_after_endstop_move();
 
-    KEEPALIVE_STATE(IN_HANDLER);
-
     if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< gcode_G29");
+
+    delta_leveling_in_progress = false;
     report_current_position();
+    KEEPALIVE_STATE(IN_HANDLER);
   }
 
   /* G30: Delta AutoCalibration
@@ -4218,9 +4193,7 @@ inline void gcode_G28() {
   inline void gcode_G30() {
     if (DEBUGGING(INFO)) ECHO_LM(INFO, "gcode_G30 >>>");
 
-    saved_feedrate = feedrate;
-    saved_feedrate_multiplier = feedrate_multiplier;
-    feedrate_multiplier = 100;
+    setup_for_endstop_move();
 
     // Reset the bed level array
     reset_bed_level();
@@ -4228,7 +4201,9 @@ inline void gcode_G28() {
     // Homing and deploy z probe
     if (!axis_homed[X_AXIS] || !axis_homed[Y_AXIS] || !axis_homed[Z_AXIS])
       home_delta_axis();
+
     deploy_z_probe();
+    delta_leveling_in_progress = true;
     bed_safe_z = current_position[Z_AXIS];
 
     if (code_seen('X') and code_seen('Y')) {
@@ -4361,7 +4336,7 @@ inline void gcode_G28() {
             // Tower positions have been changed .. home to endstops
             ECHO_LM(DB, "Tower Positions changed .. Homing");
             home_delta_axis();
-            deploy_z_probe();
+            do_blocking_move_to_z(z_probe_deploy_start_location[Z_AXIS]);
           }
           else {
             ECHO_LM(DB, "Checking Diagonal Rod Length");
@@ -4369,7 +4344,7 @@ inline void gcode_G28() {
               // If diagonal rod length has been changed .. home to endstops
               ECHO_LM(DB, "Diagonal Rod Length changed .. Homing");
               home_delta_axis();
-              deploy_z_probe();
+              do_blocking_move_to_z(z_probe_deploy_start_location[Z_AXIS]);
             }
           }
           bed_probe_all();
@@ -4403,10 +4378,11 @@ inline void gcode_G28() {
 
     clean_up_after_endstop_move();
 
-    KEEPALIVE_STATE(IN_HANDLER);
-
     if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< gcode_G30");
+
+    delta_leveling_in_progress = false;
     report_current_position();
+    KEEPALIVE_STATE(IN_HANDLER);
   }
 #endif // DELTA && Z_PROBE_ENDSTOP
 
@@ -4604,7 +4580,7 @@ inline void gcode_M11() {
       enqueue_and_echo_commands_P(PSTR(STOP_PRINTING_SCRIPT));
     #endif
     #if HAS(FILRUNOUT)
-      filrunoutEnqueued = false;
+      filament_ran_out = false;
       ECHO_LM(DB, "Filament runout deactivated.");
     #endif
   }
@@ -4615,7 +4591,7 @@ inline void gcode_M11() {
       enqueue_and_echo_commands_P(PSTR(START_PRINTING_SCRIPT));
     #endif
     #if HAS(FILRUNOUT)
-      filrunoutEnqueued = false;
+      filament_ran_out = false;
       ECHO_LM(DB, "Filament runout activated.");
       ECHO_S(RESUME);
       ECHO_E;
@@ -4689,7 +4665,7 @@ inline void gcode_M17() {
    */
   inline void gcode_M26() {
     if (card.cardOK && code_seen('S'))
-      card.setIndex(code_value_short());
+      card.setIndex(code_value_long());
   }
 
   /**
@@ -6932,7 +6908,7 @@ inline void gcode_M503() {
   }
 #endif // HEATER_USES_AD595
 
-#if ENABLED(FILAMENTCHANGEENABLE)
+#if ENABLED(FILAMENT_CHANGE_FEATURE)
   /**
    * M600: Pause for filament change
    *
@@ -6952,57 +6928,68 @@ inline void gcode_M503() {
       return;
     }
 
+    // Show initial message and wait for synchronize steppers
+    lcd_filament_change_show_message(FILAMENT_CHANGE_MESSAGE_INIT);
+    st_synchronize();
+
     float lastpos[NUM_AXIS];
 
-    filament_changing = true;
+    // Save current position of all axes
     for (int i = 0; i < NUM_AXIS; i++)
       lastpos[i] = destination[i] = current_position[i];
 
     #if MECH(DELTA)
-			float fr60 = feedrate / 60;
-      #define RUNPLAN calculate_delta(destination); \
-                      plan_buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], destination[E_AXIS], fr60, active_extruder, active_driver);
+			#define RUNPLAN calculate_delta(destination); \
+                      plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], destination[E_AXIS], FILAMENT_CHANGE_XY_FEEDRATE * 60, active_extruder, active_driver);
     #else
-      #define RUNPLAN line_to_destination();
+      #define RUNPLAN line_to_destination(FILAMENT_CHANGE_XY_FEEDRATE * 60);
     #endif
 
-    //retract by E
+    KEEPALIVE_STATE(IN_HANDLER);
+
+    // Initial retract before move to filament change position
     if (code_seen('E')) destination[E_AXIS] += code_value();
-    #if ENABLED(FILAMENTCHANGE_FIRSTRETRACT)
-      else destination[E_AXIS] += FILAMENTCHANGE_FIRSTRETRACT;
+    #if ENABLED(FILAMENT_CHANGE_RETRACT_LENGTH)
+      else destination[E_AXIS] += FILAMENT_CHANGE_RETRACT_LENGTH;
     #endif
+    line_to_destination(FILAMENT_CHANGE_RETRACT_FEEDRATE * 60);
 
-    RUNPLAN
-
-    //lift Z
+    // Lift Z axis
     if (code_seen('Z')) destination[Z_AXIS] += code_value();
-    #if ENABLED(FILAMENTCHANGE_ZADD)
-      else destination[Z_AXIS] += FILAMENTCHANGE_ZADD;
+    #if ENABLED(FILAMENT_CHANGE_Z_ADD)
+      else {
+        if (destination[Z_AXIS] + FILAMENT_CHANGE_Z_ADD > Z_MAX_POS)
+          destination[Z_AXIS] = Z_MAX_POS;
+        else
+          destination[Z_AXIS] += FILAMENT_CHANGE_Z_ADD;
+      }
     #endif
 
     RUNPLAN
 
-    //move xy
+    // Move XY axes to filament exchange position
     if (code_seen('X')) destination[X_AXIS] = code_value();
-    #if ENABLED(FILAMENTCHANGE_XPOS)
-      else destination[X_AXIS] = FILAMENTCHANGE_XPOS;
+    #if ENABLED(FILAMENT_CHANGE_X_POS)
+      else destination[X_AXIS] = FILAMENT_CHANGE_X_POS;
     #endif
 
     if (code_seen('Y')) destination[Y_AXIS] = code_value();
-    #if ENABLED(FILAMENTCHANGE_YPOS)
-      else destination[Y_AXIS] = FILAMENTCHANGE_YPOS;
+    #if ENABLED(FILAMENT_CHANGE_Y_POS)
+      else destination[Y_AXIS] = FILAMENT_CHANGE_Y_POS;
     #endif
 
     RUNPLAN
+
+    st_synchronize();
+    lcd_filament_change_show_message(FILAMENT_CHANGE_MESSAGE_UNLOAD);
 
     if (code_seen('L')) destination[E_AXIS] += code_value();
-    #if ENABLED(FILAMENTCHANGE_FINALRETRACT)
-      else destination[E_AXIS] += FILAMENTCHANGE_FINALRETRACT;
+    #if ENABLED(FILAMENT_CHANGE_UNLOAD_LENGTH)
+      else destination[E_AXIS] += FILAMENT_CHANGE_UNLOAD_LENGTH;
     #endif
+    line_to_destination(FILAMENT_CHANGE_UNLOAD_FEEDRATE * 60);
 
-    RUNPLAN
-
-    //finish moves
+    // Synchronize steppers and then disable extruders steppers for manual filament changing
     st_synchronize();
     //disable extruder steppers so filament can be removed
     disable_e();
@@ -7010,39 +6997,42 @@ inline void gcode_M503() {
     boolean beep = true;
     boolean sleep = false;
     uint8_t cnt = 0;
-    
+
     int old_target_temperature[HOTENDS] = { 0 };
     for (uint8_t e = 0; e < HOTENDS; e++) {
       old_target_temperature[e] = target_temperature[e];
     }
     int old_target_temperature_bed = target_temperature_bed;
     millis_t last_set = millis();
-    
-    PRESSBUTTON:
-    KEEPALIVE_STATE(PAUSED_FOR_USER);
-    LCD_ALERTMESSAGEPGM(MSG_FILAMENTCHANGE);
+
+    // Wait for filament insert by user and press button
+    lcd_filament_change_show_message(FILAMENT_CHANGE_MESSAGE_INSERT);
+
     while (!lcd_clicked()) {
-      idle();
-      if ((millis() - last_set > 60000) && cnt <= FILAMENTCHANGE_PRINTEROFF) beep = true;
-      if (cnt >= FILAMENTCHANGE_PRINTEROFF && !sleep) {
+      if ((millis() - last_set > 60000) && cnt <= FILAMENT_CHANGE_PRINTER_OFF) beep = true;
+      if (cnt >= FILAMENT_CHANGE_PRINTER_OFF && !sleep) {
         disable_all_heaters();
-        disable_all_steppers();
         sleep = true;
         lcd_reset_alert_level();
         LCD_ALERTMESSAGEPGM("Zzzz Zzzz Zzzz");
       }
       if (beep) {
         #if HAS(BUZZER)
-          for(uint8_t i = 0; i < 3; i++) buzz(100, 1000);
+          for(uint8_t i = 0; i < 3; i++) buzz(300, 1000);
         #endif
         last_set = millis();
         beep = false;
         ++cnt;
       }
+      idle(true);
     } // while(!lcd_clicked)
-    KEEPALIVE_STATE(IN_HANDLER);
-    lcd_quick_feedback();     // click sound feedback
-    lcd_reset_alert_level();  //reset LCD alert message
+
+    delay(100);
+    while (lcd_clicked()) idle(true);
+    delay(100);
+
+    // Reset LCD alert message
+    lcd_reset_alert_level();
 
     if (sleep) {
       enable_all_steppers(); // Enable all stepper
@@ -7052,48 +7042,67 @@ inline void gcode_M503() {
       }
       setTargetBed(old_target_temperature_bed);
       wait_bed();
-      sleep = false;
-      beep = true;
-      cnt = 0;
-      goto PRESSBUTTON;
     }
 
-    //return to normal
+    // Show load message
+    lcd_filament_change_show_message(FILAMENT_CHANGE_MESSAGE_LOAD);
+
+    // Load filament
     if (code_seen('L')) destination[E_AXIS] -= code_value();
-    #if ENABLED(FILAMENTCHANGE_FINALRETRACT)
-      else destination[E_AXIS] -= FILAMENTCHANGE_FINALRETRACT;
+    #if ENABLED(FILAMENT_CHANGE_LOAD_LENGTH)
+      else destination[E_AXIS] -= FILAMENT_CHANGE_LOAD_LENGTH;
     #endif
 
-    current_position[E_AXIS] = destination[E_AXIS]; //the long retract of L is compensated by manual filament feeding
+    line_to_destination(FILAMENT_CHANGE_LOAD_FEEDRATE * 60);
+    st_synchronize();
+
+    #if ENABLED(FILAMENT_CHANGE_EXTRUDE_LENGTH)
+      do {
+        // Extrude filament to get into hotend
+        lcd_filament_change_show_message(FILAMENT_CHANGE_MESSAGE_EXTRUDE);
+        destination[E_AXIS] += FILAMENT_CHANGE_EXTRUDE_LENGTH;
+        line_to_destination(FILAMENT_CHANGE_EXTRUDE_FEEDRATE * 60);
+        st_synchronize();
+        // Ask user if more filament should be extruded
+        KEEPALIVE_STATE(PAUSED_FOR_USER);
+        lcd_filament_change_show_message(FILAMENT_CHANGE_MESSAGE_OPTION);
+        while (filament_change_menu_response == FILAMENT_CHANGE_RESPONSE_WAIT_FOR) idle(true);
+        KEEPALIVE_STATE(IN_HANDLER);
+      } while (filament_change_menu_response != FILAMENT_CHANGE_RESPONSE_RESUME_PRINT);
+    #endif
+
+    lcd_filament_change_show_message(FILAMENT_CHANGE_MESSAGE_RESUME);
+
+    KEEPALIVE_STATE(IN_HANDLER);
+
+    // Set extruder to saved position
+    current_position[E_AXIS] = lastpos[E_AXIS];
+    destination[E_AXIS] = lastpos[E_AXIS];
     plan_set_e_position(current_position[E_AXIS]);
-
-    RUNPLAN // should do nothing
-
-    lcd_reset_alert_level();
 
     #if MECH(DELTA)
       // Move XYZ to starting position, then E
       calculate_delta(lastpos);
-      plan_buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], destination[E_AXIS], fr60, active_extruder, active_driver);
-      plan_buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], lastpos[E_AXIS], fr60, active_extruder, active_driver);
+      plan_buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], destination[E_AXIS], FILAMENT_CHANGE_XY_FEEDRATE * 60, active_extruder, active_driver);
+      plan_buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], lastpos[E_AXIS], FILAMENT_CHANGE_XY_FEEDRATE * 60, active_extruder, active_driver);
     #else
       // Move XY to starting position, then Z, then E
       destination[X_AXIS] = lastpos[X_AXIS];
       destination[Y_AXIS] = lastpos[Y_AXIS];
-      line_to_destination();
+      line_to_destination(FILAMENT_CHANGE_XY_FEEDRATE * 60);
       destination[Z_AXIS] = lastpos[Z_AXIS];
-      line_to_destination();
-      destination[E_AXIS] = lastpos[E_AXIS];
-      line_to_destination();
+      line_to_destination(FILAMENT_CHANGE_Z_FEEDRATE * 60);
     #endif
+    st_synchronize();
 
     #if HAS(FILRUNOUT)
-      filrunoutEnqueued = false;
+      filament_ran_out = false;
     #endif
 
-    filament_changing = false;
+    // Show status screen
+    lcd_filament_change_show_message(FILAMENT_CHANGE_MESSAGE_STATUS);
   }
-#endif //FILAMENTCHANGEENABLE
+#endif // FILAMENT_CHANGE_FEATURE
 
 #if ENABLED(DUAL_X_CARRIAGE)
   /**
@@ -8108,7 +8117,7 @@ void process_next_command() {
           gcode_M595(); break;
       #endif
 
-      #if ENABLED(FILAMENTCHANGEENABLE)
+      #if ENABLED(FILAMENT_CHANGE_FEATURE)
         case 600: // Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
           gcode_M600(); break;
       #endif
@@ -8319,7 +8328,8 @@ static void report_current_position() {
       #endif
 
       calculate_delta(target);
-      adjust_delta(target);
+
+      if (!delta_leveling_in_progress) adjust_delta(target);
 
       if (DEBUGGING(DEBUG)) {
         DEBUG_POS("prepare_move_delta", target);
@@ -8706,13 +8716,13 @@ void plan_arc(
  * Standard idle routine keeps the machine alive
  */
 void idle(
-  #if ENABLED(FILAMENTCHANGEENABLE)
+  #if ENABLED(FILAMENT_CHANGE_FEATURE)
     bool no_stepper_sleep/*=false*/
   #endif
 ) {
   manage_heater();
   manage_inactivity(
-    #if ENABLED(FILAMENTCHANGEENABLE)
+    #if ENABLED(FILAMENT_CHANGE_FEATURE)
       no_stepper_sleep
     #endif
   );
@@ -8983,8 +8993,8 @@ void kill(const char* lcd_msg) {
 
 #if HAS(FILRUNOUT)
   void filrunout() {
-    if (!filrunoutEnqueued) {
-      filrunoutEnqueued = true;
+    if (!filament_ran_out) {
+      filament_ran_out = true;
       enqueue_and_echo_commands_P(PSTR(FILAMENT_RUNOUT_SCRIPT));
       st_synchronize();
     }
