@@ -7412,7 +7412,7 @@ inline void gcode_M503() {
       codenum += millis();  // keep track of when we started waiting
       previous_millis_cmd = millis();
       while(millis()  < codenum ){
-        manage_heater();
+        manage_temp_controller();
         manage_inactivity();
         lcd_update();
       }
@@ -9036,7 +9036,7 @@ void idle(
     bool no_stepper_sleep/*=false*/
   #endif
 ) {
-  manage_heater();
+  manage_temp_controller();
   manage_inactivity(
     #if ENABLED(FILAMENTCHANGEENABLE)
       no_stepper_sleep

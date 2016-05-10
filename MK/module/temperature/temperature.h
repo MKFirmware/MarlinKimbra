@@ -45,7 +45,7 @@
 
 // public functions
 void tp_init();  //initialize the heating
-void manage_heater(); //it is critical that this is called periodically.
+void manage_temp_controller(); //it is critical that this is called periodically.
 
 #if ENABLED(FILAMENT_SENSOR)
   // For converting raw Filament Width to milimeters
@@ -135,6 +135,10 @@ FORCE_INLINE float degTargetCooler() { return target_temperature_cooler; }
 
 #if ENABLED(THERMAL_PROTECTION_HOTENDS)
   void start_watching_heater(int h = 0);
+#endif
+
+#if ENABLED(THERMAL_PROTECTION_COOLERS)
+  void start_watching_cooler(void);
 #endif
 
 FORCE_INLINE void setTargetHotend(const float& celsius, uint8_t hotend) {

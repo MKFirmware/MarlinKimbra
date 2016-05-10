@@ -237,6 +237,11 @@ static void updateTemperaturesFromRawValues();
   millis_t watch_heater_next_ms[HOTENDS] = { 0 };
 #endif
 
+#if ENABLED(THERMAL_PROTECTION_COOLERS)
+  int watch_target_temp_cooler = 0;
+  millis_t watch_cooler_next_ms = 0;
+#endif
+
 #if DISABLED(SOFT_PWM_SCALE)
   #define SOFT_PWM_SCALE 0
 #endif
@@ -813,7 +818,7 @@ float get_pid_output(int h) {
  *  - Apply filament width to the extrusion rate (may move)
  *  - Update the heated bed PID output value
  */
-void manage_heater() { // NEXTIME cambia nome GUARDA TUTTA LA FUNZIONE
+void manage_temp_controller() { 
 
   if (!temp_meas_ready) return;
 
@@ -825,7 +830,7 @@ void manage_heater() { // NEXTIME cambia nome GUARDA TUTTA LA FUNZIONE
     if (ct < max(HEATER_0_MINTEMP, 0.01)) min_temp_error(0);
   #endif
 
-  #if ENABLED(THERMAL_PROTECTION_HOTENDS) || DISABLED(PIDTEMPBED) || HAS(AUTO_FAN)
+  #if ENABLED(THERMAL_PROTECTION_HOTENDS) || DISABLED(PIDTEMPBED) || DISABLED(PIDTEMPCOOLER) || HAS(AUTO_FAN)
     millis_t ms = millis();
   #endif
 
@@ -894,6 +899,11 @@ void manage_heater() { // NEXTIME cambia nome GUARDA TUTTA LA FUNZIONE
     next_bed_check_ms = ms + BED_CHECK_INTERVAL;
   #endif
 
+  #if DISABLED(PIDTEMPCOOLER)
+    if (ms < next_cooler_check_ms) return;
+    next_cooler_check_ms = ms + BED_COOLER_INTERVAL;
+  #endif
+
   #if TEMP_SENSOR_BED != 0
 
     #if ENABLED(THERMAL_PROTECTION_BED)
@@ -928,6 +938,42 @@ void manage_heater() { // NEXTIME cambia nome GUARDA TUTTA LA FUNZIONE
       }
     #endif
   #endif // TEMP_SENSOR_BED != 0
+
+  #if TEMP_SENSOR_COOLER != 0
+
+    #if ENABLED(THERMAL_PROTECTION_COOLER)
+      thermal_runaway_protection(&thermal_runaway_cooler_state_machine, &thermal_runaway_cooler_timer, current_temperature_cooler, target_temperature_cooler, -2, THERMAL_PROTECTION_COOLER_PERIOD, THERMAL_PROTECTION_COOLER_HYSTERESIS);
+    #endif
+
+    #if ENABLED(PIDTEMPCOOLER)
+      float pid_output = get_pid_output_cooler();
+
+      soft_pwm_cooler = current_temperature_cooler > COOLER_MINTEMP && current_temperature_cooler < COOLER_MAXTEMP ? (int)pid_output >> 1 : 0;
+
+    #elif ENABLED(COOLER_LIMIT_SWITCHING)
+      // Check if temperature is within the correct band
+      if (current_temperature_cooler > COOLER_MINTEMP && current_temperature_cooler < COOLER_MAXTEMP) {
+        if (current_temperature_cooler >= target_temperature_cooler + COOLER_HYSTERESIS)
+          soft_pwm_cooler = MAX_COOLER_POWER >> 1;
+        else if (current_temperature_cooler <= target_temperature_cooler - COOLER_HYSTERESIS)
+          soft_pwm_cooler = 0;
+      }
+      else { // NEXTIME XXX here we have to manage hw pwm?
+        soft_pwm_cooler = 0;
+        WRITE_HEATER_COOLER(LOW);
+      }
+    #else // COOLER_LIMIT_SWITCHING
+      // Check if temperature is within the correct range
+      if (current_temperature_cooler > COOLER_MINTEMP && current_temperature_cooler < COOLER_MAXTEMP) {
+        soft_pwm_cooler = current_temperature_cooler > target_temperature_cooler ? MAX_COOLER_POWER >> 1 : 0;
+      }
+      else {
+        soft_pwm_cooler = 0;
+        WRITE_HEATER_COOLER(LOW);
+      }
+    #endif
+  #endif // TEMP_SENSOR_COOLER != 0
+
 }
 
 #define PGM_RD_W(x)   (short)pgm_read_word(&x)
@@ -1156,7 +1202,7 @@ static void updateTemperaturesFromRawValues() {
 
 /**
  * Initialize the temperature manager
- * The manager is implemented by periodic calls to manage_heater()
+ * The manager is implemented by periodic calls to manage_temp_controller()
  */
 void tp_init() { 
   #if MB(RUMBA) && ((TEMP_SENSOR_0==-1)||(TEMP_SENSOR_1==-1)||(TEMP_SENSOR_2==-1)||(TEMP_SENSOR_BED==-1)||(TEMP_SENSOR_COOLER==-1)
@@ -1406,7 +1452,7 @@ void tp_init() {
 
 }
 
-#if ENABLED(THERMAL_PROTECTION_HOTENDS) // NEXTIME this has be done even for cooler, but cooler uses M140? or anything else?
+#if ENABLED(THERMAL_PROTECTION_HOTENDS) 
   /**
    * Start Heating Sanity Check for hotends that are below
    * their target temperature by a configurable margin.
@@ -1421,6 +1467,23 @@ void tp_init() {
       watch_heater_next_ms[h] = 0;
   }
 #endif
+
+#if ENABLED(THERMAL_PROTECTION_COOLERS) 
+  /**
+   * Start Cooling Sanity Check for hotends that are below
+   * their target temperature by a configurable margin.
+   * This is called when the temperature is set. (M141)
+   */
+  void start_watching_cooler(void) {
+    if (degCooler() < degTargetCooler() - (WATCH_TEMP_COOLER_INCREASE + TEMP_COOLER_HYSTERESIS + 1)) {
+      watch_target_temp_cooler = degCooler() + WATCH_COOLER_TEMP_INCREASE;
+      watch_cooler_next_ms = millis() + WATCH_TEMP_COOLER_PERIOD * 1000UL;
+    }
+    else
+      watch_cooler_next_ms = 0;
+  }
+#endif
+
 
 #if ENABLED(THERMAL_PROTECTION_HOTENDS) || ENABLED(THERMAL_PROTECTION_BED) || ENABLED(THERMAL_PROTECTION_COOLER) 
 
@@ -1642,12 +1705,12 @@ static void set_current_temp_raw() {
 
 /**
  * Timer 0 is shared with millies
- *  - Manage PWM to all the heaters and fan
+ *  - Manage PWM to all the heaters, coolers and fan
  *  - Update the raw temperature values
  *  - Check new temperature values for MIN/MAX errors
  *  - Step the babysteps value for each axis towards 0
  */
-ISR(TIMER0_COMPB_vect) { // NEXTIME tutta la funzione
+ISR(TIMER0_COMPB_vect) { 
 
   static unsigned char temp_count = 0;
   static TempState temp_state = StartupDelay;
@@ -1677,6 +1740,9 @@ ISR(TIMER0_COMPB_vect) { // NEXTIME tutta la funzione
   #endif
   #if HAS(HEATER_BED)
     ISR_STATICS(BED);
+  #endif
+  #if HAS(COOLER)
+    ISR_STATICS(COOLER_DEVICE);
   #endif
 
   #if HAS(FILAMENT_SENSOR)
@@ -1711,6 +1777,10 @@ ISR(TIMER0_COMPB_vect) { // NEXTIME tutta la funzione
         soft_pwm_BED = soft_pwm_bed;
         WRITE_HEATER_BED(soft_pwm_BED > 0 ? 1 : 0);
       #endif
+      #if HAS(COOLER)
+		  soft_pwm_COOLER_DEVICE = soft_pwm_cooler;
+        WRITE_COOLER(soft_pwm_COOLER_DEVICE > 0 ? 1 : 0);
+      #endif 
       #if ENABLED(FAN_SOFT_PWM)
         soft_pwm_fan = fanSpeedSoftPwm / 2;
         #if HAS(CONTROLLERFAN)
@@ -1749,6 +1819,9 @@ ISR(TIMER0_COMPB_vect) { // NEXTIME tutta la funzione
 
     #if HAS(HEATER_BED)
       if (soft_pwm_BED < pwm_count) WRITE_HEATER_BED(0);
+    #endif
+    #if HAS(COOLER)
+      if (soft_pwm_COOLER_DEVICE < pwm_count ) WRITE_COOLER(0);
     #endif
 
     #if ENABLED(FAN_SOFT_PWM)
@@ -1831,6 +1904,9 @@ ISR(TIMER0_COMPB_vect) { // NEXTIME tutta la funzione
       #if HAS(HEATER_BED)
         _SLOW_PWM_ROUTINE(BED, soft_pwm_bed); // BED
       #endif
+      #if HAS(COOLER)
+        _SLOW_PWM_SOURINT(COOLER_DEVICE, soft_pwm_cooler); // COOLER
+      #endif
 
     } // slow_pwm_count == 0
 
@@ -1847,6 +1923,9 @@ ISR(TIMER0_COMPB_vect) { // NEXTIME tutta la funzione
     #if HAS(HEATER_BED)
       PWM_OFF_ROUTINE(BED); // BED
     #endif
+    #if HAS(COOLER)
+      PWM_OFF_ROUTINE(COOLER_DEVICE); // COOLER
+    #endif 
 
     #if ENABLED(FAN_SOFT_PWM)
       if (pwm_count == 0) {
@@ -1916,6 +1995,9 @@ ISR(TIMER0_COMPB_vect) { // NEXTIME tutta la funzione
       #if HAS(HEATER_BED)
         if (state_timer_heater_BED > 0) state_timer_heater_BED--;
       #endif
+      #if HAS(COOLER)
+        if(state_timer_heater_COOLER_DEVICE > 0) state_timer_heater_COOLER_DEVICE--;
+      #endif 
     } // (pwm_count % 64) == 0
 
   #endif // SLOW_PWM_HEATERS
@@ -2119,6 +2201,17 @@ ISR(TIMER0_COMPB_vect) { // NEXTIME tutta la funzione
       if (current_temperature_bed_raw GEBED bed_maxttemp_raw) _temp_error(-1, PSTR(SERIAL_T_MAXTEMP), PSTR(MSG_ERR_MAXTEMP_BED));
       if (bed_minttemp_raw GEBED current_temperature_bed_raw) _temp_error(-1, PSTR(SERIAL_T_MINTEMP), PSTR(MSG_ERR_MINTEMP_BED));
     #endif
+    #if HAS(TEMP_COOLER)
+      #if COOLER_RAW_LO_TEMP > COOLER_RAW_HI_TEMP
+        #define GECOOLER <=
+      #else
+        #define GECOOLER >=
+      #endif
+      if (current_temperature_cooler_raw GECOOLER cooler_maxttemp_raw) _temp_error(-1, PSTR(SERIAL_T_MAXTEMP), PSTR(MSG_ERR_MAXTEMP_COOLER));
+      if (cooler_minttemp_raw GECOOLER current_temperature_cooler_raw) _temp_error(-1, PSTR(SERIAL_T_MINTEMP), PSTR(MSG_ERR_MINTEMP_COOLER));
+    #endif
+
+
 
   } // temp_count >= OVERSAMPLENR
 
