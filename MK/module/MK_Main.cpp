@@ -3037,7 +3037,9 @@ inline void wait_bed(bool no_wait_for_cooling = true) {
     now = millis();
     if (ELAPSED(now, next_temp_ms)) { //Print Temp Reading every 1 second while heating up.
       next_temp_ms = now + 1000UL;
-      print_heaterstates();
+      #if HAS(TEMP_0) || HAS(TEMP_BED)
+        print_heaterstates();
+      #endif
       #if TEMP_BED_RESIDENCY_TIME > 0
         ECHO_M(SERIAL_W);
         if (residency_start_ms) {
