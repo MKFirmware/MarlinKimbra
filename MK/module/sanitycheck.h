@@ -1830,6 +1830,7 @@
           #error DEPENDENCY ERROR: You have to set LASER_FIRING_PIN and LASER_INTENSITY_PIN to a valid pin if you enable LASER
         #endif
       #endif
+    #endif
   #endif
 
   #if ENABLED(FILAMENT_RUNOUT_SENSOR) && !PIN_EXISTS(FILRUNOUT)
