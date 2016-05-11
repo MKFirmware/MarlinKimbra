@@ -987,7 +987,7 @@ void manage_temp_controller() {
       }
       else { // NEXTIME XXX here we have to manage hw pwm?
         soft_pwm_cooler = 0;
-        WRITE_HEATER_COOLER(LOW);
+        WRITE_COOLER(LOW);
       }
     #else // COOLER_LIMIT_SWITCHING
       // Check if temperature is within the correct range
@@ -996,7 +996,7 @@ void manage_temp_controller() {
       }
       else {
         soft_pwm_cooler = 0;
-        WRITE_HEATER_COOLER(LOW);
+        WRITE_COOLER(LOW);
       }
     #endif
   #endif // TEMP_SENSOR_COOLER != 0
@@ -1276,11 +1276,9 @@ void tp_init() {
     SET_OUTPUT(HEATER_BED_PIN);
   #endif
   #if HAS(COOLER_DEV) 
-    SET_OUTPUT(COOLER_PIN)
-    #if ENABLED(COOLER_PWM)
+    SET_OUTPUT(COOLER_PIN);
+    #if ENABLED(FAST_COOLER_PWM)
 	    setPwmFrequency(COOLER_PIN, 2); // No prescaling. Pwm frequency = F_CPU/256/64
-    #else
-       soft_pwm_cooler = coolerSpeedSoftPwm / 2;
     #endif
   #endif
   #if HAS(FAN)
@@ -1793,7 +1791,7 @@ ISR(TIMER0_COMPB_vect) {
     ISR_STATICS(BED);
   #endif
   #if HAS(COOLER_DEV)
-    ISR_STATICS(COOLER_DEVICE);
+    ISR_STATICS(COOLER_DEV);
   #endif
 
   #if HAS(FILAMENT_SENSOR)
@@ -1829,8 +1827,8 @@ ISR(TIMER0_COMPB_vect) {
         WRITE_HEATER_BED(soft_pwm_BED > 0 ? 1 : 0);
       #endif
       #if HAS(COOLER_DEV)
-		  soft_pwm_COOLER_DEVICE = soft_pwm_cooler;
-        WRITE_COOLER(soft_pwm_COOLER_DEVICE > 0 ? 1 : 0);
+		  soft_pwm_cooler = soft_pwm_cooler;
+        WRITE_COOLER(soft_pwm_cooler > 0 ? 1 : 0);
       #endif 
       #if ENABLED(FAN_SOFT_PWM)
         soft_pwm_fan = fanSpeedSoftPwm / 2;
@@ -1872,7 +1870,7 @@ ISR(TIMER0_COMPB_vect) {
       if (soft_pwm_BED < pwm_count) WRITE_HEATER_BED(0);
     #endif
     #if HAS(COOLER_DEV)
-      if (soft_pwm_COOLER_DEVICE < pwm_count ) WRITE_COOLER(0);
+      if (soft_pwm_cooler < pwm_count ) WRITE_COOLER(0);
     #endif
 
     #if ENABLED(FAN_SOFT_PWM)
@@ -1956,7 +1954,7 @@ ISR(TIMER0_COMPB_vect) {
         _SLOW_PWM_ROUTINE(BED, soft_pwm_bed); // BED
       #endif
       #if HAS(COOLER_DEV)
-        _SLOW_PWM_SOURINT(COOLER_DEVICE, soft_pwm_cooler); // COOLER
+        _SLOW_PWM_SOURINT(COOLER_DEV, soft_pwm_cooler); // COOLER
       #endif
 
     } // slow_pwm_count == 0
@@ -1975,7 +1973,7 @@ ISR(TIMER0_COMPB_vect) {
       PWM_OFF_ROUTINE(BED); // BED
     #endif
     #if HAS(COOLER_DEV)
-      PWM_OFF_ROUTINE(COOLER_DEVICE); // COOLER
+      PWM_OFF_ROUTINE(COOLER_DEV); // COOLER
     #endif 
 
     #if ENABLED(FAN_SOFT_PWM)
@@ -2047,7 +2045,7 @@ ISR(TIMER0_COMPB_vect) {
         if (state_timer_heater_BED > 0) state_timer_heater_BED--;
       #endif
       #if HAS(COOLER_DEV)
-        if(state_timer_heater_COOLER_DEVICE > 0) state_timer_heater_COOLER_DEVICE--;
+        if(state_timer_heater_COOLER_DEV > 0) state_timer_heater_COOLER_DEV--;
       #endif 
     } // (pwm_count % 64) == 0
 

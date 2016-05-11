@@ -757,7 +757,7 @@ MENU_ITEM_EDIT(int3, MSG_SPEED, &feedrate_multiplier, 10, 999);
 // Laser:
 //
 #if ENABLED(LASER)
- MENU_ITEM_EDIT(int3, MSG_NOZZLE, &target_temperature[0], 0, HEATER_0_MAXTEMP - 15);
+ MENU_ITEM_EDIT(int3, MSG_NOZZLE, &target_temperature_cooler, 0, COOLER_MAXTEMP - 15);
 #endif
 
 //
@@ -1774,7 +1774,7 @@ static void lcd_control_volumetric_menu() {
 static void lcd_laser_menu()
 {
    START_MENU();
-   MENU_ITEM(back, MSG_MAIN, lcd_main_menu);
+   MENU_ITEM(back, MSG_MAIN);
    MENU_ITEM(submenu, "Set Focus", lcd_laser_focus_menu);
    MENU_ITEM(submenu, "Test Fire", lcd_laser_test_fire_menu);
    #ifdef LASER_PERIPHERALS
@@ -1789,7 +1789,7 @@ static void lcd_laser_menu()
 
 static void lcd_laser_test_fire_menu() {
    START_MENU();
-   MENU_ITEM(back, "Laser Functions", lcd_laser_menu);
+   MENU_ITEM(back, "Laser Functions");
    MENU_ITEM(function, " 20%  50ms", action_laser_test_20_50ms);
    MENU_ITEM(function, " 20% 100ms", action_laser_test_20_100ms);
    MENU_ITEM(function, "100%  50ms", action_laser_test_100_50ms);
@@ -1835,7 +1835,7 @@ static void laser_test_fire(uint8_t power, int dwell) {
 float focalLength = 0;
 static void lcd_laser_focus_menu() {
    START_MENU();
-   MENU_ITEM(back, "Laser Functions", lcd_laser_menu);
+   MENU_ITEM(back, "Laser Functions");
    MENU_ITEM(function, "1mm", action_laser_focus_1mm);
    MENU_ITEM(function, "2mm", action_laser_focus_2mm);
    MENU_ITEM(function, "3mm - 1/8in", action_laser_focus_3mm);
@@ -1878,7 +1878,7 @@ static void action_laser_focus_7mm() {
    laser_set_focus(7);
 }
 static void laser_set_focus(float f_length) {
-   if (!TEST(axis_was_homed, Z_AXIS)) {
+   if (!axis_homed[Z_AXIS]) {
       enqueue_and_echo_commands_P(PSTR("G28 Z F150"));
    }
    focalLength = f_length;

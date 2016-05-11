@@ -805,7 +805,7 @@
       #define WRITE_HEATER_BED(v) WRITE(HEATER_BED_PIN,v)
     #endif
   #endif
-  #if HAS(HEATER_COOLER)
+  #if HAS(COOLER_DEV)
     #if ENABLED(INVERTED_COOLER_PINS)
       #define WRITE_COOLER(v) WRITE(COOLER_PIN,!v)
     #else

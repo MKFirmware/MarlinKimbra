@@ -94,7 +94,6 @@
 #define SERIAL_INVALID_HOTEND                   "Invalid hotend"
 #define SERIAL_INVALID_SOLENOID                 "Invalid solenoid"
 #define SERIAL_ERR_NO_THERMISTORS               "No thermistors - no temperature"
-#define SERIAL_COUNT_X                          " Count X: "
 #define SERIAL_ERR_KILLED                       "Printer halted. kill() called!"
 #define SERIAL_ERR_STOPPED                      "Printer stopped due to errors. Fix the error and use M999 to restart. (Temperature is reset. Set it after restarting)"
 #define SERIAL_BUSY_PROCESSING                  "processing"

@@ -69,7 +69,7 @@ static unsigned char last_direction_bits = 0;  // The next stepping-bits to be o
 static unsigned int cleaning_buffer_counter = 0;
 
 #ifdef LASER
-static long counter_l;
+static long counter_L;
 #endif // LASER
 
 #ifdef LASER_RASTER
@@ -447,7 +447,7 @@ ISR(TIMER1_COMPA_vect) {
       // Initialize Bresenham counters to 1/2 the ceiling
       counter_X = counter_Y = counter_Z = counter_E = -(current_block->step_event_count >> 1);
       #if ENABLED(LASER)
-         counter_l = counter_x;
+         counter_L = counter_X;
          laser.dur = current_block->laser_duration;
       #endif
 
@@ -597,14 +597,14 @@ ISR(TIMER1_COMPA_vect) {
       #endif
 
       #if ENABLED(LASER)
-        counter_l += current_block->steps_l;
-        if (counter_l > 0) {
+        counter_L += current_block->steps_l;
+        if (counter_L > 0) {
           if (current_block->laser_mode == PULSED && current_block->laser_status == LASER_ON) { // Pulsed Firing Mode
             laser_fire(current_block->laser_intensity);
             if (laser.diagnostics) {
-              ECHO_MV("X: ", counter_x);
-              ECHO_MV("Y: ", counter_y);
-              ECHO_MV("L: ", counter_l);
+              ECHO_MV("X: ", counter_X);
+              ECHO_MV("Y: ", counter_Y);
+              ECHO_MV("L: ", counter_L);
             }
           }
           #if ENABLED(LASER_RASTER)
@@ -618,7 +618,7 @@ ISR(TIMER1_COMPA_vect) {
               counter_raster++;
             }
           #endif // LASER_RASTER
-          counter_l -= current_block->step_event_count;
+          counter_L -= current_block->step_event_count;
         }
         if (current_block->laser_duration != 0 && (laser.last_firing + current_block->laser_duration < micros())) {
           if (laser.diagnostics) ECHO_LM(INFO, "Laser firing duration elapsed, in interrupt fast loop");

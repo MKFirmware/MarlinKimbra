@@ -155,6 +155,9 @@
     #if DISABLED(COOLER_MINTEMP)
       #error DEPENDENCY ERROR: Missing setting COOLER_MINTEMP
     #endif
+    #if DISABLED(COOLER)
+      #error DEPENDENCY ERROR: Cannot enable TEMP_SENSOR_COOLER and not COOLER
+    #endif
   #endif
   #if DISABLED(PLA_PREHEAT_HOTEND_TEMP)
     #error DEPENDENCY ERROR: Missing setting PLA_PREHEAT_HOTEND_TEMP
