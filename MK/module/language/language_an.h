@@ -1,4 +1,26 @@
 /**
+ * MK & MK4due 3D Printer Firmware
+ *
+ * Based on Marlin, Sprinter and grbl
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2013 - 2016 Alberto Cotronei @MagoKimbra
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+/**
  * Aragonese
  *
  * LCD Menu Messages
@@ -13,7 +35,7 @@
 
 
 #define WELCOME_MSG                         MACHINE_NAME " parada."
-#define MSG_SD                              "SD"
+#define MSG_SD                              "Tarcheta"
 #define MSG_SD_INSERTED                     MSG_SD " colocada"
 #define MSG_SD_REMOVED                      MSG_SD " retirada"
 #define MSG_MAIN                            "Menu prencipal"
@@ -34,20 +56,19 @@
 #define MSG_ONFOR                           "On x:"
 #define MSG_PWRCONSUMED                     "P.er:"
 #define MSG_FILCONSUMED                     "F:"
-#define MSG_PREHEAT                         "Prec."
-#define MSG_CONGIG                          "conf."
-#define MSG_PREHEAT_PLA                     MSG_PREHEAT " PLA"
-#define MSG_PREHEAT_PLA_ALL                 MSG_PREHEAT_PLA " All"
-#define MSG_PREHEAT_PLA_BEDONLY             MSG_PREHEAT_PLA " Bed"
-#define MSG_PREHEAT_PLA_SETTINGS            MSG_CONGIG " PLA"
-#define MSG_PREHEAT_ABS                     MSG_PREHEAT " ABS"
-#define MSG_PREHEAT_ABS_ALL                 MSG_PREHEAT_ABS " All"
-#define MSG_PREHEAT_ABS_BEDONLY             MSG_PREHEAT_ABS " Bed"
-#define MSG_PREHEAT_ABS_SETTINGS            MSG_CONGIG " ABS"
-#define MSG_PREHEAT_GUM                     MSG_PREHEAT " GUM"
-#define MSG_PREHEAT_GUM_ALL                 MSG_PREHEAT_GUM " All"
-#define MSG_PREHEAT_GUM_BEDONLY             MSG_PREHEAT_GUM " Bed"
-#define MSG_PREHEAT_GUM_SETTINGS            MSG_CONGIG " GUM" 
+#define MSG_PREHEAT                         "Precalentar"
+#define MSG_PREHEAT_PLA                     "Precalentar PLA"
+#define MSG_PREHEAT_PLA_ALL                 "Precalentar PLA a"
+#define MSG_PREHEAT_PLA_BEDONLY             "Prec. PLA Base"
+#define MSG_PREHEAT_PLA_SETTINGS            "Achustar tem. PLA"
+#define MSG_PREHEAT_ABS                     "Precalentar ABS"
+#define MSG_PREHEAT_ABS_ALL                 "Precalentar ABS a"
+#define MSG_PREHEAT_ABS_BEDONLY             "Prec. ABS Base"
+#define MSG_PREHEAT_ABS_SETTINGS            "Achustar tem. ABS"
+#define MSG_PREHEAT_GUM                     "Precalentar GUM"
+#define MSG_PREHEAT_GUM_ALL                 "Precalentar GUM a"
+#define MSG_PREHEAT_GUM_BEDONLY             "Achustar tem. "
+#define MSG_PREHEAT_GUM_SETTINGS            "Achustar tem. GUM"
 #define MSG_TOO_COLD_FOR_FILAMENTCHANGE     "Hotend too cold to change filament"
 #define MSG_COOLDOWN                        "Enfriar"
 #define MSG_SWITCH_PS_ON                    "Enchegar Fuent"
@@ -69,8 +90,8 @@
 #define MSG_FACTOR                          LCD_STR_THERMOMETER " Fact"
 #define MSG_IDLEOOZING                      "Anti oozing"
 #define MSG_AUTOTEMP                        "Autotemp"
-#define MSG_ON                              "ON "
-#define MSG_OFF                             "OFF"
+#define MSG_ON                              "On"
+#define MSG_OFF                             "Off"
 #define MSG_PID_P                           "PID-P"
 #define MSG_PID_I                           "PID-I"
 #define MSG_PID_D                           "PID-D"
@@ -82,13 +103,13 @@
 #define MSG_VXY_JERK                        "Vxy-jerk"
 #define MSG_VZ_JERK                         "Vz-jerk"
 #define MSG_VE_JERK                         "Ves-jerk"
-#define MSG_VMAX                            "Vmax "
+#define MSG_VMAX                            "Vmax"
 #define MSG_X                               "X"
 #define MSG_Y                               "Y"
 #define MSG_Z                               "Z"
 #define MSG_E                               "E"
-#define MSG_MOVE                            "Move"
-#define MSG_MOVE_AXIS                       MSG_MOVE " axis"
+#define MSG_MOVE                            "Mover"
+#define MSG_MOVE_AXIS                       MSG_MOVE " Eixes"
 #define MSG_MOVE_X                          MSG_MOVE " " MSG_X
 #define MSG_MOVE_Y                          MSG_MOVE " " MSG_Y
 #define MSG_MOVE_Z                          MSG_MOVE " " MSG_Z
@@ -98,7 +119,7 @@
 #define MSG_MOVE_E                          "Extruder"
 #define MSG_VMIN                            "Vmin"
 #define MSG_VTRAV_MIN                       "VTrav min"
-#define MSG_AMAX                            "Amax "
+#define MSG_AMAX                            "Amax"
 #define MSG_A_RETRACT                       "A-retrac."
 #define MSG_A_TRAVEL                        "A-travel"
 #define MSG_XSTEPS                          MSG_X " trangos/mm"
@@ -124,8 +145,8 @@
 #define MSG_PAUSE_PRINT                     "Pausar impresion"
 #define MSG_RESUME_PRINT                    "Contin. impresion"
 #define MSG_STOP_PRINT                      "Detener Impresion"
-#define MSG_CARD_MENU                       "Menu de " MSG_SD
-#define MSG_NO_CARD                         "No i hai " MSG_SD
+#define MSG_CARD_MENU                       "Menu de SD"
+#define MSG_NO_CARD                         "No i hai tarcheta"
 #define MSG_DWELL                           "Reposo..."
 #define MSG_USERWAIT                        "Asperan. ordines"
 #define MSG_RESUMING                        "Contin. impresion"
@@ -134,7 +155,7 @@
 #define MSG_KILLED                          "ATURADA D'EMERCH."
 #define MSG_STOPPED                         "ATURADA."
 #define MSG_CONTROL_RETRACT                 "Retraer mm"
-#define MSG_CONTROL_RETRACT_SWAP            "Swap Re. mm"
+#define MSG_CONTROL_RETRACT_SWAP            "Swap Retraer mm"
 #define MSG_CONTROL_RETRACTF                "Retraer  F"
 #define MSG_CONTROL_RETRACT_ZLIFT           "Devantar mm"
 #define MSG_CONTROL_RETRACT_RECOVER         "DesRet +mm"
@@ -142,8 +163,8 @@
 #define MSG_CONTROL_RETRACT_RECOVERF        "DesRet F"
 #define MSG_AUTORETRACT                     "AutoRetr."
 #define MSG_FILAMENTCHANGE                  "Cambear"
-#define MSG_INIT_SDCARD                     "Encetan. " MSG_SD
-#define MSG_CNG_SDCARD                      "Cambiar " MSG_SD
+#define MSG_INIT_SDCARD                     "Encetan. tarcheta"
+#define MSG_CNG_SDCARD                      "Cambiar tarcheta"
 #define MSG_ZPROBE_OUT                      "Z probe out. bed"
 #define MSG_POSITION_UNKNOWN                "Home X/Y before Z"
 #define MSG_ZPROBE_ZOFFSET                  "Z Offset"
@@ -155,7 +176,7 @@
 #define MSG_HEATING_FAILED_LCD              "Heating failed"
 #define MSG_ERR_REDUNDANT_TEMP              "REDUNDANT TEMP ERROR"
 #define MSG_THERMAL_RUNAWAY                 "THERMAL RUNAWAY"
-#define MSG_HOTEND_AD595                    "HOTEND AD595 Offset & Gain"
+#define MSG_AD595                           "AD595 Offset & Gain"
 #define MSG_ERR_MAXTEMP                     "MAXTEMP ERROR"
 #define MSG_ERR_MINTEMP                     "MINTEMP ERROR"
 #define MSG_ERR_MAXTEMP_BED                 "MAXTEMP BED ERROR"
@@ -212,9 +233,13 @@
 #if ENABLED(RFID_MODULE)
   #define MSG_RFID_SPOOL                    "Spool on E"
   #define MSG_RFID_BRAND                    "Brand: "
+  #define MSG_RFID_TYPE                     "Type: "
   #define MSG_RFID_COLOR                    "Color: "
   #define MSG_RFID_SIZE                     "Size: "
-  #define MSG_RFID_TEMPERATURE              "Temperature: "
+  #define MSG_RFID_TEMP_HOTEND              "Temperature Hotend: "
+  #define MSG_RFID_TEMP_BED                 "Temperature Bed: "
+  #define MSG_RFID_TEMP_USER_HOTEND         "User temperature Hotend: "
+  #define MSG_RFID_TEMP_USER_BED            "User temperatura Bed: "
   #define MSG_RFID_DENSITY                  "Density: "
   #define MSG_RFID_SPOOL_LENGHT             "Spool Lenght: "
 #endif

@@ -1,4 +1,26 @@
 /**
+ * MK & MK4due 3D Printer Firmware
+ *
+ * Based on Marlin, Sprinter and grbl
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2013 - 2016 Alberto Cotronei @MagoKimbra
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+/**
  * English
  *
  * LCD Menu Messages
@@ -140,7 +162,7 @@
 #define MSG_CONTROL_RETRACT_RECOVER_SWAP    "Swap UnRet +mm"
 #define MSG_CONTROL_RETRACT_RECOVERF        "UnRet  F"
 #define MSG_AUTORETRACT                     "AutoRetr."
-#define MSG_FILAMENTCHANGE                  "Change filament"
+#define MSG_FILAMENT_CHANGE                 "Change filament"
 #define MSG_INIT_SDCARD                     "Init. " MSG_SD
 #define MSG_CNG_SDCARD                      "Change " MSG_SD
 #define MSG_ZPROBE_OUT                      "Z probe out. bed"
@@ -183,6 +205,30 @@
   #define MSG_DELTA_CALIBRATE_Z             "Calibrate " MSG_Z
   #define MSG_DELTA_CALIBRATE_CENTER        "Calibrate Center"
 #endif // DELTA
+
+// FILAMENT_CHANGE_FEATURE
+#define MSG_FILAMENT_CHANGE_HEADER          "CHANGE FILAMENT"
+#define MSG_FILAMENT_CHANGE_INIT_1          "Wait for start"
+#define MSG_FILAMENT_CHANGE_INIT_2          "of the filament"
+#define MSG_FILAMENT_CHANGE_INIT_3          "change"
+#define MSG_FILAMENT_CHANGE_UNLOAD_1        "Wait for"
+#define MSG_FILAMENT_CHANGE_UNLOAD_2        "filament unload"
+#define MSG_FILAMENT_CHANGE_UNLOAD_3        ""
+#define MSG_FILAMENT_CHANGE_INSERT_1        "Insert filament"
+#define MSG_FILAMENT_CHANGE_INSERT_2        "and press button"
+#define MSG_FILAMENT_CHANGE_INSERT_3        "to continue..."
+#define MSG_FILAMENT_CHANGE_LOAD_1          "Wait for"
+#define MSG_FILAMENT_CHANGE_LOAD_2          "filament load"
+#define MSG_FILAMENT_CHANGE_LOAD_3          ""
+#define MSG_FILAMENT_CHANGE_EXTRUDE_1       "Wait for"
+#define MSG_FILAMENT_CHANGE_EXTRUDE_2       "filament extrude"
+#define MSG_FILAMENT_CHANGE_EXTRUDE_3       ""
+#define MSG_FILAMENT_CHANGE_OPTION_HEADER   "WHAT NEXT?"
+#define MSG_FILAMENT_CHANGE_OPTION_EXTRUDE  "Extrude more"
+#define MSG_FILAMENT_CHANGE_OPTION_RESUME   "Resume print"
+#define MSG_FILAMENT_CHANGE_RESUME_1        "Wait for print"
+#define MSG_FILAMENT_CHANGE_RESUME_2        "resume"
+#define MSG_FILAMENT_CHANGE_RESUME_3        ""
 
 // Scara
 #if MECH(SCARA)

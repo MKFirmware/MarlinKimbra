@@ -110,14 +110,15 @@ unsigned char soft_pwm_cooler;
 #endif
 
 #if ENABLED(THERMAL_PROTECTION_HOTENDS) || ENABLED(THERMAL_PROTECTION_BED) || ENABLED(THERMAL_PROTECTION_COOLER)
-  enum TRState { TRReset, TRInactive, TRFirstRunnig, TRStable, TRRunaway };
+  enum TRState { TRInactive, TRFirstRunnig, TRStable, TRRunaway };
   void thermal_runaway_protection(TRState* state, millis_t* timer, float temperature, float target_temperature, int temp_controller_id, int period_seconds, int hysteresis_degc);
+
   #if ENABLED(THERMAL_PROTECTION_HOTENDS)
-    static TRState thermal_runaway_state_machine[HOTENDS] = { TRReset };
+    static TRState thermal_runaway_state_machine[HOTENDS] = { TRInactive };
     static millis_t thermal_runaway_timer[HOTENDS] = { 0 };
   #endif
   #if ENABLED(THERMAL_PROTECTION_BED) && TEMP_SENSOR_BED != 0
-    static TRState thermal_runaway_bed_state_machine = TRReset;
+    static TRState thermal_runaway_bed_state_machine = TRInactive;
     static millis_t thermal_runaway_bed_timer;
   #endif
   #if ENABLED(THERMAL_PROTECTION_COOLER) && TEMP_SENSOR_COOLER != 0
@@ -1553,42 +1554,33 @@ void tp_init() {
 
     // If the target temperature changes, restart
     if (tr_target_temperature[temp_controller_index] != target_temperature)
-      *state = TRReset;
+      tr_target_temperature[temp_controller_index] = target_temperature;
+      *state = target_temperature > 0 ? TRFirstRunning : TRInactive;
 
     switch (*state) {
-      case TRReset:
-        *timer = 0;
-        *state = TRInactive;
       // Inactive state waits for a target temperature to be set
-      case TRInactive:
-        if (target_temperature > 0) {
-          tr_target_temperature[temp_controller_index] = target_temperature;
-          *state = TRFirstRunning;
-        }
-        break;
+      case TRInactive: break;
       // When first heating/cooling, wait for the temperature to be reached then go to Stable state
       case TRFirstRunning:
-        if (temperature <= tr_target_temperature[temp_controller_index] && temp_controller_index > HEATERS) *state = TRStable;
-		  else if((temperature >= tr_target_temperature[temp_controller_index] && temp_controller_index <= HEATERS) *state = TRStable;
-        break;
+        if (temperature < tr_target_temperature[temp_controller_index] && temp_controller_index > HEATERS) break;
+		  else if((temperature > tr_target_temperature[temp_controller_index] && temp_controller_index <= HEATERS) break;
+        *state = TRStable;
       // While the temperature is stable watch for a bad temperature
       case TRStable:
-        // If the temperature is over (-hysteresys, for heaters) or lower (+hysteresys, for coolers) the target restart the timer
 		  if(temp_controller_index <= HEATERS) { // HEATERS
-        	 if (temperature >= tr_target_temperature[temp_controller_index] - hysteresis_degc)
-            *timer = millis();
-          // If the timer goes too long without a reset, trigger shutdown
-          else if (ELAPSED(millis() > *timer + period_seconds * 1000UL))
+        	 if (temperature < tr_target_temperature[temp_controller_index] - hysteresis_degc && ELAPSED(millis(), *timer))
             *state = TRRunaway;
+          else {
+            *timer = millis() + period_seconds * 1000UL;
+            break;
         }
         else { // COOLERS
-		    if (temperature <= tr_target_temperature[temp_controller_index] + hysteresis_degc)
-			   *timer = millis();
-          // If the timer goes too long without a reset, trigger shutdown
-          else if (ELAPSED(millis() > *timer + period_seconds * 1000UL))
-            *state = TRRunaway;
+		    if (temperature > tr_target_temperature[temp_controller_index] + hysteresis_degc && ELAPSED(millis(), *timer)))
+			   *state = TRRunaway;
+          else {
+            *timer = millis() + period_seconds * 1000UL;
+            break;
         }
-        break;
       case TRRunaway:
         _temp_error(temp_controller_id, PSTR(SERIAL_T_THERMAL_RUNAWAY), PSTR(MSG_THERMAL_RUNAWAY));
     }
