@@ -100,7 +100,7 @@ unsigned char soft_pwm_bed;
 unsigned char soft_pwm_cooler;
 
 void setPwmCooler(unsigned char pwm);
-unsigned char getPwmCooler(bool soft=true);
+unsigned char getPwmCooler(bool soft);
 
 
 #if ENABLED(BABYSTEPPING)
@@ -1017,7 +1017,7 @@ void manage_temp_controller() {
     #else // COOLER_LIMIT_SWITCHING
       // Check if temperature is within the correct range
       if (current_temperature_cooler > COOLER_MINTEMP && current_temperature_cooler < COOLER_MAXTEMP) {
-        setPwmCooler(current_temperature_cooler > target_temperature_cooler ? MAX_COOLER_POWER  : 0)
+        setPwmCooler(current_temperature_cooler > target_temperature_cooler ? MAX_COOLER_POWER  : 0);
       }
       else {
         setPwmCooler(0);
