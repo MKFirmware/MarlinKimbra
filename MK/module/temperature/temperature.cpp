@@ -313,7 +313,7 @@ void autotempShutdown() {
     if (temp_controller == -1) {
       ECHO_SM(DB, "BED");
     }
-    else if(hotend < -1) {
+    else if(temp_controller < -1) {
       ECHO_SM(DB, "COOLER");
     }
     else {
@@ -359,7 +359,7 @@ void autotempShutdown() {
 
         if (running && ((input > temp && temp_controller >= -1) || (input < temp && temp_controller < -1))) {
           if (ms > t2 + 5000UL) {
-            runnig = false;
+            running = false;
 				if (temp_controller < -1)
 				  soft_pwm_cooler = (bias - d) >> 1;
             else if (temp_controller < 0)
@@ -383,8 +383,8 @@ void autotempShutdown() {
             if (cycles > 0) {
 				  if (temp_controller < -1)
 					 long max_pow = MAX_COOLER_POWER;
-				  else:
-              	 long max_pow = hotend < 0 ? MAX_BED_POWER : PID_MAX;
+				  else
+              	 long max_pow = temp_controller < 0 ? MAX_BED_POWER : PID_MAX;
               bias += (d * (t_high - t_low)) / (t_low + t_high);
               bias = constrain(bias, 20, max_pow - 20);
               d = (bias > max_pow / 2) ? max_pow - 1 - bias : bias;
@@ -413,7 +413,7 @@ void autotempShutdown() {
             }
             #if ENABLED(PIDTEMP)
 				  if (temp_controller >= 0)
-              	 soft_pwm[hotend] = (bias + d) >> 1;
+              	 soft_pwm[temp_controller] = (bias + d) >> 1;
             #endif
             #if ENABLED(PIDTEMPBED)
               if (temp_controller == -1)
@@ -424,7 +424,7 @@ void autotempShutdown() {
                 soft_pwm_cooler = (bias + d) >> 1;
             #endif
             cycles++;
-            if(temp_cooler < -1)
+            if(temp_controller < -1)
               max = temp;
 			   else
               min = temp;
@@ -462,9 +462,9 @@ void autotempShutdown() {
         ECHO_LM(DB, SERIAL_PID_AUTOTUNE_FINISHED);
         #if ENABLED(PIDTEMP)
           if (temp_controller >= 0) {
-            ECHO_SMV(DB, SERIAL_KP, PID_PARAM(Kp, hotend));
-            ECHO_MV(SERIAL_KI, unscalePID_i(PID_PARAM(Ki, hotend)));
-            ECHO_EMV(SERIAL_KD, unscalePID_d(PID_PARAM(Kd, hotend)));
+            ECHO_SMV(DB, SERIAL_KP, PID_PARAM(Kp, temp_controller));
+            ECHO_MV(SERIAL_KI, unscalePID_i(PID_PARAM(Ki, temp_controller)));
+            ECHO_EMV(SERIAL_KD, unscalePID_d(PID_PARAM(Kd, temp_controller)));
             if (set_result) {
               PID_PARAM(Kp, hotend) = workKp;
               PID_PARAM(Ki, hotend) = scalePID_i(workKi);
