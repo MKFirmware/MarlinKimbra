@@ -1800,11 +1800,11 @@ static void lcd_laser_test_fire_menu() {
 
 
 static void action_laser_acc_on() {
-   enqueuecommands_P(PSTR("M80"));
+   enqueue_and_echo_commands_P(PSTR("M80"));
 }
 
 static void action_laser_acc_off() {
-   enqueuecommands_P(PSTR("M81"));
+   enqueue_and_echo_commands_P(PSTR("M81"));
 }
 static void action_laser_test_20_50ms() {
    laser_test_fire(20, 50);
@@ -1827,7 +1827,7 @@ static void action_laser_test_warm() {
 }
 
 static void laser_test_fire(uint8_t power, int dwell) {
-   enqueuecommands_P(PSTR("M80"));  // Enable laser accessories since we don't know if its been done (and there's no penalty for doing it again).
+   enqueue_and_echo_commands_P(PSTR("M80"));  // Enable laser accessories since we don't know if its been done (and there's no penalty for doing it again).
     laser_fire(power);
    delay(dwell);
    laser_extinguish();
@@ -1879,14 +1879,14 @@ static void action_laser_focus_7mm() {
 }
 static void laser_set_focus(float f_length) {
    if (!TEST(axis_was_homed, Z_AXIS)) {
-      enqueuecommands_P(PSTR("G28 Z F150"));
+      enqueue_and_echo_commands_P(PSTR("G28 Z F150"));
    }
    focalLength = f_length;
    float focus = LASER_FOCAL_HEIGHT - f_length;
    char cmd[20];
 
    sprintf_P(cmd, PSTR("G0 Z%s F150"), ftostr52(focus));
-   enqueuecommands_P(cmd);
+   enqueue_and_echo_commands_P(cmd);
 }
 
 #endif // LASER
