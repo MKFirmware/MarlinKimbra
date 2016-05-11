@@ -99,6 +99,10 @@ float current_temperature_cooler = 0.0;
 unsigned char soft_pwm_bed;
 unsigned char soft_pwm_cooler;
 
+void setPwmCooler(unsigned char pwm);
+unsigned char getPwmCooler(bool soft=true);
+
+
 #if ENABLED(BABYSTEPPING)
   volatile int babystepsTodo[3] = { 0 };
 #endif
@@ -266,6 +270,25 @@ static void updateTemperaturesFromRawValues();
 //================================ Functions ================================
 //===========================================================================
 
+
+void setPwmCooler(unsigned char pwm) {
+   soft_pwm_cooler = pwm >> 1;
+   #if ENABLED(FAST_PWM_COOLER)
+      analogWrite(COOLER_PIN, pwm);
+   #endif
+}
+
+
+unsigned char getPwmCooler(bool soft=true) {
+   if(soft) 
+      return soft_pwm_cooler;
+   #if ENABLED(FAST_PWM_COOLER)
+   return analogRead(COOLER_PIN);
+   #else
+   return soft_pwm_cooler * 2;
+   #endif
+}
+
 void autotempShutdown() {
   #if ENABLED(AUTOTEMP)
     if (autotemp_enabled) {
@@ -325,8 +348,10 @@ void autotempShutdown() {
 
     if (temp_controller == -1)
       soft_pwm_bed = bias = d = MAX_BED_POWER / 2;
-    else if(temp_controller < -1)
-		soft_pwm_cooler = bias = d = MAX_COOLER_POWER / 2;
+    else if(temp_controller < -1) {
+      bias = d = MAX_COOLER_POWER / 2;
+      setPwmCooler(MAX_COOLER_POWER);
+    }
     else
       soft_pwm[temp_controller] = bias = d = PID_MAX / 2;
 
@@ -358,8 +383,8 @@ void autotempShutdown() {
         if (running && ((input > temp && temp_controller >= -1) || (input < temp && temp_controller < -1))) {
           if (ms > t2 + 5000UL) {
             running = false;
-				if (temp_controller < -1)
-				  soft_pwm_cooler = (bias - d) >> 1;
+				if (temp_controller < -1) 
+              setPwmCooler((bias - d));
             else if (temp_controller < 0)
               soft_pwm_bed = (bias - d) >> 1;
             else
@@ -420,7 +445,7 @@ void autotempShutdown() {
             #endif
             #if ENABLED(PIDTEMPCOOLER)
               if (temp_controller < -1)
-                soft_pwm_cooler = (bias + d) >> 1;
+                setPwmCooler((bias + d));
             #endif
             cycles++;
             if(temp_controller < -1)
@@ -975,27 +1000,27 @@ void manage_temp_controller() {
     #if ENABLED(PIDTEMPCOOLER)
       float pid_output = get_pid_output_cooler();
 
-      soft_pwm_cooler = current_temperature_cooler > COOLER_MINTEMP && current_temperature_cooler < COOLER_MAXTEMP ? (int)pid_output >> 1 : 0;
+      setPwmCooler(current_temperature_cooler > COOLER_MINTEMP && current_temperature_cooler < COOLER_MAXTEMP ? (int)pid_output : 0);
 
     #elif ENABLED(COOLER_LIMIT_SWITCHING)
       // Check if temperature is within the correct band
       if (current_temperature_cooler > COOLER_MINTEMP && current_temperature_cooler < COOLER_MAXTEMP) {
         if (current_temperature_cooler >= target_temperature_cooler + COOLER_HYSTERESIS)
-          soft_pwm_cooler = MAX_COOLER_POWER >> 1;
+          setPwmCooler(MAX_COOLER_POWER);
         else if (current_temperature_cooler <= target_temperature_cooler - COOLER_HYSTERESIS)
-          soft_pwm_cooler = 0;
+          setPwmCooler(0);
       }
-      else { // NEXTIME XXX here we have to manage hw pwm?
-        soft_pwm_cooler = 0;
+      else { 
+        setPwmCooler(0);
         WRITE_COOLER(LOW);
       }
     #else // COOLER_LIMIT_SWITCHING
       // Check if temperature is within the correct range
       if (current_temperature_cooler > COOLER_MINTEMP && current_temperature_cooler < COOLER_MAXTEMP) {
-        soft_pwm_cooler = current_temperature_cooler > target_temperature_cooler ? MAX_COOLER_POWER >> 1 : 0;
+        setPwmCooler(current_temperature_cooler > target_temperature_cooler ? MAX_COOLER_POWER  : 0)
       }
       else {
-        soft_pwm_cooler = 0;
+        setPwmCooler(0);
         WRITE_COOLER(LOW);
       }
     #endif
@@ -1631,8 +1656,8 @@ void disable_all_coolers() {
 
    #if HAS(TEMP_COOLER)
      target_temperature_cooler = 0;
-     soft_pwm_cooler = 0;
-     #if HAS(COOLER_DEV)
+     setPwmCooler(0);
+     #if HAS(COOLER_DEV) && !ENABLED(FAST_PWM_COOLER)
         WRITE_COOLER(LOW);
      #endif
    #endif
@@ -1790,7 +1815,7 @@ ISR(TIMER0_COMPB_vect) {
   #if HAS(HEATER_BED)
     ISR_STATICS(BED);
   #endif
-  #if HAS(COOLER_DEV)
+  #if HAS(COOLER_DEV) && !ENABLED(FAST_PWM_COOLER)
     ISR_STATICS(COOLER_DEV);
   #endif
 
@@ -1826,9 +1851,9 @@ ISR(TIMER0_COMPB_vect) {
         soft_pwm_BED = soft_pwm_bed;
         WRITE_HEATER_BED(soft_pwm_BED > 0 ? 1 : 0);
       #endif
-      #if HAS(COOLER_DEV)
-		  soft_pwm_cooler = soft_pwm_cooler;
-        WRITE_COOLER(soft_pwm_cooler > 0 ? 1 : 0);
+      #if HAS(COOLER_DEV) && !ENABLED(FAST_PWM_COOLER)
+		  soft_pwm_COOLER_DEV = soft_pwm_cooler;
+        WRITE_COOLER(soft_pwm_COOLER_DEV > 0 ? 1 : 0);
       #endif 
       #if ENABLED(FAN_SOFT_PWM)
         soft_pwm_fan = fanSpeedSoftPwm / 2;
@@ -1869,8 +1894,8 @@ ISR(TIMER0_COMPB_vect) {
     #if HAS(HEATER_BED)
       if (soft_pwm_BED < pwm_count) WRITE_HEATER_BED(0);
     #endif
-    #if HAS(COOLER_DEV)
-      if (soft_pwm_cooler < pwm_count ) WRITE_COOLER(0);
+    #if HAS(COOLER_DEV) && !ENABLED(FAST_PWM_COOLER)
+      if (soft_pwm_COOLER_DEV < pwm_count ) WRITE_COOLER(0);
     #endif
 
     #if ENABLED(FAN_SOFT_PWM)
@@ -1953,7 +1978,7 @@ ISR(TIMER0_COMPB_vect) {
       #if HAS(HEATER_BED)
         _SLOW_PWM_ROUTINE(BED, soft_pwm_bed); // BED
       #endif
-      #if HAS(COOLER_DEV)
+      #if HAS(COOLER_DEV) && !ENABLED(FAST_PWM_COOLER)
         _SLOW_PWM_SOURINT(COOLER_DEV, soft_pwm_cooler); // COOLER
       #endif
 
@@ -1972,7 +1997,7 @@ ISR(TIMER0_COMPB_vect) {
     #if HAS(HEATER_BED)
       PWM_OFF_ROUTINE(BED); // BED
     #endif
-    #if HAS(COOLER_DEV)
+    #if HAS(COOLER_DEV) && !ENABLED(FAST_PWM_COOLER)
       PWM_OFF_ROUTINE(COOLER_DEV); // COOLER
     #endif 
 
@@ -2044,7 +2069,7 @@ ISR(TIMER0_COMPB_vect) {
       #if HAS(HEATER_BED)
         if (state_timer_heater_BED > 0) state_timer_heater_BED--;
       #endif
-      #if HAS(COOLER_DEV)
+      #if HAS(COOLER_DEV) && !ENABLED(FAST_PWM_COOLER)
         if(state_timer_heater_COOLER_DEV > 0) state_timer_heater_COOLER_DEV--;
       #endif 
     } // (pwm_count % 64) == 0
