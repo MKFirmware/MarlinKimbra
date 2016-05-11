@@ -6508,6 +6508,7 @@ inline void gcode_M226() {
     #if ENABLED(PIDTEMPCOOLER) && ENABLED(PIDTEMPBED)
     else {
     #endif
+    #if ENABLED(PIDTEMPBED)
       if (code_seen('P')) bedKp = code_value();
       if (code_seen('I')) bedKi = scalePID_i(code_value());
       if (code_seen('D')) bedKd = scalePID_d(code_value());
@@ -6516,6 +6517,7 @@ inline void gcode_M226() {
       ECHO_SMV(OK, "p:", bedKp);
       ECHO_MV(" i:", unscalePID_i(bedKi));
       ECHO_EMV(" d:", unscalePID_d(bedKd));
+    #endif
     #if ENABLED(PIDTEMPCOOLER) && ENABLED(PIDTEMPBED)
     }
     #endif
