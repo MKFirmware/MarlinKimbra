@@ -1277,7 +1277,7 @@ void tp_init() {
   #endif
   #if HAS(COOLER_DEV) 
     SET_OUTPUT(COOLER_PIN);
-    #if ENABLED(FAST_COOLER_PWM)
+    #if ENABLED(FAST_PWM_COOLER)
 	    setPwmFrequency(COOLER_PIN, 2); // No prescaling. Pwm frequency = F_CPU/256/64
     #endif
   #endif

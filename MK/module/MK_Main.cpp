@@ -9358,7 +9358,7 @@ void kill(const char* lcd_msg) {
   }
 #endif
 
-#if ENABLED(FAST_PWM_FAN) || ENABLED(LASER_COOLER_COOLING)
+#if ENABLED(FAST_PWM_FAN) || ENABLED(FAST_PWM_COOLER)
 
   void setPwmFrequency(uint8_t pin, int val) {
     val &= 0x07;
