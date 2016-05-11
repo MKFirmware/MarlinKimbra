@@ -2136,14 +2136,14 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
         endstop_adj[i] -= high_endstop;
       }
       sw_endstop_max[Z_AXIS] -= high_endstop;
-    }/*
+    }
     else if (high_endstop < 0) {
       ECHO_LMV(DB, "Increment Build height by ", abs(high_endstop));
       for(uint8_t i = 0; i < 3; i++) {
         endstop_adj[i] -= high_endstop;
       }
       sw_endstop_max[Z_AXIS] -= high_endstop;
-    }*/
+    }
 
     set_delta_constants();
   }
