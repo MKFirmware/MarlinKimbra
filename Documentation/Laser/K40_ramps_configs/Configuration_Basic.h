@@ -9,7 +9,6 @@
  * - Extruders number
  * - Thermistor type
  * - Temperature limits
- * - UI Language
  *
  * Mechanisms-settings can be found in Configuration_Xxxxxx.h (where Xxxxxx can be: Cartesian - Delta - Core - Scara)
  * Feature-settings can be found in Configuration_Feature.h
@@ -52,9 +51,14 @@
 //#define FIRMWARE_TEST
 
 // Some particular clients re-start sending commands only after receiving a 'wait' when there is a bad serial-connection.
-//#define NO_TIMEOUTS
+//#define NO_TIMEOUTS 1000 // Milliseconds
 // Uncomment to include more info in ok command
 //#define ADVANCED_OK
+
+// By default MarlinKimbra will send a busy status message to the host
+// every couple of seconds when it can't accept commands.
+// Enable this option if your host doesn't like keepalive messages.
+//#define DISABLE_HOST_KEEPALIVE
 /***********************************************************************/
 
 
@@ -72,10 +76,22 @@
 
 /***********************************************************************
  *************************** Mechanism type ****************************
+ ***********************************************************************
+ *                                                                     *
+ * CARTESIAN  - Prusa, Mendel, etc                                     *
+ * COREXY     - H-Bot/Core XY (x_motor = x+y, y_motor = x-y)           *
+ * COREYX     - H-Bot/Core XY (x_motor = y+x, y_motor = y-x)           *
+ * COREXZ     - H-Bot/Core XZ (x_motor = x+z, z_motor = x-z)           *
+ * COREZX     - H-Bot/Core XZ (x_motor = z+x, z_motor = z-x)           *
+ * DELTA      - Rostock, Kossel, RostockMax, Cerberus, etc             *
+ * SCARA      - SCARA                                                  *
+ *                                                                     *
  ***********************************************************************/
 #define MECHANISM MECH_CARTESIAN
 //#define MECHANISM MECH_COREXY
+//#define MECHANISM MECH_COREYX
 //#define MECHANISM MECH_COREXZ
+//#define MECHANISM MECH_COREZX
 //#define MECHANISM MECH_DELTA
 //#define MECHANISM MECH_SCARA
 /***********************************************************************/
@@ -156,11 +172,12 @@
  *  998 and 999 are Dummy Tables. ALWAYS read 25°C or DUMMY_THERMISTOR_998_VALUE temperature        *
  *                                                                                                   *
  *****************************************************************************************************/
-#define TEMP_SENSOR_0 40
+#define TEMP_SENSOR_0 0
 #define TEMP_SENSOR_1 0
 #define TEMP_SENSOR_2 0
 #define TEMP_SENSOR_3 0
 #define TEMP_SENSOR_BED 0
+#define TEMP_SENSOR_COOLER 40
 
 //These 2 defines help to calibrate the AD595 sensor in case you get wrong temperature measurements.
 //The measured temperature is defined as "actualTemp = (measuredTemp * TEMP_SENSOR_AD595_GAIN) + TEMP_SENSOR_AD595_OFFSET"
@@ -180,12 +197,18 @@
 /***********************************************************************
  ************************* Temperature limits ***************************
  ***********************************************************************/
-// Actual temperature must be close to target for this long before M109 returns success
+// Hotend temperature must be close to target for this long before M109 returns success
 #define TEMP_RESIDENCY_TIME 10  // (seconds)
 #define TEMP_HYSTERESIS 3       // (degC) range of +/- temperatures considered "close" to the target one
 #define TEMP_WINDOW     1       // (degC) Window around target to start the residency timer x degC early.
 
+// Bed temperature must be close to target for this long before M190 returns success
+#define TEMP_BED_RESIDENCY_TIME 0   // (seconds)
+#define TEMP_BED_HYSTERESIS 3       // (degC) range of +/- temperatures considered "close" to the target one
+#define TEMP_BED_WINDOW     1       // (degC) Window around target to start the residency timer x degC early.
+
 // When temperature exceeds max temp, your heater will be switched off.
+// When temperature exceeds max temp, your cooler cannot be activaed.
 // This feature exists to protect your hotend from overheating accidentally, but *NOT* from thermistor short/failure!
 // You should use MINTEMP for thermistor short/failure protection.
 #define HEATER_0_MAXTEMP 275 // (degC)
@@ -193,8 +216,10 @@
 #define HEATER_2_MAXTEMP 275 // (degC)
 #define HEATER_3_MAXTEMP 275 // (degC)
 #define BED_MAXTEMP      150 // (degC)
+#define COOLER_MAXTEMP   30  // 
 
 // The minimal temperature defines the temperature below which the heater will not be enabled It is used
+// or, in case of cooler, it will switched off.
 // to check that the wiring to the thermistor is not broken.
 // Otherwise this would lead to the heater being powered on all the time.
 #define HEATER_0_MINTEMP 5 // (degC)
@@ -202,6 +227,7 @@
 #define HEATER_2_MINTEMP 5 // (degC)
 #define HEATER_3_MINTEMP 5 // (degC)
 #define BED_MINTEMP      5 // (degC)
+#define COOLER_MINTEMP  15 // (degC) 
 
 //Preheat Constants
 #define PLA_PREHEAT_HOTEND_TEMP 190
@@ -217,34 +243,4 @@
 #define GUM_PREHEAT_FAN_SPEED   255   // Insert Value between 0 and 255
 /*****************************************************************************************************/
 
-
-/***********************************************************************
- *************************** UI Language  ******************************
- ***********************************************************************
- *                                                                     *
- * Select the language that you prefer and change LANGUAGE_CHOICE      *
- *                                                                     *
- * 1  English                                                          *
- * 2  Polish                                                           *
- * 3  French                                                           *
- * 4  German                                                           *
- * 5  Spanish                                                          *
- * 6  Russian                                                          *
- * 7  Italian                                                          *
- * 8  Portuguese                                                       *
- * 9  Finnish                                                          *
- * 10 Aragonese                                                        *
- * 11 Dutch                                                            *
- * 12 Danish                                                           *
- * 13 Catalan                                                          *
- * 14 Basque-Euskera                                                   *
- * 15 Portuguese (Brazil)                                              *
- * 16 Bulgarian                                                        *
- * 17 Japanese                                                         *
- * 18 Japanese utf                                                     *
- * 19 Chinese                                                          *
- *                                                                     *
- ***********************************************************************/
-#define LANGUAGE_CHOICE 1
-/***********************************************************************/
 #endif

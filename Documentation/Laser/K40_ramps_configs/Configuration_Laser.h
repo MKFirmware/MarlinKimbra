@@ -17,11 +17,6 @@
 // Uncomment the following if your laser firing pin (not the PWM pin) for two pin control requires a HIGH signal to fire rather than a low (eg Red Sail M300 RS 3040)
 /// #define HIGH_TO_FIRE
 
-// Uncomment the following to enable the use of the PWM (the one for the extruder 0) to drive a peltier cell or any PWM driven cooler for the laser
-#define LASER_WATER_COOLING
-#define LASER_WATER_MAXTEMP 25
-
-
 //// The following defines select which G codes tell the laser to fire.  It's OK to uncomment more than one.
 #define LASER_FIRE_G1 10 // fire the laser on a G1 move, extinguish when the move ends
 #define LASER_FIRE_SPINDLE 11 // fire the laser on M3, extinguish on M5
@@ -34,7 +29,7 @@
 #define LASER_RASTER_MM_PER_PULSE 0.2 //Can be overridden by providing an R value in M649 command : M649 S17 B2 D0 R0.1 F4000
 
 //// Uncomment the following if the laser cutter is equipped with a peripheral relay board
-//// to control power to an exhaust fan, water pump, laser power supply, etc.
+//// to control power to an exhaust fan, cooler pump, laser power supply, etc.
 //#define LASER_PERIPHERALS
 //#define LASER_PERIPHERALS_TIMEOUT 30000  // Number of milliseconds to wait for status signal from peripheral control board
 

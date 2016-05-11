@@ -278,16 +278,26 @@
 
 // Offsets to the probe relative to the extruder tip (Hotend - Probe)
 // X and Y offsets MUST be INTEGERS
-#define X_PROBE_OFFSET_FROM_EXTRUDER 0      // Probe on: -left  +right
-#define Y_PROBE_OFFSET_FROM_EXTRUDER 0      // Probe on: -front +behind
-#define Z_PROBE_OFFSET_FROM_EXTRUDER -1     // -below (always!)
+//
+//    +-- BACK ---+
+//    |           |
+//  L |    (+) P  | R <-- probe (10,10)
+//  E |           | I
+//  F | (-) N (+) | G <-- nozzle (0,0)
+//  T |           | H
+//    |  P (-)    | T <-- probe (-10,-10)
+//    |           |
+//    O-- FRONT --+
+#define X_PROBE_OFFSET_FROM_EXTRUDER  0     // X offset: -left  [of the nozzle] +right
+#define Y_PROBE_OFFSET_FROM_EXTRUDER  0     // Y offset: -front [of the nozzle] +behind
+#define Z_PROBE_OFFSET_FROM_EXTRUDER -1     // Z offset: -below [of the nozzle] (always negative!)
 
-#define Z_RAISE_BEFORE_HOMING       10      // (in mm) Raise Z before homing (G28) for Probe Clearance.
+#define Z_RAISE_BEFORE_HOMING        10     // (in mm) Raise Z before homing (G28) for Probe Clearance.
                                             // Be sure you have this distance over your Z_MAX_POS in case
 
-#define Z_RAISE_BEFORE_PROBING      10      //How much the extruder will be raised before travelling to the first probing point.
-#define Z_RAISE_BETWEEN_PROBINGS     5      //How much the extruder will be raised when travelling from between next probing points
-#define Z_RAISE_AFTER_PROBING        5      //How much the extruder will be raised after the last probing point.
+#define Z_RAISE_BEFORE_PROBING       10     //How much the extruder will be raised before travelling to the first probing point.
+#define Z_RAISE_BETWEEN_PROBINGS      5     //How much the extruder will be raised when travelling from between next probing points
+#define Z_RAISE_AFTER_PROBING         5     //How much the extruder will be raised after the last probing point.
 
 //#define Z_PROBE_END_SCRIPT "G1 Z10 F8000\nG1 X10 Y10\nG1 Z0.5"  // These commands will be executed in the end of G29 routine.
                                                                   // Useful to retract a deployable Z probe.
@@ -399,7 +409,7 @@
 /*****************************************************************************************
  ************************************ Homing feedrate ************************************
  *****************************************************************************************/
-#define HOMING_FEEDRATE {7600, 7600, 0, 0} // set the homing speeds (mm/min)
+#define HOMING_FEEDRATE  {7600, 7600, 0, 0} // set the homing speeds (mm/min)
 
 // homing hits the endstop, then retracts by this distance, before it tries to slowly bump again:
 #define X_HOME_BUMP_MM 5
@@ -419,8 +429,8 @@
  * For the other hotends it is their distance from the hotend 0.                         *
  *                                                                                       *
  *****************************************************************************************/
-//#define HOTEND_OFFSET_X {0.0, 5.0, 0.0, 0.0} // (in mm) for each hotend, offset of the hotend on the X axis
-//#define HOTEND_OFFSET_Y {0.0, 5.0, 0.0, 0.0} // (in mm) for each hotend, offset of the hotend on the Y axis
+//#define HOTEND_OFFSET_X {0.0, 0.0, 0.0, 0.0} // (in mm) for each hotend, offset of the hotend on the X axis
+//#define HOTEND_OFFSET_Y {0.0, 0.0, 0.0, 0.0} // (in mm) for each hotend, offset of the hotend on the Y axis
 //#define HOTEND_OFFSET_Z {0.0, 0.0, 0.0, 0.0} // (in mm) for each hotend, offset of the hotend on the Z axis
 /*****************************************************************************************/
 
