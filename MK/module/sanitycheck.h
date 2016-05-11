@@ -1817,8 +1817,19 @@
     #error DEPENDENCY ERROR: You must enable only one of LASERBEAM or LASER, not both!
   #endif
 
-  #if ENABLED(LASER) && (!PIN_EXISTS(LASER_FIRING_PIN) || !PIN_EXISTS(LASER_INTENSITY_PIN))
-    #error DEPENDENCY ERROR: You have to set LASER_FIRING_PIN and LASER_INTENSITY_PIN to a valid pin if you enable LASER
+  #if ENABLED(LASER) 
+    #if (!ENABLED(LASER_CONTROL) || ((LASER_CONTROL > 0) && (LASER_CONTROL < 2)))
+       #error DEPENDENCY ERROR: You have to set LASER_CONTROL to 1 or 2
+    #else
+      #if(LASER_CONTROL == 1)
+        #if( !PIN_EXISTS(LASER_FIRING_PIN))
+          #error DEPENDENCY ERROR: You have to set LASER_FIRING_PIN
+        #endif
+      #else
+        #if( !PIN_EXISTS(LASER_FIRING_PIN) || !PIN_EXISTS(LASER_INTENSITY_PIN))
+          #error DEPENDENCY ERROR: You have to set LASER_FIRING_PIN and LASER_INTENSITY_PIN to a valid pin if you enable LASER
+        #endif
+      #endif
   #endif
 
   #if ENABLED(FILAMENT_RUNOUT_SENSOR) && !PIN_EXISTS(FILRUNOUT)

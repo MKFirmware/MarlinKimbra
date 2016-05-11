@@ -109,6 +109,7 @@
 #if ENABLED(LASER)
    #if LASER_CONTROL == 1
       #define LASER_FIRING_PIN    5
+      #define LASER_INTENSITY_PIN -1
    #endif
    #if LASER_CONTROL == 2
       #define LASER_INTENSITY_PIN 6 // Digital pins 2, 3, 5, 6, 7, 8 are attached to timers we can use
