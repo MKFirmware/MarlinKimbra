@@ -209,6 +209,9 @@
 // If this is enabled, find your own PID constants below.
 //#define PIDTEMPCOOLER
 
+// Enable fast PWM for cooler
+//#define FAST_PWM_COOLER
+
 //#define COOLER_LIMIT_SWITCHING
 #define COOLER_HYSTERESIS 2 //only disable heating if T<target-COOLER_HYSTERESIS and enable heating if T<target+COOLER_HYSTERESIS (works only if COOLER_LIMIT_SWITCHING is enabled)
 #define COOLER_CHECK_INTERVAL 5000 //ms between checks in bang-bang control

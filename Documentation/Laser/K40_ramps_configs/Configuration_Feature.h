@@ -207,7 +207,10 @@
 // If your configuration is significantly different than this and you don't understand the issues involved, you probably
 // shouldn't use bed PID until someone else verifies your hardware works.
 // If this is enabled, find your own PID constants below.
-//#define PIDTEMPCOOLER
+#define PIDTEMPCOOLER
+
+// Enable fast PWM for cooler
+#define FAST_PWM_COOLER
 
 //#define COOLER_LIMIT_SWITCHING
 #define COOLER_HYSTERESIS 2 //only disable heating if T<target-COOLER_HYSTERESIS and enable heating if T<target+COOLER_HYSTERESIS (works only if COOLER_LIMIT_SWITCHING is enabled)
