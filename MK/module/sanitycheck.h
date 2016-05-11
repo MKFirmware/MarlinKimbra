@@ -1822,11 +1822,11 @@
        #error DEPENDENCY ERROR: You have to set LASER_CONTROL to 1 or 2
     #else
       #if(LASER_CONTROL == 1)
-        #if( !PIN_EXISTS(LASER_FIRING_PIN))
+        #if( !PIN_EXISTS(LASER_FIRING))
           #error DEPENDENCY ERROR: You have to set LASER_FIRING_PIN
         #endif
       #else
-        #if( !PIN_EXISTS(LASER_FIRING_PIN) || !PIN_EXISTS(LASER_INTENSITY_PIN))
+        #if( !PIN_EXISTS(LASER_FIRING) || !PIN_EXISTS(LASER_INTENSITY))
           #error DEPENDENCY ERROR: You have to set LASER_FIRING_PIN and LASER_INTENSITY_PIN to a valid pin if you enable LASER
         #endif
       #endif
