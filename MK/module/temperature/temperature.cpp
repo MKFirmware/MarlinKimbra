@@ -65,11 +65,9 @@ int current_temperature_raw[4] = { 0 };
 float current_temperature[4] = { 0.0 };
 int current_temperature_bed_raw = 0;
 float current_temperature_bed = 0.0;
-#if ENABLED(COOLER)
-   int target_temperature_cooler = 0;
-   int current_temperature_cooler_raw = 0;
-   float current_temperature_cooler = 0.0;
-#endif
+int target_temperature_cooler = 0;
+int current_temperature_cooler_raw = 0;
+float current_temperature_cooler = 0.0;
 
 #if ENABLED(TEMP_SENSOR_1_AS_REDUNDANT)
   int redundant_temperature_raw = 0;
@@ -344,7 +342,7 @@ void autotempShutdown() {
           input = current_temperature_bed;
         else if(temp_controller < -1) 
 			 input = current_temperature_cooler;
-        else { 
+        else  
           input = current_temperature[temp_controller];
 
         max = max(max, input);
@@ -381,10 +379,11 @@ void autotempShutdown() {
             t2 = ms;
             t_low = t2 - t1;
             if (cycles > 0) {
+              long max_pow;
 				  if (temp_controller < -1)
-					 long max_pow = MAX_COOLER_POWER;
+					 max_pow = MAX_COOLER_POWER;
 				  else
-              	 long max_pow = temp_controller < 0 ? MAX_BED_POWER : PID_MAX;
+              	 max_pow = temp_controller < 0 ? MAX_BED_POWER : PID_MAX;
               bias += (d * (t_high - t_low)) / (t_low + t_high);
               bias = constrain(bias, 20, max_pow - 20);
               d = (bias > max_pow / 2) ? max_pow - 1 - bias : bias;
@@ -466,10 +465,10 @@ void autotempShutdown() {
             ECHO_MV(SERIAL_KI, unscalePID_i(PID_PARAM(Ki, temp_controller)));
             ECHO_EMV(SERIAL_KD, unscalePID_d(PID_PARAM(Kd, temp_controller)));
             if (set_result) {
-              PID_PARAM(Kp, hotend) = workKp;
-              PID_PARAM(Ki, hotend) = scalePID_i(workKi);
-              PID_PARAM(Kd, hotend) = scalePID_d(workKd);
-              updatePID();
+              PID_PARAM(Kp, temp_controller) = workKp;
+              PID_PARAM(Ki, temp_controller) = scalePID_i(workKi);
+              PID_PARAM(Kd, temp_controller) = scalePID_d(workKd);
+              //updatePID();
             }
           }
         #endif
@@ -482,7 +481,7 @@ void autotempShutdown() {
               bedKp = workKp;
               bedKi = scalePID_i(workKi);
               bedKd = scalePID_d(workKd);
-              updatePID();
+              //updatePID();
             }
           }
         #endif
@@ -495,7 +494,7 @@ void autotempShutdown() {
               coolerKp = workKp;
               coolerKi = scalePID_i(workKi);
               coolerKd = scalePID_d(workKd);
-              updatePID();
+              //updatePID();
             }
           }
         #endif
@@ -528,7 +527,7 @@ int getHeaterPower(int heater) {
   return heater < 0 ? soft_pwm_bed : soft_pwm[heater];
 }
 
-int getCoolerPower(void) {
+int getCoolerPower() {
   return soft_pwm_cooler;
 }
 
@@ -1138,7 +1137,7 @@ static void updateTemperaturesFromRawValues() {
     current_temperature[h] = analog2temp(current_temperature_raw[h], h);
   }
   current_temperature_bed = analog2tempBed(current_temperature_bed_raw);
-  current_temperature_cooler = analog2TempCooler(current_temperature_cooler_raw);
+  current_temperature_cooler = analog2tempCooler(current_temperature_cooler_raw);
   #if ENABLED(TEMP_SENSOR_1_AS_REDUNDANT)
     redundant_temperature = analog2temp(redundant_temperature_raw, 1);
   #endif
@@ -1233,7 +1232,7 @@ static void updateTemperaturesFromRawValues() {
  * The manager is implemented by periodic calls to manage_temp_controller()
  */
 void tp_init() { 
-  #if MB(RUMBA) && ((TEMP_SENSOR_0==-1)||(TEMP_SENSOR_1==-1)||(TEMP_SENSOR_2==-1)||(TEMP_SENSOR_BED==-1)||(TEMP_SENSOR_COOLER==-1)
+  #if MB(RUMBA) && ((TEMP_SENSOR_0==-1)||(TEMP_SENSOR_1==-1)||(TEMP_SENSOR_2==-1)||(TEMP_SENSOR_BED==-1)||(TEMP_SENSOR_COOLER==-1))
     // disable RUMBA JTAG in case the thermocouple extension is plugged on top of JTAG connector
     MCUCR = _BV(JTD);
     MCUCR = _BV(JTD);
@@ -1502,7 +1501,7 @@ void tp_init() {
    * their target temperature by a configurable margin.
    * This is called when the temperature is set. (M141)
    */
-  void start_watching_cooler(void) {
+  void start_watching_cooler() {
     if (degCooler() > degTargetCooler() - (WATCH_TEMP_COOLER_DECREASE - TEMP_COOLER_HYSTERESIS - 1)) {
       watch_target_temp_cooler = degCooler() - WATCH_COOLER_TEMP_DECREASE;
       watch_cooler_next_ms = millis() + WATCH_TEMP_COOLER_PERIOD * 1000UL;

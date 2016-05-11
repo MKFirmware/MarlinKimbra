@@ -199,7 +199,7 @@ HOTEND_ROUTINES(0);
 #endif
 
 int getHeaterPower(int heater);
-int getCoolerPower(void);
+int getCoolerPower();
 
 void disable_all_heaters(); 
 void disable_all_coolers();
