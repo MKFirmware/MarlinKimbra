@@ -114,7 +114,7 @@
  *                                                                     *
  ***********************************************************************/
 //#define HOTEND_WATTS (12.0*12.0/6.7)  //  P=I^2/R
-//#define BED_WATTS (12.0*12.0/1.1)     // P=I^2/R
+//#define BED_WATTS (12.0*12.0/1.1)     //  P=I^2/R
 /***********************************************************************/
 
 
@@ -484,6 +484,8 @@
  ***********************************************************************
  *                                                                     *
  * Setting for multiextruder DONDOLO 1.0b by Gianni Franci             *
+ * Enable DONDOLO SINGLE MOTOR for original DONDOLO by Gianni Franci   *
+ * Enable DONDOLO DUAL MOTOR for bowden and dual EXTRUDER              *
  * http://www.thingiverse.com/thing:673816                             *
  * For function set NUM_SERVOS +1 if you use for endstop or probe      *
  * Set DONDOLO SERVO INDEX for servo you use for DONDOLO               *
@@ -492,7 +494,9 @@
  * Remember set HOTEND OFFSET X Y Z                                    *
  *                                                                     *
  ***********************************************************************/
-//#define DONDOLO
+//#define DONDOLO_SINGLE_MOTOR
+//#define DONDOLO_DUAL_MOTOR
+
 #define DONDOLO_SERVO_INDEX 0
 #define DONDOLO_SERVOPOS_E0 120
 #define DONDOLO_SERVOPOS_E1 10

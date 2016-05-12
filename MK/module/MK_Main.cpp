@@ -582,7 +582,7 @@ bool enqueue_and_echo_command(const char* cmd, bool say_ok/*=false*/) {
       servo[3].detach();
     #endif
 
-    #if ENABLED(DONDOLO)
+    #if HAS(DONDOLO)
       servo[DONDOLO_SERVO_INDEX].attach(0);
   		servo[DONDOLO_SERVO_INDEX].write(DONDOLO_SERVOPOS_E0);
   		delay_ms(DONDOLO_SERVO_DELAY);
@@ -591,7 +591,7 @@ bool enqueue_and_echo_command(const char* cmd, bool say_ok/*=false*/) {
 
     // Set position of Servo Endstops that are defined
     #if HAS(SERVO_ENDSTOPS)
-      #if ENABLED(DONDOLO)
+      #if HAS(DONDOLO)
         for (int i = 0; i < 3; i++) {
           if (servo_endstop_id[i] >= 0 && servo_endstop_id[i] != DONDOLO_SERVO_INDEX)
             servo[servo_endstop_id[i]].write(servo_endstop_angle[i][1]);
@@ -1926,6 +1926,8 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
   static void deploy_z_probe() {
 
+    if (DEBUGGING(INFO)) DEBUG_POS("deploy_z_probe", current_position);
+
     if (endstops.z_probe_enabled) return;
 
     #if HAS(SERVO_ENDSTOPS)
@@ -1960,6 +1962,8 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
   }
 
   static void retract_z_probe() {
+
+    if (DEBUGGING(INFO)) DEBUG_POS("retract_z_probe", current_position);
 
     if (!endstops.z_probe_enabled) return;
 
@@ -6134,7 +6138,7 @@ inline void gcode_M226() {
   inline void gcode_M280() {
     int servo_index = code_seen('P') ? code_value_short() : -1;
     int servo_position = 0;
-    #if ENABLED(DONDOLO)
+    #if HAS(DONDOLO)
       if (code_seen('S')) {
         servo_position = code_value_short();
         if (servo_index >= 0 && servo_index < NUM_SERVOS && servo_index != DONDOLO_SERVO_INDEX) {
@@ -7588,7 +7592,7 @@ inline void gcode_T(uint8_t tmp_extruder) {
               old_color = active_extruder = target_extruder;
               active_driver = 0;
               ECHO_LMV(DB, SERIAL_ACTIVE_COLOR, (int)active_extruder);
-            #elif ENABLED(DONDOLO)
+            #elif HAS(DONDOLO)
               st_synchronize();
               servo[DONDOLO_SERVO_INDEX].attach(0);
               if (target_extruder == 0) {
@@ -7600,8 +7604,12 @@ inline void gcode_T(uint8_t tmp_extruder) {
               delay_ms(DONDOLO_SERVO_DELAY);
               servo[DONDOLO_SERVO_INDEX].detach();
               previous_extruder = active_extruder;
-              active_extruder = target_extruder;
-              active_driver = 0;
+              #if ENABLED(DONDOLO_SINGLE_MOTOR)
+                active_extruder = target_extruder;
+                active_driver = 0;
+              #elif ENABLED(DONDOLO_DUAL_MOTOR)
+                active_driver = active_extruder = target_extruder;
+              #endif
               set_stepper_direction(true);
               ECHO_LMV(DB, SERIAL_ACTIVE_DRIVER, (int)active_driver);
               ECHO_LMV(DB, SERIAL_ACTIVE_EXTRUDER, (int)active_extruder);

@@ -701,6 +701,16 @@ static void lcd_tune_fixstep() {
   #endif
 #endif // !THERMAL_PROTECTION_HOTENDS
 
+#if ENABLED(THERMAL_PROTECTION_BED)
+  #if TEMP_SENSOR_BED != 0
+    void watch_temp_callback_bed() { start_watching_bed(); }
+  #endif
+#else
+  #if TEMP_SENSOR_BED != 0
+    void watch_temp_callback_bed() {}
+  #endif
+#endif
+
 /**
  *
  * "Tune" submenu
@@ -749,7 +759,7 @@ static void lcd_tune_menu() {
   // Bed:
   //
   #if TEMP_SENSOR_BED != 0
-    MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP - 15);
+    MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP - 15, watch_temp_callback_bed);
   #endif
 
   //
@@ -827,6 +837,11 @@ static void lcd_tune_menu() {
   }
 #endif // EASY_LOAD
 
+/**
+ *
+ * "Prepare" submenu items
+ *
+ */
 void _lcd_preheat(int endnum, const float temph, const float tempb, const int fan) {
   if (temph > 0) setTargetHotend(temph, endnum);
   #if TEMP_SENSOR_BED != 0
@@ -980,6 +995,9 @@ static void lcd_prepare_menu() {
   // Auto Home
   //
   MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
+  MENU_ITEM(gcode, MSG_AUTO_HOME_X, PSTR("G28 X"));
+  MENU_ITEM(gcode, MSG_AUTO_HOME_Y, PSTR("G28 Y"));
+  MENU_ITEM(gcode, MSG_AUTO_HOME_Z, PSTR("G28 Z"));
 
   //
   // Set Home Offsets
