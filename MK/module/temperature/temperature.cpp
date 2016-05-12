@@ -2288,8 +2288,8 @@ ISR(TIMER0_COMPB_vect) {
       #else
         #define GECOOLER >=
       #endif
-      if (current_temperature_cooler_raw GECOOLER cooler_maxttemp_raw) _temp_error(-1, PSTR(SERIAL_T_MAXTEMP), PSTR(MSG_ERR_MAXTEMP_COOLER));
-      if (cooler_minttemp_raw GECOOLER current_temperature_cooler_raw) _temp_error(-1, PSTR(SERIAL_T_MINTEMP), PSTR(MSG_ERR_MINTEMP_COOLER));
+      if (current_temperature_cooler_raw GECOOLER cooler_maxttemp_raw) _temp_error(-2, PSTR(SERIAL_T_MAXTEMP), PSTR(MSG_ERR_MAXTEMP_COOLER));
+      if (cooler_minttemp_raw GECOOLER current_temperature_cooler_raw) _temp_error(-2, PSTR(SERIAL_T_MINTEMP), PSTR(MSG_ERR_MINTEMP_COOLER));
     #endif
 
 
