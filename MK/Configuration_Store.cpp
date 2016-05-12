@@ -853,7 +853,7 @@ void Config_ResetDefault() {
         ECHO_EMV(" D", unscalePID_d(bedKd));
       #endif
       #if ENABLED(PIDTEMPCOOLER)
-        ECHO_SMV(CFG, "  M304 L P", coolerKp); // for compatibility with hosts, only echos values for E0
+        ECHO_SMV(CFG, "  M304 C P", coolerKp); // for compatibility with hosts, only echos values for E0
         ECHO_MV(" I", unscalePID_i(coolerKi));
         ECHO_EMV(" D", unscalePID_d(coolerKd));
       #endif

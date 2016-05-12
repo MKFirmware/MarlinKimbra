@@ -2943,6 +2943,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
 #if HAS(TEMP_COOLER)
   void print_coolerstates() {
+    ECHO_M(" COOL: ");
     ECHO_MV(SERIAL_C, degCooler(), 1);
     ECHO_MV(" /", degTargetCooler(), 1);
     ECHO_M(SERIAL_CAT);
