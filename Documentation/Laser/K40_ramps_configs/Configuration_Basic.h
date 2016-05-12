@@ -232,7 +232,7 @@
 #define HEATER_2_MAXTEMP 275 // (degC)
 #define HEATER_3_MAXTEMP 275 // (degC)
 #define BED_MAXTEMP      150 // (degC)
-#define COOLER_MAXTEMP   30  // 
+#define COOLER_MAXTEMP   35  // 
 
 // The minimal temperature defines the temperature below which the heater will not be enabled It is used
 // or, in case of cooler, it will switched off.
@@ -243,7 +243,7 @@
 #define HEATER_2_MINTEMP 5 // (degC)
 #define HEATER_3_MINTEMP 5 // (degC)
 #define BED_MINTEMP      5 // (degC)
-#define COOLER_MINTEMP  15 // (degC) 
+#define COOLER_MINTEMP  10 // (degC) 
 
 //Preheat Constants
 #define PLA_PREHEAT_HOTEND_TEMP 190

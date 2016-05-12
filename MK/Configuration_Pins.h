@@ -116,7 +116,7 @@
       #define LASER_FIRING_PIN   5
    #endif
    #if DISABLED(ORIG_TEMP_COOLER_PIN)
-     #define TEMP_COOLER_PIN ORIG_HEATER_0_PIN // Default to the first thermistor
+     #define TEMP_COOLER_PIN ORIG_TEMP_0_PIN // Default to the first thermistor
    #endif
    #if ENABLED(LASER_POWER_DOWN)
       #define LASER_POWER_PIN 9 // This is currently hard-coded to timer2 which services pins 9, 10

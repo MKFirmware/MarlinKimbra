@@ -2949,11 +2949,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
     #if ENABLED(COOLER_WATTS)
       ECHO_VM(((COOLER_WATTS) * getCoolerPower()) / 127, "W");
     #else
-      #if ENABLED(FAST_PWM_COOLER)
-        ECHO_V(getPwmCooler(false));
-      #else
-        ECHO_V(getCoolerPower());
-      #endif
+      ECHO_V(getCoolerPower());
     #endif
     #if ENABLED(SHOW_TEMP_ADC_VALUES)
       ECHO_MV("    ADC C:", degCooler(), 1);
@@ -8404,7 +8400,7 @@ void process_next_command() {
       #if HAS(TEMP_BED) || HAS(TEMP_COOLER)
         case 190: // M190 - Wait for bed heater or for cooler to reach target.
           gcode_M190(); break;
-      #endif //TEMP_BED_PIN
+      #endif //TEMP_BED || TEMP_COOLER
 
       case 200: // M200 D<millimetres> set filament diameter and set E axis units to cubic millimetres (use S0 to set back to millimeters).
         gcode_M200(); break;

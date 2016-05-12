@@ -98,6 +98,9 @@ float current_temperature_cooler = 0.0;
 
 unsigned char soft_pwm_bed;
 unsigned char soft_pwm_cooler;
+#if ENABLED(FAST_PWM_COOLER)
+   unsigned char fast_pwm_cooler;
+#endif
 
 void setPwmCooler(unsigned char pwm);
 
@@ -273,8 +276,10 @@ static void updateTemperaturesFromRawValues();
 void setPwmCooler(unsigned char pwm) {
    soft_pwm_cooler = pwm >> 1;
    #if ENABLED(FAST_PWM_COOLER)
+      fast_pwm_cooler = pwm;
       analogWrite(COOLER_PIN, pwm);
    #endif
+
 }
 
 
@@ -282,7 +287,7 @@ unsigned char getPwmCooler(bool soft=true) {
    if(soft) 
       return soft_pwm_cooler;
    #if ENABLED(FAST_PWM_COOLER)
-   return analogRead(COOLER_PIN);
+   return fast_pwm_cooler;
    #else
    return soft_pwm_cooler * 2;
    #endif
@@ -552,7 +557,11 @@ int getHeaterPower(int heater) {
 }
 
 int getCoolerPower() {
+  #if ENABLED(FAST_PWM_COOLER)
+  return fast_pwm_cooler;
+  #else
   return soft_pwm_cooler;
+  #endif
 }
 
 #if HAS(AUTO_FAN)
@@ -2228,6 +2237,7 @@ ISR(TIMER0_COMPB_vect) {
     temp_count = 0;
     for (int i = 0; i < 4; i++) raw_temp_value[i] = 0;
     raw_temp_bed_value = 0;
+    raw_temp_cooler_value = 0;
 
     #if HAS(POWER_CONSUMPTION_SENSOR)
       raw_powconsumption_value = 0;
@@ -2279,8 +2289,8 @@ ISR(TIMER0_COMPB_vect) {
       #else
         #define GEBED >=
       #endif
-      if (current_temperature_bed_raw GEBED bed_maxttemp_raw) _temp_error(-1, PSTR(SERIAL_T_MAXTEMP), PSTR(MSG_ERR_MAXTEMP_BED));
-      if (bed_minttemp_raw GEBED current_temperature_bed_raw) _temp_error(-1, PSTR(SERIAL_T_MINTEMP), PSTR(MSG_ERR_MINTEMP_BED));
+      if (current_temperature_bed_raw GEBED bed_maxttemp_raw) _temp_error(-1, SERIAL_T_MAXTEMP, PSTR(MSG_ERR_MAXTEMP_BED));
+      if (bed_minttemp_raw GEBED current_temperature_bed_raw) _temp_error(-1, SERIAL_T_MINTEMP, PSTR(MSG_ERR_MINTEMP_BED));
     #endif
     #if HAS(TEMP_COOLER)
       #if COOLER_RAW_LO_TEMP > COOLER_RAW_HI_TEMP
@@ -2288,8 +2298,8 @@ ISR(TIMER0_COMPB_vect) {
       #else
         #define GECOOLER >=
       #endif
-      if (current_temperature_cooler_raw GECOOLER cooler_maxttemp_raw) _temp_error(-2, PSTR(SERIAL_T_MAXTEMP), PSTR(MSG_ERR_MAXTEMP_COOLER));
-      if (cooler_minttemp_raw GECOOLER current_temperature_cooler_raw) _temp_error(-2, PSTR(SERIAL_T_MINTEMP), PSTR(MSG_ERR_MINTEMP_COOLER));
+      if (current_temperature_cooler_raw GECOOLER cooler_maxttemp_raw) _temp_error(-2, SERIAL_T_MAXTEMP, PSTR(MSG_ERR_MAXTEMP_COOLER));
+      if (cooler_minttemp_raw GECOOLER current_temperature_cooler_raw) _temp_error(-2, SERIAL_T_MINTEMP, PSTR(MSG_ERR_MINTEMP_COOLER));
     #endif
 
 
