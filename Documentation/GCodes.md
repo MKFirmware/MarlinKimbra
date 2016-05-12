@@ -79,14 +79,15 @@
 *  M127 - Solenoid Air Valve Closed (BariCUDA vent to atmospheric pressure by jmil)
 *  M128 - EtoP Open (BariCUDA EtoP = electricity to air pressure transducer by jmil)
 *  M129 - EtoP Closed (BariCUDA EtoP = electricity to air pressure transducer by jmil)
-*  M140 - Set bed target temp
+*  M140 - Set bed or cooler target temp
 *  M145 - Set the heatup state H<hotend> B<bed> F<fan speed> for S<material> (0=PLA, 1=ABS)
 *  M150 - Set BlinkM Color Output R: Red<0-255> U(!): Green<0-255> B: Blue<0-255> over i2c, G for green does not work.
 *  M163 - Set a single proportion for a mixing extruder. Requires COLOR_MIXING_EXTRUDER.
 *  M164 - Save the mix as a virtual extruder. Requires COLOR_MIXING_EXTRUDER and MIXING_VIRTUAL_TOOLS.
 *  M165 - Set the proportions for a mixing extruder. Use parameters ABCDHI to set the mixing factors. Requires COLOR_MIXING_EXTRUDER.
-*  M190 - S[xxx] Wait for bed current temp to reach target temp. Waits only when heating
-        - R[xxx] Wait for bed current temp to reach target temp. Waits when heating and cooling
+*  M190 - S[xxx] Wait for bed or cooler current temp to reach target temp. Waits only when heating bed or cooling cooler
+        - R[xxx] Wait for bed or cooler current temp to reach target temp. Waits when heating and cooling
+        - C parameter select Cooler, omitting it selec bed.
 *  M200 - D[millimeters]- set filament diameter and set E axis units to cubic millimeters (use S0 to set back to millimeters).
 *  M201 - Set max acceleration in units/s^2 for print moves (M201 X1000 Y1000 Z1000 E0 S1000 E1 S1000 E2 S1000 E3 S1000) in mm/sec^2
 *  M203 - Set maximum feedrate that your machine can sustain (M203 X200 Y200 Z300 E0 S1000 E1 S1000 E2 S1000 E3 S1000) in mm/sec
@@ -106,7 +107,7 @@
 *  M301 - Set PID parameters P I and D
 *  M302 - Allow cold extrudes
 *  M303 - PID relay autotune S<temperature> sets the target temperature (default target temperature = 150C). H<hotend> C<cycles> U<Apply result>
-*  M304 - Set bed PID parameters P I and D or Water Cooling if L parameter
+*  M304 - Set bed PID parameters P I and D or Water Cooling if C parameter
 *  M350 - Set microstepping mode.
 *  M351 - Toggle MS1 MS2 pins directly.
 *  M400 - Finish all moves

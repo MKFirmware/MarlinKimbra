@@ -217,6 +217,11 @@
 #define TEMP_BED_HYSTERESIS 3       // (degC) range of +/- temperatures considered "close" to the target one
 #define TEMP_BED_WINDOW     1       // (degC) Window around target to start the residency timer x degC early.
 
+// Cooler temperature must be close to target for this long before M190 returns success
+#define TEMP_COOLER_RESIDENCY_TIME 0   // (seconds)
+#define TEMP_COOLER_HYSTERESIS 1          // (degC) range of +/- temperatures considered "close" to the target one
+#define TEMP_COOLER_WINDOW     1          // (degC) Window around target to start the residency timer x degC early.
+
 // When temperature exceeds max temp, your heater will be switched off.
 // When temperature exceeds max temp, your cooler cannot be activaed.
 // This feature exists to protect your hotend from overheating accidentally, but *NOT* from thermistor short/failure!

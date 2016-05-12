@@ -119,14 +119,15 @@
  * M127 - Solenoid Air Valve Closed (BariCUDA vent to atmospheric pressure by jmil)
  * M128 - EtoP Open (BariCUDA EtoP = electricity to air pressure transducer by jmil)
  * M129 - EtoP Closed (BariCUDA EtoP = electricity to air pressure transducer by jmil)
- * M140 - Set bed target temp
+ * M140 - Set bed or cooler target temp
  * M145 - Set the heatup state H<hotend> B<bed> F<fan speed> for S<material> (0=PLA, 1=ABS)
  * M150 - Set BlinkM Color Output R: Red<0-255> U(!): Green<0-255> B: Blue<0-255> over i2c, G for green does not work.
  * M163 - Set a single proportion for a mixing extruder. Requires COLOR_MIXING_EXTRUDER.
  * M164 - Save the mix as a virtual extruder. Requires COLOR_MIXING_EXTRUDER and MIXING_VIRTUAL_TOOLS.
  * M165 - Set the proportions for a mixing extruder. Use parameters ABCDHI to set the mixing factors. Requires COLOR_MIXING_EXTRUDER.
- * M190 - Sxxx Wait for bed current temp to reach target temp. Waits only when heating
- *        Rxxx Wait for bed current temp to reach target temp. Waits when heating and cooling
+ * M190 - Sxxx Wait for bed or cooler current temp to reach target temp. Waits only when heating Waits only when heating bed or cooling cooler
+ *        Rxxx Wait for bed or cooler current temp to reach target temp. Waits when heating and cooling
+ *        C parameter select Cooler, omitting it selec bed.
  * M200 - set filament diameter and set E axis units to cubic millimeters (use S0 to set back to millimeters).:D<millimeters>- 
  * M201 - Set max acceleration in units/s^2 for print moves (M201 X1000 Y1000)
  * M202 - Set max acceleration in units/s^2 for travel moves (M202 X1000 Y1000) Unused in Marlin!!
@@ -149,7 +150,7 @@
  * M301 - Set PID parameters P I D and C
  * M302 - Allow cold extrudes, or set the minimum extrude S<temperature>.
  * M303 - PID relay autotune S<temperature> sets the target temperature (default target temperature = 150C). H<hotend> C<cycles> U<Apply result>
- * M304 - Set bed PID parameters P I and D or cooling if L parameter
+ * M304 - Set bed PID parameters P I and D or cooling if C parameter
  * M350 - Set microstepping mode.
  * M351 - Toggle MS1 MS2 pins directly.
  * M380 - Activate solenoid on active extruder

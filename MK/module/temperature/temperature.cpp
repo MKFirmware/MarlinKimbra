@@ -100,7 +100,6 @@ unsigned char soft_pwm_bed;
 unsigned char soft_pwm_cooler;
 
 void setPwmCooler(unsigned char pwm);
-unsigned char getPwmCooler(bool soft);
 
 
 #if ENABLED(BABYSTEPPING)

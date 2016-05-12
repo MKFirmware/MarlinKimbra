@@ -999,6 +999,7 @@ static void lcd_preheat_gum_menu() {
 
 void lcd_cooldown() {
 disable_all_heaters();
+disable_all_coolers();
 fanSpeed = 0;
 lcd_return_to_status();
 }

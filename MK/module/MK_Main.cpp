@@ -2940,6 +2940,27 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
   }
 #endif
 
+#if HAS(TEMP_COOLER)
+  void print_coolerstates() {
+    ECHO_MV(SERIAL_C, degCooler(), 1);
+    ECHO_MV(" /", degTargetCooler(), 1);
+    ECHO_M(SERIAL_CAT);
+    #if ENABLED(COOLER_WATTS)
+      ECHO_VM(((COOLER_WATTS) * getCoolerPower()) / 127, "W");
+    #else
+      #if ENABLED(FAST_PWM_COOLER)
+        ECHO_V(getPwmCooler(false));
+      #else
+        ECHO_V(getCoolerPower());
+      #endif
+    #endif
+    #if ENABLED(SHOW_TEMP_ADC_VALUES)
+      ECHO_MV("    ADC C:", degCooler(), 1);
+      ECHO_MV("C->", rawBedCooler() / OVERSAMPLENR, 0);
+    #endif
+  }
+#endif // HAS(TEMP_COOLER)
+
 inline void wait_heater(bool no_wait_for_cooling = true) {
 
   #if ENABLED(TEMP_RESIDENCY_TIME)
@@ -3087,6 +3108,79 @@ inline void wait_bed(bool no_wait_for_cooling = true) {
   LCD_MESSAGEPGM(MSG_BED_DONE);
   KEEPALIVE_STATE(IN_HANDLER);
 }
+
+#if HAS(TEMP_COOLER)
+  inline void wait_cooler(bool no_wait_for_heating = true) {
+    #if TEMP_COOLER_RESIDENCY_TIME > 0
+      millis_t residency_start_ms = 0;
+      // Loop until the temperature has stabilized
+      #define TEMP_COOLER_CONDITIONS (!residency_start_ms || PENDING(now, residency_start_ms + (TEMP_COOLER_RESIDENCY_TIME) * 1000UL))
+    #else
+      // Loop until the temperature is very close target
+      #define TEMP_COOLER_CONDITIONS (wants_to_heat ? isHeatingCooler() : isCoolingCooler())
+    #endif
+
+    float theTarget = -1;
+    bool wants_to_cool;
+    cancel_cooldown = false;
+    millis_t now, next_temp_ms = 0;
+
+    KEEPALIVE_STATE(NOT_BUSY);
+
+    // Wait for temperature to come close enough
+    do {
+      now = millis();
+      if (ELAPSED(now, next_temp_ms)) { //Print Temp Reading every 1 second while heating up.
+        next_temp_ms = now + 1000UL;
+        print_coolerstates();
+        #if TEMP_COOLER_RESIDENCY_TIME > 0
+          ECHO_M(SERIAL_W);
+          if (residency_start_ms) {
+            long rem = (((TEMP_COOLER_RESIDENCY_TIME) * 1000UL) - (now - residency_start_ms)) / 1000UL;
+            ECHO_EV(rem);
+          }
+          else {
+            ECHO_EM("?");
+          }
+        #else
+          ECHO_E;
+        #endif
+      }
+
+      // Target temperature might be changed during the loop
+      if (theTarget != degTargetCooler()) {
+        wants_to_heat = isHeatingCooler();
+        theTarget = degTargetCooler();
+
+        // Exit if S<higher>, continue if S<lower>, R<higher>, or R<lower>
+        if (no_wait_for_heating && wants_to_heat) break;
+
+        // Prevent a wait-forever situation if R is misused i.e. M190 C R50
+        // Simply don't wait to heat a cooler over 25C
+        if (wants_to_heat && theTarget > 25) break;
+      }
+
+		idle();
+		refresh_cmd_timeout(); // to prevent stepper_inactive_time from running out
+	
+      #if TEMP_COOLER_RESIDENCY_TIME > 0
+        float temp_diff = fabs(degTargetBed() - theTarget);
+
+        if (!residency_start_ms) {
+          // Start the TEMP_COOLER_RESIDENCY_TIME timer when we reach target temp for the first time.
+          if (temp_diff < TEMP_COOLER_WINDOW) residency_start_ms = millis();
+        }
+        else if (temp_diff > TEMP_COOLER_HYSTERESIS) {
+          // Restart the timer whenever the temperature falls outside the hysteresis.
+          residency_start_ms = millis();
+        }
+      #endif //TEMP_COOLER_RESIDENCY_TIME > 0
+
+    } while (!cancel_cooldown && TEMP_COOLER_CONDITIONS);
+    LCD_MESSAGEPGM(MSG_COOLER_DONE);
+    KEEPALIVE_STATE(IN_HANDLER);
+  }
+#endif
 
 
 /******************************************************************************
@@ -5292,6 +5386,7 @@ inline void gcode_M77() {
  */
 inline void gcode_M81() {
   disable_all_heaters();
+  disable_all_coolers();
   st_synchronize();
   disable_e();
   finishAndDisableSteppers();
@@ -5644,9 +5739,14 @@ inline void gcode_M104() {
 inline void gcode_M105() {
   if (setTargetedExtruder(105)) return;
 
-  #if HAS(TEMP_0) || HAS(TEMP_BED) || ENABLED(HEATER_0_USES_MAX6675)
+  #if HAS(TEMP_0) || HAS(TEMP_BED) || ENABLED(HEATER_0_USES_MAX6675) || HAS(TEMP_COOLER)
     ECHO_S(OK);
-    print_heaterstates();
+    #if HAS(TEMP_0) || HAS(TEMP_BED) || ENABLED(HEATER_0_USES_MAX6675)
+      print_heaterstates();
+    #endif
+    #if HAS(TEMP_COOLER)
+      print_coolerstates();
+    #endif
   #else // HASNT(TEMP_0) && HASNT(TEMP_BED)
     ECHO_LM(ER, SERIAL_ERR_NO_THERMISTORS);
   #endif
@@ -5841,11 +5941,17 @@ inline void gcode_M122() {
 #endif //BARICUDA
 
 /**
- * M140: Set bed temperature
+ * M140: Set bed or cooler temperature
  */
 inline void gcode_M140() {
   if (DEBUGGING(DRYRUN)) return;
-  if (code_seen('S')) setTargetBed(code_value());
+  if (code_seen('C')) {
+    if (code_seen('S')) setTargetCooler(code_value());
+  }
+  else {
+    if (code_seen('S')) setTargetBed(code_value());
+  }
+
 }
 
 #if ENABLED(ULTIPANEL) && TEMP_SENSOR_0 != 0
@@ -5992,19 +6098,37 @@ inline void gcode_M140() {
   inline void gcode_M165() { gcode_get_mix(); }
 #endif  // COLOR_MIXING_EXTRUDER
 
-#if HAS(TEMP_BED)
+#if HAS(TEMP_BED) || HAS(TEMP_COOLER)
   /**
-   * M190: Sxxx Wait for bed current temp to reach target temp. Waits only when heating
-   *       Rxxx Wait for bed current temp to reach target temp. Waits when heating and cooling
+   * M190: Sxxx Wait for bed or cooler current temp to reach target temp. Waits only when heating for bed, cooling for cooler
+   *       Rxxx Wait for bed or cooler current temp to reach target temp. Waits when heating and cooling
+   *       C    select cooler, omitting select bed
+   *
    */
   inline void gcode_M190() {
     if (DEBUGGING(DRYRUN)) return;
+    #if HAS(TEMP_COOLER)
+      if code_seen('C') {
+        LCD_MESSAGEPGM(MSG_COOLER_COOLING);
+        bool no_wait_for_heating = code_seen('S');
+        if (no_wait_for_heating || code_seen('R')) setTargetCooler(code_value());
 
-    LCD_MESSAGEPGM(MSG_BED_HEATING);
-    bool no_wait_for_cooling = code_seen('S');
-    if (no_wait_for_cooling || code_seen('R')) setTargetBed(code_value());
+        wait_cooler(no_wait_for_heating);
+      }
+    #endif
+    #if HAS(TEMP_BED) && HAS(TEMP_COOLER)
+      else {
+    #elif HAS(TEMP_BED)
+      if (!code_seen('C')) {
+    #endif
+    #if HAS(TEMP_BED)
+        LCD_MESSAGEPGM(MSG_BED_HEATING);
+        bool no_wait_for_cooling = code_seen('S');
+        if (no_wait_for_cooling || code_seen('R')) setTargetBed(code_value());
 
-    wait_bed(no_wait_for_cooling);
+        wait_bed(no_wait_for_cooling);
+      }
+    #endif
   }
 #endif // HAS(TEMP_BED)
 
@@ -6493,13 +6617,13 @@ inline void gcode_M226() {
   // M304: Set bed PID parameters P I and D
   inline void gcode_M304() {
     #if ENABLED(PIDTEMPCOOLER)
-    if (code_seen('L')) {
+    if (code_seen('C')) {
       if (code_seen('P')) coolerKp = code_value();
       if (code_seen('I')) coolerKi = scalePID_i(code_value());
       if (code_seen('D')) coolerKd = scalePID_d(code_value());
 
       updatePID();
-      ECHO_SMV(OK, " L p:", coolerKp);
+      ECHO_SMV(OK, " C p:", coolerKp);
       ECHO_MV(" i:", unscalePID_i(coolerKi));
       ECHO_EMV(" d:", unscalePID_d(coolerKd));
 
@@ -7256,6 +7380,7 @@ inline void gcode_M503() {
       if ((millis() - last_set > 60000) && cnt <= FILAMENT_CHANGE_PRINTER_OFF) beep = true;
       if (cnt >= FILAMENT_CHANGE_PRINTER_OFF && !sleep) {
         disable_all_heaters();
+        disable_all_coolers();
         sleep = true;
         lcd_reset_alert_level();
         LCD_ALERTMESSAGEPGM("Zzzz Zzzz Zzzz");
@@ -8250,7 +8375,7 @@ void process_next_command() {
         #endif // HAS(HEATER_2)
       #endif // BARICUDA
 
-      case 140: // M140 Set bed temp
+      case 140: // M140 Set bed or cooler temp
         gcode_M140(); break;
 
       #if ENABLED(BLINKM)
@@ -8269,8 +8394,8 @@ void process_next_command() {
           gcode_M165(); break;
       #endif
 
-      #if HAS(TEMP_BED)
-        case 190: // M190 - Wait for bed heater to reach target.
+      #if HAS(TEMP_BED) || HAS(TEMP_COOLER)
+        case 190: // M190 - Wait for bed heater or for cooler to reach target.
           gcode_M190(); break;
       #endif //TEMP_BED_PIN
 
@@ -9430,6 +9555,7 @@ void kill(const char* lcd_msg) {
 
 void stop() {
   disable_all_heaters();
+  disable_all_coolers();
   #ifdef LASER
     if (laser.diagnostics) ECHO_LM(INFO, "Laser set to off, stop() called");
     laser_extinguish();

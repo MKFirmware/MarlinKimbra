@@ -162,6 +162,7 @@ void Endstops::report_state() {
         card.closefile();
         quickStop();
         disable_all_heaters(); // switch off all heaters.
+        disable_all_coolers();
       }
     #endif
   }

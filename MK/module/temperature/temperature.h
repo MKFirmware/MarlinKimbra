@@ -200,6 +200,7 @@ HOTEND_ROUTINES(0);
 
 int getHeaterPower(int heater);
 int getCoolerPower();
+unsigned char getPwmCooler(bool soft);
 
 void disable_all_heaters(); 
 void disable_all_coolers();
