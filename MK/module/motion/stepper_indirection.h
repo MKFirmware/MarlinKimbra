@@ -237,7 +237,7 @@
     #define REV_E_DIR()     { if(extruder_duplication_enabled) { E0_DIR_WRITE( INVERT_E0_DIR); E1_DIR_WRITE( INVERT_E1_DIR); } else if(current_block->active_driver == 1) { E1_DIR_WRITE( INVERT_E1_DIR); } else { E0_DIR_WRITE( INVERT_E0_DIR); }}
   #endif
 #else
-  #if ENABLED(DONDOLO)
+  #if ENABLED(DONDOLO_SINGLE_MOTOR)
     #define E_STEP_WRITE(v) E0_STEP_WRITE(v)
     #define NORM_E_DIR()  { switch(active_extruder) { case 1: E0_DIR_WRITE( INVERT_E0_DIR); break; case 0: E0_DIR_WRITE(!INVERT_E0_DIR); break; }}
     #define REV_E_DIR()   { switch(active_extruder) { case 1: E0_DIR_WRITE(!INVERT_E0_DIR); break; case 0: E0_DIR_WRITE( INVERT_E0_DIR); break; }}
