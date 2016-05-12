@@ -99,6 +99,7 @@ const char axis_codes[NUM_AXIS] = {'X', 'Y', 'Z', 'E'};
 static bool relative_mode = false;
 
 bool cancel_heatup = false;
+bool cancel_cooldown = false;
 
 static int serial_count = 0;
 
@@ -3121,7 +3122,7 @@ inline void wait_bed(bool no_wait_for_cooling = true) {
     #endif
 
     float theTarget = -1;
-    bool wants_to_cool;
+    bool wants_to_heat;
     cancel_cooldown = false;
     millis_t now, next_temp_ms = 0;
 
@@ -6108,7 +6109,7 @@ inline void gcode_M140() {
   inline void gcode_M190() {
     if (DEBUGGING(DRYRUN)) return;
     #if HAS(TEMP_COOLER)
-      if code_seen('C') {
+      if (code_seen('C')) {
         LCD_MESSAGEPGM(MSG_COOLER_COOLING);
         bool no_wait_for_heating = code_seen('S');
         if (no_wait_for_heating || code_seen('R')) setTargetCooler(code_value());
