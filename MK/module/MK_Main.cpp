@@ -5395,6 +5395,12 @@ inline void gcode_M81() {
   #if ENABLED(LASERBEAM)
     laser_ttl_modulation = 0;
   #endif
+  #ifdef LASER
+    laser_extinguish();
+  #endif
+  #ifdef LASER_PERIPHERALS
+    laser_peripherals_off();
+  #endif
   delay_ms(1000); // Wait 1 second before switching off
   #if HAS(SUICIDE)
     st_synchronize();

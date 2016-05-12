@@ -1653,6 +1653,14 @@ void disable_all_heaters() {
 void disable_all_coolers() {
    setTargetCooler(0);
 
+   // if cooler go down the print job is stopped 
+   print_job_timer.stop();
+
+   #if ENABLED(LASER)
+      // No laser firing with no coolers running! (paranoia)
+      laser_extinguish();
+   #endif
+
    #if HAS(TEMP_COOLER)
      target_temperature_cooler = 0;
      setPwmCooler(0);
