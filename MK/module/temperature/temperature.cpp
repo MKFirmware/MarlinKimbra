@@ -812,10 +812,10 @@ float get_pid_output(int h) {
 
 #if ENABLED(PIDTEMPCOOLER)
   float get_pid_output_cooler() {
-	  float pid_output;
+     float pid_output;
      #if ENABLED(PID_OPENLOOP)
        pid_output = constrain(target_temperature_cooler, 0, MAX_COOLER_POWER);
-	  #else
+     #else
       //pid_error_cooler = target_temperature_cooler - current_temperature_cooler;
       pid_error_cooler = current_temperature_cooler - target_temperature_cooler;
       pTerm_cooler = coolerKp * pid_error_cooler;
@@ -826,7 +826,7 @@ float get_pid_output(int h) {
       //dTerm_cooler = K2 * coolerKd * (current_temperature_cooler - temp_dState_cooler) + K1 * dTerm_cooler;
       dTerm_cooler = K2 * coolerKd * (temp_dState_cooler - current_temperature_cooler) + K1 * dTerm_cooler;
       temp_dState_cooler = current_temperature_cooler;
-      
+
       pid_output = pTerm_cooler + iTerm_cooler - dTerm_cooler;
       if (pid_output > MAX_COOLER_POWER) {
         if (pid_error_cooler > 0) temp_iState_cooler -= pid_error_cooler; // conditional un-integration
@@ -836,7 +836,6 @@ float get_pid_output(int h) {
         if (pid_error_cooler < 0) temp_iState_cooler -= pid_error_cooler; // conditional un-integration
         pid_output = 0;
       }
-
      #endif // PID_OPENLOOP
 
     #if ENABLED(PID_COOLER_DEBUG)
@@ -848,8 +847,9 @@ float get_pid_output(int h) {
       ECHO_EMV(" dTerm ", dTerm_cooler);
     #endif //PID_COOLER_DEBUG
 
-
+    return pid_output;
   }
+
 #endif
 
 /**

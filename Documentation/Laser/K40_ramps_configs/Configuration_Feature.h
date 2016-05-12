@@ -220,14 +220,14 @@
 // all forms of bed control obey this (PID, bang-bang, bang-bang with hysteresis)
 // setting this to anything other than 255 enables a form of PWM to the bed,
 // so you shouldn't use it unless you are OK with PWM on your bed.  (see the comment on enabling PIDTEMPCOOLER)
-#define MAX_COOLER_POWER 255 // limits duty cycle to bed; 255=full current
+#define MAX_COOLER_POWER 200 // limits duty cycle to bed; 255=full current, save PEC life by setting max to 200
 
 #define PID_COOLER_INTEGRAL_DRIVE_MAX MAX_COOLER_POWER // limit for the integral term
 // 120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
 // from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
-#define DEFAULT_coolerKp 10.00
-#define DEFAULT_coolerKi .023
-#define DEFAULT_coolerKd 305.4
+#define DEFAULT_coolerKp 40.00
+#define DEFAULT_coolerKi .3
+#define DEFAULT_coolerKd 50.4
 
 // FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
 
