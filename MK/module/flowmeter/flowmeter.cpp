@@ -33,17 +33,17 @@ void flowrate_pulsecounter();
 void flow_init() {
 
    flowrate = 0;
-   pulsecount = 0;
+   flowrate_pulsecount = 0;
    flowml = 0;
    pinMode(FLOWMETER_PIN, INPUT);
    
-   attachInterrupt(FLOWMETER_INTERRUPT, flowrate_pulsecounter, FALLING);
+   attachInterrupt(digitalPinToInterrupt(FLOWMETER_PIN), flowrate_pulsecounter, FALLING);
 }
 
 void flowrate_manage() {
-   millis_t = now;
+   millis_t  now;
    now = millis()
-   if(ELAPSED(now, flowmeter_timer) {
+   if(ELAPSED(now, flowmeter_timer)) {
       detachInterrupt(digitalPinToInterrupt(FLOWMETER_PIN));
       flowrate  = ((1000.0 / (now - flowmeter_timer)) * flowrate_pulsecount) / FLOWMETER_CALIBRATION;
       flowmeter_timer = now + 1000UL;
