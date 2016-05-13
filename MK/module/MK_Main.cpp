@@ -2970,7 +2970,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 #if ENABLED(FLOWMETER_SENSOR)
   void print_flowratestates() {
     ECHO_MV(" FLOW: ", get_flowrate(), 1);
-    ECHO_MV(" ml/min ");
+    ECHO_M(" ml/min ");
   }
 #endif
 
@@ -9253,7 +9253,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
 
   #if ENABLED(FLOWMETER_SENSOR) && ENABLED(MINFLOW_PROTECTION)
     if (get_flowrate() < (MINFLOW_PROTECTION*1000)) {
-      if (IsRunning()) kill(PSTR(MSG_KILLED)) : stop();
+      if (IsRunning()) kill(PSTR(MSG_KILLED)); : stop();
     }
   #endif
 
