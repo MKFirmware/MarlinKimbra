@@ -1074,7 +1074,7 @@
  * You also need to set FLOWMETER_PIN in Configurations_pins.h            *
  *                                                                        *
  **************************************************************************/
- //#define FLOMETER_SENSOR
+ //#define FLOWMETER_SENSOR
  
 #define FLOWMETER_MAXFLOW  6.0      // Liters per minute max
 #define FLOWMETER_MAXFREQ  55       // frequency of pulses at max flow

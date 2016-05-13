@@ -270,6 +270,10 @@ extern uint8_t active_driver;
   void print_coolerstates();
 #endif
 
+#if ENABLED(FLOWMETER_SENSOR)
+  void print_flowratestates();
+#endif
+
 #if ENABLED(FIRMWARE_TEST)
   void FirmwareTest();
 #endif

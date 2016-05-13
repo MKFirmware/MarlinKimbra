@@ -28,6 +28,7 @@ float flowrate;
 unsigned int flowml;
 static millis_t flowmeter_timer = 0;
 
+void flowrate_pulsecounter();
 
 void flow_init() {
 
@@ -52,6 +53,10 @@ void flowrate_manage() {
       attachInterrupt(digitalPinToInterrupt(FLOWMETER_PIN), flowrate_pulsecounter, FALLING);
    }
 
+}
+
+int get_florate() {
+   return flowml;
 }
 
 void flowrate_pulsecounter()

@@ -748,6 +748,10 @@ void setup() {
     laser_init();
   #endif
 
+  #if ENABLED(FLOWMETER_SENSOR)
+    flow_init();
+  #endif
+
   #if ENABLED(COLOR_MIXING_EXTRUDER) && MIXING_VIRTUAL_TOOLS > 1
     // Initialize mixing to 100% color 1
     for (uint8_t i = 0; i < DRIVER_EXTRUDERS; i++) {
@@ -2958,6 +2962,13 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
     #endif
   }
 #endif // HAS(TEMP_COOLER)
+
+#if ENABLED(FLOWMETER_SENSOR)
+  void print_flowratestates() {
+    ECHO_MV(" FLOW: ", get_flowrate(), 1);
+    ECHO_MV(" ml/min ");
+  }
+#endif
 
 inline void wait_heater(bool no_wait_for_cooling = true) {
 
@@ -5750,6 +5761,9 @@ inline void gcode_M105() {
     #endif
     #if HAS(TEMP_COOLER)
       print_coolerstates();
+    #endif
+    #if HAS(FLOWMETER_SENSOR)
+      print_flowratestates();
     #endif
   #else // HASNT(TEMP_0) && HASNT(TEMP_BED)
     ECHO_LM(ER, SERIAL_ERR_NO_THERMISTORS);
@@ -9190,6 +9204,9 @@ void idle(
   #endif
 ) {
   manage_temp_controller();
+  #if ENABLED(FLOWMETER_SENSOR)
+    flowrate_manage();
+  #endif
   manage_inactivity(
     #if ENABLED(FILAMENT_CHANGE_FEATURE)
       no_stepper_sleep
@@ -9225,6 +9242,12 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
   millis_t ms = millis();
 
   if (max_inactive_time && ELAPSED(ms, previous_cmd_ms + max_inactive_time)) kill(PSTR(MSG_KILLED));
+
+  #if ENABLED(FLOWMETER_SENSOR) && ENABLED(MINFLOW_PROTECTION)
+    if (get_flowrate() < (MINFLOW_PROTECTION*1000)) {
+      if (IsRunning()) kill(PSTR(MSG_KILLED)) : stop();
+    }
+  #endif
 
   if (stepper_inactive_time && ELAPSED(ms, previous_cmd_ms + stepper_inactive_time)
       && !ignore_stepper_queue && !blocks_queued()) {
@@ -9453,6 +9476,7 @@ void kill(const char* lcd_msg) {
 
   cli(); // Stop interrupts
   disable_all_heaters();
+  disable_all_coolers();
   disable_all_steppers();
 
   #if ENABLED(LASER)
