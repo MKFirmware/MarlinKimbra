@@ -19,18 +19,13 @@
 #ifndef FLOWMETER_H
 #define FLOWMETER_H
 
-#include <inttypes.h>
-#include "../../base.h"
-
-
 #define FLOWMETER_CALIBRATION (FLOWMETER_MAXFREQ/FLOWMETER_MAXFLOW)
 
 #if ENABLED(FLOWMETER_SENSOR)
-
 void flowrate_manage();
 void flow_init();
 int get_flowrate();
+#endif
 
-#endif // FLOWMETER_SENSOR
 
 #endif // FLOWMETER_H

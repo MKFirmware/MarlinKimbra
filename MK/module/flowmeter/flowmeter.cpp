@@ -55,7 +55,7 @@ void flowrate_manage() {
 
 }
 
-int get_florate() {
+int get_flowrate() {
    return flowml;
 }
 

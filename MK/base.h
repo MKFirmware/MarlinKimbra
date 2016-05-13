@@ -38,7 +38,6 @@
 #include "Configuration_Feature.h"
 #include "Configuration_Overall.h"
 
-#include "module/flowmeter/flowmeter.h"
 
 #if ENABLED(LASER)
   #include "Configuration_Laser.h"
@@ -66,6 +65,7 @@
 #include "module/motion/qr_solve.h"
 #include "module/motion/cartesian_correction.h"
 #include "module/temperature/temperature.h"
+#include "module/flowmeter/flowmeter.h"
 #include "module/temperature/thermistortables.h"
 #include "module/lcd/ultralcd.h"
 #include "module/lcd/buzzer.h"

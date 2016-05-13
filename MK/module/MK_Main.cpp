@@ -2962,7 +2962,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
     #endif
     #if ENABLED(SHOW_TEMP_ADC_VALUES)
       ECHO_MV("    ADC C:", degCooler(), 1);
-      ECHO_MV("C->", rawBedCooler() / OVERSAMPLENR, 0);
+      ECHO_MV("C->", rawCoolerTemp() / OVERSAMPLENR, 0);
     #endif
   }
 #endif // HAS(TEMP_COOLER)
