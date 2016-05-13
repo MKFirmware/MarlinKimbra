@@ -26,22 +26,22 @@
 laser_t laser;
 
 #if ENABLED(LASER_PULSE_METHOD)
-#define bit(x) (1 << x)
+#define pulsebit(x) (1 << x)
 #endif
 
 void timer3_init(int pin) {
   #if ENABLED(LASER_PULSE_METHOD)
     TCCR3A = 0;                 // clear control register A 
-    TCCR3B = bit(WGM33);        // set mode as phase and frequency correct pwm, stop the timer
+    TCCR3B = pulsebit(WGM33);        // set mode as phase and frequency correct pwm, stop the timer
 
     ICR3 = F_CPU / LASER_PWM / 2;  // the counter runs backwards after TOP
     TCCR3B &= ~(bit(CS30) | bit(CS31) | bit(CS32)); // Stop timer
 
-    TCCR3A |= bit(COM3A1);      // Connect pin5 to timer register
-    DDRE |= bit(PORTE3);        // Actually output on pin 5
+    TCCR3A |= pulsebit(COM3A1);      // Connect pin5 to timer register
+    DDRE |= pulsebit(PORTE3);        // Actually output on pin 5
 
     OCR3A = 0;                  // Zero duty cycle = OFF
-    TCCR3B |= bit(CS30);        // No prescaler, start timer
+    TCCR3B |= pulsebit(CS30);        // No prescaler, start timer
 
     // Use timer4 to end laser pulse
     /*
@@ -90,8 +90,8 @@ void timer3_init(int pin) {
     */
     // Prepare laser pulse shutdown timer
     TCCR4A = 0; 
-    TCCR4B = bit(WGM42);    // CTC
-    TIMSK4 |= bit(OCIE4A);  // Enable interrupt on OCR4A
+    TCCR4B = pulsebit(WGM42);    // CTC
+    TIMSK4 |= pulsebit(OCIE4A);  // Enable interrupt on OCR4A
   #else
     pinMode(pin, OUTPUT);
     analogWrite(pin, 1);  // let Arduino setup do it's thing to the PWM pin
@@ -117,7 +117,7 @@ void timer3_init(int pin) {
     OCR3A = 0;              // 0 Duty cycle
 
     // Stop pulse shutdown timer
-    TCCR4B &= ~(bit(CS40) | bit(CS41) | bit(CS42)); // Stop timer.
+    TCCR4B &= ~(pulsebit(CS40) | pulsebit(CS41) | pulsebit(CS42)); // Stop timer.
   }
 
   void laser_pulse(uint32_t ulValue, unsigned long usec)
@@ -127,8 +127,8 @@ void timer3_init(int pin) {
     // Start timer4 to end pulse
     OCR4A = 2*usec;         // Ticks until IRQ, "2" comes from prescaler
     TCNT4 = 0;              // Count from 0
-    TCCR4B |= bit(CS41);    // Start timer
-    TIFR4 = bit(OCF4A);     // Clear any pending interrupt
+    TCCR4B |= pulsebit(CS41);    // Start timer
+    TIFR4 = pulsebit(OCF4A);     // Clear any pending interrupt
   }
 #else // LASER_PULSE_METHOD
 	void timer4_init(int pin) {
@@ -218,7 +218,7 @@ void laser_fire(float intensity = 100.0){
   #if(ENABLED(LASER_REMAP_INTENSITY))
     #if LASER_REMAP_INTENSITY != 0
       #define OldRange (255.0 - 0.0);
-      #define NewRange = (255.0 - LASER_REMAP_INTENSITY);
+      #define NewRange (255.0 - LASER_REMAP_INTENSITY);
       intensity = intensity * NewRange / OldRange + LASER_REMAP_INTENSITY;
 	 #endif
   #endif
