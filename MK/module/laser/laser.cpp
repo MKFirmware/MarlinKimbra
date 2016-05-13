@@ -27,6 +27,9 @@ laser_t laser;
 
 #if ENABLED(LASER_PULSE_METHOD)
 #define pulsebit(x) (1 << x)
+#ifndef PE3                   // Undef'd in fastio.h.
+#define PE3 3
+#endif
 #endif
 
 void timer3_init(int pin) {
@@ -217,9 +220,10 @@ void laser_fire(float intensity = 100.0){
   // At least some CO2-drivers need it, not sure about laserdiode drivers.
   #if(ENABLED(LASER_REMAP_INTENSITY))
     #if LASER_REMAP_INTENSITY != 0
-      #define OldRange (255.0 - 0.0);
-      #define NewRange (255.0 - LASER_REMAP_INTENSITY);
-      intensity = intensity * NewRange / OldRange + LASER_REMAP_INTENSITY;
+      float OldRange, NewRange;
+      OldRange = (255.0 - 0.0);
+      NewRange = (intensity - LASER_REMAP_INTENSITY);  
+      intensity = (float)(((((float)intensity - 0) * NewRange) / OldRange) + LASER_REMAP_INTENSITY);
 	 #endif
   #endif
 
