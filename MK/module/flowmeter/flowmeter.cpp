@@ -49,7 +49,7 @@ void flowrate_manage() {
       flowmeter_timer = now + 1000UL;
       flowml = (flowrate / 60) * 1000;
 
-      pulseCount = 0;
+      flowrate_pulsecount = 0;
       attachInterrupt(digitalPinToInterrupt(FLOWMETER_PIN), flowrate_pulsecounter, FALLING);
    }
 
