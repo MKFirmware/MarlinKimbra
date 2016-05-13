@@ -775,10 +775,6 @@ float get_pid_output(int h) {
   float get_pid_output_bed() {
     float pid_output;
 
-    // We need this cause 0 is lower than our current temperature probably.
-    if(target_temperature_cooler < COOLER_MINTEMP)
-      return 0;
-
     #if ENABLED(PID_OPENLOOP)
       pid_output = constrain(target_temperature_bed, 0, MAX_BED_POWER);
     #else
@@ -817,10 +813,11 @@ float get_pid_output(int h) {
 
 #if ENABLED(PIDTEMPCOOLER)
   float get_pid_output_cooler() {
-     float pid_output;
+    float pid_output;
 
-     if(target_temperature_cooler == 0)
-        return 0
+    // We need this cause 0 is lower than our current temperature probably.
+    if(target_temperature_cooler < COOLER_MINTEMP)
+      return 0.0;
 
      #if ENABLED(PID_OPENLOOP)
        pid_output = constrain(target_temperature_cooler, 0, MAX_COOLER_POWER);
