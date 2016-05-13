@@ -47,7 +47,7 @@ void flowrate_manage() {
       detachInterrupt(digitalPinToInterrupt(FLOWMETER_PIN));
       flowrate  = ((1000.0 / (now - flowmeter_timer)) * flowrate_pulsecount) / FLOWMETER_CALIBRATION;
       flowmeter_timer = now + 1000UL;
-      flowml = (flowrate / 60) * 1000;
+      flowml = (flowrate / 60.0) * 1000;
 
       flowrate_pulsecount = 0;
       attachInterrupt(digitalPinToInterrupt(FLOWMETER_PIN), flowrate_pulsecounter, FALLING);

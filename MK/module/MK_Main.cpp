@@ -5758,7 +5758,7 @@ inline void gcode_M104() {
 inline void gcode_M105() {
   if (setTargetedExtruder(105)) return;
 
-  #if HAS(TEMP_0) || HAS(TEMP_BED) || ENABLED(HEATER_0_USES_MAX6675) || HAS(TEMP_COOLER)
+  #if HAS(TEMP_0) || HAS(TEMP_BED) || ENABLED(HEATER_0_USES_MAX6675) || HAS(TEMP_COOLER) || ENABLED(FLOWMETER_SENSOR)
     ECHO_S(OK);
     #if HAS(TEMP_0) || HAS(TEMP_BED) || ENABLED(HEATER_0_USES_MAX6675)
       print_heaterstates();
@@ -5766,7 +5766,7 @@ inline void gcode_M105() {
     #if HAS(TEMP_COOLER)
       print_coolerstates();
     #endif
-    #if HAS(FLOWMETER_SENSOR)
+    #if ENABLED(FLOWMETER_SENSOR)
       print_flowratestates();
     #endif
   #else // HASNT(TEMP_0) && HASNT(TEMP_BED)
@@ -9253,10 +9253,10 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
 
   #if ENABLED(FLOWMETER_SENSOR) && ENABLED(MINFLOW_PROTECTION)
     if (get_flowrate() < (MINFLOW_PROTECTION*1000)) {
-      if (IsRunning()) 
-       kill(PSTR(MSG_KILLED));  
-      else
-       stop();
+      if (Printing) 
+        kill(PSTR(MSG_KILLED));  
+      //else
+      // stop();
     }
   #endif
 
