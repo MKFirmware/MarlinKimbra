@@ -38,7 +38,7 @@
 #include "Configuration_Feature.h"
 #include "Configuration_Overall.h"
 
-#include "module/flowrate/flowrate.h"
+#include "module/flowmeter/flowmeter.h"
 
 #if ENABLED(LASER)
   #include "Configuration_Laser.h"
