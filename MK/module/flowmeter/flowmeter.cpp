@@ -42,7 +42,7 @@ void flow_init() {
 
 void flowrate_manage() {
    millis_t  now;
-   now = millis()
+   now = millis();
    if(ELAPSED(now, flowmeter_timer)) {
       detachInterrupt(digitalPinToInterrupt(FLOWMETER_PIN));
       flowrate  = ((1000.0 / (now - flowmeter_timer)) * flowrate_pulsecount) / FLOWMETER_CALIBRATION;
