@@ -9253,7 +9253,10 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
 
   #if ENABLED(FLOWMETER_SENSOR) && ENABLED(MINFLOW_PROTECTION)
     if (get_flowrate() < (MINFLOW_PROTECTION*1000)) {
-      if (IsRunning()) kill(PSTR(MSG_KILLED)); : stop();
+      if (IsRunning()) 
+       kill(PSTR(MSG_KILLED));  
+      else
+       stop();
     }
   #endif
 
