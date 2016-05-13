@@ -57,7 +57,7 @@ typedef struct {
 extern laser_t laser;
 
 void laser_init();
-void laser_fire(int intensity);
+void laser_fire(float intensity);
 #if ENABLED(LASER_PULSE_METHOD)
   void laser_pulse(uint32_t ulValue, unsigned long usec);
 #endif
