@@ -24,7 +24,7 @@
 #if ENABLED(FLOWMETER_SENSOR)
 void flowrate_manage();
 void flow_init();
-int get_flowrate();
+float get_flowrate();
 #endif
 
 

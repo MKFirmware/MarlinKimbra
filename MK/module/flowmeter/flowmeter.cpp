@@ -23,18 +23,16 @@
 
 #if ENABLED(FLOWMETER_SENSOR)
 
-volatile byte flowrate_pulsecount;  
+volatile int flowrate_pulsecount;  
 float flowrate;
-unsigned int flowml;
 static millis_t flowmeter_timer = 0;
-
+static millis_t lastflow = 0;
 void flowrate_pulsecounter();
 
 void flow_init() {
 
    flowrate = 0;
    flowrate_pulsecount = 0;
-   flowml = 0;
    pinMode(FLOWMETER_PIN, INPUT);
    
    attachInterrupt(digitalPinToInterrupt(FLOWMETER_PIN), flowrate_pulsecounter, FALLING);
@@ -45,18 +43,25 @@ void flowrate_manage() {
    now = millis();
    if(ELAPSED(now, flowmeter_timer)) {
       detachInterrupt(digitalPinToInterrupt(FLOWMETER_PIN));
-      flowrate  = ((1000.0 / (now - flowmeter_timer)) * flowrate_pulsecount) / FLOWMETER_CALIBRATION;
+      flowrate  = (float)(((1000.0 / (float)((float)now - (float)lastflow)) * (float)flowrate_pulsecount) / (float)FLOWMETER_CALIBRATION);
+      #if ENABLED(FLOWMETER_DEBUG)
+         ECHO_M(" FLOWMETER DEBUG ");
+         ECHO_MV(" flowrate:", flowrate);
+         ECHO_MV(" flowrate_pulsecount:", flowrate_pulsecount);
+         ECHO_MV(" CALIBRATION:", FLOWMETER_CALIBRATION);
+         ECHO_E;
+      #endif
       flowmeter_timer = now + 1000UL;
-      flowml = (flowrate / 60.0) * 1000;
-
+      lastflow = now;
       flowrate_pulsecount = 0;
       attachInterrupt(digitalPinToInterrupt(FLOWMETER_PIN), flowrate_pulsecounter, FALLING);
+
    }
 
 }
 
-int get_flowrate() {
-   return flowml;
+float get_flowrate() {
+   return flowrate;
 }
 
 void flowrate_pulsecounter()

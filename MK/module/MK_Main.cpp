@@ -42,6 +42,10 @@
   CardReader card;
 #endif
 
+#if ENABLED(FLOWMETER_SENSOR) && ENABLED(MINFLOW_PROTECTION)
+  bool flow_firstread = false;
+#endif
+
 bool Running = true;
 bool Printing = false;
 
@@ -749,6 +753,9 @@ void setup() {
   #endif
 
   #if ENABLED(FLOWMETER_SENSOR)
+    #if ENABLED(MINFLOW_PROTECTION)
+      flow_firstread=false;
+    #endif
     flow_init();
   #endif
 
@@ -2969,8 +2976,14 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
 #if ENABLED(FLOWMETER_SENSOR)
   void print_flowratestates() {
-    ECHO_MV(" FLOW: ", get_flowrate(), 1);
-    ECHO_M(" ml/min ");
+    float readval;
+    readval = get_flowrate();
+    #if ENABLED(MINFLOW_PROTECTION)
+    if(readval > MINFLOW_PROTECTION)
+      flow_firstread=true;
+    #endif
+    ECHO_MV(" FLOW: ", readval);
+    ECHO_M(" l/min ");
   }
 #endif
 
@@ -9252,14 +9265,11 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
   if (max_inactive_time && ELAPSED(ms, previous_cmd_ms + max_inactive_time)) kill(PSTR(MSG_KILLED));
 
   #if ENABLED(FLOWMETER_SENSOR) && ENABLED(MINFLOW_PROTECTION)
-    if (get_flowrate() < (MINFLOW_PROTECTION*1000)) {
-      if (Printing) 
+    if (flow_firstread && Printing && (get_flowrate() < (float)MINFLOW_PROTECTION)) {
+        flow_firstread = false;
         kill(PSTR(MSG_KILLED));  
-      //else
-      // stop();
     }
   #endif
-
   if (stepper_inactive_time && ELAPSED(ms, previous_cmd_ms + stepper_inactive_time)
       && !ignore_stepper_queue && !blocks_queued()) {
     #if DISABLE_X == true
@@ -9480,6 +9490,9 @@ void kill(const char* lcd_msg) {
   #if ENABLED(KILL_METHOD) && KILL_METHOD == 1
     HAL::resetHardware();
   #endif
+  #if ENABLED(FLOWMETER_SENSOR) && ENABLED(MINFLOW_PROTECTION)
+    flow_firstread=false;
+  #endif
 
   #if ENABLED(ULTRA_LCD)
     lcd_setalertstatuspgm(lcd_msg);
@@ -9593,6 +9606,9 @@ void kill(const char* lcd_msg) {
 #endif // FAST_PWM_FAN
 
 void stop() {
+  #if ENABLED(FLOWMETER_SENSOR) && ENABLED(MINFLOW_PROTECTION)
+    flow_firstread=false;
+  #endif
   disable_all_heaters();
   disable_all_coolers();
   #ifdef LASER

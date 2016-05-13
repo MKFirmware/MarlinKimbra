@@ -818,6 +818,10 @@ float get_pid_output(int h) {
 #if ENABLED(PIDTEMPCOOLER)
   float get_pid_output_cooler() {
      float pid_output;
+
+     if(target_temperature_cooler == 0)
+        return 0
+
      #if ENABLED(PID_OPENLOOP)
        pid_output = constrain(target_temperature_cooler, 0, MAX_COOLER_POWER);
      #else
