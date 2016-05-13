@@ -58,6 +58,9 @@ extern laser_t laser;
 
 void laser_init();
 void laser_fire(int intensity);
+#if ENABLED(LASER_PULSE_METHOD)
+  void laser_pulse(uint32_t ulValue, unsigned long usec);
+#endif
 void laser_extinguish();
 void laser_update_lifetime();
 void laser_set_mode(int mode);

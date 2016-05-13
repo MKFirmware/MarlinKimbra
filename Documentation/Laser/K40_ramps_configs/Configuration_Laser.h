@@ -17,6 +17,17 @@
 // Uncomment the following if your laser firing pin (not the PWM pin) for two pin control requires a HIGH signal to fire rather than a low (eg Red Sail M300 RS 3040)
 /// #define HIGH_TO_FIRE
 
+/// The following define to use the new HakanBasted laser_pulse method to fire laser. It should be more efficient, but it's less tested.
+// Thanks for it to HakanBastedt that has implemented it for Marlin at https://github.com/HakanBastedt/Marlin
+// Uncomment to enable it *USE AT YOUR OWN RISK*, it should work but it's *NOT WELL TESTED YET*
+//#define LASER_PULSE_METHOD
+
+//// In the case that the laserdriver need at least a certain level "LASER_REMAP_INTENSITY"
+// to give anything, the intensity can be remapped to start at "LASER_REMAP_INTENSITY"
+// At least some CO2-drivers need it, not sure about laserdiode drivers.
+#define LASER_REMAP_INTENSITY 7
+
+
 //// The following defines select which G codes tell the laser to fire.  It's OK to uncomment more than one.
 #define LASER_FIRE_G1 10 // fire the laser on a G1 move, extinguish when the move ends
 #define LASER_FIRE_SPINDLE 11 // fire the laser on M3, extinguish on M5

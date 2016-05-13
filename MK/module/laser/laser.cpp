@@ -25,8 +25,75 @@
 
 laser_t laser;
 
+#if ENABLED(LASER_PULSE_METHOD)
+#define bit(x) (1 << x)
+#endif
+
 void timer3_init(int pin) {
-	pinMode(pin, OUTPUT);
+  #if ENABLED(LASER_PULSE_METHOD)
+    TCCR3A = 0;                 // clear control register A 
+    TCCR3B = bit(WGM33);        // set mode as phase and frequency correct pwm, stop the timer
+
+    ICR3 = F_CPU / LASER_PWM / 2;  // the counter runs backwards after TOP
+    TCCR3B &= ~(bit(CS30) | bit(CS31) | bit(CS32)); // Stop timer
+
+    TCCR3A |= bit(COM3A1);      // Connect pin5 to timer register
+    DDRE |= bit(PORTE3);        // Actually output on pin 5
+
+    OCR3A = 0;                  // Zero duty cycle = OFF
+    TCCR3B |= bit(CS30);        // No prescaler, start timer
+
+    // Use timer4 to end laser pulse
+    /*
+    Prescaler  CS42  CS41  CS40  Range
+       1         0     0     1   0 - 4.08 msec
+       8         0     1     0   0 - 32.7 ms  <=====
+      64         0     1     1   0 - 261 ms
+     256         1     0     0   0 - 1046 ms
+    1024         1     0     1   0 - 4183 ms
+    6000 mm/min at 508 dpi = 0.5 ms pulse
+    300 mm/min at 254 dpi = 20 ms pulse
+    For the moment a prescaler of 8 is used which
+    allows up to 32.7 ms pulses with a theoretical
+    resolution of 0.5 µs. 
+    Waveform generation mode 4: CTC top in OCR4A
+    ============================================
+    
+    WGN43, WGM42, WGM41, WGM40 = 0, 1, 0, 0
+    TCCR4A
+    ======
+    COM4A1, COM4A0 = 0,0 = Normal operation, OC4A disconnected
+    COM4B1, COM4B0 = 0,0 = Normal operation, OC4B disconnected
+    COM4C1, COM4C0 = 0,0 = Normal operation, OC4C disconnected
+    WGM41, WGM40 = 0,0 (See above)
+    TCCR4B
+    ======
+    ICN4, IEC4 = 0,0 = Not applicable without input
+    WGM43, WGM42 = 0,1 (See above)
+    CS42, CS41, CS40 = 0,1,0 (See above)
+    CS42, CS41, CS40 = 0,0,0 = Clock stopped
+    TCCR4C
+    ======
+    FOC4A, FOC4B, FOS4B = 0,0,0 = Not used
+    OCR4A
+    =====
+    16-bit value when timer overflows = generated interrupt
+    This is set in laser_pulse()
+    TIMSK4
+    ======
+    OCIE4A = 1 = Generate interrupt when timer reach OCR4A
+
+    TIFR4
+    =====
+    OCF4A: When set, the interrupt will be executed. To clear, write 1 here
+    When reloading the timer in laser_pulse, an expired interrupt is cleared.
+    */
+    // Prepare laser pulse shutdown timer
+    TCCR4A = 0; 
+    TCCR4B = bit(WGM42);    // CTC
+    TIMSK4 |= bit(OCIE4A);  // Enable interrupt on OCR4A
+  #else
+    pinMode(pin, OUTPUT);
     analogWrite(pin, 1);  // let Arduino setup do it's thing to the PWM pin
 
     TCCR3B = 0x00;  // stop Timer4 clock for register updates
@@ -41,37 +108,67 @@ void timer3_init(int pin) {
     ICR3 = labs(F_CPU / LASER_PWM); // set new PWM period
     TCCR3B |= 0x01; // start the timer with proper prescaler value
     interrupts();
+  #endif
 }
 
-void timer4_init(int pin) {
-	pinMode(pin, OUTPUT);
-    analogWrite(pin, 1);  // let Arduino setup do it's thing to the PWM pin
+#if ENABLED(LASER_PULSE_METHOD)
+  ISR(TIMER4_COMPA_vect) 
+  {
+    OCR3A = 0;              // 0 Duty cycle
 
-    TCCR4B = 0x00;  // stop Timer4 clock for register updates
-    TCCR4A = 0x82; // Clear OC4A on match, fast PWM mode, lower WGM4x=14
-    ICR4 = labs(F_CPU / LASER_PWM); // clock cycles per PWM pulse
-    OCR4A = labs(F_CPU / LASER_PWM) - 1; // ICR4 - 1 force immediate compare on next tick
-    TCCR4B = 0x18 | 0x01; // upper WGM4x = 14, clock sel = prescaler, start running
+    // Stop pulse shutdown timer
+    TCCR4B &= ~(bit(CS40) | bit(CS41) | bit(CS42)); // Stop timer.
+  }
 
-    noInterrupts();
-    TCCR4B &= 0xf8; // stop timer, OC4A may be active now
-    TCNT4 = labs(F_CPU / LASER_PWM); // force immediate compare on next tick
-    ICR4 = labs(F_CPU / LASER_PWM); // set new PWM period
-    TCCR4B |= 0x01; // start the timer with proper prescaler value
-    interrupts();
-}
+  void laser_pulse(uint32_t ulValue, unsigned long usec)
+  {
+    OCR3A = ulValue;        // Duty cycle of pulse
+
+    // Start timer4 to end pulse
+    OCR4A = 2*usec;         // Ticks until IRQ, "2" comes from prescaler
+    TCNT4 = 0;              // Count from 0
+    TCCR4B |= bit(CS41);    // Start timer
+    TIFR4 = bit(OCF4A);     // Clear any pending interrupt
+  }
+#else // LASER_PULSE_METHOD
+	void timer4_init(int pin) {
+	  pinMode(pin, OUTPUT);
+     analogWrite(pin, 1);  // let Arduino setup do it's thing to the PWM pin
+
+     TCCR4B = 0x00;  // stop Timer4 clock for register updates
+     TCCR4A = 0x82; // Clear OC4A on match, fast PWM mode, lower WGM4x=14
+     ICR4 = labs(F_CPU / LASER_PWM); // clock cycles per PWM pulse
+     OCR4A = labs(F_CPU / LASER_PWM) - 1; // ICR4 - 1 force immediate compare on next tick
+     TCCR4B = 0x18 | 0x01; // upper WGM4x = 14, clock sel = prescaler, start running
+
+     noInterrupts();
+     TCCR4B &= 0xf8; // stop timer, OC4A may be active now
+     TCNT4 = labs(F_CPU / LASER_PWM); // force immediate compare on next tick
+     ICR4 = labs(F_CPU / LASER_PWM); // set new PWM period
+     TCCR4B |= 0x01; // start the timer with proper prescaler value
+     interrupts();
+  }
+#endif // LASER_PULSE_METHOD
 
 void laser_init()
 {
-  // Initialize timers for laser intensity control
-  #if LASER_CONTROL == 1
-    if (LASER_FIRING_PIN == 2 || LASER_FIRING_PIN == 3 || LASER_FIRING_PIN == 5) timer3_init(LASER_FIRING_PIN);
-    if (LASER_FIRING_PIN == 6 || LASER_FIRING_PIN == 7 || LASER_FIRING_PIN == 8) timer4_init(LASER_FIRING_PIN);
-  #endif
-  #if LASER_CONTROL == 2
-    if (LASER_INTENSITY_PIN == 2 || LASER_INTENSITY_PIN == 3 || LASER_INTENSITY_PIN == 5) timer3_init(LASER_INTENSITY_PIN);
-    if (LASER_INTENSITY_PIN == 6 || LASER_INTENSITY_PIN == 7 || LASER_INTENSITY_PIN == 8) timer4_init(LASER_INTENSITY_PIN);
-  #endif
+
+  #if ENABLED(LASER_PULSE_METHOD)
+    // Initialize timers for laser intensity control 
+    // ONLY laser_firing on pin 5. Can't use pin 6 for output, used by timer4.
+    timer3_init(LASER_FIRING_PIN);
+
+  #else
+    // Initialize timers for laser intensity control
+    #if LASER_CONTROL == 1
+      if (LASER_FIRING_PIN == 2 || LASER_FIRING_PIN == 3 || LASER_FIRING_PIN == 5) timer3_init(LASER_FIRING_PIN);
+      if (LASER_FIRING_PIN == 6 || LASER_FIRING_PIN == 7 || LASER_FIRING_PIN == 8) timer4_init(LASER_FIRING_PIN);
+    #endif
+    #if LASER_CONTROL == 2
+      if (LASER_INTENSITY_PIN == 2 || LASER_INTENSITY_PIN == 3 || LASER_INTENSITY_PIN == 5) timer3_init(LASER_INTENSITY_PIN);
+      if (LASER_INTENSITY_PIN == 6 || LASER_INTENSITY_PIN == 7 || LASER_INTENSITY_PIN == 8) timer4_init(LASER_INTENSITY_PIN);
+    #endif
+  #endif // LASER_PULSE_METHOD
 
   #ifdef LASER_PERIPHERALS
   digitalWrite(LASER_PERIPHERALS_PIN, HIGH);  // Laser peripherals are active LOW, so preset the pin
@@ -85,7 +182,7 @@ void laser_init()
   pinMode(LASER_FIRING_PIN, OUTPUT);
 
   // initialize state to some sane defaults
-  laser.intensity = 100.0;
+  laser.intensity = 50.0;
   laser.ppm = 0.0;
   laser.duration = 0;
   laser.status = LASER_OFF;
@@ -105,17 +202,37 @@ void laser_init()
     laser.peel_pause = 0.0;
   #endif // MUVE_Z_PEEL
   
-  laser_extinguish();
+  #if !ENABLED(LASER_PULSE_METHOD)
+  	 laser_extinguish();
+  #endif
 }
-void laser_fire(int intensity = 100.0){
+void laser_fire(float intensity = 100.0){
 	laser.firing = LASER_ON;
 	laser.last_firing = micros(); // microseconds of last laser firing
 	if (intensity > 100.0) intensity = 100.0; // restrict intensity between 0 and 100
 	if (intensity < 0) intensity = 0;
 
-    pinMode(LASER_FIRING_PIN, OUTPUT);
+  // In the case that the laserdriver need at least a certain level "LASER_REMAP_INTENSITY"
+  // to give anything, the intensity can be remapped to start at "LASER_REMAP_INTENSITY"
+  // At least some CO2-drivers need it, not sure about laserdiode drivers.
+  #if(ENABLED(LASER_REMAP_INTENSITY))
+    #if LASER_REMAP_INTENSITY != 0
+      #define OldRange (255.0 - 0.0);
+      #define NewRange = (255.0 - LASER_REMAP_INTENSITY);
+      intensity = intensity * NewRange / OldRange + LASER_REMAP_INTENSITY;
+	 #endif
+  #endif
+
+   #if (!ENABLED(LASER_PULSE_METHOD))
+     pinMode(LASER_FIRING_PIN, OUTPUT);
+   #endif
+
 	#if LASER_CONTROL == 1
-	  analogWrite(LASER_FIRING_PIN, labs((intensity / 100.0)*(F_CPU / LASER_PWM)));
+     #if ENABLED(LASER_PULSE_METHOD)
+       OCR3A = labs((intensity / 100.0)*(F_CPU / LASER_PWM / 2));
+     #else
+	    analogWrite(LASER_FIRING_PIN, labs((intensity / 100.0)*(F_CPU / LASER_PWM)));
+     #endif
     #endif
 	#if LASER_CONTROL == 2
       analogWrite(LASER_INTENSITY_PIN, labs((intensity / 100.0)*(F_CPU / LASER_PWM)));
@@ -129,9 +246,14 @@ void laser_fire(int intensity = 100.0){
 void laser_extinguish(){
 	if (laser.firing == LASER_ON) {
 	  laser.firing = LASER_OFF;
+     
+     #if ENABLED(LASER_PULSE_METHOD)
+       OCR3A = 0; // Zero duty cycle = OFF
+     #else
+       // Engage the pullup resistor for TTL laser controllers which don't turn off entirely without it.
+       digitalWrite(LASER_FIRING_PIN, LASER_UNARM);
+     #endif
 
-	  // Engage the pullup resistor for TTL laser controllers which don't turn off entirely without it.
-	  digitalWrite(LASER_FIRING_PIN, LASER_UNARM);
 	  laser.time += millis() - (laser.last_firing / 1000);
 
 	  if (laser.diagnostics) {

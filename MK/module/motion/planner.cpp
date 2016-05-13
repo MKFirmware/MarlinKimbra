@@ -891,29 +891,21 @@ float junction_deviation = 0.1;
     // Calculate steps between laser firings (steps_l) and consider that when determining largest
     // interval between steps for X, Y, Z, E, L to feed to the motion control code.
     if (laser.mode == RASTER || laser.mode == PULSED) {
-        block->steps_l = labs(block->millimeters*laser.ppm);
-       for (int i = 0; i < LASER_MAX_RASTER_LINE; i++) {
-
-            //Scale the image intensity based on the raster power.
-         //100% power on a pixel basis is 255, convert back to 255 = 100.
-
-         //http://stackoverflow.com/questions/929103/convert-a-number-range-to-another-range-maintaining-ratio
-         int OldRange, NewRange;
-         float NewValue;
-         OldRange = (255 - 0);
-         NewRange = (laser.rasterlaserpower - 7); //7% power on my unit outputs hardly any noticable burn at F3000 on paper, so adjust the raster contrast based off 7 being the lower. 7 still produces burns at slower feed rates, but getting less power than this isn't typically needed at slow feed rates.
-         NewValue = (float)(((((float)laser.raster_data[i] - 0) * NewRange) / OldRange) + 7);
-
-         //If less than 7%, turn off the laser tube.
-         if(NewValue == 7)
-            NewValue = 0;
-
-            block->laser_raster_data[i] = NewValue;
-        }
+       #if ENABLED(LASER_PULSE_METHOD)
+         // Optimizing. Move calculations here rather than in stepper isr
+         static const float Factor = F_CPU/(LASER_PWM*2*100.0*255.0); 
+         block->laser_raster_intensity_factor = laser.intensity * Factor;
+       #endif
+       block->steps_l = labs(block->millimeters*laser.ppm);
+       if (laser.mode == RASTER) {
+         for (int i = 0; i < LASER_MAX_RASTER_LINE; i++) {
+            block->laser_raster_data[i] = laser.raster_data[i];
+         }
+       }
     } else {
         block->steps_l = 0;
     }
-    // NEXTIME
+    
     block->step_event_count = max(block->steps[X_AXIS], max(block->steps[Y_AXIS], max(block->steps[Z_AXIS], max(block->steps[E_AXIS], block->steps_l))));
 
     if (laser.diagnostics) {

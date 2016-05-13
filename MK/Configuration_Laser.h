@@ -14,6 +14,17 @@
 // mUVe, buildlog.net and K40 chinese machines uses 2, AMRI ablative uses 1, AMRI SLS uses 2
 #define LASER_CONTROL 2
 
+/// The following define to use the new HakanBasted laser_pulse method to fire laser. It should be more efficient, but it's less tested.
+// Thanks for it to HakanBastedt that has implemented it for Marlin at https://github.com/HakanBastedt/Marlin
+// Uncomment to enable it *USE AT YOUR OWN RISK*, it should work but it's *NOT WELL TESTED YET*
+//#define LASER_PULSE_METHOD
+
+//// In the case that the laserdriver need at least a certain level "LASER_REMAP_INTENSITY"
+// to give anything, the intensity can be remapped to start at "LASER_REMAP_INTENSITY"
+// At least some CO2-drivers need it, not sure about laserdiode drivers.
+#define LASER_REMAP_INTENSITY 7
+
+
 // Uncomment the following if your laser firing pin (not the PWM pin) for two pin control requires a HIGH signal to fire rather than a low (eg Red Sail M300 RS 3040)
 /// #define HIGH_TO_FIRE
 

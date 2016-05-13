@@ -429,7 +429,7 @@ ISR(TIMER1_COMPA_vect) {
     return;
   }
 
-  #if ENABLED(LASER)
+  #if ENABLED(LASER) && (!ENABLED(LASER_PULSE_METHOD))
     if (laser.dur != 0 && (laser.last_firing + laser.dur < micros())) {
       if (laser.diagnostics) ECHO_LM(INFO,"Laser firing duration elapsed, in interrupt handler");
      laser_extinguish();
@@ -448,7 +448,9 @@ ISR(TIMER1_COMPA_vect) {
       counter_X = counter_Y = counter_Z = counter_E = -(current_block->step_event_count >> 1);
       #if ENABLED(LASER)
          counter_L = counter_X;
-         laser.dur = current_block->laser_duration;
+         #if !ENABLED(LASER_PULSE_METHOD)
+           laser.dur = current_block->laser_duration;
+         #endif
       #endif
 
       #if ENABLED(COLOR_MIXING_EXTRUDER)
@@ -496,10 +498,12 @@ ISR(TIMER1_COMPA_vect) {
       if (current_block->laser_mode == CONTINUOUS && current_block->laser_status == LASER_ON) {
          laser_fire(current_block->laser_intensity);
       }
+      #if !ENABLED(LASER_PULSE_METHOD)
       if (current_block->laser_status == LASER_OFF) {
          if (laser.diagnostics) ECHO_LM(INFO,"Laser status set to off, in interrupt handler");
          laser_extinguish();
       }
+      #endif
     #endif
 
     // Take multiple steps per interrupt (For high speed moves)
@@ -600,7 +604,13 @@ ISR(TIMER1_COMPA_vect) {
         counter_L += current_block->steps_l;
         if (counter_L > 0) {
           if (current_block->laser_mode == PULSED && current_block->laser_status == LASER_ON) { // Pulsed Firing Mode
-            laser_fire(current_block->laser_intensity);
+            #if ENABLED(LASER_PULSE_METHOD)
+              uint32_t ulValue = current_block->laser_raster_intensity_factor * 255;
+              laser_pulse(ulValue, current_block->laser_duration);
+              laser.time += current_block->laser_duration/1000; 
+            #else
+              laser_fire(current_block->laser_intensity);
+            #endif
             if (laser.diagnostics) {
               ECHO_MV("X: ", counter_X);
               ECHO_MV("Y: ", counter_Y);
@@ -609,9 +619,17 @@ ISR(TIMER1_COMPA_vect) {
           }
           #if ENABLED(LASER_RASTER)
             if (current_block->laser_mode == RASTER && current_block->laser_status == LASER_ON) { // Raster Firing Mode
-              // For some reason, when comparing raster power to ppm line burns the rasters were around 2% more powerful
-              // going from darkened paper to burning through paper.
-              laser_fire(current_block->laser_raster_data[counter_raster]); 
+              #if ENABLED(LASER_PULSE_METHOD)
+                uint32_t ulValue = current_block->laser_raster_intensity_factor * 
+                                   current_block->laser_raster_data[counter_raster];
+                laser_pulse(ulValue, current_block->laser_duration);
+                counter_raster++;
+                laser.time += current_block->laser_duration/1000; 
+              #else
+                // For some reason, when comparing raster power to ppm line burns the rasters were around 2% more powerful
+                // going from darkened paper to burning through paper.
+                laser_fire(current_block->laser_raster_data[counter_raster]); 
+              #endif
               if (laser.diagnostics) {
                 ECHO_MV("Pixel: ", (float)current_block->laser_raster_data[counter_raster]);
               }
@@ -620,10 +638,12 @@ ISR(TIMER1_COMPA_vect) {
           #endif // LASER_RASTER
           counter_L -= current_block->step_event_count;
         }
+        #if !ENABLED(LASER_PULSE_METHOD)
         if (current_block->laser_duration != 0 && (laser.last_firing + current_block->laser_duration < micros())) {
           if (laser.diagnostics) ECHO_LM(INFO, "Laser firing duration elapsed, in interrupt fast loop");
           laser_extinguish();
         }
+        #endif
       #endif // LASER
 
 
@@ -734,6 +754,11 @@ ISR(TIMER1_COMPA_vect) {
     if (step_events_completed >= current_block->step_event_count) {
       current_block = NULL;
       plan_discard_current_block();
+      #if ENABLED(LASER) && ENABLED(LASER_PULSE_METHOD)
+        if (current_block->laser_mode == CONTINUOUS && current_block->laser_status == LASER_ON) {
+          laser_extinguish();
+        }
+      #endif
     }
   }
 }
