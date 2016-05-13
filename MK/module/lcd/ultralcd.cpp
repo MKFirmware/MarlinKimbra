@@ -735,6 +735,16 @@ static void lcd_tune_fixstep() {
 #endif
 #endif // !THERMAL_PROTECTION_HOTENDS
 
+#if ENABLED(THERMAL_PROTECTION_BED)
+  #if TEMP_SENSOR_BED != 0
+    void watch_temp_callback_bed() { start_watching_bed(); }
+  #endif
+#else
+  #if TEMP_SENSOR_BED != 0
+    void watch_temp_callback_bed() {}
+  #endif
+#endif
+
 /**
 *
 * "Tune" submenu
@@ -760,38 +770,12 @@ MENU_ITEM_EDIT(int3, MSG_SPEED, &feedrate_multiplier, 10, 999);
  MENU_ITEM_EDIT(int3, MSG_NOZZLE, &target_temperature_cooler, 0, COOLER_MAXTEMP - 15);
 #endif
 
-//
-// Nozzle:
-//
-#if HOTENDS == 1
- #if TEMP_SENSOR_0 != 0
-   MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE, &target_temperature[0], 0, HEATER_0_MAXTEMP - 15, watch_temp_callback_E0);
- #endif
-#else // HOTENDS > 1
- #if TEMP_SENSOR_0 != 0
-   MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE " 0", &target_temperature[0], 0, HEATER_0_MAXTEMP - 15, watch_temp_callback_E0);
- #endif
- #if TEMP_SENSOR_1 != 0
-   MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE " 1", &target_temperature[1], 0, HEATER_1_MAXTEMP - 15, watch_temp_callback_E1);
- #endif
- #if HOTENDS > 2
-   #if TEMP_SENSOR_2 != 0
-     MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE " 2", &target_temperature[2], 0, HEATER_2_MAXTEMP - 15, watch_temp_callback_E2);
-   #endif
-   #if HOTENDS > 3
-     #if TEMP_SENSOR_3 != 0
-       MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE " 3", &target_temperature[3], 0, HEATER_3_MAXTEMP - 15, watch_temp_callback_E3);
-     #endif
-   #endif // HOTENDS > 3
- #endif // HOTENDS > 2
-#endif // HOTENDS > 1
-
-//
-// Bed:
-//
-#if TEMP_SENSOR_BED != 0
- MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP - 15);
-#endif
+  //
+  // Bed:
+  //
+  #if TEMP_SENSOR_BED != 0
+    MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP - 15, watch_temp_callback_bed);
+  #endif
 
 //
 // Fan Speed:
@@ -868,6 +852,11 @@ static void lcd_easy_unload() {
 }
 #endif // EASY_LOAD
 
+/**
+ *
+ * "Prepare" submenu items
+ *
+ */
 void _lcd_preheat(int endnum, const float temph, const float tempb, const int fan) {
 if (temph > 0) setTargetHotend(temph, endnum);
 #if TEMP_SENSOR_BED != 0
@@ -1011,48 +1000,53 @@ lcd_return_to_status();
 */
 
 static void lcd_prepare_menu() {
-START_MENU();
+  START_MENU();
 
-//
-// ^ Main
-//
-MENU_ITEM(back, MSG_MAIN);
+  //
+  // ^ Main
+  //
+  MENU_ITEM(back, MSG_MAIN);
 
-//
-// Auto Home
-//
-#if ENABLED(LASER)
- MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28 X Y F2000"));
-#else
- MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
-#endif
+  //
+  // Auto Home
+  //
+  #if ENABLED(LASER)
+    MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28 X Y F2000"));
+  # else
+    MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
+    #if !MECH(DELTA)
+      MENU_ITEM(gcode, MSG_AUTO_HOME_X, PSTR("G28 X"));
+      MENU_ITEM(gcode, MSG_AUTO_HOME_Y, PSTR("G28 Y"));
+      MENU_ITEM(gcode, MSG_AUTO_HOME_Z, PSTR("G28 Z"));
+    #endif
+  #endif
 
-//
-// Set Home Offsets
-//
-MENU_ITEM(function, MSG_SET_HOME_OFFSETS, lcd_set_home_offsets);
-//MENU_ITEM(gcode, MSG_SET_ORIGIN, PSTR("G92 X0 Y0 Z0"));
+  //
+  // Set Home Offsets
+  //
+  MENU_ITEM(function, MSG_SET_HOME_OFFSETS, lcd_set_home_offsets);
+  //MENU_ITEM(gcode, MSG_SET_ORIGIN, PSTR("G92 X0 Y0 Z0"));
 
-//
-// Level Bed
-//
-#if ENABLED(AUTO_BED_LEVELING_FEATURE)
- MENU_ITEM(gcode, MSG_LEVEL_BED,
-   axis_homed[X_AXIS] && axis_homed[Y_AXIS] ? PSTR("G29") : PSTR("G28\nG29")
- );
-#elif !MECH(DELTA) && DISABLED(Z_SAFE_HOMING) && Z_HOME_DIR < 0
- MENU_ITEM(submenu, MSG_MBL_SETTING, config_lcd_level_bed);
-#endif
+  //
+  // Level Bed
+  //
+  #if ENABLED(AUTO_BED_LEVELING_FEATURE)
+    MENU_ITEM(gcode, MSG_LEVEL_BED,
+      axis_homed[X_AXIS] && axis_homed[Y_AXIS] ? PSTR("G29") : PSTR("G28\nG29")
+    );
+  #elif !MECH(DELTA) && DISABLED(Z_SAFE_HOMING) && Z_HOME_DIR < 0
+    MENU_ITEM(submenu, MSG_MBL_SETTING, config_lcd_level_bed);
+  #endif
 
-//
-// Move Axis
-//
-MENU_ITEM(submenu, MSG_MOVE_AXIS, lcd_move_menu);
+  //
+  // Move Axis
+  //
+  MENU_ITEM(submenu, MSG_MOVE_AXIS, lcd_move_menu);
 
-//
-// Disable Steppers
-//
-MENU_ITEM(gcode, MSG_DISABLE_STEPPERS, PSTR("M84"));
+  //
+  // Disable Steppers
+  //
+  MENU_ITEM(gcode, MSG_DISABLE_STEPPERS, PSTR("M84"));
 
 //
 // Preheat PLA

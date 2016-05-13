@@ -1,6 +1,6 @@
 <img align="right" src="Documentation/Logo/MarlinKimbra%20Logo%20GitHub.png" />
 # MarlinKimbra 3D Printer Firmware for Arduino
-## Version 4.2.81 dev
+## Version 4.2.82 dev
 
 ### Special thanks
 * all Marlin8bit-developers.
