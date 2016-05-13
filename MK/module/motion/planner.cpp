@@ -899,7 +899,21 @@ float junction_deviation = 0.1;
        block->steps_l = labs(block->millimeters*laser.ppm);
        if (laser.mode == RASTER) {
          for (int i = 0; i < LASER_MAX_RASTER_LINE; i++) {
-            block->laser_raster_data[i] = laser.raster_data[i];
+           #if (!ENABLED(LASER_PULSE_METHOD))
+             float OldRange, NewRange;
+             float NewValue;
+             OldRange = (255.0 - 0.0);
+             NewRange = (laser.rasterlaserpower - LASER_REMAP_INTENSITY); 
+             NewValue = (float)(((((float)laser.raster_data[i] - 0) * NewRange) / OldRange) + LASER_REMAP_INTENSITY);
+
+             //If less than 7%, turn off the laser tube.
+             if(NewValue == LASER_REMAP_INTENSITY)
+               NewValue = 0;
+
+             block->laser_raster_data[i] = NewValue;
+           #else
+             block->laser_raster_data[i] = laser.raster_data[i];
+           #endif
          }
        }
     } else {

@@ -218,7 +218,8 @@ void laser_fire(float intensity = 100.0){
   // In the case that the laserdriver need at least a certain level "LASER_REMAP_INTENSITY"
   // to give anything, the intensity can be remapped to start at "LASER_REMAP_INTENSITY"
   // At least some CO2-drivers need it, not sure about laserdiode drivers.
-  #if(ENABLED(LASER_REMAP_INTENSITY))
+
+  #if(ENABLED(LASER_REMAP_INTENSITY) && ENABLED(LASER_PULSE_METHOD))
     #if LASER_REMAP_INTENSITY != 0
       float OldRange, NewRange;
       OldRange = (255.0 - 0.0);

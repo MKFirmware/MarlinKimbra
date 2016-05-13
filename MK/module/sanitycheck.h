@@ -1829,6 +1829,9 @@
   #endif
 
   #if ENABLED(LASER) 
+    #if (!ENABLED(LASER_REMAP_INTENSITY) && ENABLED(LASER_RASTER))
+      #error DEPENDENCY ERROR: You have to set LASER_REMAP_INTENSITY with LASER_RASTER enabled
+    #endif
     #if (!ENABLED(LASER_CONTROL) || ((LASER_CONTROL > 0) && (LASER_CONTROL < 2)))
        #error DEPENDENCY ERROR: You have to set LASER_CONTROL to 1 or 2
     #else
