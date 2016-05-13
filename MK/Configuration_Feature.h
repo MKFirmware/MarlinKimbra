@@ -115,6 +115,7 @@
  ***********************************************************************/
 //#define HOTEND_WATTS (12.0*12.0/6.7)  //  P=I^2/R
 //#define BED_WATTS (12.0*12.0/1.1)     // P=I^2/R
+//#define COOLER_WATTS 52               // Commonly available TEC wattage
 /***********************************************************************/
 
 
@@ -1060,6 +1061,28 @@
 #define ENDSTOPPULLUP_FIL_RUNOUT      // Uncomment to use internal pullup for filament runout pins if the sensor is defined.
 #define FILAMENT_RUNOUT_SCRIPT "M600" // Script execute when filament run out
 /**********************************************************************************/
+
+
+/**************************************************************************
+ ****************************** Flow sensor *******************************
+ **************************************************************************
+ *                                                                        *
+ * Flow sensors for water circulators, usefull in case of coolers using   *
+ * water or other liquid as heat vector                                   *
+ *                                                                        *
+ * Uncomment FLOWMETER_SENSOR to enable this feature                      *
+ * You also need to set FLOWMETER_PIN in Configurations_pins.h            *
+ *                                                                        *
+ **************************************************************************/
+ //#define FLOMETER_SENSOR
+ 
+#define FLOWMETER_MAXFLOW  6.0      // Liters per minute max
+#define FLOWMETER_MAXFREQ  55       // frequency of pulses at max flow
+
+
+// uncomment this to kill print job under the min flow rate, in liters/minute
+//#define MINFLOW_PROTECTION 4      
+
 
 
 /**************************************************************************

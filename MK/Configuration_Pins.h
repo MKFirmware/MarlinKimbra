@@ -140,6 +140,10 @@
   #define FILWIDTH_PIN -1
 #endif
 
+#if ENABLED(FLOWMETER_SENSOR)
+  #define FLOWMETER_PIN -1
+#endif
+
 #if ENABLED(POWER_CONSUMPTION)
   #define POWER_CONSUMPTION_PIN -1
 #endif

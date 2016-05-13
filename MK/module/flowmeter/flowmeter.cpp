@@ -1,3 +1,28 @@
+/*
+  flowmeter.cpp - Flowmeter control library for Arduino - Version 1
+  Copyright (c) 2016 Franco (nextime) Lanza.  All right reserved.
+
+  This library is free software; you can redistribute it and/or
+  modify it under the terms of the GNU Lesser General Public
+  License as published by the Free Software Foundation; either
+  version 3 of the License, or (at your option) any later version.
+
+  This library is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with this library; if not, write to the Free Software
+  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+*/
+
+#include "../../base.h"
+#include <Arduino.h>
+
+
+#if ENABLED(FLOWMETER_SENSOR)
+
 volatile byte flowrate_pulsecount;  
 float flowrate;
 unsigned int flowml;
@@ -24,7 +49,7 @@ void flowrate_manage() {
       flowml = (flowrate / 60) * 1000;
 
       pulseCount = 0;
-      attachInterrupt(FLOWMETER_INTERRUPT, flowrate_pulsecounter,, FALLING);
+      attachInterrupt(FLOWMETER_INTERRUPT, flowrate_pulsecounter, FALLING);
    }
 
 }
@@ -35,5 +60,5 @@ void flowrate_pulsecounter()
   flowrate_pulsecount++;
 }
 
-
+#endif // FLOWMETER_SENSOR
 
