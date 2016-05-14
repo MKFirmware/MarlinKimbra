@@ -4405,7 +4405,6 @@ inline void gcode_G28() {
       enqueue_and_echo_commands_P(PSTR(Z_PROBE_END_SCRIPT));
       st_synchronize();
     #endif
-
     KEEPALIVE_STATE(IN_HANDLER);
 
     if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< gcode_G29");
@@ -4901,10 +4900,11 @@ inline void gcode_G92() {
     laser_ttl_modulation = 0;
     #endif
     #if ENABLED(LASER) && ENABLED(LASER_FIRE_SPINDLE)
-      laser.status = LASER_OFF;
-      lcd_update();
-      prepare_move();
-      KEEPALIVE_STATE(NOT_BUSY);
+      if(laser.status != LASER_OFF) {
+        laser.status = LASER_OFF;
+        lcd_update();
+        prepare_move();
+      }
     #endif
   }
 #endif //LASERBEAM
@@ -6644,7 +6644,6 @@ inline void gcode_M226() {
     KEEPALIVE_STATE(NOT_BUSY); // don't send "busy: processing" messages during autotune output
 
     PID_autotune(temp, h, c, u);
-    
     KEEPALIVE_STATE(IN_HANDLER);
   }
 #endif
@@ -7348,7 +7347,6 @@ inline void gcode_M503() {
     #else
       #define RUNPLAN line_to_destination(FILAMENT_CHANGE_XY_FEEDRATE * 60);
     #endif
-
     KEEPALIVE_STATE(IN_HANDLER);
 
     // Initial retract before move to filament change position
@@ -7477,7 +7475,6 @@ inline void gcode_M503() {
     #endif
 
     lcd_filament_change_show_message(FILAMENT_CHANGE_MESSAGE_RESUME);
-
     KEEPALIVE_STATE(IN_HANDLER);
 
     // Set extruder to saved position
@@ -8154,7 +8151,6 @@ void process_next_command() {
 
   // The command's arguments (if any) start here, for sure!
   current_command_args = cmd_ptr;
-
   KEEPALIVE_STATE(IN_HANDLER);
 
   // Handle a known G, M, or T
