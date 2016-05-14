@@ -4904,6 +4904,7 @@ inline void gcode_G92() {
       laser.status = LASER_OFF;
       lcd_update();
       prepare_move();
+      KEEPALIVE_STATE(NOT_BUSY);
     #endif
   }
 #endif //LASERBEAM
