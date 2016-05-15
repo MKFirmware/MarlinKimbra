@@ -900,8 +900,7 @@ float junction_deviation = 0.1;
        if (laser.mode == RASTER) {
          for (int i = 0; i < LASER_MAX_RASTER_LINE; i++) {
            #if (!ENABLED(LASER_PULSE_METHOD))
-             float OldRange, NewRange;
-             float NewValue;
+             float OldRange, NewRange, NewValue;
              OldRange = (255.0 - 0.0);
              NewRange = (laser.rasterlaserpower - LASER_REMAP_INTENSITY); 
              NewValue = (float)(((((float)laser.raster_data[i] - 0) * NewRange) / OldRange) + LASER_REMAP_INTENSITY);

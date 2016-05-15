@@ -19,6 +19,9 @@
 // Uncomment to enable it *USE AT YOUR OWN RISK*, it should work but it's *NOT WELL TESTED YET*
 //#define LASER_PULSE_METHOD
 
+// If your machine has laser focuser, set this to true and it will use Z axis for focus or disable it.
+#define LASER_HAS_FOCUS false
+
 //// In the case that the laserdriver need at least a certain level "LASER_REMAP_INTENSITY"
 // to give anything, the intensity can be remapped to start at "LASER_REMAP_INTENSITY"
 // At least some CO2-drivers need it, not sure about laserdiode drivers.

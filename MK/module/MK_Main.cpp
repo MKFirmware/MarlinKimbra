@@ -1667,6 +1667,10 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       #endif
       home_dir(axis);
 
+      #if ENABLED(LASER) && (LASER_HAS_FOCUS == false)
+        if (axis == Z_AXIS) goto AvoidLaserFocus;
+      #endif
+
       // Set the axis position as setup for the move
       current_position[axis] = 0;
 
@@ -1792,6 +1796,9 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
         #endif
       }
     }
+#if ENABLED(LASER) && (LASER_HAS_FOCUS == false)
+AvoidLaserFocus:
+#endif
     if (DEBUGGING(INFO)) {
       ECHO_SMV(INFO, "<<< homeaxis(", (unsigned long)axis);
       ECHO_EM(")");
@@ -8695,24 +8702,28 @@ void clamp_to_software_endstops(float target[3]) {
   if (SOFTWARE_MIN_ENDSTOPS && software_endstops) {
     NOLESS(target[X_AXIS], sw_endstop_min[X_AXIS]);
     NOLESS(target[Y_AXIS], sw_endstop_min[Y_AXIS]);
-    
-    float negative_z_offset = 0;
-    #if ENABLED(AUTO_BED_LEVELING_FEATURE)
-      if (zprobe_zoffset < 0) negative_z_offset += zprobe_zoffset;
-      if (home_offset[Z_AXIS] < 0) {
-        if (DEBUGGING(INFO))
-          ECHO_LMV(INFO, "> clamp_to_software_endstops > Add home_offset[Z_AXIS]:", home_offset[Z_AXIS]);
-        negative_z_offset += home_offset[Z_AXIS];
-      }
+    #if !ENABLED(LASER)
+      float negative_z_offset = 0;
+      #if ENABLED(AUTO_BED_LEVELING_FEATURE)
+        if (zprobe_zoffset < 0) negative_z_offset += zprobe_zoffset;
+        if (home_offset[Z_AXIS] < 0) {
+          if (DEBUGGING(INFO))
+            ECHO_LMV(INFO, "> clamp_to_software_endstops > Add home_offset[Z_AXIS]:", home_offset[Z_AXIS]);
+          negative_z_offset += home_offset[Z_AXIS];
+        }
+      #endif
+      NOLESS(target[Z_AXIS], sw_endstop_min[Z_AXIS] + negative_z_offset);
     #endif
-    NOLESS(target[Z_AXIS], sw_endstop_min[Z_AXIS] + negative_z_offset);
   }
 
   if (SOFTWARE_MAX_ENDSTOPS && software_endstops) {
     NOMORE(target[X_AXIS], sw_endstop_max[X_AXIS]);
     NOMORE(target[Y_AXIS], sw_endstop_max[Y_AXIS]);
-    NOMORE(target[Z_AXIS], sw_endstop_max[Z_AXIS]);
+    #if !ENABLED(LASER)
+      NOMORE(target[Z_AXIS], sw_endstop_max[Z_AXIS]);
+    #endif
   }
+
 }
 
 /**

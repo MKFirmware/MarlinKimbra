@@ -231,6 +231,8 @@
 #define SERIAL_BED_LEVELLING_Y                  " Y: "
 #define SERIAL_BED_LEVELLING_Z                  " Z: "
 
+#define MSG_COOLER                              "Cooler"
+
 // LCD Menu Messages
 
 #define LANGUAGE_INCL_(M) STRINGIFY_(language_##M.h)

@@ -1847,6 +1847,10 @@
     #endif
   #endif
 
+  #if DISABLED(LASER_HAS_FOCUS)
+    #error DEPENDENCY ERROR: Missing LASER_HAS_FOCUS setting
+  #endif
+
   #if ENABLED(FILAMENT_RUNOUT_SENSOR) && !PIN_EXISTS(FILRUNOUT)
     #error DEPENDENCY ERROR: You have to set FILRUNOUT_PIN to a valid pin if you enable FILAMENT_RUNOUT_SENSOR
   #endif

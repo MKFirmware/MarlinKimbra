@@ -767,7 +767,7 @@ MENU_ITEM_EDIT(int3, MSG_SPEED, &feedrate_multiplier, 10, 999);
 // Laser:
 //
 #if ENABLED(LASER) && ENABLED(COOLER)
- MENU_ITEM_EDIT(int3, MSG_NOZZLE, &target_temperature_cooler, 0, COOLER_MAXTEMP - 15);
+ MENU_ITEM_EDIT(int3, MSG_COOLER, &target_temperature_cooler, 0, COOLER_MAXTEMP - 15);
 #endif
 
   //
