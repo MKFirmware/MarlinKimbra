@@ -1365,9 +1365,9 @@ void disable_all_heaters() {
     #define MAX6675_DISCARD_BITS 3
   #endif
 
-  int Temperature::read_max6675() {
+  static millis_t next_max6675_ms = 0;
 
-    static millis_t next_max6675_ms = 0;
+  static int read_max6675() {
 
     millis_t ms = millis();
 
