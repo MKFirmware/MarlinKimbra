@@ -630,9 +630,7 @@ ISR(TIMER1_COMPA_vect) {
                 // going from darkened paper to burning through paper.
                 laser_fire(current_block->laser_raster_data[counter_raster]); 
               #endif
-              if (laser.diagnostics) {
-                ECHO_MV("Pixel: ", (float)current_block->laser_raster_data[counter_raster]);
-              }
+              if (laser.diagnostics) ECHO_EMV("Pixel: ", (float)current_block->laser_raster_data[counter_raster]);
               counter_raster++;
             }
           #endif // LASER_RASTER
@@ -640,12 +638,27 @@ ISR(TIMER1_COMPA_vect) {
         }
         #if !ENABLED(LASER_PULSE_METHOD)
         if (current_block->laser_duration != 0 && (laser.last_firing + current_block->laser_duration < micros())) {
-          if (laser.diagnostics) ECHO_LM(INFO, "Laser firing duration elapsed, in interrupt fast loop");
+          if (laser.diagnostics) {
+            ECHO_MV("X: ", counter_X);
+            ECHO_MV(", Y: ", counter_Y);
+            ECHO_MV(", L: ", counter_L);
+            ECHO_MV(", Z: ", counter_L);
+            ECHO_MV(", E: ", counter_E);
+            ECHO_MV(", steps done: ",step_events_completed);
+            ECHO_MV(", event count: ", current_block->step_event_count);
+            ECHO_EM(", <--------------------");
+            ECHO_LM(INFO, "Laser firing duration elapsed, in interrupt fast loop ");
+			 }
           laser_extinguish();
         }
         #endif
       #endif // LASER
 
+      // safe check for erroneous calculated events count
+      if(current_block->step_event_count >= MAX_EVENTS_COUNT) {
+         kill_current_block();
+         break;
+      }
 
       step_events_completed++;
       if (step_events_completed >= current_block->step_event_count) break;

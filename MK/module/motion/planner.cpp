@@ -896,7 +896,7 @@ float junction_deviation = 0.1;
          static const float Factor = F_CPU/(LASER_PWM*2*100.0*255.0); 
          block->laser_raster_intensity_factor = laser.intensity * Factor;
        #endif
-       block->steps_l = labs(block->millimeters*laser.ppm);
+       block->steps_l = (unsigned long)labs(block->millimeters*laser.ppm);
        if (laser.mode == RASTER) {
          for (int i = 0; i < LASER_MAX_RASTER_LINE; i++) {
            #if (!ENABLED(LASER_PULSE_METHOD))

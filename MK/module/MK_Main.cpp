@@ -4909,8 +4909,11 @@ inline void gcode_G92() {
     #if ENABLED(LASER) && ENABLED(LASER_FIRE_SPINDLE)
       if(laser.status != LASER_OFF) {
         laser.status = LASER_OFF;
+        laser.mode = CONTINUOUS;
+        laser.duration = 0;
         lcd_update();
         prepare_move();
+        if(laser.diagnostics) ECHO_LM(INFO, "Laser M5 called and laser ON");
       }
     #endif
   }
@@ -7555,13 +7558,17 @@ inline void gcode_M503() {
 #if ENABLED(LASER)
   // M649 set laser options
   inline void gcode_M649() {
+    // do this at the start so we can debug if needed!
+    if (code_seen('D') && IsRunning()) laser.diagnostics = (bool) code_value();
+    
+    // Wait for the rest 
+    //st_synchronize();
     if (code_seen('S') && IsRunning()) {
       laser.intensity = (float) code_value();
       laser.rasterlaserpower =  laser.intensity;
     }
     if (code_seen('L') && IsRunning()) laser.duration = (unsigned long) labs(code_value());
     if (code_seen('P') && IsRunning()) laser.ppm = (float) code_value();
-    if (code_seen('D') && IsRunning()) laser.diagnostics = (bool) code_value();
     if (code_seen('B') && IsRunning()) laser_set_mode((int) code_value());
     if (code_seen('R') && IsRunning()) laser.raster_mm_per_pulse = ((float) code_value());
     if (code_seen('F')) {
