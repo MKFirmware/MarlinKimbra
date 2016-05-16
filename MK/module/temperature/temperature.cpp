@@ -497,7 +497,7 @@ void autotempShutdown() {
               PID_PARAM(Kp, temp_controller) = workKp;
               PID_PARAM(Ki, temp_controller) = scalePID_i(workKi);
               PID_PARAM(Kd, temp_controller) = scalePID_d(workKd);
-              //updatePID();
+              updatePID();
             }
           }
         #endif
@@ -510,7 +510,7 @@ void autotempShutdown() {
               bedKp = workKp;
               bedKi = scalePID_i(workKi);
               bedKd = scalePID_d(workKd);
-              //updatePID();
+              updatePID();
             }
           }
         #endif
@@ -523,7 +523,7 @@ void autotempShutdown() {
               coolerKp = workKp;
               coolerKi = scalePID_i(workKi);
               coolerKd = scalePID_d(workKd);
-              //updatePID();
+              updatePID();
             }
           }
         #endif
