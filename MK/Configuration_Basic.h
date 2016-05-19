@@ -55,10 +55,13 @@
 // Uncomment to include more info in ok command
 //#define ADVANCED_OK
 
-// By default MarlinKimbra will send a busy status message to the host
+//
+// Host Keepalive
+//
+// When enabled MarlinKimbra will send a busy status message to the host
 // every couple of seconds when it can't accept commands.
-// Enable this option if your host doesn't like keepalive messages.
-//#define DISABLE_HOST_KEEPALIVE
+#define HOST_KEEPALIVE_FEATURE        // Disable this if your host doesn't like keepalive messages
+#define DEFAULT_KEEPALIVE_INTERVAL 2  // Number of seconds between "busy" messages. Set with M113.
 /***********************************************************************/
 
 

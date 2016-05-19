@@ -585,8 +585,10 @@ bool enqueue_and_echo_command(const char* cmd, bool say_ok/*=false*/) {
     #if HAS(DONDOLO)
       servo[DONDOLO_SERVO_INDEX].attach(0);
   		servo[DONDOLO_SERVO_INDEX].write(DONDOLO_SERVOPOS_E0);
-  		delay_ms(DONDOLO_SERVO_DELAY);
-      servo[DONDOLO_SERVO_INDEX].detach();
+      #if (DONDOLO_SERVO_DELAY > 0)
+        delay_ms(DONDOLO_SERVO_DELAY);
+        servo[DONDOLO_SERVO_INDEX].detach();
+      #endif
   	#endif
 
     // Set position of Servo Endstops that are defined
@@ -3632,8 +3634,10 @@ inline void gcode_G28() {
       #elif ENABLED(Z_SAFE_HOMING)
         if (home_all_axis || homeZ) {
 
+          if (DEBUGGING(INFO)) ECHO_LM(INFO, "> Z_SAFE_HOMING >>>");
+
           // Let's see if X and Y are homed
-          if (axis_was_homed & (_BV(X_AXIS)|_BV(Y_AXIS)) == (_BV(X_AXIS)|_BV(Y_AXIS))) {
+          if (axis_homed[X_AXIS] && axis_homed[Y_AXIS]) {
             current_position[Z_AXIS] = 0;
             sync_plan_position();
 
@@ -3643,7 +3647,6 @@ inline void gcode_G28() {
             feedrate = xy_travel_speed;
 
             if (DEBUGGING(INFO)) {
-              ECHO_SMV(INFO, "Raise Z (before homing) by ", (float)Z_RAISE_BEFORE_HOMING);
               DEBUG_POS(" > home_all_axis", current_position);
               DEBUG_POS(" > home_all_axis", destination);
             }
@@ -6148,8 +6151,10 @@ inline void gcode_M226() {
           Servo *srv = &servo[servo_index];
           srv->attach(0);
           srv->write(servo_position);
-          delay_ms(DONDOLO_SERVO_DELAY);
-          srv->detach();
+          #if (DONDOLO_SERVO_DELAY > 0)
+            delay_ms(DONDOLO_SERVO_DELAY);
+            srv->detach();
+          #endif
         }
         else {
           ECHO_SM(ER, "Servo ");
@@ -7601,8 +7606,10 @@ inline void gcode_T(uint8_t tmp_extruder) {
               else if (target_extruder == 1) {
                 servo[DONDOLO_SERVO_INDEX].write(DONDOLO_SERVOPOS_E1);
               }
-              delay_ms(DONDOLO_SERVO_DELAY);
-              servo[DONDOLO_SERVO_INDEX].detach();
+              #if (DONDOLO_SERVO_DELAY > 0)
+                delay_ms(DONDOLO_SERVO_DELAY);
+                servo[DONDOLO_SERVO_INDEX].detach();
+              #endif
               previous_extruder = active_extruder;
               #if ENABLED(DONDOLO_SINGLE_MOTOR)
                 active_extruder = target_extruder;
