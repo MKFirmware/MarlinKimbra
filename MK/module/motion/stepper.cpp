@@ -1245,13 +1245,19 @@ void digipot_init() {
   #endif
 
   #if MB(ALLIGATOR)
-    unsigned int digipot_motor = 0;
+    set_driver_current();
+  #endif // MB(ALLIGATOR)
+}
+
+#if MB(ALLIGATOR)
+  void set_driver_current() {
+    uint8_t digipot_motor = 0;
     for (uint8_t i = 0; i < 3 + DRIVER_EXTRUDERS; i++) {
       digipot_motor = 255 * motor_current[i] / 3.3;
       ExternalDac::setValue(i, digipot_motor);
     }
-  #endif//MB(ALLIGATOR)
-}
+  }
+#endif
 
 void digipot_current(uint8_t driver, int current) {
   #if HAS(DIGIPOTSS)

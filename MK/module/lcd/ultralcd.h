@@ -12,11 +12,11 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -30,7 +30,7 @@
 
   #define BUTTON_EXISTS(BN) (defined(BTN_## BN) && BTN_## BN >= 0)
   #define BUTTON_PRESSED(BN) !READ(BTN_## BN)
-  
+
   int lcd_strlen(const char* s);
   int lcd_strlen_P(const char* s);
   void lcd_update();
@@ -106,6 +106,7 @@
   bool lcd_blink();
 
   #if ENABLED(ULTIPANEL) && ENABLED(REPRAPWORLD_KEYPAD)
+
     #define REPRAPWORLD_BTN_OFFSET 0 // bit offset into buttons for shift register values
 
     #define BLEN_REPRAPWORLD_KEYPAD_F3     0
@@ -133,6 +134,7 @@
     #define REPRAPWORLD_KEYPAD_MOVE_HOME    (buttons_reprapworld_keypad & EN_REPRAPWORLD_KEYPAD_MIDDLE)
     #define REPRAPWORLD_KEYPAD_MOVE_Y_UP    (buttons_reprapworld_keypad & EN_REPRAPWORLD_KEYPAD_UP)
     #define REPRAPWORLD_KEYPAD_MOVE_X_LEFT  (buttons_reprapworld_keypad & EN_REPRAPWORLD_KEYPAD_LEFT)
+
   #endif // ULTIPANEL && REPRAPWORLD_KEYPAD
 
   #if ENABLED(NEWPANEL)

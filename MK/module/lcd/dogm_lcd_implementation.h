@@ -12,11 +12,11 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -39,7 +39,8 @@
 #define DOGM_LCD_IMPLEMENTATION_H
 
 /**
- * Implementation of the LCD display routines for a DOGM128 graphic display. These are common LCD 128x64 pixel graphic displays.
+ * Implementation of the LCD display routines for a DOGM128 graphic display.
+ * These are common LCD 128x64 pixel graphic displays.
  */
 
 #if ENABLED(ULTIPANEL)
@@ -140,6 +141,7 @@
 
 // LCD selection
 #if ENABLED(U8GLIB_ST7920)
+  //U8GLIB_ST7920_128X64_RRD u8g(0,0,0);
   U8GLIB_ST7920_128X64_RRD u8g(0);
 #elif ENABLED(MAKRPANEL)
   // The MaKrPanel display, ST7565 controller as well
@@ -171,7 +173,6 @@
 #include "utf_mapper.h"
 
 int lcd_contrast;
-static unsigned char blink = 0; // Variable for visualization of fan rotation in GLCD
 static char currentfont = 0;
 
 static void lcd_setFont(char font_nr) {
@@ -367,8 +368,16 @@ FORCE_INLINE void _draw_axis_label(AxisEnum axis, const char *pstr, bool blink) 
 static void lcd_implementation_status_screen() {
   u8g.setColorIndex(1); // black on white
 
+  bool blink = lcd_blink();
+
   // Symbols menu graphics, animated fan
-  u8g.drawBitmapP(9, 1, STATUS_SCREENBYTEWIDTH, STATUS_SCREENHEIGHT, (blink % 2) && fanSpeed ? status_screen0_bmp : status_screen1_bmp);
+  u8g.drawBitmapP(9, 1, STATUS_SCREENBYTEWIDTH, STATUS_SCREENHEIGHT,
+    #if HAS(FAN)
+      blink && fanSpeed ? status_screen0_bmp : status_screen1_bmp
+    #else
+      status_screen0_bmp
+    #endif
+  );
 
   // Status Menu Font for SD info, Heater status, Fan, XYZ
   lcd_setFont(FONT_STATUSMENU);
@@ -510,7 +519,7 @@ static void lcd_implementation_status_screen() {
       lcd_print(lcd_status_message);
     #if HAS(LCD_POWER_SENSOR)
       #if HAS(LCD_FILAMENT_SENSOR)
-        else if (millis() < previous_lcd_status_ms + 10000)
+        else if (PENDING(millis(), previous_lcd_status_ms + 10000UL))
       #else
         else
       #endif
@@ -605,7 +614,7 @@ static void _drawmenu_setting_edit_generic(bool isSelected, uint8_t row, const c
 #define lcd_implementation_drawmenu_setting_edit_callback_long5(sel, row, pstr, pstr2, data, minValue, maxValue, callback) lcd_implementation_drawmenu_setting_edit_generic(sel, row, pstr, ftostr5(*(data)))
 #define lcd_implementation_drawmenu_setting_edit_callback_bool(sel, row, pstr, pstr2, data, callback) lcd_implementation_drawmenu_setting_edit_generic_P(sel, row, pstr, (*(data))?PSTR(MSG_ON):PSTR(MSG_OFF))
 
-void lcd_implementation_drawedit(const char* pstr, char* value) {
+void lcd_implementation_drawedit(const char* pstr, const char* value=NULL) {
   uint8_t rows = 1;
   uint8_t lcd_width = LCD_WIDTH, char_width = DOG_CHAR_WIDTH;
   uint8_t vallen = lcd_strlen(value);

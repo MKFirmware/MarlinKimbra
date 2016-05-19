@@ -450,21 +450,15 @@ void Config_ResetDefault() {
   float tmp3[] = DEFAULT_MAX_ACCELERATION;
   float tmp4[] = DEFAULT_RETRACT_ACCELERATION;
   float tmp5[] = DEFAULT_EJERK;
-  #if ENABLED(PIDTEMP)
-    float tmp6[] = DEFAULT_Kp;
-    float tmp7[] = DEFAULT_Ki;
-    float tmp8[] = DEFAULT_Kd;
-    float tmp9[] = DEFAULT_Kc;
-  #endif // PIDTEMP
+  float tmp6[] = DEFAULT_Kp;
+  float tmp7[] = DEFAULT_Ki;
+  float tmp8[] = DEFAULT_Kd;
+  float tmp9[] = DEFAULT_Kc;
 
   #if ENABLED(HOTEND_OFFSET_X) && ENABLED(HOTEND_OFFSET_Y) && ENABLED(HOTEND_OFFSET_Z)
     float tmp10[] = HOTEND_OFFSET_X;
     float tmp11[] = HOTEND_OFFSET_Y;
     float tmp12[] = HOTEND_OFFSET_Z;
-  #else
-    float tmp10[] = {0};
-    float tmp11[] = {0};
-    float tmp12[] = {0};
   #endif
 
   #if MB(ALLIGATOR)
@@ -472,55 +466,30 @@ void Config_ResetDefault() {
   #endif
 
   for (int8_t i = 0; i < 3 + EXTRUDERS; i++) {
-    short max_i;
-    max_i = sizeof(tmp1) / sizeof(*tmp1);
-    if(i < max_i)
-      axis_steps_per_unit[i] = tmp1[i];
-    else
-      axis_steps_per_unit[i] = tmp1[max_i - 1];
-    max_i = sizeof(tmp2) / sizeof(*tmp2);
-    if(i < max_i)
-      max_feedrate[i] = tmp2[i];
-    else
-      max_feedrate[i] = tmp2[max_i - 1];
-    max_i = sizeof(tmp3) / sizeof(*tmp3);
-    if(i < max_i)
-      max_acceleration_units_per_sq_second[i] = tmp3[i];
-    else
-      max_acceleration_units_per_sq_second[i] = tmp3[max_i - 1];
-    if(i < EXTRUDERS) {
-      max_i = sizeof(tmp4) / sizeof(*tmp4);
-      if(i < max_i)
-        retract_acceleration[i] = tmp4[i];
-      else
-        retract_acceleration[i] = tmp4[max_i - 1];
-      max_i = sizeof(tmp5) / sizeof(*tmp5);
-      if(i < max_i)
-        max_e_jerk[i] = tmp5[i];
-      else
-        max_e_jerk[i] = tmp5[max_i - 1];
-      max_i = sizeof(tmp10) / sizeof(*tmp10);
-      if(i < max_i)
-        hotend_offset[X_AXIS][i] = tmp10[i];
-      else
-        hotend_offset[X_AXIS][i] = 0;
-      max_i = sizeof(tmp11) / sizeof(*tmp11);
-      if(i < max_i)
-        hotend_offset[Y_AXIS][i] = tmp11[i];
-      else
-        hotend_offset[Y_AXIS][i] = 0;
-      max_i = sizeof(tmp12) / sizeof(*tmp12);
-      if(i < max_i)
-        hotend_offset[Z_AXIS][i] = tmp12[i];
-      else
-        hotend_offset[Z_AXIS][i] = 0;
-    }
-    #if MB(ALLIGATOR)
-      max_i = sizeof(tmp13) / sizeof(*tmp13);
-      if(i < max_i)
-        motor_current[i] = tmp13[i];
-      else
-        motor_current[i] = tmp13[max_i - 1];
+    axis_steps_per_unit[i] = tmp1[i];
+    max_feedrate[i] = tmp2[i];
+    max_acceleration_units_per_sq_second[i] = tmp3[i];
+  }
+
+  for (int8_t i = 0; i < EXTRUDERS; i++) {
+    retract_acceleration[i] = tmp4[i];
+    max_e_jerk[i] = tmp5[i];
+  }
+
+  #if MB(ALLIGATOR)
+    for (int8_t i = 0; i < 3 + DRIVER_EXTRUDERS; i++)
+      motor_current[i] = tmp13[i];
+  #endif
+
+  for (int8_t i = 0; i < HOTENDS; i++) {
+    #if ENABLED(HOTEND_OFFSET_X) && ENABLED(HOTEND_OFFSET_Y) && ENABLED(HOTEND_OFFSET_Z)
+      hotend_offset[X_AXIS][i] = tmp10[i];
+      hotend_offset[Y_AXIS][i] = tmp11[i];
+      hotend_offset[Z_AXIS][i] = tmp12[i];
+    #else
+      hotend_offset[X_AXIS][i] = 0;
+      hotend_offset[Y_AXIS][i] = 0;
+      hotend_offset[Z_AXIS][i] = 0;
     #endif
   }
 
