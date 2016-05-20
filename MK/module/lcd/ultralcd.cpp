@@ -78,7 +78,7 @@ int gumPreheatFanSpeed;
 typedef void (*menuFunc_t)();
 
 uint8_t lcd_status_message_level;
-char lcd_status_message[3 * LCD_WIDTH + 1] = WELCOME_MSG; // worst case is kana with up to 3*LCD_WIDTH+1
+char lcd_status_message[3 * (LCD_WIDTH) + 1] = WELCOME_MSG; // worst case is kana with up to 3*LCD_WIDTH+1
 
 #if ENABLED(DOGLCD)
   #include "dogm_lcd_implementation.h"
@@ -149,7 +149,7 @@ static void lcd_status_screen();
     static void lcd_filament_change_resume_message();
   #endif 
 
-  #if HAS(LCD_CONTRAST)
+  #if ENABLED(HAS_LCD_CONTRAST)
     static void lcd_set_contrast();
   #endif
 
@@ -345,7 +345,7 @@ typedef struct {
   #endif
 } menuPosition;
 
-menuFunc_t currentMenu = lcd_status_screen; /* function pointer to the currently active menu */
+menuFunc_t currentMenu = lcd_status_screen; // pointer to the currently active menu handler
 
 menuPosition menu_history[10];
 uint8_t menu_history_depth = 0;
@@ -366,11 +366,11 @@ enum LCDViewAction {
 
 uint8_t lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW; // Set when the LCD needs to draw, decrements after every draw. Set to 2 in LCD routines so the LCD gets at least 1 full redraw (first redraw is partial)
 
-//Variables used when editing values.
+// Variables used when editing values.
 const char* editLabel;
 void* editValue;
 int32_t minEditValue, maxEditValue;
-menuFunc_t callbackFunc;
+menuFunc_t callbackFunc;              // call this after editing
 
 // place-holders for Ki and Kd edits
 float raw_Ki, raw_Kd;
@@ -392,7 +392,7 @@ static void lcd_goto_menu(menuFunc_t menu, const bool feedback = false, const ui
       menu_history_depth = 0;
     }
     #if ENABLED(LCD_PROGRESS_BAR)
-      // For LCD_PROGRESS_BAR re-initialize the custom characters
+      // For LCD_PROGRESS_BAR re-initialize custom characters
       lcd_set_custom_characters(menu == lcd_status_screen);
     #endif
   }
@@ -448,7 +448,7 @@ static void lcd_status_screen() {
           if (card.isFileOpen()) {
             // Expire the message when printing is active
             if (IS_SD_PRINTING) {
-              if (ms >= expire_status_ms) {
+              if (ELAPSED(ms, expire_status_ms)) {
                 lcd_status_message[0] = '\0';
                 expire_status_ms = 0;
               }
@@ -470,14 +470,14 @@ static void lcd_status_screen() {
   lcd_implementation_status_screen();
 
   #if HAS(LCD_POWER_SENSOR)
-    if (millis() > print_millis + 2000) print_millis = millis();
+    if (ELAPSED(millis(), print_millis + 2000UL)) print_millis = millis();
   #endif
 
   #if HAS(LCD_FILAMENT_SENSOR) || HAS(LCD_POWER_SENSOR)
     #if HAS(LCD_FILAMENT_SENSOR) && HAS(LCD_POWER_SENSOR)
-      if (millis() > previous_lcd_status_ms + 15000)
+      if (ELAPSED(millis(), previous_lcd_status_ms + 15000UL))
     #else
-      if (millis() > previous_lcd_status_ms + 10000)
+      if (ELAPSED(millis(), previous_lcd_status_ms + 10000UL))
     #endif
     {
       previous_lcd_status_ms = millis();
@@ -630,10 +630,10 @@ static void lcd_autostart_sd() {
 #endif
 
 /**
-*
-* "Tune" submenu items
-*
-*/
+ *
+ * "Tune" submenu items
+ *
+ */
 
 /**
 * Set the home offset based on the current_position
@@ -646,44 +646,44 @@ lcd_return_to_status();
 
 #if ENABLED(BABYSTEPPING)
 
-int babysteps_done = 0;
+  int babysteps_done = 0;
 
-static void _lcd_babystep(const int axis, const char* msg) {
- ENCODER_DIRECTION_NORMAL();
- if (encoderPosition) {
-   int distance = (int32_t)encoderPosition * BABYSTEP_MULTIPLICATOR;
-   encoderPosition = 0;
-   lcdDrawUpdate = LCDVIEW_REDRAW_NOW;
-   #if MECH(COREXY) || MECH(COREYX)|| MECH(COREXZ) || MECH(COREZX)
-     #if ENABLED(BABYSTEP_XY)
-       switch(axis) {
-         case X_AXIS: // X on CoreXY, Core YX, CoreXZ and CoreZZ
-           babystepsTodo[A_AXIS] += distance * 2;
-           babystepsTodo[CORE_AXIS_2] += distance * 2;
-           break;
-         case CORE_AXIS_2: // Y on CoreXY and CoreYX, Z on CoreXZ and CoreZX
-           babystepsTodo[A_AXIS] += distance * 2;
-           babystepsTodo[CORE_AXIS_2] -= distance * 2;
-           break;
-         case CORE_AXIS_3: // Z on CoreXY and CoreYX, Y on CoreXZ and CoreZX
-           babystepsTodo[CORE_AXIS_3] += distance;
-           break;
-       }
-     #elif MECH(COREXZ) || MECH(COREZX)
-       babystepsTodo[A_AXIS] += distance * 2;
-       babystepsTodo[C_AXIS] -= distance * 2;
-     #else
-       babystepsTodo[Z_AXIS] += distance;
-     #endif
-   #else
-     babystepsTodo[axis] += distance;
-   #endif
+  static void _lcd_babystep(const AxisEnum axis, const char* msg) {
+    ENCODER_DIRECTION_NORMAL();
+    if (encoderPosition) {
+      int distance = (int32_t)encoderPosition * BABYSTEP_MULTIPLICATOR;
+      encoderPosition = 0;
+      lcdDrawUpdate = LCDVIEW_REDRAW_NOW;
+      #if MECH(COREXY) || MECH(COREYX)|| MECH(COREXZ) || MECH(COREZX)
+        #if ENABLED(BABYSTEP_XY)
+          switch(axis) {
+            case X_AXIS: // X on CoreXY, Core YX, CoreXZ and CoreZZ
+              babystepsTodo[A_AXIS] += distance * 2;
+              babystepsTodo[CORE_AXIS_2] += distance * 2;
+              break;
+            case CORE_AXIS_2: // Y on CoreXY and CoreYX, Z on CoreXZ and CoreZX
+              babystepsTodo[A_AXIS] += distance * 2;
+              babystepsTodo[CORE_AXIS_2] -= distance * 2;
+              break;
+            case CORE_AXIS_3: // Z on CoreXY and CoreYX, Y on CoreXZ and CoreZX
+              babystepsTodo[CORE_AXIS_3] += distance;
+              break;
+          }
+        #elif MECH(COREXZ) || MECH(COREZX)
+          babystepsTodo[A_AXIS] += distance * 2;
+          babystepsTodo[C_AXIS] -= distance * 2;
+        #else
+          babystepsTodo[Z_AXIS] += distance;
+        #endif
+      #else
+        babystepsTodo[axis] += distance;
+      #endif
 
-   babysteps_done += distance;
- }
- if (lcdDrawUpdate) lcd_implementation_drawedit(msg, itostr3sign(babysteps_done));
- if (LCD_CLICKED) lcd_goto_previous_menu(true);
-}
+      babysteps_done += distance;
+    }
+    if (lcdDrawUpdate) lcd_implementation_drawedit(msg, itostr3sign(babysteps_done));
+    if (LCD_CLICKED) lcd_goto_previous_menu(true);
+  }
 
 #if ENABLED(BABYSTEP_XY)
  static void _lcd_babystep_x() { _lcd_babystep(X_AXIS, PSTR(MSG_BABYSTEPPING_X)); }
@@ -1726,7 +1726,7 @@ static void lcd_control_volumetric_menu() {
         lcd_contrast &= 0x3F;
       #endif
       encoderPosition = 0;
-      lcdDrawUpdate = 1;
+      lcdDrawUpdate = LCDVIEW_REDRAW_NOW;
       u8g.setContrast(lcd_contrast);
     }
     if (lcdDrawUpdate) {
@@ -1949,8 +1949,6 @@ static void laser_set_focus(float f_length) {
   
   static void lcd_filament_change_resume_print() {
     filament_change_menu_response = FILAMENT_CHANGE_RESPONSE_RESUME_PRINT;
-    lcdDrawUpdate = 2;
-    lcd_goto_menu(lcd_status_screen);
   }
   
   static void lcd_filament_change_extrude_more() {
@@ -2023,6 +2021,7 @@ static void laser_set_focus(float f_length) {
     switch (message) {
       case FILAMENT_CHANGE_MESSAGE_INIT:
         defer_return_to_status = true;
+        lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW;
         lcd_goto_menu(lcd_filament_change_init_message);
         break;
       case FILAMENT_CHANGE_MESSAGE_UNLOAD:
@@ -2046,6 +2045,7 @@ static void laser_set_focus(float f_length) {
         lcd_goto_menu(lcd_filament_change_resume_message);
         break;
       case FILAMENT_CHANGE_MESSAGE_STATUS:
+        lcd_implementation_clear();
         lcd_return_to_status();
         break;
     }
@@ -2179,7 +2179,7 @@ menu_edit_type(unsigned long, long5, ftostr5, 0.01)
 #endif
 
 void lcd_quick_feedback() {
-  lcdDrawUpdate = 2;
+  lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW;
   next_button_update_ms = millis() + 500;
 
   #if ENABLED(LCD_USE_I2C_BUZZER)
@@ -2349,11 +2349,30 @@ bool lcd_blink() {
  *   - Act on RepRap World keypad input
  *   - Update the encoder position
  *   - Apply acceleration to the encoder position
+ *   - Set lcdDrawUpdate = LCDVIEW_CALL_REDRAW_NOW on controller events
  *   - Reset the Info Screen timeout if there's any input
  *   - Update status indicators, if any
- *   - Clear the LCD if lcdDrawUpdate == 2
  *
- * Warning: This function is called from interrupt context!
+ *   Run the current LCD menu handler callback function:
+ *   - Call the handler only if lcdDrawUpdate != LCDVIEW_NONE
+ *   - Before calling the handler, LCDVIEW_CALL_NO_REDRAW => LCDVIEW_NONE
+ *   - Call the menu handler. Menu handlers should do the following:
+ *     - If a value changes, set lcdDrawUpdate to LCDVIEW_REDRAW_NOW and draw the value
+ *       (Encoder events automatically set lcdDrawUpdate for you.)
+ *     - if (lcdDrawUpdate) { redraw }
+ *     - Before exiting the handler set lcdDrawUpdate to:
+ *       - LCDVIEW_CLEAR_CALL_REDRAW to clear screen and set LCDVIEW_CALL_REDRAW_NEXT.
+ *       - LCDVIEW_REDRAW_NOW or LCDVIEW_NONE to keep drawingm but only in this loop.
+ *       - LCDVIEW_REDRAW_NEXT to keep drawing and draw on the next loop also.
+ *       - LCDVIEW_CALL_NO_REDRAW to keep drawing (or start drawing) with no redraw on the next loop.
+ *     - NOTE: For graphical displays menu handlers may be called 2 or more times per loop,
+ *             so don't change lcdDrawUpdate without considering this.
+ *
+ *   After the menu handler callback runs (or not):
+ *   - Clear the LCD if lcdDrawUpdate == LCDVIEW_CLEAR_CALL_REDRAW
+ *   - Update lcdDrawUpdate for the next loop (i.e., move one state down, usually)
+ *
+ * No worries. This function is only called from the main thread.
  */
 void lcd_update() {
   #if ENABLED(ULTIPANEL)

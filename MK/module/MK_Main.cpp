@@ -266,7 +266,7 @@ double printer_usage_filament;
 #endif
 
 #if MB(ALLIGATOR)
-  float motor_current[DRIVER_EXTRUDERS + 3];
+  float motor_current[3 + DRIVER_EXTRUDERS];
 #endif
 
 #if ENABLED(COLOR_MIXING_EXTRUDER)
@@ -590,8 +590,10 @@ bool enqueue_and_echo_command(const char* cmd, bool say_ok/*=false*/) {
     #if HAS(DONDOLO)
       servo[DONDOLO_SERVO_INDEX].attach(0);
   		servo[DONDOLO_SERVO_INDEX].write(DONDOLO_SERVOPOS_E0);
-  		delay_ms(DONDOLO_SERVO_DELAY);
-      servo[DONDOLO_SERVO_INDEX].detach();
+      #if (DONDOLO_SERVO_DELAY > 0)
+        delay_ms(DONDOLO_SERVO_DELAY);
+        servo[DONDOLO_SERVO_INDEX].detach();
+      #endif
   	#endif
 
     // Set position of Servo Endstops that are defined
@@ -668,7 +670,7 @@ bool enqueue_and_echo_command(const char* cmd, bool say_ok/*=false*/) {
  */
 void setup() {
   #if MB(ALLIGATOR)
-    setup_alligator_board();// Initialize Alligator Board
+    setup_alligator_board(); // Initialize Alligator Board
   #endif
   #if HAS(KILL)
     setup_killpin();
@@ -1083,7 +1085,7 @@ bool code_seen(char code) {
  *
  * Returns TRUE if the target is invalid
  */
-bool setTargetedExtruder(int code) {
+bool get_target_extruder_from_command(int code) {
   if (code_seen('T')) {
     short t = code_value_short();
     if (t >= EXTRUDERS) {
@@ -1104,7 +1106,7 @@ bool setTargetedExtruder(int code) {
  *
  * Returns TRUE if the target is invalid
  */
-bool setTargetedHotend(int code) {
+bool get_target_hotend_from_command(int code) {
   if (code_seen('H')) {
     short h = code_value_short();
     if (h >= HOTENDS) {
@@ -3940,8 +3942,10 @@ inline void gcode_G28() {
       #elif ENABLED(Z_SAFE_HOMING)
         if (home_all_axis || homeZ) {
 
+          if (DEBUGGING(INFO)) ECHO_LM(INFO, "> Z_SAFE_HOMING >>>");
+
           // Let's see if X and Y are homed
-          if (axis_was_homed & (_BV(X_AXIS)|_BV(Y_AXIS)) == (_BV(X_AXIS)|_BV(Y_AXIS))) {
+          if (axis_homed[X_AXIS] && axis_homed[Y_AXIS]) {
             current_position[Z_AXIS] = 0;
             sync_plan_position();
 
@@ -3951,7 +3955,6 @@ inline void gcode_G28() {
             feedrate = xy_travel_speed;
 
             if (DEBUGGING(INFO)) {
-              ECHO_SMV(INFO, "Raise Z (before homing) by ", (float)Z_RAISE_BEFORE_HOMING);
               DEBUG_POS(" > home_all_axis", current_position);
               DEBUG_POS(" > home_all_axis", destination);
             }
@@ -5500,7 +5503,7 @@ inline void gcode_M85() {
  * M92: Set axis_steps_per_unit
  */
 inline void gcode_M92() {
-  if (setTargetedExtruder(92)) return;
+  if (get_target_extruder_from_command(92)) return;
 
   for(uint8_t i = 0; i < NUM_AXIS; i++) {
     if (code_seen(axis_codes[i])) {
@@ -5741,7 +5744,7 @@ inline void gcode_M92() {
  * M104: Set hotend temperature
  */
 inline void gcode_M104() {
-  if (setTargetedExtruder(104)) return;
+  if (get_target_extruder_from_command(104)) return;
   if (DEBUGGING(DRYRUN)) return;
 
   #if HOTENDS == 1
@@ -5780,7 +5783,7 @@ inline void gcode_M104() {
  * M105: Read hot end and bed temperature
  */
 inline void gcode_M105() {
-  if (setTargetedExtruder(105)) return;
+  if (get_target_extruder_from_command(105)) return;
 
   #if HAS(TEMP_0) || HAS(TEMP_BED) || ENABLED(HEATER_0_USES_MAX6675) || HAS(TEMP_COOLER) || ENABLED(FLOWMETER_SENSOR)
     ECHO_S(OK);
@@ -5818,7 +5821,7 @@ inline void gcode_M105() {
  *       Rxxx Wait for extruder(s) to reach temperature. Waits when heating and cooling.
  */
 inline void gcode_M109() {
-  if (setTargetedExtruder(109)) return;
+  if (get_target_extruder_from_command(109)) return;
   if (DEBUGGING(DRYRUN)) return;
 
   #if HOTENDS == 1
@@ -6187,7 +6190,7 @@ inline void gcode_M140() {
  */
 inline void gcode_M200() {
 
-  if (setTargetedExtruder(200)) return;
+  if (get_target_extruder_from_command(200)) return;
 
   if (code_seen('D')) {
     float diameter = code_value();
@@ -6247,7 +6250,7 @@ inline void gcode_M201() {
  *
  */
 inline void gcode_M203() {
-  if (setTargetedExtruder(203)) return;
+  if (get_target_extruder_from_command(203)) return;
 
   for(uint8_t i = 0; i < NUM_AXIS; i++) {
     if (code_seen(axis_codes[i])) {
@@ -6269,7 +6272,7 @@ inline void gcode_M203() {
  *  Also sets minimum segment time in ms (B20000) to prevent buffer under-runs and M20 minimum feedrate
  */
 inline void gcode_M204() {
-  if (setTargetedExtruder(204)) return;
+  if (get_target_extruder_from_command(204)) return;
 
   if (code_seen('S')) {  // Kept for legacy compatibility. Should NOT BE USED for new developments.
     acceleration = code_value();
@@ -6301,7 +6304,7 @@ inline void gcode_M204() {
  *    E = Max E Jerk (mm/s/s)
  */
 inline void gcode_M205() {
-  if (setTargetedExtruder(205)) return;
+  if (get_target_extruder_from_command(205)) return;
 
   if (code_seen('S')) minimumfeedrate = code_value();
   if (code_seen('V')) mintravelfeedrate = code_value();
@@ -6389,7 +6392,7 @@ inline void gcode_M206() {
  * M218 - set hotend offset (in mm), H<hotend_number> X<offset_on_X> Y<offset_on_Y> Z<offset_on_Z>
  */
 inline void gcode_M218() {
-  if (setTargetedHotend(218)) return;
+  if (get_target_hotend_from_command(218)) return;
 
   if (code_seen('X')) hotend_offset[X_AXIS][target_extruder] = code_value();
   if (code_seen('Y')) hotend_offset[Y_AXIS][target_extruder] = code_value();
@@ -6415,7 +6418,7 @@ inline void gcode_M220() {
  * M221: Set extrusion percentage (M221 T0 S95)
  */
 inline void gcode_M221() {
-  if (setTargetedExtruder(221)) return;
+  if (get_target_extruder_from_command(221)) return;
 
   if (code_seen('S')) extruder_multiplier[target_extruder] = code_value();
 }
@@ -6424,7 +6427,7 @@ inline void gcode_M221() {
  * M222: Set density extrusion percentage (M222 T0 S95)
  */
 inline void gcode_M222() {
-  if (setTargetedExtruder(222)) return;
+  if (get_target_extruder_from_command(222)) return;
 
   if (code_seen('S')) {
     density_multiplier[target_extruder] = code_value();
@@ -6537,8 +6540,10 @@ inline void gcode_M226() {
           Servo *srv = &servo[servo_index];
           srv->attach(0);
           srv->write(servo_position);
-          delay_ms(DONDOLO_SERVO_DELAY);
-          srv->detach();
+          #if (DONDOLO_SERVO_DELAY > 0)
+            delay_ms(DONDOLO_SERVO_DELAY);
+            srv->detach();
+          #endif
         }
         else {
           ECHO_SM(ER, "Servo ");
@@ -7266,7 +7271,7 @@ inline void gcode_M503() {
    * M522: Read or Write on card. M522 T<extruders> R<read> or W<write> L<list>
    */
   inline void gcode_M522() {
-    if (setTargetedExtruder(522)) return;
+    if (get_target_extruder_from_command(522)) return;
     if (!RFID_ON) return;
 
     if (code_seen('R')) {
@@ -7302,7 +7307,7 @@ inline void gcode_M503() {
    * M595 - set Hotend AD595 offset & Gain H<hotend_number> O<offset> S<gain>
    */
   inline void gcode_M595() {
-    if (setTargetedHotend(595)) return;
+    if (get_target_hotend_from_command(595)) return;
 
     if (code_seen('O')) ad595_offset[target_extruder] = code_value();
     if (code_seen('S')) ad595_gain[target_extruder] = code_value();
@@ -7736,8 +7741,8 @@ inline void gcode_M503() {
    * M906: Set motor currents
    */
   inline void gcode_M906() {
-    if (setTargetedExtruder(906)) return;
-    for (uint8_t i = 0; i < 3 + DRIVER_EXTRUDERS; i++) {
+    if (get_target_extruder_from_command(906)) return;
+    for (uint8_t i = 0; i < NUM_AXIS; i++) {
       if (code_seen(axis_codes[i])) {
         if (i == E_AXIS)
           motor_current[i + target_extruder] = code_value();
@@ -7745,6 +7750,7 @@ inline void gcode_M503() {
           motor_current[i] = code_value();
       }
     }
+    set_driver_current();
   }
 #endif // ALLIGATOR
 
@@ -7804,11 +7810,21 @@ inline void gcode_M907() {
 
 /**
  * M999: Restart after being stopped
+ *
+ * Default behaviour is to flush the serial buffer and request
+ * a resend to the host starting on the last N line received.
+ *
+ * Sending "M999 S1" will resume printing without flushing the
+ * existing command buffer.
+ *
  */
 inline void gcode_M999() {
   Running = true;
   Printing = false;
   lcd_reset_alert_level();
+
+  if (code_seen('S') && code_value_short() == 1) return;
+
   FlushSerialRequestResend();
 }
 
@@ -8070,8 +8086,10 @@ inline void gcode_T(uint8_t tmp_extruder) {
               else if (target_extruder == 1) {
                 servo[DONDOLO_SERVO_INDEX].write(DONDOLO_SERVOPOS_E1);
               }
-              delay_ms(DONDOLO_SERVO_DELAY);
-              servo[DONDOLO_SERVO_INDEX].detach();
+              #if (DONDOLO_SERVO_DELAY > 0)
+                delay_ms(DONDOLO_SERVO_DELAY);
+                servo[DONDOLO_SERVO_INDEX].detach();
+              #endif
               previous_extruder = active_extruder;
               #if ENABLED(DONDOLO_SINGLE_MOTOR)
                 active_extruder = target_extruder;
@@ -8785,7 +8803,7 @@ static void report_current_position() {
     float difference[NUM_AXIS];
     float addDistance[NUM_AXIS];
     float fractions[NUM_AXIS];
-    float frfm = feedrate / 60 * feedrate_multiplier / 100.0;
+    float _feedrate = feedrate * feedrate_multiplier / 6000.0;
 
     for (uint8_t i = 0; i < NUM_AXIS; i++) difference[i] = target[i] - current_position[i];
 
@@ -8794,8 +8812,9 @@ static void report_current_position() {
     if (cartesian_mm < 0.000001) return false;
 
     #if ENABLED(DELTA_SEGMENTS_PER_SECOND)
-      float seconds = 6000 * cartesian_mm / feedrate / feedrate_multiplier;
+      float seconds = cartesian_mm / _feedrate;
       int steps = max(1, int(DELTA_SEGMENTS_PER_SECOND * seconds));
+      float inv_steps = 1.0 / steps;
 
       if (DEBUGGING(DEBUG)) {
         ECHO_SMV(DEB, "mm=", cartesian_mm);
@@ -8824,7 +8843,7 @@ static void report_current_position() {
     for (int s = 1; s <= steps; s++) {
 
       #if ENABLED(DELTA_SEGMENTS_PER_SECOND)
-        float fraction = float(s) / float(steps);
+        float fraction = float(s) * inv_steps;
         for (uint8_t i = 0; i < NUM_AXIS; i++)
           target[i] = current_position[i] + difference[i] * fraction;
       #else
@@ -8843,7 +8862,7 @@ static void report_current_position() {
         DEBUG_POS("prepare_move_delta", delta);
       }
 
-      plan_buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], target[E_AXIS], frfm, active_extruder, active_driver);
+      plan_buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], target[E_AXIS], _feedrate, active_extruder, active_driver);
     }
     return true;
   }
@@ -9359,7 +9378,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
   #endif
 
   #if ENABLED(EXTRUDER_RUNOUT_PREVENT)
-    if (ELAPSED(ms, previous_cmd_ms + (EXTRUDER_RUNOUT_SECONDS) * 1000UL))
+    if (ELAPSED(ms, previous_cmd_ms + (EXTRUDER_RUNOUT_SECONDS) * 1000UL)) {
       if (degHotend(active_extruder) > EXTRUDER_RUNOUT_MINTEMP) {
         bool oldstatus;
         switch(active_extruder) {

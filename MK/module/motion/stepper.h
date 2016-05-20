@@ -12,11 +12,11 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -118,6 +118,10 @@
 
   #if ENABLED(NPR2) // Multiextruder
     void colorstep(long csteps, const bool direction);
+  #endif
+
+  #if MB(ALLIGATOR)
+    extern void set_driver_current();
   #endif
 
 #endif // STEPPER_H
