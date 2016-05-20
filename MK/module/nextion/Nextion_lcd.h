@@ -12,11 +12,11 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -75,6 +75,11 @@
       void PlayPausePopCallback(void *ptr);
       void StopPopCallback(void *ptr);
       void UploadNewFirmware();
+    #endif
+
+    #if ENABLED(RFID_MODULE)
+      void rfidPopCallback(void *ptr);
+      void rfid_setText(const char* message, uint32_t color = 65535);
     #endif
 
     FORCE_INLINE bool lcd_hasstatus() { return false; }

@@ -1,5 +1,6 @@
 ### Version 4.2.82
 * Add DONDOLO_DUAL_MOTOR for DONDOLO bowden and dual extruder
+* Add reader TAG width MFRC522
 
 ### Version 4.2.81
 * Fix serial protocol for Repetier Host
