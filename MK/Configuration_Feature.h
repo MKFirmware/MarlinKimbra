@@ -50,6 +50,7 @@
  * - Filament diameter sensor
  * - Filament Runout sensor
  * - Power consumption sensor
+ * - RFID card sensor
  * ADDON FEATURES:
  * - EEPROM
  * - SDCARD
@@ -1064,6 +1065,28 @@
 
 //When using an LCD, uncomment the line below to display the Power consumption sensor data on the last line instead of status. Status will appear for 5 sec.
 //#define POWER_CONSUMPTION_LCD_DISPLAY
+/**************************************************************************/
+
+
+
+/**************************************************************************
+ *********************** RIFD module card reader **************************
+ **************************************************************************
+ *                                                                        *
+ * Support RFID module card reader width UART interface.                  *
+ * This module mount chip MFRC522 designed to communicate with            *
+ * ISO/IEC 14443 A/MIFARE cards and transponders without additional       *
+ * active circuitry                                                       *
+ *                                                                        *
+ * New command for this system is:                                        *
+ * M522 T<extruder> R<read> or W<write>                                   *
+ *                                                                        *
+ * Define if you used and Serial used.                                    *
+ *                                                                        *
+ **************************************************************************/
+//#define RFID_MODULE
+
+#define RFID_SERIAL 1
 /**************************************************************************/
 
 

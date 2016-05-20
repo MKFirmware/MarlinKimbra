@@ -3095,12 +3095,21 @@ void gcode_get_destination() {
     if(code_seen(axis_codes[E_AXIS])) IDLE_OOZING_retract(false);
   #endif
 
-  for (int i = 0; i < 3; i++) {
-    if (code_seen(axis_codes[i]))
-      destination[i] = code_value() + (axis_relative_modes[i] || relative_mode ? current_position[i] : -hotend_offset[i][active_extruder]);
-    else
-      destination[i] = current_position[i];
-  }
+  #if HOTENDS == 1
+    for (int i = 0; i < 3; i++) {
+      if (code_seen(axis_codes[i]))
+        destination[i] = code_value() + (axis_relative_modes[i] || relative_mode ? current_position[i] : 0);
+      else
+        destination[i] = current_position[i];
+    }
+  #else  
+    for (int i = 0; i < 3; i++) {
+      if (code_seen(axis_codes[i]))
+        destination[i] = code_value() + (axis_relative_modes[i] || relative_mode ? current_position[i] : -hotend_offset[i][active_extruder]);
+      else
+        destination[i] = current_position[i];
+    }
+  #endif
 
   if(code_seen(axis_codes[E_AXIS]))
     destination[E_AXIS] = code_value() + (axis_relative_modes[E_AXIS] || relative_mode ? current_position[E_AXIS] : 0);
@@ -6867,15 +6876,25 @@ inline void gcode_M503() {
 
     if (code_seen('R')) {
       ECHO_LM(DB, "Put RFID on tag!");
+      #if ENABLED(NEXTION)
+        rfid_setText("Put RFID on tag!");
+      #endif
       Spool_must_read[target_extruder] = true;
     }
     if (code_seen('W')) {
       if (Spool_ID[target_extruder] != 0) {
         ECHO_LM(DB, "Put RFID on tag!");
+        #if ENABLED(NEXTION)
+          rfid_setText("Put RFID on tag!");
+        #endif
         Spool_must_write[target_extruder] = true;
       }
-      else
+      else {
         ECHO_LM(ER, "You have not read this Spool!");
+        #if ENABLED(NEXTION)
+          rfid_setText("You have not read this Spool!", 64488);
+        #endif
+      }
     }
 
     if (code_seen('L')) RFID522.printInfo(target_extruder);
