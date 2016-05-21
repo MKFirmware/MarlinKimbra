@@ -358,7 +358,8 @@
  ******************************* Axis steps per unit *************************************
  *****************************************************************************************/
 // Default steps per unit               X,  Y,    Z,  E0...(per extruder)
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {78.7401, 157.4802, 6047.2440, 0, 0, 0, 0}
+//#define DEFAULT_AXIS_STEPS_PER_UNIT   {78.7401, 157.4802, 6047.2440, 0, 0, 0, 0} /* X stepper sobstituted with a nema17 from 3drag */
+#define DEFAULT_AXIS_STEPS_PER_UNIT   {157.4802, 157.4802, 6047.2440, 0, 0, 0, 0} /* Original K40 steppers */
 /*****************************************************************************************/
 
 
@@ -366,8 +367,8 @@
  ********************************** Axis feedrate ****************************************
  *****************************************************************************************/
 //                                       X,   Y, Z,  E0...(per extruder). (mm/sec)
-#define DEFAULT_MAX_FEEDRATE          {7600, 7600, 10, 25, 0, 0, 0}
-#define MANUAL_FEEDRATE               {7600, 7600, 10, 25}  // Feedrates for manual moves along X, Y, Z, E from panel
+#define DEFAULT_MAX_FEEDRATE          {500, 500, 10, 25, 0, 0, 0}
+#define MANUAL_FEEDRATE               {500, 500, 10, 25}  // Feedrates for manual moves along X, Y, Z, E from panel
 #define DEFAULT_MINIMUMFEEDRATE       0.0                       // minimum feedrate
 #define DEFAULT_MINTRAVELFEEDRATE     0.0
 // Minimum planner junction speed. Sets the default minimum speed the planner plans for at the end
