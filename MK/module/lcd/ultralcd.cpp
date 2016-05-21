@@ -1302,7 +1302,7 @@ static void lcd_control_menu() {
 
 static void lcd_stats_menu() {
   char row[30];
-  int day = printer_usage_seconds / 60 / 60 / 24, hours = (printer_usage_seconds / 60 / 60) % 24, minutes = (printer_usage_seconds / 60) % 60;
+  int day = print_job_counter.data.printer_usage_seconds / 60 / 60 / 24, hours = (print_job_counter.data.printer_usage_seconds / 60 / 60) % 24, minutes = (print_job_counter.data.printer_usage_seconds / 60) % 60;
   sprintf_P(row, PSTR(MSG_ONFOR " %id %ih %im"), day, hours, minutes);
   LCD_Printpos(0, 0); lcd_print(row);
   #if HAS(POWER_CONSUMPTION_SENSOR)
@@ -1310,10 +1310,10 @@ static void lcd_stats_menu() {
     LCD_Printpos(0, 1); lcd_print(row);
   #endif
   char lung[30];
-  unsigned int  kmeter = (long)printer_usage_filament / 1000 / 1000,
-                meter = ((long)printer_usage_filament / 1000) % 1000,
-                centimeter = ((long)printer_usage_filament / 10) % 100,
-                millimeter = ((long)printer_usage_filament) % 10;
+  unsigned int  kmeter = (long)print_job_counter.data.printer_usage_filament / 1000 / 1000,
+                meter = ((long)print_job_counter.data.printer_usage_filament / 1000) % 1000,
+                centimeter = ((long)print_job_counter.data.printer_usage_filament / 10) % 100,
+                millimeter = ((long)print_job_counter.data.printer_usage_filament) % 10;
   sprintf_P(lung, PSTR(MSG_FILCONSUMED "%i Km %i m %i cm %i mm"), kmeter, meter, centimeter, millimeter);
   LCD_Printpos(0, 2); lcd_print(lung);
   if (LCD_CLICKED) lcd_goto_menu(lcd_main_menu);
