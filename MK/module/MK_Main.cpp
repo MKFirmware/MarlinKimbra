@@ -116,14 +116,11 @@ static millis_t max_inactive_time = 0;
 static millis_t stepper_inactive_time = (DEFAULT_STEPPER_DEACTIVE_TIME) * 1000UL;
 
 // Print Job Timer
-Stopwatch print_job_timer = Stopwatch();
+PrintCounter print_job_counter = PrintCounter();
 
 static uint8_t target_extruder;
 
 bool software_endstops = true;
-
-unsigned long printer_usage_seconds;
-double printer_usage_filament;
 
 #if !MECH(DELTA)
   int xy_travel_speed = XY_TRAVEL_SPEED;
@@ -979,9 +976,9 @@ inline void get_serial_commands() {
       ) {
         if (card_eof) {
           ECHO_EM(SERIAL_FILE_PRINTED);
-          print_job_timer.stop();
+          print_job_counter.stop();
           char time[30];
-          millis_t t = print_job_timer.duration();
+          millis_t t = print_job_counter.duration();
           int hours = t / 60 / 60, minutes = (t / 60) % 60;
           sprintf_P(time, PSTR("%i " MSG_END_HOUR " %i " MSG_END_MINUTE), hours, minutes);
           ECHO_LT(DB, time);
@@ -3125,7 +3122,7 @@ void gcode_get_destination() {
     destination[E_AXIS] = (code_value() * density_multiplier[previous_extruder] / 100) + current_position[E_AXIS];
   }
 
-  printer_usage_filament += (destination[E_AXIS] - current_position[E_AXIS]);
+  print_job_counter.data.printer_usage_filament += (destination[E_AXIS] - current_position[E_AXIS]);
 
   #if ENABLED(RFID_MODULE)
     RFID522.RfidData[active_extruder].data.lenght -= (destination[E_AXIS] - current_position[E_AXIS]);
@@ -4663,7 +4660,7 @@ inline void gcode_M17() {
    */
   inline void gcode_M24() {
     card.startPrint();
-    print_job_timer.start();
+    print_job_counter.start();
     #if HAS(POWER_CONSUMPTION_SENSOR)
       startpower = power_consumption_hour;
     #endif
@@ -4720,7 +4717,7 @@ inline void gcode_M17() {
    * M31: Get the time since the start of SD Print (or last M109)
    */
   inline void gcode_M31() {
-    millis_t t = print_job_timer.duration();
+    millis_t t = print_job_counter.duration();
     int min = t / 60, sec = t % 60;
     char time[30];
     sprintf_P(time, PSTR("%i min, %i sec"), min, sec);
@@ -5038,21 +5035,31 @@ inline void gcode_M42() {
  * M75: Start print timer
  */
 inline void gcode_M75() {
-  print_job_timer.start();
+  print_job_counter.start();
 }
 
 /**
  * M76: Pause print timer
  */
 inline void gcode_M76() {
-  print_job_timer.pause();
+  print_job_counter.pause();
 }
 
 /**
  * M77: Stop print timer
  */
 inline void gcode_M77() {
-  print_job_timer.stop();
+  print_job_counter.stop();
+}
+
+/**
+ * M78: Show print statistics
+ */
+inline void gcode_M78() {
+  // "M78 S78" will reset the statistics
+  if (code_seen('S') && code_value_short() == 78)
+    print_job_counter.initStats();
+  else print_job_counter.showStats();
 }
 
 #if HAS(POWER_SWITCH)
@@ -5417,7 +5424,7 @@ inline void gcode_M104() {
      * the running print timer.
      */
     if (temp <= (EXTRUDE_MINTEMP)/2) {
-      print_job_timer.stop();
+      print_job_counter.stop();
       LCD_MESSAGEPGM(WELCOME_MSG);
     }
     /**
@@ -5425,7 +5432,7 @@ inline void gcode_M104() {
      * be done for us inside the Stopwatch::start() method thus a running timer
      * will not restart.
      */
-    else print_job_timer.start();
+    else print_job_counter.start();
 
     if (temp > degHotend(target_extruder)) LCD_MESSAGEPGM(MSG_HEATING);
   }
@@ -5487,7 +5494,7 @@ inline void gcode_M109() {
      * the running print timer.
      */
     if (temp <= (EXTRUDE_MINTEMP) / 2) {
-      print_job_timer.stop();
+      print_job_counter.stop();
       LCD_MESSAGEPGM(WELCOME_MSG);
     }
     /**
@@ -5495,7 +5502,7 @@ inline void gcode_M109() {
      * be done for us inside the Stopwatch::start() method thus a running timer
      * will not restart.
      */
-    else print_job_timer.start();
+    else print_job_counter.start();
 
     if (temp > degHotend(target_extruder)) LCD_MESSAGEPGM(MSG_HEATING);
   }
@@ -7875,6 +7882,9 @@ void process_next_command() {
       case 77: // Stop print timer
         gcode_M77(); break;
 
+      case 78: // Show print statistics
+        gcode_M78(); break;
+
       #if HAS(POWER_SWITCH)
         case 80: // M80 - Turn on Power Supply
           gcode_M80(); break;
@@ -8774,6 +8784,7 @@ void idle(
   );
   host_keepalive();
   lcd_update();
+  print_job_counter.tick();
 }
 
 /**

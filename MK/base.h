@@ -46,7 +46,7 @@
 #include "Configuration_Store.h"
 
 #include "module/language/language.h"
-#include "module/stopwatch/stopwatch.h"
+#include "module/printcounter/printcounter.h"
 #include "module/MK_Main.h"
 #include "module/motion/planner.h"
 #include "module/motion/stepper_indirection.h"

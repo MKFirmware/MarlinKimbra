@@ -755,7 +755,7 @@
               NPlay.setPic(17);
 
               // Estimate End Time
-              uint16_t time = print_job_timer.duration() / 60;
+              uint16_t time = print_job_counter.duration() / 60;
               uint16_t end_time = (time * (100 - card.percentDone())) / card.percentDone();
               if (end_time > (60 * 23)) {
                 lcd_setstatus("End --:--");

@@ -884,24 +884,7 @@ void Config_ResetDefault() {
       ECHO_LVM(INFO, power_consumption_hour," Wh");
     #endif
 
-    if (!forReplay) {
-      ECHO_LM(INFO, "Power on time:");
-    }
-    char time[30];
-    unsigned int day = printer_usage_seconds / 60 / 60 / 24, hours = (printer_usage_seconds / 60 / 60) % 24, minutes = (printer_usage_seconds / 60) % 60;
-    sprintf_P(time, PSTR("  %i " MSG_END_DAY " %i " MSG_END_HOUR " %i " MSG_END_MINUTE), day, hours, minutes);
-    ECHO_LT(INFO, time);
-
-    if (!forReplay) {
-      ECHO_LM(INFO, "Filament printed:");
-    }
-    char lung[30];
-    unsigned int  kmeter = (long)printer_usage_filament / 1000 / 1000,
-                  meter = ((long)printer_usage_filament / 1000) % 1000,
-                  centimeter = ((long)printer_usage_filament / 10) % 100,
-                  millimeter = ((long)printer_usage_filament) % 10;
-    sprintf_P(lung, PSTR("  %i Km %i m %i cm %i mm"), kmeter, meter, centimeter, millimeter);
-    ECHO_LT(INFO, lung);
+    print_job_counter.showStats();
   }
 
 #endif // !DISABLE_M503
@@ -916,26 +899,31 @@ void ConfigSD_ResetDefault() {
   #if HAS(POWER_CONSUMPTION_SENSOR)
    power_consumption_hour = 0;
   #endif
-  printer_usage_seconds  = 0;
-  printer_usage_filament = 0;
+  print_job_counter.initStats();
   ECHO_LM(OK, "Hardcoded SD Default Settings Loaded");
 }
 
 #if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
   static const char *cfgSD_KEY[] = { // Keep this in lexicographical order for better search performance(O(Nlog2(N)) insted of O(N*N)) (if you don't keep this sorted, the algorithm for find the key index won't work, keep attention.)
-    #if HAS(POWER_CONSUMPTION_SENSOR)
-      "PWR",
-    #endif
-    "FIL",
-    "TME"
+    "CPR",  // Number of complete prints
+    "FIL",  // Filament Usage
+    "NPR",  // Number of prints
+  #if HAS(POWER_CONSUMPTION_SENSOR)
+    "PWR",  // Power Consumption
+  #endif
+    "TME",  // Longest print job
+    "TPR"   // Total printing time
   };
 
   enum cfgSD_ENUM {   // This need to be in the same order as cfgSD_KEY
-    #if HAS(POWER_CONSUMPTION_SENSOR)
-      SD_CFG_PWR,
-    #endif
+    SD_CFG_CPR,
     SD_CFG_FIL,
+    SD_CFG_NPR,
+  #if HAS(POWER_CONSUMPTION_SENSOR)
+    SD_CFG_PWR,
+  #endif
     SD_CFG_TME,
+    SD_CFG_TPR,
     SD_CFG_END // Leave this always as the last
   };
 
@@ -949,9 +937,15 @@ void ConfigSD_ResetDefault() {
       ltoa(power_consumption_hour, buff, 10);
       card.unparseKeyLine(cfgSD_KEY[SD_CFG_PWR], buff);
     #endif
-    ltoa(printer_usage_seconds, buff, 10);
+    ltoa(print_job_counter.data.numberPrints, buff, 10);
+    card.unparseKeyLine(cfgSD_KEY[SD_CFG_NPR], buff);
+    ltoa(print_job_counter.data.completePrints, buff, 10);
+    card.unparseKeyLine(cfgSD_KEY[SD_CFG_CPR], buff);
+    ltoa(print_job_counter.data.printTime, buff, 10);
+    card.unparseKeyLine(cfgSD_KEY[SD_CFG_TPR], buff);
+    ltoa(print_job_counter.data.printer_usage_seconds, buff, 10);
     card.unparseKeyLine(cfgSD_KEY[SD_CFG_TME], buff);
-    ltoa(printer_usage_filament, buff, 10);
+    ltoa(print_job_counter.data.printer_usage_filament, buff, 10);
     card.unparseKeyLine(cfgSD_KEY[SD_CFG_FIL], buff);
 
     card.closeFile();
@@ -983,14 +977,29 @@ void ConfigSD_ResetDefault() {
         }
         break;
         #endif
+        case SD_CFG_NPR: {
+          if(addValue) print_job_counter.data.numberPrints += (unsigned long)atol(value);
+          else print_job_counter.data.numberPrints = (unsigned long)atol(value);
+        }
+        break;
+        case SD_CFG_CPR: {
+          if(addValue) print_job_counter.data.completePrints += (unsigned long)atol(value);
+          else print_job_counter.data.completePrints = (unsigned long)atol(value);
+        }
+        break;
+        case SD_CFG_TPR: {
+          if(addValue) print_job_counter.data.printTime += (unsigned long)atol(value);
+          else print_job_counter.data.printTime = (unsigned long)atol(value);
+        }
+        break;
         case SD_CFG_TME: {
-          if(addValue) printer_usage_seconds += (unsigned long)atol(value);
-          else printer_usage_seconds = (unsigned long)atol(value);
+          if(addValue) print_job_counter.data.printer_usage_seconds += (unsigned long)atol(value);
+          else print_job_counter.data.printer_usage_seconds = (unsigned long)atol(value);
         }
         break;
         case SD_CFG_FIL: {
-          if(addValue) printer_usage_filament += (unsigned long)atol(value);
-          else printer_usage_filament = (unsigned long)atol(value);
+          if(addValue) print_job_counter.data.printer_usage_filament += (unsigned long)atol(value);
+          else print_job_counter.data.printer_usage_filament = (unsigned long)atol(value);
         }
         break;
       }
