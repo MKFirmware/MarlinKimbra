@@ -50,7 +50,7 @@ extern volatile uint8_t buttons;  //an extended version of the last checked butt
     #define EN_C (_BV(BLEN_C))
   #endif
 
-  #if BUTTON_EXISTS(BTN_BACK)
+  #if BUTTON_EXISTS(BACK)
     #define BLEN_D 3
     #define EN_D (_BV(BLEN_D))
   #endif

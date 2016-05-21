@@ -1907,6 +1907,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
     for (int y = 0; y < AUTO_BED_LEVELING_GRID_POINTS; y++) {
       ECHO_S(DB);
       for (int x = 0; x < AUTO_BED_LEVELING_GRID_POINTS; x++) {
+        if(bed_level[x][y] >= 0) ECHO_M(" ");
         ECHO_VM(bed_level[x][y], " ", 3);
       }
       ECHO_E;
@@ -3118,11 +3119,11 @@ void gcode_get_destination() {
     if (next_feedrate > 0.0) feedrate = next_feedrate;
   }
 
-  if (code_seen('P')) {
+  if (code_seen('P'))
     destination[E_AXIS] = (code_value() * density_multiplier[previous_extruder] / 100) + current_position[E_AXIS];
-  }
 
-  print_job_counter.data.printer_usage_filament += (destination[E_AXIS] - current_position[E_AXIS]);
+  if(!DEBUGGING(DRYRUN))
+    print_job_counter.data.printer_usage_filament += (destination[E_AXIS] - current_position[E_AXIS]);
 
   #if ENABLED(RFID_MODULE)
     RFID522.RfidData[active_extruder].data.lenght -= (destination[E_AXIS] - current_position[E_AXIS]);
@@ -5423,7 +5424,7 @@ inline void gcode_M104() {
      * stand by mode, for instance in a dual extruder setup, without affecting
      * the running print timer.
      */
-    if (temp <= (EXTRUDE_MINTEMP)/2) {
+    if (temp <= (EXTRUDE_MINTEMP) / 2) {
       print_job_counter.stop();
       LCD_MESSAGEPGM(WELCOME_MSG);
     }

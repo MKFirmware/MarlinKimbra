@@ -933,20 +933,20 @@ void ConfigSD_ResetDefault() {
     card.setroot(true);
     card.startWrite((char *)CFG_SD_FILE, false);
     char buff[CFG_SD_MAX_VALUE_LEN];
+    ltoa(print_job_counter.data.completePrints, buff, 10);
+    card.unparseKeyLine(cfgSD_KEY[SD_CFG_CPR], buff);
+    ltoa(print_job_counter.data.printer_usage_filament, buff, 10);
+    card.unparseKeyLine(cfgSD_KEY[SD_CFG_FIL], buff);
+    ltoa(print_job_counter.data.numberPrints, buff, 10);
+    card.unparseKeyLine(cfgSD_KEY[SD_CFG_NPR], buff);
     #if HAS(POWER_CONSUMPTION_SENSOR)
       ltoa(power_consumption_hour, buff, 10);
       card.unparseKeyLine(cfgSD_KEY[SD_CFG_PWR], buff);
     #endif
-    ltoa(print_job_counter.data.numberPrints, buff, 10);
-    card.unparseKeyLine(cfgSD_KEY[SD_CFG_NPR], buff);
-    ltoa(print_job_counter.data.completePrints, buff, 10);
-    card.unparseKeyLine(cfgSD_KEY[SD_CFG_CPR], buff);
-    ltoa(print_job_counter.data.printTime, buff, 10);
-    card.unparseKeyLine(cfgSD_KEY[SD_CFG_TPR], buff);
     ltoa(print_job_counter.data.printer_usage_seconds, buff, 10);
     card.unparseKeyLine(cfgSD_KEY[SD_CFG_TME], buff);
-    ltoa(print_job_counter.data.printer_usage_filament, buff, 10);
-    card.unparseKeyLine(cfgSD_KEY[SD_CFG_FIL], buff);
+    ltoa(print_job_counter.data.printTime, buff, 10);
+    card.unparseKeyLine(cfgSD_KEY[SD_CFG_TPR], buff);
 
     card.closeFile();
     card.setlast();
@@ -966,35 +966,16 @@ void ConfigSD_ResetDefault() {
       k_len = CFG_SD_MAX_KEY_LEN;
       v_len = CFG_SD_MAX_VALUE_LEN;
       card.parseKeyLine(key, value, k_len, v_len);
+
       if(k_len == 0 || v_len == 0) break; // no valid key or value founded
+
       k_idx = ConfigSD_KeyIndex(key);
       if(k_idx == -1) continue;    // unknow key ignore it
+
       switch(k_idx) {
-        #if HAS(POWER_CONSUMPTION_SENSOR)
-        case SD_CFG_PWR: {
-          if(addValue) power_consumption_hour += (unsigned long)atol(value);
-          else power_consumption_hour = (unsigned long)atol(value);
-        }
-        break;
-        #endif
-        case SD_CFG_NPR: {
-          if(addValue) print_job_counter.data.numberPrints += (unsigned long)atol(value);
-          else print_job_counter.data.numberPrints = (unsigned long)atol(value);
-        }
-        break;
         case SD_CFG_CPR: {
           if(addValue) print_job_counter.data.completePrints += (unsigned long)atol(value);
           else print_job_counter.data.completePrints = (unsigned long)atol(value);
-        }
-        break;
-        case SD_CFG_TPR: {
-          if(addValue) print_job_counter.data.printTime += (unsigned long)atol(value);
-          else print_job_counter.data.printTime = (unsigned long)atol(value);
-        }
-        break;
-        case SD_CFG_TME: {
-          if(addValue) print_job_counter.data.printer_usage_seconds += (unsigned long)atol(value);
-          else print_job_counter.data.printer_usage_seconds = (unsigned long)atol(value);
         }
         break;
         case SD_CFG_FIL: {
@@ -1002,8 +983,31 @@ void ConfigSD_ResetDefault() {
           else print_job_counter.data.printer_usage_filament = (unsigned long)atol(value);
         }
         break;
+        case SD_CFG_NPR: {
+          if(addValue) print_job_counter.data.numberPrints += (unsigned long)atol(value);
+          else print_job_counter.data.numberPrints = (unsigned long)atol(value);
+        }
+        break;
+      #if HAS(POWER_CONSUMPTION_SENSOR)
+        case SD_CFG_PWR: {
+          if(addValue) power_consumption_hour += (unsigned long)atol(value);
+          else power_consumption_hour = (unsigned long)atol(value);
+        }
+        break;
+      #endif
+        case SD_CFG_TME: {
+          if(addValue) print_job_counter.data.printer_usage_seconds += (unsigned long)atol(value);
+          else print_job_counter.data.printer_usage_seconds = (unsigned long)atol(value);
+        }
+        break;
+        case SD_CFG_TPR: {
+          if(addValue) print_job_counter.data.printTime += (unsigned long)atol(value);
+          else print_job_counter.data.printTime = (unsigned long)atol(value);
+        }
+        break;
       }
     }
+
     card.closeFile();
     card.setlast();
     config_readed = true;
@@ -1012,6 +1016,7 @@ void ConfigSD_ResetDefault() {
 
   int ConfigSD_KeyIndex(char *key) {  // At the moment a binary search algorithm is used for simplicity, if it will be necessary (Eg. tons of key), an hash search algorithm will be implemented.
     int begin = 0, end = SD_CFG_END - 1, middle, cond;
+
     while(begin <= end) {
       middle = (begin + end) / 2;
       cond = strcmp(cfgSD_KEY[middle], key);
@@ -1019,6 +1024,7 @@ void ConfigSD_ResetDefault() {
       else if(cond < 0) begin = middle + 1;
       else end = middle - 1;
     }
+
     return -1;
   }
 

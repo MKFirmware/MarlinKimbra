@@ -55,7 +55,7 @@ void PrintCounter::showStats() {
   ECHO_EV (this->data.numberPrints - this->data.completePrints -
           ((this->isRunning() || this->isPaused()) ? 1 : 0)); // Removes 1 from failures with an active counter
 
-  day     = (this->data.printTime / 60 / 60 / 24);
+  day     = this->data.printTime / 60 / 60 / 24;
   hours   = (this->data.printTime / 60 / 60) % 24;
   minutes = (this->data.printTime / 60) % 60;
 
