@@ -399,7 +399,7 @@ static void lcd_implementation_status_screen() {
     }
 
     u8g.setPrintPos(53, 47);
-    uint16_t time = print_job_timer.duration() / 60;
+    uint16_t time = print_job_counter.duration() / 60;
     if (time != 0) {
       #if HAS(LCD_POWER_SENSOR)
         if (millis() < print_millis + 1000) {
