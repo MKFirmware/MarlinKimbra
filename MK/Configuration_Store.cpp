@@ -950,7 +950,6 @@ void ConfigSD_ResetDefault() {
 
     card.closeFile();
     card.setlast();
-    config_last_update = millis();
     unset_sd_dot();
   }
 
@@ -1008,9 +1007,9 @@ void ConfigSD_ResetDefault() {
       }
     }
 
+    print_job_counter.loaded = true;
     card.closeFile();
     card.setlast();
-    config_readed = true;
     unset_sd_dot();
   }
 

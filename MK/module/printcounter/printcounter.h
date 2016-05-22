@@ -48,6 +48,12 @@
       const uint16_t updateInterval = 10;
 
       /**
+       * @brief Interval in seconds between SDCARD saves
+       * @details This const value defines what will be the time between each
+       */
+      const uint32_t saveInterval = SD_CFG_SECONDS * 1000;
+
+      /**
        * @brief Timestamp of the last call to deltaDuration()
        * @details Stores the timestamp of the last deltaDuration(), this is
        * required due to the updateInterval cycle.
@@ -73,11 +79,11 @@
       PrintCounter();
 
       /**
-       * @brief Checks if Print Statistics has been loaded
-       * @details Returns true if the statistical data has been loaded.
-       * @return bool
+       * @brief Stats were loaded from SDCARD
+       * @details If set to true it indicates if the statistical data was already
+       * loaded from the SDCARD.
        */
-      bool isLoaded();
+      bool loaded = false;
 
       /**
        * @brief Resets the Print Statistics
@@ -85,6 +91,18 @@
        * also the magic header.
        */
       void initStats();
+
+      /**
+       * @brief Loads the Print Statistics
+       * @details Loads the statistics from SDCARD
+       */
+      void loadStats();
+
+      /**
+       * @brief Saves the Print Statistics
+       * @details Saves the statistics to SDCARD
+       */
+      void saveStats();
 
       /**
        * @brief Serial output the Print Statistics
@@ -96,15 +114,15 @@
       /**
        * @brief Loop function
        * @details This function should be called at loop, it will take care of
-       * periodically save the statistical data to EEPROM and do time keeping.
+       * periodically save the statistical data to SDCARD and do time keeping.
        */
       void tick();
 
       /**
        * The following functions are being overridden
        */
-      void start();
-      void stop();
+      bool start();
+      bool stop();
       void reset();
 
       #if ENABLED(DEBUG_PRINTCOUNTER)
