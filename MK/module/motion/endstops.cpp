@@ -35,9 +35,9 @@ Endstops endstops;
 Endstops::Endstops() {
   enable_globally(
     #if ENABLED(ENDSTOPS_ONLY_FOR_HOMING)
-      true
-    #else
       false
+    #else
+      true
     #endif
   );
   enable(true);
@@ -159,7 +159,7 @@ void Endstops::report_state() {
     #if ENABLED(ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED) && ENABLED(SDSUPPORT)
       if (abort_on_endstop_hit) {
         card.sdprinting = false;
-        card.closefile();
+        card.closeFile();
         quickStop();
         disable_all_heaters(); // switch off all heaters.
       }

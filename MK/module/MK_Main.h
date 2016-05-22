@@ -240,11 +240,6 @@ extern int fanSpeed;
   extern int laser_ttl_modulation;
 #endif
 
-#if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
-  extern millis_t config_last_update;
-  extern bool config_readed;
-#endif
-
 // Print job timer
 extern PrintCounter print_job_counter;
 

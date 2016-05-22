@@ -1402,7 +1402,6 @@ void disable_all_heaters() {
 
     return (int)max6675_temp;
   }
-
 #endif // HEATER_0_USES_MAX6675
 
 /**

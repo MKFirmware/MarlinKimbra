@@ -270,10 +270,6 @@ bool software_endstops = true;
 
 #if ENABLED(SDSUPPORT)
   static bool fromsd[BUFSIZE];
-  #if ENABLED(SD_SETTINGS)
-    millis_t config_last_update = 0;
-    bool config_readed = false;
-  #endif
 #endif
 
 #if ENABLED(IDLE_OOZING_PREVENT)
@@ -8993,18 +8989,6 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
             }
           }
         }
-      }
-    }
-  #endif
-
-  #if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
-    if(IS_SD_INSERTED && !IS_SD_PRINTING) {
-      if (!config_readed) {
-        ConfigSD_RetrieveSettings(true);
-        ConfigSD_StoreSettings();
-      }
-      else if((millis() - config_last_update) >  SD_CFG_SECONDS * 1000UL) {
-        ConfigSD_StoreSettings();
       }
     }
   #endif

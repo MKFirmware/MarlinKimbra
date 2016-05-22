@@ -45,6 +45,32 @@ void PrintCounter::initStats() {
   this->data = { 0, 0, 0, 0, 0.0 };
 }
 
+void PrintCounter::loadStats() {
+  #if ENABLED(DEBUG_PRINTCOUNTER)
+    PrintCounter::debug(PSTR("loadStats"));
+  #endif
+
+  #if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
+    // Checks if the SDCARD is inserted
+    if(IS_SD_INSERTED && !IS_SD_PRINTING) {
+      ConfigSD_RetrieveSettings(true);
+    }
+  #endif
+}
+
+void PrintCounter::saveStats() {
+  #if ENABLED(DEBUG_PRINTCOUNTER)
+    PrintCounter::debug(PSTR("saveStats"));
+  #endif
+
+  // Refuses to save data is object is not loaded
+  if (!this->loaded) return;
+
+  #if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
+    ConfigSD_StoreSettings();
+  #endif
+}
+
 void PrintCounter::showStats() {
   char temp[30];
   uint32_t day, hours, minutes;
@@ -81,7 +107,7 @@ void PrintCounter::showStats() {
 void PrintCounter::tick() {
 
   static uint32_t update_before = millis(),
-                  eeprom_before = millis();
+                  config_last_update = millis();
 
   uint32_t now = millis();
 
@@ -100,27 +126,47 @@ void PrintCounter::tick() {
       PrintCounter::debug(PSTR("tick"));
     #endif
   }
+
+  #if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
+    if (!this->loaded) {
+      this->loadStats();
+      this->saveStats();
+    }
+    else if (now - config_last_update >= this->saveInterval) {
+      config_last_update = now;
+      this->saveStats();
+    }
+  #endif
 }
 
-void PrintCounter::start() {
+bool PrintCounter::start() {
   #if ENABLED(DEBUG_PRINTCOUNTER)
     PrintCounter::debug(PSTR("start"));
   #endif
 
-  if (!this->isPaused()) this->data.numberPrints++;
-  super::start();
+  bool paused = this->isPaused();
+
+  if (super::start()) {
+    if (!paused) {
+      this->data.numberPrints++;
+      this->lastDuration = 0;
+    }
+    return true;
+  }
+  else return false;
 }
 
-void PrintCounter::stop() {
+bool PrintCounter::stop() {
   #if ENABLED(DEBUG_PRINTCOUNTER)
     PrintCounter::debug(PSTR("stop"));
   #endif
 
-  if (!this->isRunning()) return;
-  super::stop();
-
-  this->data.completePrints++;
-  this->data.printTime += this->deltaDuration();
+  if (super::stop()) {
+    this->data.completePrints++;
+    this->data.printTime += this->deltaDuration();
+    this->saveStats();
+  }
+  else return false;
 }
 
 void PrintCounter::reset() {
@@ -128,8 +174,8 @@ void PrintCounter::reset() {
     PrintCounter::debug(PSTR("stop"));
   #endif
 
-  this->lastDuration = 0;
   super::reset();
+  this->lastDuration = 0;
 }
 
 #if ENABLED(DEBUG_PRINTCOUNTER)
