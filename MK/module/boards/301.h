@@ -74,6 +74,18 @@
 #define KILL_PIN           -1 // 80 with Smart Controller LCD
 #define SUICIDE_PIN        -1 // PIN that has to be turned on right after start, to keep power flowing.
 
+#undef LASER_INTENSITY_PIN
+#undef LASER_FIRING_PIN
+#if LASER_CONTROL == 1
+   #define LASER_FIRING_PIN    5
+   #define LASER_INTENSITY_PIN -1
+#endif
+#if LASER_CONTROL == 2
+   #define LASER_INTENSITY_PIN 5 // Digital pins 2, 3, 5, 6, 7, 8 are attached to timers we can use
+   #define LASER_FIRING_PIN   2
+#endif
+
+
 #if ENABLED(ULTRA_LCD)
   #define KILL_PIN 80
   #if ENABLED(NEWPANEL)

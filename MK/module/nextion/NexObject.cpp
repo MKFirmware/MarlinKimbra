@@ -55,4 +55,3 @@ void NexObject::printObjInfo(void)
     }
     dbSerialPrintln("]");
 }
-

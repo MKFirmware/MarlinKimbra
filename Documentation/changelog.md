@@ -1,5 +1,14 @@
+### Version 4.2.82
+* Add DONDOLO_DUAL_MOTOR for DONDOLO bowden and dual extruder
+
+### Version 4.2.81
+* Fix serial protocol for Repetier Host
+* Bug fix
+
 ### Version 4.2.8
 * Add board folder with files of various board containing the pins
+* Add End time on Graphics display when SD print
+* Add M35 for upload firmware to Nextion from SD
 * Rewrite macros
 * Fix M109 so it won't wait for cooling
 * Clear code

@@ -21,19 +21,19 @@
 #include "NexConfig.h"
 #include "NexTouch.h"
 #include "NexHardware.h"
+#include "NexUpload.h"
 
 #include "NexButton.h"
-#include "NexCrop.h"
-#include "NexGauge.h"
+//#include "NexCrop.h"
+//#include "NexGauge.h"
 #include "NexHotspot.h"
 #include "NexPage.h"
 #include "NexPicture.h"
 #include "NexProgressBar.h"
 #include "NexSlider.h"
 #include "NexText.h"
-#include "NexWaveform.h"
+//#include "NexWaveform.h"
 #include "NexTimer.h"
 #include "NexVar.h"
-
 
 #endif /* #ifndef __NEXTION_H__ */

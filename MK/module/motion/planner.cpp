@@ -1,4 +1,26 @@
 /**
+ * MK4due 3D Printer Firmware
+ *
+ * Based on Marlin, Sprinter and grbl
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2013 - 2016 Alberto Cotronei @MagoKimbra
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+/**
  * planner.cpp - Buffer movement commands and manage the acceleration profile plan
  * Part of Grbl
  *
@@ -151,8 +173,8 @@ FORCE_INLINE float intersection_distance(float initial_rate, float final_rate, f
 // Calculates trapezoid parameters so that the entry- and exit-speed is compensated by the provided factors.
 
 void calculate_trapezoid_for_block(block_t* block, float entry_factor, float exit_factor) {
-  unsigned long initial_rate = ceil(block->nominal_rate * entry_factor); // (step/min)
-  unsigned long final_rate = ceil(block->nominal_rate * exit_factor); // (step/min)
+  unsigned long initial_rate = ceil(block->nominal_rate * entry_factor),
+                final_rate = ceil(block->nominal_rate * exit_factor); // (steps per second)
 
   // Limit minimal step rate (Otherwise the timer will overflow.)
   NOLESS(initial_rate, 120);
@@ -510,12 +532,13 @@ float junction_deviation = 0.1;
 
   // The target position of the tool in absolute steps
   // Calculate target position in absolute steps
-  //this should be done after the wait, because otherwise a M92 code within the gcode disrupts this calculation somehow
-  long target[NUM_AXIS];
-  target[X_AXIS] = lround(x * axis_steps_per_unit[X_AXIS]);
-  target[Y_AXIS] = lround(y * axis_steps_per_unit[Y_AXIS]);
-  target[Z_AXIS] = lround(z * axis_steps_per_unit[Z_AXIS]);
-  target[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + extruder]);
+  // this should be done after the wait, because otherwise a M92 code within the gcode disrupts this calculation somehow
+  int32_t target[NUM_AXIS] = {
+    lround(x * axis_steps_per_unit[X_AXIS]),
+    lround(y * axis_steps_per_unit[Y_AXIS]),
+    lround(z * axis_steps_per_unit[Z_AXIS]),
+    lround(e * axis_steps_per_unit[E_AXIS + extruder])
+  };
 
   // If changing extruder have to recalculate current position based on 
   // the steps-per-mm value for the new extruder.
@@ -528,16 +551,22 @@ float junction_deviation = 0.1;
     }
   #endif
 
-  long  dx = target[X_AXIS] - position[X_AXIS],
-        dy = target[Y_AXIS] - position[Y_AXIS],
-        dz = target[Z_AXIS] - position[Z_AXIS],
-        de = target[E_AXIS] - position[E_AXIS];
+  int32_t dx = target[X_AXIS] - position[X_AXIS],
+          dy = target[Y_AXIS] - position[Y_AXIS],
+          dz = target[Z_AXIS] - position[Z_AXIS],
+          de = target[E_AXIS] - position[E_AXIS];
   #if MECH(COREXY)
-    long da = dx + COREX_YZ_FACTOR * dy;
-    long db = dx - COREX_YZ_FACTOR * dy;
+    int32_t da = dx + COREX_YZ_FACTOR * dy;
+    int32_t db = dx - COREX_YZ_FACTOR * dy;
+  #elif MECH(COREYX)
+    int32_t da = dy + COREX_YZ_FACTOR * dx;
+    int32_t db = dy - COREX_YZ_FACTOR * dx;
   #elif MECH(COREXZ)
-    long da = dx + COREX_YZ_FACTOR * dz;
-    long dc = dx - COREX_YZ_FACTOR * dz;
+    int32_t da = dx + COREX_YZ_FACTOR * dz;
+    int32_t dc = dx - COREX_YZ_FACTOR * dz;
+  #elif MECH(COREZX)
+    int32_t da = dz + COREX_YZ_FACTOR * dx;
+    int32_t dc = dz - COREX_YZ_FACTOR * dx;
   #endif
 
   #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
@@ -546,8 +575,8 @@ float junction_deviation = 0.1;
         if (extruder != 1)
       #endif
         {
-          if (degHotend(extruder) < extrude_min_temp && !(debugLevel & DEBUG_DRYRUN)) {
-            position[E_AXIS] = target[E_AXIS]; //behave as if the move really took place, but ignore E part
+          if (degHotend(extruder) < extrude_min_temp && !(DEBUGGING(DRYRUN))) {
+            position[E_AXIS] = target[E_AXIS]; // Behave as if the move really took place, but ignore E part
             de = 0; // no difference
             ECHO_LM(ER, SERIAL_ERR_COLD_EXTRUDE_STOP);
           }
@@ -577,13 +606,12 @@ float junction_deviation = 0.1;
   block->busy = false;
 
   // Number of steps for each axis
-  #if MECH(COREXY)
+  #if MECH(COREXY) || MECH(COREYX)
     // corexy planning
-    // these equations follow the form of the dA and dB equations on http://www.corexy.com/theory.html
     block->steps[A_AXIS] = labs(da);
     block->steps[B_AXIS] = labs(db);
     block->steps[Z_AXIS] = labs(dz);
-  #elif MECH(COREXZ)
+  #elif MECH(COREXZ) || MECH(COREZX)
     // corexz planning
     block->steps[A_AXIS] = labs(da);
     block->steps[Y_AXIS] = labs(dy);
@@ -601,8 +629,10 @@ float junction_deviation = 0.1;
   block->steps[E_AXIS] /= 100;
   block->step_event_count = max(block->steps[X_AXIS], max(block->steps[Y_AXIS], max(block->steps[Z_AXIS], block->steps[E_AXIS])));
 
+  #if DISABLED(LASER)
   // Bail if this is a zero-length block
   if (block->step_event_count <= DROP_SEGMENTS) return;
+  #endif
 
   block->fan_speed = fanSpeed;
 
@@ -614,7 +644,7 @@ float junction_deviation = 0.1;
   // For a mixing extruder, get steps for each
   #if ENABLED(COLOR_MIXING_EXTRUDER)
     for (uint8_t i = 0; i < DRIVER_EXTRUDERS; i++)
-      block->mix_steps[i] = block->steps[E_AXIS] * mixing_factor[i];
+      block->mix_event_count[i] = block->steps[E_AXIS] * mixing_factor[i];
   #endif
 
   // Add update block variables for LASER BEAM control 
@@ -624,13 +654,13 @@ float junction_deviation = 0.1;
 
   // Compute direction bits for this block 
   uint8_t dirb = 0;
-  #if MECH(COREXY)
+  #if MECH(COREXY) || MECH(COREYX)
     if (dx < 0) SBI(dirb, X_HEAD); // Save the real Extruder (head) direction in X Axis
     if (dy < 0) SBI(dirb, Y_HEAD); // ...and Y
     if (dz < 0) SBI(dirb, Z_AXIS);
     if (da < 0) SBI(dirb, A_AXIS); // Motor A direction
     if (db < 0) SBI(dirb, B_AXIS); // Motor B direction
-  #elif MECH(COREXZ)
+  #elif MECH(COREXZ) || MECH(COREZX)
     if (dx < 0) SBI(dirb, X_HEAD); // Save the real Extruder (head) direction in X Axis
     if (dy < 0) SBI(dirb, Y_AXIS);
     if (dz < 0) SBI(dirb, Z_HEAD); // ...and Z
@@ -638,16 +668,16 @@ float junction_deviation = 0.1;
     if (dc < 0) SBI(dirb, C_AXIS); // Motor B direction
   #else
     if (dx < 0) SBI(dirb, X_AXIS);
-    if (dy < 0) SBI(dirb, Y_AXIS); 
+    if (dy < 0) SBI(dirb, Y_AXIS);
     if (dz < 0) SBI(dirb, Z_AXIS);
   #endif
-  if (de < 0) SBI(dirb, E_AXIS); 
+  if (de < 0) SBI(dirb, E_AXIS);
   block->direction_bits = dirb;
 
   block->active_driver = driver;
 
   // Enable active axes
-  #if MECH(COREXY)
+  #if MECH(COREXY) || MECH(COREYX)
     if (block->steps[A_AXIS] || block->steps[B_AXIS]) {
       enable_x();
       enable_y();
@@ -655,7 +685,7 @@ float junction_deviation = 0.1;
     #if DISABLED(Z_LATE_ENABLE)
       if (block->steps[Z_AXIS]) enable_z();
     #endif
-  #elif MECH(COREXZ)
+  #elif MECH(COREXZ) || MECH(COREZX)
     if (block->steps[A_AXIS] || block->steps[C_AXIS]) {
       enable_x();
       enable_z();
@@ -815,14 +845,14 @@ float junction_deviation = 0.1;
    * So we need to create other 2 "AXIS", named X_HEAD and Y_HEAD, meaning the real displacement of the Head.
    * Having the real displacement of the head, we can calculate the total movement length and apply the desired speed.
    */
-  #if MECH(COREXY)
+  #if MECH(COREXY) || MECH(COREYX)
     float delta_mm[6];
     delta_mm[X_HEAD] = dx / axis_steps_per_unit[A_AXIS];
     delta_mm[Y_HEAD] = dy / axis_steps_per_unit[B_AXIS];
     delta_mm[Z_AXIS] = dz / axis_steps_per_unit[Z_AXIS];
     delta_mm[A_AXIS] = da / axis_steps_per_unit[A_AXIS];
     delta_mm[B_AXIS] = db / axis_steps_per_unit[B_AXIS];
-  #elif MECH(COREXZ)
+  #elif MECH(COREXZ) || MECH(COREZX)
     float delta_mm[6];
     delta_mm[X_HEAD] = dx / axis_steps_per_unit[A_AXIS];
     delta_mm[Y_AXIS] = dy / axis_steps_per_unit[Y_AXIS];
@@ -842,15 +872,63 @@ float junction_deviation = 0.1;
   }
   else {
     block->millimeters = sqrt(
-      #if MECH(COREXY)
+      #if MECH(COREXY) || MECH(COREYX)
         square(delta_mm[X_HEAD]) + square(delta_mm[Y_HEAD]) + square(delta_mm[Z_AXIS])
-      #elif MECH(COREXZ)
+      #elif MECH(COREXZ) || MECH(COREZX)
         square(delta_mm[X_HEAD]) + square(delta_mm[Y_AXIS]) + square(delta_mm[Z_HEAD])
       #else
         square(delta_mm[X_AXIS]) + square(delta_mm[Y_AXIS]) + square(delta_mm[Z_AXIS])
       #endif
     );
   }
+
+  #if ENABLED(LASER)
+   block->laser_intensity = laser.intensity;
+   block->laser_duration = laser.duration;
+   block->laser_status = laser.status;
+   block->laser_mode = laser.mode;
+    // When operating in PULSED or RASTER modes, laser pulsing must operate in sync with movement.
+    // Calculate steps between laser firings (steps_l) and consider that when determining largest
+    // interval between steps for X, Y, Z, E, L to feed to the motion control code.
+    if (laser.mode == RASTER || laser.mode == PULSED) {
+       #if ENABLED(LASER_PULSE_METHOD)
+         // Optimizing. Move calculations here rather than in stepper isr
+         static const float Factor = F_CPU/(LASER_PWM*2*100.0*255.0); 
+         block->laser_raster_intensity_factor = laser.intensity * Factor;
+       #endif
+       block->steps_l = (unsigned long)labs(block->millimeters*laser.ppm);
+       if (laser.mode == RASTER) {
+         for (int i = 0; i < LASER_MAX_RASTER_LINE; i++) {
+           #if (!ENABLED(LASER_PULSE_METHOD))
+             float OldRange, NewRange, NewValue;
+             OldRange = (255.0 - 0.0);
+             NewRange = (laser.rasterlaserpower - LASER_REMAP_INTENSITY); 
+             NewValue = (float)(((((float)laser.raster_data[i] - 0) * NewRange) / OldRange) + LASER_REMAP_INTENSITY);
+
+             //If less than 7%, turn off the laser tube.
+             if(NewValue == LASER_REMAP_INTENSITY)
+               NewValue = 0;
+
+             block->laser_raster_data[i] = NewValue;
+           #else
+             block->laser_raster_data[i] = laser.raster_data[i];
+           #endif
+         }
+       }
+    } else {
+        block->steps_l = 0;
+    }
+    
+    block->step_event_count = max(block->steps[X_AXIS], max(block->steps[Y_AXIS], max(block->steps[Z_AXIS], max(block->steps[E_AXIS], block->steps_l))));
+
+    if (laser.diagnostics) {
+      if (block->laser_status == LASER_ON) {
+         ECHO_LM(INFO, "Laser firing enabled");
+       }
+    }
+  #endif // LASER
+
+
   float inverse_millimeters = 1.0 / block->millimeters;  // Inverse millimeters to remove multiple divides
 
   // Calculate speed in mm/second for each axis. No divide by zero due to previous checks.
@@ -979,11 +1057,12 @@ float junction_deviation = 0.1;
                 xsteps = axis_steps_per_sqr_second[X_AXIS],
                 ysteps = axis_steps_per_sqr_second[Y_AXIS],
                 zsteps = axis_steps_per_sqr_second[Z_AXIS],
-                esteps = axis_steps_per_sqr_second[E_AXIS + extruder];
-  if ((float)acc_st * bsx / block->step_event_count > xsteps) acc_st = xsteps;
-  if ((float)acc_st * bsy / block->step_event_count > ysteps) acc_st = ysteps;
-  if ((float)acc_st * bsz / block->step_event_count > zsteps) acc_st = zsteps;
-  if ((float)acc_st * bse / block->step_event_count > esteps) acc_st = esteps;
+                esteps = axis_steps_per_sqr_second[E_AXIS + extruder],
+                allsteps = block->step_event_count;
+  if (xsteps < (acc_st * bsx) / allsteps) acc_st = (xsteps * allsteps) / bsx;
+  if (ysteps < (acc_st * bsy) / allsteps) acc_st = (ysteps * allsteps) / bsy;
+  if (zsteps < (acc_st * bsz) / allsteps) acc_st = (zsteps * allsteps) / bsz;
+  if (esteps < (acc_st * bse) / allsteps) acc_st = (esteps * allsteps) / bse;
 
   block->acceleration_st = acc_st;
   block->acceleration = acc_st / steps_per_mm;
@@ -1005,7 +1084,7 @@ float junction_deviation = 0.1;
     // Compute maximum allowable entry speed at junction by centripetal acceleration approximation.
     // Let a circle be tangent to both previous and current path line segments, where the junction
     // deviation is defined as the distance from the junction to the closest edge of the circle,
-    // colinear with the circle center. The circular segment joining the two paths represents the
+    // collinear with the circle center. The circular segment joining the two paths represents the
     // path of centripetal acceleration. Solve for max velocity based on max acceleration about the
     // radius of the circle, defined indirectly by junction deviation. This may be also viewed as
     // path width or max_jerk in the previous grbl version. This approach does not actually deviate
@@ -1089,7 +1168,7 @@ float junction_deviation = 0.1;
     }
     else {
       long acc_dist = estimate_acceleration_distance(0, block->nominal_rate, block->acceleration_st);
-      float advance = (STEPS_PER_CUBIC_MM_E * EXTRUDER_ADVANCE_K) * (cse * cse * EXTRUSION_AREA * EXTRUSION_AREA) * 256;
+      float advance = ((STEPS_PER_CUBIC_MM_E) * (EXTRUDER_ADVANCE_K)) * (cse * cse * (EXTRUSION_AREA) * (EXTRUSION_AREA)) * 256;
       block->advance = advance;
       block->advance_rate = acc_dist ? advance / (float)acc_dist : 0;
     }
@@ -1097,7 +1176,20 @@ float junction_deviation = 0.1;
     ECHO_SMV(OK, "advance :", block->advance/256);
     ECHO_EMV("advance rate :", block->advance_rate/256);
     */
-  #endif // ADVANCE
+  #elif ENABLED(ADVANCE_LPC) // ADVANCE_LPC
+    // bse == allsteps: A problem occurs when there's a very tiny move before a retract.
+    // In this case, the retract and the move will be executed together.
+    // This leads to an enormous number of advance steps due to a huge e_acceleration.
+    // The math is correct, but you don't want a retract move done with advance!
+    // So this situation is filtered out here.
+    if (!bse || (!bsx && !bsy && !bsz) || extruder_advance_k == 0 || bse == allsteps) {
+      block->use_advance_lead = false;
+    }
+    else {
+      block->use_advance_lead = true;
+      block->e_speed_multiplier8 = (block->steps[E_AXIS] << 8) / block->step_event_count;
+    }
+  #endif
 
   calculate_trapezoid_for_block(block, block->entry_speed / block->nominal_speed, safe_speed / block->nominal_speed);
 
@@ -1114,6 +1206,11 @@ float junction_deviation = 0.1;
 } // plan_buffer_line()
 
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
+  /**
+   * Get the XYZ position of the steppers as a vector_3.
+   *
+   * On CORE machines XYZ is derived from ABC.
+   */
   vector_3 plan_get_position() {
     vector_3 position = vector_3(st_get_axis_position_mm(X_AXIS), st_get_axis_position_mm(Y_AXIS), st_get_axis_position_mm(Z_AXIS));
 
@@ -1128,6 +1225,11 @@ float junction_deviation = 0.1;
   }
 #endif // AUTO_BED_LEVELING_FEATURE
 
+/**
+ * Directly set the planner XYZ position (hence the stepper positions).
+ *
+ * On CORE machines stepper ABC will be translated from the given XYZ.
+ */
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
   void plan_set_position(float x, float y, float z, const float& e)
 #else

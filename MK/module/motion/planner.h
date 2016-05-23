@@ -1,22 +1,44 @@
-/*
-  planner.h - buffers movement commands and manages the acceleration profile plan
-  Part of Grbl
+/**
+ * MK & MK4due 3D Printer Firmware
+ *
+ * Based on Marlin, Sprinter and grbl
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2013 - 2016 Alberto Cotronei @MagoKimbra
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 
-  Copyright (c) 2009-2011 Simen Svale Skogsrud
-
-  Grbl is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-
-  Grbl is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
-*/
+/**
+ * planner.h - Buffer movement commands and manages the acceleration profile plan
+ * Part of Grbl
+ *
+ * Copyright (c) 2009-2011 Simen Svale Skogsrud
+ *
+ * Grbl is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Grbl is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 // This module is to be considered a sub-module of stepper.c. Please don't include
 // this file from any other module.
@@ -27,25 +49,32 @@
 // This struct is used when buffering the setup for each linear movement "nominal" values are as specified in
 // the source g-code and may never actually be reached if acceleration management is active.
 typedef struct {
+
+  unsigned char active_driver;              // Selects the active driver
+
   // Fields used by the bresenham algorithm for tracing the line
-  long steps[NUM_AXIS];                     // Step count along each axis
+  unsigned long steps[NUM_AXIS];                      // Step count along each axis
+  unsigned long step_event_count;           // The number of step events required to complete this block
 
   #if ENABLED(COLOR_MIXING_EXTRUDER)
-    float mix_steps[DRIVER_EXTRUDERS];      // Step count for each stepper in a mixing extruder
+    unsigned long mix_event_count[DRIVER_EXTRUDERS];  // Step count for each stepper in a mixing extruder
   #endif
 
-  unsigned long step_event_count;           // The number of step events required to complete this block
   long accelerate_until;                    // The index of the step event on which to stop acceleration
   long decelerate_after;                    // The index of the step event on which to start decelerating
   long acceleration_rate;                   // The acceleration rate used for acceleration calculation
-  unsigned char direction_bits;             // The direction bit set for this block (refers to *_DIRECTION_BIT in config.h)
-  unsigned char active_driver;              // Selects the active driver
 
+  unsigned char direction_bits;             // The direction bit set for this block (refers to *_DIRECTION_BIT in config.h)
+
+  // Advance extrusion
   #if ENABLED(ADVANCE)
     long advance_rate;
     volatile long initial_advance;
     volatile long final_advance;
     float advance;
+  #elif ENABLED(ADVANCE_LPC)
+    bool use_advance_lead;
+    int e_speed_multiplier8;
   #endif
 
   // Fields used by the motion planner to manage acceleration
@@ -69,6 +98,19 @@ typedef struct {
     unsigned long valve_pressure;
     unsigned long e_to_p_pressure;
   #endif
+  
+  #if ENABLED(LASER)
+    uint8_t laser_mode; // CONTINUOUS, PULSED, RASTER
+    bool laser_status; // LASER_OFF, LASER_ON
+    float laser_ppm; // pulses per millimeter, for pulsed and raster firing modes
+    unsigned long laser_duration; // laser firing duration in microseconds, for pulsed and raster firing modes
+    unsigned long steps_l; // step count between firings of the laser, for pulsed firing mode
+    float laser_intensity; // Laser firing instensity in clock cycles for the PWM timer
+    #if ENABLED(LASER_RASTER)
+      unsigned char laser_raster_data[LASER_MAX_RASTER_LINE];
+      float laser_raster_intensity_factor;
+    #endif
+  #endif 
 
   #if ENABLED(LASERBEAM)
     unsigned long laser_ttlmodulation;
@@ -78,6 +120,8 @@ typedef struct {
 } block_t;
 
 #define BLOCK_MOD(n) ((n)&(BLOCK_BUFFER_SIZE-1))
+
+#define MAX_EVENTS_COUNT 2147483648 // max for a signed 32 bit number
 
 // Initialize the motion plan subsystem
 void plan_init();

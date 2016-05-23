@@ -1,4 +1,26 @@
-/*
+/**
+ * MK & MK4due 3D Printer Firmware
+ *
+ * Based on Marlin, Sprinter and grbl
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2013 - 2016 Alberto Cotronei @MagoKimbra
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+/**
   temperature.h - temperature controller
   Part of Marlin
 
@@ -23,7 +45,7 @@
 
 // public functions
 void tp_init();  //initialize the heating
-void manage_heater(); //it is critical that this is called periodically.
+void manage_temp_controller(); //it is critical that this is called periodically.
 
 #if ENABLED(FILAMENT_SENSOR)
   // For converting raw Filament Width to milimeters
@@ -50,9 +72,12 @@ extern float current_temperature[4];
 #if ENABLED(SHOW_TEMP_ADC_VALUES)
   extern int current_temperature_raw[4];
   extern int current_temperature_bed_raw;
+  extern int current_temperature_cooler_raw;
 #endif
 extern int target_temperature_bed;
 extern float current_temperature_bed;
+extern int target_temperature_cooler;
+extern float current_temperature_cooler;
 #if ENABLED(TEMP_SENSOR_1_AS_REDUNDANT)
   extern float redundant_temperature;
 #endif
@@ -70,7 +95,11 @@ extern float current_temperature_bed;
   extern float bedKp, bedKi, bedKd;
 #endif
 
-#if ENABLED(PIDTEMP) || ENABLED(PIDTEMPBED)
+#if ENABLED(PIDTEMPCOOLER)
+  extern float coolerKp, coolerKi, coolerKd;
+#endif
+
+#if ENABLED(PIDTEMP) || ENABLED(PIDTEMPBED) || ENABLED(PIDTEMPCOOLER)
   float scalePID_i(float i);
   float scalePID_d(float d);
   float unscalePID_i(float i);
@@ -92,17 +121,28 @@ extern float current_temperature_bed;
 
 FORCE_INLINE float degHotend(uint8_t hotend) { return current_temperature[HOTEND_ARG]; }
 FORCE_INLINE float degBed() { return current_temperature_bed; }
+FORCE_INLINE float degCooler() { return current_temperature_cooler; }
 
 #if ENABLED(SHOW_TEMP_ADC_VALUES)
   FORCE_INLINE float rawHotendTemp(uint8_t hotend) { return current_temperature_raw[HOTEND_ARG]; }
   FORCE_INLINE float rawBedTemp() { return current_temperature_bed_raw; }
+  FORCE_INLINE float rawCoolerTemp() { return current_temperature_cooler_raw; }
 #endif
 
 FORCE_INLINE float degTargetHotend(uint8_t hotend) { return target_temperature[HOTEND_ARG]; }
 FORCE_INLINE float degTargetBed() { return target_temperature_bed; }
+FORCE_INLINE float degTargetCooler() { return target_temperature_cooler; }
 
 #if ENABLED(THERMAL_PROTECTION_HOTENDS)
   void start_watching_heater(int h = 0);
+#endif
+
+#if ENABLED(THERMAL_PROTECTION_COOLERS)
+  void start_watching_cooler();
+#endif
+
+#if ENABLED(THERMAL_PROTECTION_BED)
+  void start_watching_bed();
 #endif
 
 FORCE_INLINE void setTargetHotend(const float& celsius, uint8_t hotend) {
@@ -111,13 +151,29 @@ FORCE_INLINE void setTargetHotend(const float& celsius, uint8_t hotend) {
     start_watching_heater(HOTEND_ARG);
   #endif
 }
-FORCE_INLINE void setTargetBed(const float& celsius) { target_temperature_bed = celsius; }
+
+FORCE_INLINE void setTargetBed(const float& celsius) {
+  target_temperature_bed = celsius;
+  #if ENABLED(THERMAL_PROTECTION_BED)
+    start_watching_bed();
+  #endif
+}
+
+FORCE_INLINE void setTargetCooler(const float& celsius) {
+  target_temperature_cooler = celsius;
+  #if ENABLED(THERMAL_PROTECTION_COOLER) && ENABLED(THERMAL_PROTECTION_COOLER_WATCHDOG)
+    start_watching_cooler();
+  #endif
+}
+
 
 FORCE_INLINE bool isHeatingHotend(uint8_t hotend) { return target_temperature[HOTEND_ARG] > current_temperature[HOTEND_ARG]; }
 FORCE_INLINE bool isHeatingBed() { return target_temperature_bed > current_temperature_bed; }
+FORCE_INLINE bool isHeatingCooler() { return target_temperature_cooler > current_temperature_cooler; } 
 
 FORCE_INLINE bool isCoolingHotend(uint8_t hotend) { return target_temperature[HOTEND_ARG] < current_temperature[HOTEND_ARG]; }
 FORCE_INLINE bool isCoolingBed() { return target_temperature_bed < current_temperature_bed; }
+FORCE_INLINE bool isCoolingCooler() { return target_temperature_cooler < current_temperature_cooler; } 
 
 #define HOTEND_ROUTINES(NR) \
   FORCE_INLINE float degHotend##NR() { return degHotend(NR); } \
@@ -143,10 +199,16 @@ HOTEND_ROUTINES(0);
 #endif
 
 int getHeaterPower(int heater);
-void disable_all_heaters();
+int getCoolerPower();
+unsigned char getPwmCooler(bool soft);
+
+void disable_all_heaters(); 
+void disable_all_coolers();
 void updatePID();
 
-void PID_autotune(float temp, int hotend, int ncycles);
+#if  HAS(PID_HEATING) || HAS(PID_COOLING)
+  void PID_autotune(float temp, int temp_controller, int ncycles, bool set_result = false);
+#endif
 
 void setExtruderAutoFanState(int pin, bool state);
 void checkExtruderAutoFans();

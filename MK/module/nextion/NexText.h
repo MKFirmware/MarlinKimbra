@@ -34,24 +34,32 @@ public: /* methods */
      * @copydoc NexObject::NexObject(uint8_t pid, uint8_t cid, const char *name);
      */
     NexText(uint8_t pid, uint8_t cid, const char *name);
-    
+
     /**
      * Get text attribute of component.
      *
-     * @param buffer - buffer storing text returned. 
-     * @param len - length of buffer. 
-     * @return The real length of text returned. 
+     * @param buffer - buffer storing text returned.
+     * @param len - length of buffer.
+     * @return The real length of text returned.
      */
     uint16_t getText(char *buffer, uint16_t len);
-    
+
     /**
      * Set text attribute of component.
      *
-     * @param buffer - text buffer terminated with '\0'. 
-     * @return true if success, false for failure. 
+     * @param buffer - text buffer terminated with '\0'.
+     * @return true if success, false for failure.
      */
     bool setText(const char *buffer);
     bool setColor(uint32_t value);
+
+    /**
+     * Set Hide / Show component
+     *
+     * @return true if success, false for failure.
+     */
+    bool setHide();
+    bool setShow();
 };
 
 /**

@@ -65,7 +65,7 @@ bool recvRetNumber(uint32_t *number, uint32_t timeout)
         && temp[7] == 0xFF
         )
     {
-        *number = (temp[4] << 24) | (temp[3] << 16) | (temp[2] << 8) | (temp[1]);
+        *number = ((uint32_t)temp[4] << 24) | ((uint32_t)temp[3] << 16) | ((uint32_t)temp[2] << 8) | ((uint32_t)temp[1]);
         ret = true;
     }
 
@@ -83,7 +83,6 @@ __return:
     
     return ret;
 }
-
 
 /*
  * Receive string data. 
@@ -222,7 +221,7 @@ bool nexInit(void)
 {
     bool ret1 = false;
     bool ret2 = false;
-    
+
     // Try default baudrate
     dbSerialBegin(9600);
     nexSerial.begin(9600);
@@ -232,19 +231,20 @@ bool nexInit(void)
     sendCommand("page 0");
     ret2 = recvRetCommandFinished();
 
-    // If baudrate is 9600 set to 57600 and reconnect
+    // If baudrate is 9600 set to 115200 and reconnect
     if (ret1 && ret2) {
-      sendCommand("baud=57600");
+      sendCommand("baud=115200");
       nexSerial.end();
       HAL::delayMilliseconds(1000);
-      nexSerial.begin(57600);
+      nexSerial.begin(115200);
       return ret1 && ret2;
 
-    // Else try to 57600 baudrate
-    } else {
+    // Else try to 115200 baudrate
+    }
+    else {
       nexSerial.end();
       HAL::delayMilliseconds(1000);
-      nexSerial.begin(57600);
+      nexSerial.begin(115200);
       sendCommand("");
       sendCommand("bkcmd=1");
       ret1 = recvRetCommandFinished();

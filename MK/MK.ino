@@ -1,9 +1,9 @@
 /**
- * MK Firmware
+ * MK 3D Printer Firmware
  *
  * Based on Marlin, Sprinter and grbl
- * Copyright (C) 2013 MagoKimbra
  * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2013 - 2016 Alberto Cotronei @MagoKimbra
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,11 +34,13 @@
  *
  * "G" Codes
  *
- * G0  -> G1
- * G1  - Coordinated Movement X Y Z E
+ * G0  -> G1 except for laser where G0 is "move without firing"
+ * G1  - Coordinated Movement X Y Z E, for laser move by firing
  * G2  - CW ARC
  * G3  - CCW ARC
  * G4  - Dwell S<seconds> or P<milliseconds>
+ * G5  - Bezier curve - from http://forums.reprap.org/read.php?147,93577
+ * G7  - Execute laser raster line
  * G10 - retract filament according to settings of M207
  * G11 - retract recover filament according to settings of M208
  * G28 - Home one or more axes
@@ -79,6 +81,7 @@
  * M30  - Delete file from SD (M30 filename.g)
  * M31  - Output time since last M109 or SD card start to serial
  * M32  - Make directory
+ * M35  - Upload Firmware to Nextion from SD
  * M42  - Change pin status via gcode Use M42 Px Sy to set pin x to value y, when omitting Px the onboard led will be used.
  * M48  - Measure Z_Probe repeatability. M48 [P # of points] [X position] [Y position] [V_erboseness #] [E_ngage Probe] [L # of legs of travel]
  * M70  - Power consumption sensor calibration
@@ -116,14 +119,15 @@
  * M127 - Solenoid Air Valve Closed (BariCUDA vent to atmospheric pressure by jmil)
  * M128 - EtoP Open (BariCUDA EtoP = electricity to air pressure transducer by jmil)
  * M129 - EtoP Closed (BariCUDA EtoP = electricity to air pressure transducer by jmil)
- * M140 - Set bed target temp
+ * M140 - Set bed or cooler target temp
  * M145 - Set the heatup state H<hotend> B<bed> F<fan speed> for S<material> (0=PLA, 1=ABS)
  * M150 - Set BlinkM Color Output R: Red<0-255> U(!): Green<0-255> B: Blue<0-255> over i2c, G for green does not work.
  * M163 - Set a single proportion for a mixing extruder. Requires COLOR_MIXING_EXTRUDER.
  * M164 - Save the mix as a virtual extruder. Requires COLOR_MIXING_EXTRUDER and MIXING_VIRTUAL_TOOLS.
  * M165 - Set the proportions for a mixing extruder. Use parameters ABCDHI to set the mixing factors. Requires COLOR_MIXING_EXTRUDER.
- * M190 - Sxxx Wait for bed current temp to reach target temp. Waits only when heating
- *        Rxxx Wait for bed current temp to reach target temp. Waits when heating and cooling
+ * M190 - Sxxx Wait for bed or cooler current temp to reach target temp. Waits only when heating Waits only when heating bed or cooling cooler
+ *        Rxxx Wait for bed or cooler current temp to reach target temp. Waits when heating and cooling
+ *        C parameter select Cooler, omitting it selec bed.
  * M200 - set filament diameter and set E axis units to cubic millimeters (use S0 to set back to millimeters).:D<millimeters>- 
  * M201 - Set max acceleration in units/s^2 for print moves (M201 X1000 Y1000)
  * M202 - Set max acceleration in units/s^2 for travel moves (M202 X1000 Y1000) Unused in Marlin!!
@@ -145,8 +149,8 @@
  * M300 - Play beep sound S<frequency Hz> P<duration ms>
  * M301 - Set PID parameters P I D and C
  * M302 - Allow cold extrudes, or set the minimum extrude S<temperature>.
- * M303 - PID relay autotune S<temperature> sets the target temperature (default target temperature = 150C). H<hotend> C<cycles>
- * M304 - Set bed PID parameters P I and D
+ * M303 - PID relay autotune S<temperature> sets the target temperature (default target temperature = 150C). H<hotend> C<cycles> U<Apply result>
+ * M304 - Set bed PID parameters P I and D or cooling if C parameter
  * M350 - Set microstepping mode.
  * M351 - Toggle MS1 MS2 pins directly.
  * M380 - Activate solenoid on active extruder
@@ -170,6 +174,9 @@
  * M595 - Set hotend AD595 O<offset> and S<gain>
  * M600 - Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
  * M605 - Set dual x-carriage movement mode: S<mode> [ X<duplication x-offset> R<duplication temp offset> ]
+ * M649 - laser set options
+ * M650 - mUVe peel set peel distance
+ * M651 - mUVe peel run peel move
  * M666 - Set z probe offset or Endstop and delta geometry adjustment
  * M906 - Set motor currents XYZ T0-4 E
  * M907 - Set digital trimpot motor current using axis codes.
@@ -193,9 +200,8 @@
  * T0-T3 - Select a tool by index (usually an extruder) [ F<mm/min> ]
  *
  */
- 
-#include "base.h"
 
+#include "base.h"
 #if ENABLED(DIGIPOT_I2C) || ENABLED(BLINKM)
   #include <Wire.h>
 #endif

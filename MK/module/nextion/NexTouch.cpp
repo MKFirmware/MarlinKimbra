@@ -92,4 +92,3 @@ void NexTouch::iterate(NexTouch **list, uint8_t pid, uint8_t cid, int32_t event)
         }
     }
 }
-

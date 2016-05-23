@@ -17,6 +17,7 @@
 *  35 BOARD_RAMPS_13_HFF - RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Fan, Fan)
 *  36 BOARD_RAMPS_13_HHF - RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Fan)
 *  37 BOARD_RAMPS_13_HHH - RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Hotend2)
+*  39 BOARD_SAINSMART_2IN1 - SainSmart 2 in 1
 * 301 BOARD_RAMBO - Rambo
 * 302 BOARD_MINIRAMBO - Mini Rambo
 * 316 BOARD_PIBOT - PiBot Controller Rev2.0 
@@ -92,6 +93,7 @@
 #define BOARD_RAMPS_13_HFF      35    // RAMPS 1.3 / 1.4 (Power outputs: Hotend, Fan, Fan)
 #define BOARD_RAMPS_13_HHF      36    // RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Fan)
 #define BOARD_RAMPS_13_HHH      37    // RAMPS 1.3 / 1.4 (Power outputs: Hotend0, Hotend1, Hotend2)
+#define BOARD_SAINSMART_2IN1    39    // SainSmart 2 in 1
 #define BOARD_RAMBO             301   // Rambo
 #define BOARD_MINIRAMBO         302   // Mini-Rambo
 #define BOARD_PIBOT             316   // PiBot Controller Rev2.0
@@ -99,7 +101,7 @@
 #define BOARD_DUEMILANOVE_328P  4     // Duemilanove w/ ATMega328P pin assignments
 #define BOARD_MKS_BASE          40    // MKS BASE 1.0
 #define BOARD_MKS_MINI          41    // MKS MINI 1.0
-#define BOARD_RADDS             402   // RADDS ARM 32
+#define BOARD_RADDS             401   // RADDS ARM 32
 #define BOARD_RAMPS_FD_V1       403   // RAMPS-FD V1 ARM 32
 #define BOARD_RAMPS_FD_V2       404   // RAMPS-FD V2 ARM 32
 #define BOARD_SMART_RAMPS       408   // SMART RAMPS ARM 32

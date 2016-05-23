@@ -1,16 +1,39 @@
+/**
+ * MK & MK4due 3D Printer Firmware
+ *
+ * Based on Marlin, Sprinter and grbl
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2013 - 2016 Alberto Cotronei @MagoKimbra
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 #ifndef COMMUNICATION_H
   #define COMMUNICATION_H
 
   #define START       "start"               // start for host
-  #define OK          "ok "                 // ok answer for host
-  #define ER          "Error: "             // error for host
-  #define WT          "Wait"                // wait for host
-  #define DB          "Echo: "              // message for user
-  #define DEB         "Debug: "             // message for debug
-  #define CFG         "Config: "            // config for host
-  #define INFO        "Info: "              // info for host
-  #define RESEND      "Resend: "            // resend for host
-  #define WARNING     "Warning: "           // warning for host
+  #define OK          "ok"                  // ok answer for host
+  #define ER          "Error:"              // error for host
+  #define WT          "wait"                // wait for host
+  #define DB          "Echo:"               // message for user
+  #define DEB         "Debug:"              // message for debug
+  #define CFG         "Config:"             // config for host
+  #define INFO        "Info:"               // info for host
+  #define BUSY        "busy:"               // buys for host
+  #define RESEND      "Resend:"             // resend for host
+  #define WARNING     "Warning:"            // warning for host
   #define TNAN        "NAN"                 // NAN for host
   #define TINF        "INF"                 // INF for host
   #define PAUSE       "//action:pause"      // command for host that support action

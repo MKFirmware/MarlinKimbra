@@ -1,23 +1,32 @@
-/*
-  stepper_indirection.h - stepper motor driver indirection macros
-  to allow some stepper functions to be done via SPI/I2c instead of direct pin manipulation
-  Part of Marlin
+/**
+ * MK & MK4due 3D Printer Firmware
+ *
+ * Based on Marlin, Sprinter and grbl
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2013 - 2016 Alberto Cotronei @MagoKimbra
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 
-  Copyright (c) 2015 Dominik Wenger
-
-  Marlin is free software: you can redistribute it and/or modify
-  it under the terms of the GNU General Public License as published by
-  the Free Software Foundation, either version 3 of the License, or
-  (at your option) any later version.
-
-  Marlin is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU General Public License for more details.
-
-  You should have received a copy of the GNU General Public License
-  along with Marlin.  If not, see <http://www.gnu.org/licenses/>.
-*/
+/**
+ * stepper_indirection.h - stepper motor driver indirection macros
+ * to allow some stepper functions to be done via SPI/I2c instead of direct pin manipulation
+ *
+ * Copyright (c) 2015 Dominik Wenger
+ *
+ */
 
 #ifndef STEPPER_INDIRECTION_H
 #define STEPPER_INDIRECTION_H
@@ -179,7 +188,7 @@
 #define E5_ENABLE_READ READ(E5_ENABLE_PIN)
 
 #if ENABLED(COLOR_MIXING_EXTRUDER)
-  #define E_STEP_WRITE(v) ; /* not used for mixing extruders! */
+  #define E_STEP_WRITE(v) NOOP /* not used for mixing extruders! */
   #if DRIVER_EXTRUDERS > 5
     #define En_STEP_WRITE(n,v) { switch (n) { case 0: E0_STEP_WRITE(v); break; case 1: E1_STEP_WRITE(v); break; case 2: E2_STEP_WRITE(v); break; case 3: E3_STEP_WRITE(v); break; case 4: E4_STEP_WRITE(v); break; case 5: E5_STEP_WRITE(v); } }
     #define NORM_E_DIR() { E0_DIR_WRITE(!INVERT_E0_DIR); E1_DIR_WRITE(!INVERT_E1_DIR); E2_DIR_WRITE(!INVERT_E2_DIR); E3_DIR_WRITE(!INVERT_E3_DIR); E4_DIR_WRITE(!INVERT_E4_DIR); E5_DIR_WRITE(!INVERT_E5_DIR); }
@@ -223,13 +232,12 @@
     #define NORM_E_DIR()    { switch(current_block->active_driver) { case 1: E1_DIR_WRITE(!INVERT_E1_DIR); break; case 0: E0_DIR_WRITE(!INVERT_E0_DIR); break; }}
     #define REV_E_DIR()     { switch(current_block->active_driver) { case 1: E1_DIR_WRITE( INVERT_E1_DIR); break; case 0: E0_DIR_WRITE( INVERT_E0_DIR); break; }}
   #else
-    extern bool extruder_duplication_enabled;
     #define E_STEP_WRITE(v) { if(extruder_duplication_enabled) { E0_STEP_WRITE(v); E1_STEP_WRITE(v); } else if(current_block->active_driver == 1) { E1_STEP_WRITE(v); } else { E0_STEP_WRITE(v); }}
     #define NORM_E_DIR()    { if(extruder_duplication_enabled) { E0_DIR_WRITE(!INVERT_E0_DIR); E1_DIR_WRITE(!INVERT_E1_DIR); } else if(current_block->active_driver == 1) { E1_DIR_WRITE(!INVERT_E1_DIR); } else { E0_DIR_WRITE(!INVERT_E0_DIR); }}
     #define REV_E_DIR()     { if(extruder_duplication_enabled) { E0_DIR_WRITE( INVERT_E0_DIR); E1_DIR_WRITE( INVERT_E1_DIR); } else if(current_block->active_driver == 1) { E1_DIR_WRITE( INVERT_E1_DIR); } else { E0_DIR_WRITE( INVERT_E0_DIR); }}
   #endif
 #else
-  #if ENABLED(DONDOLO)
+  #if ENABLED(DONDOLO_SINGLE_MOTOR)
     #define E_STEP_WRITE(v) E0_STEP_WRITE(v)
     #define NORM_E_DIR()  { switch(active_extruder) { case 1: E0_DIR_WRITE( INVERT_E0_DIR); break; case 0: E0_DIR_WRITE(!INVERT_E0_DIR); break; }}
     #define REV_E_DIR()   { switch(active_extruder) { case 1: E0_DIR_WRITE(!INVERT_E0_DIR); break; case 0: E0_DIR_WRITE( INVERT_E0_DIR); break; }}
@@ -245,7 +253,7 @@
   #define disable_x() do { X_ENABLE_WRITE(!X_ENABLE_ON); X2_ENABLE_WRITE(!X_ENABLE_ON); CBI(axis_known_position, X_AXIS); } while (0)
 #elif HAS(X_ENABLE)
   #define  enable_x() X_ENABLE_WRITE( X_ENABLE_ON)
-  #define disable_x() { X_ENABLE_WRITE(!X_ENABLE_ON); CBI(axis_known_position, X_AXIS); }
+  #define disable_x() { X_ENABLE_WRITE(!X_ENABLE_ON); axis_known_position[X_AXIS] = false; }
 #else
   #define  enable_x() ;
   #define disable_x() ;
@@ -257,7 +265,7 @@
     #define disable_y() { Y_ENABLE_WRITE(!Y_ENABLE_ON); Y2_ENABLE_WRITE(!Y_ENABLE_ON); CBI(axis_known_position, Y_AXIS); }
   #else
     #define  enable_y() Y_ENABLE_WRITE( Y_ENABLE_ON)
-    #define disable_y() { Y_ENABLE_WRITE(!Y_ENABLE_ON); CBI(axis_known_position, Y_AXIS); }
+    #define disable_y() { Y_ENABLE_WRITE(!Y_ENABLE_ON); axis_known_position[Y_AXIS] = false; }
   #endif
 #else
   #define  enable_y() ;
@@ -267,10 +275,10 @@
 #if HAS(Z_ENABLE)
   #if ENABLED(Z_DUAL_STEPPER_DRIVERS)
     #define  enable_z() { Z_ENABLE_WRITE( Z_ENABLE_ON); Z2_ENABLE_WRITE(Z_ENABLE_ON); }
-    #define disable_z() { Z_ENABLE_WRITE(!Z_ENABLE_ON); Z2_ENABLE_WRITE(!Z_ENABLE_ON); CBI(axis_known_position, Z_AXIS); }
+    #define disable_z() { Z_ENABLE_WRITE(!Z_ENABLE_ON); Z2_ENABLE_WRITE(!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }
   #else
     #define  enable_z() Z_ENABLE_WRITE( Z_ENABLE_ON)
-    #define disable_z() { Z_ENABLE_WRITE(!Z_ENABLE_ON); CBI(axis_known_position, Z_AXIS); }
+    #define disable_z() { Z_ENABLE_WRITE(!Z_ENABLE_ON); axis_known_position[Z_AXIS] = false; }
   #endif
 #else
   #define  enable_z() ;
@@ -279,16 +287,16 @@
 
 #if ENABLED(COLOR_MIXING_EXTRUDER)
 
-  #if MIXING_EXTRUDER > 5
+  #if DRIVER_EXTRUDERS > 5
     #define  enable_e0() { E0_ENABLE_WRITE( E_ENABLE_ON); E1_ENABLE_WRITE( E_ENABLE_ON); E2_ENABLE_WRITE( E_ENABLE_ON); E3_ENABLE_WRITE( E_ENABLE_ON); E4_ENABLE_WRITE( E_ENABLE_ON); E5_ENABLE_WRITE( E_ENABLE_ON); }
     #define disable_e0() { E0_ENABLE_WRITE(!E_ENABLE_ON); E1_ENABLE_WRITE(!E_ENABLE_ON); E2_ENABLE_WRITE(!E_ENABLE_ON); E3_ENABLE_WRITE(!E_ENABLE_ON); E4_ENABLE_WRITE(!E_ENABLE_ON); E5_ENABLE_WRITE(!E_ENABLE_ON); }
-  #elif MIXING_EXTRUDER > 4
+  #elif DRIVER_EXTRUDERS > 4
     #define  enable_e0() { E0_ENABLE_WRITE( E_ENABLE_ON); E1_ENABLE_WRITE( E_ENABLE_ON); E2_ENABLE_WRITE( E_ENABLE_ON); E3_ENABLE_WRITE( E_ENABLE_ON); E4_ENABLE_WRITE( E_ENABLE_ON); }
     #define disable_e0() { E0_ENABLE_WRITE(!E_ENABLE_ON); E1_ENABLE_WRITE(!E_ENABLE_ON); E2_ENABLE_WRITE(!E_ENABLE_ON); E3_ENABLE_WRITE(!E_ENABLE_ON); E4_ENABLE_WRITE(!E_ENABLE_ON); }
-  #elif MIXING_EXTRUDER > 3
+  #elif DRIVER_EXTRUDERS > 3
     #define  enable_e0() { E0_ENABLE_WRITE( E_ENABLE_ON); E1_ENABLE_WRITE( E_ENABLE_ON); E2_ENABLE_WRITE( E_ENABLE_ON); E3_ENABLE_WRITE( E_ENABLE_ON); }
     #define disable_e0() { E0_ENABLE_WRITE(!E_ENABLE_ON); E1_ENABLE_WRITE(!E_ENABLE_ON); E2_ENABLE_WRITE(!E_ENABLE_ON); E3_ENABLE_WRITE(!E_ENABLE_ON); }
-  #elif MIXING_EXTRUDER > 2
+  #elif DRIVER_EXTRUDERS > 2
     #define  enable_e0() { E0_ENABLE_WRITE( E_ENABLE_ON); E1_ENABLE_WRITE( E_ENABLE_ON); E2_ENABLE_WRITE( E_ENABLE_ON); }
     #define disable_e0() { E0_ENABLE_WRITE(!E_ENABLE_ON); E1_ENABLE_WRITE(!E_ENABLE_ON); E2_ENABLE_WRITE(!E_ENABLE_ON); }
   #else
@@ -296,16 +304,16 @@
     #define disable_e0() { E0_ENABLE_WRITE(!E_ENABLE_ON); E1_ENABLE_WRITE(!E_ENABLE_ON); }
   #endif
 
-  #define  enable_e1() ;
-  #define disable_e1() ;
-  #define  enable_e2() ;
-  #define disable_e2() ;
-  #define  enable_e3() ;
-  #define disable_e3() ;
-  #define  enable_e4() ;
-  #define disable_e4() ;
-  #define  enable_e5() ;
-  #define disable_e5() ;
+  #define  enable_e1() NOOP
+  #define disable_e1() NOOP
+  #define  enable_e2() NOOP
+  #define disable_e2() NOOP
+  #define  enable_e3() NOOP
+  #define disable_e3() NOOP
+  #define  enable_e4() NOOP
+  #define disable_e4() NOOP
+  #define  enable_e5() NOOP
+  #define disable_e5() NOOP
 
 #else // !COLOR_MIXING_EXTRUDER
 
@@ -313,48 +321,48 @@
     #define  enable_e0() E0_ENABLE_WRITE( E_ENABLE_ON)
     #define disable_e0() E0_ENABLE_WRITE(!E_ENABLE_ON)
   #else
-    #define  enable_e0() /* nothing */
-    #define disable_e0() /* nothing */
+    #define  enable_e0() NOOP
+    #define disable_e0() NOOP
   #endif
 
   #if (DRIVER_EXTRUDERS > 1) && HAS(E1_ENABLE)
     #define  enable_e1() E1_ENABLE_WRITE( E_ENABLE_ON)
     #define disable_e1() E1_ENABLE_WRITE(!E_ENABLE_ON)
   #else
-    #define  enable_e1() /* nothing */
-    #define disable_e1() /* nothing */
+    #define  enable_e1() NOOP
+    #define disable_e1() NOOP
   #endif
 
   #if (DRIVER_EXTRUDERS > 2) && HAS(E2_ENABLE)
     #define  enable_e2() E2_ENABLE_WRITE( E_ENABLE_ON)
     #define disable_e2() E2_ENABLE_WRITE(!E_ENABLE_ON)
   #else
-    #define  enable_e2() /* nothing */
-    #define disable_e2() /* nothing */
+    #define  enable_e2() NOOP
+    #define disable_e2() NOOP
   #endif
 
   #if (DRIVER_EXTRUDERS > 3) && HAS(E3_ENABLE)
     #define  enable_e3() E3_ENABLE_WRITE( E_ENABLE_ON)
     #define disable_e3() E3_ENABLE_WRITE(!E_ENABLE_ON)
   #else
-    #define  enable_e3() /* nothing */
-    #define disable_e3() /* nothing */
+    #define  enable_e3() NOOP
+    #define disable_e3() NOOP
   #endif
 
   #if (DRIVER_EXTRUDERS > 4) && HAS(E4_ENABLE)
     #define  enable_e4() E4_ENABLE_WRITE( E_ENABLE_ON)
     #define disable_e4() E4_ENABLE_WRITE(!E_ENABLE_ON)
   #else
-    #define  enable_e4() /* nothing */
-    #define disable_e4() /* nothing */
+    #define  enable_e4() NOOP
+    #define disable_e4() NOOP
   #endif
 
   #if (DRIVER_EXTRUDERS > 5) && HAS(E5_ENABLE)
     #define  enable_e5() E5_ENABLE_WRITE( E_ENABLE_ON)
     #define disable_e5() E5_ENABLE_WRITE(!E_ENABLE_ON)
   #else
-    #define  enable_e5() /* nothing */
-    #define disable_e5() /* nothing */
+    #define  enable_e5() NOOP
+    #define disable_e5() NOOP
   #endif
 
 #endif

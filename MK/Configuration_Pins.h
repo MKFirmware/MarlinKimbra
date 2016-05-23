@@ -94,6 +94,8 @@
   #define E0E1_CHOICE_PIN -1
   #define E0E2_CHOICE_PIN -1
   #define E0E3_CHOICE_PIN -1
+  #define E0E4_CHOICE_PIN -1
+  #define E0E5_CHOICE_PIN -1
   #define E1E3_CHOICE_PIN -1
 #endif
 
@@ -106,12 +108,43 @@
   #define LASER_TTL_PIN -1
 #endif
 
+#if ENABLED(LASER)
+   #if LASER_CONTROL == 1
+      #define LASER_FIRING_PIN    5
+      #define LASER_INTENSITY_PIN -1
+   #endif
+   #if LASER_CONTROL == 2
+      #define LASER_INTENSITY_PIN 6 // Digital pins 2, 3, 5, 6, 7, 8 are attached to timers we can use
+      #define LASER_FIRING_PIN   5
+   #endif
+   #if DISABLED(ORIG_TEMP_COOLER_PIN)
+     #define TEMP_COOLER_PIN ORIG_TEMP_0_PIN // Default to the first thermistor
+   #endif
+   #if ENABLED(LASER_POWER_DOWN)
+      #define LASER_POWER_PIN 9 // This is currently hard-coded to timer2 which services pins 9, 10
+   #endif // LASER_POWER_DOWN
+   #if ENABLED(LASER_PERIPHERALS)
+      #define LASER_PERIPHERALS_PIN       11
+      #define LASER_PERIPHERALS_STATUS_PIN      4
+   #endif // LASER_PERIPHERALS
+   #if ENABLED(COOLER)
+      #define COOLER_PIN 2 // Digital pins 2, 3, 5, 6, 7, 8 are attached to timers we can use
+   #endif // COOLER
+#endif
+
+
+
+
 #if ENABLED(FILAMENT_RUNOUT_SENSOR)
   #define FILRUNOUT_PIN -1
 #endif
 
 #if ENABLED(FILAMENT_SENSOR)
   #define FILWIDTH_PIN -1
+#endif
+
+#if ENABLED(FLOWMETER_SENSOR)
+  #define FLOWMETER_PIN -1
 #endif
 
 #if ENABLED(POWER_CONSUMPTION)

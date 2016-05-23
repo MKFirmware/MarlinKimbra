@@ -1,4 +1,26 @@
 /**
+ * MK & MK4due 3D Printer Firmware
+ *
+ * Based on Marlin, Sprinter and grbl
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2013 - 2016 Alberto Cotronei @MagoKimbra
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+/**
  * sanitycheck.h
  *
  * Test configuration values for errors at compile-time.
@@ -60,12 +82,15 @@
   #if DISABLED(TEMP_SENSOR_BED)
     #error DEPENDENCY ERROR: Missing setting TEMP_SENSOR_BED
   #endif
-  #if (THERMISTORHEATER_0 == 998) || (THERMISTORHEATER_1 == 998) || (THERMISTORHEATER_2 == 998) || (THERMISTORHEATER_3 == 998) || (THERMISTORBED == 998) //User EXIST table
+  #if DISABLED(TEMP_SENSOR_COOLER)
+    #error DEPENDENCY_ERROR: Missing setting TEMP_SENSOR_COOLER
+  #endif
+  #if (THERMISTORHEATER_0 == 998) || (THERMISTORHEATER_1 == 998) || (THERMISTORHEATER_2 == 998) || (THERMISTORHEATER_3 == 998) || (THERMISTORBED == 998) || (THERMISTORCOOLER == 998) //User EXIST table
     #if DISABLED(DUMMY_THERMISTOR_998_VALUE)
       #define DUMMY_THERMISTOR_998_VALUE 25
     #endif
   #endif
-  #if (THERMISTORHEATER_0 == 999) || (THERMISTORHEATER_1 == 999) || (THERMISTORHEATER_2 == 999) || (THERMISTORHEATER_3 == 999) || (THERMISTORBED == 999) //User EXIST table
+  #if (THERMISTORHEATER_0 == 999) || (THERMISTORHEATER_1 == 999) || (THERMISTORHEATER_2 == 999) || (THERMISTORHEATER_3 == 999) || (THERMISTORBED == 999) || (THERMISTORCOOLER == 999)//User EXIST table
     #if DISABLED(DUMMY_THERMISTOR_999_VALUE)
       #define DUMMY_THERMISTOR_999_VALUE 25
     #endif
@@ -123,6 +148,17 @@
       #error DEPENDENCY ERROR: Missing setting BED_MINTEMP
     #endif
   #endif
+  #if TEMP_SENSOR_COOLER != 0
+    #if DISABLED(COOLER_MAXTEMP)
+      #error DEPENDENCY ERROR: Missing setting COOLER_MAXTEMP
+    #endif
+    #if DISABLED(COOLER_MINTEMP)
+      #error DEPENDENCY ERROR: Missing setting COOLER_MINTEMP
+    #endif
+    #if DISABLED(COOLER)
+      #error DEPENDENCY ERROR: Cannot enable TEMP_SENSOR_COOLER and not COOLER
+    #endif
+  #endif
   #if DISABLED(PLA_PREHEAT_HOTEND_TEMP)
     #error DEPENDENCY ERROR: Missing setting PLA_PREHEAT_HOTEND_TEMP
   #endif
@@ -152,8 +188,8 @@
   #endif
 
   // Language
-  #if DISABLED(LANGUAGE_CHOICE)
-    #error DEPENDENCY ERROR: Missing setting LANGUAGE_CHOICE
+  #if DISABLED(LCD_LANGUAGE)
+    #error DEPENDENCY ERROR: Missing setting LCD_LANGUAGE
   #endif
 
   /// FEATURE
@@ -165,7 +201,10 @@
   #if DISABLED(MAX_BED_POWER)
     #error DEPENDENCY ERROR: Missing setting MAX_BED_POWER
   #endif
-  #if ENABLED(PIDTEMP) || ENABLED(PIDTEMPBED)
+  #if DISABLED(MAX_COOLER_POWER)
+    #error DEPENDENCY ERROR: Missing setting MAX_COOLER_POWER
+  #endif
+  #if ENABLED(PIDTEMP) || ENABLED(PIDTEMPBED) || ENABLED(PIDTEMPCOOLER)
     #if DISABLED(MAX_OVERSHOOT_PID_AUTOTUNE)
       #error DEPENDENCY ERROR: Missing setting MAX_OVERSHOOT_PID_AUTOTUNE
     #endif
@@ -201,6 +240,21 @@
       #error DEPENDENCY ERROR: Missing setting DEFAULT_bedKd
     #endif
   #endif
+  #if ENABLED(PIDTEMPCOOLER)
+    #if DISABLED(PID_COOLER_INTEGRAL_DRIVE_MAX)
+       #error DEPENDENCY ERROR: Missing setting PID_COOLER_INTEGRAL_DRIVE_MAX
+    #endif
+    #if DISABLED(DEFAULT_coolerKp)
+      #error DEPENDENCY ERROR: Missing setting DEFAULT_coolerKp
+    #endif
+    #if DISABLED(DEFAULT_coolerKi)
+      #error DEPENDENCY ERROR: Missing setting DEFAULT_coolerKi
+    #endif
+    #if DISABLED(DEFAULT_coolerKd)
+      #error DEPENDENCY ERROR: Missing setting DEFAULT_coolerKd
+    #endif
+
+  #endif
   #if ENABLED(BED_LIMIT_SWITCHING)
     #if DISABLED(BED_HYSTERESIS)
       #error DEPENDENCY ERROR: Missing setting BED_HYSTERESIS
@@ -209,6 +263,15 @@
       #error DEPENDENCY ERROR: Missing setting BED_CHECK_INTERVAL
     #endif
   #endif
+  #if ENABLED(COOLER_LIMIT_SWITCHING)
+    #if DISABLED(COOLER_HYSTERESIS)
+      #error DEPENDENCY ERROR: Missing setting COOLER_HYSTERESIS
+    #endif
+    #if DISABLED(COOLER_CHECK_INTERVAL)
+      #error DEPENDENCY ERROR: Missing setting COOLER_CHECK_INTERVAL
+    #endif
+  #endif
+
   #if ENABLED(THERMAL_PROTECTION_HOTENDS)
     #if DISABLED(THERMAL_PROTECTION_PERIOD)
       #error DEPENDENCY ERROR: Missing setting THERMAL_PROTECTION_PERIOD
@@ -231,6 +294,23 @@
       #error DEPENDENCY ERROR: Missing setting THERMAL_PROTECTION_BED_HYSTERESIS
     #endif
   #endif
+  #if ENABLED(THERMAL_PROTECTION_COOLER)
+    #if DISANLED(THERMAL_PROTECTION_COOLER_PERIOD)
+      #error DEPENDENCY ERROR: Missing setting THERMAL_PROTECTION_COOLER_PERIOD
+    #endif
+    #if DISABLED(THERMAL_PROTECTION_COOLER_HYSTERESIS)
+      #error DEPENDENCY ERROR: Missing setting THERMAL_PROTECTION_COOLER_HYSTERESIS
+    #endif
+    #if ENABLED(THERMAL_PROTECTION_COOLER_WATCHDOG)
+       #if DISABLED(WATCH_TEMP_COOLER_PERIOD)
+         #error DEPENDENCY ERROR: Missing setting WATCH_TEMP_COOLER_PERIOD
+       #endif
+       #if DISABLED(WATCH_TEMP_COOLER_DECREASE)
+         #error DEPENDENCY ERROR: Missing setting WATCH_TEMP_COOLER_DECREASE
+       #endif
+    #endif
+  #endif
+
 
   // Fan
   #if DISABLED(SOFT_PWM_SCALE)
@@ -369,6 +449,12 @@
     #endif
   #endif
 
+  /**
+   * Advance Extrusion
+   */
+  #if ENABLED(ADVANCE) && ENABLED(ADVANCE_LPC)
+    #error You can enable ADVANCE or ADVANCE_LPC, but not both.
+  #endif
   #if ENABLED(ADVANCE)
     #if DISABLED(EXTRUDER_ADVANCE_K)
       #error DEPENDENCY ERROR: Missing setting EXTRUDER_ADVANCE_K
@@ -378,24 +464,24 @@
     #endif
   #endif
 
-  #if ENABLED(FILAMENTCHANGEENABLE)
-    #if DISABLED(FILAMENTCHANGE_XPOS)
-      #error DEPENDENCY ERROR: Missing setting FILAMENTCHANGE_XPOS
+  #if ENABLED(FILAMENT_CHANGE_FEATURE)
+    #if DISABLED(FILAMENT_CHANGE_X_POS)
+      #error DEPENDENCY ERROR: Missing setting FILAMENT_CHANGE_X_POS
     #endif
-    #if DISABLED(FILAMENTCHANGE_YPOS)
-      #error DEPENDENCY ERROR: Missing setting FILAMENTCHANGE_YPOS
+    #if DISABLED(FILAMENT_CHANGE_Y_POS)
+      #error DEPENDENCY ERROR: Missing setting FILAMENT_CHANGE_Y_POS
     #endif
-    #if DISABLED(FILAMENTCHANGE_ZADD)
-      #error DEPENDENCY ERROR: Missing setting FILAMENTCHANGE_ZADD
+    #if DISABLED(FILAMENT_CHANGE_Z_ADD)
+      #error DEPENDENCY ERROR: Missing setting FILAMENT_CHANGE_Z_ADD
     #endif
-    #if DISABLED(FILAMENTCHANGE_FIRSTRETRACT)
-      #error DEPENDENCY ERROR: Missing setting FILAMENTCHANGE_FIRSTRETRACT
+    #if DISABLED(FILAMENT_CHANGE_RETRACT_LENGTH)
+      #error DEPENDENCY ERROR: Missing setting FILAMENT_CHANGE_RETRACT_LENGTH
     #endif
-    #if DISABLED(FILAMENTCHANGE_FINALRETRACT)
-      #error DEPENDENCY ERROR: Missing setting FILAMENTCHANGE_FINALRETRACT
+    #if DISABLED(FILAMENT_CHANGE_UNLOAD_LENGTH)
+      #error DEPENDENCY ERROR: Missing setting FILAMENT_CHANGE_UNLOAD_LENGTH
     #endif
-    #if DISABLED(FILAMENTCHANGE_PRINTEROFF)
-      #error DEPENDENCY ERROR: Missing setting FILAMENTCHANGE_PRINTEROFF
+    #if DISABLED(FILAMENT_CHANGE_PRINTER_OFF)
+      #error DEPENDENCY ERROR: Missing setting FILAMENT_CHANGE_PRINTER_OFF
     #endif
   #endif
     
@@ -1190,7 +1276,7 @@
       #error DEPENDENCY ERROR: Missing setting MANUAL_Z_HOME_POS
     #endif
   #endif
-  #if MECH(COREXY) || MECH(COREXZ)
+  #if MECH(COREXY) || MECH(COREYX) || MECH(COREXZ) || MECH(COREZX)
     #if DISABLED(COREX_YZ_FACTOR)
       #error DEPENDENCY ERROR: Missing setting COREX_YZ_FACTOR
     #endif
@@ -1220,8 +1306,8 @@
   #endif
 
   #if MECH(DELTA)
-    #if DISABLED(DEFAULT_DELTA_DIAGONAL_ROD)
-      #error DEPENDENCY ERROR: Missing setting DEFAULT_DELTA_DIAGONAL_ROD
+    #if DISABLED(DELTA_DIAGONAL_ROD)
+      #error DEPENDENCY ERROR: Missing setting DELTA_DIAGONAL_ROD
     #endif
     #if DISABLED(DELTA_SMOOTH_ROD_OFFSET)
       #error DEPENDENCY ERROR: Missing setting DELTA_SMOOTH_ROD_OFFSET
@@ -1229,8 +1315,8 @@
     #if DISABLED(DELTA_CARRIAGE_OFFSET)
       #error DEPENDENCY ERROR: Missing setting DELTA_CARRIAGE_OFFSET
     #endif
-    #if DISABLED(BED_PRINTER_RADIUS)
-      #error DEPENDENCY ERROR: Missing setting BED_PRINTER_RADIUS
+    #if DISABLED(DELTA_PRINTABLE_RADIUS)
+      #error DEPENDENCY ERROR: Missing setting DELTA_PRINTABLE_RADIUS
     #endif
     #if DISABLED(DEFAULT_DELTA_RADIUS)
       #error DEPENDENCY ERROR: Missing setting DEFAULT_DELTA_RADIUS
@@ -1280,8 +1366,14 @@
     #if DISABLED(TOWER_C_DIAGROD_ADJ)
       #error DEPENDENCY ERROR: Missing setting TOWER_C_DIAGROD_ADJ
     #endif
-    #if DISABLED(Z_PROBE_OFFSET)
-      #error DEPENDENCY ERROR: Missing setting Z_PROBE_OFFSET
+    #if DISABLED(X_PROBE_OFFSET_FROM_EXTRUDER)
+      #error DEPENDENCY ERROR: Missing setting X_PROBE_OFFSET_FROM_EXTRUDER
+    #endif
+    #if DISABLED(Y_PROBE_OFFSET_FROM_EXTRUDER)
+      #error DEPENDENCY ERROR: Missing setting Y_PROBE_OFFSET_FROM_EXTRUDER
+    #endif
+    #if DISABLED(Z_PROBE_OFFSET_FROM_EXTRUDER)
+      #error DEPENDENCY ERROR: Missing setting Z_PROBE_OFFSET_FROM_EXTRUDER
     #endif
     #if DISABLED(Z_PROBE_DEPLOY_START_LOCATION)
       #error DEPENDENCY ERROR: Missing setting Z_PROBE_DEPLOY_START_LOCATION
@@ -1346,8 +1438,11 @@
    * Babystepping
    */
   #if ENABLED(BABYSTEPPING)
-    #if MECH(COREXY) && ENABLED(BABYSTEP_XY)
+    #if (MECH(COREXY) || MECH(COREYX)) && ENABLED(BABYSTEP_XY)
       #error CONFLICT ERROR: BABYSTEPPING only implemented for Z axis on CoreXY.
+    #endif
+    #if (MECH(COREXZ) || MECH(COREZX))
+      #error CONFLICT ERROR: BABYSTEPPING not implemented for CoreXZ or CoreZX.
     #endif
     #if MECH(SCARA)
       #error CONFLICT ERROR: BABYSTEPPING is not implemented for SCARA yet.
@@ -1435,10 +1530,10 @@
   #endif
 
   /**
-   * Required LCD for FILAMENTCHANGEENABLE
+   * Required LCD for FILAMENT_CHANGE_FEATURE
    */
-  #if ENABLED(FILAMENTCHANGEENABLE) && DISABLED(ULTRA_LCD)
-    #error DEPENDENCY ERROR: You must have LCD in order to use FILAMENTCHANGEENABLE
+  #if ENABLED(FILAMENT_CHANGE_FEATURE) && DISABLED(ULTRA_LCD)
+    #error DEPENDENCY ERROR: You must have LCD in order to use FILAMENT_CHANGE_FEATURE
   #endif
 
   /**
@@ -1713,12 +1808,47 @@
     #error DEPENDENCY ERROR: You have to set E_MIN_PIN to a valid pin if you enable NPR2
   #endif
 
-  #if ENABLED(DONDOLO) && NUM_SERVOS < 1
-    #error DEPENDENCY ERROR: You must set NUM_SERVOS > 0 for DONDOLO
+  #if (ENABLED(DONDOLO_SINGLE_MOTOR) || ENABLED(DONDOLO_DUAL_MOTOR)) && HASNT(SERVOS)
+    #error DEPENDENCY ERROR: You must enabled ENABLE_SERVOS and set NUM_SERVOS > 0 for DONDOLO MULTI EXTRUDER
+  #endif
+
+  #if ENABLED(DONDOLO_SINGLE_MOTOR) && ENABLED(DONDOLO_DUAL_MOTOR)
+    #error DEPENDENCY ERROR: You must enabled only one for DONDOLO_SINGLE_MOTOR and DONDOLO_DUAL_MOTOR
+  #endif
+
+  #if (ENABLED(DONDOLO_SINGLE_MOTOR) || ENABLED(DONDOLO_DUAL_MOTOR)) && EXTRUDERS != 2
+    #error DEPENDENCY ERROR: You must set EXTRUDERS = 2 for DONDOLO
   #endif
 
   #if ENABLED(LASERBEAM) && (!PIN_EXISTS(LASER_PWR) ||  !PIN_EXISTS(LASER_TTL)) 
     #error DEPENDENCY ERROR: You have to set LASER_PWR_PIN and LASER_TTL_PIN to a valid pin if you enable LASERBEAM
+  #endif
+
+  #if ENABLED(LASERBEAM) && ENABLED(LASER)
+    #error DEPENDENCY ERROR: You must enable only one of LASERBEAM or LASER, not both!
+  #endif
+
+  #if ENABLED(LASER) 
+    #if (!ENABLED(LASER_REMAP_INTENSITY) && ENABLED(LASER_RASTER))
+      #error DEPENDENCY ERROR: You have to set LASER_REMAP_INTENSITY with LASER_RASTER enabled
+    #endif
+    #if (!ENABLED(LASER_CONTROL) || ((LASER_CONTROL > 0) && (LASER_CONTROL < 2)))
+       #error DEPENDENCY ERROR: You have to set LASER_CONTROL to 1 or 2
+    #else
+      #if(LASER_CONTROL == 1)
+        #if( !PIN_EXISTS(LASER_FIRING))
+          #error DEPENDENCY ERROR: You have to set LASER_FIRING_PIN
+        #endif
+      #else
+        #if( !PIN_EXISTS(LASER_FIRING) || !PIN_EXISTS(LASER_INTENSITY))
+          #error DEPENDENCY ERROR: You have to set LASER_FIRING_PIN and LASER_INTENSITY_PIN to a valid pin if you enable LASER
+        #endif
+      #endif
+    #endif
+  #endif
+
+  #if DISABLED(LASER_HAS_FOCUS)
+    #error DEPENDENCY ERROR: Missing LASER_HAS_FOCUS setting
   #endif
 
   #if ENABLED(FILAMENT_RUNOUT_SENSOR) && !PIN_EXISTS(FILRUNOUT)
@@ -1727,6 +1857,10 @@
 
   #if ENABLED(FILAMENT_SENSOR) && !PIN_EXISTS(FILWIDTH)
     #error DEPENDENCY ERROR: You have to set FILWIDTH_PIN to a valid pin if you enable FILAMENT_SENSOR
+  #endif
+
+  #if ENABLED(FILAMENT_SENSOR) && !PIN_EXISTS(FLOWMETER)
+    #error DEPENDENCY ERROR: You have to set FLOWMETER_PIN to a valid pin if you enable FLOWMETER_SENSOR
   #endif
 
   #if ENABLED(POWER_CONSUMPTION) && !PIN_EXISTS(POWER_CONSUMPTION)
@@ -1759,6 +1893,10 @@
   
   #if ENABLED(Z_PROBE_SLED) && !PIN_EXISTS(SLED)
     #error DEPENDENCY ERROR: You have to set SLED_PIN to a valid pin if you enable Z_PROBE_SLED
+  #endif
+
+  #if ENABLED(LASERBEAM) && ENABLED(LASER)
+    #error DEPENDENCY ERROR: You have to select only one of LASER or LASERBEAM
   #endif
 
 #endif //SANITYCHECK_H

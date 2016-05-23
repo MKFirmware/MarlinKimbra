@@ -1,5 +1,24 @@
-// Tonokip RepRap firmware rewrite based off of Hydra-mmm firmware.
-// License: GPL
+/**
+ * MK & MK4due 3D Printer Firmware
+ *
+ * Based on Marlin, Sprinter and grbl
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2013 - 2016 Alberto Cotronei @MagoKimbra
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
 
 #ifndef MK_H
 #define MK_H
@@ -9,29 +28,34 @@
 
 void get_command();
 
-void idle(bool ignore_stepper_queue = false);
+void idle(
+  #if ENABLED(FILAMENT_CHANGE_FEATURE)
+    bool no_stepper_sleep=false  // pass true to keep steppers from disabling on timeout
+  #endif
+);
 
 void manage_inactivity(bool ignore_stepper_queue = false);
+
+#if ENABLED(DUAL_X_CARRIAGE)
+  extern bool extruder_duplication_enabled;
+#endif
 
 void FlushSerialRequestResend();
 void ok_to_send();
 
 #if MECH(DELTA)
-  float probe_bed(float x, float y);
   void set_delta_constants();
-  void adj_tower_delta(int tower);
-  void adj_tower_radius(int tower);
-  void home_delta_axis();
-  void calibration_report();
-  void bed_probe_all();
-  void set_default_z_probe_offset();
-  void set_delta_constants();
-  void save_carriage_positions(int position_num);
   void calculate_delta(float cartesian[3]);
-  void adjust_delta(float cartesian[3]);
-  void adj_endstops();
-  void reset_bed_level();
-  void prepare_move_raw();
+  static float probe_bed(float x, float y);
+  static void adj_tower_delta(int tower);
+  static void adj_tower_radius(int tower);
+  static void home_delta_axis();
+  static void calibration_report();
+  static void bed_probe_all();
+  static void adjust_delta(float cartesian[3]);
+  static void adj_endstops();
+  static void reset_bed_level();
+  static void prepare_move_raw();
   extern float delta[3];
   extern float delta_tmp[3];
   extern float delta_tower1_x, delta_tower1_y;
@@ -44,11 +68,14 @@ void ok_to_send();
   extern float delta_radius;
   extern float delta_diagonal_rod;
 #endif
+
 #if MECH(SCARA)
   void calculate_delta(float cartesian[3]);
   void calculate_SCARA_forward_Transform(float f_scara[3]);
 #endif
+
 void prepare_move();
+
 void kill(const char *);
 void Stop();
 
@@ -60,36 +87,38 @@ void Stop();
  * Debug flags - with repetier
  */
 enum DebugFlags {
-  DEBUG_ECHO          = _BV(0),
-  DEBUG_INFO          = _BV(1),
-  DEBUG_ERRORS        = _BV(2),
-  DEBUG_DRYRUN        = _BV(3),
-  DEBUG_COMMUNICATION = _BV(4),
-  DEBUG_DEBUG         = _BV(5)
+  DEBUG_NONE          = 0,
+  DEBUG_ECHO          = _BV(0), ///< Echo commands in order as they are processed
+  DEBUG_INFO          = _BV(1), ///< Print messages for code that has debug output
+  DEBUG_ERRORS        = _BV(2), ///< Not implemented
+  DEBUG_DRYRUN        = _BV(3), ///< Ignore temperature setting
+  DEBUG_COMMUNICATION = _BV(4), ///< Not implemented
+  DEBUG_DEBUG         = _BV(5)  ///< Print Debug
 };
+extern uint8_t mk_debug_flags;
 
 void clamp_to_software_endstops(float target[3]);
-
-extern uint8_t debugLevel;
 
 extern bool Running;
 inline bool IsRunning() { return  Running; }
 inline bool IsStopped() { return !Running; }
 extern bool Printing;
 
-bool enqueuecommand(const char *cmd); //put a single ASCII command at the end of the current buffer or return false when it is full
-void enqueuecommands_P(const char *cmd); //put one or many ASCII commands at the end of the current buffer, read from flash
+bool enqueue_and_echo_command(const char* cmd, bool say_ok = false); // put a single ASCII command at the end of the current buffer or return false when it is full
+void enqueue_and_echo_command_now(const char* cmd); // enqueue now, only return when the command has been enqueued
+void enqueue_and_echo_commands_P(const char* cmd);  // put one or many ASCII commands at the end of the current buffer, read from flash
 
 void prepare_arc_move(char isclockwise);
 void clamp_to_software_endstops(float target[3]);
 
 extern millis_t previous_cmd_ms;
-void refresh_cmd_timeout();
+inline void refresh_cmd_timeout() { previous_cmd_ms = millis(); }
 
 extern void delay_ms(millis_t ms);
 
-#if ENABLED(FAST_PWM_FAN)
-  void setPwmFrequency(uint8_t pin, uint8_t val);
+#if ENABLED(FAST_PWM_FAN) || ENABLED(FAST_PWM_COOLER)
+
+  void setPwmFrequency(uint8_t pin, int val);
 #endif
 
 extern float homing_feedrate[];
@@ -103,16 +132,22 @@ extern float volumetric_multiplier[EXTRUDERS];  // reciprocal of cross-sectional
 extern float current_position[NUM_AXIS];
 extern float destination[NUM_AXIS];
 extern float home_offset[3];
-extern float min_pos[3];
-extern float max_pos[3];
+extern float hotend_offset[3][HOTENDS];
+extern float sw_endstop_min[3];
+extern float sw_endstop_max[3];
+extern bool axis_known_position[3];
+extern bool axis_homed[3];
 extern float zprobe_zoffset;
-extern uint8_t axis_known_position;
-extern uint8_t axis_was_homed;
 
-// Hotend offset
-#if HOTENDS > 1
-  extern float hotend_offset[3][HOTENDS];
-#endif // HOTENDS > 1
+// GCode support for external objects
+bool code_seen(char);
+float code_value();
+long code_value_long();
+int16_t code_value_short();
+
+#if ENABLED(ADVANCE_LPC)
+  extern int extruder_advance_k;
+#endif
 
 #if HEATER_USES_AD595
   extern float ad595_offset[HOTENDS];
@@ -123,13 +158,7 @@ extern uint8_t axis_was_homed;
   extern uint8_t old_color; // old color for system NPR2
 #endif
 
-#if MECH(DELTA)
-  extern float z_probe_offset[3];
-  extern float endstop_adj[3];
-  extern float tower_adj[6];
-  extern float delta_radius;
-  extern float delta_diagonal_rod;
-#elif ENABLED(Z_DUAL_ENDSTOPS)
+#if ENABLED(Z_DUAL_ENDSTOPS)
   extern float z_endstop_adj;
 #endif
 
@@ -146,11 +175,15 @@ extern double printer_usage_filament;
   extern float extrude_min_temp;
 #endif
 
+#if ENABLED(HOST_KEEPALIVE_FEATURE)
+  extern uint8_t host_keepalive_interval;
+#endif
+
 extern int fanSpeed;
 
 #if ENABLED(BARICUDA)
-  extern int ValvePressure;
-  extern int EtoPPressure;
+  extern int baricuda_valve_pressure;
+  extern int baricuda_e_to_p_pressure;
 #endif
 
 #if ENABLED(FAN_SOFT_PWM)
@@ -168,6 +201,15 @@ extern int fanSpeed;
   extern int delay_index1, delay_index2;  //ring buffer index. used by planner, temperature, and main code
   extern float delay_dist;                //delay distance counter
   extern int meas_delay_cm;               //delay distance
+#endif
+
+#if ENABLED(FILAMENT_CHANGE_FEATURE)
+  enum FilamentChangeMenuResponse {
+    FILAMENT_CHANGE_RESPONSE_WAIT_FOR,
+    FILAMENT_CHANGE_RESPONSE_EXTRUDE_MORE,
+    FILAMENT_CHANGE_RESPONSE_RESUME_PRINT
+  };
+  extern FilamentChangeMenuResponse filament_change_menu_response;
 #endif
 
 #if HAS(POWER_CONSUMPTION_SENSOR)
@@ -209,8 +251,8 @@ extern int fanSpeed;
   extern bool config_readed;
 #endif
 
-extern millis_t print_job_start_ms;
-extern millis_t print_job_stop_ms;
+// Print job timer
+extern Stopwatch print_job_timer;
 
 // Handling multiple extruders pins
 extern uint8_t active_extruder;
@@ -218,7 +260,7 @@ extern uint8_t previous_extruder;
 extern uint8_t active_driver;
 
 #if MB(ALLIGATOR)
-  extern float motor_current[DRIVER_EXTRUDERS + 3];
+  extern float motor_current[3 + DRIVER_EXTRUDERS];
 #endif
 
 #if ENABLED(DIGIPOT_I2C)
@@ -230,6 +272,14 @@ extern uint8_t active_driver;
   void print_heaterstates();
 #endif
 
+#if HAS(TEMP_COOLER)
+  void print_coolerstates();
+#endif
+
+#if ENABLED(FLOWMETER_SENSOR)
+  void print_flowratestates();
+#endif
+
 #if ENABLED(FIRMWARE_TEST)
   void FirmwareTest();
 #endif
@@ -238,18 +288,11 @@ extern uint8_t active_driver;
   extern float mixing_factor[DRIVER_EXTRUDERS];
 #endif
 
-extern void calculate_volumetric_multipliers();
+void calculate_volumetric_multipliers();
 
 #if ENABLED(M100_FREE_MEMORY_WATCHER)
   extern void *__brkval;
   extern size_t  __heap_start, __heap_end, __flp;
-
-  //
-  // Declare all the functions we need from Marlin_Main.cpp to do the work!
-  //
-  float code_value();
-  long code_value_long();
-  bool code_seen(char );
 
   //
   // Utility functions used by M100 to get its work done.

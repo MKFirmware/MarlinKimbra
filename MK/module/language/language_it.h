@@ -1,4 +1,26 @@
 /**
+ * MK & MK4due 3D Printer Firmware
+ *
+ * Based on Marlin, Sprinter and grbl
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2013 - 2016 Alberto Cotronei @MagoKimbra
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+/**
  * Italian
  *
  * LCD Menu Messages
@@ -73,6 +95,7 @@
 #define MSG_PID_P                           "PID-P"
 #define MSG_PID_I                           "PID-I"
 #define MSG_PID_D                           "PID-D"
+#define MSG_PID_C                           "PID-C"
 #define MSG_H1                              " H1"
 #define MSG_H2                              " H2"
 #define MSG_H3                              " H3"
@@ -139,7 +162,7 @@
 #define MSG_CONTROL_RETRACT_RECOVER_SWAP    "Scamb. UnRet +mm"
 #define MSG_CONTROL_RETRACT_RECOVERF        "UnRet  V"
 #define MSG_AUTORETRACT                     "AutoArretramento"
-#define MSG_FILAMENTCHANGE                  "Cambia filamento"
+#define MSG_FILAMENT_CHANGE                 "Cambia filamento"
 #define MSG_INIT_SDCARD                     "Iniz. SD-Card"
 #define MSG_CNG_SDCARD                      "Cambia SD-Card"
 #define MSG_ZPROBE_OUT                      "Z probe out. bed"
@@ -151,13 +174,15 @@
 #define MSG_BABYSTEP_Z                      MSG_BABYSTEP " " MSG_Z
 #define MSG_ENDSTOP_ABORT                   "Finecorsa abort."
 #define MSG_HEATING_FAILED_LCD              "Riscaldamento fallito"
-#define MSG_ERR_REDUNDANT_TEMP              "REDUNDANT TEMP ERROR"
-#define MSG_THERMAL_RUNAWAY                 "THERMAL RUNAWAY"
+#define MSG_ERR_REDUNDANT_TEMP              "Err: TEMP RIDONDANTI"
+#define MSG_THERMAL_RUNAWAY                 "TEMP FUORI CONTROLLO"
 #define MSG_AD595                           "AD595 Offset & Gain"
-#define MSG_ERR_MAXTEMP                     "MAXTEMP ERROR"
-#define MSG_ERR_MINTEMP                     "MINTEMP ERROR"
-#define MSG_ERR_MAXTEMP_BED                 "MAXTEMP BED ERROR"
-#define MSG_ERR_MINTEMP_BED                 "MINTEMP BED ERROR"
+#define MSG_ERR_MAXTEMP                     "Err: TEMP MASSIMA"
+#define MSG_ERR_MINTEMP                     "Err: TEMP MINIMA"
+#define MSG_ERR_MAXTEMP_BED                 "Err: TEMP MASSIMA PIATTO"
+#define MSG_ERR_MINTEMP_BED                 "Err: TEMP MINIMA PIATTO"
+#define MSG_ERR_MAXTEMP_COOLER              "MAXTEMP COOLER ERROR"
+#define MSG_ERR_MINTEMP_COOLER              "MINTEMP COOLER ERROR"
 #define MSG_END_DAY                         "giorni"
 #define MSG_END_HOUR                        "ore"
 #define MSG_END_MINUTE                      "minuti"
@@ -183,6 +208,30 @@
   #define MSG_DELTA_CALIBRATE_CENTER        "Calibra Centro"
 #endif // DELTA
 
+// FILAMENT_CHANGE_FEATURE
+#define MSG_FILAMENT_CHANGE_HEADER          "CAMBIO FILO"
+#define MSG_FILAMENT_CHANGE_INIT_1          "Attendere"
+#define MSG_FILAMENT_CHANGE_INIT_2          "per il cambio"
+#define MSG_FILAMENT_CHANGE_INIT_3          "filamento"
+#define MSG_FILAMENT_CHANGE_UNLOAD_1        "Attendere lo"
+#define MSG_FILAMENT_CHANGE_UNLOAD_2        "scarico filamento"
+#define MSG_FILAMENT_CHANGE_UNLOAD_3        ""
+#define MSG_FILAMENT_CHANGE_INSERT_1        "Inserire filamento"
+#define MSG_FILAMENT_CHANGE_INSERT_2        "premere il bottone"
+#define MSG_FILAMENT_CHANGE_INSERT_3        "per continuare..."
+#define MSG_FILAMENT_CHANGE_LOAD_1          "Attendere il"
+#define MSG_FILAMENT_CHANGE_LOAD_2          "caricamento filo"
+#define MSG_FILAMENT_CHANGE_LOAD_3          ""
+#define MSG_FILAMENT_CHANGE_EXTRUDE_1       "Attendere"
+#define MSG_FILAMENT_CHANGE_EXTRUDE_2       "estrusione filamento"
+#define MSG_FILAMENT_CHANGE_EXTRUDE_3       ""
+#define MSG_FILAMENT_CHANGE_OPTION_HEADER   "Cosa faccio?"
+#define MSG_FILAMENT_CHANGE_OPTION_EXTRUDE  "Estrudere ancora"
+#define MSG_FILAMENT_CHANGE_OPTION_RESUME   "Riprendere la stampa"
+#define MSG_FILAMENT_CHANGE_RESUME_1        "Attendere che la"
+#define MSG_FILAMENT_CHANGE_RESUME_2        "stampa riprenda"
+#define MSG_FILAMENT_CHANGE_RESUME_3        ""
+
 // Scara
 #if MECH(SCARA)
   #define MSG_SCALE                         "Scale"
@@ -194,6 +243,9 @@
 #define MSG_HEATING_COMPLETE                "Riscaldamento finito."
 #define MSG_BED_HEATING                     "Riscaldamento piatto."
 #define MSG_BED_DONE                        "Piatto riscaldato."
+#define MSG_COOLER_COOLING                  "Raffreddamento..."
+#define MSG_COOLER_DONE                     "Raffreddamento finito."
+
 
 // Extra
 #define MSG_LASER                           "Laser Preset"

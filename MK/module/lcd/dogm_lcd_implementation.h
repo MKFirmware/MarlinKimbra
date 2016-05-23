@@ -1,4 +1,26 @@
 /**
+ * MK & MK4due 3D Printer Firmware
+ *
+ * Based on Marlin, Sprinter and grbl
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2013 - 2016 Alberto Cotronei @MagoKimbra
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+/**
  * dogm_lcd_implementation.h
  *
  * Graphics LCD implementation for 128x64 pixel LCDs by STB for ErikZalm/Marlin
@@ -7,7 +29,7 @@
  *
  * With the use of:
  * u8glib by Oliver Kraus
- * http://code.google.com/p/u8glib/
+ * https://github.com/olikraus/U8glib_Arduino
  * License: http://opensource.org/licenses/BSD-3-Clause
  */
 
@@ -17,7 +39,8 @@
 #define DOGM_LCD_IMPLEMENTATION_H
 
 /**
- * Implementation of the LCD display routines for a DOGM128 graphic display. These are common LCD 128x64 pixel graphic displays.
+ * Implementation of the LCD display routines for a DOGM128 graphic display.
+ * These are common LCD 128x64 pixel graphic displays.
  */
 
 #if ENABLED(ULTIPANEL)
@@ -44,6 +67,9 @@
   #undef USE_BIG_EDIT_FONT
 #endif
 
+#if ENABLED(LASER)
+#include "../laser/laserbitmaps.h"
+#endif
 
 #if ENABLED(USE_SMALL_INFOFONT)
   #include "dogm_font_data_6x9_marlin.h"
@@ -119,6 +145,7 @@
 
 // LCD selection
 #if ENABLED(U8GLIB_ST7920)
+  //U8GLIB_ST7920_128X64_RRD u8g(0,0,0);
   U8GLIB_ST7920_128X64_RRD u8g(0);
 #elif ENABLED(MAKRPANEL)
   // The MaKrPanel display, ST7565 controller as well
@@ -150,7 +177,6 @@
 #include "utf_mapper.h"
 
 int lcd_contrast;
-static unsigned char blink = 0; // Variable for visualization of fan rotation in GLCD
 static char currentfont = 0;
 
 static void lcd_setFont(char font_nr) {
@@ -174,7 +200,7 @@ char lcd_print(char c) {
     return charset_mapper(c);
 }
 
-char lcd_print(char* str) {
+char lcd_print(const char* str) {
   char c;
   int i = 0;
   char n = 0;
@@ -229,14 +255,14 @@ static void lcd_implementation_init() {
   #endif
 
   #if ENABLED(SHOW_BOOTSCREEN)
-    int offx = (u8g.getWidth() - START_BMPWIDTH) / 2;
+    int offx = (u8g.getWidth() - (START_BMPWIDTH)) / 2;
     #if ENABLED(START_BMPHIGH)
       int offy = 0;
     #else
       int offy = DOG_CHAR_HEIGHT;
     #endif
 
-    int txt1X = (u8g.getWidth() - (sizeof(STRING_SPLASH_LINE1) - 1) * DOG_CHAR_WIDTH) / 2;
+    int txt1X = (u8g.getWidth() - (sizeof(STRING_SPLASH_LINE1) - 1) * (DOG_CHAR_WIDTH)) / 2;
 
     u8g.firstPage();
     do {
@@ -244,11 +270,11 @@ static void lcd_implementation_init() {
         u8g.drawBitmapP(offx, offy, START_BMPBYTEWIDTH, START_BMPHEIGHT, start_bmp);
         lcd_setFont(FONT_MENU);
         #if DISABLED(STRING_SPLASH_LINE2)
-          u8g.drawStr(txt1X, u8g.getHeight() - DOG_CHAR_HEIGHT, STRING_SPLASH_LINE1);
+          u8g.drawStr(txt1X, u8g.getHeight() - (DOG_CHAR_HEIGHT), STRING_SPLASH_LINE1);
         #else
-          int txt2X = (u8g.getWidth() - (sizeof(STRING_SPLASH_LINE2) - 1) * DOG_CHAR_WIDTH) / 2;
-          u8g.drawStr(txt1X, u8g.getHeight() - DOG_CHAR_HEIGHT * 3 / 2, STRING_SPLASH_LINE1);
-          u8g.drawStr(txt2X, u8g.getHeight() - DOG_CHAR_HEIGHT * 1 / 2, STRING_SPLASH_LINE2);
+          int txt2X = (u8g.getWidth() - (sizeof(STRING_SPLASH_LINE2) - 1) * (DOG_CHAR_WIDTH)) / 2;
+          u8g.drawStr(txt1X, u8g.getHeight() - (DOG_CHAR_HEIGHT) * 3 / 2, STRING_SPLASH_LINE1);
+          u8g.drawStr(txt2X, u8g.getHeight() - (DOG_CHAR_HEIGHT) * 1 / 2, STRING_SPLASH_LINE2);
         #endif
       }
     } while (u8g.nextPage());
@@ -262,85 +288,203 @@ static void lcd_implementation_init() {
 
 static void lcd_implementation_clear() { } // Automatically cleared by Picture Loop
 
-static void _draw_heater_status(int x, int heater) {
-  bool isBed = heater < 0;
+FORCE_INLINE void _draw_centered_temp(int temp, int x, int y) {
+  int degsize = 6 * (temp >= 100 ? 3 : temp >= 10 ? 2 : 1); // number's pixel width
+  u8g.setPrintPos(x - (18 - degsize) / 2, y); // move left if shorter
+  lcd_print(itostr3(temp));
+  lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
+}
+
+FORCE_INLINE void _draw_heater_status(int x, int heater) {
+  #if HAS(TEMP_BED)
+    bool isBed = heater < 0;
+  #else
+    const bool isBed = false;
+  #endif
+
   int y = 17 + (isBed ? 1 : 0);
-
   lcd_setFont(FONT_STATUSMENU);
-  u8g.setPrintPos(x, 7);
-  lcd_print(itostr3(int((heater >= 0 ? degTargetHotend(heater) : degTargetBed()) + 0.5)));
-  lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
-  u8g.setPrintPos(x, 28);
-  lcd_print(itostr3(int(heater >= 0 ? degHotend(heater) : degBed()) + 0.5));
 
-  lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
-  if (heater >= 0 ? !isHeatingHotend(heater) : !isHeatingBed()) {
-    u8g.drawBox(x + 7, y, 2, 2);
-  }
+  #ifdef COLOR_MIXING_EXTRUDER
+    if (isBed) {
+      u8g.setPrintPos(x, 7);
+      lcd_print(itostr3(int(degTargetBed()) + 0.5));
+      lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
+      u8g.setPrintPos(x, 28);
+      lcd_print(itostr3(int(degBed()) + 0.5));
+
+      lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
+		  if (!isHeatingBed()) {
+        u8g.drawBox(x + 7, y, 2, 2);
+		  }
+		  else {
+        u8g.setColorIndex(0); // white on black
+        u8g.drawBox(x + 7, y, 2, 2);
+        u8g.setColorIndex(1); // black on white
+		  }
+	  }
+    else {
+      u8g.setPrintPos(0, 7);
+      lcd_print('T');
+      lcd_printPGM(PSTR(LCD_STR_DEGREE));
+      lcd_print(':');
+      lcd_print(itostr3(int(degHotend(heater)) + 0.5));
+      lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
+      u8g.setPrintPos(44, 7);
+      lcd_print('/');
+      lcd_print(itostr3(int(degTargetHotend(heater)) + 0.5));
+      lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
+    }
+  #else
+    u8g.setPrintPos(x, 7);
+    lcd_print(itostr3(int((heater >= 0 ? degTargetHotend(heater) : degTargetBed()) + 0.5)));
+    lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
+    u8g.setPrintPos(x, 28);
+    lcd_print(itostr3(int(heater >= 0 ? degHotend(heater) : degBed()) + 0.5));
+
+    lcd_printPGM(PSTR(LCD_STR_DEGREE " "));
+    if (heater >= 0 ? !isHeatingHotend(heater) : !isHeatingBed()) {
+      u8g.drawBox(x + 7, y, 2, 2);
+    }
+    else {
+      u8g.setColorIndex(0); // white on black
+      u8g.drawBox(x + 7, y, 2, 2);
+      u8g.setColorIndex(1); // black on white
+    }
+  #endif
+}
+
+FORCE_INLINE void _draw_axis_label(AxisEnum axis, const char *pstr, bool blink) {
+  if (blink)
+    lcd_printPGM(pstr);
   else {
-    u8g.setColorIndex(0); // white on black
-    u8g.drawBox(x + 7, y, 2, 2);
-    u8g.setColorIndex(1); // black on white
+    if (!axis_homed[axis])
+      lcd_printPGM(PSTR("?"));
+    else {
+      if (!axis_known_position[axis])
+        lcd_printPGM(PSTR(" "));
+      else
+        lcd_printPGM(pstr);
+    }
   }
 }
 
 static void lcd_implementation_status_screen() {
   u8g.setColorIndex(1); // black on white
 
-  // Symbols menu graphics, animated fan
-  u8g.drawBitmapP(9, 1, STATUS_SCREENBYTEWIDTH, STATUS_SCREENHEIGHT, (blink % 2) && fanSpeed ? status_screen0_bmp : status_screen1_bmp);
+  bool blink = lcd_blink();
+
+  #if ENABLED(LASER)
+    #if ENABLED(LASER_PERIPHERALS)
+      if (laser_peripherals_ok()) {
+        u8g.drawBitmapP(29,4, LASERENABLE_BYTEWIDTH, LASERENABLE_HEIGHT, laserenable_bmp);
+      }
+    #endif
+    lcd_setFont(FONT_STATUSMENU);
+    u8g.setColorIndex(1);
+    u8g.setPrintPos(3,6);
+    if (current_block->laser_status == LASER_ON) {
+      u8g.drawBitmapP(5,14, ICON_BYTEWIDTH, ICON_HEIGHT, laseron_bmp);
+      u8g.print(itostr3(current_block->laser_intensity));
+      lcd_printPGM(PSTR("%"));
+    } else {
+      u8g.drawBitmapP(5,14, ICON_BYTEWIDTH, ICON_HEIGHT, laseroff_bmp);
+      lcd_printPGM(PSTR("---%"));
+    }
+
+  #else
+    // Symbols menu graphics, animated fan
+    u8g.drawBitmapP(9, 1, STATUS_SCREENBYTEWIDTH, STATUS_SCREENHEIGHT,
+      #if HAS(FAN)
+        blink && fanSpeed ? status_screen0_bmp : status_screen1_bmp
+      #else
+        status_screen0_bmp
+      #endif
+    );
+  #endif
+
+  // Status Menu Font for SD info, Heater status, Fan, XYZ
+  lcd_setFont(FONT_STATUSMENU);
 
   #if ENABLED(SDSUPPORT)
     // SD Card Symbol
-    u8g.drawBox(42, 42 - TALL_FONT_CORRECTION, 8, 7);
-    u8g.drawBox(50, 44 - TALL_FONT_CORRECTION, 2, 5);
-    u8g.drawFrame(42, 49 - TALL_FONT_CORRECTION, 10, 4);
-    u8g.drawPixel(50, 43 - TALL_FONT_CORRECTION);
+    u8g.drawBox(42, 42 - (TALL_FONT_CORRECTION), 8, 7);
+    u8g.drawBox(50, 44 - (TALL_FONT_CORRECTION), 2, 5);
+    u8g.drawFrame(42, 49 - (TALL_FONT_CORRECTION), 10, 4);
+    u8g.drawPixel(50, 43 - (TALL_FONT_CORRECTION));
 
     // Progress bar frame
-    u8g.drawFrame(54, 49, 73, 4 - TALL_FONT_CORRECTION);
+    u8g.drawFrame(54, 49, 73, 4 - (TALL_FONT_CORRECTION));
 
     // SD Card Progress bar and clock
-    lcd_setFont(FONT_STATUSMENU);
-
     if (IS_SD_PRINTING) {
       // Progress bar solid part
-      u8g.drawBox(55, 50, (unsigned int)(71.f * card.percentDone() / 100.f), 2 - TALL_FONT_CORRECTION);
+      u8g.drawBox(55, 50, (unsigned int)(71.f * card.percentDone() / 100.f), 2 - (TALL_FONT_CORRECTION));
     }
 
-    u8g.setPrintPos(80, 48);
-    if (print_job_start_ms != 0) {
+    u8g.setPrintPos(53, 47);
+    uint16_t time = print_job_timer.duration() / 60;
+    if (time != 0) {
       #if HAS(LCD_POWER_SENSOR)
         if (millis() < print_millis + 1000) {
-          uint16_t time = (millis() - print_job_start_ms) / 60000;
+          uint16_t end_time = (time * (100 - card.percentDone())) / card.percentDone();
+          lcd_print('S');
           lcd_print(itostr2(time/60));
           lcd_print(':');
           lcd_print(itostr2(time%60));
+
+          u8g.setPrintPos(90,47);
+
+          if (end_time > 1380 || end_time == 0)
+            u8g.print('E--:--');
+          else if (end_time > 0) {
+            u8g.print('E');
+            u8g.print(itostr2(end_time/60));
+            u8g.print(':');
+            u8g.print(itostr2(end_time%60));
+          }
         }
         else {
-          lcd_print(itostr4(power_consumption_hour-startpower));
+          lcd_print(itostr4(power_consumption_hour - startpower));
           lcd_print((char*)"Wh");
         }
       #else
-        uint16_t time = (millis() - print_job_start_ms) / 60000;
-        lcd_print(itostr2(time / 60));
+        uint16_t end_time = (time * (100 - card.percentDone())) / card.percentDone();
+        lcd_print('S');
+        lcd_print(itostr2(time/60));
         lcd_print(':');
-        lcd_print(itostr2(time % 60));
+        lcd_print(itostr2(time%60));
+
+        u8g.setPrintPos(90, 47);
+
+        if (end_time > 1380 || end_time == 0)
+          lcd_printPGM(PSTR("E--:--"));
+        else if (end_time > 0) {
+          u8g.print('E');
+          u8g.print(itostr2(end_time/60));
+          u8g.print(':');
+          u8g.print(itostr2(end_time%60));
+        }
       #endif
     }
     else {
-      lcd_printPGM(PSTR("--:--"));
+      lcd_printPGM(PSTR("S--:--"));
+      u8g.setPrintPos(90, 47);
+      lcd_printPGM(PSTR("E--:--"));
     }
   #endif
 
+  #if DISABLED(LASER)
   // Hotends
-  for (int i = 0; i < HOTENDS; i++) _draw_heater_status(6 + i * 25, i);
+    for (int i = 0; i < HOTENDS; i++) _draw_heater_status(6 + i * 25, i);
 
-  // Heatbed
-  if (HOTENDS < 4) _draw_heater_status(81, -1);
+    // Heated bed
+    #if HOTENDS < 4 && HAS(TEMP_BED)
+     _draw_heater_status(81, -1);
+    #endif
 
+  #endif // DISABLED LASER
   // Fan
-  lcd_setFont(FONT_STATUSMENU);
   u8g.setPrintPos(104, 27);
   #if HAS(FAN)
     int per = ((fanSpeed + 1) * 100) / 256;
@@ -348,17 +492,13 @@ static void lcd_implementation_status_screen() {
       lcd_print(itostr3(per));
       lcd_print('%');
     }
-    else
   #endif
-    {
-      lcd_printPGM(PSTR("---"));
-    }
 
-  // Print XYZ Coordinates
-  // If the axis was not homed, show "---"
-  // If the position is untrusted, show "?"
+  // X, Y, Z-Coordinates
+  // Before homing the axis letters are blinking 'X' <-> '?'.
+  // When axis is homed but axis_known_position is false the axis letters are blinking 'X' <-> ' '.
+  // When everything is ok you see a constant 'X'.
   #define XYZ_BASELINE 38
-  lcd_setFont(FONT_STATUSMENU);
 
   #if ENABLED(USE_SMALL_INFOFONT)
     u8g.drawBox(0, 30, LCD_PIXEL_WIDTH, 10);
@@ -368,58 +508,44 @@ static void lcd_implementation_status_screen() {
   u8g.setColorIndex(0); // white on black
 
   u8g.setPrintPos(2, XYZ_BASELINE);
-  lcd_print(TEST(axis_known_position, X_AXIS) || !TEST(axis_was_homed, X_AXIS) ? 'X' : '?');
-  u8g.drawPixel(8, XYZ_BASELINE - 5);
-  u8g.drawPixel(8, XYZ_BASELINE - 3);
+  _draw_axis_label(X_AXIS, PSTR(MSG_X), blink);
   u8g.setPrintPos(10, XYZ_BASELINE);
-  if (TEST(axis_was_homed, X_AXIS))
-    lcd_print(ftostr31ns(current_position[X_AXIS]));
-  else
-    lcd_printPGM(PSTR("---"));
+  lcd_print(ftostr4sign(current_position[X_AXIS]));
 
   u8g.setPrintPos(43, XYZ_BASELINE);
-  lcd_print(TEST(axis_known_position, Y_AXIS) || !TEST(axis_was_homed, Y_AXIS) ? 'Y' : '?');
-  u8g.drawPixel(49, XYZ_BASELINE - 5);
-  u8g.drawPixel(49, XYZ_BASELINE - 3);
+  _draw_axis_label(Y_AXIS, PSTR(MSG_Y), blink);
   u8g.setPrintPos(51, XYZ_BASELINE);
-  if (TEST(axis_was_homed, Y_AXIS))
-    lcd_print(ftostr31ns(current_position[Y_AXIS]));
-  else
-    lcd_printPGM(PSTR("---"));
+  lcd_print(ftostr4sign(current_position[Y_AXIS]));
 
   u8g.setPrintPos(83, XYZ_BASELINE);
-  lcd_print(TEST(axis_known_position, Z_AXIS) || !TEST(axis_was_homed, Z_AXIS) ? 'Z' : '?');
-  u8g.drawPixel(89, XYZ_BASELINE - 5);
-  u8g.drawPixel(89, XYZ_BASELINE - 3);
+  _draw_axis_label(Z_AXIS, PSTR(MSG_Z), blink);
   u8g.setPrintPos(91, XYZ_BASELINE);
-   if (TEST(axis_was_homed, Z_AXIS))
-    lcd_print(ftostr32sp(current_position[Z_AXIS]));
-  else
-    lcd_printPGM(PSTR("---.--"));
+  lcd_print(ftostr32sp(current_position[Z_AXIS] + 0.00001));
+
   u8g.setColorIndex(1); // black on white
 
   // Feedrate
   lcd_setFont(FONT_MENU);
   u8g.setPrintPos(3, 49);
   lcd_print(LCD_STR_FEEDRATE[0]);
+
   lcd_setFont(FONT_STATUSMENU);
   u8g.setPrintPos(12, 49);
   lcd_print(itostr3(feedrate_multiplier));
   lcd_print('%');
 
   // Status line
-  lcd_setFont(FONT_STATUSMENU);
   #if ENABLED(USE_SMALL_INFOFONT)
     u8g.setPrintPos(0, 62);
   #else
     u8g.setPrintPos(0, 63);
   #endif
   #if HAS(LCD_FILAMENT_SENSOR) || HAS(LCD_POWER_SENSOR)
-    if (millis() < previous_lcd_status_ms + 5000)  //Display both Status message line and Filament display on the last line
+    if (PENDING(millis(), previous_lcd_status_ms + 5000UL)) {  //Display both Status message line and Filament display on the last line
       lcd_print(lcd_status_message);
     #if HAS(LCD_POWER_SENSOR)
       #if HAS(LCD_FILAMENT_SENSOR)
-        else if (millis() < previous_lcd_status_ms + 10000)
+        else if (PENDING(millis(), previous_lcd_status_ms + 10000UL))
       #else
         else
       #endif
@@ -448,13 +574,13 @@ static void lcd_implementation_status_screen() {
 static void lcd_implementation_mark_as_selected(uint8_t row, bool isSelected) {
   if (isSelected) {
     u8g.setColorIndex(1);  // black on white
-    u8g.drawBox(0, row * DOG_CHAR_HEIGHT + 3 - TALL_FONT_CORRECTION, LCD_PIXEL_WIDTH, DOG_CHAR_HEIGHT);
+    u8g.drawBox(0, row * (DOG_CHAR_HEIGHT) + 3 - (TALL_FONT_CORRECTION), LCD_PIXEL_WIDTH, DOG_CHAR_HEIGHT);
     u8g.setColorIndex(0);  // following text must be white on black
   }
   else {
     u8g.setColorIndex(1); // unmarked text is black on white
   }
-  u8g.setPrintPos(START_ROW * DOG_CHAR_WIDTH, (row + 1) * DOG_CHAR_HEIGHT);
+  u8g.setPrintPos((START_ROW) * (DOG_CHAR_WIDTH), (row + 1) * (DOG_CHAR_HEIGHT));
 }
 
 static void lcd_implementation_drawmenu_generic(bool isSelected, uint8_t row, const char* pstr, char pre_char, char post_char) {
@@ -468,7 +594,7 @@ static void lcd_implementation_drawmenu_generic(bool isSelected, uint8_t row, co
     pstr++;
   }
   while (n--) lcd_print(' ');
-  u8g.setPrintPos(LCD_PIXEL_WIDTH - DOG_CHAR_WIDTH, (row + 1) * DOG_CHAR_HEIGHT);
+  u8g.setPrintPos(LCD_PIXEL_WIDTH - (DOG_CHAR_WIDTH), (row + 1) * (DOG_CHAR_HEIGHT));
   lcd_print(post_char);
   lcd_print(' ');
 }
@@ -486,7 +612,7 @@ static void _drawmenu_setting_edit_generic(bool isSelected, uint8_t row, const c
   }
   lcd_print(':');
   while (n--) lcd_print(' ');
-  u8g.setPrintPos(LCD_PIXEL_WIDTH - DOG_CHAR_WIDTH * vallen, (row + 1) * DOG_CHAR_HEIGHT);
+  u8g.setPrintPos(LCD_PIXEL_WIDTH - (DOG_CHAR_WIDTH) * vallen, (row + 1) * (DOG_CHAR_HEIGHT));
   if (pgm)  lcd_printPGM(data);  else  lcd_print((char*)data);
 }
 
@@ -514,7 +640,7 @@ static void _drawmenu_setting_edit_generic(bool isSelected, uint8_t row, const c
 #define lcd_implementation_drawmenu_setting_edit_callback_long5(sel, row, pstr, pstr2, data, minValue, maxValue, callback) lcd_implementation_drawmenu_setting_edit_generic(sel, row, pstr, ftostr5(*(data)))
 #define lcd_implementation_drawmenu_setting_edit_callback_bool(sel, row, pstr, pstr2, data, callback) lcd_implementation_drawmenu_setting_edit_generic_P(sel, row, pstr, (*(data))?PSTR(MSG_ON):PSTR(MSG_OFF))
 
-void lcd_implementation_drawedit(const char* pstr, char* value) {
+void lcd_implementation_drawedit(const char* pstr, const char* value=NULL) {
   uint8_t rows = 1;
   uint8_t lcd_width = LCD_WIDTH, char_width = DOG_CHAR_WIDTH;
   uint8_t vallen = lcd_strlen(value);
@@ -533,14 +659,16 @@ void lcd_implementation_drawedit(const char* pstr, char* value) {
 
   if (lcd_strlen_P(pstr) > LCD_WIDTH - 2 - vallen) rows = 2;
 
-  const float kHalfChar = DOG_CHAR_HEIGHT_EDIT / 2;
+  const float kHalfChar = (DOG_CHAR_HEIGHT_EDIT) / 2;
   float rowHeight = u8g.getHeight() / (rows + 1); // 1/(rows+1) = 1/2 or 1/3
 
   u8g.setPrintPos(0, rowHeight + kHalfChar);
   lcd_printPGM(pstr);
-  lcd_print(':');
-  u8g.setPrintPos((lcd_width - 1 - vallen) * char_width, rows * rowHeight + kHalfChar);
-  lcd_print(value);
+  if (value != NULL) {
+    lcd_print(':');
+    u8g.setPrintPos((lcd_width - 1 - vallen) * char_width, rows * rowHeight + kHalfChar);
+    lcd_print(value);
+  }
 }
 
 #if ENABLED(SDSUPPORT)
@@ -563,7 +691,7 @@ void lcd_implementation_drawedit(const char* pstr, char* value) {
 
 #endif //SDSUPPORT
 
-#define lcd_implementation_drawmenu_back(sel, row, pstr, data) lcd_implementation_drawmenu_generic(sel, row, pstr, LCD_STR_UPLEVEL[0], LCD_STR_UPLEVEL[0])
+#define lcd_implementation_drawmenu_back(sel, row, pstr) lcd_implementation_drawmenu_generic(sel, row, pstr, LCD_STR_UPLEVEL[0], LCD_STR_UPLEVEL[0])
 #define lcd_implementation_drawmenu_submenu(sel, row, pstr, data) lcd_implementation_drawmenu_generic(sel, row, pstr, '>', LCD_STR_ARROW_RIGHT[0])
 #define lcd_implementation_drawmenu_gcode(sel, row, pstr, gcode) lcd_implementation_drawmenu_generic(sel, row, pstr, '>', ' ')
 #define lcd_implementation_drawmenu_function(sel, row, pstr, data) lcd_implementation_drawmenu_generic(sel, row, pstr, '>', ' ')

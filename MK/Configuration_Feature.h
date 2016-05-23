@@ -53,6 +53,7 @@
  * ADDON FEATURES:
  * - EEPROM
  * - SDCARD
+ * - LCD Language
  * - LCD
  * - Canon RC-1 Remote
  * - Camera trigger
@@ -113,7 +114,8 @@
  *                                                                     *
  ***********************************************************************/
 //#define HOTEND_WATTS (12.0*12.0/6.7)  //  P=I^2/R
-//#define BED_WATTS (12.0*12.0/1.1)     // P=I^2/R
+//#define BED_WATTS (12.0*12.0/1.1)     //  P=I^2/R
+
 /***********************************************************************/
 
 
@@ -169,9 +171,10 @@
 
 // Comment the following line to disable PID and enable bang-bang.
 #define PIDTEMP
-//#define PID_DEBUG        // Sends debug data to the serial port.
-//#define PID_OPENLOOP 1   // Puts PID in open loop. M104/M140 sets the output power from 0 to PID_MAX
-//#define SLOW_PWM_HEATERS // PWM with very low frequency (roughly 0.125Hz=8s) and minimum state time of approximately 1s useful for heaters driven by a relay
+//#define PID_AUTOTUNE_MENU // Add PID Autotune to the LCD "Temperature" menu to run M303 and apply the result.
+//#define PID_DEBUG         // Sends debug data to the serial port.
+//#define PID_OPENLOOP 1    // Puts PID in open loop. M104/M140 sets the output power from 0 to PID_MAX
+//#define SLOW_PWM_HEATERS  // PWM with very low frequency (roughly 0.125Hz=8s) and minimum state time of approximately 1s useful for heaters driven by a relay
 // If the temperature difference between the target temperature and the actual temperature
 // is more then PID_FUNCTIONAL_RANGE then the PID will be shut off and the heater will be set to min/max.
 #define PID_FUNCTIONAL_RANGE 10         // degC
@@ -182,10 +185,54 @@
 #define LPQ_MAX_LEN 50
 
 //           HotEnd{HE0,HE1,HE2,HE3}
-#define DEFAULT_Kp {40, 40, 40, 40}     // Kp for E0, E1, E2, E3
-#define DEFAULT_Ki {07, 07, 07, 07}     // Ki for E0, E1, E2, E3
-#define DEFAULT_Kd {60, 60, 60, 60}     // Kd for E0, E1, E2, E3
+#define DEFAULT_Kp {40, 40, 40, 40}     // Kp for H0, H1, H2, H3
+#define DEFAULT_Ki {07, 07, 07, 07}     // Ki for H0, H1, H2, H3
+#define DEFAULT_Kd {60, 60, 60, 60}     // Kd for H0, H1, H2, H3
 #define DEFAULT_Kc {100, 100, 100, 100} // heating power = Kc * (e_speed)
+/***********************************************************************/
+
+/***********************************************************************
+ ************************ PID Settings - COOLER ************************
+ ***********************************************************************
+ *                                                                     *
+ * PID Tuning Guide here: http://reprap.org/wiki/PID_Tuning            *
+ * Select PID or bang-bang with PIDTEMPCOOLER.                         *
+ * If bang-bang, COOLER_LIMIT_SWITCHING will enable hysteresis         *
+ *                                                                     *
+ ***********************************************************************/
+// Uncomment this to enable PID on the cooler. It uses the same frequency PWM as the extruder
+// if you use a software PWM or the frequency you select if using an hardware PWM
+// If your PID_dT is the default, you use a software PWM, and correct for your hardware/configuration, that means 7.689Hz,
+// which is fine for driving a square wave into a resistive load and does not significantly impact you FET heating.
+// This also works fine on a Fotek SSR-10DA Solid State Relay into a 250W cooler.
+// If your configuration is significantly different than this and you don't understand the issues involved, you probably
+// shouldn't use bed PID until someone else verifies your hardware works.
+// If this is enabled, find your own PID constants below.
+//#define PIDTEMPCOOLER
+
+// Enable fast PWM for cooler
+//#define FAST_PWM_COOLER
+
+//#define COOLER_LIMIT_SWITCHING
+#define COOLER_HYSTERESIS 2 //only disable heating if T<target-COOLER_HYSTERESIS and enable heating if T<target+COOLER_HYSTERESIS (works only if COOLER_LIMIT_SWITCHING is enabled)
+#define COOLER_CHECK_INTERVAL 5000 //ms between checks in bang-bang control
+
+// This sets the max power delivered to the bed.
+// all forms of bed control obey this (PID, bang-bang, bang-bang with hysteresis)
+// setting this to anything other than 255 enables a form of PWM to the bed,
+// so you shouldn't use it unless you are OK with PWM on your bed.  (see the comment on enabling PIDTEMPCOOLER)
+#define MAX_COOLER_POWER 255 // limits duty cycle to bed; 255=full current
+
+#define PID_COOLER_INTEGRAL_DRIVE_MAX MAX_COOLER_POWER // limit for the integral term
+// 120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
+// from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
+#define DEFAULT_coolerKp 10.00
+#define DEFAULT_coolerKi .023
+#define DEFAULT_coolerKd 305.4
+
+// FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
+
+//#define PID_COOLER_DEBUG // Sends debug data to the serial port.
 /***********************************************************************/
 
 
@@ -245,13 +292,13 @@
  ************************ Thermal runaway protection ****************************
  ********************************************************************************
  *                                                                              *
- * This protects your printer from damage and fire if a thermistor              *
+ * This protects your device from damage and fire if a thermistor               *
  * falls out or temperature sensors fail in any way.                            *
  *                                                                              *
  * The issue: If a thermistor falls out or a temperature sensor fails,          *
  * Marlin can no longer sense the actual temperature. Since a                   *
  * disconnected thermistor reads as a low temperature, the firmware             *
- * will keep the heater on.                                                     *
+ * will keep the heater/cooler on.                                              *
  *                                                                              *
  * The solution: Once the temperature reaches the target, start                 *
  * observing. If the temperature stays too far below the                        *
@@ -260,6 +307,7 @@
  *                                                                              *
  * Uncomment THERMAL_PROTECTION_HOTENDS to enable this feature for all hotends. *
  * Uncomment THERMAL_PROTECTION_BED to enable this feature for the heated bed.  *
+ * Uncomment THERMAL_PROTECTION_COOLER to enable this feature for the cooler.   *
  *                                                                              *
  ********************************************************************************/
 //#define THERMAL_PROTECTION_HOTENDS
@@ -267,17 +315,53 @@
 #define THERMAL_PROTECTION_PERIOD    40     // Seconds
 #define THERMAL_PROTECTION_HYSTERESIS 4     // Degrees Celsius
 
-// Whenever an M104 or M109 increases the target temperature the firmware will wait for the
-// WATCH TEMP PERIOD to expire, and if the temperature hasn't increased by WATCH TEMP INCREASE
-// degrees, the machine is halted, requiring a hard reset. This test restarts with any M104/M109,
-//but only if the current temperature is far enough below the target for a reliable test.
-#define WATCH_TEMP_PERIOD  16               // Seconds
-#define WATCH_TEMP_INCREASE 4               // Degrees Celsius
+/**
+ * Whenever an M104 or M109 increases the target temperature the firmware will wait for the
+ * WATCH TEMP PERIOD to expire, and if the temperature hasn't increased by WATCH TEMP INCREASE
+ * degrees, the machine is halted, requiring a hard reset. This test restarts with any M104/M109,
+ * but only if the current temperature is far enough below the target for a reliable test.
+ *
+ * If you get false positives for "Heating failed" increase WATCH TEMP PERIOD and/or decrease WATCH TEMP INCREASE
+ * WATCH TEMP INCREASE should not be below 2.
+ */
+#define WATCH_TEMP_PERIOD  20               // Seconds
+#define WATCH_TEMP_INCREASE 2               // Degrees Celsius
 
-//#define THERMAL_PROTECTION_BED 
+/**
+ * Thermal Protection parameters for the bed are just as above for hotends.
+ */
+//#define THERMAL_PROTECTION_BED
 
 #define THERMAL_PROTECTION_BED_PERIOD    20 // Seconds
 #define THERMAL_PROTECTION_BED_HYSTERESIS 2 // Degrees Celsius
+
+
+//#define THERMAL_PROTECTION_COOLER
+
+#define THERMAL_PROTECTION_COOLER_PERIOD    30 // Seconds
+#define THERMAL_PROTECTION_COOLER_HYSTERESIS 3 // Degree Celsius
+
+// Using M141 to set cooling temperature the firmware will wait for the WATCH_COOLER_TEMP_PERIOD 
+// to expire, and if the temperature hasn't lowered by WATCH_TEMP_DECREASE degrees, 
+// the machine is halted, requiring a hard reset. This test restarts with any M141, 
+// but only if the current remperature is far enough exceeding the target for a reliable test
+// Enable this feature by uncomment THERMAL_PROTECTION_COOLER_WATCHDOG
+
+//#define THERMAL_PROTECTION_COOLER_WATCHDOG
+#define WATCH_TEMP_COOLER_PERIOD 60          // Seconds
+#define WATCH_TEMP_COOLER_DECREASE 1         // Degree Celsius
+
+/**
+ * Whenever an M140 or M190 increases the target temperature the firmware will wait for the
+ * WATCH BED TEMP PERIOD to expire, and if the temperature hasn't increased by WATCH BED TEMP INCREASE
+ * degrees, the machine is halted, requiring a hard reset. This test restarts with any M140/M190,
+ * but only if the current temperature is far enough below the target for a reliable test.
+ *
+ * If you get too many "Heating failed" errors, increase WATCH BED TEMP PERIOD and/or decrease
+ * WATCH BED TEMP INCREASE. (WATCH BED TEMP INCREASE should not be below 2.)
+ */
+#define WATCH_BED_TEMP_PERIOD  60           // Seconds
+#define WATCH_BED_TEMP_INCREASE 2           // Degrees Celsius
 /********************************************************************************/
 
 
@@ -462,6 +546,8 @@
  ***********************************************************************
  *                                                                     *
  * Setting for multiextruder DONDOLO 1.0b by Gianni Franci             *
+ * Enable DONDOLO SINGLE MOTOR for original DONDOLO by Gianni Franci   *
+ * Enable DONDOLO DUAL MOTOR for bowden and dual EXTRUDER              *
  * http://www.thingiverse.com/thing:673816                             *
  * For function set NUM_SERVOS +1 if you use for endstop or probe      *
  * Set DONDOLO SERVO INDEX for servo you use for DONDOLO               *
@@ -470,7 +556,9 @@
  * Remember set HOTEND OFFSET X Y Z                                    *
  *                                                                     *
  ***********************************************************************/
-//#define DONDOLO
+//#define DONDOLO_SINGLE_MOTOR
+//#define DONDOLO_DUAL_MOTOR
+
 #define DONDOLO_SERVO_INDEX 0
 #define DONDOLO_SERVOPOS_E0 120
 #define DONDOLO_SERVOPOS_E1 10
@@ -562,9 +650,21 @@
  *****************************************************************************************/
 //#define ADVANCE
 
-#define EXTRUDER_ADVANCE_K .0
+#define EXTRUDER_ADVANCE_K 0.0
 #define D_FILAMENT 1.75
-#define STEPS_PER_CUBIC_MM_E 0.85
+/*****************************************************************************************/
+
+
+/*****************************************************************************************
+ ****************** Extruder Advance Linear Pressure Control *****************************
+ *****************************************************************************************
+ *                                                                                       *
+ * Assumption: advance = k * (delta velocity)                                            *
+ * K=0 means advance disabled. A good value for a gregs wade extruder will be around K=75*
+ *                                                                                       *
+ *****************************************************************************************/
+//#define ADVANCE_LPC
+#define ADVANCE_LPC_K 75
 /*****************************************************************************************/
 
 
@@ -574,18 +674,35 @@
  *                                                                        *
  * Add support for filament exchange support M600                         *
  *                                                                        *
- * Uncomment FILAMENTCHANGEENABLE to enable this feature                  *
+ * Uncomment FILAMENT CHANGE FEATURE to enable this feature               *
  * Requires display                                                       *
  *                                                                        *
  **************************************************************************/
-//#define FILAMENTCHANGEENABLE
+//#define FILAMENT_CHANGE_FEATURE
 
-#define FILAMENTCHANGE_XPOS 3
-#define FILAMENTCHANGE_YPOS 3
-#define FILAMENTCHANGE_ZADD 10
-#define FILAMENTCHANGE_FIRSTRETRACT -2
-#define FILAMENTCHANGE_FINALRETRACT -100
-#define FILAMENTCHANGE_PRINTEROFF 5     // Minutes
+#define FILAMENT_CHANGE_X_POS 3             // X position of hotend
+#define FILAMENT_CHANGE_Y_POS 3             // Y position of hotend
+#define FILAMENT_CHANGE_Z_ADD 10            // Z addition of hotend (lift)
+#define FILAMENT_CHANGE_XY_FEEDRATE 100     // X and Y axes feedrate in mm/s (also used for delta printers Z axis)
+#define FILAMENT_CHANGE_Z_FEEDRATE 5        // Z axis feedrate in mm/s (not used for delta printers)
+#define FILAMENT_CHANGE_RETRACT_LENGTH 2    // Initial retract in mm
+                                            // It is a short retract used immediately after print interrupt before move to filament exchange position
+#define FILAMENT_CHANGE_RETRACT_FEEDRATE 50 // Initial retract feedrate in mm/s
+#define FILAMENT_CHANGE_UNLOAD_LENGTH 100   // Unload filament length from hotend in mm
+                                            // Longer length for bowden printers to unload filament from whole bowden tube,
+                                            // shorter lenght for printers without bowden to unload filament from extruder only,
+                                            // 0 to disable unloading for manual unloading
+#define FILAMENT_CHANGE_UNLOAD_FEEDRATE 100 // Unload filament feedrate in mm/s - filament unloading can be fast
+#define FILAMENT_CHANGE_LOAD_LENGTH 100     // Load filament length over hotend in mm
+                                            // Longer length for bowden printers to fast load filament into whole bowden tube over the hotend,
+                                            // Short or zero length for printers without bowden where loading is not used
+#define FILAMENT_CHANGE_LOAD_FEEDRATE 100   // Load filament feedrate in mm/s - filament loading into the bowden tube can be fast
+#define FILAMENT_CHANGE_EXTRUDE_LENGTH 50   // Extrude filament length in mm after filament is load over the hotend,
+                                            // 0 to disable for manual extrusion
+                                            // Filament can be extruded repeatedly from the filament exchange menu to fill the hotend,
+                                            // or until outcoming filament color is not clear for filament color change
+#define FILAMENT_CHANGE_EXTRUDE_FEEDRATE 5  // Extrude filament feedrate in mm/s - must be slower than load feedrate
+#define FILAMENT_CHANGE_PRINTER_OFF 5       // Minutes
 /**************************************************************************/
 
 
@@ -951,6 +1068,28 @@
 
 
 /**************************************************************************
+ ****************************** Flow sensor *******************************
+ **************************************************************************
+ *                                                                        *
+ * Flow sensors for water circulators, usefull in case of coolers using   *
+ * water or other liquid as heat vector                                   *
+ *                                                                        *
+ * Uncomment FLOWMETER_SENSOR to enable this feature                      *
+ * You also need to set FLOWMETER_PIN in Configurations_pins.h            *
+ *                                                                        *
+ **************************************************************************/
+ //#define FLOWMETER_SENSOR
+ 
+#define FLOWMETER_MAXFLOW  6.0      // Liters per minute max
+#define FLOWMETER_MAXFREQ  55       // frequency of pulses at max flow
+
+
+// uncomment this to kill print job under the min flow rate, in liters/minute
+//#define MINFLOW_PROTECTION 4      
+
+
+
+/**************************************************************************
  *********************** Power consumption sensor *************************
  **************************************************************************
  *                                                                        *
@@ -1012,6 +1151,7 @@
 /**************************************************************************/
 
 
+
 //===========================================================================
 //============================= ADDON FEATURES ==============================
 //===========================================================================
@@ -1068,9 +1208,25 @@
 /*****************************************************************************************/
 
 
-/************************************************************************************************
- ********************************************* LCD **********************************************
- ************************************************************************************************/
+/***********************************************************************
+ *************************** LCD Language ******************************
+ ***********************************************************************
+ *                                                                     *
+ * Here you may choose the language used by MK or MK4due               *
+ * on the LCD menus, the following                                     *
+ *                                                                     *
+ * list of languages are available:                                    *
+ *    en, pl, fr, de, es, ru, it, pt, fi, an, nl, ca, eu               *
+ *    pt-br, bg, kana, kana_utf8, cn                                   *
+ *                                                                     *
+ ***********************************************************************/
+#define LCD_LANGUAGE en
+/***********************************************************************/
+
+
+/***********************************************************************
+ ******************************* LCD ***********************************
+ ***********************************************************************/
 
 //Charset type
 //Choose ONE of these 3 charsets. This has to match your hardware.
@@ -1092,7 +1248,7 @@
 
 //#define INVERT_CLICK_BUTTON           // Option for invert encoder button logic
 //#define INVERT_BACK_BUTTON            // Option for invert back button logic if avaible
-//#define INVERT_ROTARY_SWITCH          // Option for invert rotary encoder
+//#define INVERT_ROTARY_SWITCH          // Option for reverses the encoder direction for navigating LCD menus.
 #define ENCODER_RATE_MULTIPLIER         // If defined, certain menu edit operations automatically multiply the steps when the encoder is moved quickly
 #define ENCODER_10X_STEPS_PER_SEC   75  // If the encoder steps per sec exceeds this value, multiply steps moved x10 to quickly advance the value
 #define ENCODER_100X_STEPS_PER_SEC 160  // If the encoder steps per sec exceeds this value, multiply steps moved x100 to really quickly advance the value
@@ -1265,6 +1421,19 @@
 /**************************************************************************/
 
 
+/**************************************************************************
+ ******************************* Laser **** *******************************
+ **************************************************************************
+ *                                                                        *
+ * Support for laser beam                                                 *
+ * Check also Configuration_Laser.h                                       *
+ *                                                                        *
+ **************************************************************************/
+//#define LASER
+/**************************************************************************/
+
+
+
 //===========================================================================
 //========================= ADVANCED MOTION FEATURES ========================
 //===========================================================================
@@ -1325,9 +1494,9 @@
  ************************** Motor's current ****************************
  ***********************************************************************/
 // Motor Current setting (Only functional on ALLIGATOR BOARD)
-#define MOTOR_CURRENT {1, 1, 1, 1, 1, 1, 1} // X Y Z E0 E1 E2 E3 - Values 0 - 2.5 A
+#define MOTOR_CURRENT {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0} // X Y Z E0 E1 E2 E3 - Values 0 - 2.5 A
 // Motor Current setting (Only functional when motor driver current ref pins are connected to a digital trimpot on supported boards)
-#define DIGIPOT_MOTOR_CURRENT {135,135,135,135,135} // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
+#define DIGIPOT_MOTOR_CURRENT {135, 135, 135, 135, 135} // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
 /***********************************************************************/
 
 

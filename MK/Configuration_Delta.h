@@ -50,8 +50,36 @@
 // if you want use new function comment this (using // at the start of the line)
 #define DELTA_SEGMENTS_PER_SECOND 200
 
+// NOTE: All following values for DELTA_* MUST be floating point,
+// so always have a decimal point in them.
+//
+// Towers and rod nomenclature for the following defines:
+//
+//                     C, Y-axis
+//                     |
+// DELTA_ALPHA_CA=120° |  DELTA_ALPHA_CB=120°
+//                     |
+//                     |______ X-axis
+//                    / \
+//                   /   \
+//                  /     \
+//                 /       \
+//                A         B
+//
+//    |___| DELTA CARRIAGE OFFSET
+//    |   \
+//    |    \
+//    |     \  DELTA DIAGONAL ROD
+//    |      \
+//    |       \   | Effector is at printer center!
+//    |        \__|__/
+//    |        |--| DELTA EFFECTOR OFFSET
+//        |----|    DELTA RADIUS Calculated in fw (DELTA SMOOTH ROD OFFSET - DELTA EFFECTOR OFFSET - DELTA CARRIAGE OFFSET)
+//      |---------| DELTA PRINTABLE RADIUS
+//    |-----------| DELTA SMOOTH ROD OFFSET
+  
 // Center-to-center distance of the holes in the diagonal push rods.
-#define DEFAULT_DELTA_DIAGONAL_ROD 220.0    // mm
+#define DELTA_DIAGONAL_ROD 220.0            // mm
 
 // Horizontal offset from middle of printer to smooth rod center.
 #define DELTA_SMOOTH_ROD_OFFSET 150.0       // mm
@@ -62,8 +90,8 @@
 // Horizontal offset of the universal joints on the carriages.
 #define DELTA_CARRIAGE_OFFSET 20.0          // mm
 
-// Bed Printer radius
-#define BED_PRINTER_RADIUS 75               // mm
+// Delta Printable radius
+#define DELTA_PRINTABLE_RADIUS 75.0         // mm
 
 //Endstop Offset Adjustment - All values are in mm and must be negative (to move down away from endstop switches) 
 #define TOWER_A_ENDSTOP_ADJ 0 // Front Left Tower
@@ -80,7 +108,7 @@
 #define TOWER_B_RADIUS_ADJ 0 //Front Right Tower
 #define TOWER_C_RADIUS_ADJ 0 //Rear Tower
 
-//Diagonal Rod Adjustment - Adj diag rod for Tower by x mm from DEFAULT_DELTA_DIAGONAL_ROD value
+//Diagonal Rod Adjustment - Adj diag rod for Tower by x mm from DELTA_DIAGONAL_ROD value
 #define TOWER_A_DIAGROD_ADJ 0 //Front Left Tower
 #define TOWER_B_DIAGROD_ADJ 0 //Front Right Tower
 #define TOWER_C_DIAGROD_ADJ 0 //Rear Tower
@@ -115,17 +143,30 @@
 #define AUTOCALIBRATION_PRECISION 0.1 // mm
 
 // Z-Probe variables
-// X, Y, Z, E distance between hotend nozzle and deployed bed leveling probe.
-#define Z_PROBE_OFFSET {0, 0, -1}
+// Offsets to the probe relative to the extruder tip (Hotend - Probe)
+// X and Y offsets MUST be INTEGERS
+//
+//    +-- BACK ---+
+//    |           |
+//  L |    (+) P  | R <-- probe (10,10)
+//  E |           | I
+//  F | (-) N (+) | G <-- nozzle (0,0)
+//  T |           | H
+//    |  P (-)    | T <-- probe (-10,-10)
+//    |           |
+//    O-- FRONT --+
+#define X_PROBE_OFFSET_FROM_EXTRUDER  0     // X offset: -left  [of the nozzle] +right
+#define Y_PROBE_OFFSET_FROM_EXTRUDER  0     // Y offset: -front [of the nozzle] +behind
+#define Z_PROBE_OFFSET_FROM_EXTRUDER -1     // Z offset: -below [of the nozzle] (always negative!)
 
 // Start and end location values are used to deploy/retract the probe (will move from start to end and back again)
-#define Z_PROBE_DEPLOY_START_LOCATION {0, 0, 20}   // X, Y, Z, E start location for z-probe deployment sequence
-#define Z_PROBE_DEPLOY_END_LOCATION {0, 0, 20}     // X, Y, Z, E end location for z-probe deployment sequence
-#define Z_PROBE_RETRACT_START_LOCATION {0, 0, 20}  // X, Y, Z, E start location for z-probe retract sequence
-#define Z_PROBE_RETRACT_END_LOCATION {0, 0, 20}    // X, Y, Z, E end location for z-probe retract sequence
+#define Z_PROBE_DEPLOY_START_LOCATION {0, 0, 30}   // X, Y, Z, E start location for z-probe deployment sequence
+#define Z_PROBE_DEPLOY_END_LOCATION {0, 0, 30}     // X, Y, Z, E end location for z-probe deployment sequence
+#define Z_PROBE_RETRACT_START_LOCATION {0, 0, 30}  // X, Y, Z, E start location for z-probe retract sequence
+#define Z_PROBE_RETRACT_END_LOCATION {0, 0, 30}    // X, Y, Z, E end location for z-probe retract sequence
 
 // How much the nozzle will be raised when travelling from between next probing points
-#define Z_RAISE_BETWEEN_PROBINGS 5
+#define Z_RAISE_BETWEEN_PROBINGS 30
 
 // Define the grid for bed level AUTO BED LEVELING GRID POINTS X AUTO BED LEVELING GRID POINTS.
 #define AUTO_BED_LEVELING_GRID_POINTS 9
@@ -282,10 +323,10 @@
  * Travel limits after homing (units are in mm)                                          *
  *                                                                                       *
  *****************************************************************************************/
-#define X_MAX_POS BED_PRINTER_RADIUS
-#define X_MIN_POS -BED_PRINTER_RADIUS
-#define Y_MAX_POS BED_PRINTER_RADIUS
-#define Y_MIN_POS -BED_PRINTER_RADIUS
+#define X_MAX_POS DELTA_PRINTABLE_RADIUS
+#define X_MIN_POS -DELTA_PRINTABLE_RADIUS
+#define Y_MAX_POS DELTA_PRINTABLE_RADIUS
+#define Y_MIN_POS -DELTA_PRINTABLE_RADIUS
 #define Z_MAX_POS MANUAL_Z_HOME_POS
 #define Z_MIN_POS 0
 #define E_MIN_POS 0
@@ -374,9 +415,9 @@
  * For the other hotends it is their distance from the hotend 0.                         *
  *                                                                                       *
  *****************************************************************************************/
-//#define HOTEND_OFFSET_X {0.0, 5.0, 0.0, 0.0} // (in mm) for each hotend, offset of the hotend on the X axis
-//#define HOTEND_OFFSET_Y {0.0, 5.0, 0.0, 0.0} // (in mm) for each hotend, offset of the hotend on the Y axis
-//#define HOTEND_OFFSET_Z {0.0, 0.0, 0.0, 0.0} // (in mm) for each hotend, offset of the hotend on the Z axis
+#define HOTEND_OFFSET_X {0.0, 0.0, 0.0, 0.0} // (in mm) for each hotend, offset of the hotend on the X axis
+#define HOTEND_OFFSET_Y {0.0, 0.0, 0.0, 0.0} // (in mm) for each hotend, offset of the hotend on the Y axis
+#define HOTEND_OFFSET_Z {0.0, 0.0, 0.0, 0.0} // (in mm) for each hotend, offset of the hotend on the Z axis
 /*****************************************************************************************/
 
 #endif

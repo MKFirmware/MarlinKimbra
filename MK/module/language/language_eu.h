@@ -1,4 +1,26 @@
 /**
+ * MK & MK4due 3D Printer Firmware
+ *
+ * Based on Marlin, Sprinter and grbl
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2013 - 2016 Alberto Cotronei @MagoKimbra
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+/**
  * Basque-Euskera
  *
  * LCD Menu Messages
@@ -73,6 +95,7 @@
 #define MSG_PID_P                           "PID-P"
 #define MSG_PID_I                           "PID-I"
 #define MSG_PID_D                           "PID-D"
+#define MSG_PID_C                           "PID-C"
 #define MSG_H1                              " H1"
 #define MSG_H2                              " H2"
 #define MSG_H3                              " H3"
@@ -158,6 +181,8 @@
 #define MSG_ERR_MINTEMP                     "MINTEMP ERROR"
 #define MSG_ERR_MAXTEMP_BED                 "MAXTEMP BED ERROR"
 #define MSG_ERR_MINTEMP_BED                 "MINTEMP BED ERROR"
+#define MSG_ERR_MAXTEMP_COOLER              "MAXTEMP COOLER ERROR"
+#define MSG_ERR_MINTEMP_COOLER              "MINTEMP COOLER ERROR"
 #define MSG_END_DAY                         "days"
 #define MSG_END_HOUR                        "hours"
 #define MSG_END_MINUTE                      "minutes"
@@ -194,6 +219,9 @@
 #define MSG_HEATING_COMPLETE                "Heating done."
 #define MSG_BED_HEATING                     "Bed Heating."
 #define MSG_BED_DONE                        "Bed done."
+#define MSG_COOLER_COOLING                  "Cooling..."
+#define MSG_COOLER_DONE                     "Cooling done."
+
 
 // Extra
 #define MSG_LASER                           "Laser Preset"

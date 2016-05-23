@@ -42,4 +42,23 @@ bool NexPicture::setPic(uint32_t number)
     sendCommand(cmd.c_str());
     return recvRetCommandFinished();
 }
- 
+
+bool NexPicture::setHide()
+{
+    String cmd;
+    cmd += "vis ";
+    cmd += getObjName();
+    cmd += ",0";
+    sendCommand(cmd.c_str());
+    return recvRetCommandFinished();
+}
+
+bool NexPicture::setShow()
+{
+    String cmd;
+    cmd += "vis ";
+    cmd += getObjName();
+    cmd += ",1";
+    sendCommand(cmd.c_str());
+    return recvRetCommandFinished();
+}

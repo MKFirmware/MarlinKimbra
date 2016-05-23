@@ -53,3 +53,23 @@ bool NexText::setColor(uint32_t value)
     sendCommand(cmd.c_str());
     return recvRetCommandFinished();
 }
+
+bool NexText::setHide()
+{
+    String cmd;
+    cmd += "vis ";
+    cmd += getObjName();
+    cmd += ",0";
+    sendCommand(cmd.c_str());
+    return recvRetCommandFinished();
+}
+
+bool NexText::setShow()
+{
+    String cmd;
+    cmd += "vis ";
+    cmd += getObjName();
+    cmd += ",1";
+    sendCommand(cmd.c_str());
+    return recvRetCommandFinished();
+}

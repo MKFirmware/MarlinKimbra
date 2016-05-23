@@ -1,3 +1,44 @@
+/**
+ * MK & MK4due 3D Printer Firmware
+ *
+ * Based on Marlin, Sprinter and grbl
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2013 - 2016 Alberto Cotronei @MagoKimbra
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+/**
+ * Nextion_lcd.cpp
+ *
+ * Copyright (c) 2014-2016 Alberto Cotronei @MagoKimbra
+ *
+ * Grbl is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Grbl is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "../../base.h"
 
 #if ENABLED(NEXTION)
@@ -7,12 +48,17 @@
   #include "Nextion.h"
 
   bool NextionON        = false;
-  bool PageInfo         = false;
+  uint8_t NextionPage   = 0;
   char buffer[100]      = {0};
   uint32_t slidermaxval = 20;
   char lcd_status_message[30] = WELCOME_MSG;
   uint8_t lcd_status_message_level = 0;
   static millis_t next_lcd_update_ms;
+
+  #if ENABLED(SDSUPPORT)
+    uint8_t SDstatus    = 0; // 0 SD not insert, 1 SD insert, 2 SD printing
+    NexUpload Firmware(NEXTION_FIRMWARE_FILE, 57600);
+  #endif
 
   #if ENABLED(NEXTION_GFX)
     GFX gfx = GFX(200, 190);
@@ -26,20 +72,20 @@
   NexPage Psdcard       = NexPage(4, 0, "sdcard");
   NexPage Psetup        = NexPage(5, 0, "setup");
   NexPage Pmove         = NexPage(6, 0, "move");
+  NexPage Pspeed        = NexPage(7, 0, "speed");
+  NexPage Pgcode        = NexPage(8, 0, "gcode");
 
   // Page 0 Start
-  NexTimer startimer    = NexTimer(0,  1, "tm0");  
+  NexTimer startimer    = NexTimer(0,  1, "tm0");
 
   // Page 1 Info
   NexText Hotend0       = NexText(1,  2,  "t0");
   NexText Hotend1       = NexText(1,  4,  "t1");
   NexText Hotend21      = NexText(1,  5,  "h2");
   NexText Hotend2       = NexText(1,  6,  "t2");
-  NexText LedStatus     = NexText(1,  7,  "t4");
-  NexText LedCoord      = NexText(1,  8,  "t5");
-  NexPicture Menu       = NexPicture(1,  9, "p0");
-  NexPicture MSD        = NexPicture(1, 10, "p1");
-  NexPicture MSetup     = NexPicture(1, 11, "p2");
+  NexText LedStatus     = NexText(1,  7,  "status");
+  NexText LedCoord1     = NexText(1,  8,  "icoord");
+  NexPicture MSD1       = NexPicture(1, 10, "p1");
   NexPicture Hend0      = NexPicture(1, 12, "p3");
   NexHotspot hot0       = NexHotspot(1, 13, "hot0");
   NexPicture Hend1      = NexPicture(1, 14, "p4");
@@ -49,10 +95,15 @@
   NexPicture Fanpic     = NexPicture(1, 18, "p6");
   NexVar Hotend         = NexVar(1, 19, "he");
   NexVar Bed            = NexVar(1, 20, "bed");
+  NexVar Fan            = NexVar(1, 21, "fn");
   NexTimer fantimer     = NexTimer(1, 22, "tm0");
   NexProgressBar sdbar  = NexProgressBar(1, 23, "j0");
   NexPicture NPlay      = NexPicture(1, 24, "p7");
   NexPicture NStop      = NexPicture(1, 25, "p8");
+  NexVar SD             = NexVar(1, 26, "sd");
+  NexVar RFID           = NexVar(1, 27, "rfid");
+  NexPicture Speedpic   = NexPicture(1, 28, "p9");
+  NexVar VSpeed         = NexVar(1, 29, "vspeed");
 
   // Page 2 Temp
   NexText set0          = NexText(2,  2,  "set0");
@@ -62,10 +113,11 @@
   NexVar set1           = NexVar(2, 17, "set1");
 
   // Page 3 Menu
+  NexPicture MSD3       = NexPicture(3,  2, "p1");
   NexPicture Exit1      = NexPicture(3,  4, "p3");
 
   // Page 4 SDCard
-  NexSlider sdlist      = NexSlider(4, 1,   "h0");
+  NexSlider sdlist      = NexSlider(4, 1, "h0");
   NexText sdrow0        = NexText(4,  3,  "t0");
   NexText sdrow1        = NexText(4,  4,  "t1");
   NexText sdrow2        = NexText(4,  5,  "t2");
@@ -85,9 +137,11 @@
   NexHotspot ScrollDown = NexHotspot(4, 22, "m1");
 
   // Page 5 Setup
+  NexPicture MSD5       = NexPicture(5,  2, "p1");
   NexPicture Exit3      = NexPicture(5,  4, "p3");
 
   // Page 6 Move
+  NexPicture MSD6       = NexPicture(6,  2, "p1");
   NexPicture XYHome     = NexPicture(6,  5, "p4");
   NexPicture XYUp       = NexPicture(6,  6, "p5");
   NexPicture XYRight    = NexPicture(6,  7, "p6");
@@ -97,14 +151,24 @@
   NexPicture ZUp        = NexPicture(6, 11, "p10");
   NexPicture ZDown      = NexPicture(6, 12, "p11");
   NexVar movecmd        = NexVar(6, 18, "vacmd");
+  NexText LedCoord6     = NexText(6, 19, "mcoord");
+
+  // Page 7 Feed
+  NexPicture SpeedOk    = NexPicture(7, 2,  "p0");
+
+  // Page 8 Gcode
+  NexText Tgcode        = NexText(8, 1, "tgcode");
+  NexButton Benter      = NexButton(8, 41, "benter");
 
   NexTouch *nex_listen_list[] =
   {
     &Pstart,
-    &Menu,
-    &MSD,
-    &MSetup,
+    &MSD1,
+    &MSD3,
+    &MSD5,
+    &MSD6,
     &Fanpic,
+    &Speedpic,
     &NPlay,
     &NStop,
     &hot0,
@@ -134,6 +198,8 @@
     &ZHome,
     &ZUp,
     &ZDown,
+    &SpeedOk,
+    &Benter,
     NULL
   };
 
@@ -168,41 +234,52 @@
   };
 
   void setpageInfo() {
+    if (NextionPage == 0) {
+      Pinfo.show();
+
+      #if HAS(TEMP_0)
+        Hotend.setValue(1);
+      #endif
+      #if HAS(TEMP_1)
+        Hotend.setValue(2);
+      #endif
+      #if HAS(TEMP_2)
+        Hotend.setValue(3);
+      #elif HAS(TEMP_BED)
+        Bed.setValue(1);
+        Hotend21.setText("BED");
+      #endif
+
+      VSpeed.setValue(100);
+
+      #if HAS(FAN)
+        Fan.setValue(1);
+      #endif
+
+      lcd_setstatus(lcd_status_message);
+    }
+
     Pinfo.show();
 
-    PageInfo = true;
-
     #if ENABLED(NEXTION_GFX)
-      gfx_clear(X_MAX_POS, Y_MAX_POS, Z_MAX_POS);
+      #if MECH(DELTA)
+        gfx_clear((X_MAX_POS) * 2, (Y_MAX_POS) * 2, Z_MAX_POS);
+      #else
+        gfx_clear(X_MAX_POS, Y_MAX_POS, Z_MAX_POS);
+      #endif
     #endif
-
-    #if HAS_TEMP_0
-      Hotend.setValue(1);
-    #endif
-    #if HAS_TEMP_1
-      Hotend.setValue(2);
-    #endif
-    #if HAS_TEMP_2
-      Hotend.setValue(3);
-    #elif HAS_TEMP_BED
-      Hotend21.setText("BED");
-      Bed.setValue(1);
-    #endif
-
-    lcd_setstatus(lcd_status_message);
   }
 
   #if ENABLED(SDSUPPORT)
     void printrowsd(uint8_t row, const bool folder, const char* filename) {
-      
       if (folder) {
-        folder_list[row]->setPic(18);
+        folder_list[row]->setShow();
         row_list[row]->attachPop(sdfolderPopCallback, row_list[row]);
       } else if (filename == "") {
-        folder_list[row]->setPic(17);
+        folder_list[row]->setHide();
         row_list[row]->detachPop();
       } else {
-        folder_list[row]->setPic(17);
+        folder_list[row]->setHide();
         row_list[row]->attachPop(sdfilePopCallback, row_list[row]);
       }
       row_list[row]->setText(filename);
@@ -214,12 +291,12 @@
       card.getWorkDirName();
 
       if (fullName[0] != '/') {
-        Folderup.setPic(20);
+        Folderup.setShow();
         Folderup.attachPop(sdfolderUpPopCallback);
         sdfolder.setText(fullName);
       } else {
         Folderup.detachPop();
-        Folderup.setPic(19);
+        Folderup.setHide();
         sdfolder.setText("");
       }
 
@@ -235,8 +312,22 @@
       sendCommand("ref 0");
     }
 
-    static void setpagesdcard() {
-      PageInfo = false;
+    static void menu_action_sdfile(const char* filename) {
+      char cmd[30];
+      char* c;
+      sprintf_P(cmd, PSTR("M23 %s"), filename);
+      for(c = &cmd[4]; *c; c++) *c = tolower(*c);
+      enqueue_and_echo_command(cmd);
+      enqueue_and_echo_commands_P(PSTR("M24"));
+      setpageInfo();
+    }
+
+    static void menu_action_sddirectory(const char* filename) {
+      card.chdir(filename);
+      setpageSDPopCallback(&MSD1);
+    }
+
+    void setpageSDPopCallback(void *ptr) {
       Psdcard.show();
       uint16_t fileCnt = card.getnrfilenames();
 
@@ -261,21 +352,6 @@
       sdlist.getValue(&number);
       number = slidermaxval - number;
       setrowsdcard(number);
-    }
-
-    static void menu_action_sdfile(const char* filename) {
-      char cmd[30];
-      char* c;
-      sprintf_P(cmd, PSTR("M23 %s"), filename);
-      for(c = &cmd[4]; *c; c++) *c = tolower(*c);
-      enqueuecommand(cmd);
-      enqueuecommands_P(PSTR("M24"));
-      setpageInfo();
-    }
-
-    static void menu_action_sddirectory(const char* filename) {
-      card.chdir(filename);
-      setpagesdcard();
     }
 
     void sdfilePopCallback(void *ptr) {
@@ -318,9 +394,16 @@
 
     void sdfolderUpPopCallback(void *ptr) {
       card.updir();
-      setpagesdcard();
+      setpageSDPopCallback(&MSD1);
     }
-
+    
+    void UploadNewFirmware() {
+      if(IS_SD_INSERTED || card.cardOK) {
+        Firmware.startUpload();
+        nexSerial.end();
+        lcd_init();
+      }
+    }
   #endif
 
   void ExitPopCallback(void *ptr) {
@@ -333,7 +416,6 @@
 
   void hotPopCallback(void *ptr) {
     Ptemp.show();
-    PageInfo = false;
     memset(buffer, 0, sizeof(buffer));
     if (ptr == &hot0) {
       if (degTargetHotend(0) != 0) {
@@ -387,43 +469,40 @@
   void sethotPopCallback(void *ptr) {
     memset(buffer, 0, sizeof(buffer));
     set1.getText(buffer, sizeof(buffer));
-    enqueuecommands_P(buffer);
+    enqueue_and_echo_commands_P(buffer);
     setpageInfo();
   }
 
-  void setpagePopCallback(void *ptr) {
-    if (ptr == &Menu) {
-      PageInfo = false;
-      Pmenu.show();
-    }
-    else if (ptr == &MSetup) {
-      PageInfo = false;
-      Psetup.show();
-    }
-
-    #if ENABLED(SDSUPPORT)
-      else if (ptr == &MSD)
-        setpagesdcard();
-    #endif
+  void setgcodePopCallback(void *ptr) {
+    memset(buffer, 0, sizeof(buffer));
+    Tgcode.getText(buffer, sizeof(buffer));
+    enqueue_and_echo_commands_P(buffer);
+    Pmenu.show();
   }
 
   void setfanPopCallback(void *ptr) {
-    if (fanSpeed) fanSpeed = 0;
-    else fanSpeed = 255;
+    if (fanSpeed) {
+      fanSpeed = 0;
+      fantimer.disable();
+    }
+    else {
+      fanSpeed = 255;
+      fantimer.enable();
+    }
   }
 
   void setmovePopCallback(void *ptr) {
     memset(buffer, 0, sizeof(buffer));
     movecmd.getText(buffer, sizeof(buffer));
-    enqueuecommands_P(PSTR("G91"));
-    enqueuecommands_P(buffer);
-    enqueuecommands_P(PSTR("G90"));
+    enqueue_and_echo_commands_P(PSTR("G91"));
+    enqueue_and_echo_commands_P(buffer);
+    enqueue_and_echo_commands_P(PSTR("G90"));
   }
 
   #if ENABLED(SDSUPPORT)
     void PlayPausePopCallback(void *ptr) {
       if (card.cardOK && card.isFileOpen()) {
-        if (card.sdprinting)
+        if (IS_SD_PRINTING)
           card.pausePrint();
         else
           card.startPrint();
@@ -439,6 +518,8 @@
   #endif
 
   void lcd_init() {
+    HAL::delayMilliseconds(2000);
+
     for (uint8_t i = 0; i < 10; i++) {
       NextionON = nexInit();
       if (NextionON) break;
@@ -464,7 +545,10 @@
       #endif
 
       #if ENABLED(SDSUPPORT)
-        MSD.attachPop(setpagePopCallback, &MSD);
+        MSD1.attachPop(setpageSDPopCallback);
+        MSD3.attachPop(setpageSDPopCallback);
+        MSD5.attachPop(setpageSDPopCallback);
+        MSD6.attachPop(setpageSDPopCallback);
         sdlist.attachPop(sdlistPopCallback);
         ScrollUp.attachPop(sdlistPopCallback);
         ScrollDown.attachPop(sdlistPopCallback);
@@ -483,8 +567,6 @@
         hot2.attachPop(hotPopCallback,      &hot2);
       #endif
 
-      Menu.attachPop(setpagePopCallback,    &Menu);
-      MSetup.attachPop(setpagePopCallback,  &MSetup);
       Fanpic.attachPop(setfanPopCallback,   &Fanpic);
       m11.attachPop(sethotPopCallback,      &m11);
       tup.attachPop(settempPopCallback,     &tup);
@@ -497,6 +579,8 @@
       ZHome.attachPop(setmovePopCallback);
       ZUp.attachPop(setmovePopCallback);
       ZDown.attachPop(setmovePopCallback);
+      SpeedOk.attachPop(ExitPopCallback);
+      Benter.attachPop(setgcodePopCallback);
 
       startimer.enable();
     }
@@ -528,31 +612,26 @@
     char* valuetemp;
 
     memset(buffer, 0, sizeof(buffer));
-    strcat(buffer, TEST(axis_known_position, X_AXIS) || !TEST(axis_was_homed, X_AXIS) ? "X" : "?");
-    if (TEST(axis_was_homed, X_AXIS)) {
+    strcat(buffer, (axis_known_position[X_AXIS] ? "X" : "?"));
+    if (axis_homed[X_AXIS]) {
       valuetemp = ftostr4sign(current_position[X_AXIS]);
       strcat(buffer, valuetemp);
     }
-    else
-      strcat(buffer, "---");
 
-    strcat(buffer, TEST(axis_known_position, Y_AXIS) || !TEST(axis_was_homed, Y_AXIS) ? PSTR(" Y") : PSTR(" ?"));
-    if (TEST(axis_was_homed, Y_AXIS)) {
+    strcat(buffer, (axis_known_position[Y_AXIS] ? " Y" : " ?"));
+    if (axis_homed[Y_AXIS]) {
       valuetemp = ftostr4sign(current_position[Y_AXIS]);
       strcat(buffer, valuetemp);
     }
-    else
-      strcat(buffer, "---");
 
-    strcat(buffer, TEST(axis_known_position, Z_AXIS) || !TEST(axis_was_homed, Z_AXIS) ? PSTR("Z ") : PSTR("? "));
-    if (TEST(axis_was_homed, Z_AXIS)) {
+    strcat(buffer, (axis_known_position[Z_AXIS] ? " Z " : " ? "));
+    if (axis_homed[Z_AXIS]) {
       valuetemp = ftostr32sp(current_position[Z_AXIS] + 0.00001);
       strcat(buffer, valuetemp);
     }
-    else
-      strcat(buffer, "---");
-    
-    LedCoord.setText(buffer);
+
+    LedCoord1.setText(buffer);
+    LedCoord6.setText(buffer);
   }
 
   void lcd_update() {
@@ -563,51 +642,80 @@
 
     millis_t ms = millis();
 
-    if (ms > next_lcd_update_ms && PageInfo) {
+    if (ms > next_lcd_update_ms) {
 
-      if (fanSpeed > 0) fantimer.enable();
-      else fantimer.disable();
+      sendCurrentPageId(&NextionPage);
 
-      #if HAS_TEMP_0
-        temptoLCD(0, degHotend(0), degTargetHotend(0));
-      #endif
-      #if HAS_TEMP_1
-        temptoLCD(1, degHotend(1), degTargetHotend(1));
-      #endif
-      #if HAS_TEMP_2
-        temptoLCD(2, degHotend(2), degTargetHotend(2));
-      #elif HAS_TEMP_BED
-        temptoLCD(2, degBed(), degTargetBed());
-      #endif
+      if (NextionPage == 1) {
+        if (fanSpeed > 0) fantimer.enable();
+        else fantimer.disable();
 
-      coordtoLCD();
+        uint32_t temp_feedrate = 0;
+        VSpeed.getValue(&temp_feedrate);
+        feedrate_multiplier = (int)temp_feedrate;
 
-      #if ENABLED(SDSUPPORT)
+        #if HAS(TEMP_0)
+          temptoLCD(0, degHotend(0), degTargetHotend(0));
+        #endif
+        #if HAS(TEMP_1)
+          temptoLCD(1, degHotend(1), degTargetHotend(1));
+        #endif
+        #if HAS(TEMP_2)
+          temptoLCD(2, degHotend(2), degTargetHotend(2));
+        #elif HAS(TEMP_BED)
+          temptoLCD(2, degBed(), degTargetBed());
+        #endif
 
-        if (card.cardOK) {
-          MSD.setPic(7);
-          NPlay.setPic(38);
-          NStop.setPic(41);
-        }
-        else {
-          MSD.setPic(6);
-          NPlay.setPic(39);
-          NStop.setPic(42);
-        }
+        coordtoLCD();
 
-        if (card.isFileOpen()) {
-          if (card.sdprinting) {
-            // Progress bar solid part
-            sdbar.setValue(card.percentDone());
-            NPlay.setPic(40);
+        #if ENABLED(SDSUPPORT)
+          if (card.isFileOpen()) {
+            if (SDstatus != 2) {
+              SDstatus = 2;
+              SD.setValue(2);
+              NPlay.setShow();
+              NStop.setShow();
+            }
+            if(IS_SD_PRINTING) {
+              // Progress bar solid part
+              sdbar.setValue(card.percentDone());
+              NPlay.setPic(17);
+
+              // Estimate End Time
+              uint16_t time = print_job_timer.duration() / 60;
+              uint16_t end_time = (time * (100 - card.percentDone())) / card.percentDone();
+              if (end_time > (60 * 23)) {
+                lcd_setstatus("End --:--");
+              }
+              else if (end_time >= 0) {
+                char temp[30];
+                sprintf_P(temp, PSTR("End %i:%i"), end_time / 60, end_time%60);
+                lcd_setstatus(temp);
+              }
+            }
+            else {
+              NPlay.setPic(16);
+            }
           }
-          else {
-            NPlay.setPic(38);
+          else if (card.cardOK && SDstatus != 1) {
+            SDstatus = 1;
+            SD.setValue(1);
+            MSD1.setShow();
+            NPlay.setHide();
+            NStop.setHide();
           }
-        }
-
-      #endif
-
+          else if (!card.cardOK && SDstatus != 0) {
+            SDstatus = 0;
+            SD.setValue(0);
+            MSD1.setHide();
+            NPlay.setHide();
+            NStop.setHide();
+          }
+        #endif
+      }
+      else if (NextionPage == 6) {
+        coordtoLCD();
+      }
       next_lcd_update_ms = ms + LCD_UPDATE_INTERVAL;
     }
   }
@@ -634,17 +742,17 @@
 
   #if ENABLED(NEXTION_GFX)
     void gfx_clear(float x, float y, float z) {
-      if (PageInfo && (Printing || IS_SD_PRINTING))
+      if ((NextionPage == 1) && (Printing || IS_SD_PRINTING))
         gfx.clear(x, y, z);
     }
 
     void gfx_cursor_to(float x, float y, float z) {
-      if (PageInfo && (Printing || IS_SD_PRINTING))
+      if ((NextionPage == 1) && (Printing || IS_SD_PRINTING))
         gfx.cursor_to(x, y, z);
     }
 
     void gfx_line_to(float x, float y, float z){
-      if (PageInfo && (Printing || IS_SD_PRINTING))
+      if ((NextionPage == 1) && (Printing || IS_SD_PRINTING))
         gfx.line_to(VC_TOOL, x, y, z);
     }
   #endif
