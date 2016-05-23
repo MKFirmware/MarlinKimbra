@@ -45,6 +45,7 @@ Added total Power consumption writed in SD CARD.
 Added total filament printed writed in SD CARD.
 Added anti extruder idle oozing system.
 Added Hysteresis and Z-Wobble correction (only cartesian printers).
+Added support reader TAG width MFRC522
 
 ## Credits
 

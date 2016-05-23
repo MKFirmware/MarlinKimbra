@@ -35,5 +35,6 @@
 //#include "NexWaveform.h"
 #include "NexTimer.h"
 #include "NexVar.h"
+#include "NexDualStateButton.h"
 
 #endif /* #ifndef __NEXTION_H__ */

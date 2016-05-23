@@ -166,11 +166,6 @@ int16_t code_value_short();
   extern float axis_scaling[3];  // Build size scaling
 #endif
 
-// Lifetime stats
-extern unsigned long printer_usage_seconds;  // this can old about 136 year before go overflow. If you belive that you can live more than this please contact me.
-// Filament stats
-extern double printer_usage_filament;
-
 #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
   extern float extrude_min_temp;
 #endif
@@ -246,13 +241,8 @@ extern int fanSpeed;
   extern int laser_ttl_modulation;
 #endif
 
-#if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
-  extern millis_t config_last_update;
-  extern bool config_readed;
-#endif
-
 // Print job timer
-extern Stopwatch print_job_timer;
+extern PrintCounter print_job_counter;
 
 // Handling multiple extruders pins
 extern uint8_t active_extruder;

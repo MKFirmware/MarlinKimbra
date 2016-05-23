@@ -121,14 +121,11 @@ static millis_t max_inactive_time = 0;
 static millis_t stepper_inactive_time = (DEFAULT_STEPPER_DEACTIVE_TIME) * 1000UL;
 
 // Print Job Timer
-Stopwatch print_job_timer = Stopwatch();
+PrintCounter print_job_counter = PrintCounter();
 
 static uint8_t target_extruder;
 
 bool software_endstops = true;
-
-unsigned long printer_usage_seconds;
-double printer_usage_filament;
 
 #if !MECH(DELTA)
   int xy_travel_speed = XY_TRAVEL_SPEED;
@@ -278,10 +275,6 @@ double printer_usage_filament;
 
 #if ENABLED(SDSUPPORT)
   static bool fromsd[BUFSIZE];
-  #if ENABLED(SD_SETTINGS)
-    millis_t config_last_update = 0;
-    bool config_readed = false;
-  #endif
 #endif
 
 #if ENABLED(IDLE_OOZING_PREVENT)
@@ -996,9 +989,9 @@ inline void get_serial_commands() {
       ) {
         if (card_eof) {
           ECHO_EM(SERIAL_FILE_PRINTED);
-          print_job_timer.stop();
+          print_job_counter.stop();
           char time[30];
-          millis_t t = print_job_timer.duration();
+          millis_t t = print_job_counter.duration();
           int hours = t / 60 / 60, minutes = (t / 60) % 60;
           sprintf_P(time, PSTR("%i " MSG_END_HOUR " %i " MSG_END_MINUTE), hours, minutes);
           ECHO_LT(DB, time);
@@ -1943,6 +1936,7 @@ AvoidLaserFocus:
     for (int y = 0; y < AUTO_BED_LEVELING_GRID_POINTS; y++) {
       ECHO_S(DB);
       for (int x = 0; x < AUTO_BED_LEVELING_GRID_POINTS; x++) {
+        if(bed_level[x][y] >= 0) ECHO_M(" ");
         ECHO_VM(bed_level[x][y], " ", 3);
       }
       ECHO_E;
@@ -3234,12 +3228,21 @@ void gcode_get_destination() {
     if(code_seen(axis_codes[E_AXIS])) IDLE_OOZING_retract(false);
   #endif
 
-  for (int i = 0; i < 3; i++) {
-    if (code_seen(axis_codes[i]))
-      destination[i] = code_value() + (axis_relative_modes[i] || relative_mode ? current_position[i] : -hotend_offset[i][active_extruder]);
-    else
-      destination[i] = current_position[i];
-  }
+  #if HOTENDS == 1
+    for (int i = 0; i < 3; i++) {
+      if (code_seen(axis_codes[i]))
+        destination[i] = code_value() + (axis_relative_modes[i] || relative_mode ? current_position[i] : 0);
+      else
+        destination[i] = current_position[i];
+    }
+  #else  
+    for (int i = 0; i < 3; i++) {
+      if (code_seen(axis_codes[i]))
+        destination[i] = code_value() + (axis_relative_modes[i] || relative_mode ? current_position[i] : -hotend_offset[i][active_extruder]);
+      else
+        destination[i] = current_position[i];
+    }
+  #endif
 
   if(code_seen(axis_codes[E_AXIS]))
     destination[E_AXIS] = code_value() + (axis_relative_modes[E_AXIS] || relative_mode ? current_position[E_AXIS] : 0);
@@ -3251,11 +3254,11 @@ void gcode_get_destination() {
     if (next_feedrate > 0.0) feedrate = next_feedrate;
   }
 
-  if (code_seen('P')) {
+  if (code_seen('P'))
     destination[E_AXIS] = (code_value() * density_multiplier[previous_extruder] / 100) + current_position[E_AXIS];
-  }
 
-  printer_usage_filament += (destination[E_AXIS] - current_position[E_AXIS]);
+  if(!DEBUGGING(DRYRUN))
+    print_job_counter.data.printer_usage_filament += (destination[E_AXIS] - current_position[E_AXIS]);
 
   #if ENABLED(RFID_MODULE)
     RFID522.RfidData[active_extruder].data.lenght -= (destination[E_AXIS] - current_position[E_AXIS]);
@@ -5000,7 +5003,7 @@ inline void gcode_M17() {
    */
   inline void gcode_M24() {
     card.startPrint();
-    print_job_timer.start();
+    print_job_counter.start();
     #if HAS(POWER_CONSUMPTION_SENSOR)
       startpower = power_consumption_hour;
     #endif
@@ -5057,7 +5060,7 @@ inline void gcode_M17() {
    * M31: Get the time since the start of SD Print (or last M109)
    */
   inline void gcode_M31() {
-    millis_t t = print_job_timer.duration();
+    millis_t t = print_job_counter.duration();
     int min = t / 60, sec = t % 60;
     char time[30];
     sprintf_P(time, PSTR("%i min, %i sec"), min, sec);
@@ -5375,21 +5378,31 @@ inline void gcode_M42() {
  * M75: Start print timer
  */
 inline void gcode_M75() {
-  print_job_timer.start();
+  print_job_counter.start();
 }
 
 /**
  * M76: Pause print timer
  */
 inline void gcode_M76() {
-  print_job_timer.pause();
+  print_job_counter.pause();
 }
 
 /**
  * M77: Stop print timer
  */
 inline void gcode_M77() {
-  print_job_timer.stop();
+  print_job_counter.stop();
+}
+
+/**
+ * M78: Show print statistics
+ */
+inline void gcode_M78() {
+  // "M78 S78" will reset the statistics
+  if (code_seen('S') && code_value_short() == 78)
+    print_job_counter.initStats();
+  else print_job_counter.showStats();
 }
 
 #if HAS(POWER_SWITCH)
@@ -5764,8 +5777,8 @@ inline void gcode_M104() {
      * stand by mode, for instance in a dual extruder setup, without affecting
      * the running print timer.
      */
-    if (temp <= (EXTRUDE_MINTEMP)/2) {
-      print_job_timer.stop();
+    if (temp <= (EXTRUDE_MINTEMP) / 2) {
+      print_job_counter.stop();
       LCD_MESSAGEPGM(WELCOME_MSG);
     }
     /**
@@ -5773,7 +5786,7 @@ inline void gcode_M104() {
      * be done for us inside the Stopwatch::start() method thus a running timer
      * will not restart.
      */
-    else print_job_timer.start();
+    else print_job_counter.start();
 
     if (temp > degHotend(target_extruder)) LCD_MESSAGEPGM(MSG_HEATING);
   }
@@ -5843,7 +5856,7 @@ inline void gcode_M109() {
      * the running print timer.
      */
     if (temp <= (EXTRUDE_MINTEMP) / 2) {
-      print_job_timer.stop();
+      print_job_counter.stop();
       LCD_MESSAGEPGM(WELCOME_MSG);
     }
     /**
@@ -5851,7 +5864,7 @@ inline void gcode_M109() {
      * be done for us inside the Stopwatch::start() method thus a running timer
      * will not restart.
      */
-    else print_job_timer.start();
+    else print_job_counter.start();
 
     if (temp > degHotend(target_extruder)) LCD_MESSAGEPGM(MSG_HEATING);
   }
@@ -7276,15 +7289,25 @@ inline void gcode_M503() {
 
     if (code_seen('R')) {
       ECHO_LM(DB, "Put RFID on tag!");
+      #if ENABLED(NEXTION)
+        rfid_setText("Put RFID on tag!");
+      #endif
       Spool_must_read[target_extruder] = true;
     }
     if (code_seen('W')) {
       if (Spool_ID[target_extruder] != 0) {
         ECHO_LM(DB, "Put RFID on tag!");
+        #if ENABLED(NEXTION)
+          rfid_setText("Put RFID on tag!");
+        #endif
         Spool_must_write[target_extruder] = true;
       }
-      else
+      else {
         ECHO_LM(ER, "You have not read this Spool!");
+        #if ENABLED(NEXTION)
+          rfid_setText("You have not read this Spool!", 64488);
+        #endif
+      }
     }
 
     if (code_seen('L')) RFID522.printInfo(target_extruder);
@@ -8336,6 +8359,9 @@ void process_next_command() {
       case 77: // Stop print timer
         gcode_M77(); break;
 
+      case 78: // Show print statistics
+        gcode_M78(); break;
+
       #if HAS(POWER_SWITCH)
         case 80: // M80 - Turn on Power Supply
           gcode_M80(); break;
@@ -9269,6 +9295,7 @@ void idle(
   );
   host_keepalive();
   lcd_update();
+  print_job_counter.tick();
 }
 
 /**
@@ -9493,18 +9520,6 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
             }
           }
         }
-      }
-    }
-  #endif
-
-  #if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
-    if(IS_SD_INSERTED && !IS_SD_PRINTING) {
-      if (!config_readed) {
-        ConfigSD_RetrieveSettings(true);
-        ConfigSD_StoreSettings();
-      }
-      else if((millis() - config_last_update) >  SD_CFG_SECONDS * 1000UL) {
-        ConfigSD_StoreSettings();
       }
     }
   #endif

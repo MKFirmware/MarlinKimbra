@@ -50,7 +50,7 @@ extern volatile uint8_t buttons;  //an extended version of the last checked butt
     #define EN_C (_BV(BLEN_C))
   #endif
 
-  #if BUTTON_EXISTS(BTN_BACK)
+  #if BUTTON_EXISTS(BACK)
     #define BLEN_D 3
     #define EN_D (_BV(BLEN_D))
   #endif
@@ -790,7 +790,7 @@ static void lcd_implementation_status_screen() {
     #endif // LCD_WIDTH > 19 && SDSUPPORT
 
     lcd.setCursor(LCD_WIDTH - 6, 2);
-    uint16_t time = print_job_timer.duration() / 60;
+    uint16_t time = print_job_counter.duration() / 60;
     if(time != 0) {
       #if HAS(LCD_POWER_SENSOR)
         if (millis() < print_millis + 1000) {
