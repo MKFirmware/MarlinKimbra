@@ -39,7 +39,7 @@ mega256.bootloader.unlock_bits=0x3F
 mega256.bootloader.lock_bits=0x0F
 
 mega256.build.f_cpu=16000000L
-mega256.build.core=arduino_256
+mega256.build.core=arduino
 mega256.build.variant=mega
 mega256.build.extra_flags=-DSERIAL_RX_BUFFER_SIZE=256 -DSERIAL_TX_BUFFER_SIZE=256
 
