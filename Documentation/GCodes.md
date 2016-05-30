@@ -111,7 +111,7 @@
 *  M401 - Lower z-probe if present
 *  M402 - Raise z-probe if present
 *  M404 - D[dia in mm] Enter the nominal filament width (3mm, 1.75mm) or will display nominal filament width without parameters
-*  M405 - Turn on Filament Sensor extrusion control.  Optional D[delay in cm] to set delay in centimeters between sensor and extruder
+*  M405 - Turn on Filament Sensor extrusion control. Optional D[delay in cm] to set delay in centimeters between sensor and extruder
 *  M406 - Turn off Filament Sensor extrusion control
 *  M407 - Displays measured filament diameter
 *  M408 - Report JSON-style response
@@ -119,8 +119,9 @@
 *  M428 - Set the home_offset logically based on the current_position
 *  M500 - stores paramters in EEPROM
 *  M501 - reads parameters from EEPROM (if you need reset them after you changed them temporarily).
-*  M502 - reverts to the default "factory settings".  You still need to store them in EEPROM afterwards if you want to.
+*  M502 - reverts to the default "factory settings". You still need to store them in EEPROM afterwards if you want to.
 *  M503 - print the current settings (from memory not from EEPROM)
+*  M522 - Use for reader o writer tag width MFRC522. M522 T<extruder> R(read) W(write) L(print list data on tag)
 *  M540 - Use S[0|1] to enable or disable the stop SD card print on endstop hit (requires ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED)
 *  M595 - Set hotend AD595 offset and gain
 *  M600 - Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]

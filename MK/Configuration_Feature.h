@@ -50,6 +50,7 @@
  * - Filament diameter sensor
  * - Filament Runout sensor
  * - Power consumption sensor
+ * - RFID card sensor
  * ADDON FEATURES:
  * - EEPROM
  * - SDCARD
@@ -1068,6 +1069,28 @@
 
 
 
+/**************************************************************************
+ *********************** RIFD module card reader **************************
+ **************************************************************************
+ *                                                                        *
+ * Support RFID module card reader width UART interface.                  *
+ * This module mount chip MFRC522 designed to communicate with            *
+ * ISO/IEC 14443 A/MIFARE cards and transponders without additional       *
+ * active circuitry                                                       *
+ *                                                                        *
+ * New command for this system is:                                        *
+ * M522 T<extruder> R<read> or W<write>                                   *
+ *                                                                        *
+ * Define if you used and Serial used.                                    *
+ *                                                                        *
+ **************************************************************************/
+//#define RFID_MODULE
+
+#define RFID_SERIAL 1
+/**************************************************************************/
+
+
+
 //===========================================================================
 //============================= ADDON FEATURES ==============================
 //===========================================================================
@@ -1107,7 +1130,7 @@
 // as SD_DETECT_PIN in your board's pins definitions.
 // This setting should be disabled unless you are using a push button, pulling the pin to ground.
 // Note: This is always disabled for ULTIPANEL (except ELB_FULL_GRAPHIC_CONTROLLER).
-#define SD_DETECT_INVERTED
+//#define SD_DETECT_INVERTED
 
 #define SD_FINISHED_STEPPERRELEASE true  //if sd support and the file is finished: disable steppers?
 #define SD_FINISHED_RELEASECOMMAND "M84 X Y Z E" // You might want to keep the z enabled so your bed stays in place.
@@ -1397,9 +1420,9 @@
  ************************** Motor's current ****************************
  ***********************************************************************/
 // Motor Current setting (Only functional on ALLIGATOR BOARD)
-#define MOTOR_CURRENT {1, 1, 1, 1, 1, 1, 1} // X Y Z E0 E1 E2 E3 - Values 0 - 2.5 A
+#define MOTOR_CURRENT {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0} // X Y Z E0 E1 E2 E3 - Values 0 - 2.5 A
 // Motor Current setting (Only functional when motor driver current ref pins are connected to a digital trimpot on supported boards)
-#define DIGIPOT_MOTOR_CURRENT {135,135,135,135,135} // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
+#define DIGIPOT_MOTOR_CURRENT {135, 135, 135, 135, 135} // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
 /***********************************************************************/
 
 

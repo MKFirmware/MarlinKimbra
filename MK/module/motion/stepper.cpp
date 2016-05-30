@@ -297,11 +297,11 @@ FORCE_INLINE unsigned short calc_timer(unsigned short step_rate) {
   NOMORE(step_rate, MAX_STEP_FREQUENCY);
 
   if(step_rate > (2 * DOUBLE_STEP_FREQUENCY)) { // If steprate > 2*DOUBLE_STEP_FREQUENCY >> step 4 times
-    step_rate = (step_rate >> 2);
+    step_rate >>= 2;
     step_loops = 4;
   }
   else if(step_rate > DOUBLE_STEP_FREQUENCY) { // If steprate > DOUBLE_STEP_FREQUENCY >> step 2 times
-    step_rate = (step_rate >> 1);
+    step_rate >>= 1;
     step_loops = 2;
   }
   else {
@@ -1245,13 +1245,19 @@ void digipot_init() {
   #endif
 
   #if MB(ALLIGATOR)
-    unsigned int digipot_motor = 0;
+    set_driver_current();
+  #endif // MB(ALLIGATOR)
+}
+
+#if MB(ALLIGATOR)
+  void set_driver_current() {
+    uint8_t digipot_motor = 0;
     for (uint8_t i = 0; i < 3 + DRIVER_EXTRUDERS; i++) {
       digipot_motor = 255 * motor_current[i] / 3.3;
       ExternalDac::setValue(i, digipot_motor);
     }
-  #endif//MB(ALLIGATOR)
-}
+  }
+#endif
 
 void digipot_current(uint8_t driver, int current) {
   #if HAS(DIGIPOTSS)

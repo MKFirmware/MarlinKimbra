@@ -138,6 +138,12 @@ extern bool axis_known_position[3];
 extern bool axis_homed[3];
 extern float zprobe_zoffset;
 
+// GCode support for external objects
+bool code_seen(char);
+float code_value();
+long code_value_long();
+int16_t code_value_short();
+
 #if ENABLED(ADVANCE_LPC)
   extern int extruder_advance_k;
 #endif
@@ -158,11 +164,6 @@ extern float zprobe_zoffset;
 #if MECH(SCARA)
   extern float axis_scaling[3];  // Build size scaling
 #endif
-
-// Lifetime stats
-extern unsigned long printer_usage_seconds;  // this can old about 136 year before go overflow. If you belive that you can live more than this please contact me.
-// Filament stats
-extern double printer_usage_filament;
 
 #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
   extern float extrude_min_temp;
@@ -239,13 +240,8 @@ extern int fanSpeed;
   extern int laser_ttl_modulation;
 #endif
 
-#if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
-  extern millis_t config_last_update;
-  extern bool config_readed;
-#endif
-
 // Print job timer
-extern Stopwatch print_job_timer;
+extern PrintCounter print_job_counter;
 
 // Handling multiple extruders pins
 extern uint8_t active_extruder;
@@ -253,7 +249,7 @@ extern uint8_t previous_extruder;
 extern uint8_t active_driver;
 
 #if MB(ALLIGATOR)
-  extern float motor_current[DRIVER_EXTRUDERS + 3];
+  extern float motor_current[3 + DRIVER_EXTRUDERS];
 #endif
 
 #if ENABLED(DIGIPOT_I2C)
@@ -273,18 +269,11 @@ extern uint8_t active_driver;
   extern float mixing_factor[DRIVER_EXTRUDERS];
 #endif
 
-extern void calculate_volumetric_multipliers();
+void calculate_volumetric_multipliers();
 
 #if ENABLED(M100_FREE_MEMORY_WATCHER)
   extern void *__brkval;
   extern size_t  __heap_start, __heap_end, __flp;
-
-  //
-  // Declare all the functions we need from Marlin_Main.cpp to do the work!
-  //
-  float code_value();
-  long code_value_long();
-  bool code_seen(char );
 
   //
   // Utility functions used by M100 to get its work done.

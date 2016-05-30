@@ -12,11 +12,11 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -104,6 +104,7 @@
   NexVar RFID           = NexVar(1, 27, "rfid");
   NexPicture Speedpic   = NexPicture(1, 28, "p9");
   NexVar VSpeed         = NexVar(1, 29, "vspeed");
+  NexVar Extruder       = NexVar(1, 30, "extruder");
 
   // Page 2 Temp
   NexText set0          = NexText(2,  2,  "set0");
@@ -160,6 +161,17 @@
   NexText Tgcode        = NexText(8, 1, "tgcode");
   NexButton Benter      = NexButton(8, 41, "benter");
 
+  // Page 9 Gcode
+  NexPicture MSD9       = NexPicture(9, 2,  "p1");
+  NexButton Rfid0       = NexButton(9,  5,  "b0");
+  NexButton Rfid1       = NexButton(9,  6,  "b1");
+  NexButton Rfid2       = NexButton(9,  7,  "b2");
+  NexButton Rfid3       = NexButton(9,  8,  "b3");
+  NexButton Rfid4       = NexButton(9,  9,  "b4");
+  NexButton Rfid5       = NexButton(9,  10, "b5");
+  NexDSButton RfidR     = NexDSButton(9,11, "bt0");
+  NexText RfidText      = NexText(9,    13, "t0");
+
   NexTouch *nex_listen_list[] =
   {
     &Pstart,
@@ -167,6 +179,7 @@
     &MSD3,
     &MSD5,
     &MSD6,
+    &MSD9,
     &Fanpic,
     &Speedpic,
     &NPlay,
@@ -200,6 +213,12 @@
     &ZDown,
     &SpeedOk,
     &Benter,
+    &Rfid0,
+    &Rfid1,
+    &Rfid2,
+    &Rfid3,
+    &Rfid4,
+    &Rfid5,
     NULL
   };
 
@@ -250,10 +269,16 @@
         Hotend21.setText("BED");
       #endif
 
+      Extruder.setValue(EXTRUDERS);
+
       VSpeed.setValue(100);
 
       #if HAS(FAN)
         Fan.setValue(1);
+      #endif
+
+      #if ENABLED(RFID_MODULE)
+        RFID.setValue(1);
       #endif
 
       lcd_setstatus(lcd_status_message);
@@ -406,6 +431,44 @@
     }
   #endif
 
+  #if ENABLED(RFID_MODULE)
+    void rfidPopCallback(void *ptr) {
+
+      memset(buffer, 0, sizeof(buffer));
+      String temp = "M522 ";
+      uint32_t Rfid_read = 0;
+      RfidR.getValue(&Rfid_read);
+
+      if (ptr == &Rfid0)
+        temp += "T0 ";
+      else if (ptr == &Rfid1)
+        temp += "T1 ";
+      else if (ptr == &Rfid2)
+        temp += "T2 ";
+      else if (ptr == &Rfid3)
+        temp += "T3 ";
+      else if (ptr == &Rfid4)
+        temp += "T4 ";
+      else if (ptr == &Rfid5)
+        temp += "T5 ";
+      
+      if(Rfid_read)
+        temp += "R";
+      else
+        temp += "W";
+
+      temp.toCharArray(buffer, sizeof(buffer));
+      enqueue_and_echo_commands_P(buffer);
+    }
+
+    void rfid_setText(const char* message, uint32_t color /* = 65535 */) {
+      char Rfid_status_message[25];
+      strncpy(Rfid_status_message, message, 30);
+      RfidText.setColor(color);
+      RfidText.setText(Rfid_status_message);
+    }
+  #endif
+
   void ExitPopCallback(void *ptr) {
     setpageInfo();
   }
@@ -523,7 +586,7 @@
     for (uint8_t i = 0; i < 10; i++) {
       NextionON = nexInit();
       if (NextionON) break;
-      delay(1000);
+      HAL::delayMilliseconds(1000);
     }
 
     if (!NextionON) {
@@ -549,12 +612,22 @@
         MSD3.attachPop(setpageSDPopCallback);
         MSD5.attachPop(setpageSDPopCallback);
         MSD6.attachPop(setpageSDPopCallback);
+        MSD9.attachPop(setpageSDPopCallback);
         sdlist.attachPop(sdlistPopCallback);
         ScrollUp.attachPop(sdlistPopCallback);
         ScrollDown.attachPop(sdlistPopCallback);
         Exit2.attachPop(ExitPopCallback);
         NPlay.attachPop(PlayPausePopCallback);
         NStop.attachPop(StopPopCallback);
+      #endif
+
+      #if ENABLED(RFID_MODULE)
+        Rfid0.attachPop(rfidPopCallback,  &Rfid0);
+        Rfid1.attachPop(rfidPopCallback,  &Rfid1);
+        Rfid2.attachPop(rfidPopCallback,  &Rfid2);
+        Rfid3.attachPop(rfidPopCallback,  &Rfid3);
+        Rfid4.attachPop(rfidPopCallback,  &Rfid4);
+        Rfid5.attachPop(rfidPopCallback,  &Rfid5);
       #endif
 
       #if HAS_TEMP_0
@@ -682,7 +755,7 @@
               NPlay.setPic(17);
 
               // Estimate End Time
-              uint16_t time = print_job_timer.duration() / 60;
+              uint16_t time = print_job_counter.duration() / 60;
               uint16_t end_time = (time * (100 - card.percentDone())) / card.percentDone();
               if (end_time > (60 * 23)) {
                 lcd_setstatus("End --:--");

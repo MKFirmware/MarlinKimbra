@@ -917,9 +917,7 @@ static float analog2tempBed(int raw) {
 /* Called to get the raw values into the the actual temperatures. The raw values are created in interrupt context,
     and this function is called from normal context as it is too slow to run in interrupts and will block the stepper routine otherwise */
 static void updateTemperaturesFromRawValues() {
-  static millis_t last_update = millis();
-  millis_t temp_last_update = millis();
-  millis_t from_last_update = temp_last_update - last_update;
+
   #if ENABLED(HEATER_0_USES_MAX6675)
     current_temperature_raw[0] = read_max6675();
   #endif
@@ -934,6 +932,9 @@ static void updateTemperaturesFromRawValues() {
     filament_width_meas = analog2widthFil();
   #endif
   #if HAS(POWER_CONSUMPTION_SENSOR)
+    static millis_t last_update = millis();
+    millis_t temp_last_update = millis();
+    millis_t from_last_update = temp_last_update - last_update;
     static float watt_overflow = 0.0;
     power_consumption_meas = analog2power();
     /*ECHO_MV("raw:", raw_analog2voltage(), 5);
@@ -945,16 +946,9 @@ static void updateTemperaturesFromRawValues() {
       power_consumption_hour++;
       watt_overflow--;
     }
+    last_update = temp_last_update;
   #endif
 
-  // Update printer usage
-  static unsigned int second_overflow = 0;
-  second_overflow += from_last_update;
-  if (second_overflow >= 1000) {
-    printer_usage_seconds++;
-    second_overflow -= 1000;
-  }
-  last_update = temp_last_update;
   #if ENABLED(USE_WATCHDOG)
     // Reset the watchdog after we know we have a temperature measurement.
     watchdog_reset();
@@ -1316,7 +1310,7 @@ void disable_all_heaters() {
   setTargetBed(0);
 
   // If all heaters go down then for sure our print job has stopped
-  print_job_timer.stop();
+  print_job_counter.stop();
 
   #define DISABLE_HEATER(NR) { \
     target_temperature[NR] = 0; \
@@ -1408,7 +1402,6 @@ void disable_all_heaters() {
 
     return (int)max6675_temp;
   }
-
 #endif // HEATER_0_USES_MAX6675
 
 /**

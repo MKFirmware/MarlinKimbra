@@ -78,7 +78,7 @@ int gumPreheatFanSpeed;
 typedef void (*menuFunc_t)();
 
 uint8_t lcd_status_message_level;
-char lcd_status_message[3 * LCD_WIDTH + 1] = WELCOME_MSG; // worst case is kana with up to 3*LCD_WIDTH+1
+char lcd_status_message[3 * (LCD_WIDTH) + 1] = WELCOME_MSG; // worst case is kana with up to 3*LCD_WIDTH+1
 
 #if ENABLED(DOGLCD)
   #include "dogm_lcd_implementation.h"
@@ -120,7 +120,7 @@ static void lcd_status_screen();
     static void lcd_filament_change_resume_message();
   #endif 
 
-  #if HAS(LCD_CONTRAST)
+  #if ENABLED(HAS_LCD_CONTRAST)
     static void lcd_set_contrast();
   #endif
 
@@ -316,7 +316,7 @@ typedef struct {
   #endif
 } menuPosition;
 
-menuFunc_t currentMenu = lcd_status_screen; /* function pointer to the currently active menu */
+menuFunc_t currentMenu = lcd_status_screen; // pointer to the currently active menu handler
 
 menuPosition menu_history[10];
 uint8_t menu_history_depth = 0;
@@ -337,11 +337,11 @@ enum LCDViewAction {
 
 uint8_t lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW; // Set when the LCD needs to draw, decrements after every draw. Set to 2 in LCD routines so the LCD gets at least 1 full redraw (first redraw is partial)
 
-//Variables used when editing values.
+// Variables used when editing values.
 const char* editLabel;
 void* editValue;
 int32_t minEditValue, maxEditValue;
-menuFunc_t callbackFunc;
+menuFunc_t callbackFunc;              // call this after editing
 
 // place-holders for Ki and Kd edits
 float raw_Ki, raw_Kd;
@@ -363,7 +363,7 @@ static void lcd_goto_menu(menuFunc_t menu, const bool feedback = false, const ui
       menu_history_depth = 0;
     }
     #if ENABLED(LCD_PROGRESS_BAR)
-      // For LCD_PROGRESS_BAR re-initialize the custom characters
+      // For LCD_PROGRESS_BAR re-initialize custom characters
       lcd_set_custom_characters(menu == lcd_status_screen);
     #endif
   }
@@ -419,7 +419,7 @@ static void lcd_status_screen() {
           if (card.isFileOpen()) {
             // Expire the message when printing is active
             if (IS_SD_PRINTING) {
-              if (ms >= expire_status_ms) {
+              if (ELAPSED(ms, expire_status_ms)) {
                 lcd_status_message[0] = '\0';
                 expire_status_ms = 0;
               }
@@ -441,14 +441,14 @@ static void lcd_status_screen() {
   lcd_implementation_status_screen();
 
   #if HAS(LCD_POWER_SENSOR)
-    if (millis() > print_millis + 2000) print_millis = millis();
+    if (ELAPSED(millis(), print_millis + 2000UL)) print_millis = millis();
   #endif
 
   #if HAS(LCD_FILAMENT_SENSOR) || HAS(LCD_POWER_SENSOR)
     #if HAS(LCD_FILAMENT_SENSOR) && HAS(LCD_POWER_SENSOR)
-      if (millis() > previous_lcd_status_ms + 15000)
+      if (ELAPSED(millis(), previous_lcd_status_ms + 15000UL))
     #else
-      if (millis() > previous_lcd_status_ms + 10000)
+      if (ELAPSED(millis(), previous_lcd_status_ms + 10000UL))
     #endif
     {
       previous_lcd_status_ms = millis();
@@ -600,7 +600,7 @@ static void lcd_main_menu() {
  * "Tune" submenu items
  *
  */
- 
+
 /**
  * Set the home offset based on the current_position
  */
@@ -614,7 +614,7 @@ void lcd_set_home_offsets() {
 
   int babysteps_done = 0;
 
-  static void _lcd_babystep(const int axis, const char* msg) {
+  static void _lcd_babystep(const AxisEnum axis, const char* msg) {
     ENCODER_DIRECTION_NORMAL();
     if (encoderPosition) {
       int distance = (int32_t)encoderPosition * BABYSTEP_MULTIPLICATOR;
@@ -1302,7 +1302,7 @@ static void lcd_control_menu() {
 
 static void lcd_stats_menu() {
   char row[30];
-  int day = printer_usage_seconds / 60 / 60 / 24, hours = (printer_usage_seconds / 60 / 60) % 24, minutes = (printer_usage_seconds / 60) % 60;
+  int day = print_job_counter.data.printer_usage_seconds / 60 / 60 / 24, hours = (print_job_counter.data.printer_usage_seconds / 60 / 60) % 24, minutes = (print_job_counter.data.printer_usage_seconds / 60) % 60;
   sprintf_P(row, PSTR(MSG_ONFOR " %id %ih %im"), day, hours, minutes);
   LCD_Printpos(0, 0); lcd_print(row);
   #if HAS(POWER_CONSUMPTION_SENSOR)
@@ -1310,10 +1310,10 @@ static void lcd_stats_menu() {
     LCD_Printpos(0, 1); lcd_print(row);
   #endif
   char lung[30];
-  unsigned int  kmeter = (long)printer_usage_filament / 1000 / 1000,
-                meter = ((long)printer_usage_filament / 1000) % 1000,
-                centimeter = ((long)printer_usage_filament / 10) % 100,
-                millimeter = ((long)printer_usage_filament) % 10;
+  unsigned int  kmeter = (long)print_job_counter.data.printer_usage_filament / 1000 / 1000,
+                meter = ((long)print_job_counter.data.printer_usage_filament / 1000) % 1000,
+                centimeter = ((long)print_job_counter.data.printer_usage_filament / 10) % 100,
+                millimeter = ((long)print_job_counter.data.printer_usage_filament) % 10;
   sprintf_P(lung, PSTR(MSG_FILCONSUMED "%i Km %i m %i cm %i mm"), kmeter, meter, centimeter, millimeter);
   LCD_Printpos(0, 2); lcd_print(lung);
   if (LCD_CLICKED) lcd_goto_menu(lcd_main_menu);
@@ -1691,7 +1691,7 @@ static void lcd_control_volumetric_menu() {
         lcd_contrast &= 0x3F;
       #endif
       encoderPosition = 0;
-      lcdDrawUpdate = 1;
+      lcdDrawUpdate = LCDVIEW_REDRAW_NOW;
       u8g.setContrast(lcd_contrast);
     }
     if (lcdDrawUpdate) {
@@ -1793,8 +1793,6 @@ static void lcd_control_volumetric_menu() {
   
   static void lcd_filament_change_resume_print() {
     filament_change_menu_response = FILAMENT_CHANGE_RESPONSE_RESUME_PRINT;
-    lcdDrawUpdate = 2;
-    lcd_goto_menu(lcd_status_screen);
   }
   
   static void lcd_filament_change_extrude_more() {
@@ -1867,6 +1865,7 @@ static void lcd_control_volumetric_menu() {
     switch (message) {
       case FILAMENT_CHANGE_MESSAGE_INIT:
         defer_return_to_status = true;
+        lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW;
         lcd_goto_menu(lcd_filament_change_init_message);
         break;
       case FILAMENT_CHANGE_MESSAGE_UNLOAD:
@@ -1890,6 +1889,7 @@ static void lcd_control_volumetric_menu() {
         lcd_goto_menu(lcd_filament_change_resume_message);
         break;
       case FILAMENT_CHANGE_MESSAGE_STATUS:
+        lcd_implementation_clear();
         lcd_return_to_status();
         break;
     }
@@ -2023,7 +2023,7 @@ menu_edit_type(unsigned long, long5, ftostr5, 0.01)
 #endif
 
 void lcd_quick_feedback() {
-  lcdDrawUpdate = 2;
+  lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW;
   next_button_update_ms = millis() + 500;
 
   #if ENABLED(LCD_USE_I2C_BUZZER)
@@ -2193,11 +2193,30 @@ bool lcd_blink() {
  *   - Act on RepRap World keypad input
  *   - Update the encoder position
  *   - Apply acceleration to the encoder position
+ *   - Set lcdDrawUpdate = LCDVIEW_CALL_REDRAW_NOW on controller events
  *   - Reset the Info Screen timeout if there's any input
  *   - Update status indicators, if any
- *   - Clear the LCD if lcdDrawUpdate == 2
  *
- * Warning: This function is called from interrupt context!
+ *   Run the current LCD menu handler callback function:
+ *   - Call the handler only if lcdDrawUpdate != LCDVIEW_NONE
+ *   - Before calling the handler, LCDVIEW_CALL_NO_REDRAW => LCDVIEW_NONE
+ *   - Call the menu handler. Menu handlers should do the following:
+ *     - If a value changes, set lcdDrawUpdate to LCDVIEW_REDRAW_NOW and draw the value
+ *       (Encoder events automatically set lcdDrawUpdate for you.)
+ *     - if (lcdDrawUpdate) { redraw }
+ *     - Before exiting the handler set lcdDrawUpdate to:
+ *       - LCDVIEW_CLEAR_CALL_REDRAW to clear screen and set LCDVIEW_CALL_REDRAW_NEXT.
+ *       - LCDVIEW_REDRAW_NOW or LCDVIEW_NONE to keep drawingm but only in this loop.
+ *       - LCDVIEW_REDRAW_NEXT to keep drawing and draw on the next loop also.
+ *       - LCDVIEW_CALL_NO_REDRAW to keep drawing (or start drawing) with no redraw on the next loop.
+ *     - NOTE: For graphical displays menu handlers may be called 2 or more times per loop,
+ *             so don't change lcdDrawUpdate without considering this.
+ *
+ *   After the menu handler callback runs (or not):
+ *   - Clear the LCD if lcdDrawUpdate == LCDVIEW_CLEAR_CALL_REDRAW
+ *   - Update lcdDrawUpdate for the next loop (i.e., move one state down, usually)
+ *
+ * No worries. This function is only called from the main thread.
  */
 void lcd_update() {
   #if ENABLED(ULTIPANEL)

@@ -450,21 +450,15 @@ void Config_ResetDefault() {
   float tmp3[] = DEFAULT_MAX_ACCELERATION;
   float tmp4[] = DEFAULT_RETRACT_ACCELERATION;
   float tmp5[] = DEFAULT_EJERK;
-  #if ENABLED(PIDTEMP)
-    float tmp6[] = DEFAULT_Kp;
-    float tmp7[] = DEFAULT_Ki;
-    float tmp8[] = DEFAULT_Kd;
-    float tmp9[] = DEFAULT_Kc;
-  #endif // PIDTEMP
+  float tmp6[] = DEFAULT_Kp;
+  float tmp7[] = DEFAULT_Ki;
+  float tmp8[] = DEFAULT_Kd;
+  float tmp9[] = DEFAULT_Kc;
 
   #if ENABLED(HOTEND_OFFSET_X) && ENABLED(HOTEND_OFFSET_Y) && ENABLED(HOTEND_OFFSET_Z)
     float tmp10[] = HOTEND_OFFSET_X;
     float tmp11[] = HOTEND_OFFSET_Y;
     float tmp12[] = HOTEND_OFFSET_Z;
-  #else
-    float tmp10[] = {0};
-    float tmp11[] = {0};
-    float tmp12[] = {0};
   #endif
 
   #if MB(ALLIGATOR)
@@ -472,55 +466,30 @@ void Config_ResetDefault() {
   #endif
 
   for (int8_t i = 0; i < 3 + EXTRUDERS; i++) {
-    short max_i;
-    max_i = sizeof(tmp1) / sizeof(*tmp1);
-    if(i < max_i)
-      axis_steps_per_unit[i] = tmp1[i];
-    else
-      axis_steps_per_unit[i] = tmp1[max_i - 1];
-    max_i = sizeof(tmp2) / sizeof(*tmp2);
-    if(i < max_i)
-      max_feedrate[i] = tmp2[i];
-    else
-      max_feedrate[i] = tmp2[max_i - 1];
-    max_i = sizeof(tmp3) / sizeof(*tmp3);
-    if(i < max_i)
-      max_acceleration_units_per_sq_second[i] = tmp3[i];
-    else
-      max_acceleration_units_per_sq_second[i] = tmp3[max_i - 1];
-    if(i < EXTRUDERS) {
-      max_i = sizeof(tmp4) / sizeof(*tmp4);
-      if(i < max_i)
-        retract_acceleration[i] = tmp4[i];
-      else
-        retract_acceleration[i] = tmp4[max_i - 1];
-      max_i = sizeof(tmp5) / sizeof(*tmp5);
-      if(i < max_i)
-        max_e_jerk[i] = tmp5[i];
-      else
-        max_e_jerk[i] = tmp5[max_i - 1];
-      max_i = sizeof(tmp10) / sizeof(*tmp10);
-      if(i < max_i)
-        hotend_offset[X_AXIS][i] = tmp10[i];
-      else
-        hotend_offset[X_AXIS][i] = 0;
-      max_i = sizeof(tmp11) / sizeof(*tmp11);
-      if(i < max_i)
-        hotend_offset[Y_AXIS][i] = tmp11[i];
-      else
-        hotend_offset[Y_AXIS][i] = 0;
-      max_i = sizeof(tmp12) / sizeof(*tmp12);
-      if(i < max_i)
-        hotend_offset[Z_AXIS][i] = tmp12[i];
-      else
-        hotend_offset[Z_AXIS][i] = 0;
-    }
-    #if MB(ALLIGATOR)
-      max_i = sizeof(tmp13) / sizeof(*tmp13);
-      if(i < max_i)
-        motor_current[i] = tmp13[i];
-      else
-        motor_current[i] = tmp13[max_i - 1];
+    axis_steps_per_unit[i] = tmp1[i];
+    max_feedrate[i] = tmp2[i];
+    max_acceleration_units_per_sq_second[i] = tmp3[i];
+  }
+
+  for (int8_t i = 0; i < EXTRUDERS; i++) {
+    retract_acceleration[i] = tmp4[i];
+    max_e_jerk[i] = tmp5[i];
+  }
+
+  #if MB(ALLIGATOR)
+    for (int8_t i = 0; i < 3 + DRIVER_EXTRUDERS; i++)
+      motor_current[i] = tmp13[i];
+  #endif
+
+  for (int8_t i = 0; i < HOTENDS; i++) {
+    #if ENABLED(HOTEND_OFFSET_X) && ENABLED(HOTEND_OFFSET_Y) && ENABLED(HOTEND_OFFSET_Z)
+      hotend_offset[X_AXIS][i] = tmp10[i];
+      hotend_offset[Y_AXIS][i] = tmp11[i];
+      hotend_offset[Z_AXIS][i] = tmp12[i];
+    #else
+      hotend_offset[X_AXIS][i] = 0;
+      hotend_offset[Y_AXIS][i] = 0;
+      hotend_offset[Z_AXIS][i] = 0;
     #endif
   }
 
@@ -915,24 +884,7 @@ void Config_ResetDefault() {
       ECHO_LVM(INFO, power_consumption_hour," Wh");
     #endif
 
-    if (!forReplay) {
-      ECHO_LM(INFO, "Power on time:");
-    }
-    char time[30];
-    unsigned int day = printer_usage_seconds / 60 / 60 / 24, hours = (printer_usage_seconds / 60 / 60) % 24, minutes = (printer_usage_seconds / 60) % 60;
-    sprintf_P(time, PSTR("  %i " MSG_END_DAY " %i " MSG_END_HOUR " %i " MSG_END_MINUTE), day, hours, minutes);
-    ECHO_LT(INFO, time);
-
-    if (!forReplay) {
-      ECHO_LM(INFO, "Filament printed:");
-    }
-    char lung[30];
-    unsigned int  kmeter = (long)printer_usage_filament / 1000 / 1000,
-                  meter = ((long)printer_usage_filament / 1000) % 1000,
-                  centimeter = ((long)printer_usage_filament / 10) % 100,
-                  millimeter = ((long)printer_usage_filament) % 10;
-    sprintf_P(lung, PSTR("  %i Km %i m %i cm %i mm"), kmeter, meter, centimeter, millimeter);
-    ECHO_LT(INFO, lung);
+    print_job_counter.showStats();
   }
 
 #endif // !DISABLE_M503
@@ -947,26 +899,31 @@ void ConfigSD_ResetDefault() {
   #if HAS(POWER_CONSUMPTION_SENSOR)
    power_consumption_hour = 0;
   #endif
-  printer_usage_seconds  = 0;
-  printer_usage_filament = 0;
+  print_job_counter.initStats();
   ECHO_LM(OK, "Hardcoded SD Default Settings Loaded");
 }
 
 #if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
   static const char *cfgSD_KEY[] = { // Keep this in lexicographical order for better search performance(O(Nlog2(N)) insted of O(N*N)) (if you don't keep this sorted, the algorithm for find the key index won't work, keep attention.)
-    #if HAS(POWER_CONSUMPTION_SENSOR)
-      "PWR",
-    #endif
-    "FIL",
-    "TME"
+    "CPR",  // Number of complete prints
+    "FIL",  // Filament Usage
+    "NPR",  // Number of prints
+  #if HAS(POWER_CONSUMPTION_SENSOR)
+    "PWR",  // Power Consumption
+  #endif
+    "TME",  // Longest print job
+    "TPR"   // Total printing time
   };
 
   enum cfgSD_ENUM {   // This need to be in the same order as cfgSD_KEY
-    #if HAS(POWER_CONSUMPTION_SENSOR)
-      SD_CFG_PWR,
-    #endif
+    SD_CFG_CPR,
     SD_CFG_FIL,
+    SD_CFG_NPR,
+  #if HAS(POWER_CONSUMPTION_SENSOR)
+    SD_CFG_PWR,
+  #endif
     SD_CFG_TME,
+    SD_CFG_TPR,
     SD_CFG_END // Leave this always as the last
   };
 
@@ -976,18 +933,23 @@ void ConfigSD_ResetDefault() {
     card.setroot(true);
     card.startWrite((char *)CFG_SD_FILE, false);
     char buff[CFG_SD_MAX_VALUE_LEN];
+    ltoa(print_job_counter.data.completePrints, buff, 10);
+    card.unparseKeyLine(cfgSD_KEY[SD_CFG_CPR], buff);
+    ltoa(print_job_counter.data.printer_usage_filament, buff, 10);
+    card.unparseKeyLine(cfgSD_KEY[SD_CFG_FIL], buff);
+    ltoa(print_job_counter.data.numberPrints, buff, 10);
+    card.unparseKeyLine(cfgSD_KEY[SD_CFG_NPR], buff);
     #if HAS(POWER_CONSUMPTION_SENSOR)
       ltoa(power_consumption_hour, buff, 10);
       card.unparseKeyLine(cfgSD_KEY[SD_CFG_PWR], buff);
     #endif
-    ltoa(printer_usage_seconds, buff, 10);
+    ltoa(print_job_counter.data.printer_usage_seconds, buff, 10);
     card.unparseKeyLine(cfgSD_KEY[SD_CFG_TME], buff);
-    ltoa(printer_usage_filament, buff, 10);
-    card.unparseKeyLine(cfgSD_KEY[SD_CFG_FIL], buff);
+    ltoa(print_job_counter.data.printTime, buff, 10);
+    card.unparseKeyLine(cfgSD_KEY[SD_CFG_TPR], buff);
 
     card.closeFile();
     card.setlast();
-    config_last_update = millis();
     unset_sd_dot();
   }
 
@@ -1003,37 +965,57 @@ void ConfigSD_ResetDefault() {
       k_len = CFG_SD_MAX_KEY_LEN;
       v_len = CFG_SD_MAX_VALUE_LEN;
       card.parseKeyLine(key, value, k_len, v_len);
+
       if(k_len == 0 || v_len == 0) break; // no valid key or value founded
+
       k_idx = ConfigSD_KeyIndex(key);
       if(k_idx == -1) continue;    // unknow key ignore it
+
       switch(k_idx) {
-        #if HAS(POWER_CONSUMPTION_SENSOR)
+        case SD_CFG_CPR: {
+          if(addValue) print_job_counter.data.completePrints += (unsigned long)atol(value);
+          else print_job_counter.data.completePrints = (unsigned long)atol(value);
+        }
+        break;
+        case SD_CFG_FIL: {
+          if(addValue) print_job_counter.data.printer_usage_filament += (unsigned long)atol(value);
+          else print_job_counter.data.printer_usage_filament = (unsigned long)atol(value);
+        }
+        break;
+        case SD_CFG_NPR: {
+          if(addValue) print_job_counter.data.numberPrints += (unsigned long)atol(value);
+          else print_job_counter.data.numberPrints = (unsigned long)atol(value);
+        }
+        break;
+      #if HAS(POWER_CONSUMPTION_SENSOR)
         case SD_CFG_PWR: {
           if(addValue) power_consumption_hour += (unsigned long)atol(value);
           else power_consumption_hour = (unsigned long)atol(value);
         }
         break;
-        #endif
+      #endif
         case SD_CFG_TME: {
-          if(addValue) printer_usage_seconds += (unsigned long)atol(value);
-          else printer_usage_seconds = (unsigned long)atol(value);
+          if(addValue) print_job_counter.data.printer_usage_seconds += (unsigned long)atol(value);
+          else print_job_counter.data.printer_usage_seconds = (unsigned long)atol(value);
         }
         break;
-        case SD_CFG_FIL: {
-          if(addValue) printer_usage_filament += (unsigned long)atol(value);
-          else printer_usage_filament = (unsigned long)atol(value);
+        case SD_CFG_TPR: {
+          if(addValue) print_job_counter.data.printTime += (unsigned long)atol(value);
+          else print_job_counter.data.printTime = (unsigned long)atol(value);
         }
         break;
       }
     }
+
+    print_job_counter.loaded = true;
     card.closeFile();
     card.setlast();
-    config_readed = true;
     unset_sd_dot();
   }
 
   int ConfigSD_KeyIndex(char *key) {  // At the moment a binary search algorithm is used for simplicity, if it will be necessary (Eg. tons of key), an hash search algorithm will be implemented.
     int begin = 0, end = SD_CFG_END - 1, middle, cond;
+
     while(begin <= end) {
       middle = (begin + end) / 2;
       cond = strcmp(cfgSD_KEY[middle], key);
@@ -1041,6 +1023,7 @@ void ConfigSD_ResetDefault() {
       else if(cond < 0) begin = middle + 1;
       else end = middle - 1;
     }
+
     return -1;
   }
 
