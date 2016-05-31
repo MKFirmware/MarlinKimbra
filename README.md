@@ -47,7 +47,7 @@ Added anti extruder idle oozing system.
 Added Hysteresis and Z-Wobble correction (only cartesian printers).
 Added support reader TAG width MFRC522
 Added Cooler and Hot Chamber
-Added Laser beam, raset
+Added Laser beam and raster base64
 
 ## Credits
 
