@@ -3008,7 +3008,7 @@ inline void wait_heater(bool no_wait_for_cooling = true) {
     now = millis();
     if (ELAPSED(now, next_temp_ms)) { //Print temp & remaining time every 1s while waiting
       next_temp_ms = now + 1000UL;
-      #if HAS(TEMP_HOTEND) || HAS(TEMP_BED)
+      #if HAS(TEMP_0) || HAS(TEMP_BED) || ENABLED(HEATER_0_USES_MAX6675)
         print_heaterstates();
       #endif
       #if TEMP_RESIDENCY_TIME > 0
@@ -3083,7 +3083,9 @@ inline void wait_bed(bool no_wait_for_cooling = true) {
     now = millis();
     if (ELAPSED(now, next_temp_ms)) { //Print Temp Reading every 1 second while heating up.
       next_temp_ms = now + 1000UL;
-      print_heaterstates();
+      #if HAS(TEMP_0) || HAS(TEMP_BED) || ENABLED(HEATER_0_USES_MAX6675)
+        print_heaterstates();
+      #endif
       #if TEMP_BED_RESIDENCY_TIME > 0
         ECHO_M(SERIAL_W);
         if (residency_start_ms) {
@@ -4865,9 +4867,7 @@ inline void gcode_G92() {
       current_position[i] = v;
 
       if (i == E_AXIS) {
-        #if DISABLED(MUVE_Z_PEEL)
-          plan_set_e_position(v);
-        #endif
+        plan_set_e_position(v);
       }
       else {
         position_shift[i] += v - p; // Offset the coordinate space
