@@ -7687,7 +7687,7 @@ inline void gcode_M503() {
     if (code_seen('D') && IsRunning()) laser.diagnostics = (bool) code_value();
 
     // Wait for the rest 
-    //st_synchronize();
+    // st_synchronize();
     if (code_seen('S') && IsRunning()) {
       laser.intensity = (float) code_value();
       laser.rasterlaserpower =  laser.intensity;

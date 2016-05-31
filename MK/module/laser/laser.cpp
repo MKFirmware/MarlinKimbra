@@ -23,6 +23,7 @@
 /**
  * laser.cpp - Laser control library for Arduino using 16 bit timers- Version 1
  * Copyright (c) 2013 Timothy Schmidt.  All right reserved.
+ * Copyright (c) 2016 Franco (nextime) Lanza
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -304,7 +305,7 @@
 
   #if ENABLED(LASER_PERIPHERALS)
     bool laser_peripherals_ok() { return !digitalRead(LASER_PERIPHERALS_STATUS_PIN); }
-  
+
     void laser_peripherals_on() {
       digitalWrite(LASER_PERIPHERALS_PIN, LOW);
       if (laser.diagnostics)

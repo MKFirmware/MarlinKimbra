@@ -1,6 +1,6 @@
 ### Version 4.2.83
 * Add Cooler and Hot Chamber
-* Add Laser Beam PWM and raster base64 ONLY ARDUINO MEGA
+* Add Laser Beam PWM and raster base64
 
 ### Version 4.2.82
 * Add DONDOLO_DUAL_MOTOR for DONDOLO bowden and dual extruder
