@@ -68,15 +68,12 @@ block_t* current_block;  // A pointer to the block currently being traced
 static unsigned char last_direction_bits = 0;  // The next stepping-bits to be output
 static unsigned int cleaning_buffer_counter = 0;
 
-#ifdef LASER
-static long counter_L;
-#endif // LASER
-
-#ifdef LASER_RASTER
-static int counter_raster;
-#endif // LASER_RASTER
-
-
+#if ENABLED(LASERBEAM)
+  static long counter_L;
+  #if ENABLED(LASER_RASTER)
+    static int counter_raster;
+  #endif // LASER_RASTER
+#endif // LASERBEAM
 
 #if ENABLED(Z_DUAL_ENDSTOPS)
   static bool performing_homing = false,
@@ -124,7 +121,7 @@ static unsigned short OCR1A_nominal;
 static bool check_endstops = true;
 
 volatile long count_position[NUM_AXIS] = { 0 }; // Positions of stepper motors, in step units
-volatile signed char count_direction[NUM_AXIS] = { 1 };
+volatile signed char count_direction[NUM_AXIS] = { 1, 1, 1, 1 };
 
 
 //===========================================================================
@@ -307,11 +304,11 @@ FORCE_INLINE unsigned short calc_timer(unsigned short step_rate) {
   NOMORE(step_rate, MAX_STEP_FREQUENCY);
 
   if(step_rate > (2 * DOUBLE_STEP_FREQUENCY)) { // If steprate > 2*DOUBLE_STEP_FREQUENCY >> step 4 times
-    step_rate = (step_rate >> 2);
+    step_rate >>= 2;
     step_loops = 4;
   }
   else if(step_rate > DOUBLE_STEP_FREQUENCY) { // If steprate > DOUBLE_STEP_FREQUENCY >> step 2 times
-    step_rate = (step_rate >> 1);
+    step_rate >>= 1;
     step_loops = 2;
   }
   else {
@@ -429,10 +426,12 @@ ISR(TIMER1_COMPA_vect) {
     return;
   }
 
-  #if ENABLED(LASER) && (!ENABLED(LASER_PULSE_METHOD))
+  #if ENABLED(LASERBEAM) && (!ENABLED(LASER_PULSE_METHOD))
     if (laser.dur != 0 && (laser.last_firing + laser.dur < micros())) {
-      if (laser.diagnostics) ECHO_LM(INFO,"Laser firing duration elapsed, in interrupt handler");
-     laser_extinguish();
+      if (laser.diagnostics)
+        ECHO_LM(INFO, "Laser firing duration elapsed, in interrupt handler");
+
+      laser_extinguish();
     }
   #endif
 
@@ -446,7 +445,8 @@ ISR(TIMER1_COMPA_vect) {
 
       // Initialize Bresenham counters to 1/2 the ceiling
       counter_X = counter_Y = counter_Z = counter_E = -(current_block->step_event_count >> 1);
-      #if ENABLED(LASER)
+
+      #if ENABLED(LASERBEAM)
          counter_L = counter_X;
          #if !ENABLED(LASER_PULSE_METHOD)
            laser.dur = current_block->laser_duration;
@@ -463,15 +463,12 @@ ISR(TIMER1_COMPA_vect) {
       #if ENABLED(Z_LATE_ENABLE)
         if (current_block->steps[Z_AXIS] > 0) {
           enable_z();
-          #if ENABLED(MUVE)
-            enable_e();
-          #endif
           OCR1A = 2000; // 1ms wait
           return;
         }
       #endif
 
-      #if ENABLED(LASER_RASTER)
+      #if ENABLED(LASERBEAM) && ENABLED(LASER_RASTER)
          if (current_block->laser_mode == RASTER) counter_raster = 0;
       #endif
 
@@ -494,15 +491,15 @@ ISR(TIMER1_COMPA_vect) {
     #endif
 
     // Continuous firing of the laser during a move happens here, PPM and raster happen further down
-    #if ENABLED(LASER)
-      if (current_block->laser_mode == CONTINUOUS && current_block->laser_status == LASER_ON) {
-         laser_fire(current_block->laser_intensity);
-      }
+    #if ENABLED(LASERBEAM)
+      if (current_block->laser_mode == CONTINUOUS && current_block->laser_status == LASER_ON)
+        laser_fire(current_block->laser_intensity);
+
       #if !ENABLED(LASER_PULSE_METHOD)
-      if (current_block->laser_status == LASER_OFF) {
-         if (laser.diagnostics) ECHO_LM(INFO,"Laser status set to off, in interrupt handler");
-         laser_extinguish();
-      }
+        if (current_block->laser_status == LASER_OFF) {
+          if (laser.diagnostics) ECHO_LM(INFO,"Laser status set to off, in interrupt handler");
+          laser_extinguish();
+        }
       #endif
     #endif
 
@@ -600,14 +597,14 @@ ISR(TIMER1_COMPA_vect) {
         #endif
       #endif
 
-      #if ENABLED(LASER)
+      #if ENABLED(LASERBEAM)
         counter_L += current_block->steps_l;
         if (counter_L > 0) {
           if (current_block->laser_mode == PULSED && current_block->laser_status == LASER_ON) { // Pulsed Firing Mode
             #if ENABLED(LASER_PULSE_METHOD)
               uint32_t ulValue = current_block->laser_raster_intensity_factor * 255;
               laser_pulse(ulValue, current_block->laser_duration);
-              laser.time += current_block->laser_duration/1000; 
+              laser.time += current_block->laser_duration / 1000; 
             #else
               laser_fire(current_block->laser_intensity);
             #endif
@@ -652,7 +649,7 @@ ISR(TIMER1_COMPA_vect) {
           laser_extinguish();
         }
         #endif
-      #endif // LASER
+      #endif // LASERBEAM
 
       // safe check for erroneous calculated events count
       if(current_block->step_event_count >= MAX_EVENTS_COUNT) {
@@ -767,10 +764,9 @@ ISR(TIMER1_COMPA_vect) {
     if (step_events_completed >= current_block->step_event_count) {
       current_block = NULL;
       plan_discard_current_block();
-      #if ENABLED(LASER) && ENABLED(LASER_PULSE_METHOD)
-        if (current_block->laser_mode == CONTINUOUS && current_block->laser_status == LASER_ON) {
+      #if ENABLED(LASERBEAM) && ENABLED(LASER_PULSE_METHOD)
+        if (current_block->laser_mode == CONTINUOUS && current_block->laser_status == LASER_ON)
           laser_extinguish();
-        }
       #endif
     }
   }

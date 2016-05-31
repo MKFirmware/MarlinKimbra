@@ -98,8 +98,8 @@ typedef struct {
     unsigned long valve_pressure;
     unsigned long e_to_p_pressure;
   #endif
-  
-  #if ENABLED(LASER)
+
+  #if ENABLED(LASERBEAM)
     uint8_t laser_mode; // CONTINUOUS, PULSED, RASTER
     bool laser_status; // LASER_OFF, LASER_ON
     float laser_ppm; // pulses per millimeter, for pulsed and raster firing modes
@@ -111,10 +111,6 @@ typedef struct {
       float laser_raster_intensity_factor;
     #endif
   #endif 
-
-  #if ENABLED(LASERBEAM)
-    unsigned long laser_ttlmodulation;
-  #endif
 
   volatile char busy;
 } block_t;
