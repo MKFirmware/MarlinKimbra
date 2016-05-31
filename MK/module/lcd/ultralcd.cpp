@@ -604,37 +604,37 @@ static void lcd_main_menu() {
   MENU_ITEM(submenu, MSG_CONTROL, lcd_control_menu);
   MENU_ITEM(submenu, MSG_STATS, lcd_stats_menu);
 
-#if ENABLED(SDSUPPORT)
- if (card.cardOK) {
-   if (card.isFileOpen()) {
-     if (card.sdprinting)
-       MENU_ITEM(function, MSG_PAUSE_PRINT, lcd_sdcard_pause);
-     else
-       MENU_ITEM(function, MSG_RESUME_PRINT, lcd_sdcard_resume);
-     MENU_ITEM(function, MSG_STOP_PRINT, lcd_sdcard_stop);
-   }
-   else {
-     MENU_ITEM(submenu, MSG_CARD_MENU, lcd_sdcard_menu);
-     #if !PIN_EXISTS(SD_DETECT)
-       MENU_ITEM(gcode, MSG_CNG_SDCARD, PSTR("M21"));  // SD-card changed by user
-     #endif
-   }
- }
- else {
-   MENU_ITEM(submenu, MSG_NO_CARD, lcd_sdcard_menu);
-   #if !PIN_EXISTS(SD_DETECT)
-     MENU_ITEM(gcode, MSG_INIT_SDCARD, PSTR("M21")); // Manually initialize the SD-card via user interface
-   #endif
- }
-#endif // SDSUPPORT
+  #if ENABLED(SDSUPPORT)
+    if (card.cardOK) {
+      if (card.isFileOpen()) {
+        if (card.sdprinting)
+          MENU_ITEM(function, MSG_PAUSE_PRINT, lcd_sdcard_pause);
+        else
+          MENU_ITEM(function, MSG_RESUME_PRINT, lcd_sdcard_resume);
+        MENU_ITEM(function, MSG_STOP_PRINT, lcd_sdcard_stop);
+      }
+      else {
+        MENU_ITEM(submenu, MSG_CARD_MENU, lcd_sdcard_menu);
+        #if !PIN_EXISTS(SD_DETECT)
+          MENU_ITEM(gcode, MSG_CNG_SDCARD, PSTR("M21"));  // SD-card changed by user
+        #endif
+      }
+    }
+    else {
+      MENU_ITEM(submenu, MSG_NO_CARD, lcd_sdcard_menu);
+      #if !PIN_EXISTS(SD_DETECT)
+        MENU_ITEM(gcode, MSG_INIT_SDCARD, PSTR("M21")); // Manually initialize the SD-card via user interface
+      #endif
+    }
+  #endif // SDSUPPORT
 
-END_MENU();
+  END_MENU();
 }
 
 #if ENABLED(SDSUPPORT) && ENABLED(MENU_ADDAUTOSTART)
-static void lcd_autostart_sd() {
- card.checkautostart(true);
-}
+  static void lcd_autostart_sd() {
+    card.checkautostart(true);
+  }
 #endif
 
 /**
@@ -644,12 +644,12 @@ static void lcd_autostart_sd() {
  */
 
 /**
-* Set the home offset based on the current_position
-*/
+ * Set the home offset based on the current_position
+ */
 void lcd_set_home_offsets() {
-// M428 Command
-enqueue_and_echo_commands_P(PSTR("M428"));
-lcd_return_to_status();
+  // M428 Command
+  enqueue_and_echo_commands_P(PSTR("M428"));
+  lcd_return_to_status();
 }
 
 #if ENABLED(BABYSTEPPING)
@@ -693,54 +693,54 @@ lcd_return_to_status();
     if (LCD_CLICKED) lcd_goto_previous_menu(true);
   }
 
-#if ENABLED(BABYSTEP_XY)
- static void _lcd_babystep_x() { _lcd_babystep(X_AXIS, PSTR(MSG_BABYSTEPPING_X)); }
- static void _lcd_babystep_y() { _lcd_babystep(Y_AXIS, PSTR(MSG_BABYSTEPPING_Y)); }
- static void lcd_babystep_x() { babysteps_done = 0; lcd_goto_menu(_lcd_babystep_x); }
- static void lcd_babystep_y() { babysteps_done = 0; lcd_goto_menu(_lcd_babystep_y); }
-#endif
-static void _lcd_babystep_z() { _lcd_babystep(Z_AXIS, PSTR(MSG_BABYSTEPPING_Z)); }
-static void lcd_babystep_z() { babysteps_done = 0; lcd_goto_menu(_lcd_babystep_z); }
+  #if ENABLED(BABYSTEP_XY)
+    static void _lcd_babystep_x() { _lcd_babystep(X_AXIS, PSTR(MSG_BABYSTEPPING_X)); }
+    static void _lcd_babystep_y() { _lcd_babystep(Y_AXIS, PSTR(MSG_BABYSTEPPING_Y)); }
+    static void lcd_babystep_x() { babysteps_done = 0; lcd_goto_menu(_lcd_babystep_x); }
+    static void lcd_babystep_y() { babysteps_done = 0; lcd_goto_menu(_lcd_babystep_y); }
+  #endif
+  static void _lcd_babystep_z() { _lcd_babystep(Z_AXIS, PSTR(MSG_BABYSTEPPING_Z)); }
+  static void lcd_babystep_z() { babysteps_done = 0; lcd_goto_menu(_lcd_babystep_z); }
 
 #endif // BABYSTEPPING
 
 static void lcd_tune_fixstep() {
-#if MECH(DELTA)
- enqueue_and_echo_commands_P(PSTR("G28 B"));
-#else
- enqueue_and_echo_commands_P(PSTR("G28 X Y B"));
-#endif
+  #if MECH(DELTA)
+    enqueue_and_echo_commands_P(PSTR("G28 B"));
+  #else
+    enqueue_and_echo_commands_P(PSTR("G28 X Y B"));
+  #endif
 }
 
 /**
-* Watch temperature callbacks
-*/
+ * Watch temperature callbacks
+ */
 #if ENABLED(THERMAL_PROTECTION_HOTENDS)
-#if TEMP_SENSOR_0 != 0
- void watch_temp_callback_E0() { start_watching_heater(0); }
-#endif
-#if HOTENDS > 1 && TEMP_SENSOR_1 != 0
- void watch_temp_callback_E1() { start_watching_heater(1); }
-#endif
-#if HOTENDS > 2 && TEMP_SENSOR_2 != 0
- void watch_temp_callback_E2() { start_watching_heater(2); }
-#endif
-#if HOTENDS > 3 && TEMP_SENSOR_3 != 0
- void watch_temp_callback_E3() { start_watching_heater(3); }
-#endif
+  #if TEMP_SENSOR_0 != 0
+    void watch_temp_callback_E0() { start_watching_heater(0); }
+  #endif
+  #if HOTENDS > 1 && TEMP_SENSOR_1 != 0
+    void watch_temp_callback_E1() { start_watching_heater(1); }
+  #endif
+  #if HOTENDS > 2 && TEMP_SENSOR_2 != 0
+    void watch_temp_callback_E2() { start_watching_heater(2); }
+  #endif
+  #if HOTENDS > 3 && TEMP_SENSOR_3 != 0
+    void watch_temp_callback_E3() { start_watching_heater(3); }
+  #endif
 #else
-#if TEMP_SENSOR_0 != 0
- void watch_temp_callback_E0() {}
-#endif
-#if HOTENDS > 1 && TEMP_SENSOR_1 != 0
- void watch_temp_callback_E1() {}
-#endif
-#if HOTENDS > 2 && TEMP_SENSOR_2 != 0
- void watch_temp_callback_E2() {}
-#endif
-#if HOTENDS > 3 && TEMP_SENSOR_3 != 0
- void watch_temp_callback_E3() {}
-#endif
+  #if TEMP_SENSOR_0 != 0
+    void watch_temp_callback_E0() {}
+  #endif
+  #if HOTENDS > 1 && TEMP_SENSOR_1 != 0
+    void watch_temp_callback_E1() {}
+  #endif
+  #if HOTENDS > 2 && TEMP_SENSOR_2 != 0
+    void watch_temp_callback_E2() {}
+  #endif
+  #if HOTENDS > 3 && TEMP_SENSOR_3 != 0
+    void watch_temp_callback_E3() {}
+  #endif
 #endif // !THERMAL_PROTECTION_HOTENDS
 
 #if ENABLED(THERMAL_PROTECTION_BED)
@@ -754,29 +754,48 @@ static void lcd_tune_fixstep() {
 #endif
 
 /**
-*
-* "Tune" submenu
-*
-*/
+ *
+ * "Tune" submenu
+ *
+ */
 static void lcd_tune_menu() {
-START_MENU();
+  START_MENU();
 
-//
-// ^ Main
-//
-MENU_ITEM(back, MSG_MAIN);
+  //
+  // ^ Main
+  //
+  MENU_ITEM(back, MSG_MAIN);
 
-//
-// Speed:
-//
-MENU_ITEM_EDIT(int3, MSG_SPEED, &feedrate_multiplier, 10, 999);
+  //
+  // Speed:
+  //
+  MENU_ITEM_EDIT(int3, MSG_SPEED, &feedrate_multiplier, 10, 999);
 
-//
-// Laser:
-//
-#if ENABLED(LASER) && ENABLED(COOLER)
- MENU_ITEM_EDIT(int3, MSG_COOLER, &target_temperature_cooler, 0, COOLER_MAXTEMP - 15);
-#endif
+  //
+  // Nozzle:
+  //
+  #if HOTENDS == 1
+    #if TEMP_SENSOR_0 != 0
+      MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE, &target_temperature[0], 0, HEATER_0_MAXTEMP - 15, watch_temp_callback_E0);
+    #endif
+  #else // HOTENDS > 1
+    #if TEMP_SENSOR_0 != 0
+      MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE " 0", &target_temperature[0], 0, HEATER_0_MAXTEMP - 15, watch_temp_callback_E0);
+    #endif
+    #if TEMP_SENSOR_1 != 0
+      MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE " 1", &target_temperature[1], 0, HEATER_1_MAXTEMP - 15, watch_temp_callback_E1);
+    #endif
+    #if HOTENDS > 2
+      #if TEMP_SENSOR_2 != 0
+        MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE " 2", &target_temperature[2], 0, HEATER_2_MAXTEMP - 15, watch_temp_callback_E2);
+      #endif
+      #if HOTENDS > 3
+        #if TEMP_SENSOR_3 != 0
+          MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_NOZZLE " 3", &target_temperature[3], 0, HEATER_3_MAXTEMP - 15, watch_temp_callback_E3);
+        #endif
+      #endif // HOTENDS > 3
+    #endif // HOTENDS > 2
+  #endif // HOTENDS > 1
 
   //
   // Laser:
@@ -792,46 +811,46 @@ MENU_ITEM_EDIT(int3, MSG_SPEED, &feedrate_multiplier, 10, 999);
     MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_BED, &target_temperature_bed, 0, BED_MAXTEMP - 15, watch_temp_callback_bed);
   #endif
 
-//
-// Fan Speed:
-//
-MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255);
+  //
+  // Fan Speed:
+  //
+  MENU_MULTIPLIER_ITEM_EDIT(int3, MSG_FAN_SPEED, &fanSpeed, 0, 255);
 
-//
-// Flow:
-// Flow 1:
-// Flow 2:
-// Flow 3:
-// Flow 4:
-//
-#if EXTRUDERS == 1
- MENU_ITEM_EDIT(int3, MSG_FLOW, &extruder_multiplier[0], 10, 999);
-#else // EXTRUDERS > 1
- MENU_ITEM_EDIT(int3, MSG_FLOW, &extruder_multiplier[active_extruder], 10, 999);
- MENU_ITEM_EDIT(int3, MSG_FLOW " 0", &extruder_multiplier[0], 10, 999);
- MENU_ITEM_EDIT(int3, MSG_FLOW " 1", &extruder_multiplier[1], 10, 999);
- #if EXTRUDERS > 2
-   MENU_ITEM_EDIT(int3, MSG_FLOW " 2", &extruder_multiplier[2], 10, 999);
-   #if EXTRUDERS > 3
-     MENU_ITEM_EDIT(int3, MSG_FLOW " 3", &extruder_multiplier[3], 10, 999);
-   #endif // EXTRUDERS > 3
- #endif // EXTRUDERS > 2
-#endif // EXTRUDERS > 1
+  //
+  // Flow:
+  // Flow 1:
+  // Flow 2:
+  // Flow 3:
+  // Flow 4:
+  //
+  #if EXTRUDERS == 1
+    MENU_ITEM_EDIT(int3, MSG_FLOW, &extruder_multiplier[0], 10, 999);
+  #else // EXTRUDERS > 1
+    MENU_ITEM_EDIT(int3, MSG_FLOW, &extruder_multiplier[active_extruder], 10, 999);
+    MENU_ITEM_EDIT(int3, MSG_FLOW " 0", &extruder_multiplier[0], 10, 999);
+    MENU_ITEM_EDIT(int3, MSG_FLOW " 1", &extruder_multiplier[1], 10, 999);
+    #if EXTRUDERS > 2
+      MENU_ITEM_EDIT(int3, MSG_FLOW " 2", &extruder_multiplier[2], 10, 999);
+      #if EXTRUDERS > 3
+        MENU_ITEM_EDIT(int3, MSG_FLOW " 3", &extruder_multiplier[3], 10, 999);
+      #endif // EXTRUDERS > 3
+    #endif // EXTRUDERS > 2
+  #endif // EXTRUDERS > 1
 
-//
-// Babystep X:
-// Babystep Y:
-// Babystep Z:
-//
-#if ENABLED(BABYSTEPPING)
- #if ENABLED(BABYSTEP_XY)
-   MENU_ITEM(submenu, MSG_BABYSTEP_X, lcd_babystep_x);
-   MENU_ITEM(submenu, MSG_BABYSTEP_Y, lcd_babystep_y);
- #endif // BABYSTEP_XY
- MENU_ITEM(submenu, MSG_BABYSTEP_Z, lcd_babystep_z);
-#endif
+  //
+  // Babystep X:
+  // Babystep Y:
+  // Babystep Z:
+  //
+  #if ENABLED(BABYSTEPPING)
+    #if ENABLED(BABYSTEP_XY)
+      MENU_ITEM(submenu, MSG_BABYSTEP_X, lcd_babystep_x);
+      MENU_ITEM(submenu, MSG_BABYSTEP_Y, lcd_babystep_y);
+    #endif // BABYSTEP_XY
+    MENU_ITEM(submenu, MSG_BABYSTEP_Z, lcd_babystep_z);
+  #endif
 
-MENU_ITEM(function, MSG_FIX_LOSE_STEPS, lcd_tune_fixstep);
+  MENU_ITEM(function, MSG_FIX_LOSE_STEPS, lcd_tune_fixstep);
 
   //
   // Change filament
@@ -840,31 +859,31 @@ MENU_ITEM(function, MSG_FIX_LOSE_STEPS, lcd_tune_fixstep);
      MENU_ITEM(gcode, MSG_FILAMENT_CHANGE, PSTR("M600"));
   #endif
 
-END_MENU();
+  END_MENU();
 }
 
 #if ENABLED(EASY_LOAD)
-static void lcd_extrude(float length, float feedrate) {
- current_position[E_AXIS] += length;
- #if MECH(DELTA)
-   calculate_delta(current_position);
-   plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS], feedrate, active_extruder, active_driver);
- #else
-   plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], feedrate, active_extruder, active_driver);
- #endif
-}
-static void lcd_purge() { lcd_extrude(LCD_PURGE_LENGTH, LCD_PURGE_FEEDRATE); }
-static void lcd_retract() { lcd_extrude(-LCD_RETRACT_LENGTH, LCD_RETRACT_FEEDRATE); }
-static void lcd_easy_load() {
- allow_lengthy_extrude_once = true;
- lcd_extrude(BOWDEN_LENGTH, LCD_LOAD_FEEDRATE);
- lcd_return_to_status();
-}
-static void lcd_easy_unload() {
- allow_lengthy_extrude_once = true;
- lcd_extrude(-BOWDEN_LENGTH, LCD_UNLOAD_FEEDRATE);
- lcd_return_to_status();
-}
+  static void lcd_extrude(float length, float feedrate) {
+    current_position[E_AXIS] += length;
+    #if MECH(DELTA)
+      calculate_delta(current_position);
+      plan_buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS], feedrate, active_extruder, active_driver);
+    #else
+      plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], feedrate, active_extruder, active_driver);
+    #endif
+  }
+  static void lcd_purge() { lcd_extrude(LCD_PURGE_LENGTH, LCD_PURGE_FEEDRATE); }
+  static void lcd_retract() { lcd_extrude(-LCD_RETRACT_LENGTH, LCD_RETRACT_FEEDRATE); }
+  static void lcd_easy_load() {
+    allow_lengthy_extrude_once = true;
+    lcd_extrude(BOWDEN_LENGTH, LCD_LOAD_FEEDRATE);
+    lcd_return_to_status();
+  }
+  static void lcd_easy_unload() {
+    allow_lengthy_extrude_once = true;
+    lcd_extrude(-BOWDEN_LENGTH, LCD_UNLOAD_FEEDRATE);
+    lcd_return_to_status();
+  }
 #endif // EASY_LOAD
 
 /**
@@ -873,131 +892,131 @@ static void lcd_easy_unload() {
  *
  */
 void _lcd_preheat(int endnum, const float temph, const float tempb, const int fan) {
-if (temph > 0) setTargetHotend(temph, endnum);
-#if TEMP_SENSOR_BED != 0
- setTargetBed(tempb);
-#else
- UNUSED(tempb);
-#endif
-fanSpeed = fan;
-lcd_return_to_status();
+  if (temph > 0) setTargetHotend(temph, endnum);
+  #if TEMP_SENSOR_BED != 0
+    setTargetBed(tempb);
+  #else
+    UNUSED(tempb);
+  #endif
+  fanSpeed = fan;
+  lcd_return_to_status();
 }
 
 #if TEMP_SENSOR_0 != 0
-void lcd_preheat_pla0() { _lcd_preheat(0, plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed); }
-void lcd_preheat_abs0() { _lcd_preheat(0, absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed); }
-void lcd_preheat_gum0() { _lcd_preheat(0, gumPreheatHotendTemp, gumPreheatHPBTemp, gumPreheatFanSpeed); }
+  void lcd_preheat_pla0() { _lcd_preheat(0, plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed); }
+  void lcd_preheat_abs0() { _lcd_preheat(0, absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed); }
+  void lcd_preheat_gum0() { _lcd_preheat(0, gumPreheatHotendTemp, gumPreheatHPBTemp, gumPreheatFanSpeed); }
 #endif
 
 #if HOTENDS > 1
-void lcd_preheat_pla1() { _lcd_preheat(1, plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed); }
-void lcd_preheat_abs1() { _lcd_preheat(1, absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed); }
-void lcd_preheat_gum1() { _lcd_preheat(1, gumPreheatHotendTemp, gumPreheatHPBTemp, gumPreheatFanSpeed); }
-#if HOTENDS > 2
- void lcd_preheat_pla2() { _lcd_preheat(2, plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed); }
- void lcd_preheat_abs2() { _lcd_preheat(2, absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed); }
- void lcd_preheat_gum2() { _lcd_preheat(2, gumPreheatHotendTemp, gumPreheatHPBTemp, gumPreheatFanSpeed); }
- #if HOTENDS > 3
-   void lcd_preheat_pla3() { _lcd_preheat(3, plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed); }
-   void lcd_preheat_abs3() { _lcd_preheat(3, absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed); }
-   void lcd_preheat_gum3() { _lcd_preheat(3, gumPreheatHotendTemp, gumPreheatHPBTemp, gumPreheatFanSpeed); }
- #endif
-#endif
+  void lcd_preheat_pla1() { _lcd_preheat(1, plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed); }
+  void lcd_preheat_abs1() { _lcd_preheat(1, absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed); }
+  void lcd_preheat_gum1() { _lcd_preheat(1, gumPreheatHotendTemp, gumPreheatHPBTemp, gumPreheatFanSpeed); }
+  #if HOTENDS > 2
+    void lcd_preheat_pla2() { _lcd_preheat(2, plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed); }
+    void lcd_preheat_abs2() { _lcd_preheat(2, absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed); }
+    void lcd_preheat_gum2() { _lcd_preheat(2, gumPreheatHotendTemp, gumPreheatHPBTemp, gumPreheatFanSpeed); }
+    #if HOTENDS > 3
+      void lcd_preheat_pla3() { _lcd_preheat(3, plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed); }
+      void lcd_preheat_abs3() { _lcd_preheat(3, absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed); }
+      void lcd_preheat_gum3() { _lcd_preheat(3, gumPreheatHotendTemp, gumPreheatHPBTemp, gumPreheatFanSpeed); }
+    #endif
+  #endif
 
-void lcd_preheat_pla0123() {
- setTargetHotend0(plaPreheatHotendTemp);
- setTargetHotend1(plaPreheatHotendTemp);
- setTargetHotend2(plaPreheatHotendTemp);
- _lcd_preheat(3, plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed);
-}
-void lcd_preheat_abs0123() {
- setTargetHotend0(absPreheatHotendTemp);
- setTargetHotend1(absPreheatHotendTemp);
- setTargetHotend2(absPreheatHotendTemp);
- _lcd_preheat(3, absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed);
-}
-void lcd_preheat_gum0123() {
- setTargetHotend0(gumPreheatHotendTemp);
- setTargetHotend1(gumPreheatHotendTemp);
- setTargetHotend2(gumPreheatHotendTemp);
- _lcd_preheat(3, gumPreheatHotendTemp, gumPreheatHPBTemp, gumPreheatFanSpeed);
-}
+  void lcd_preheat_pla0123() {
+    setTargetHotend0(plaPreheatHotendTemp);
+    setTargetHotend1(plaPreheatHotendTemp);
+    setTargetHotend2(plaPreheatHotendTemp);
+    _lcd_preheat(3, plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed);
+  }
+  void lcd_preheat_abs0123() {
+    setTargetHotend0(absPreheatHotendTemp);
+    setTargetHotend1(absPreheatHotendTemp);
+    setTargetHotend2(absPreheatHotendTemp);
+    _lcd_preheat(3, absPreheatHotendTemp, absPreheatHPBTemp, absPreheatFanSpeed);
+  }
+  void lcd_preheat_gum0123() {
+    setTargetHotend0(gumPreheatHotendTemp);
+    setTargetHotend1(gumPreheatHotendTemp);
+    setTargetHotend2(gumPreheatHotendTemp);
+    _lcd_preheat(3, gumPreheatHotendTemp, gumPreheatHPBTemp, gumPreheatFanSpeed);
+  }
 
 #endif // HOTENDS > 1
 
 #if TEMP_SENSOR_BED != 0
-void lcd_preheat_pla_bedonly() { _lcd_preheat(0, 0, plaPreheatHPBTemp, plaPreheatFanSpeed); }
-void lcd_preheat_abs_bedonly() { _lcd_preheat(0, 0, absPreheatHPBTemp, absPreheatFanSpeed); }
-void lcd_preheat_gum_bedonly() { _lcd_preheat(0, 0, gumPreheatHPBTemp, gumPreheatFanSpeed); }
+  void lcd_preheat_pla_bedonly() { _lcd_preheat(0, 0, plaPreheatHPBTemp, plaPreheatFanSpeed); }
+  void lcd_preheat_abs_bedonly() { _lcd_preheat(0, 0, absPreheatHPBTemp, absPreheatFanSpeed); }
+  void lcd_preheat_gum_bedonly() { _lcd_preheat(0, 0, gumPreheatHPBTemp, gumPreheatFanSpeed); }
 #endif
 
 #if TEMP_SENSOR_0 != 0 && (TEMP_SENSOR_1 != 0 || TEMP_SENSOR_2 != 0 || TEMP_SENSOR_3 != 0 || TEMP_SENSOR_BED != 0)
 
-static void lcd_preheat_pla_menu() {
- START_MENU();
- MENU_ITEM(back, MSG_PREPARE);
- #if HOTENDS == 1
-   MENU_ITEM(function, MSG_PREHEAT_PLA, lcd_preheat_pla0);
- #else
-   MENU_ITEM(function, MSG_PREHEAT_PLA " 0", lcd_preheat_pla0);
-   MENU_ITEM(function, MSG_PREHEAT_PLA " 1", lcd_preheat_pla1);
-   #if HOTENDS > 2
-     MENU_ITEM(function, MSG_PREHEAT_PLA " 2", lcd_preheat_pla2);
-     #if HOTENDS > 3
-       MENU_ITEM(function, MSG_PREHEAT_PLA " 3", lcd_preheat_pla3);
-     #endif
-   #endif
-   MENU_ITEM(function, MSG_PREHEAT_PLA_ALL, lcd_preheat_pla0123);
- #endif
- #if TEMP_SENSOR_BED != 0
-   MENU_ITEM(function, MSG_PREHEAT_PLA_BEDONLY, lcd_preheat_pla_bedonly);
- #endif
- END_MENU();
-}
+  static void lcd_preheat_pla_menu() {
+    START_MENU();
+    MENU_ITEM(back, MSG_PREPARE);
+    #if HOTENDS == 1
+      MENU_ITEM(function, MSG_PREHEAT_PLA, lcd_preheat_pla0);
+    #else
+      MENU_ITEM(function, MSG_PREHEAT_PLA " 0", lcd_preheat_pla0);
+      MENU_ITEM(function, MSG_PREHEAT_PLA " 1", lcd_preheat_pla1);
+      #if HOTENDS > 2
+        MENU_ITEM(function, MSG_PREHEAT_PLA " 2", lcd_preheat_pla2);
+        #if HOTENDS > 3
+          MENU_ITEM(function, MSG_PREHEAT_PLA " 3", lcd_preheat_pla3);
+        #endif
+      #endif
+      MENU_ITEM(function, MSG_PREHEAT_PLA_ALL, lcd_preheat_pla0123);
+    #endif
+    #if TEMP_SENSOR_BED != 0
+      MENU_ITEM(function, MSG_PREHEAT_PLA_BEDONLY, lcd_preheat_pla_bedonly);
+    #endif
+    END_MENU();
+  }
 
-static void lcd_preheat_abs_menu() {
- START_MENU();
- MENU_ITEM(back, MSG_TEMPERATURE);
- #if HOTENDS == 1
-   MENU_ITEM(function, MSG_PREHEAT_ABS, lcd_preheat_abs0);
- #else
-   MENU_ITEM(function, MSG_PREHEAT_ABS " 0", lcd_preheat_abs0);
-   MENU_ITEM(function, MSG_PREHEAT_ABS " 1", lcd_preheat_abs1);
-   #if HOTENDS > 2
-     MENU_ITEM(function, MSG_PREHEAT_ABS " 2", lcd_preheat_abs2);
-     #if HOTENDS > 3
-       MENU_ITEM(function, MSG_PREHEAT_ABS " 3", lcd_preheat_abs3);
-     #endif
-   #endif
-   MENU_ITEM(function, MSG_PREHEAT_ABS_ALL, lcd_preheat_abs0123);
- #endif
- #if TEMP_SENSOR_BED != 0
-   MENU_ITEM(function, MSG_PREHEAT_ABS_BEDONLY, lcd_preheat_abs_bedonly);
- #endif
- END_MENU();
-}
+  static void lcd_preheat_abs_menu() {
+    START_MENU();
+    MENU_ITEM(back, MSG_TEMPERATURE);
+    #if HOTENDS == 1
+      MENU_ITEM(function, MSG_PREHEAT_ABS, lcd_preheat_abs0);
+    #else
+      MENU_ITEM(function, MSG_PREHEAT_ABS " 0", lcd_preheat_abs0);
+      MENU_ITEM(function, MSG_PREHEAT_ABS " 1", lcd_preheat_abs1);
+      #if HOTENDS > 2
+        MENU_ITEM(function, MSG_PREHEAT_ABS " 2", lcd_preheat_abs2);
+        #if HOTENDS > 3
+          MENU_ITEM(function, MSG_PREHEAT_ABS " 3", lcd_preheat_abs3);
+        #endif
+      #endif
+      MENU_ITEM(function, MSG_PREHEAT_ABS_ALL, lcd_preheat_abs0123);
+    #endif
+    #if TEMP_SENSOR_BED != 0
+      MENU_ITEM(function, MSG_PREHEAT_ABS_BEDONLY, lcd_preheat_abs_bedonly);
+    #endif
+    END_MENU();
+  }
 
-static void lcd_preheat_gum_menu() {
- START_MENU();
- MENU_ITEM(back, MSG_TEMPERATURE);
- #if HOTENDS == 1
-   MENU_ITEM(function, MSG_PREHEAT_GUM, lcd_preheat_gum0);
- #else
-   MENU_ITEM(function, MSG_PREHEAT_GUM " 0", lcd_preheat_gum0);
-   MENU_ITEM(function, MSG_PREHEAT_GUM " 1", lcd_preheat_gum1);
-   #if HOTENDS > 2
-     MENU_ITEM(function, MSG_PREHEAT_GUM " 2", lcd_preheat_gum2);
-     #if HOTENDS > 3
-       MENU_ITEM(function, MSG_PREHEAT_GUM " 3", lcd_preheat_gum3);
-     #endif
-   #endif
-   MENU_ITEM(function, MSG_PREHEAT_GUM_ALL, lcd_preheat_gum0123);
- #endif
- #if TEMP_SENSOR_BED != 0
-   MENU_ITEM(function, MSG_PREHEAT_GUM_BEDONLY, lcd_preheat_gum_bedonly);
- #endif
- END_MENU();
-}
+  static void lcd_preheat_gum_menu() {
+    START_MENU();
+    MENU_ITEM(back, MSG_TEMPERATURE);
+    #if HOTENDS == 1
+      MENU_ITEM(function, MSG_PREHEAT_GUM, lcd_preheat_gum0);
+    #else
+      MENU_ITEM(function, MSG_PREHEAT_GUM " 0", lcd_preheat_gum0);
+      MENU_ITEM(function, MSG_PREHEAT_GUM " 1", lcd_preheat_gum1);
+      #if HOTENDS > 2
+        MENU_ITEM(function, MSG_PREHEAT_GUM " 2", lcd_preheat_gum2);
+        #if HOTENDS > 3
+          MENU_ITEM(function, MSG_PREHEAT_GUM " 3", lcd_preheat_gum3);
+        #endif
+      #endif
+      MENU_ITEM(function, MSG_PREHEAT_GUM_ALL, lcd_preheat_gum0123);
+    #endif
+    #if TEMP_SENSOR_BED != 0
+      MENU_ITEM(function, MSG_PREHEAT_GUM_BEDONLY, lcd_preheat_gum_bedonly);
+    #endif
+    END_MENU();
+  }
 
 #endif // TEMP_SENSOR_0 && (TEMP_SENSOR_1 || TEMP_SENSOR_2 || TEMP_SENSOR_3 || TEMP_SENSOR_BED)
 
@@ -1009,10 +1028,10 @@ void lcd_cooldown() {
 }
 
 /**
-*
-* "Prepare" submenu
-*
-*/
+ *
+ * "Prepare" submenu
+ *
+ */
 
 static void lcd_prepare_menu() {
   START_MENU();
@@ -1095,209 +1114,204 @@ static void lcd_prepare_menu() {
   //
   MENU_ITEM(function, MSG_COOLDOWN, lcd_cooldown);
 
-//
-// Cooldown
-//
-MENU_ITEM(function, MSG_COOLDOWN, lcd_cooldown);
+  //
+  // Switch power on/off
+  //
+  #if HAS(POWER_SWITCH)
+    if (powersupply)
+      MENU_ITEM(gcode, MSG_SWITCH_PS_OFF, PSTR("M81"));
+    else
+      MENU_ITEM(gcode, MSG_SWITCH_PS_ON, PSTR("M80"));
+  #endif
 
-//
-// Switch power on/off
-//
-#if HAS(POWER_SWITCH)
- if (powersupply)
-   MENU_ITEM(gcode, MSG_SWITCH_PS_OFF, PSTR("M81"));
- else
-   MENU_ITEM(gcode, MSG_SWITCH_PS_ON, PSTR("M80"));
-#endif
+  //
+  // Autostart
+  //
+  #if ENABLED(SDSUPPORT) && ENABLED(MENU_ADDAUTOSTART)
+    MENU_ITEM(function, MSG_AUTOSTART, lcd_autostart_sd);
+  #endif
 
-//
-// Autostart
-//
-#if ENABLED(SDSUPPORT) && ENABLED(MENU_ADDAUTOSTART)
- MENU_ITEM(function, MSG_AUTOSTART, lcd_autostart_sd);
-#endif
-
-END_MENU();
+  END_MENU();
 }
 
 #if MECH(DELTA)
 
-static void lcd_delta_calibrate_menu() {
- START_MENU();
- MENU_ITEM(back, MSG_MAIN);
- MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
- MENU_ITEM(gcode, MSG_DELTA_CALIBRATE_X, PSTR("G0 F8000 X-77.94 Y-45 Z0"));
- MENU_ITEM(gcode, MSG_DELTA_CALIBRATE_Y, PSTR("G0 F8000 X77.94 Y-45 Z0"));
- MENU_ITEM(gcode, MSG_DELTA_CALIBRATE_Z, PSTR("G0 F8000 X0 Y90 Z0"));
- MENU_ITEM(gcode, MSG_DELTA_CALIBRATE_CENTER, PSTR("G0 F8000 X0 Y0 Z0"));
- END_MENU();
-}
+  static void lcd_delta_calibrate_menu() {
+    START_MENU();
+    MENU_ITEM(back, MSG_MAIN);
+    MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
+    MENU_ITEM(gcode, MSG_DELTA_CALIBRATE_X, PSTR("G0 F8000 X-77.94 Y-45 Z0"));
+    MENU_ITEM(gcode, MSG_DELTA_CALIBRATE_Y, PSTR("G0 F8000 X77.94 Y-45 Z0"));
+    MENU_ITEM(gcode, MSG_DELTA_CALIBRATE_Z, PSTR("G0 F8000 X0 Y90 Z0"));
+    MENU_ITEM(gcode, MSG_DELTA_CALIBRATE_CENTER, PSTR("G0 F8000 X0 Y0 Z0"));
+    END_MENU();
+  }
 
 #endif // DELTA
 
 /**
-*
-* "Prepare" > "Move Axis" submenu
-*
-*/
+ *
+ * "Prepare" > "Move Axis" submenu
+ *
+ */
 
 float move_menu_scale;
 
 static void _lcd_move(const char* name, AxisEnum axis, int min, int max) {
-ENCODER_DIRECTION_NORMAL();
-if (encoderPosition != 0) {
- refresh_cmd_timeout();
- current_position[axis] += float((int)encoderPosition) * move_menu_scale;
- if (SOFTWARE_MIN_ENDSTOPS) NOLESS(current_position[axis], min);
- if (SOFTWARE_MAX_ENDSTOPS) NOMORE(current_position[axis], max);
- encoderPosition = 0;
- line_to_current(axis);
- lcdDrawUpdate = LCDVIEW_REDRAW_NOW;
-}
-encoderPosition = 0;
-if (lcdDrawUpdate) lcd_implementation_drawedit(name, ftostr31(current_position[axis]));
-if (LCD_CLICKED) lcd_goto_previous_menu(true);
+  ENCODER_DIRECTION_NORMAL();
+  if (encoderPosition != 0) {
+    refresh_cmd_timeout();
+    current_position[axis] += float((int)encoderPosition) * move_menu_scale;
+    if (SOFTWARE_MIN_ENDSTOPS) NOLESS(current_position[axis], min);
+    if (SOFTWARE_MAX_ENDSTOPS) NOMORE(current_position[axis], max);
+    encoderPosition = 0;
+    line_to_current(axis);
+    lcdDrawUpdate = LCDVIEW_REDRAW_NOW;
+  }
+  encoderPosition = 0;
+  if (lcdDrawUpdate) lcd_implementation_drawedit(name, ftostr31(current_position[axis]));
+  if (LCD_CLICKED) lcd_goto_previous_menu(true);
 }
 
 #if MECH(DELTA)
-static float delta_clip_radius_2 =  DELTA_PRINTABLE_RADIUS * DELTA_PRINTABLE_RADIUS;
-static int delta_clip( float a ) { return sqrt(delta_clip_radius_2 - a * a); }
-static void lcd_move_x() { int clip = delta_clip(current_position[Y_AXIS]); _lcd_move(PSTR(MSG_MOVE_X), X_AXIS, max(X_MIN_POS, -clip), min(X_MAX_POS, clip)); }
-static void lcd_move_y() { int clip = delta_clip(current_position[X_AXIS]); _lcd_move(PSTR(MSG_MOVE_X), X_AXIS, max(X_MIN_POS, -clip), min(X_MAX_POS, clip)); }
+  static float delta_clip_radius_2 =  DELTA_PRINTABLE_RADIUS * DELTA_PRINTABLE_RADIUS;
+  static int delta_clip( float a ) { return sqrt(delta_clip_radius_2 - a * a); }
+  static void lcd_move_x() { int clip = delta_clip(current_position[Y_AXIS]); _lcd_move(PSTR(MSG_MOVE_X), X_AXIS, max(X_MIN_POS, -clip), min(X_MAX_POS, clip)); }
+  static void lcd_move_y() { int clip = delta_clip(current_position[X_AXIS]); _lcd_move(PSTR(MSG_MOVE_X), X_AXIS, max(X_MIN_POS, -clip), min(X_MAX_POS, clip)); }
 #else
-static void lcd_move_x() { _lcd_move(PSTR(MSG_MOVE_X), X_AXIS, X_MIN_POS, X_MAX_POS); }
-static void lcd_move_y() { _lcd_move(PSTR(MSG_MOVE_Y), Y_AXIS, Y_MIN_POS, Y_MAX_POS); }
+  static void lcd_move_x() { _lcd_move(PSTR(MSG_MOVE_X), X_AXIS, X_MIN_POS, X_MAX_POS); }
+  static void lcd_move_y() { _lcd_move(PSTR(MSG_MOVE_Y), Y_AXIS, Y_MIN_POS, Y_MAX_POS); }
 #endif
 static void lcd_move_z() { _lcd_move(PSTR(MSG_MOVE_Z), Z_AXIS, Z_MIN_POS, Z_MAX_POS); }
 static void lcd_move_e(
-#if EXTRUDERS > 1
- uint8_t e
-#endif
+  #if EXTRUDERS > 1
+    uint8_t e
+  #endif
 ) {
-ENCODER_DIRECTION_NORMAL();
-#if EXTRUDERS > 1
- unsigned short original_active_extruder = active_extruder;
- active_extruder = e;
-#endif
-if (encoderPosition != 0) {
- #if ENABLED(IDLE_OOZING_PREVENT)
-   IDLE_OOZING_retract(false);
- #endif
- current_position[E_AXIS] += float((int)encoderPosition) * move_menu_scale;
- line_to_current(E_AXIS);
- lcdDrawUpdate = LCDVIEW_REDRAW_NOW;
-}
-encoderPosition = 0;
-if (lcdDrawUpdate) {
- PGM_P pos_label;
- #if EXTRUDERS == 1
-   pos_label = PSTR(MSG_MOVE_E);
- #else
-   switch (e) {
-     case 0: pos_label = PSTR(MSG_MOVE_E "0"); break;
-     case 1: pos_label = PSTR(MSG_MOVE_E "1"); break;
-     #if EXTRUDERS > 2
-       case 2: pos_label = PSTR(MSG_MOVE_E "2"); break;
-       #if EXTRUDERS > 3
-         case 3: pos_label = PSTR(MSG_MOVE_E "3"); break;
-       #endif // EXTRUDERS > 3
-     #endif // EXTRUDERS > 2
-   }
- #endif // EXTRUDERS > 1
- lcd_implementation_drawedit(pos_label, ftostr31(current_position[E_AXIS]));
-}
-if (LCD_CLICKED) lcd_goto_previous_menu(true);
-#if EXTRUDERS > 1
- active_extruder = original_active_extruder;
-#endif
+  ENCODER_DIRECTION_NORMAL();
+  #if EXTRUDERS > 1
+    unsigned short original_active_extruder = active_extruder;
+    active_extruder = e;
+  #endif
+  if (encoderPosition != 0) {
+    #if ENABLED(IDLE_OOZING_PREVENT)
+      IDLE_OOZING_retract(false);
+    #endif
+    current_position[E_AXIS] += float((int)encoderPosition) * move_menu_scale;
+    line_to_current(E_AXIS);
+    lcdDrawUpdate = LCDVIEW_REDRAW_NOW;
+  }
+  encoderPosition = 0;
+  if (lcdDrawUpdate) {
+    PGM_P pos_label;
+    #if EXTRUDERS == 1
+      pos_label = PSTR(MSG_MOVE_E);
+    #else
+      switch (e) {
+        case 0: pos_label = PSTR(MSG_MOVE_E "0"); break;
+        case 1: pos_label = PSTR(MSG_MOVE_E "1"); break;
+        #if EXTRUDERS > 2
+          case 2: pos_label = PSTR(MSG_MOVE_E "2"); break;
+          #if EXTRUDERS > 3
+            case 3: pos_label = PSTR(MSG_MOVE_E "3"); break;
+          #endif // EXTRUDERS > 3
+        #endif // EXTRUDERS > 2
+      }
+    #endif // EXTRUDERS > 1
+    lcd_implementation_drawedit(pos_label, ftostr31(current_position[E_AXIS]));
+  }
+  if (LCD_CLICKED) lcd_goto_previous_menu(true);
+  #if EXTRUDERS > 1
+    active_extruder = original_active_extruder;
+  #endif
 }
 
 #if EXTRUDERS > 1
-static void lcd_move_e0() { lcd_move_e(0); }
-static void lcd_move_e1() { lcd_move_e(1); }
-#if EXTRUDERS > 2
- static void lcd_move_e2() { lcd_move_e(2); }
- #if EXTRUDERS > 3
-   static void lcd_move_e3() { lcd_move_e(3); }
- #endif // EXTRUDERS > 3
-#endif // EXTRUDERS > 2
+  static void lcd_move_e0() { lcd_move_e(0); }
+  static void lcd_move_e1() { lcd_move_e(1); }
+  #if EXTRUDERS > 2
+    static void lcd_move_e2() { lcd_move_e(2); }
+    #if EXTRUDERS > 3
+      static void lcd_move_e3() { lcd_move_e(3); }
+    #endif // EXTRUDERS > 3
+  #endif // EXTRUDERS > 2
 #endif // EXTRUDERS > 1
 
 /**
-*
-* "Prepare" > "Move Xmm" > "Move XYZ" submenu
-*
-*/
+ *
+ * "Prepare" > "Move Xmm" > "Move XYZ" submenu
+ *
+ */
 
 #if MECH(DELTA) || MECH(SCARA)
-#define _MOVE_XYZ_ALLOWED (axis_homed[X_AXIS] && axis_homed[Y_AXIS] && axis_homed[Z_AXIS])
+  #define _MOVE_XYZ_ALLOWED (axis_homed[X_AXIS] && axis_homed[Y_AXIS] && axis_homed[Z_AXIS])
 #else
-#define _MOVE_XYZ_ALLOWED true
+  #define _MOVE_XYZ_ALLOWED true
 #endif
 
 static void lcd_move_menu_axis() {
-START_MENU();
-MENU_ITEM(back, MSG_MOVE_AXIS);
-
-if (_MOVE_XYZ_ALLOWED) {
- MENU_ITEM(submenu, MSG_MOVE_X, lcd_move_x);
- MENU_ITEM(submenu, MSG_MOVE_Y, lcd_move_y);
- MENU_ITEM(submenu, MSG_MOVE_Z, lcd_move_z);
-}
-if (move_menu_scale < 10.0) {
- #if EXTRUDERS == 1
-   MENU_ITEM(submenu, MSG_MOVE_E, lcd_move_e);
- #else
-   MENU_ITEM(submenu, MSG_MOVE_E "0", lcd_move_e0);
-   MENU_ITEM(submenu, MSG_MOVE_E "1", lcd_move_e1);
-   #if EXTRUDERS > 2
-     MENU_ITEM(submenu, MSG_MOVE_E "2", lcd_move_e2);
-     #if EXTRUDERS > 3
-       MENU_ITEM(submenu, MSG_MOVE_E "3", lcd_move_e3);
-     #endif // EXTRUDERS > 3
-   #endif // EXTRUDERS > 2
- #endif // EXTRUDERS > 1
-}
-END_MENU();
+  START_MENU();
+  MENU_ITEM(back, MSG_MOVE_AXIS);
+  
+  if (_MOVE_XYZ_ALLOWED) {
+    MENU_ITEM(submenu, MSG_MOVE_X, lcd_move_x);
+    MENU_ITEM(submenu, MSG_MOVE_Y, lcd_move_y);
+    MENU_ITEM(submenu, MSG_MOVE_Z, lcd_move_z);
+  }
+  if (move_menu_scale < 10.0) {
+    #if EXTRUDERS == 1
+      MENU_ITEM(submenu, MSG_MOVE_E, lcd_move_e);
+    #else
+      MENU_ITEM(submenu, MSG_MOVE_E "0", lcd_move_e0);
+      MENU_ITEM(submenu, MSG_MOVE_E "1", lcd_move_e1);
+      #if EXTRUDERS > 2
+        MENU_ITEM(submenu, MSG_MOVE_E "2", lcd_move_e2);
+        #if EXTRUDERS > 3
+          MENU_ITEM(submenu, MSG_MOVE_E "3", lcd_move_e3);
+        #endif // EXTRUDERS > 3
+      #endif // EXTRUDERS > 2
+    #endif // EXTRUDERS > 1
+  }
+  END_MENU();
 }
 
 static void lcd_move_menu_10mm() {
-move_menu_scale = 10.0;
-lcd_move_menu_axis();
+  move_menu_scale = 10.0;
+  lcd_move_menu_axis();
 }
 static void lcd_move_menu_1mm() {
-move_menu_scale = 1.0;
-lcd_move_menu_axis();
+  move_menu_scale = 1.0;
+  lcd_move_menu_axis();
 }
 static void lcd_move_menu_01mm() {
-move_menu_scale = 0.1;
-lcd_move_menu_axis();
+  move_menu_scale = 0.1;
+  lcd_move_menu_axis();
 }
 
 /**
-*
-* "Prepare" > "Move Axis" submenu
-*
-*/
+ *
+ * "Prepare" > "Move Axis" submenu
+ *
+ */
 
 static void lcd_move_menu() {
-START_MENU();
-MENU_ITEM(back, MSG_PREPARE);
+  START_MENU();
+  MENU_ITEM(back, MSG_PREPARE);
 
-if (_MOVE_XYZ_ALLOWED)
- MENU_ITEM(submenu, MSG_MOVE_10MM, lcd_move_menu_10mm);
+  if (_MOVE_XYZ_ALLOWED)
+    MENU_ITEM(submenu, MSG_MOVE_10MM, lcd_move_menu_10mm);
 
-MENU_ITEM(submenu, MSG_MOVE_1MM, lcd_move_menu_1mm);
-MENU_ITEM(submenu, MSG_MOVE_01MM, lcd_move_menu_01mm);
-// TODO:X,Y,Z,E
-END_MENU();
+  MENU_ITEM(submenu, MSG_MOVE_1MM, lcd_move_menu_1mm);
+  MENU_ITEM(submenu, MSG_MOVE_01MM, lcd_move_menu_01mm);
+  // TODO:X,Y,Z,E
+  END_MENU();
 }
 
 /**
-*
-* "Control" submenu
-*
-*/
+ *
+ * "Control" submenu
+ *
+ */
 
 static void lcd_control_menu() {
   START_MENU();

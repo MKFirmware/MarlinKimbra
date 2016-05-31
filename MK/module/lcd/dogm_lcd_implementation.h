@@ -484,7 +484,6 @@ static void lcd_implementation_status_screen() {
     #endif
   #endif // !LASERBEAM
 
-  #endif // DISABLED LASER
   // Fan
   u8g.setPrintPos(104, 27);
   #if HAS(FAN)
