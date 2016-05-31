@@ -181,6 +181,8 @@
 #define MSG_ERR_MINTEMP                     "Err: TEMP MINIMA"
 #define MSG_ERR_MAXTEMP_BED                 "Err: TEMP MASSIMA PIATTO"
 #define MSG_ERR_MINTEMP_BED                 "Err: TEMP MINIMA PIATTO"
+#define MSG_ERR_MAXTEMP_CHAMBER             "MAXTEMP CHAMBER ERROR"
+#define MSG_ERR_MINTEMP_CHAMBER             "MINTEMP CHAMBER ERROR"
 #define MSG_ERR_MAXTEMP_COOLER              "MAXTEMP COOLER ERROR"
 #define MSG_ERR_MINTEMP_COOLER              "MINTEMP COOLER ERROR"
 #define MSG_END_DAY                         "giorni"
@@ -245,7 +247,6 @@
 #define MSG_BED_DONE                        "Piatto riscaldato."
 #define MSG_COOLER_COOLING                  "Raffreddamento..."
 #define MSG_COOLER_DONE                     "Raffreddamento finito."
-
 
 // Extra
 #define MSG_LASER                           "Laser Preset"

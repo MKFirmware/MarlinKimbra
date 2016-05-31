@@ -67,8 +67,8 @@
   #undef USE_BIG_EDIT_FONT
 #endif
 
-#if ENABLED(LASER)
-#include "../laser/laserbitmaps.h"
+#if ENABLED(LASERBEAM)
+  #include "../laser/laserbitmaps.h"
 #endif
 
 #if ENABLED(USE_SMALL_INFOFONT)
@@ -374,7 +374,7 @@ static void lcd_implementation_status_screen() {
 
   bool blink = lcd_blink();
 
-  #if ENABLED(LASER)
+  #if ENABLED(LASERBEAM)
     #if ENABLED(LASER_PERIPHERALS)
       if (laser_peripherals_ok()) {
         u8g.drawBitmapP(29,4, LASERENABLE_BYTEWIDTH, LASERENABLE_HEIGHT, laserenable_bmp);
@@ -474,16 +474,16 @@ static void lcd_implementation_status_screen() {
     }
   #endif
 
-  #if DISABLED(LASER)
-  // Hotends
+  #if DISABLED(LASERBEAM)
+    // Hotends
     for (int i = 0; i < HOTENDS; i++) _draw_heater_status(6 + i * 25, i);
 
     // Heated bed
     #if HOTENDS < 4 && HAS(TEMP_BED)
-     _draw_heater_status(81, -1);
+      _draw_heater_status(81, -1);
     #endif
+  #endif // !LASERBEAM
 
-  #endif // DISABLED LASER
   // Fan
   u8g.setPrintPos(104, 27);
   #if HAS(FAN)

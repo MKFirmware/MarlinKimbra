@@ -352,12 +352,12 @@
   #define COOLER_PIN -1
 #endif
 
-#ifndef LASER_FIRING_PIN
-  #define LASER_FIRING_PIN -1
+#ifndef LASER_PWR_PIN
+  #define LASER_PWR_PIN -1
 #endif
 
-#ifndef LASER_INTENSITY_PIN
-  #define LASER_INTENSITY_PIN -1
+#ifndef LASER_TTL_PIN
+  #define LASER_TTL_PIN -1
 #endif
 
 #ifndef FLOWMETER_PIN
@@ -373,7 +373,7 @@
                         _E0_PINS _E1_PINS _E2_PINS _E3_PINS _E4_PINS _E5_PINS \
                         analogInputToDigitalPin(TEMP_BED_PIN), \
                         analogInputToDigitalPin(TEMP_COOLER_PIN), \
-                        COOLER_PIN, LASER_FIRING_PIN, LASER_INTENSITY_PIN, \
+                        COOLER_PIN, LASER_PWR_PIN, LASER_TTL_PIN, \
                         FLOWMETER_PIN \
                        }
 

@@ -198,9 +198,10 @@
 #define SERIAL_PID_DEBUG_CTERM                  " cTerm "
 #define SERIAL_INVALID_EXTRUDER_NUM             " - Invalid extruder number !"
 
-#define SERIAL_HEATER_BED                       "bed"
 #define SERIAL_STOPPED_HEATER                   ", system stopped! Heater_ID: "
-#define SERIAL_STOPPED_COOLER                   "system stopped! Cooler"
+#define SERIAL_STOPPED_BED                      ", system stopped! Bed"
+#define SERIAL_STOPPED_CHAMBER                  ", system stopped! Chamber"
+#define SERIAL_STOPPED_COOLER                   ", system stopped! Cooler"
 #define SERIAL_REDUNDANCY                       "Heater switched off. Temperature difference between temp sensors is too high !"
 #define SERIAL_T_HEATING_FAILED                 "Heating failed"
 #define SERIAL_T_THERMAL_RUNAWAY                "Thermal Runaway"

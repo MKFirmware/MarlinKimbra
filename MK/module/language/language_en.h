@@ -184,6 +184,8 @@
 #define MSG_ERR_MINTEMP                     "MINTEMP ERROR"
 #define MSG_ERR_MAXTEMP_BED                 "MAXTEMP BED ERROR"
 #define MSG_ERR_MINTEMP_BED                 "MINTEMP BED ERROR"
+#define MSG_ERR_MAXTEMP_CHAMBER             "MAXTEMP CHAMBER ERROR"
+#define MSG_ERR_MINTEMP_CHAMBER             "MINTEMP CHAMBER ERROR"
 #define MSG_ERR_MAXTEMP_COOLER              "MAXTEMP COOLER ERROR"
 #define MSG_ERR_MINTEMP_COOLER              "MINTEMP COOLER ERROR"
 #define MSG_END_DAY                         "days"

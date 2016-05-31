@@ -290,10 +290,6 @@ bool software_endstops = true;
   unsigned long stoppower = 0;
 #endif
 
-#if ENABLED(LASERBEAM)
-  int laser_ttl_modulation = 0;
-#endif
-
 #if ENABLED(NPR2)
   static float color_position[] = COLOR_STEP;
   static float color_step_moltiplicator = (DRIVER_MICROSTEP / MOTOR_ANGLE) * CARTER_MOLTIPLICATOR;
@@ -535,13 +531,6 @@ bool enqueue_and_echo_command(const char* cmd, bool say_ok/*=false*/) {
   }
 #endif
 
-#if ENABLED(LASERBEAM)
-  void setup_laserbeampin() {
-    OUT_WRITE(LASER_PWR_PIN, LOW);
-    OUT_WRITE(LASER_TTL_PIN, LOW);
-  }
-#endif
-
 #if HAS(POWER_SWITCH)
   void setup_powerhold() {
     #if HAS(SUICIDE)
@@ -715,10 +704,6 @@ void setup() {
     setup_photpin();
   #endif
 
-  #if ENABLED(LASERBEAM)
-    setup_laserbeampin();
-  #endif
-
   #if HAS(SERVOS)
     servo_init();
   #endif
@@ -743,13 +728,13 @@ void setup() {
     setup_statled();
   #endif
 
-  #if ENABLED(LASER)
+  #if ENABLED(LASERBEAM)
     laser_init();
   #endif
 
   #if ENABLED(FLOWMETER_SENSOR)
     #if ENABLED(MINFLOW_PROTECTION)
-      flow_firstread=false;
+      flow_firstread = false;
     #endif
     flow_init();
   #endif
@@ -775,7 +760,6 @@ void setup() {
   #if ENABLED(FIRMWARE_TEST)
     FirmwareTest();
   #endif
-
 }
 
 /**
@@ -1326,21 +1310,13 @@ inline void line_to_z(float zPosition) {
   plan_buffer_line(current_position[X_AXIS], current_position[Y_AXIS], zPosition, current_position[E_AXIS], feedrate/60, active_extruder, active_driver);
 }
 inline void line_to_destination(float mm_m) {
-  #if ENABLED(LASER) && ENABLED(MUVE_Z_PEEL)
-    plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[Z_AXIS], mm_m/60, active_extruder, active_driver);
-  #else
-    plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], mm_m/60, active_extruder, active_driver);
-  #endif
+  plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], mm_m/60, active_extruder, active_driver);
 }
 inline void line_to_destination() {
   line_to_destination(feedrate);
 }
 inline void sync_plan_position() {
-  #if ENABLED(LASER) && ENABLED(MUVE_Z_PEEL)
-    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[Z_AXIS]);
-  #else
-    plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
-  #endif
+  plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 }
 #if MECH(DELTA) || MECH(SCARA)
   inline void sync_plan_position_delta() {
@@ -1662,13 +1638,12 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       #endif
       home_dir(axis);
 
-      #if ENABLED(LASER) && (LASER_HAS_FOCUS == false)
+      #if ENABLED(LASERBEAM) && (LASER_HAS_FOCUS == false)
         if (axis == Z_AXIS) goto AvoidLaserFocus;
       #endif
 
       // Set the axis position as setup for the move
       current_position[axis] = 0;
-
       sync_plan_position();
 
       #if HAS(Z_PROBE_SLED)
@@ -1791,9 +1766,11 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
         #endif
       }
     }
-#if ENABLED(LASER) && (LASER_HAS_FOCUS == false)
-AvoidLaserFocus:
+
+#if ENABLED(LASERBEAM) && (LASER_HAS_FOCUS == false)
+  AvoidLaserFocus:
 #endif
+
     if (DEBUGGING(INFO)) {
       ECHO_SMV(INFO, "<<< homeaxis(", (unsigned long)axis);
       ECHO_EM(")");
@@ -2922,9 +2899,9 @@ AvoidLaserFocus:
     #if HAS(TEMP_BED)
       ECHO_M(SERIAL_BAT);
       #if ENABLED(BED_WATTS)
-        ECHO_VM(((BED_WATTS) * getHeaterPower(-1)) / 127, "W");
+        ECHO_VM(((BED_WATTS) * getBedPower()) / 127, "W");
       #else
-        ECHO_V(getHeaterPower(-1));
+        ECHO_V(getBedPower());
       #endif
     #endif
     ECHO_M(SERIAL_AT ":");
@@ -2959,8 +2936,26 @@ AvoidLaserFocus:
   }
 #endif
 
+#if HAS(TEMP_CHAMBER)
+  void print_chamberstate() {
+    ECHO_M(" CHAMBER: ");
+    ECHO_MV(SERIAL_C, degChamber(), 1);
+    ECHO_MV(" /", degTargetChamber(), 1);
+    ECHO_M(SERIAL_CAT);
+    #if ENABLED(CHAMBER_WATTS)
+      ECHO_VM(((CHAMBER_WATTS) * getChamberPower()) / 127, "W");
+    #else
+      ECHO_V(getChamberPower());
+    #endif
+    #if ENABLED(SHOW_TEMP_ADC_VALUES)
+      ECHO_MV("    ADC C:", degChamber(), 1);
+      ECHO_MV("C->", rawChamberTemp() / OVERSAMPLENR, 0);
+    #endif
+  }
+#endif // HAS(TEMP_CHAMBER)
+
 #if HAS(TEMP_COOLER)
-  void print_coolerstates() {
+  void print_coolerstate() {
     ECHO_M(" COOL: ");
     ECHO_MV(SERIAL_C, degCooler(), 1);
     ECHO_MV(" /", degTargetCooler(), 1);
@@ -2978,13 +2973,14 @@ AvoidLaserFocus:
 #endif // HAS(TEMP_COOLER)
 
 #if ENABLED(FLOWMETER_SENSOR)
-  void print_flowratestates() {
-    float readval;
-    readval = get_flowrate();
+  void print_flowratestate() {
+    float readval = get_flowrate();
+
     #if ENABLED(MINFLOW_PROTECTION)
-    if(readval > MINFLOW_PROTECTION)
-      flow_firstread=true;
+      if(readval > MINFLOW_PROTECTION)
+        flow_firstread = true;
     #endif
+
     ECHO_MV(" FLOW: ", readval);
     ECHO_M(" l/min ");
   }
@@ -3138,6 +3134,79 @@ inline void wait_bed(bool no_wait_for_cooling = true) {
   KEEPALIVE_STATE(IN_HANDLER);
 }
 
+#if HAS(TEMP_CHAMBER)
+  inline void wait_chamber(bool no_wait_for_heating = true) {
+    #if TEMP_CHAMBER_RESIDENCY_TIME > 0
+      millis_t residency_start_ms = 0;
+      // Loop until the temperature has stabilized
+      #define TEMP_CHAMBER_CONDITIONS (!residency_start_ms || PENDING(now, residency_start_ms + (TEMP_CHAMBER_RESIDENCY_TIME) * 1000UL))
+    #else
+      // Loop until the temperature is very close target
+      #define TEMP_CHAMBER_CONDITIONS (wants_to_heat ? isHeatingChamber() : isCoolingChamber())
+    #endif
+
+    float theTarget = -1;
+    bool wants_to_heat;
+    cancel_cooldown = false;
+    millis_t now, next_temp_ms = 0;
+
+    KEEPALIVE_STATE(NOT_BUSY);
+
+    // Wait for temperature to come close enough
+    do {
+      now = millis();
+      if (ELAPSED(now, next_temp_ms)) { //Print Temp Reading every 1 second while heating up.
+        next_temp_ms = now + 1000UL;
+        print_chamberstate();
+        #if TEMP_CHAMBER_RESIDENCY_TIME > 0
+          ECHO_M(SERIAL_W);
+          if (residency_start_ms) {
+            long rem = (((TEMP_CHAMBER_RESIDENCY_TIME) * 1000UL) - (now - residency_start_ms)) / 1000UL;
+            ECHO_EV(rem);
+          }
+          else {
+            ECHO_EM("?");
+          }
+        #else
+          ECHO_E;
+        #endif
+      }
+
+      // Target temperature might be changed during the loop
+      if (theTarget != degTargetChamber()) {
+        wants_to_heat = isHeatingChamber();
+        theTarget = degTargetChamber();
+
+        // Exit if S<higher>, continue if S<lower>, R<higher>, or R<lower>
+        if (no_wait_for_heating && wants_to_heat) break;
+
+        // Prevent a wait-forever situation if R is misused i.e. M190 C R50
+        // Simply don't wait to heat a chamber over 25C
+        if (wants_to_heat && theTarget > 25) break;
+      }
+
+		idle();
+		refresh_cmd_timeout(); // to prevent stepper_inactive_time from running out
+	
+      #if TEMP_CHAMBER_RESIDENCY_TIME > 0
+        float temp_diff = fabs(degTargetBed() - theTarget);
+
+        if (!residency_start_ms) {
+          // Start the TEMP_CHAMBER_RESIDENCY_TIME timer when we reach target temp for the first time.
+          if (temp_diff < TEMP_CHAMBER_WINDOW) residency_start_ms = millis();
+        }
+        else if (temp_diff > TEMP_CHAMBER_HYSTERESIS) {
+          // Restart the timer whenever the temperature falls outside the hysteresis.
+          residency_start_ms = millis();
+        }
+      #endif //TEMP_CHAMBER_RESIDENCY_TIME > 0
+
+    } while (!cancel_cooldown && TEMP_CHAMBER_CONDITIONS);
+    LCD_MESSAGEPGM(MSG_CHAMBER_DONE);
+    KEEPALIVE_STATE(IN_HANDLER);
+  }
+#endif
+
 #if HAS(TEMP_COOLER)
   inline void wait_cooler(bool no_wait_for_heating = true) {
     #if TEMP_COOLER_RESIDENCY_TIME > 0
@@ -3161,7 +3230,7 @@ inline void wait_bed(bool no_wait_for_cooling = true) {
       now = millis();
       if (ELAPSED(now, next_temp_ms)) { //Print Temp Reading every 1 second while heating up.
         next_temp_ms = now + 1000UL;
-        print_coolerstates();
+        print_coolerstate();
         #if TEMP_COOLER_RESIDENCY_TIME > 0
           ECHO_M(SERIAL_W);
           if (residency_start_ms) {
@@ -3330,26 +3399,25 @@ inline void gcode_G0_G1(bool lfire) {
           return;
         }
       }
-    #endif //FWRETRACT
-    #if ENABLED(LASER) && ENABLED(LASER_FIRE_G1)
-      if(lfire) {
-         if (code_seen('S') && IsRunning()) laser.intensity = (float) code_value();
-         if (code_seen('L') && IsRunning()) laser.duration = (unsigned long) labs(code_value());
-         if (code_seen('P') && IsRunning()) laser.ppm = (float) code_value();
-         if (code_seen('D') && IsRunning()) laser.diagnostics = (bool) code_value();
-         if (code_seen('B') && IsRunning()) laser_set_mode((int) code_value());
+    #endif // FWRETRACT
 
-         laser.status = LASER_ON;
-         laser.fired = LASER_FIRE_G1;
+    #if ENABLED(LASERBEAM) && ENABLED(LASER_FIRE_G1)
+      if(lfire) {
+        if (code_seen('S') && IsRunning()) laser.intensity = (float) code_value();
+        if (code_seen('L') && IsRunning()) laser.duration = (unsigned long) labs(code_value());
+        if (code_seen('P') && IsRunning()) laser.ppm = (float) code_value();
+        if (code_seen('D') && IsRunning()) laser.diagnostics = (bool) code_value();
+        if (code_seen('B') && IsRunning()) laser_set_mode((int) code_value());
+
+        laser.status = LASER_ON;
+        laser.fired = LASER_FIRE_G1;
       }
     #endif
 
     prepare_move();
 
-    #if ENABLED(LASER) && ENABLED(LASER_FIRE_G1)
-      if(lfire) {
-         laser.status = LASER_OFF;
-      }
+    #if ENABLED(LASERBEAM) && ENABLED(LASER_FIRE_G1)
+      if(lfire) laser.status = LASER_OFF;
     #endif
 
   }
@@ -3369,17 +3437,16 @@ inline void gcode_G2_G3(bool clockwise) {
 
     gcode_get_destination();
 
-    #if ENABLED(LASER) && ENABLED(LASER_FIRE_G1)
-       if (code_seen('S') && IsRunning()) laser.intensity = (float) code_value();
-       if (code_seen('L') && IsRunning()) laser.duration = (unsigned long) labs(code_value());
-       if (code_seen('P') && IsRunning()) laser.ppm = (float) code_value();
-       if (code_seen('D') && IsRunning()) laser.diagnostics = (bool) code_value();
-       if (code_seen('B') && IsRunning()) laser_set_mode((int) code_value());
+    #if ENABLED(LASERBEAM) && ENABLED(LASER_FIRE_G1)
+      if (code_seen('S') && IsRunning()) laser.intensity = (float) code_value();
+      if (code_seen('L') && IsRunning()) laser.duration = (unsigned long) labs(code_value());
+      if (code_seen('P') && IsRunning()) laser.ppm = (float) code_value();
+      if (code_seen('D') && IsRunning()) laser.diagnostics = (bool) code_value();
+      if (code_seen('B') && IsRunning()) laser_set_mode((int) code_value());
 
-       laser.status = LASER_ON;
-       laser.fired = LASER_FIRE_G1;
+      laser.status = LASER_ON;
+      laser.fired = LASER_FIRE_G1;
     #endif
-
 
     #if ENABLED(SF_ARC_FIX)
       relative_mode = relative_mode_backup;
@@ -3395,7 +3462,8 @@ inline void gcode_G2_G3(bool clockwise) {
     plan_arc(destination, arc_offset, clockwise);
 
     refresh_cmd_timeout();
-    #if ENABLED(LASER) && ENABLED(LASER_FIRE_G1)
+
+    #if ENABLED(LASERBEAM) && ENABLED(LASER_FIRE_G1)
       laser.status = LASER_OFF;
     #endif
 
@@ -3442,137 +3510,149 @@ inline void gcode_G4() {
 #endif //FWRETRACT
 
 #if ENABLED(G5_BEZIER)
-inline void gcode_G5() {
-  float p[4][2] = {{0.0,0.0},{0.0,0.0},{0.0,0.0},{0.0,0.0}};
-  int steps = 10;
-  float stepsPerUnit = 1;
-  float f[2]={0,0};
-  float fd[2]={0,0};
-  float fdd[2]={0,0};
-  float fddd[2]={0,0};
-  float fdd_per_2[2]={0,0};
-  float fddd_per_2[2]={0,0};
-  float fddd_per_6[2]={0,0};
-  float t = (1.0);
-  float temp;
-  // get coordinates
-  //---------------------------------------
-  // start point
-  p[0][0] = current_position[0];
-  p[0][1] = current_position[1];
-  // control point 1
-  if(code_seen('I')) p[1][0] = (float)code_value() + (axis_relative_modes[0] || relative_mode)*current_position[0];
-  if(code_seen('J')) p[1][1] = (float)code_value() + (axis_relative_modes[1] || relative_mode)*current_position[1];
+  inline void gcode_G5() {
+    float p[4][2] = {{0.0,0.0},{0.0,0.0},{0.0,0.0},{0.0,0.0}};
+    int steps = 10;
+    float stepsPerUnit = 1;
+    float f[2]={0,0};
+    float fd[2]={0,0};
+    float fdd[2]={0,0};
+    float fddd[2]={0,0};
+    float fdd_per_2[2]={0,0};
+    float fddd_per_2[2]={0,0};
+    float fddd_per_6[2]={0,0};
+    float t = (1.0);
+    float temp;
+    // get coordinates
+    //---------------------------------------
+    // start point
+    p[0][0] = current_position[0];
+    p[0][1] = current_position[1];
+    // control point 1
+    if(code_seen('I')) p[1][0] = (float)code_value() + (axis_relative_modes[0] || relative_mode)*current_position[0];
+    if(code_seen('J')) p[1][1] = (float)code_value() + (axis_relative_modes[1] || relative_mode)*current_position[1];
 
-  // control point 2
-  if(code_seen('K')) p[2][0] = (float)code_value() + (axis_relative_modes[0] || relative_mode)*current_position[0];
-  if(code_seen('L')) p[2][1] = (float)code_value() + (axis_relative_modes[1] || relative_mode)*current_position[1];
-  // end point
-  if(code_seen(axis_codes[0])) p[3][0] = (float)code_value() + (axis_relative_modes[0] || relative_mode)*current_position[0];
-  if(code_seen(axis_codes[1])) p[3][1] = (float)code_value() + (axis_relative_modes[1] || relative_mode)*current_position[1];
+    // control point 2
+    if(code_seen('K')) p[2][0] = (float)code_value() + (axis_relative_modes[0] || relative_mode)*current_position[0];
+    if(code_seen('L')) p[2][1] = (float)code_value() + (axis_relative_modes[1] || relative_mode)*current_position[1];
+    // end point
+    if(code_seen(axis_codes[0])) p[3][0] = (float)code_value() + (axis_relative_modes[0] || relative_mode)*current_position[0];
+    if(code_seen(axis_codes[1])) p[3][1] = (float)code_value() + (axis_relative_modes[1] || relative_mode)*current_position[1];
 
-  #ifdef DEBUG
-    log_float("CX", p[0][0]);
-    log_float("CY", p[0][1]);
-    log_float("I", p[1][0]);
-    log_float("J", p[1][1]);
-    log_float("K", p[2][0]);
-    log_float("L", p[2][1]);
-    log_float("X", p[3][0]);
-    log_float("Y", p[3][1]);
-  #endif
-  // calc num steps
-  float maxD = 0, sqrD = 0;
-  for (int i=1; i<4; i++) {
-    sqrD = (p[i][0] - p[i-1][0])*(p[i][0] - p[i-1][0]) + (p[i][1] - p[i-1][1])*(p[i][1] - p[i-1][1]);
-    if (sqrD > maxD) {maxD = sqrD; };
-  }
-  maxD = sqrt(maxD);
-  if (maxD > 0) {
-    steps = round((3 * maxD * stepsPerUnit));
-  }
-  if (steps < 1) steps = 1;
-  if (steps > 200) steps = 200;
-  #ifdef DEBUG
-    log_float("maxD",maxD);
-    log_int("steps", steps);
-  #endif
-  // init Forward Differencing algo
-  //---------------------------------------
-  t = 1.0 / steps;
-  temp = t*t;
-  for (int i=0; i<2; i++) {
-    f[i] = p[0][i];
-    fd[i] = 3 * (p[1][i] - p[0][i]) * t;
-    fdd_per_2[i] = 3 * (p[0][i] - 2 * p[1][i] + p[2][i]) * temp;
-    fddd_per_2[i] = 3 * (3 * (p[1][i] - p[2][i]) + p[3][i] - p[0][i]) * temp * t;
-
-    fddd[i] = fddd_per_2[i] + fddd_per_2[i];
-    fdd[i] = fdd_per_2[i] + fdd_per_2[i];
-    fddd_per_6[i] = (fddd_per_2[i] * (1.0 / 3));
-  }
-  // prep destination
-  for(int i=0; i < NUM_AXIS; i++) {
-    destination[i] = current_position[i];
-  }
-  // iterate through curve
-  //---------------------------------------
-  for (int loop=0; loop < steps; loop++) {
-    destination[0] = f[0];
-    destination[1] = f[1];
     #ifdef DEBUG
-      log_float("X",f[0]);
-      log_float("Y",f[1]);
+      log_float("CX", p[0][0]);
+      log_float("CY", p[0][1]);
+      log_float("I", p[1][0]);
+      log_float("J", p[1][1]);
+      log_float("K", p[2][0]);
+      log_float("L", p[2][1]);
+      log_float("X", p[3][0]);
+      log_float("Y", p[3][1]);
     #endif
-  prepare_move();
-  previous_millis_cmd = millis();
 
-  // update f
-  for (int i=0; i<2; i++) {
-    f[i] = f[i] + fd[i] + fdd_per_2[i] + fddd_per_6[i];
-    fd[i] = fd[i] + fdd[i] + fddd_per_2[i];
-    fdd[i] = fdd[i] + fddd[i];
-    fdd_per_2[i] = fdd_per_2[i] + fddd_per_2[i];
+    // calc num steps
+    float maxD = 0, sqrD = 0;
+
+    for (int i=1; i<4; i++) {
+      sqrD = (p[i][0] - p[i-1][0])*(p[i][0] - p[i-1][0]) + (p[i][1] - p[i-1][1])*(p[i][1] - p[i-1][1]);
+      if (sqrD > maxD) {maxD = sqrD; };
     }
-  }
-  // Move to final position
-  destination[0] = p[3][0];
-  destination[1] = p[3][1];
-  prepare_move();
-  previous_millis_cmd = millis();
 
-}
+    maxD = sqrt(maxD);
+
+    if (maxD > 0)
+      steps = round((3 * maxD * stepsPerUnit));
+    if (steps < 1)
+      steps = 1;
+    if (steps > 200)
+      steps = 200;
+
+    #ifdef DEBUG
+      log_float("maxD",maxD);
+      log_int("steps", steps);
+    #endif
+
+    // init Forward Differencing algo
+    //---------------------------------------
+    t = 1.0 / steps;
+    temp = t*t;
+    for (int i = 0; i < 2; i++) {
+      f[i] = p[0][i];
+      fd[i] = 3 * (p[1][i] - p[0][i]) * t;
+      fdd_per_2[i] = 3 * (p[0][i] - 2 * p[1][i] + p[2][i]) * temp;
+      fddd_per_2[i] = 3 * (3 * (p[1][i] - p[2][i]) + p[3][i] - p[0][i]) * temp * t;
+
+      fddd[i] = fddd_per_2[i] + fddd_per_2[i];
+      fdd[i] = fdd_per_2[i] + fdd_per_2[i];
+      fddd_per_6[i] = (fddd_per_2[i] * (1.0 / 3));
+    }
+
+    // prep destination
+    for(int i = 0; i < NUM_AXIS; i++) {
+      destination[i] = current_position[i];
+    }
+
+    // iterate through curve
+    //---------------------------------------
+    for (int loop = 0; loop < steps; loop++) {
+      destination[0] = f[0];
+      destination[1] = f[1];
+
+      #ifdef DEBUG
+        log_float("X",f[0]);
+        log_float("Y",f[1]);
+      #endif
+      prepare_move();
+      previous_millis_cmd = millis();
+
+      // update f
+      for (int i=0; i<2; i++) {
+        f[i] = f[i] + fd[i] + fdd_per_2[i] + fddd_per_6[i];
+        fd[i] = fd[i] + fdd[i] + fddd_per_2[i];
+        fdd[i] = fdd[i] + fddd[i];
+        fdd_per_2[i] = fdd_per_2[i] + fddd_per_2[i];
+      }
+    }
+
+    // Move to final position
+    destination[0] = p[3][0];
+    destination[1] = p[3][1];
+    prepare_move();
+    previous_millis_cmd = millis();
+ }
 #endif
 
-#if ENABLED(LASER) && ENABLED(LASER_RASTER)
-inline void gcode_G7() {
-  if (code_seen('L')) laser.raster_raw_length = int(code_value());
-  if (code_seen('$')) {
-    laser.raster_direction = (bool)code_value();
-    destination[Y_AXIS] = current_position[Y_AXIS] + (laser.raster_mm_per_pulse * laser.raster_aspect_ratio); // increment Y axis
-  }
-  if (code_seen('D')) laser.raster_num_pixels = base64_decode(laser.raster_data, seen_pointer+1, laser.raster_raw_length);
-  if (!laser.raster_direction) {
-    destination[X_AXIS] = current_position[X_AXIS] - (laser.raster_mm_per_pulse * laser.raster_num_pixels);
-    if (laser.diagnostics) {
-      ECHO_LM(INFO, "Negative Raster Line");
-    }
-  } else {
-    destination[X_AXIS] = current_position[X_AXIS] + (laser.raster_mm_per_pulse * laser.raster_num_pixels);
-    if (laser.diagnostics) {
-      ECHO_LM(INFO, "Positive Raster Line");
-    }
-  }
+#if ENABLED(LASERBEAM) && ENABLED(LASER_RASTER)
+  inline void gcode_G7() {
 
-  laser.ppm = 1 / laser.raster_mm_per_pulse; //number of pulses per millimetre
-  laser.duration = (1000000 / ( feedrate / 60)) / laser.ppm; // (1 second in microseconds / (time to move 1mm in microseconds)) / (pulses per mm) = Duration of pulse, taking into account feedrate as speed and ppm
-  
-  laser.mode = RASTER;
-  laser.status = LASER_ON;
-  laser.fired = RASTER;
-  prepare_move();
+    if (code_seen('L')) laser.raster_raw_length = int(code_value());
 
-}
+    if (code_seen('$')) {
+      laser.raster_direction = (bool)code_value();
+      destination[Y_AXIS] = current_position[Y_AXIS] + (laser.raster_mm_per_pulse * laser.raster_aspect_ratio); // increment Y axis
+    }
+
+    if (code_seen('D')) laser.raster_num_pixels = base64_decode(laser.raster_data, seen_pointer+1, laser.raster_raw_length);
+
+    if (!laser.raster_direction) {
+      destination[X_AXIS] = current_position[X_AXIS] - (laser.raster_mm_per_pulse * laser.raster_num_pixels);
+      if (laser.diagnostics)
+        ECHO_LM(INFO, "Negative Raster Line");
+    }
+    else {
+      destination[X_AXIS] = current_position[X_AXIS] + (laser.raster_mm_per_pulse * laser.raster_num_pixels);
+      if (laser.diagnostics)
+        ECHO_LM(INFO, "Positive Raster Line");
+    }
+
+    laser.ppm = 1 / laser.raster_mm_per_pulse; // number of pulses per millimetre
+    laser.duration = (1000000 / ( feedrate / 60)) / laser.ppm; // (1 second in microseconds / (time to move 1mm in microseconds)) / (pulses per mm) = Duration of pulse, taking into account feedrate as speed and ppm
+
+    laser.mode = RASTER;
+    laser.status = LASER_ON;
+    laser.fired = RASTER;
+    prepare_move();
+  }
 #endif
 
 /**
@@ -4418,6 +4498,7 @@ inline void gcode_G28() {
       enqueue_and_echo_commands_P(PSTR(Z_PROBE_END_SCRIPT));
       st_synchronize();
     #endif
+
     KEEPALIVE_STATE(IN_HANDLER);
 
     if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< gcode_G29");
@@ -4782,14 +4863,13 @@ inline void gcode_G92() {
     if (code_seen(axis_codes[i])) {
       float p = current_position[i],
             v = code_value();
-      
+
       current_position[i] = v;
 
       if (i == E_AXIS) {
-        #if DISABLED(MUVE_Z_PEEL)
-        plan_set_e_position(v);
-        #endif
-      } else {
+          plan_set_e_position(v);
+      }
+      else {
         position_shift[i] += v - p; // Offset the coordinate space
         update_software_endstops((AxisEnum)i);
         didXYZ = true;
@@ -4860,20 +4940,11 @@ inline void gcode_G92() {
   }
 #endif //ULTIPANEL
 
-#if (ENABLED(LASERBEAM) || ENABLED(LASER) && ENABLED(LASER_FIRE_SPINDLE))
+#if (ENABLED(LASERBEAM) && ENABLED(LASER_FIRE_SPINDLE))
   /**
    * M3: S - Setting laser beam or fire laser 
    */
-  inline void gcode_M3() {
-    #if ENABLED(LASERBEAM)
-    if (code_seen('S')) {
-      laser_ttl_modulation = constrain(code_value(), 0, 255);
-    }
-    else {
-      laser_ttl_modulation = 0;
-    }
-    #endif
-    #if ENABLED(LASER) && ENABLED(LASER_FIRE_SPINDLE)
+  inline void gcode_M3_M4() {
     if (code_seen('S') && IsRunning()) laser.intensity = (float) code_value();
     if (code_seen('L') && IsRunning()) laser.duration = (unsigned long) labs(code_value());
     if (code_seen('P') && IsRunning()) laser.ppm = (float) code_value();
@@ -4886,44 +4957,26 @@ inline void gcode_G92() {
     lcd_update();
 
     prepare_move();
-
-    #endif
-  }
-
-  /**
-   * M4: Turn on laser beam
-   */
-  inline void gcode_M4() {
-    #if ENABLED(LASERBEAM)
-    WRITE(LASER_PWR_PIN, HIGH);
-    laser_ttl_modulation = 0;
-    #endif
-    #if ENABLED(LASER) && ENABLED(LASER_FIRE_SPINDLE)
-      gcode_M3();
-    #endif
-
   }
 
   /**
    * M5: Turn off laser beam
    */
   inline void gcode_M5() {
-    #if ENABLED(LASERBEAM)
-    WRITE(LASER_PWR_PIN, LOW);
-    laser_ttl_modulation = 0;
-    #endif
-    #if ENABLED(LASER) && ENABLED(LASER_FIRE_SPINDLE)
-      if(laser.status != LASER_OFF) {
-        laser.status = LASER_OFF;
-        laser.mode = CONTINUOUS;
-        laser.duration = 0;
-        lcd_update();
-        prepare_move();
-        if(laser.diagnostics) ECHO_LM(INFO, "Laser M5 called and laser ON");
-      }
-    #endif
+    if (laser.status != LASER_OFF) {
+      laser.status = LASER_OFF;
+      laser.mode = CONTINUOUS;
+      laser.duration = 0;
+
+      lcd_update();
+
+      prepare_move();
+
+      if (laser.diagnostics)
+        ECHO_LM(INFO, "Laser M5 called and laser OFF");
+    }
   }
-#endif //LASERBEAM
+#endif // LASERBEAM
 
 /**
  * M11: Start/Stop printing serial mode
@@ -5425,7 +5478,8 @@ inline void gcode_M78() {
       LCD_MESSAGEPGM(WELCOME_MSG);
       lcd_update();
     #endif
-    #if ENABLED(LASER_PERIPHERALS)
+
+    #if ENABLED(LASERBEAM) && ENABLED(LASER_PERIPHERALS)
       laser_peripherals_on();
       laser_wait_for_peripherals();
     #endif
@@ -5444,16 +5498,15 @@ inline void gcode_M81() {
   disable_e();
   finishAndDisableSteppers();
   fanSpeed = 0;
+
   #if ENABLED(LASERBEAM)
-    laser_ttl_modulation = 0;
-  #endif
-  #ifdef LASER
     laser_extinguish();
-  #endif
-  #ifdef LASER_PERIPHERALS
-    laser_peripherals_off();
+    #if ENABLED(LASER_PERIPHERALS)
+      laser_peripherals_off();
+    #endif
   #endif
   delay_ms(1000); // Wait 1 second before switching off
+
   #if HAS(SUICIDE)
     st_synchronize();
     suicide();
@@ -5461,6 +5514,7 @@ inline void gcode_M81() {
     OUT_WRITE(PS_ON_PIN, PS_ON_ASLEEP);
     powersupply = false;
   #endif
+
   #if ENABLED(ULTIPANEL)
     LCD_MESSAGEPGM(MACHINE_NAME " " MSG_OFF ".");
     lcd_update();
@@ -5803,11 +5857,14 @@ inline void gcode_M105() {
     #if HAS(TEMP_0) || HAS(TEMP_BED) || ENABLED(HEATER_0_USES_MAX6675)
       print_heaterstates();
     #endif
+    #if HAS(TEMP_CHAMBER)
+      print_chamberstate();
+    #endif
     #if HAS(TEMP_COOLER)
-      print_coolerstates();
+      print_coolerstate();
     #endif
     #if ENABLED(FLOWMETER_SENSOR)
-      print_flowratestates();
+      print_flowratestate();
     #endif
   #else // HASNT(TEMP_0) && HASNT(TEMP_BED)
     ECHO_LM(ER, SERIAL_ERR_NO_THERMISTORS);
@@ -5830,8 +5887,8 @@ inline void gcode_M105() {
 #endif // HAS(FAN)
 
 /**
- * M109: Sxxx Wait for extruder(s) to reach temperature. Waits only when heating.
- *       Rxxx Wait for extruder(s) to reach temperature. Waits when heating and cooling.
+ * M109: Sxxx Wait for hotend(s) to reach temperature. Waits only when heating.
+ *       Rxxx Wait for hotend(s) to reach temperature. Waits when heating and cooling.
  */
 inline void gcode_M109() {
   if (get_target_extruder_from_command(109)) return;
@@ -6002,19 +6059,35 @@ inline void gcode_M122() {
   #endif
 #endif //BARICUDA
 
-/**
- * M140: Set bed or cooler temperature
- */
-inline void gcode_M140() {
-  if (DEBUGGING(DRYRUN)) return;
-  if (code_seen('C')) {
-    if (code_seen('S')) setTargetCooler(code_value());
-  }
-  else {
+#if HAS(TEMP_BED)
+  /**
+   * M140: Set Bed temperature
+   */
+  inline void gcode_M140() {
+    if (DEBUGGING(DRYRUN)) return;
     if (code_seen('S')) setTargetBed(code_value());
   }
+#endif
 
-}
+#if HAS(TEMP_CHAMBER)
+  /**
+   * M141: Set Chamber temperature
+   */
+  inline void gcode_M141() {
+    if (DEBUGGING(DRYRUN)) return;
+    if (code_seen('S')) setTargetChamber(code_value());
+  }
+#endif
+
+#if HAS(TEMP_COOLER)
+  /**
+   * M142: Set Cooler temperature
+   */
+  inline void gcode_M142() {
+    if (DEBUGGING(DRYRUN)) return;
+    if (code_seen('S')) setTargetCooler(code_value());
+  }
+#endif
 
 #if ENABLED(ULTIPANEL) && TEMP_SENSOR_0 != 0
   /**
@@ -6160,39 +6233,53 @@ inline void gcode_M140() {
   inline void gcode_M165() { gcode_get_mix(); }
 #endif  // COLOR_MIXING_EXTRUDER
 
-#if HAS(TEMP_BED) || HAS(TEMP_COOLER)
+#if HAS(TEMP_BED)
   /**
-   * M190: Sxxx Wait for bed or cooler current temp to reach target temp. Waits only when heating for bed, cooling for cooler
-   *       Rxxx Wait for bed or cooler current temp to reach target temp. Waits when heating and cooling
-   *       C    select cooler, omitting select bed
-   *
+   * M190: Sxxx Wait for bed current temp to reach target temp. Waits only when heating
+   *       Rxxx Wait for bed current temp to reach target temp. Waits when heating and cooling
    */
   inline void gcode_M190() {
     if (DEBUGGING(DRYRUN)) return;
-    #if HAS(TEMP_COOLER)
-      if (code_seen('C')) {
-        LCD_MESSAGEPGM(MSG_COOLER_COOLING);
-        bool no_wait_for_heating = code_seen('S');
-        if (no_wait_for_heating || code_seen('R')) setTargetCooler(code_value());
 
-        wait_cooler(no_wait_for_heating);
-      }
-    #endif
-    #if HAS(TEMP_BED) && HAS(TEMP_COOLER)
-      else {
-    #elif HAS(TEMP_BED)
-      if (!code_seen('C')) {
-    #endif
-    #if HAS(TEMP_BED)
-        LCD_MESSAGEPGM(MSG_BED_HEATING);
-        bool no_wait_for_cooling = code_seen('S');
-        if (no_wait_for_cooling || code_seen('R')) setTargetBed(code_value());
+    LCD_MESSAGEPGM(MSG_BED_HEATING);
+    bool no_wait_for_cooling = code_seen('S');
+    if (no_wait_for_cooling || code_seen('R')) setTargetBed(code_value());
 
-        wait_bed(no_wait_for_cooling);
-      }
-    #endif
+    wait_bed(no_wait_for_cooling);
   }
 #endif // HAS(TEMP_BED)
+
+#if HAS(TEMP_CHAMBER)
+  /**
+   * M191: Sxxx Wait for chamber current temp to reach target temp. Waits only when heating
+   *       Rxxx Wait for chamber current temp to reach target temp. Waits when heating and cooling
+   */
+  inline void gcode_M191() {
+    if (DEBUGGING(DRYRUN)) return;
+
+    LCD_MESSAGEPGM(MSG_CHAMBER_HEATING);
+    bool no_wait_for_cooling = code_seen('S');
+    if (no_wait_for_cooling || code_seen('R')) setTargetChamber(code_value());
+
+    wait_chamber(no_wait_for_cooling);
+  }
+#endif // HAS(TEMP_CHAMBER)
+
+#if HAS(TEMP_COOLER)
+  /**
+   * M192: Sxxx Wait for cooler current temp to reach target temp. Waits only when heating
+   *       Rxxx Wait for cooler current temp to reach target temp. Waits when heating and cooling
+   */
+  inline void gcode_M192() {
+    if (DEBUGGING(DRYRUN)) return;
+
+    LCD_MESSAGEPGM(MSG_COOLER_COOLING);
+    bool no_wait_for_heating = code_seen('S');
+    if (no_wait_for_heating || code_seen('R')) setTargetCooler(code_value());
+
+    wait_cooler(no_wait_for_heating);
+  }
+#endif
 
 /**
  * M200: Set filament diameter and set E axis units to cubic millimetres
@@ -6253,7 +6340,6 @@ inline void gcode_M201() {
     }
   }
 #endif
-
 
 /**
  * M203: Set maximum feedrate that your machine can sustain in mm/sec
@@ -6656,7 +6742,7 @@ inline void gcode_M226() {
   /**
    * M303: PID relay autotune
    *       S<temperature> sets the target temperature. (default target temperature = 150C)
-   *       H<hotend> (-1 for the bed, -2 for cooler) (default 0)
+   *       H<hotend> (-1 for the bed, -2 for chamber, -3 for cooler) (default 0)
    *       C<cycles>
    *       U<bool> with a non-zero value will apply the result to current settings
    */
@@ -6672,44 +6758,52 @@ inline void gcode_M226() {
     KEEPALIVE_STATE(NOT_BUSY); // don't send "busy: processing" messages during autotune output
 
     PID_autotune(temp, h, c, u);
+
     KEEPALIVE_STATE(IN_HANDLER);
   }
 #endif
 
-#if ENABLED(PIDTEMPBED) || ENABLED(PIDTEMPCOOLER)
+#if ENABLED(PIDTEMPBED)
   // M304: Set bed PID parameters P I and D
   inline void gcode_M304() {
-    #if ENABLED(PIDTEMPCOOLER)
-    if (code_seen('C')) {
-      if (code_seen('P')) coolerKp = code_value();
-      if (code_seen('I')) coolerKi = scalePID_i(code_value());
-      if (code_seen('D')) coolerKd = scalePID_d(code_value());
+    if (code_seen('P')) bedKp = code_value();
+    if (code_seen('I')) bedKi = scalePID_i(code_value());
+    if (code_seen('D')) bedKd = scalePID_d(code_value());
 
-      updatePID();
-      ECHO_SMV(OK, " C p:", coolerKp);
-      ECHO_MV(" i:", unscalePID_i(coolerKi));
-      ECHO_EMV(" d:", unscalePID_d(coolerKd));
-
-    }
-    #endif
-    #if ENABLED(PIDTEMPCOOLER) && ENABLED(PIDTEMPBED)
-    else {
-    #endif
-    #if ENABLED(PIDTEMPBED)
-      if (code_seen('P')) bedKp = code_value();
-      if (code_seen('I')) bedKi = scalePID_i(code_value());
-      if (code_seen('D')) bedKd = scalePID_d(code_value());
-
-      updatePID();
-      ECHO_SMV(OK, "p:", bedKp);
-      ECHO_MV(" i:", unscalePID_i(bedKi));
-      ECHO_EMV(" d:", unscalePID_d(bedKd));
-    #endif
-    #if ENABLED(PIDTEMPCOOLER) && ENABLED(PIDTEMPBED)
-    }
-    #endif
+    updatePID();
+    ECHO_SMV(OK, "p:", bedKp);
+    ECHO_MV(" i:", unscalePID_i(bedKi));
+    ECHO_EMV(" d:", unscalePID_d(bedKd));
   }
-#endif // PIDTEMPBED || PIDTEMPCOOLER
+#endif // PIDTEMPBED
+
+#if ENABLED(PIDTEMPCHAMBER)
+  // M305: Set chamber PID parameters P I and D
+  inline void gcode_M305() {
+    if (code_seen('P')) chamberKp = code_value();
+    if (code_seen('I')) chamberKi = scalePID_i(code_value());
+    if (code_seen('D')) chamberKd = scalePID_d(code_value());
+
+    updatePID();
+    ECHO_SMV(OK, "p:", chamberKp);
+    ECHO_MV(" i:", unscalePID_i(chamberKi));
+    ECHO_EMV(" d:", unscalePID_d(chamberKd));
+  }
+#endif // PIDTEMPCHAMBER
+
+#if ENABLED(PIDTEMPCOOLER)
+  // M306: Set cooler PID parameters P I and D
+  inline void gcode_M306() {
+    if (code_seen('P')) coolerKp = code_value();
+    if (code_seen('I')) coolerKi = scalePID_i(code_value());
+    if (code_seen('D')) coolerKd = scalePID_d(code_value());
+
+    updatePID();
+    ECHO_SMV(OK, "p:", coolerKp);
+    ECHO_MV(" i:", unscalePID_i(coolerKi));
+    ECHO_EMV(" d:", unscalePID_d(coolerKd));
+  }
+#endif // PIDTEMPCOOLER
 
 #if HAS(MICROSTEPS)
   // M350 Set microstepping mode. Warning: Steps per unit remains unchanged. S code sets stepping mode for all drivers.
@@ -7385,6 +7479,7 @@ inline void gcode_M503() {
     #else
       #define RUNPLAN line_to_destination(FILAMENT_CHANGE_XY_FEEDRATE * 60);
     #endif
+
     KEEPALIVE_STATE(IN_HANDLER);
 
     // Initial retract before move to filament change position
@@ -7513,6 +7608,7 @@ inline void gcode_M503() {
     #endif
 
     lcd_filament_change_show_message(FILAMENT_CHANGE_MESSAGE_RESUME);
+
     KEEPALIVE_STATE(IN_HANDLER);
 
     // Set extruder to saved position
@@ -7583,66 +7679,31 @@ inline void gcode_M503() {
   }
 #endif // DUAL_X_CARRIAGE
 
-#if ENABLED(LASER)
+#if ENABLED(LASERBEAM)
+
   // M649 set laser options
   inline void gcode_M649() {
     // do this at the start so we can debug if needed!
     if (code_seen('D') && IsRunning()) laser.diagnostics = (bool) code_value();
-    
+
     // Wait for the rest 
-    //st_synchronize();
+    // st_synchronize();
     if (code_seen('S') && IsRunning()) {
       laser.intensity = (float) code_value();
       laser.rasterlaserpower =  laser.intensity;
     }
+
     if (code_seen('L') && IsRunning()) laser.duration = (unsigned long) labs(code_value());
     if (code_seen('P') && IsRunning()) laser.ppm = (float) code_value();
     if (code_seen('B') && IsRunning()) laser_set_mode((int) code_value());
     if (code_seen('R') && IsRunning()) laser.raster_mm_per_pulse = ((float) code_value());
+
     if (code_seen('F')) {
       float next_feedrate = code_value();
       if(next_feedrate > 0.0) feedrate = next_feedrate;
     }
   }
-  #if ENABLED(MUVE_Z_PEEL)
-  // M650 set peel distance
-  inline void gcode_M650() {
-    st_synchronize();
-    laser.peel_distance=2.0;
-    laser.peel_speed=2.0;
-    laser.peel_pause=0.0;
-    if(code_seen('D')) laser.peel_distance = (float) code_value();
-    if(code_seen('S')) laser.peel_speed = (float) code_value();
-    if(code_seen('P')) laser.peel_pause = (float) code_value();
-
-  }
-
-  // M651 run peel move
-  inline void gcode_M651() {
-    if(laser.peel_distance > 0) {
-      plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS] + laser.peel_distance, destination[Z_AXIS], laser.peel_speed, active_extruder);
-      plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS] + laser.peel_distance, destination[Z_AXIS] + laser.peel_distance, laser.peel_speed, active_extruder);
-      st_synchronize();
-    }
-    if(laser.peel_pause > 0) {
-      st_synchronize();
-      codenum = laser.peel_pause;
-      codenum += millis();  // keep track of when we started waiting
-      previous_millis_cmd = millis();
-      while(millis()  < codenum ){
-        manage_temp_controller();
-        manage_inactivity();
-        lcd_update();
-      }
-      plan_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[Z_AXIS], 30, active_extruder);
-      st_synchronize();
-
-    }
-
-  }
-  #endif
-
-#endif
+#endif // LASERBEAM
 
 #if ENABLED(AUTO_BED_LEVELING_FEATURE)
   //M666: Set Z probe offset
@@ -8206,6 +8267,7 @@ void process_next_command() {
 
   // The command's arguments (if any) start here, for sure!
   current_command_args = cmd_ptr;
+
   KEEPALIVE_STATE(IN_HANDLER);
 
   // Handle a known G, M, or T
@@ -8228,16 +8290,16 @@ void process_next_command() {
       case 4:
         gcode_G4(); break;
 
-      // G5 Bezier curve - from http://forums.reprap.org/read.php?147,93577
-      #if ENABLED(G5_BEZIER)
-        case 5:
-          gcode_G5(); break;
-      #endif
+      #if ENABLED(LASERBEAM)
+        #if ENABLED(G5_BEZIER)
+          case 5: // G5: Bezier curve - from http://forums.reprap.org/read.php?147,93577
+            gcode_G5(); break;
+        #endif
 
-      // G7 Execute laser raster line
-      #if ENABLED(LASER) && ENABLED(LASER_RASTER)
-        case 7:
-          gcode_G7(); break;
+        #if ENABLED(LASER_RASTER)
+          case 7: // G7: Execute laser raster line
+            gcode_G7(); break;
+        #endif
       #endif
 
       #if ENABLED(FWRETRACT)
@@ -8290,14 +8352,13 @@ void process_next_command() {
           gcode_M0_M1(); break;
       #endif //ULTIPANEL
 
-      #if ENABLED(LASERBEAM) || (ENABLED(LASER) && ENABLED(LASER_FIRE_SPINDLE))
+      #if ENABLED(LASERBEAM) && ENABLED(LASER_FIRE_SPINDLE)
         case 3: // M03 S - Setting laser beam
-          gcode_M3(); break;
         case 4: // M04 - Turn on laser beam
-          gcode_M4(); break;
+          gcode_M3_M4(); break;
         case 5: // M05 - Turn off laser beam
           gcode_M5(); break;
-      #endif //LASERBEAM
+      #endif // LASERBEAM
 
       case 11: // M11 - Start/Stop printing serial mode
         gcode_M11(); break;
@@ -8469,8 +8530,20 @@ void process_next_command() {
         #endif // HAS(HEATER_2)
       #endif // BARICUDA
 
-      case 140: // M140 Set bed or cooler temp
-        gcode_M140(); break;
+      #if HAS(TEMP_BED)
+        case 140: // M140 - Set bed temp
+          gcode_M140(); break;
+      #endif
+
+      #if HAS(TEMP_CHAMBER)
+        case 141: // M141 - Set chamber temp
+          gcode_M141(); break;
+      #endif
+
+      #if HAS(TEMP_COOLER)
+        case 142: // M142 - Set cooler temp
+          gcode_M142(); break;
+      #endif
 
       #if ENABLED(BLINKM)
         case 150: // M150
@@ -8488,10 +8561,20 @@ void process_next_command() {
           gcode_M165(); break;
       #endif
 
-      #if HAS(TEMP_BED) || HAS(TEMP_COOLER)
-        case 190: // M190 - Wait for bed heater or for cooler to reach target.
+      #if HAS(TEMP_BED)
+        case 190: // M190 - Wait for bed heater to reach target.
           gcode_M190(); break;
-      #endif //TEMP_BED || TEMP_COOLER
+      #endif // TEMP_BED
+
+      #if HAS(TEMP_CHAMBER)
+        case 191: // M191 - Wait for chamber heater to reach target.
+          gcode_M191(); break;
+      #endif
+
+      #if HAS(TEMP_COOLER)
+        case 192: // M192 - Wait for chamber heater to reach target.
+          gcode_M192(); break;
+      #endif
 
       case 200: // M200 D<millimetres> set filament diameter and set E axis units to cubic millimetres (use S0 to set back to millimeters).
         gcode_M200(); break;
@@ -8566,10 +8649,20 @@ void process_next_command() {
           gcode_M303(); break;
       #endif
 
-      #if ENABLED(PIDTEMPBED) || ENABLED(PIDTEMPCOOLER)
-        case 304: // M304
+      #if ENABLED(PIDTEMPBED)
+        case 304: // M304 - Set Bed PID
           gcode_M304(); break;
       #endif // PIDTEMPBED
+
+      #if ENABLED(PIDTEMPCHAMBER)
+        case 305: // M305 - Set Chamber PID
+          gcode_M305(); break;
+      #endif // PIDTEMPCHAMBER
+
+      #if ENABLED(PIDTEMPCOOLER)
+        case 306: // M306 - Set Cooler PID
+          gcode_M306(); break;
+      #endif // PIDTEMPCOOLER
 
       #if HAS(MICROSTEPS)
         case 350: // M350 Set microstepping mode. Warning: Steps per unit remains unchanged. S code sets stepping mode for all drivers.
@@ -8659,19 +8752,9 @@ void process_next_command() {
           gcode_M605(); break;
       #endif
 
-      #if ENABLED(LASER)
+      #if ENABLED(LASERBEAM)
         case 649: // M649 set laser options
           gcode_M649(); break;
-
-        #if ENABLED(MUVE_Z_PEEL)
-          case 650:
-            gcode_M650(); break;
-
-          case 651:
-            gcode_M651(); break;
-        #endif
-
-
       #endif 
 
       #if ENABLED(AUTO_BED_LEVELING_FEATURE) || MECH(DELTA)
@@ -8753,7 +8836,7 @@ void clamp_to_software_endstops(float target[3]) {
   if (SOFTWARE_MIN_ENDSTOPS && software_endstops) {
     NOLESS(target[X_AXIS], sw_endstop_min[X_AXIS]);
     NOLESS(target[Y_AXIS], sw_endstop_min[Y_AXIS]);
-    #if !ENABLED(LASER)
+    #if !ENABLED(LASERBEAM)
       float negative_z_offset = 0;
       #if ENABLED(AUTO_BED_LEVELING_FEATURE)
         if (zprobe_zoffset < 0) negative_z_offset += zprobe_zoffset;
@@ -8770,11 +8853,10 @@ void clamp_to_software_endstops(float target[3]) {
   if (SOFTWARE_MAX_ENDSTOPS && software_endstops) {
     NOMORE(target[X_AXIS], sw_endstop_max[X_AXIS]);
     NOMORE(target[Y_AXIS], sw_endstop_max[Y_AXIS]);
-    #if !ENABLED(LASER)
+    #if !ENABLED(LASERBEAM)
       NOMORE(target[Z_AXIS], sw_endstop_max[Z_AXIS]);
     #endif
   }
-
 }
 
 /**
@@ -8940,25 +9022,21 @@ static void report_current_position() {
 #if MECH(CARTESIAN) || MECH(COREXY) || MECH(COREYX) || MECH(COREXZ) || MECH(COREZX)
 
   inline bool prepare_move_cartesian() {
-    #if ENABLED(LASER) && ENABLED(LASER_FIRE_E)
+    #if ENABLED(LASERBEAM) && ENABLED(LASER_FIRE_E)
       if (current_position[E_AXIS] != destination[E_AXIS] && ((current_position[X_AXIS] != destination [X_AXIS]) || (current_position[Y_AXIS] != destination [Y_AXIS]))){
         laser.status = LASER_ON;
         laser.fired = LASER_FIRE_E;
       }
-      if (current_position[E_AXIS] == destination[E_AXIS] && laser.fired == LASER_FIRE_E){
+      if (current_position[E_AXIS] == destination[E_AXIS] && laser.fired == LASER_FIRE_E)
         laser.status = LASER_OFF;
-      }
     #endif
+
     // Do not use feedrate_multiplier for E or Z only moves
-    if (current_position[X_AXIS] == destination[X_AXIS] && current_position[Y_AXIS] == destination[Y_AXIS]) {
+    if (current_position[X_AXIS] == destination[X_AXIS] && current_position[Y_AXIS] == destination[Y_AXIS])
       line_to_destination();
-      #if ENABLED(LASER) && ENABLED(MUVE_Z_PEEL)
-        current_position[E_AXIS] = current_position[Z_AXIS];
-      #endif
-    }
-    else {
+    else
       line_to_destination(feedrate * feedrate_multiplier / 100.0);
-    }
+
     return true;
   }
 
@@ -9345,7 +9423,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
     #if DISABLE_E == true
       disable_e();
     #endif
-    #if ENABLED(LASER)
+    #if ENABLED(LASERBEAM)
       if (laser.time / 60000 > 0) {
         laser.lifetime += laser.time / 60000; // convert to minutes
         laser.time = 0;
@@ -9540,7 +9618,7 @@ void kill(const char* lcd_msg) {
     HAL::resetHardware();
   #endif
   #if ENABLED(FLOWMETER_SENSOR) && ENABLED(MINFLOW_PROTECTION)
-    flow_firstread=false;
+    flow_firstread = false;
   #endif
 
   #if ENABLED(ULTRA_LCD)
@@ -9552,12 +9630,11 @@ void kill(const char* lcd_msg) {
   disable_all_coolers();
   disable_all_steppers();
 
-  #if ENABLED(LASER)
+  #if ENABLED(LASERBEAM)
     laser_init();
-  #endif
-
-  #if ENABLED(LASER_PERIPHERALS)
-    laser_peripherals_off();
+    #if ENABLED(LASER_PERIPHERALS)
+      laser_peripherals_off();
+    #endif
   #endif
 
   #if HAS(POWER_SWITCH)
@@ -9658,14 +9735,16 @@ void stop() {
   #if ENABLED(FLOWMETER_SENSOR) && ENABLED(MINFLOW_PROTECTION)
     flow_firstread=false;
   #endif
+
   disable_all_heaters();
   disable_all_coolers();
-  #ifdef LASER
+
+  #if ENABLED(LASERBEAM)
     if (laser.diagnostics) ECHO_LM(INFO, "Laser set to off, stop() called");
     laser_extinguish();
-  #endif
-  #ifdef LASER_PERIPHERALS
-    laser_peripherals_off();
+    #if ENABLED(LASER_PERIPHERALS)
+      laser_peripherals_off();
+    #endif
   #endif
 
   if (IsRunning()) {

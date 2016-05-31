@@ -165,6 +165,7 @@ bool PrintCounter::stop() {
     this->data.completePrints++;
     this->data.printTime += this->deltaDuration();
     this->saveStats();
+    return true;
   }
   else return false;
 }
