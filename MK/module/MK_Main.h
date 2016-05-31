@@ -116,7 +116,7 @@ inline void refresh_cmd_timeout() { previous_cmd_ms = millis(); }
 
 extern void delay_ms(millis_t ms);
 
-#if ENABLED(FAST_PWM_FAN)
+#if ENABLED(FAST_PWM_FAN) || ENABLED(FAST_PWM_COOLER)
   void setPwmFrequency(uint8_t pin, uint8_t val);
 #endif
 
@@ -236,10 +236,6 @@ extern int fanSpeed;
   extern bool allow_lengthy_extrude_once; // for load/unload
 #endif
 
-#if ENABLED(LASERBEAM)
-  extern int laser_ttl_modulation;
-#endif
-
 // Print job timer
 extern PrintCounter print_job_counter;
 
@@ -259,6 +255,18 @@ extern uint8_t active_driver;
 
 #if HAS(TEMP_0) || HAS(TEMP_BED) || ENABLED(HEATER_0_USES_MAX6675)
   void print_heaterstates();
+#endif
+
+#if HAS(TEMP_CHAMBER)
+  void print_chamberstate();
+#endif
+
+#if HAS(TEMP_COOLER)
+  void print_coolerstate();
+#endif
+
+#if ENABLED(FLOWMETER_SENSOR)
+  void print_flowratestate();
 #endif
 
 #if ENABLED(FIRMWARE_TEST)

@@ -4,19 +4,8 @@
 /*
  * This configuration file contains all features that can be enabled.
  *
- * TEMPERATURE FEATURES:
- * - Automatic temperature
- * - Wattage report
- * - Parallel heaters
- * - Redundant thermistor
- * - Temperature status LEDs
- * - PID Settings - HOTEND
- * - PID Settings - BED
- * - Inverted PINS
- * - Thermal runaway protection
- * - Fan configuration
- * - Mediancount (ONLY FOR DUE)
  * EXTRUDER FEATURES:
+ * - Fan configuration
  * - Default nominal filament diameter
  * - Dangerous extrution prevention
  * - Single nozzle
@@ -51,6 +40,7 @@
  * - Filament Runout sensor
  * - Power consumption sensor
  * - RFID card sensor
+ * - Flow sensor
  * ADDON FEATURES:
  * - EEPROM
  * - SDCARD
@@ -83,226 +73,8 @@
  */
 
 //===========================================================================
-//=========================== TEMPERATURE FEATURES ==========================
+//============================= EXTRUDER FEATURES ===========================
 //===========================================================================
-
-/*****************************************************************************************
- ******************************** Automatic temperature **********************************
- *****************************************************************************************
- *                                                                                       *
- * The hotend target temperature is calculated by all the buffered lines of gcode.       *
- * The maximum buffered steps/sec of the extruder motor is called "se".                  *
- * Start autotemp mode with M109 S<mintemp> B<maxtemp> F<factor>                         *
- * The target temperature is set to mintemp+factor*se[steps/sec] and is limited by       *
- * mintemp and maxtemp. Turn this off by excuting M109 without F*                        *
- * Also, if the temperature is set to a value below mintemp, it will not be changed      *
- * by autotemp.                                                                          *
- * On an Ultimaker, some initial testing worked with M109 S215 B260 F1                   *
- * in the start.gcode                                                                    *
- *                                                                                       *
- *****************************************************************************************/
-#define AUTOTEMP
-#define AUTOTEMP_OLDWEIGHT 0.98
-/*****************************************************************************************/
-
-
-/***********************************************************************
- ************************* Wattage report ******************************
- ***********************************************************************
- *                                                                     *
- * If you want the M105 heater power reported in watts,                *
- * define the BED_WATTS, and (shared for all hotend) HOTEND_WATTS      *
- *                                                                     *
- ***********************************************************************/
-//#define HOTEND_WATTS (12.0*12.0/6.7)  //  P=I^2/R
-//#define BED_WATTS (12.0*12.0/1.1)     //  P=I^2/R
-/***********************************************************************/
-
-
-/***********************************************************************
- ************************* Parallel heaters ******************************
- ***********************************************************************
- *                                                                     *
- * Control heater 0 and heater 1 in parallel.                          *
- *                                                                     *
- ***********************************************************************/
-//#define HEATERS_PARALLEL
-/***********************************************************************/
-
-
-/***********************************************************************
- ********************** Redundant thermistor ***************************
- ***********************************************************************
- *                                                                     *
- * This makes temp sensor 1 a redundant sensor for sensor 0.           *
- * If the temperatures difference between these sensors is to high     *
- * the print will be aborted.                                          *
- *                                                                     *
- ***********************************************************************/
-//#define TEMP_SENSOR_1_AS_REDUNDANT
-#define MAX_REDUNDANT_TEMP_SENSOR_DIFF 10 // (degC)
-/***********************************************************************/
-
-
-/***********************************************************************
- ********************* Temperature status LEDs *************************
- ***********************************************************************
- *                                                                     *
- * Temperature status LEDs that display the hotend and bed             *
- * temperature.                                                        *
- * Otherwise the RED led is on. There is 1C hysteresis.                *
- *                                                                     *
- ***********************************************************************/
-//#define TEMP_STAT_LEDS
-/***********************************************************************/
- 
- 
-/***********************************************************************
- ********************** PID Settings - HOTEND **************************
- ***********************************************************************
- *                                                                     *
- * PID Tuning Guide here: http://reprap.org/wiki/PID_Tuning            *
- *                                                                     *
- ***********************************************************************/
-#define BANG_MAX 255       // limits current to nozzle while in bang-bang mode; 255=full current
-#define PID_MAX BANG_MAX   // limits current to nozzle while PID is active (see PID_FUNCTIONAL_RANGE below); 255=full current
-#define K1 0.95            // Smoothing factor within the PID
-#define MAX_OVERSHOOT_PID_AUTOTUNE 20   // Max valor for overshoot autotune
-
-// Comment the following line to disable PID and enable bang-bang.
-#define PIDTEMP
-//#define PID_AUTOTUNE_MENU // Add PID Autotune to the LCD "Temperature" menu to run M303 and apply the result.
-//#define PID_DEBUG         // Sends debug data to the serial port.
-//#define PID_OPENLOOP 1    // Puts PID in open loop. M104/M140 sets the output power from 0 to PID_MAX
-//#define SLOW_PWM_HEATERS  // PWM with very low frequency (roughly 0.125Hz=8s) and minimum state time of approximately 1s useful for heaters driven by a relay
-// If the temperature difference between the target temperature and the actual temperature
-// is more then PID_FUNCTIONAL_RANGE then the PID will be shut off and the heater will be set to min/max.
-#define PID_FUNCTIONAL_RANGE 10         // degC
-#define PID_INTEGRAL_DRIVE_MAX PID_MAX  // Limit for the integral term
-// this adds an experimental additional term to the heating power, proportional to the extrusion speed.
-// if Kc is chosen well, the additional required power due to increased melting should be compensated.
-//#define PID_ADD_EXTRUSION_RATE
-#define LPQ_MAX_LEN 50
-
-//           HotEnd{HE0,HE1,HE2,HE3}
-#define DEFAULT_Kp {40, 40, 40, 40}     // Kp for H0, H1, H2, H3
-#define DEFAULT_Ki {07, 07, 07, 07}     // Ki for H0, H1, H2, H3
-#define DEFAULT_Kd {60, 60, 60, 60}     // Kd for H0, H1, H2, H3
-#define DEFAULT_Kc {100, 100, 100, 100} // heating power = Kc * (e_speed)
-/***********************************************************************/
-
-
-/***********************************************************************
- ************************ PID Settings - BED ***************************
- ***********************************************************************
- *                                                                     *
- * PID Tuning Guide here: http://reprap.org/wiki/PID_Tuning            *
- * Select PID or bang-bang with PIDTEMPBED.                            *
- * If bang-bang, BED_LIMIT_SWITCHING will enable hysteresis            *
- *                                                                     *
- ***********************************************************************/
-// Uncomment this to enable PID on the bed. It uses the same frequency PWM as the extruder.
-// If your PID_dT is the default, and correct for your hardware/configuration, that means 7.689Hz,
-// which is fine for driving a square wave into a resistive load and does not significantly impact you FET heating.
-// This also works fine on a Fotek SSR-10DA Solid State Relay into a 250W heater.
-// If your configuration is significantly different than this and you don't understand the issues involved, you probably
-// shouldn't use bed PID until someone else verifies your hardware works.
-// If this is enabled, find your own PID constants below.
-//#define PIDTEMPBED
-
-//#define BED_LIMIT_SWITCHING
-#define BED_HYSTERESIS 2 //only disable heating if T>target+BED_HYSTERESIS and enable heating if T>target-BED_HYSTERESIS (works only if BED_LIMIT_SWITCHING is enabled)
-#define BED_CHECK_INTERVAL 5000 //ms between checks in bang-bang control
-
-// This sets the max power delivered to the bed.
-// all forms of bed control obey this (PID, bang-bang, bang-bang with hysteresis)
-// setting this to anything other than 255 enables a form of PWM to the bed,
-// so you shouldn't use it unless you are OK with PWM on your bed.  (see the comment on enabling PIDTEMPBED)
-#define MAX_BED_POWER 255 // limits duty cycle to bed; 255=full current
-
-#define PID_BED_INTEGRAL_DRIVE_MAX MAX_BED_POWER // limit for the integral term
-// 120v 250W silicone heater into 4mm borosilicate (MendelMax 1.5+)
-// from FOPDT model - kp=.39 Tp=405 Tdead=66, Tc set to 79.2, aggressive factor of .15 (vs .1, 1, 10)
-#define DEFAULT_bedKp 10.00
-#define DEFAULT_bedKi .023
-#define DEFAULT_bedKd 305.4
-
-// FIND YOUR OWN: "M303 E-1 C8 S90" to run autotune on the bed at 90 degreesC for 8 cycles.
-
-//#define PID_BED_DEBUG // Sends debug data to the serial port.
-/***********************************************************************/
-
-
-/********************************************************************************
- ************************ Inverted Heater or Bed PINS ***************************
- ********************************************************************************
- *                                                                              *
- * For inverted logical Heater or Bed pins                                      *
- *                                                                              *
- ********************************************************************************/
-//#define INVERTED_HEATER_PINS
-//#define INVERTED_BED_PINS
-
-
-/********************************************************************************
- ************************ Thermal runaway protection ****************************
- ********************************************************************************
- *                                                                              *
- * This protects your printer from damage and fire if a thermistor              *
- * falls out or temperature sensors fail in any way.                            *
- *                                                                              *
- * The issue: If a thermistor falls out or a temperature sensor fails,          *
- * Marlin can no longer sense the actual temperature. Since a                   *
- * disconnected thermistor reads as a low temperature, the firmware             *
- * will keep the heater on.                                                     *
- *                                                                              *
- * The solution: Once the temperature reaches the target, start                 *
- * observing. If the temperature stays too far below the                        *
- * target(hysteresis) for too long, the firmware will halt                      *
- * as a safety precaution.                                                      *
- *                                                                              *
- * Uncomment THERMAL_PROTECTION_HOTENDS to enable this feature for all hotends. *
- * Uncomment THERMAL_PROTECTION_BED to enable this feature for the heated bed.  *
- *                                                                              *
- ********************************************************************************/
-//#define THERMAL_PROTECTION_HOTENDS
-
-#define THERMAL_PROTECTION_PERIOD    40     // Seconds
-#define THERMAL_PROTECTION_HYSTERESIS 4     // Degrees Celsius
-
-/**
- * Whenever an M104 or M109 increases the target temperature the firmware will wait for the
- * WATCH TEMP PERIOD to expire, and if the temperature hasn't increased by WATCH TEMP INCREASE
- * degrees, the machine is halted, requiring a hard reset. This test restarts with any M104/M109,
- * but only if the current temperature is far enough below the target for a reliable test.
- *
- * If you get false positives for "Heating failed" increase WATCH TEMP PERIOD and/or decrease WATCH TEMP INCREASE
- * WATCH TEMP INCREASE should not be below 2.
- */
-#define WATCH_TEMP_PERIOD  20               // Seconds
-#define WATCH_TEMP_INCREASE 2               // Degrees Celsius
-
-/**
- * Thermal Protection parameters for the bed are just as above for hotends.
- */
-//#define THERMAL_PROTECTION_BED
-
-#define THERMAL_PROTECTION_BED_PERIOD    20 // Seconds
-#define THERMAL_PROTECTION_BED_HYSTERESIS 2 // Degrees Celsius
-
-/**
- * Whenever an M140 or M190 increases the target temperature the firmware will wait for the
- * WATCH BED TEMP PERIOD to expire, and if the temperature hasn't increased by WATCH BED TEMP INCREASE
- * degrees, the machine is halted, requiring a hard reset. This test restarts with any M140/M190,
- * but only if the current temperature is far enough below the target for a reliable test.
- *
- * If you get too many "Heating failed" errors, increase WATCH BED TEMP PERIOD and/or decrease
- * WATCH BED TEMP INCREASE. (WATCH BED TEMP INCREASE should not be below 2.)
- */
-#define WATCH_BED_TEMP_PERIOD  60           // Seconds
-#define WATCH_BED_TEMP_INCREASE 2           // Degrees Celsius
-/********************************************************************************/
-
 
 /**************************************************************************
  **************************** Fan configuration ***************************
@@ -352,22 +124,6 @@
 #define EXTRUDER_AUTO_FAN_SPEED       255  // 255 = full speed
 #define EXTRUDER_AUTO_FAN_MIN_SPEED     0
 /**************************************************************************/
-
-
-/**************************************************************************
- **************************** MEDIAN COUNT ********************************
- **************************************************************************
- *                                                                        *
- * For Smoother temperature                                               *
- * ONLY FOR DUE                                                           *
- **************************************************************************/
-#define MEDIAN_COUNT 10
-/**************************************************************************/
-
-
-//===========================================================================
-//============================= EXTRUDER FEATURES ===========================
-//===========================================================================
 
 
 /***********************************************************************
@@ -1090,6 +846,26 @@
 /**************************************************************************/
 
 
+/**************************************************************************
+ ****************************** Flow sensor *******************************
+ **************************************************************************
+ *                                                                        *
+ * Flow sensors for water circulators, usefull in case of coolers using   *
+ * water or other liquid as heat vector                                   *
+ *                                                                        *
+ * Uncomment FLOWMETER SENSOR to enable this feature                      *
+ * You also need to set FLOWMETER PIN in Configurations_pins.h            *
+ *                                                                        *
+ **************************************************************************/
+//#define FLOWMETER_SENSOR
+
+#define FLOWMETER_MAXFLOW  6.0      // Liters per minute max
+#define FLOWMETER_MAXFREQ  55       // frequency of pulses at max flow
+
+// uncomment this to kill print job under the min flow rate, in liters/minute
+//#define MINFLOW_PROTECTION 4      
+/**************************************************************************/
+
 
 //===========================================================================
 //============================= ADDON FEATURES ==============================
@@ -1352,8 +1128,7 @@
  **************************************************************************
  *                                                                        *
  * Support for laser beam                                                 *
- * Check also LASER_PWR_PIN and LASER_TTL_PIN in Configuration_pins.h     *
- * Check also LASER_PWR_PIN and LASER_TTL_PIN in Configuration_pins.h     *
+ * Check also Configuration_Laser.h                                       *
  *                                                                        *
  **************************************************************************/
 //#define LASERBEAM

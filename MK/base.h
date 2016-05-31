@@ -35,8 +35,17 @@
   #include "Configuration_Scara.h"
 #endif
 
+#include "Configuration_Temperature.h"
 #include "Configuration_Feature.h"
 #include "Configuration_Overall.h"
+
+#if ENABLED(LASERBEAM)
+  #include "Configuration_Laser.h"
+  #if ENABLED(LASER_RASTER)
+    #include "module/laser/base64/base64.h"
+  #endif
+  #include "module/laser/laser.h"
+#endif
 
 #include "module/conditionals.h"
 #include "module/sanitycheck.h"
@@ -56,6 +65,7 @@
 #include "module/motion/qr_solve.h"
 #include "module/motion/cartesian_correction.h"
 #include "module/temperature/temperature.h"
+#include "module/sensor/flowmeter.h"
 #include "module/temperature/thermistortables.h"
 #include "module/lcd/ultralcd.h"
 #include "module/lcd/buzzer.h"

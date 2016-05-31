@@ -64,18 +64,22 @@
 #define Z_MAX_PIN       ORIG_Z_MAX_PIN
 
 // HEATER pin
-#define HEATER_0_PIN    ORIG_HEATER_0_PIN
-#define HEATER_1_PIN    ORIG_HEATER_1_PIN
-#define HEATER_2_PIN    ORIG_HEATER_2_PIN
-#define HEATER_3_PIN    ORIG_HEATER_3_PIN
-#define HEATER_BED_PIN  ORIG_HEATER_BED_PIN
+#define HEATER_0_PIN        ORIG_HEATER_0_PIN
+#define HEATER_1_PIN        ORIG_HEATER_1_PIN
+#define HEATER_2_PIN        ORIG_HEATER_2_PIN
+#define HEATER_3_PIN        ORIG_HEATER_3_PIN
+#define HEATER_BED_PIN      ORIG_HEATER_BED_PIN
+#define HEATER_CHAMBER_PIN  -1
+#define COOLER_PIN          -1
 
 // TEMP pin
-#define TEMP_0_PIN      ORIG_TEMP_0_PIN
-#define TEMP_1_PIN      ORIG_TEMP_1_PIN
-#define TEMP_2_PIN      ORIG_TEMP_2_PIN
-#define TEMP_3_PIN      ORIG_TEMP_3_PIN
-#define TEMP_BED_PIN    ORIG_TEMP_BED_PIN
+#define TEMP_0_PIN        ORIG_TEMP_0_PIN
+#define TEMP_1_PIN        ORIG_TEMP_1_PIN
+#define TEMP_2_PIN        ORIG_TEMP_2_PIN
+#define TEMP_3_PIN        ORIG_TEMP_3_PIN
+#define TEMP_BED_PIN      ORIG_TEMP_BED_PIN
+#define TEMP_CHAMBER_PIN  -1
+#define TEMP_COOLER_PIN   -1
 
 // FAN pin
 #define FAN_PIN         ORIG_FAN_PIN
@@ -104,8 +108,12 @@
 #endif
 
 #if ENABLED(LASERBEAM)
-  #define LASER_PWR_PIN -1
-  #define LASER_TTL_PIN -1
+  #define LASER_PWR_PIN                   -1
+  #define LASER_TTL_PIN                   -1
+  #if ENABLED(LASER_PERIPHERALS)
+    #define LASER_PERIPHERALS_PIN         -1
+    #define LASER_PERIPHERALS_STATUS_PIN  -1
+  #endif
 #endif
 
 #if ENABLED(FILAMENT_RUNOUT_SENSOR)
@@ -114,6 +122,10 @@
 
 #if ENABLED(FILAMENT_SENSOR)
   #define FILWIDTH_PIN -1
+#endif
+
+#if ENABLED(FLOWMETER_SENSOR)
+  #define FLOWMETER_PIN -1
 #endif
 
 #if ENABLED(POWER_CONSUMPTION)
