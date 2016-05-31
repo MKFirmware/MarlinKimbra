@@ -82,12 +82,18 @@
   #if DISABLED(TEMP_SENSOR_BED)
     #error DEPENDENCY ERROR: Missing setting TEMP_SENSOR_BED
   #endif
-  #if (THERMISTORHEATER_0 == 998) || (THERMISTORHEATER_1 == 998) || (THERMISTORHEATER_2 == 998) || (THERMISTORHEATER_3 == 998) || (THERMISTORBED == 998) //User EXIST table
+  #if DISABLED(TEMP_SENSOR_CHAMBER)
+    #error DEPENDENCY_ERROR: Missing setting TEMP_SENSOR_CHAMBER
+  #endif
+  #if DISABLED(TEMP_SENSOR_COOLER)
+    #error DEPENDENCY_ERROR: Missing setting TEMP_SENSOR_COOLER
+  #endif
+  #if (THERMISTORHEATER_0 == 998) || (THERMISTORHEATER_1 == 998) || (THERMISTORHEATER_2 == 998) || (THERMISTORHEATER_3 == 998) || (THERMISTORBED == 998) || (THERMISTORCHAMBER == 998) || (THERMISTORCOOLER == 998) // User EXIST table
     #if DISABLED(DUMMY_THERMISTOR_998_VALUE)
       #define DUMMY_THERMISTOR_998_VALUE 25
     #endif
   #endif
-  #if (THERMISTORHEATER_0 == 999) || (THERMISTORHEATER_1 == 999) || (THERMISTORHEATER_2 == 999) || (THERMISTORHEATER_3 == 999) || (THERMISTORBED == 999) //User EXIST table
+  #if (THERMISTORHEATER_0 == 999) || (THERMISTORHEATER_1 == 999) || (THERMISTORHEATER_2 == 999) || (THERMISTORHEATER_3 == 999) || (THERMISTORBED == 999) || (THERMISTORCHAMBER == 999) || (THERMISTORCOOLER == 999)// User EXIST table
     #if DISABLED(DUMMY_THERMISTOR_999_VALUE)
       #define DUMMY_THERMISTOR_999_VALUE 25
     #endif
@@ -145,6 +151,28 @@
       #error DEPENDENCY ERROR: Missing setting BED_MINTEMP
     #endif
   #endif
+  #if TEMP_SENSOR_CHAMBER != 0
+    #if DISABLED(CHAMBER_MAXTEMP)
+      #error DEPENDENCY ERROR: Missing setting CHAMBER_MAXTEMP
+    #endif
+    #if DISABLED(CHAMBER_MINTEMP)
+      #error DEPENDENCY ERROR: Missing setting CHAMBER_MINTEMP
+    #endif
+    #if HASNT(HEATER_CHAMBER)
+      #error DEPENDENCY ERROR: Cannot enable TEMP_SENSOR_CHAMBER and not HEATER_CHAMBER_PIN
+    #endif
+  #endif
+  #if TEMP_SENSOR_COOLER != 0
+    #if DISABLED(COOLER_MAXTEMP)
+      #error DEPENDENCY ERROR: Missing setting COOLER_MAXTEMP
+    #endif
+    #if DISABLED(COOLER_MINTEMP)
+      #error DEPENDENCY ERROR: Missing setting COOLER_MINTEMP
+    #endif
+    #if HASNT(COOLER)
+      #error DEPENDENCY ERROR: Cannot enable TEMP_SENSOR_COOLER and not COOLER_PIN
+    #endif
+  #endif
   #if DISABLED(PLA_PREHEAT_HOTEND_TEMP)
     #error DEPENDENCY ERROR: Missing setting PLA_PREHEAT_HOTEND_TEMP
   #endif
@@ -187,7 +215,13 @@
   #if DISABLED(MAX_BED_POWER)
     #error DEPENDENCY ERROR: Missing setting MAX_BED_POWER
   #endif
-  #if ENABLED(PIDTEMP) || ENABLED(PIDTEMPBED)
+  #if DISABLED(MAX_CHAMBER_POWER)
+    #error DEPENDENCY ERROR: Missing setting MAX_CHAMBER_POWER
+  #endif
+  #if DISABLED(MAX_COOLER_POWER)
+    #error DEPENDENCY ERROR: Missing setting MAX_COOLER_POWER
+  #endif
+  #if ENABLED(PIDTEMP) || ENABLED(PIDTEMPBED) || ENABLED(PIDTEMPCHAMBER) || ENABLED(PIDTEMPCOOLER)
     #if DISABLED(MAX_OVERSHOOT_PID_AUTOTUNE)
       #error DEPENDENCY ERROR: Missing setting MAX_OVERSHOOT_PID_AUTOTUNE
     #endif
@@ -223,12 +257,57 @@
       #error DEPENDENCY ERROR: Missing setting DEFAULT_bedKd
     #endif
   #endif
+  #if ENABLED(PIDTEMPCHAMBER)
+    #if DISABLED(PID_CHAMBER_INTEGRAL_DRIVE_MAX)
+       #error DEPENDENCY ERROR: Missing setting PID_CHAMBER_INTEGRAL_DRIVE_MAX
+    #endif
+    #if DISABLED(DEFAULT_chamberKp)
+      #error DEPENDENCY ERROR: Missing setting DEFAULT_chamberKp
+    #endif
+    #if DISABLED(DEFAULT_chamberKi)
+      #error DEPENDENCY ERROR: Missing setting DEFAULT_chamberKi
+    #endif
+    #if DISABLED(DEFAULT_chamberKd)
+      #error DEPENDENCY ERROR: Missing setting DEFAULT_chamberKd
+    #endif
+
+  #endif
+  #if ENABLED(PIDTEMPCOOLER)
+    #if DISABLED(PID_COOLER_INTEGRAL_DRIVE_MAX)
+       #error DEPENDENCY ERROR: Missing setting PID_COOLER_INTEGRAL_DRIVE_MAX
+    #endif
+    #if DISABLED(DEFAULT_coolerKp)
+      #error DEPENDENCY ERROR: Missing setting DEFAULT_coolerKp
+    #endif
+    #if DISABLED(DEFAULT_coolerKi)
+      #error DEPENDENCY ERROR: Missing setting DEFAULT_coolerKi
+    #endif
+    #if DISABLED(DEFAULT_coolerKd)
+      #error DEPENDENCY ERROR: Missing setting DEFAULT_coolerKd
+    #endif
+  #endif
   #if ENABLED(BED_LIMIT_SWITCHING)
     #if DISABLED(BED_HYSTERESIS)
       #error DEPENDENCY ERROR: Missing setting BED_HYSTERESIS
     #endif
     #if DISABLED(BED_CHECK_INTERVAL)
       #error DEPENDENCY ERROR: Missing setting BED_CHECK_INTERVAL
+    #endif
+  #endif
+  #if ENABLED(CHAMBER_LIMIT_SWITCHING)
+    #if DISABLED(CHAMBER_HYSTERESIS)
+      #error DEPENDENCY ERROR: Missing setting CHAMBER_HYSTERESIS
+    #endif
+    #if DISABLED(CHAMBER_CHECK_INTERVAL)
+      #error DEPENDENCY ERROR: Missing setting CHAMBER_CHECK_INTERVAL
+    #endif
+  #endif
+  #if ENABLED(COOLER_LIMIT_SWITCHING)
+    #if DISABLED(COOLER_HYSTERESIS)
+      #error DEPENDENCY ERROR: Missing setting COOLER_HYSTERESIS
+    #endif
+    #if DISABLED(COOLER_CHECK_INTERVAL)
+      #error DEPENDENCY ERROR: Missing setting COOLER_CHECK_INTERVAL
     #endif
   #endif
   #if ENABLED(THERMAL_PROTECTION_HOTENDS)
@@ -253,6 +332,23 @@
       #error DEPENDENCY ERROR: Missing setting THERMAL_PROTECTION_BED_HYSTERESIS
     #endif
   #endif
+  #if ENABLED(THERMAL_PROTECTION_COOLER)
+    #if DISANLED(THERMAL_PROTECTION_COOLER_PERIOD)
+      #error DEPENDENCY ERROR: Missing setting THERMAL_PROTECTION_COOLER_PERIOD
+    #endif
+    #if DISABLED(THERMAL_PROTECTION_COOLER_HYSTERESIS)
+      #error DEPENDENCY ERROR: Missing setting THERMAL_PROTECTION_COOLER_HYSTERESIS
+    #endif
+    #if ENABLED(THERMAL_PROTECTION_COOLER_WATCHDOG)
+       #if DISABLED(WATCH_TEMP_COOLER_PERIOD)
+         #error DEPENDENCY ERROR: Missing setting WATCH_TEMP_COOLER_PERIOD
+       #endif
+       #if DISABLED(WATCH_TEMP_COOLER_DECREASE)
+         #error DEPENDENCY ERROR: Missing setting WATCH_TEMP_COOLER_DECREASE
+       #endif
+    #endif
+  #endif
+
 
   // Fan
   #if DISABLED(SOFT_PWM_SCALE)
@@ -1762,8 +1858,26 @@
     #error DEPENDENCY ERROR: You must set EXTRUDERS = 2 for DONDOLO
   #endif
 
-  #if ENABLED(LASERBEAM) && (!PIN_EXISTS(LASER_PWR) ||  !PIN_EXISTS(LASER_TTL)) 
-    #error DEPENDENCY ERROR: You have to set LASER_PWR_PIN and LASER_TTL_PIN to a valid pin if you enable LASERBEAM
+  #if ENABLED(LASERBEAM) 
+    #if (!ENABLED(LASER_REMAP_INTENSITY) && ENABLED(LASER_RASTER))
+      #error DEPENDENCY ERROR: You have to set LASER_REMAP_INTENSITY with LASER_RASTER enabled
+    #endif
+    #if (!ENABLED(LASER_CONTROL) || ((LASER_CONTROL != 1) && (LASER_CONTROL != 2)))
+       #error DEPENDENCY ERROR: You have to set LASER_CONTROL to 1 or 2
+    #else
+      #if(LASER_CONTROL == 1)
+        #if( !PIN_EXISTS(LASER_PWR))
+          #error DEPENDENCY ERROR: You have to set LASER_PWR_PIN
+        #endif
+      #else
+        #if( !PIN_EXISTS(LASER_PWR) || !PIN_EXISTS(LASER_TTL))
+          #error DEPENDENCY ERROR: You have to set LASER_PWR_PIN and LASER_TTL_PIN to a valid pin if you enable LASER
+        #endif
+      #endif
+    #endif
+    #if DISABLED(LASER_HAS_FOCUS)
+      #error DEPENDENCY ERROR: Missing LASER_HAS_FOCUS setting
+    #endif
   #endif
 
   #if ENABLED(FILAMENT_RUNOUT_SENSOR) && !PIN_EXISTS(FILRUNOUT)
@@ -1772,6 +1886,10 @@
 
   #if ENABLED(FILAMENT_SENSOR) && !PIN_EXISTS(FILWIDTH)
     #error DEPENDENCY ERROR: You have to set FILWIDTH_PIN to a valid pin if you enable FILAMENT_SENSOR
+  #endif
+
+  #if ENABLED(FILAMENT_SENSOR) && !PIN_EXISTS(FLOWMETER)
+    #error DEPENDENCY ERROR: You have to set FLOWMETER_PIN to a valid pin if you enable FLOWMETER_SENSOR
   #endif
 
   #if ENABLED(POWER_CONSUMPTION) && !PIN_EXISTS(POWER_CONSUMPTION)

@@ -344,6 +344,26 @@
   #define _E5_PINS
 #endif
 
+#ifndef TEMP_COOLER_PIN
+  #define TEMP_COOLER_PIN -1
+#endif
+
+#ifndef COOLER_PIN
+  #define COOLER_PIN -1
+#endif
+
+#ifndef LASER_PWR_PIN
+  #define LASER_PWR_PIN -1
+#endif
+
+#ifndef LASER_TTL_PIN
+  #define LASER_TTL_PIN -1
+#endif
+
+#ifndef FLOWMETER_PIN
+  #define FLOWMETER_PIN -1
+#endif
+
 #define SENSITIVE_PINS { 0, 1, \
                         X_STEP_PIN, X_DIR_PIN, X_ENABLE_PIN, X_MIN_PIN, X_MAX_PIN, \
                         Y_STEP_PIN, Y_DIR_PIN, Y_ENABLE_PIN, Y_MIN_PIN, Y_MAX_PIN, \
@@ -351,7 +371,10 @@
                         PS_ON_PIN, HEATER_BED_PIN, FAN_PIN, \
                         _H0_PINS _H1_PINS _H2_PINS _H3_PINS \
                         _E0_PINS _E1_PINS _E2_PINS _E3_PINS _E4_PINS _E5_PINS \
-                        analogInputToDigitalPin(TEMP_BED_PIN) \
+                        analogInputToDigitalPin(TEMP_BED_PIN), \
+                        analogInputToDigitalPin(TEMP_COOLER_PIN), \
+                        COOLER_PIN, LASER_PWR_PIN, LASER_TTL_PIN, \
+                        FLOWMETER_PIN \
                        }
 
 #endif //__PINS_H

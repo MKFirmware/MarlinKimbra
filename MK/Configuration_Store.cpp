@@ -95,6 +95,10 @@
  *
  * PIDTEMPBED:
  *  M304      PID         bedKp, bedKi, bedKd
+ * PIDTEMPCHAMBER
+ *  M305      PID         chamberKp, chamberKi, chamberKd
+ * PIDTEMPCOOLER
+ *  M306      PID         coolerKp, coolerKi, coolerKd
  *
  * DOGLCD:
  *  M250  C               lcd_contrast
@@ -230,6 +234,18 @@ void Config_StoreSettings() {
     EEPROM_WRITE_VAR(i, bedKp);
     EEPROM_WRITE_VAR(i, bedKi);
     EEPROM_WRITE_VAR(i, bedKd);
+  #endif
+
+  #if ENABLED(PIDTEMPCHAMBER)
+    EEPROM_WRITE_VAR(i, chamberKp);
+    EEPROM_WRITE_VAR(i, chamberKi);
+    EEPROM_WRITE_VAR(i, chamberKd);
+  #endif
+
+  #if ENABLED(PIDTEMPCOOLER)
+    EEPROM_WRITE_VAR(i, coolerKp);
+    EEPROM_WRITE_VAR(i, coolerKi);
+    EEPROM_WRITE_VAR(i, coolerKd);
   #endif
 
   #if HASNT(LCD_CONTRAST)
@@ -379,6 +395,18 @@ void Config_RetrieveSettings() {
       EEPROM_READ_VAR(i, bedKp);
       EEPROM_READ_VAR(i, bedKi);
       EEPROM_READ_VAR(i, bedKd);
+    #endif
+
+    #if ENABLED(PIDTEMPCHAMBER)
+      EEPROM_READ_VAR(i, chamberKp);
+      EEPROM_READ_VAR(i, chamberKi);
+      EEPROM_READ_VAR(i, chamberKd);
+    #endif
+
+    #if ENABLED(PIDTEMPCOOLER)
+      EEPROM_READ_VAR(i, coolerKp);
+      EEPROM_READ_VAR(i, coolerKi);
+      EEPROM_READ_VAR(i, coolerKd);
     #endif
 
     #if HASNT(LCD_CONTRAST)
@@ -573,6 +601,18 @@ void Config_ResetDefault() {
     bedKp = DEFAULT_bedKp;
     bedKi = scalePID_i(DEFAULT_bedKi);
     bedKd = scalePID_d(DEFAULT_bedKd);
+  #endif
+
+  #if ENABLED(PIDTEMPCHAMBER)
+    chamberKp = DEFAULT_chamberKp;
+    chamberKi = scalePID_i(DEFAULT_chamberKi);
+    chamberKd = scalePID_d(DEFAULT_chamberKd);
+  #endif
+
+  #if ENABLED(PIDTEMPCOOLER)
+    coolerKp = DEFAULT_coolerKp;
+    coolerKi = scalePID_i(DEFAULT_coolerKi);
+    coolerKd = scalePID_d(DEFAULT_coolerKd);
   #endif
 
   #if ENABLED(FWRETRACT)
@@ -777,7 +817,7 @@ void Config_ResetDefault() {
       ECHO_EM(" (Material GUM)");
     #endif // ULTIPANEL
 
-    #if ENABLED(PIDTEMP) || ENABLED(PIDTEMPBED)
+    #if ENABLED(PIDTEMP) || ENABLED(PIDTEMPBED) || ENABLED(PIDTEMPCHAMBER) || ENABLED(PIDTEMPCOOLER)
       if (!forReplay) {
         ECHO_LM(CFG, "PID settings:");
       }
@@ -797,10 +837,21 @@ void Config_ResetDefault() {
         #endif
       #endif
       #if ENABLED(PIDTEMPBED)
-        ECHO_SMV(CFG, "  M304 P", bedKp); // for compatibility with hosts, only echos values for E0
+        ECHO_SMV(CFG, "  M304 P", bedKp);
         ECHO_MV(" I", unscalePID_i(bedKi));
         ECHO_EMV(" D", unscalePID_d(bedKd));
       #endif
+      #if ENABLED(PIDTEMPCHAMBER)
+        ECHO_SMV(CFG, "  M305 P", chamberKp);
+        ECHO_MV(" I", unscalePID_i(chamberKi));
+        ECHO_EMV(" D", unscalePID_d(chamberKd));
+      #endif
+      #if ENABLED(PIDTEMPCOOLER)
+        ECHO_SMV(CFG, "  M306 P", coolerKp);
+        ECHO_MV(" I", unscalePID_i(coolerKi));
+        ECHO_EMV(" D", unscalePID_d(coolerKd));
+      #endif
+
     #endif
 
     #if ENABLED(FWRETRACT)

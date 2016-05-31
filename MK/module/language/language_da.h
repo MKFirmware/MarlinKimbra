@@ -181,6 +181,8 @@
 #define MSG_ERR_MINTEMP                     "MINTEMP ERROR"
 #define MSG_ERR_MAXTEMP_BED                 "MAXTEMP BED ERROR"
 #define MSG_ERR_MINTEMP_BED                 "MINTEMP BED ERROR"
+#define MSG_ERR_MAXTEMP_COOLER              "MAXTEMP COOLER ERROR"
+#define MSG_ERR_MINTEMP_COOLER              "MINTEMP COOLER ERROR"
 #define MSG_END_DAY                         "days"
 #define MSG_END_HOUR                        "timer"
 #define MSG_END_MINUTE                      "minutter"
@@ -217,6 +219,9 @@
 #define MSG_HEATING_COMPLETE                "Opvarmet"
 #define MSG_BED_HEATING                     "Opvarmer plade"
 #define MSG_BED_DONE                        "Plade opvarmet"
+#define MSG_COOLER_COOLING                  "Cooling..."
+#define MSG_COOLER_DONE                     "Cooling done."
+
 
 // Extra
 #define MSG_LASER                           "Laser Preset"

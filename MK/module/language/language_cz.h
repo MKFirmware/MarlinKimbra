@@ -183,6 +183,8 @@
 #define MSG_ERR_MINTEMP                     "Chyba: NIZKA TEPLOTA"
 #define MSG_ERR_MAXTEMP_BED                 "Chyba: VYSOKA TEPLOTA PODL."
 #define MSG_ERR_MINTEMP_BED                 "Chyba: NIZKA TEPLOTA PODL."
+#define MSG_ERR_MAXTEMP_COOLER              "MAXTEMP COOLER ERROR"
+#define MSG_ERR_MINTEMP_COOLER              "MINTEMP COOLER ERROR"
 #define MSG_END_DAY                         "days"
 #define MSG_END_HOUR                        "hod"
 #define MSG_END_MINUTE                      "min"
@@ -219,6 +221,9 @@
 #define MSG_HEATING_COMPLETE                "Heating done."
 #define MSG_BED_HEATING                     "Bed Heating."
 #define MSG_BED_DONE                        "Bed done."
+
+#define MSG_COOLER_COOLING                  "Cooling..."
+#define MSG_COOLER_DONE                     "Cooling done."
 
 // Extra
 #define MSG_LASER                           "Laser Preset"

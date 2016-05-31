@@ -417,9 +417,7 @@ void check_axes_activity() {
     unsigned char tail_valve_pressure = ValvePressure,
                   tail_e_to_p_pressure = EtoPPressure;
   #endif
-  #if ENABLED(LASERBEAM)
-    unsigned char tail_laser_ttl_modulation = laser_ttl_modulation;
-  #endif
+
   block_t* block;
 
   if (blocks_queued()) {
@@ -429,9 +427,6 @@ void check_axes_activity() {
       block = &block_buffer[block_index];
       tail_valve_pressure = block->valve_pressure;
       tail_e_to_p_pressure = block->e_to_p_pressure;
-    #endif
-    #if ENABLED(LASERBEAM)
-      tail_laser_ttl_modulation = block_buffer[block_index].laser_ttlmodulation;
     #endif
 
     while (block_index != block_buffer_head) {
@@ -493,10 +488,6 @@ void check_axes_activity() {
     #endif
   #endif
 
-  // add Laser TTL Modulation(PWM) Control
-  #if ENABLED(LASERBEAM)
-    analogWrite(LASER_TTL_PIN, tail_laser_ttl_modulation);
-  #endif
 }
 
 float junction_deviation = 0.1;
@@ -629,8 +620,10 @@ float junction_deviation = 0.1;
   block->steps[E_AXIS] /= 100;
   block->step_event_count = max(block->steps[X_AXIS], max(block->steps[Y_AXIS], max(block->steps[Z_AXIS], block->steps[E_AXIS])));
 
-  // Bail if this is a zero-length block
-  if (block->step_event_count <= DROP_SEGMENTS) return;
+  #if DISABLED(LASERBEAM)
+    // Bail if this is a zero-length block
+    if (block->step_event_count <= DROP_SEGMENTS) return;
+  #endif
 
   block->fan_speed = fanSpeed;
 
@@ -643,11 +636,6 @@ float junction_deviation = 0.1;
   #if ENABLED(COLOR_MIXING_EXTRUDER)
     for (uint8_t i = 0; i < DRIVER_EXTRUDERS; i++)
       block->mix_event_count[i] = block->steps[E_AXIS] * mixing_factor[i];
-  #endif
-
-  // Add update block variables for LASER BEAM control 
-  #if ENABLED(LASERBEAM)
-    block->laser_ttlmodulation = laser_ttl_modulation;
   #endif
 
   // Compute direction bits for this block 
@@ -879,6 +867,51 @@ float junction_deviation = 0.1;
       #endif
     );
   }
+
+  #if ENABLED(LASERBEAM)
+    block->laser_intensity = laser.intensity;
+    block->laser_duration = laser.duration;
+    block->laser_status = laser.status;
+    block->laser_mode = laser.mode;
+    // When operating in PULSED or RASTER modes, laser pulsing must operate in sync with movement.
+    // Calculate steps between laser firings (steps_l) and consider that when determining largest
+    // interval between steps for X, Y, Z, E, L to feed to the motion control code.
+    if (laser.mode == RASTER || laser.mode == PULSED) {
+      #if ENABLED(LASER_PULSE_METHOD)
+        // Optimizing. Move calculations here rather than in stepper isr
+        static const float Factor = F_CPU/(LASER_PWM*2*100.0*255.0); 
+        block->laser_raster_intensity_factor = laser.intensity * Factor;
+      #endif
+      block->steps_l = (unsigned long)labs(block->millimeters*laser.ppm);
+      if (laser.mode == RASTER) {
+        for (int i = 0; i < LASER_MAX_RASTER_LINE; i++) {
+          #if (!ENABLED(LASER_PULSE_METHOD))
+            float OldRange, NewRange, NewValue;
+            OldRange = (255.0 - 0.0);
+            NewRange = (laser.rasterlaserpower - LASER_REMAP_INTENSITY); 
+            NewValue = (float)(((((float)laser.raster_data[i] - 0) * NewRange) / OldRange) + LASER_REMAP_INTENSITY);
+
+            //If less than 7%, turn off the laser tube.
+            if(NewValue == LASER_REMAP_INTENSITY)
+              NewValue = 0;
+
+            block->laser_raster_data[i] = NewValue;
+          #else
+            block->laser_raster_data[i] = laser.raster_data[i];
+          #endif
+        }
+      }
+    }
+    else
+      block->steps_l = 0;
+
+    block->step_event_count = max(block->steps[X_AXIS], max(block->steps[Y_AXIS], max(block->steps[Z_AXIS], max(block->steps[E_AXIS], block->steps_l))));
+
+    if (laser.diagnostics && block->laser_status == LASER_ON)
+      ECHO_LM(INFO, "Laser firing enabled");
+
+  #endif // LASERBEAM
+
   float inverse_millimeters = 1.0 / block->millimeters;  // Inverse millimeters to remove multiple divides
 
   // Calculate speed in mm/second for each axis. No divide by zero due to previous checks.

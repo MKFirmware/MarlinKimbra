@@ -7,9 +7,10 @@
 *  G2  - CW ARC
 *  G3  - CCW ARC
 *  G4  - Dwell S[seconds] or P[milliseconds], delay in Second or Millisecond
+*  G7  - Laser raster base64
 *  G10 - retract filament according to settings of M207
 *  G11 - retract recover filament according to settings of M208
-*  G28 - X0 Y0 Z0 Home all Axis. G28 M for bed manual setting with LCD.
+*  G28 - X Y Z Home all Axis. M for bed manual setting with LCD. B return to back point
 *  G29 - Detailed Z-Probe, probes the bed at 3 points or grid.  You must be at the home position for this to work correctly.
    G29 Fyyy Lxxx Rxxx Byyy for customer grid.
 *  G30 - Single Z Probe, probes bed at current XY location. Bed Probe and Delta geometry Autocalibration G30 A
@@ -45,7 +46,8 @@
 *  M32  - Make directory
 *  M35  - Upload Firmware to Nextion from SD
 *  M42  - Change pin status via gcode Use M42 Px Sy to set pin x to value y, when omitting Px the onboard led will be used.
-*  M49  - Z probe repetability test
+*  M48  - Measure Z_Probe repeatability. M48 [P # of points] [X position] [Y position] [V_erboseness #] [E_ngage Probe] [L # of legs of travel]
+*  M70  - Power consumption sensor calibration
 *  M80  - Turn on Power Supply
 *  M81  - Turn off Power, including Power Supply, if possible
 *  M82  - Set E codes absolute (default)
@@ -58,26 +60,29 @@
 *  M98  - Print Hysteresis value
 *  M99  - Set Hysteresis parameter M99 X<in mm> Y<in mm> Z<in mm> E<in mm>
 *  M100 - Watch Free Memory (For Debugging Only)
-*  M104 - Set extruder target temp
+*  M104 - Set hotend target temp
 *  M105 - Read current temp
 *  M106 - Fan on
 *  M107 - Fan off
-*  M109 - S[xxx] Wait for extruder current temp to reach target temp. Waits only when heating
-        - R[xxx] Wait for extruder current temp to reach target temp. Waits when heating and cooling
-*  M111 - Debug Dryrun Repetier
+*  M109 - S[xxx] Wait for hotend current temp to reach target temp. Waits only when heating
+        - R[xxx] Wait for hotend current temp to reach target temp. Waits when heating and cooling
+*  M110 - Set the current line number
+*  M111 - Set debug flags with S<mask>.
 *  M112 - Emergency stop
-*  M114 - Output current position to serial port, (V)erbose for user
+*  M114 - Output current position to serial port
 *  M115 - Capabilities string
-*  M117 - display message
+*  M117 - Display a message on the controller screen
 *  M119 - Output Endstop status to serial port
-*  M120 - Disable Endstop
-*  M121 - Enable Endstop
+*  M120 - Enable endstop detection
+*  M121 - Disable endstop detection
 *  M122 - S<1=true/0=false> Enable or disable check software endstop
 *  M126 - Solenoid Air Valve Open (BariCUDA support by jmil)
 *  M127 - Solenoid Air Valve Closed (BariCUDA vent to atmospheric pressure by jmil)
 *  M128 - EtoP Open (BariCUDA EtoP = electricity to air pressure transducer by jmil)
 *  M129 - EtoP Closed (BariCUDA EtoP = electricity to air pressure transducer by jmil)
-*  M140 - Set bed target temp
+*  M140 - Set hot bed target temp
+*  M141 - Set hot chamber target temp
+*  M142 - Set cooler target temp
 *  M145 - Set the heatup state H<hotend> B<bed> F<fan speed> for S<material> (0=PLA, 1=ABS)
 *  M150 - Set BlinkM Color Output R: Red<0-255> U(!): Green<0-255> B: Blue<0-255> over i2c, G for green does not work.
 *  M163 - Set a single proportion for a mixing extruder. Requires COLOR_MIXING_EXTRUDER.
@@ -85,6 +90,10 @@
 *  M165 - Set the proportions for a mixing extruder. Use parameters ABCDHI to set the mixing factors. Requires COLOR_MIXING_EXTRUDER.
 *  M190 - S[xxx] Wait for bed current temp to reach target temp. Waits only when heating
         - R[xxx] Wait for bed current temp to reach target temp. Waits when heating and cooling
+*  M191 - Sxxx Wait for chamber current temp to reach target temp. Waits only when heating
+*         Rxxx Wait for chamber current temp to reach target temp. Waits when heating and cooling
+*  M192 - Sxxx Wait for cooler current temp to reach target temp. Waits only when heating
+*         Rxxx Wait for cooler current temp to reach target temp. Waits when heating and cooling
 *  M200 - D[millimeters]- set filament diameter and set E axis units to cubic millimeters (use S0 to set back to millimeters).
 *  M201 - Set max acceleration in units/s^2 for print moves (M201 X1000 Y1000 Z1000 E0 S1000 E1 S1000 E2 S1000 E3 S1000) in mm/sec^2
 *  M203 - Set maximum feedrate that your machine can sustain (M203 X200 Y200 Z300 E0 S1000 E1 S1000 E2 S1000 E3 S1000) in mm/sec
@@ -104,7 +113,9 @@
 *  M301 - Set PID parameters P I and D
 *  M302 - Allow cold extrudes
 *  M303 - PID relay autotune S<temperature> sets the target temperature (default target temperature = 150C). H<hotend> C<cycles> U<Apply result>
-*  M304 - Set bed PID parameters P I and D
+*  M304 - Set hot bed PID parameters P I and D
+*  M305 - Set hot chamber PID parameters P I and D
+*  M306 - Set cooler PID parameters P I and D
 *  M350 - Set microstepping mode.
 *  M351 - Toggle MS1 MS2 pins directly.
 *  M400 - Finish all moves
@@ -131,4 +142,5 @@
 *  M907 - Set digital trimpot motor current using axis codes.
 *  M908 - Control digital trimpot directly.
 *  M928 - Start SD logging (M928 filename.g) - ended by M29
+*  M997 - NPR2 Color rotate
 *  M999 - Restart after being stopped by error

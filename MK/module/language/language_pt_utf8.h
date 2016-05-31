@@ -161,12 +161,17 @@
 #define MSG_ERR_MINTEMP                     "Err: T Mínima"
 #define MSG_ERR_MAXTEMP_BED                 "Err: T Base Máxima"
 #define MSG_ERR_MINTEMP_BED                 "Err: T Base Mínima"
+#define MSG_ERR_MAXTEMP_COOLER              "MAXTEMP COOLER ERROR"
+#define MSG_ERR_MINTEMP_COOLER              "MINTEMP COOLER ERROR"
 #define MSG_END_HOUR                        "horas"
 #define MSG_END_MINUTE                      "minutos"
 #define MSG_HEATING                         "Aquecendo..."
 #define MSG_HEATING_COMPLETE                "Aquecida."
 #define MSG_BED_HEATING                     "Aquecendo base.."
 #define MSG_BED_DONE                        "Base aquecida."
+#define MSG_COOLER_COOLING                  "Cooling..."
+#define MSG_COOLER_DONE                     "Cooling done."
+
 
 #define MSG_DELTA_CALIBRATE                 "Calibração Delta"
 #define MSG_DELTA_CALIBRATE_X               "Calibrar X"

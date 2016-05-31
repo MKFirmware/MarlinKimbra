@@ -94,7 +94,6 @@
 #define SERIAL_INVALID_HOTEND                   "Invalid hotend"
 #define SERIAL_INVALID_SOLENOID                 "Invalid solenoid"
 #define SERIAL_ERR_NO_THERMISTORS               "No thermistors - no temperature"
-#define SERIAL_COUNT_X                          " Count X: "
 #define SERIAL_ERR_KILLED                       "Printer halted. kill() called!"
 #define SERIAL_ERR_STOPPED                      "Printer stopped due to errors. Fix the error and use M999 to restart. (Temperature is reset. Set it after restarting)"
 #define SERIAL_BUSY_PROCESSING                  "processing"
@@ -168,8 +167,9 @@
 #define SERIAL_PID_AUTOTUNE                     "PID Autotune"
 #define SERIAL_PID_AUTOTUNE_START               SERIAL_PID_AUTOTUNE " start"
 #define SERIAL_PID_AUTOTUNE_FAILED              SERIAL_PID_AUTOTUNE " failed!"
-#define SERIAL_PID_BAD_EXTRUDER_NUM             SERIAL_PID_AUTOTUNE_FAILED " Bad extruder number"
+#define SERIAL_PID_BAD_TEMP_CONTROLLER_NUM      SERIAL_PID_AUTOTUNE_FAILED " Bad temperature controller number"
 #define SERIAL_PID_TEMP_TOO_HIGH                SERIAL_PID_AUTOTUNE_FAILED " Temperature too high"
+#define SERIAL_PID_TEMP_TOO_LOW                 SERIAL_PID_AUTOTUNE_FAILED " Temperature too low"
 #define SERIAL_PID_TIMEOUT                      SERIAL_PID_AUTOTUNE_FAILED " timeout"
 #define SERIAL_BIAS                             " bias: "
 #define SERIAL_D                                " d: "
@@ -182,9 +182,11 @@
 #define SERIAL_KI                               " Ki: "
 #define SERIAL_KD                               " Kd: "
 #define SERIAL_T                                " T:"
+#define SERIAL_C                                " C:"
 #define SERIAL_B                                " B:"
 #define SERIAL_AT                               " @"
 #define SERIAL_BAT                              " B@:"
+#define SERIAL_CAT                              " C@:"
 #define SERIAL_W                                " W:"
 #define SERIAL_PID_AUTOTUNE_FINISHED            SERIAL_PID_AUTOTUNE " finished! Put the last Kp, Ki and Kd constants from above into Configuration.h or send command M500 for save in EEPROM the new value!"
 #define SERIAL_PID_DEBUG                        " PID_DEBUG "
@@ -196,8 +198,10 @@
 #define SERIAL_PID_DEBUG_CTERM                  " cTerm "
 #define SERIAL_INVALID_EXTRUDER_NUM             " - Invalid extruder number !"
 
-#define SERIAL_HEATER_BED                       "bed"
 #define SERIAL_STOPPED_HEATER                   ", system stopped! Heater_ID: "
+#define SERIAL_STOPPED_BED                      ", system stopped! Bed"
+#define SERIAL_STOPPED_CHAMBER                  ", system stopped! Chamber"
+#define SERIAL_STOPPED_COOLER                   ", system stopped! Cooler"
 #define SERIAL_REDUNDANCY                       "Heater switched off. Temperature difference between temp sensors is too high !"
 #define SERIAL_T_HEATING_FAILED                 "Heating failed"
 #define SERIAL_T_THERMAL_RUNAWAY                "Thermal Runaway"
@@ -227,6 +231,8 @@
 #define SERIAL_BED_LEVELLING_X                  " X: "
 #define SERIAL_BED_LEVELLING_Y                  " Y: "
 #define SERIAL_BED_LEVELLING_Z                  " Z: "
+
+#define MSG_COOLER                              "Cooler"
 
 // LCD Menu Messages
 
