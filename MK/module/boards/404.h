@@ -13,7 +13,9 @@
 #if MB(RAMPS_FD_V1)
   #define RAMPS_FD_V1
   #define INVERTED_HEATER_PINS
-  #define INVERTED_BED_PINS
+  #define INVERTED_BED_PIN
+  #define INVERTED_CHAMBER_PIN
+  #define INVERTED_COOLER_PIN
   // No EEPROM
   // Use 4k7 thermistor tables
 #else

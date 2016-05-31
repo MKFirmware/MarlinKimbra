@@ -12,11 +12,11 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 /**
@@ -38,12 +38,12 @@
  * G1  - Coordinated Movement X Y Z E, for laser move by firing
  * G2  - CW ARC
  * G3  - CCW ARC
- * G4  - Dwell S<seconds> or P<milliseconds>
+ * G4  - Dwell S[seconds] or P[milliseconds], delay in Second or Millisecond
  * G5  - Bezier curve - from http://forums.reprap.org/read.php?147,93577
- * G7  - Execute laser raster line
+ * G7  - Laser raster base64
  * G10 - retract filament according to settings of M207
  * G11 - retract recover filament according to settings of M208
- * G28 - Home one or more axes
+ * G28 - X Y Z Home all Axis. M for bed manual setting with LCD. B return to back point
  * G29 - Detailed Z-Probe, probes the bed at 3 or more points.  Will fail if you haven't homed yet.
  * G30 - Single Z Probe, probes bed at current XY location. - Bed Probe and Delta geometry Autocalibration
  * G31 - Dock sled (Z_PROBE_SLED only)
@@ -98,15 +98,15 @@
  * M98  - Print Hysteresis value
  * M99  - Set Hysteresis parameter M99 X<in mm> Y<in mm> Z<in mm> E<in mm>
  * M100 - Watch Free Memory (For Debugging Only)
- * M104 - Set extruder target temp
+ * M104 - Set hotend target temp
  * M105 - Read current temp
  * M106 - Fan on
  * M107 - Fan off
- * M109 - Sxxx Wait for extruder current temp to reach target temp. Waits only when heating
- *        Rxxx Wait for extruder current temp to reach target temp. Waits when heating and cooling
+ * M109 - Sxxx Wait for hotend current temp to reach target temp. Waits only when heating
+ *        Rxxx Wait for hotend current temp to reach target temp. Waits when heating and cooling
  *        IF AUTOTEMP is enabled, S<mintemp> B<maxtemp> F<factor>. Exit autotemp by any M109 without F
  * M110 - Set the current line number
- * M111 - Set debug flags with S<mask>. See flag bits defined in Marlin.h.
+ * M111 - Set debug flags with S<mask>.
  * M112 - Emergency stop
  * M114 - Output current position to serial port
  * M115 - Capabilities string
@@ -119,15 +119,20 @@
  * M127 - Solenoid Air Valve Closed (BariCUDA vent to atmospheric pressure by jmil)
  * M128 - EtoP Open (BariCUDA EtoP = electricity to air pressure transducer by jmil)
  * M129 - EtoP Closed (BariCUDA EtoP = electricity to air pressure transducer by jmil)
- * M140 - Set bed or cooler target temp
+ * M140 - Set hot bed target temp
+ * M141 - Set hot chamber target temp
+ * M142 - Set cooler target temp
  * M145 - Set the heatup state H<hotend> B<bed> F<fan speed> for S<material> (0=PLA, 1=ABS)
  * M150 - Set BlinkM Color Output R: Red<0-255> U(!): Green<0-255> B: Blue<0-255> over i2c, G for green does not work.
  * M163 - Set a single proportion for a mixing extruder. Requires COLOR_MIXING_EXTRUDER.
  * M164 - Save the mix as a virtual extruder. Requires COLOR_MIXING_EXTRUDER and MIXING_VIRTUAL_TOOLS.
  * M165 - Set the proportions for a mixing extruder. Use parameters ABCDHI to set the mixing factors. Requires COLOR_MIXING_EXTRUDER.
- * M190 - Sxxx Wait for bed or cooler current temp to reach target temp. Waits only when heating Waits only when heating bed or cooling cooler
- *        Rxxx Wait for bed or cooler current temp to reach target temp. Waits when heating and cooling
- *        C parameter select Cooler, omitting it selec bed.
+ * M190 - Sxxx Wait for bed current temp to reach target temp. Waits only when heating
+ *        Rxxx Wait for bed current temp to reach target temp. Waits when heating and cooling
+ * M191 - Sxxx Wait for chamber current temp to reach target temp. Waits only when heating
+ *        Rxxx Wait for chamber current temp to reach target temp. Waits when heating and cooling
+ * M192 - Sxxx Wait for cooler current temp to reach target temp. Waits only when heating
+ *        Rxxx Wait for cooler current temp to reach target temp. Waits when heating and cooling
  * M200 - set filament diameter and set E axis units to cubic millimeters (use S0 to set back to millimeters).:D<millimeters>- 
  * M201 - Set max acceleration in units/s^2 for print moves (M201 X1000 Y1000)
  * M202 - Set max acceleration in units/s^2 for travel moves (M202 X1000 Y1000) Unused in Marlin!!
@@ -140,8 +145,8 @@
  * M209 - S<1=true/0=false> enable automatic retract detect if the slicer did not support G10/11: every normal extrude-only move will be classified as retract depending on the direction.
  * M218 - Set hotend offset (in mm): T<extruder_number> X<offset_on_X> Y<offset_on_Y>
  * M220 - Set speed factor override percentage: S<factor in percent>
- * M221 - Set extrude factor override percentage: S<factor in percent>
- * M222 - Set density extrusion percentage for purge: S<factor in percent>
+ * M221 - T<extruder> S<factor in percent> - set extrude factor override percentage
+ * M222 - T<extruder> S<factor in percent> - set density extrude factor percentage for purge
  * M226 - Wait until the specified pin reaches the state required: P<pin number> S<pin state>
  * M240 - Trigger a camera to take a photograph
  * M250 - Set LCD contrast C<contrast value> (value 0..63)
@@ -150,7 +155,9 @@
  * M301 - Set PID parameters P I D and C
  * M302 - Allow cold extrudes, or set the minimum extrude S<temperature>.
  * M303 - PID relay autotune S<temperature> sets the target temperature (default target temperature = 150C). H<hotend> C<cycles> U<Apply result>
- * M304 - Set bed PID parameters P I and D or cooling if C parameter
+ * M304 - Set hot bed PID parameters P I and D
+ * M305 - Set hot chamber PID parameters P I and D
+ * M306 - Set cooler PID parameters P I and D
  * M350 - Set microstepping mode.
  * M351 - Toggle MS1 MS2 pins directly.
  * M380 - Activate solenoid on active extruder
@@ -175,8 +182,6 @@
  * M600 - Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
  * M605 - Set dual x-carriage movement mode: S<mode> [ X<duplication x-offset> R<duplication temp offset> ]
  * M649 - laser set options
- * M650 - mUVe peel set peel distance
- * M651 - mUVe peel run peel move
  * M666 - Set z probe offset or Endstop and delta geometry adjustment
  * M906 - Set motor currents XYZ T0-4 E
  * M907 - Set digital trimpot motor current using axis codes.
