@@ -137,6 +137,7 @@
 *  M595 - Set hotend AD595 offset and gain
 *  M600 - Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
 *  M605 - Set dual x-carriage movement mode: Smode [ X<duplication x-offset> Rduplication temp offset ]
+*  M649 - Set laser options. S<intensity> L<duration> P<ppm> B<set mode> R<raster mm per pulse> F<feedrate>
 *  M666 - Set z probe offset or Endstop and delta geometry adjustment. M666 L for list command
 *  M906 - Set motor currents XYZ T0-4 E
 *  M907 - Set digital trimpot motor current using axis codes.

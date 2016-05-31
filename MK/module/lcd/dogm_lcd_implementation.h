@@ -67,6 +67,10 @@
   #undef USE_BIG_EDIT_FONT
 #endif
 
+#if ENABLED(LASERBEAM)
+  #include "../laser/laserbitmaps.h"
+#endif
+
 #if ENABLED(USE_SMALL_INFOFONT)
   #include "dogm_font_data_6x9_marlin.h"
   #define FONT_STATUSMENU_NAME u8g_font_6x9
@@ -370,14 +374,34 @@ static void lcd_implementation_status_screen() {
 
   bool blink = lcd_blink();
 
-  // Symbols menu graphics, animated fan
-  u8g.drawBitmapP(9, 1, STATUS_SCREENBYTEWIDTH, STATUS_SCREENHEIGHT,
-    #if HAS(FAN)
-      blink && fanSpeed ? status_screen0_bmp : status_screen1_bmp
-    #else
-      status_screen0_bmp
+  #if ENABLED(LASERBEAM)
+    #if ENABLED(LASER_PERIPHERALS)
+      if (laser_peripherals_ok()) {
+        u8g.drawBitmapP(29,4, LASERENABLE_BYTEWIDTH, LASERENABLE_HEIGHT, laserenable_bmp);
+      }
     #endif
-  );
+    lcd_setFont(FONT_STATUSMENU);
+    u8g.setColorIndex(1);
+    u8g.setPrintPos(3,6);
+    if (current_block->laser_status == LASER_ON) {
+      u8g.drawBitmapP(5,14, ICON_BYTEWIDTH, ICON_HEIGHT, laseron_bmp);
+      u8g.print(itostr3(current_block->laser_intensity));
+      lcd_printPGM(PSTR("%"));
+    } else {
+      u8g.drawBitmapP(5,14, ICON_BYTEWIDTH, ICON_HEIGHT, laseroff_bmp);
+      lcd_printPGM(PSTR("---%"));
+    }
+
+  #else
+    // Symbols menu graphics, animated fan
+    u8g.drawBitmapP(9, 1, STATUS_SCREENBYTEWIDTH, STATUS_SCREENHEIGHT,
+      #if HAS(FAN)
+        blink && fanSpeed ? status_screen0_bmp : status_screen1_bmp
+      #else
+        status_screen0_bmp
+      #endif
+    );
+  #endif
 
   // Status Menu Font for SD info, Heater status, Fan, XYZ
   lcd_setFont(FONT_STATUSMENU);
@@ -434,7 +458,7 @@ static void lcd_implementation_status_screen() {
         u8g.setPrintPos(90, 47);
 
         if (end_time > 1380 || end_time == 0)
-          u8g.print('E--:--');
+          lcd_printPGM(PSTR("E--:--"));
         else if (end_time > 0) {
           u8g.print('E');
           u8g.print(itostr2(end_time/60));
@@ -450,13 +474,15 @@ static void lcd_implementation_status_screen() {
     }
   #endif
 
-  // Hotends
-  for (int i = 0; i < HOTENDS; i++) _draw_heater_status(6 + i * 25, i);
+  #if DISABLED(LASERBEAM)
+    // Hotends
+    for (int i = 0; i < HOTENDS; i++) _draw_heater_status(6 + i * 25, i);
 
-  // Heated bed
-  #if HOTENDS < 4 && HAS(TEMP_BED)
-    _draw_heater_status(81, -1);
-  #endif
+    // Heated bed
+    #if HOTENDS < 4 && HAS(TEMP_BED)
+      _draw_heater_status(81, -1);
+    #endif
+  #endif // !LASERBEAM
 
   // Fan
   u8g.setPrintPos(104, 27);
