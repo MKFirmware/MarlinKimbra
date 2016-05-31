@@ -56,7 +56,7 @@ The current MarlinKimbra dev team consists of:
  - simonepri - Simone Primarosa (https://github.com/simonepri)
 
 More features have been added by:
- -
+ - Franco (nextime) Lanza
 
 ## License
 
