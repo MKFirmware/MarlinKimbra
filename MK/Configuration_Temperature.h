@@ -73,7 +73,7 @@
 #define TEMP_SENSOR_2 0
 #define TEMP_SENSOR_3 0
 #define TEMP_SENSOR_BED 0
-#define TEMP_SENSOR_CHAMBER 0 // NOT USED FOR NOW!!!
+#define TEMP_SENSOR_CHAMBER 0
 #define TEMP_SENSOR_COOLER 0
 
 //These 2 defines help to calibrate the AD595 sensor in case you get wrong temperature measurements.
