@@ -10,6 +10,11 @@ https://www.nexlab.net/donations/k40-laser/
 [DONATIONS id:1269]
 
 
+For K40 laser cutter there are branches with the default config files ready to use:
+
+ * [with cooler and flow sensor](https://git.nexlab.net/machinery/MarlinKimbra/tree/k40_flow_cooler)
+ * [without cooler and flow sensor](https://git.nexlab.net/machinery/MarlinKimbra/tree/k40_noflow_nocooler)
+
 ### Special thanks
 * all Marlin8bit-developers.
 
