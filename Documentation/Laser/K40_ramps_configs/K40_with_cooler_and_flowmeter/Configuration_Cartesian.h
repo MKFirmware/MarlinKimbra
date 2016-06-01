@@ -143,7 +143,7 @@
  * Change (or reverse the motor connector) if an axis goes the wrong way.                *
  *                                                                                       *
  *****************************************************************************************/
-#define INVERT_X_DIR true
+#define INVERT_X_DIR false
 #define INVERT_Y_DIR false
 #define INVERT_Z_DIR false
 #define INVERT_E0_DIR false
@@ -164,7 +164,7 @@
  *****************************************************************************************/
 #define DISABLE_X false
 #define DISABLE_Y false
-#define DISABLE_Z true
+#define DISABLE_Z false
 #define DISABLE_E true      // For all extruder
 // Disable only inactive extruder and keep active extruder enabled
 #define DISABLE_INACTIVE_EXTRUDER false
@@ -358,8 +358,7 @@
  ******************************* Axis steps per unit *************************************
  *****************************************************************************************/
 // Default steps per unit               X,  Y,    Z,  E0...(per extruder)
-//#define DEFAULT_AXIS_STEPS_PER_UNIT   {78.7401, 157.4802, 6047.2440, 0, 0, 0, 0} /* X stepper sobstituted with a nema17 from 3drag */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   {157.4802, 157.4802, 6047.2440, 0, 0, 0, 0} /* Original K40 steppers */
+#define DEFAULT_AXIS_STEPS_PER_UNIT   {157.4802, 157.4802, 6047.2440, 0, 0, 0, 0}
 /*****************************************************************************************/
 
 
@@ -367,8 +366,8 @@
  ********************************** Axis feedrate ****************************************
  *****************************************************************************************/
 //                                       X,   Y, Z,  E0...(per extruder). (mm/sec)
-#define DEFAULT_MAX_FEEDRATE          {500, 500, 10, 25, 0, 0, 0}
-#define MANUAL_FEEDRATE               {500, 500, 10, 25}  // Feedrates for manual moves along X, Y, Z, E from panel
+#define DEFAULT_MAX_FEEDRATE          {500, 500, 100, 25, 0, 0, 0}
+#define MANUAL_FEEDRATE               {50*60, 50*60, 4*60, 60}  // Feedrates for manual moves along X, Y, Z, E from panel
 #define DEFAULT_MINIMUMFEEDRATE       0.0                       // minimum feedrate
 #define DEFAULT_MINTRAVELFEEDRATE     0.0
 // Minimum planner junction speed. Sets the default minimum speed the planner plans for at the end
@@ -410,7 +409,7 @@
 /*****************************************************************************************
  ************************************ Homing feedrate ************************************
  *****************************************************************************************/
-#define HOMING_FEEDRATE  {7600, 7600, 0, 0} // set the homing speeds (mm/min)
+#define HOMING_FEEDRATE {100*60, 100*60, 2*60, 0} // set the homing speeds (mm/min)
 
 // homing hits the endstop, then retracts by this distance, before it tries to slowly bump again:
 #define X_HOME_BUMP_MM 5
