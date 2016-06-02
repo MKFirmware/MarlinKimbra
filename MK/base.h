@@ -52,6 +52,10 @@
 #include "module/HAL/HAL.h"
 #include "module/communication/communication.h"
 
+#if ENABLED(MESH_BED_LEVELING)
+  #include "module/mbl/mesh_bed_leveling.h"
+#endif
+
 #include "Configuration_Store.h"
 
 #include "module/language/language.h"

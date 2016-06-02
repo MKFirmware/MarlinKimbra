@@ -55,10 +55,6 @@
     void lcd_setcontrast(uint8_t value);
   #endif
 
-  #if !MECH(DELTA) && DISABLED(Z_SAFE_HOMING) && Z_HOME_DIR < 0
-    void set_pageShowInfo(int value);
-  #endif
-
   #define LCD_MESSAGEPGM(x) lcd_setstatuspgm(PSTR(x))
   #define LCD_ALERTMESSAGEPGM(x) lcd_setalertstatuspgm(PSTR(x))
 
@@ -102,7 +98,7 @@
   #endif
   void lcd_quick_feedback(); // Audible feedback for a button click - could also be visual
   bool lcd_clicked();
-  void lcd_ignore_click(bool b = true);
+  void lcd_ignore_click(bool b=true);
   bool lcd_blink();
 
   #if ENABLED(ULTIPANEL) && ENABLED(REPRAPWORLD_KEYPAD)
@@ -138,6 +134,7 @@
   #endif // ULTIPANEL && REPRAPWORLD_KEYPAD
 
   #if ENABLED(NEWPANEL)
+
     #define EN_C (_BV(BLEN_C))
     #define EN_B (_BV(BLEN_B))
     #define EN_A (_BV(BLEN_A))
@@ -179,25 +176,23 @@
 
   char* itostr2(const uint8_t& x);
   char* itostr3sign(const int& x);
-  char* itostr3(const int& xx);
-  char* itostr3left(const int& xx);
-  char* itostr4(const int& xx);
+  char* itostr3(const int& x);
+  char* itostr3left(const int& x);
+  char* itostr4(const int& x);
   char* itostr4sign(const int& x);
-
-  char* ltostr7(const long& xx);
 
   char* ftostr3(const float& x);
   char* ftostr4sign(const float& x);
-  char* ftostr30(const float& x);
   char* ftostr31ns(const float& x); // float to string without sign character
   char* ftostr31(const float& x);
   char* ftostr32(const float& x);
-  char* ftostr43(const float& x);
-  char* ftostr12ns(const float& x); 
+  char* ftostr43(const float& x, char plus=' ');
+  char* ftostr12ns(const float& x);
   char* ftostr32sp(const float& x); // remove zero-padding from ftostr32
   char* ftostr5(const float& x);
   char* ftostr51(const float& x);
   char* ftostr52(const float& x);
+  char* ltostr7(const long& x);
 
 #elif DISABLED(NEXTION)
 

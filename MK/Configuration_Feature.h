@@ -23,6 +23,7 @@
  * - Software endstops
  * - Endstops only for homing
  * - Abort on endstop hit feature
+ * - Mesh Level Area
  * - R/C Servo
  * - Late Z axis
  * - Ahead slowdown
@@ -437,6 +438,23 @@
  **************************************************************************/
 //#define ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
 #define ABORT_ON_ENDSTOP_HIT_INIT true
+/**************************************************************************/
+
+
+/**************************************************************************
+ *************************** Mesh Level Area ******************************
+ **************************************************************************
+ *                                                                        *
+ * Default mesh area is an area with an inset margin on the print area.   *
+ * Below are the macros that are used to define the borders for the mesh  *
+ * area, made available here for specialized needs.                       *
+ *                                                                        *
+ **************************************************************************/
+#define MESH_MIN_X (X_MIN_POS + MESH_INSET)
+#define MESH_MAX_X (X_MAX_POS - (MESH_INSET))
+#define MESH_MIN_Y (Y_MIN_POS + MESH_INSET)
+#define MESH_MAX_Y (Y_MAX_POS - (MESH_INSET))
+/**************************************************************************/
 
 
 /**************************************************************************

@@ -137,7 +137,7 @@
   #define LCD_WIDTH_EDIT       22
 #endif
 
-#if DISABLED(TALL_FONT_CORRECTION)
+#ifndef TALL_FONT_CORRECTION
   #define TALL_FONT_CORRECTION 0
 #endif
 
@@ -158,7 +158,10 @@
   U8GLIB_LM6059 u8g(DOGLCD_CS, DOGLCD_A0);
 #elif ENABLED(U8GLIB_SSD1306)
   // Generic support for SSD1306 OLED I2C LCDs
-  U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_NONE);
+  U8GLIB_SSD1306_128X64 u8g(U8G_I2C_OPT_NONE | U8G_I2C_OPT_FAST);
+#elif ENABLED(U8GLIB_SH1106)
+  // Generic support for SH1106 OLED I2C LCDs
+  U8GLIB_SH1106_128X64 u8g(U8G_I2C_OPT_NONE | U8G_I2C_OPT_FAST);
 #elif ENABLED(MINIPANEL)
   // The MINIPanel display
   U8GLIB_MINI12864 u8g(DOGLCD_CS, DOGLCD_A0);
@@ -167,10 +170,10 @@
   U8GLIB_DOGM128 u8g(DOGLCD_CS, DOGLCD_A0);  // HW-SPI Com: CS, A0
 #endif
 
-#if DISABLED(LCD_PIXEL_WIDTH)
+#ifndef LCD_PIXEL_WIDTH
   #define LCD_PIXEL_WIDTH 128
 #endif
-#if DISABLED(LCD_PIXEL_HEIGHT)
+#ifndef LCD_PIXEL_HEIGHT
   #define LCD_PIXEL_HEIGHT 64
 #endif
 
@@ -269,7 +272,7 @@ static void lcd_implementation_init() {
       if (show_bootscreen) {
         u8g.drawBitmapP(offx, offy, START_BMPBYTEWIDTH, START_BMPHEIGHT, start_bmp);
         lcd_setFont(FONT_MENU);
-        #if DISABLED(STRING_SPLASH_LINE2)
+        #ifndef STRING_SPLASH_LINE2
           u8g.drawStr(txt1X, u8g.getHeight() - (DOG_CHAR_HEIGHT), STRING_SPLASH_LINE1);
         #else
           int txt2X = (u8g.getWidth() - (sizeof(STRING_SPLASH_LINE2) - 1) * (DOG_CHAR_WIDTH)) / 2;

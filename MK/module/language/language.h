@@ -116,6 +116,8 @@
 #define SERIAL_Z_PROBE                          "z_probe: "
 #define SERIAL_E_MIN                            "e_min: "
 #define SERIAL_ERR_MATERIAL_INDEX               "M145 S<index> out of range (0-2)"
+#define SERIAL_ERR_M421_PARAMETERS              "M421 requires XYZ or IJZ parameters"
+#define SERIAL_ERR_MESH_XY                      "Mesh XY or IJ cannot be resolved"
 #define SERIAL_ERR_M428_TOO_FAR                 "Too far from reference point"
 #define SERIAL_M119_REPORT                      "Reporting endstop status"
 #define SERIAL_ENDSTOP_HIT                      "TRIGGERED"
