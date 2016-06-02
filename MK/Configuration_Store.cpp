@@ -179,6 +179,14 @@ void Config_StoreSettings() {
   EEPROM_WRITE_VAR(i, home_offset);
   EEPROM_WRITE_VAR(i, hotend_offset);
 
+  #if ENABLED(MESH_BED_LEVELING)
+    // Compile time test that sizeof(mbl.z_values) is as expected
+    typedef char c_assert[(sizeof(mbl.z_values) == (MESH_NUM_X_POINTS) * (MESH_NUM_Y_POINTS) * sizeof(dummy)) ? 1 : -1];
+    EEPROM_WRITE_VAR(i, mbl.active);
+    EEPROM_WRITE_VAR(i, mbl.z_offset);
+    EEPROM_WRITE_VAR(i, mbl.z_values);
+  #endif
+
   #if !MECH(DELTA)
     EEPROM_WRITE_VAR(i, zprobe_zoffset);
   #endif
@@ -337,6 +345,12 @@ void Config_RetrieveSettings() {
     EEPROM_READ_VAR(i, max_e_jerk);
     EEPROM_READ_VAR(i, home_offset);
     EEPROM_READ_VAR(i, hotend_offset);
+
+    #if ENABLED(MESH_BED_LEVELING)
+      EPROM_READ_VAR(i, mbl.active);
+      EEPROM_READ_VAR(i, mbl.z_offset);
+      EEPROM_READ_VAR(i, mbl.z_values);
+    #endif
 
     #if !MECH(DELTA)
       EEPROM_READ_VAR(i, zprobe_zoffset);
@@ -539,6 +553,10 @@ void Config_ResetDefault() {
   max_xy_jerk = DEFAULT_XYJERK;
   max_z_jerk = DEFAULT_ZJERK;
   home_offset[X_AXIS] = home_offset[Y_AXIS] = home_offset[Z_AXIS] = 0;
+
+  #if ENABLED(MESH_BED_LEVELING)
+    mbl.active = false;
+  #endif
 
   #if ENABLED(AUTO_BED_LEVELING_FEATURE)
     zprobe_zoffset = Z_PROBE_OFFSET_FROM_EXTRUDER;
@@ -745,6 +763,23 @@ void Config_ResetDefault() {
       ECHO_EMV(" Z", hotend_offset[Z_AXIS][h]);
     }
 
+    #if ENABLED(MESH_BED_LEVELING)
+      if (!forReplay) {
+        ECHO_LM(CFG, "Mesh bed leveling:");
+      }
+      ECHO_SMV(CFG, "  M420 S", mbl.active);
+      ECHO_MV(" X", MESH_NUM_X_POINTS);
+      ECHO_EMV(" Y", MESH_NUM_Y_POINTS);
+
+      for (int py = 1; py <= MESH_NUM_Y_POINTS; py++) {
+        for (int px = 1; px <= MESH_NUM_X_POINTS; px++) {
+          ECHO_SMV(CFG, "  G29 S3 X", px);
+          ECHO_MV(" Y", py);
+          ECHO_EMV(" Z", mbl.z_values[py-1][px-1], 5);
+        }
+      }
+    #endif
+  
     #if HEATER_USES_AD595
       if (!forReplay) {
         ECHO_LM(CFG, "AD595 Offset and Gain:");

@@ -127,6 +127,8 @@
 *  M407 - Displays measured filament diameter
 *  M408 - Report JSON-style response
 *  M410 - Quickstop. Abort all the planned moves
+*  M420 - Enable/Disable Mesh Bed Leveling
+*  M421 - Set a single Mesh Bed Leveling Z coordinate. M421 X<mm> Y<mm> Z<mm>' or 'M421 I<xindex> J<yindex> Z<mm>
 *  M428 - Set the home_offset logically based on the current_position
 *  M500 - stores paramters in EEPROM
 *  M501 - reads parameters from EEPROM (if you need reset them after you changed them temporarily).

@@ -12,11 +12,11 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
@@ -33,11 +33,11 @@
  *
  * Grbl is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
+ * along with Grbl. If not, see <http://www.gnu.org/licenses/>.
  */
 
 // This module is to be considered a sub-module of stepper.c. Please don't include
@@ -127,29 +127,43 @@ void check_axes_activity();
 // Get the number of buffered moves
 extern volatile unsigned char block_buffer_head;
 extern volatile unsigned char block_buffer_tail;
+
+/**
+ * Number of moves currently in the planner
+ */
 FORCE_INLINE uint8_t movesplanned() { return BLOCK_MOD(block_buffer_head - block_buffer_tail + BLOCK_BUFFER_SIZE); }
 
-#if ENABLED(AUTO_BED_LEVELING_FEATURE)
+#if ENABLED(AUTO_BED_LEVELING_FEATURE) || ENABLED(MESH_BED_LEVELING)
 
-  #include "vector_3.h"
+  #if ENABLED(AUTO_BED_LEVELING_FEATURE)
 
-  // Transform required to compensate for bed level
-  extern matrix_3x3 plan_bed_level_matrix;
+    #include "vector_3.h"
+
+    // Transform to compensate for bed level
+    extern matrix_3x3 plan_bed_level_matrix;
+
+    /**
+     * The corrected position, applying the bed level matrix
+     */
+    vector_3 plan_adjusted_position();
+  #endif
 
   /**
-   * Get the position applying the bed level matrix
-   */
-  vector_3 plan_get_position();
-
-  /**
-   * Add a new linear movement to the buffer. x, y, z are the signed, absolute target position in
-   * millimeters. Feed rate specifies the (target) speed of the motion.
+   * Add a new linear movement to the buffer.
+   *
+   *  x,y,z,e   - target position in mm
+   *  feed_rate - (target) speed of the move
+   *  extruder  - target extruder
    */
   void plan_buffer_line(float x, float y, float z, const float& e, float feed_rate, const uint8_t extruder, const uint8_t driver);
 
   /**
-   * Set the planner positions. Used for G92 instructions.
-   * Multiplies by axis_steps_per_unit[] to set stepper positions.
+   * Set the planner.position and individual stepper positions.
+   * Used by G92, G28, G29, and other procedures.
+   *
+   * Multiplies by axis_steps_per_unit[] and does necessary conversion
+   * for COREXY / COREXZ to set the corresponding stepper positions.
+   *
    * Clears previous speed values.
    */
   void plan_set_position(float x, float y, float z, const float& e);
@@ -159,8 +173,11 @@ FORCE_INLINE uint8_t movesplanned() { return BLOCK_MOD(block_buffer_head - block
   void plan_buffer_line(const float& x, const float& y, const float& z, const float& e, float feed_rate, const uint8_t extruder, const uint8_t driver);
   void plan_set_position(const float& x, const float& y, const float& z, const float& e);
 
-#endif // AUTO_BED_LEVELING_FEATURE
+#endif // AUTO_BED_LEVELING_FEATURE || MESH_BED_LEVELING
 
+/**
+ * Set the E position (mm) of the planner (and the E stepper)
+ */
 void plan_set_e_position(const float& e);
 
 //===========================================================================
@@ -193,17 +210,24 @@ extern block_t block_buffer[BLOCK_BUFFER_SIZE];            // A ring buffer for 
 extern volatile unsigned char block_buffer_head;           // Index of the next block to be pushed
 extern volatile unsigned char block_buffer_tail;
 
-// Returns true if the buffer has a queued block, false otherwise
+/**
+ * Does the buffer have any blocks queued?
+ */
 FORCE_INLINE bool blocks_queued() { return (block_buffer_head != block_buffer_tail); }
 
-// Called when the current block is no longer needed. Discards
-// the block and makes the memory available for new blocks.
+/**
+ * "Discards" the block and "releases" the memory.
+ * Called when the current block is no longer needed.
+ */
 FORCE_INLINE void plan_discard_current_block() {
   if (blocks_queued())
     block_buffer_tail = BLOCK_MOD(block_buffer_tail + 1);
 }
 
-// Gets the current block. Returns NULL if buffer empty
+/**
+ * The current block. NULL if the buffer is empty.
+ * This also marks the block as busy.
+ */
 FORCE_INLINE block_t* plan_get_current_block() {
   if (blocks_queued()) {
     block_t* block = &block_buffer[block_buffer_tail];
