@@ -35,7 +35,7 @@
  * "G" Codes
  *
  * G0  -> G1 except for laser where G0 is "move without firing"
- * G1  - Coordinated Movement X Y Z E, for laser move by firing
+ * G1  - Coordinated Movement X Y Z E F(feedrate) P(Purge), for laser move by firing
  * G2  - CW ARC
  * G3  - CCW ARC
  * G4  - Dwell S[seconds] or P[milliseconds], delay in Second or Millisecond
@@ -209,6 +209,7 @@
  */
 
 #include "base.h"
+
 #if ENABLED(DIGIPOT_I2C) || ENABLED(BLINKM)
   #include <Wire.h>
 #endif
