@@ -1,19 +1,6 @@
 <img align="right" src="Documentation/Logo/MarlinKimbra%20Logo%20GitHub.png" />
 # MarlinKimbra 3D Printer Firmware for Arduino
-## Version 4.2.82 Laser dev
-
-This is the Laser enhananced version with the patches from Franco (nextime) Lanza.
-
-If you like to help the work on Laser version, please donate to 
-
-https://www.nexlab.net/donations/k40-laser/
-[DONATIONS id:1269]
-
-
-For K40 laser cutter there are branches with the default config files ready to use:
-
- * [with cooler and flow sensor](https://git.nexlab.net/machinery/MarlinKimbra/tree/k40_flow_cooler)
- * [without cooler and flow sensor](https://git.nexlab.net/machinery/MarlinKimbra/tree/k40_noflow_nocooler)
+## Version 4.2.84 dev
 
 ### Special thanks
 * all Marlin8bit-developers.
