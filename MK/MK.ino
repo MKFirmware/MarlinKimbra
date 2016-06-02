@@ -34,11 +34,12 @@
  *
  * "G" Codes
  *
- * G0  -> G1
- * G1  - Coordinated Movement X Y Z E F(feedrate) P(Purge)
+ * G0  -> G1 except for laser where G0 is "move without firing"
+ * G1  - Coordinated Movement X Y Z E, for laser move by firing
  * G2  - CW ARC
  * G3  - CCW ARC
  * G4  - Dwell S[seconds] or P[milliseconds], delay in Second or Millisecond
+ * G5  - Bezier curve - from http://forums.reprap.org/read.php?147,93577
  * G7  - Laser raster base64
  * G10 - retract filament according to settings of M207
  * G11 - retract recover filament according to settings of M208
@@ -182,6 +183,7 @@
  * M595 - Set hotend AD595 O<offset> and S<gain>
  * M600 - Pause for filament change X[pos] Y[pos] Z[relative lift] E[initial retract] L[later retract distance for removal]
  * M605 - Set dual x-carriage movement mode: S<mode> [ X<duplication x-offset> R<duplication temp offset> ]
+ * M649 - laser set options
  * M666 - Set z probe offset or Endstop and delta geometry adjustment
  * M906 - Set motor currents XYZ T0-4 E
  * M907 - Set digital trimpot motor current using axis codes.
@@ -205,9 +207,8 @@
  * T0-T3 - Select a tool by index (usually an extruder) [ F<mm/min> ]
  *
  */
- 
-#include "base.h"
 
+#include "base.h"
 #if ENABLED(DIGIPOT_I2C) || ENABLED(BLINKM)
   #include <Wire.h>
 #endif

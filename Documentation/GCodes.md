@@ -2,11 +2,12 @@
 
 ## G Codes
 
-*  G0  -> G1
-*  G1  - Coordinated Movement X Y Z E F(feedrate) P(Purge)
+*  G0  -> G1 except for laser where G0 is "move without firing"
+*  G1  - Coordinated Movement X Y Z E F(feedrate) P(Purge), for laser move by firing
 *  G2  - CW ARC
 *  G3  - CCW ARC
 *  G4  - Dwell S[seconds] or P[milliseconds], delay in Second or Millisecond
+*  G5  - Bezier curve - from http://forums.reprap.org/read.php?147,93577
 *  G7  - Laser raster base64
 *  G10 - retract filament according to settings of M207
 *  G11 - retract recover filament according to settings of M208
