@@ -1,3 +1,25 @@
+/**
+ * MK & MK4due 3D Printer Firmware
+ *
+ * Based on Marlin, Sprinter and grbl
+ * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
+ * Copyright (C) 2013 - 2016 Alberto Cotronei @MagoKimbra
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
 #ifndef UTF_MAPPER_H
 #define UTF_MAPPER_H
 
@@ -50,7 +72,7 @@
   //          ヰ    ヱ    ヲ    ン    フ    ?    ?   ?    ?    ?    ヲ    ・    ー    ヽ    ヽ   ?
            };
     #elif ENABLED(MAPPER_D0D1)
-      #error( "Cyrillic on a japanese dsplay makes no sense. There are no matching symbols.");
+      #error "Cyrillic on a JAPANESE display makes no sense. There are no matching symbols."
     #endif
 
   #elif ENABLED(DISPLAY_CHARSET_HD44780_WESTERN)
@@ -84,7 +106,7 @@
   //          p    c    T    y    Ф    x    Ч    ч    Ш    Щ    Ъ    Ы    b    Э    Ю    Я
             };
     #elif ENABLED(MAPPER_E382E383)
-      #error( "Katakana on a western display makes no sense. There are no matching symbols." );
+      #error "Katakana on a WESTERN display makes no sense. There are no matching symbols."
     #endif
 
   #elif ENABLED(DISPLAY_CHARSET_HD44780_CYRILLIC)
@@ -94,30 +116,30 @@
       // except 0401 --> 0xa2 = Ё, 0451 --> 0xb5 = ё
       const PROGMEM uint8_t utf_recode[] =
              { 0x41,0xa0,0x42,0xa1,0xe0,0x45,0xa3,0xa4,   // unicode U+0400 to U+047f
-  //            A   Б->Ё  B    Г    Д    E    Ж    З      // 0  Ѐ Ё Ђ Ѓ Є Ѕ І Ї
+             // A   Б->Ё  B    Г    Д    E    Ж    З      // 0  Ѐ Ё Ђ Ѓ Є Ѕ І Ї
                0xa5,0xa6,0x4b,0xa7,0x4d,0x48,0x4f,0xa8,   //    Ј Љ Њ Ћ Ќ Ѝ Ў Џ
-  //            И    Й    K    Л    M    H    O    П      // 1  А Б В Г Д Е Ж З
+             // И    Й    K    Л    M    H    O    П      // 1  А Б В Г Д Е Ж З
                0x50,0x43,0x54,0xa9,0xaa,0x58,0xe1,0xab,   //    И Й К Л М Н О П
-  //            P    C    T    У    Ф    X    Ч    ч      // 2  Р С Т У Ф Х Г Ч
+             // P    C    T    У    Ф    X    Ч    ч      // 2  Р С Т У Ф Х Г Ч
                0xac,0xe2,0xad,0xae,0x62,0xaf,0xb0,0xb1,   //    Ш Щ Ъ Ы Ь Э Ю Я
-  //            Ш    Щ    Ъ    Ы    b    Э    Ю    Я      // 3  а б в г д е ж з
+             // Ш    Щ    Ъ    Ы    b    Э    Ю    Я      // 3  а б в г д е ж з
                0x61,0xb2,0xb3,0xb4,0xe3,0x65,0xb6,0xb7,   //    и й к л м н о п
-  //            a   б->ё  в    г    д    e    ж    з      // 4  р с т у ф х ц ч
+             // a   б->ё  в    г    д    e    ж    з      // 4  р с т у ф х ц ч
                0xb8,0xb9,0xba,0xbb,0xbc,0xbd,0x6f,0xbe,   //    ш щ ъ ы ь э ю я
-  //            и    й    к    л    м    н    o    п      // 5  ѐ ё ђ ѓ є ѕ і ї
+             // и    й    к    л    м    н    o    п      // 5  ѐ ё ђ ѓ є ѕ і ї
                0x70,0x63,0xbf,0x79,0xe4,0x78,0xe5,0xc0,   //    ј љ њ ћ ќ ѝ ў џ
-  //            p    c    т    y    ф    x    ц    ч      // 6  Ѡ ѡ Ѣ ѣ Ѥ ѥ Ѧ ѧ
+             // p    c    т    y    ф    x    ц    ч      // 6  Ѡ ѡ Ѣ ѣ Ѥ ѥ Ѧ ѧ
                0xc1,0xe6,0xc2,0xc3,0xc4,0xc5,0xc6,0xc7    //    Ѫ ѩ Ѫ ѫ Ѭ ѭ Ѯ ѯ
-  //            ш    щ    ъ    ы    ь    э    ю    я      // 7  Ѱ ѱ Ѳ ѳ Ѵ ѵ Ѷ ѷ
+             // ш    щ    ъ    ы    ь    э    ю    я      // 7  Ѱ ѱ Ѳ ѳ Ѵ ѵ Ѷ ѷ
              };                                           //    ѻ ѹ Ѻ ѻ Ѽ ѽ Ѿ ѿ
     #elif ENABLED(MAPPER_C2C3)
-      #error( "Western languages on a cyrillic display makes no sense. There are no matching symbols." );
+      #error "Western languages on a CYRILLIC display makes no sense. There are no matching symbols."
     #elif ENABLED(MAPPER_E382E383)
-      #error( "Katakana on a cyrillic display makes no sense. There are no matching symbols." );
+      #error "Katakana on a CYRILLIC display makes no sense. There are no matching symbols."
     #endif
   #else
-    #error("Something went wrong in the selection of DISPLAY_CHARSET_HD44780's");
-  #endif // DISPLAY_CHARSET_HD44780_CYRILLIC
+    #error "Something went wrong in the setting of DISPLAY_CHARSET_HD44780"
+  #endif // DISPLAY_CHARSET_HD44780
 #endif // SIMULATE_ROMFONT
 
 #if ENABLED(MAPPER_NON)
@@ -209,7 +231,7 @@
       }
       else if (seen_d5) {
         d &= 0x3fu;
-        #if DISABLED(MAPPER_ONE_TO_ONE)
+        #ifndef MAPPER_ONE_TO_ONE
           HARDWARE_CHAR_OUT((char)pgm_read_byte_near(utf_recode + d + (utf_hi_char << 6) - 0x20));
         #else
           HARDWARE_CHAR_OUT((char)(0xa0u + (utf_hi_char << 6) + d)) ;
@@ -245,7 +267,7 @@
       }
       else if (seen_e3 && seen_82_83) {
         d &= 0x3f;
-        #if DISABLED(MAPPER_ONE_TO_ONE)
+        #ifndef MAPPER_ONE_TO_ONE
           HARDWARE_CHAR_OUT((char)pgm_read_byte_near(utf_recode + d + (utf_hi_char << 6) - 0x20));
         #else
           HARDWARE_CHAR_OUT((char)(0x80 + (utf_hi_char << 6) + d)) ;

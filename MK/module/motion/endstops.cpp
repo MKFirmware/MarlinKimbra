@@ -32,6 +32,34 @@
 
 Endstops endstops;
 
+// public:
+
+bool  Endstops::enabled = true,
+      Endstops::enabled_globally =
+        #if ENABLED(ENDSTOPS_ONLY_FOR_HOMING)
+          false
+        #else
+          true
+        #endif
+      ;
+volatile char Endstops::endstop_hit_bits; // use X_MIN, Y_MIN, Z_MIN and Z_MIN_PROBE as BIT value
+
+#if ENABLED(Z_DUAL_ENDSTOPS)
+  uint16_t
+#else
+  byte
+#endif
+    Endstops::current_endstop_bits = 0,
+    Endstops::old_endstop_bits = 0;
+
+#if HAS(Z_PROBE)
+  volatile bool Endstops::z_probe_enabled = false;
+#endif
+
+/**
+ * Class and Instance Methods
+ */
+
 Endstops::Endstops() {
   enable_globally(
     #if ENABLED(ENDSTOPS_ONLY_FOR_HOMING)
@@ -41,7 +69,7 @@ Endstops::Endstops() {
     #endif
   );
   enable(true);
-  #if ENABLED(HAS_Z_PROBE)
+  #if HAS(Z_PROBE)
     enable_z_probe(false);
   #endif
 } // Endstops::Endstops
@@ -240,8 +268,8 @@ void Endstops::update() {
 
   #if MECH(COREXY) || MECH(COREYX)|| MECH(COREXZ) || MECH(COREZX)
     // Head direction in -X axis for CoreXY and CoreXZ bots.
-    // If Delta1 == -Delta2, the movement is only in Y or Z axis
-    if ((current_block->steps[A_AXIS] != current_block->steps[CORE_AXIS_2]) || (motor_direction(A_AXIS) == motor_direction(CORE_AXIS_2))) {
+    // If DeltaA == -DeltaB, the movement is only in Y or Z axis
+    if ((current_block->steps[CORE_AXIS_1] != current_block->steps[CORE_AXIS_2]) || (motor_direction(CORE_AXIS_1) == motor_direction(CORE_AXIS_2))) {
       if (motor_direction(X_HEAD))
   #else
     if (motor_direction(X_AXIS))   // stepping along -X axis (regular Cartesian bot)
@@ -274,8 +302,8 @@ void Endstops::update() {
 
   #if MECH(COREXY) || MECH(COREYX)
     // Head direction in -Y axis for CoreXY bots.
-    // If DeltaX == DeltaY, the movement is only in X axis
-    if ((current_block->steps[A_AXIS] != current_block->steps[B_AXIS]) || (motor_direction(A_AXIS) != motor_direction(B_AXIS))) {
+    // If DeltaA == DeltaB, the movement is only in X axis
+    if ((current_block->steps[CORE_AXIS_1] != current_block->steps[CORE_AXIS_2]) || (motor_direction(CORE_AXIS_1) != motor_direction(CORE_AXIS_2))) {
       if (motor_direction(Y_HEAD))
   #else
       if (motor_direction(Y_AXIS))   // -direction
@@ -296,8 +324,8 @@ void Endstops::update() {
 
   #if MECH(COREXZ) || MECH(COREZX)
     // Head direction in -Z axis for CoreXZ bots.
-    // If DeltaX == DeltaZ, the movement is only in X axis
-    if ((current_block->steps[A_AXIS] != current_block->steps[C_AXIS]) || (motor_direction(A_AXIS) != motor_direction(C_AXIS))) {
+    // If DeltaA == DeltaB, the movement is only in X axis
+    if ((current_block->steps[CORE_AXIS_1] != current_block->steps[CORE_AXIS_2]) || (motor_direction(CORE_AXIS_1) !) != motor_direction(CORE_AXIS_2))) {
       if (motor_direction(Z_HEAD))
   #else
       if (motor_direction(Z_AXIS))

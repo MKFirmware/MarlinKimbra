@@ -376,11 +376,13 @@
    * CoreXY or CoreYX or CoreXZ or CoreZX
    */
   #if MECH(COREXY) || MECH(COREYX)
+    #define CORE_AXIS_1 A_AXIS
     #define CORE_AXIS_2 B_AXIS
-    #define CORE_AXIS_3 Z_AXIS
+    #define NORMAL_AXIS Z_AXIS
   #elif MECH(COREXZ) || MECH(COREZX)
+    #define CORE_AXIS_1 A_AXIS
     #define CORE_AXIS_2 C_AXIS
-    #define CORE_AXIS_3 Y_AXIS
+    #define NORMAL_AXIS Y_AXIS
   #endif
 
   /**

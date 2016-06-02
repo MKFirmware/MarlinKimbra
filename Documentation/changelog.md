@@ -1,3 +1,6 @@
+### Version 4.2.84
+* Add Mesh Bed Level (MBL)
+
 ### Version 4.2.83
 * Add Cooler and Hot Chamber
 * Add Laser Beam PWM and raster base64

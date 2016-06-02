@@ -61,6 +61,7 @@ Added Hysteresis and Z-Wobble correction (only cartesian printers).
 Added support reader TAG width MFRC522
 Added Cooler and Hot Chamber
 Added Laser beam and raster base64
+Addes Mesh Bed Level (MBL)
 
 ## Credits
 

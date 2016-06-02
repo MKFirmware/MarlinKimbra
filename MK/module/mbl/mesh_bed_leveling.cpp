@@ -20,13 +20,20 @@
  *
  */
 
-#ifndef CONFIGURATION_VERSION_H
-  #define CONFIGURATION_VERSION_H
+#include "../../base.h"
 
-  #define FIRMWARE_NAME "MK"
-  #define SHORT_BUILD_VERSION "4.2.84_dev"
-  #define BUILD_VERSION FIRMWARE_NAME "_" SHORT_BUILD_VERSION
-  #define STRING_DISTRIBUTION_DATE __DATE__ " " __TIME__    // build date and time
-  // It might also be appropriate to define a location where additional information can be found
-  #define FIRMWARE_URL  "https://github.com/MagoKimbra/MarlinKimbra"
-#endif
+#if ENABLED(MESH_BED_LEVELING)
+
+  mesh_bed_leveling mbl;
+
+  mesh_bed_leveling::mesh_bed_leveling() { reset(); }
+
+  void mesh_bed_leveling::reset() {
+    active = 0;
+    z_offset = 0;
+    for (int8_t y = MESH_NUM_Y_POINTS; y--;)
+      for (int8_t x = MESH_NUM_X_POINTS; x--;)
+        z_values[y][x] = 0;
+  }
+
+#endif  // MESH_BED_LEVELING

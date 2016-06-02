@@ -1,3 +1,4 @@
+
 /**
  * MK & MK4due 3D Printer Firmware
  *
@@ -23,7 +24,6 @@
 /**
  * laser.cpp - Laser control library for Arduino using 16 bit timers- Version 1
  * Copyright (c) 2013 Timothy Schmidt.  All right reserved.
- * Copyright (c) 2016 Franco (nextime) Lanza
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -32,7 +32,7 @@
  *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
@@ -58,16 +58,16 @@
   void timer3_init(int pin) {
     #if ENABLED(LASER_PULSE_METHOD)
       TCCR3A = 0;                 // clear control register A 
-      TCCR3B = pulsebit(WGM33);   // set mode as phase and frequency correct pwm, stop the timer
+      TCCR3B = pulsebit(WGM33);        // set mode as phase and frequency correct pwm, stop the timer
 
-      ICR3 = F_CPU / LASER_PWM / 2; // the counter runs backwards after TOP
+      ICR3 = F_CPU / LASER_PWM / 2;  // the counter runs backwards after TOP
       TCCR3B &= ~(bit(CS30) | bit(CS31) | bit(CS32)); // Stop timer
 
-      TCCR3A |= pulsebit(COM3A1); // Connect pin5 to timer register
-      DDRE |= pulsebit(PORTE3);   // Actually output on pin 5
+      TCCR3A |= pulsebit(COM3A1);      // Connect pin5 to timer register
+      DDRE |= pulsebit(PORTE3);        // Actually output on pin 5
 
-      OCR3A = 0;                // Zero duty cycle = OFF
-      TCCR3B |= pulsebit(CS30); // No prescaler, start timer
+      OCR3A = 0;                  // Zero duty cycle = OFF
+      TCCR3B |= pulsebit(CS30);        // No prescaler, start timer
 
       // Use timer4 to end laser pulse
       /*
@@ -162,20 +162,20 @@
 
     void timer4_init(int pin) {
       pinMode(pin, OUTPUT);
-      analogWrite(pin, 1);  // let Arduino setup do it's thing to the PWM pin
+       analogWrite(pin, 1);  // let Arduino setup do it's thing to the PWM pin
 
-      TCCR4B = 0x00;  // stop Timer4 clock for register updates
-      TCCR4A = 0x82; // Clear OC4A on match, fast PWM mode, lower WGM4x=14
-      ICR4 = labs(F_CPU / LASER_PWM); // clock cycles per PWM pulse
-      OCR4A = labs(F_CPU / LASER_PWM) - 1; // ICR4 - 1 force immediate compare on next tick
-      TCCR4B = 0x18 | 0x01; // upper WGM4x = 14, clock sel = prescaler, start running
+       TCCR4B = 0x00;  // stop Timer4 clock for register updates
+       TCCR4A = 0x82; // Clear OC4A on match, fast PWM mode, lower WGM4x=14
+       ICR4 = labs(F_CPU / LASER_PWM); // clock cycles per PWM pulse
+       OCR4A = labs(F_CPU / LASER_PWM) - 1; // ICR4 - 1 force immediate compare on next tick
+       TCCR4B = 0x18 | 0x01; // upper WGM4x = 14, clock sel = prescaler, start running
 
-      noInterrupts();
-      TCCR4B &= 0xf8; // stop timer, OC4A may be active now
-      TCNT4 = labs(F_CPU / LASER_PWM); // force immediate compare on next tick
-      ICR4 = labs(F_CPU / LASER_PWM); // set new PWM period
-      TCCR4B |= 0x01; // start the timer with proper prescaler value
-      interrupts();
+       noInterrupts();
+       TCCR4B &= 0xf8; // stop timer, OC4A may be active now
+       TCNT4 = labs(F_CPU / LASER_PWM); // force immediate compare on next tick
+       ICR4 = labs(F_CPU / LASER_PWM); // set new PWM period
+       TCCR4B |= 0x01; // start the timer with proper prescaler value
+       interrupts();
     }
 
   #endif // LASER_PULSE_METHOD
@@ -305,7 +305,7 @@
 
   #if ENABLED(LASER_PERIPHERALS)
     bool laser_peripherals_ok() { return !digitalRead(LASER_PERIPHERALS_STATUS_PIN); }
-
+  
     void laser_peripherals_on() {
       digitalWrite(LASER_PERIPHERALS_PIN, LOW);
       if (laser.diagnostics)
@@ -335,6 +335,7 @@
         }
       }
     }
+
   #endif // LASER_PERIPHERALS
 
 #endif // LASERBEAM

@@ -9,6 +9,7 @@
  * - Endstop pullup resistors
  * - Endstops logic
  * - Endstops min or max
+ * - Min Z height for homing
  * - Stepper enable logic
  * - Stepper step logic
  * - Stepper direction
@@ -123,6 +124,18 @@
 #define Y_HOME_DIR -1
 #define Z_HOME_DIR -1
 #define E_HOME_DIR -1
+/*****************************************************************************************/
+
+
+/*****************************************************************************************
+ ***************************** MIN Z HEIGHT FOR HOMING **********************************
+ *****************************************************************************************
+ *                                                                                       *
+ * (in mm) Minimal z height before homing (G28) for Z clearance above the bed, clamps,   *
+ * Be sure you have this distance over your Z_MAX_POS in case.                           *
+ *                                                                                       *
+ *****************************************************************************************/
+#define MIN_Z_HEIGHT_FOR_HOMING   0
 /*****************************************************************************************/
 
 
@@ -255,7 +268,27 @@
 
 
 /*****************************************************************************************
- ******************************* Auto bed levelling **************************************
+ ******************************* Mesh bed leveling ***************************************
+ *****************************************************************************************/
+//#define MESH_BED_LEVELING
+
+#define MESH_INSET         10   // Mesh inset margin on print area
+#define MESH_NUM_X_POINTS   3   // Don't use more than 7 points per axis, implementation limited.
+#define MESH_NUM_Y_POINTS   3
+#define MESH_HOME_SEARCH_Z  5   // Z after Home, bed somewhere below but above 0.0.
+
+// After homing all axes ('G28' or 'G28 XYZ') rest at origin [0,0,0]
+//#define MESH_G28_REST_ORIGIN
+
+// Add display menu option for bed leveling.
+//#define MANUAL_BED_LEVELING
+// Step size while manually probing Z axis.
+#define MBL_Z_STEP 0.025
+/*****************************************************************************************/
+
+
+/*****************************************************************************************
+ ******************************* Auto bed leveling ***************************************
  *****************************************************************************************
  *                                                                                       *
  * There are 2 different ways to specify probing locations                               *
@@ -293,9 +326,9 @@
 #define ABL_PROBE_PT_1_X 15
 #define ABL_PROBE_PT_1_Y 180
 #define ABL_PROBE_PT_2_X 15
-#define ABL_PROBE_PT_2_Y 20
-#define ABL_PROBE_PT_3_X 170
-#define ABL_PROBE_PT_3_Y 20
+#define ABL_PROBE_PT_2_Y 15
+#define ABL_PROBE_PT_3_X 180
+#define ABL_PROBE_PT_3_Y 15
 // no AUTO_BED_LEVELING_GRID
 
 // Offsets to the probe relative to the extruder tip (Hotend - Probe)
@@ -314,9 +347,6 @@
 #define Y_PROBE_OFFSET_FROM_EXTRUDER  0     // Y offset: -front [of the nozzle] +behind
 #define Z_PROBE_OFFSET_FROM_EXTRUDER -1     // Z offset: -below [of the nozzle] (always negative!)
 
-#define Z_RAISE_BEFORE_HOMING        10     // (in mm) Raise Z before homing (G28) for Probe Clearance.
-                                            // Be sure you have this distance over your Z_MAX_POS in case
-
 #define Z_RAISE_BEFORE_PROBING       10     //How much the extruder will be raised before travelling to the first probing point.
 #define Z_RAISE_BETWEEN_PROBINGS      5     //How much the extruder will be raised when travelling from between next probing points
 #define Z_RAISE_AFTER_PROBING         5     //How much the extruder will be raised after the last probing point.
@@ -324,8 +354,8 @@
 //#define Z_PROBE_END_SCRIPT "G1 Z10 F8000\nG1 X10 Y10\nG1 Z0.5"  // These commands will be executed in the end of G29 routine.
                                                                   // Useful to retract a deployable Z probe.
 
-//#define Z_PROBE_SLED                // turn on if you have a z-probe mounted on a sled like those designed by Charles Bell
-//#define SLED_DOCKING_OFFSET 5       // the extra distance the X axis must travel to pick up the sled. 0 should be fine but you can push it further if you'd like.
+//#define Z_PROBE_SLED          // turn on if you have a z-probe mounted on a sled like those designed by Charles Bell
+#define SLED_DOCKING_OFFSET 5   // the extra distance the X axis must travel to pick up the sled. 0 should be fine but you can push it further if you'd like.
 /*****************************************************************************************/
 
 
@@ -336,26 +366,26 @@
  * If you have enabled the Auto bed levelling this add the Support for                   *
  * a dedicated Z PROBE endstop separate from the Z MIN endstop.                          *
  * If you would like to use both a Z PROBE and a Z MIN endstop together                  *
- * or just a Z PROBE with a custom pin, uncomment #define Z_PROBE_ENDSTOP                *
+ * or just a Z PROBE with a custom pin, uncomment #define Z PROBE ENDSTOP                *
  * and read the instructions below.                                                      *
  *                                                                                       *
  * If you want to still use the Z min endstop for homing,                                *
- * disable Z_SAFE_HOMING.                                                                *
+ * disable Z SAFE HOMING.                                                                *
  * Eg: to park the head outside the bed area when homing with G28.                       *
  *                                                                                       *
  * WARNING: The Z MIN endstop will need to set properly as it would                      *
  * without a Z PROBE to prevent head crashes and premature stopping                      *
  * during a print.                                                                       *
- * To use a separte Z PROBE endstop, you must have a Z_PROBE_PIN                         *
+ * To use a separte Z PROBE endstop, you must have a Z PROBE PIN                         *
  * defined in the pins.h file for your control board.                                    *
  * If you are using a servo based Z PROBE, you will need to enable                       *
- * NUM_SERVOS, SERVO_ENDSTOPS and SERVO_ENDSTOPS_ANGLES in                               *
+ * NUM SERVOS, SERVO ENDSTOPS and SERVO ENDSTOPS ANGLES in                               *
  * Configuration_Feature R/C Servo section.                                              *
  *                                                                                       *
  * WARNING: Setting the wrong pin may have unexpected and potentially                    *
  * disastrous outcomes. Use with caution and do your homework.                           *
  *                                                                                       *
- * Uncomment Z_PROBE_ENDSTOP to enable.                                                  *
+ * Uncomment Z PROBE ENDSTOP to enable.                                                  *
  *                                                                                       *
  *****************************************************************************************/
 //#define Z_PROBE_ENDSTOP
@@ -364,10 +394,10 @@
 
 /*****************************************************************************************
  ******************************** Manual home positions **********************************
-/*****************************************************************************************/
+ *****************************************************************************************/
 // The position of the homing switches
-//#define MANUAL_HOME_POSITIONS  // If defined, MANUAL_*_HOME_POS below will be used
-//#define BED_CENTER_AT_0_0  // If defined, the center of the bed is at (X=0, Y=0)
+//#define MANUAL_HOME_POSITIONS   // If defined, MANUAL_*_HOME_POS below will be used
+//#define BED_CENTER_AT_0_0       // If defined, the center of the bed is at (X=0, Y=0)
 
 //Manual homing switch locations:
 #define MANUAL_X_HOME_POS 0

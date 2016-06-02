@@ -416,7 +416,7 @@ static void lcd_implementation_init(
   #elif ENABLED(LCD_I2C_TYPE_MCP23017)
     lcd.setMCPType(LTI_TYPE_MCP23017);
     lcd.begin(LCD_WIDTH, LCD_HEIGHT);
-    lcd.setBacklight(0); //set all the LEDs off to begin with
+    lcd_implementation_update_indicators();
 
   #elif ENABLED(LCD_I2C_TYPE_MCP23008)
     lcd.setMCPType(LTI_TYPE_MCP23008);
@@ -990,14 +990,14 @@ void lcd_implementation_drawedit(const char* pstr, const char* value = NULL) {
     static uint8_t ledsprev = 0;
     uint8_t leds = 0;
 
-    if (target_temperature_bed > 0) leds |= LED_A;
+    if (degTargetBed() > 0) leds |= LED_A;
 
-    if (target_temperature[0] > 0) leds |= LED_B;
+    if (degTargetHotend(0) > 0) leds |= LED_B;
 
     if (fanSpeed) leds |= LED_C;
 
     #if HOTENDS > 1
-      if (target_temperature[1] > 0) leds |= LED_C;
+      if (degTargetHotend(1) > 0) leds |= LED_C;
     #endif
 
     if (leds != ledsprev) {

@@ -530,6 +530,27 @@
   #if DISABLED(SOFTWARE_MAX_ENDSTOPS)
     #error DEPENDENCY ERROR: Missing setting SOFTWARE_MAX_ENDSTOPS
   #endif
+
+  /**
+   * Mesh Bed Leveling
+   */
+  #if ENABLED(MESH_BED_LEVELING)
+    #if MECH(DELTA)
+      #error "MESH_BED_LEVELING does not yet support DELTA printers."
+    #endif
+    #if ENABLED(AUTO_BED_LEVELING_FEATURE)
+      #error "Select AUTO_BED_LEVELING_FEATURE or MESH_BED_LEVELING, not both."
+    #endif
+    #if MESH_NUM_X_POINTS > 7 || MESH_NUM_Y_POINTS > 7
+      #error "MESH_NUM_X_POINTS and MESH_NUM_Y_POINTS need to be less than 8."
+    #endif
+  #elif ENABLED(MANUAL_BED_LEVELING)
+    #error "MESH_BED_LEVELING is required for MANUAL_BED_LEVELING."
+  #endif
+
+  /**
+   * Auto Bed Leveling
+   */
   #if ENABLED(AUTO_BED_LEVELING_FEATURE)
     #if ENABLED(AUTO_BED_LEVELING_GRID)
       #if DISABLED(MIN_PROBE_EDGE)
@@ -1924,4 +1945,12 @@
     #error DEPENDENCY ERROR: You have to set SLED_PIN to a valid pin if you enable Z_PROBE_SLED
   #endif
 
+  /**
+   * Warnings for old configurations
+   */
+  #if WATCH_TEMP_PERIOD > 500
+    #error "WATCH_TEMP_PERIOD now uses seconds instead of milliseconds."
+  #elif defined(Z_RAISE_BEFORE_HOMING)
+    #error "Z_RAISE_BEFORE_HOMING is deprecated. Use MIN_Z_HEIGHT_FOR_HOMING instead."
+  #endif
 #endif //SANITYCHECK_H

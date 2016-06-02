@@ -170,8 +170,10 @@ FORCE_INLINE float intersection_distance(float initial_rate, float final_rate, f
   return (acceleration * 2 * distance - initial_rate * initial_rate + final_rate * final_rate) / (acceleration * 4);
 }
 
-// Calculates trapezoid parameters so that the entry- and exit-speed is compensated by the provided factors.
-
+/**
+ * Calculate trapezoid parameters, multiplying the entry- and exit-speeds
+ * by the provided factors.
+ */
 void calculate_trapezoid_for_block(block_t* block, float entry_factor, float exit_factor) {
   unsigned long initial_rate = ceil(block->nominal_rate * entry_factor),
                 final_rate = ceil(block->nominal_rate * exit_factor); // (steps per second)
@@ -218,8 +220,11 @@ void calculate_trapezoid_for_block(block_t* block, float entry_factor, float exi
   CRITICAL_SECTION_END;
 }
 
-// Calculates the maximum allowable speed at this point when you must be able to reach target_velocity using the
-// acceleration within the allotted distance.
+/**
+ * Calculate the maximum allowable speed at this point, in order
+ * to reach 'target_velocity' using 'acceleration' within a given
+ * 'distance'.
+ */
 FORCE_INLINE float max_allowable_speed(float acceleration, float target_velocity, float distance) {
   return sqrt(target_velocity * target_velocity - 2 * acceleration * distance);
 }
@@ -259,24 +264,27 @@ void planner_reverse_pass_kernel(block_t* previous, block_t* current, block_t* n
   } // Skip last block. Already initialized and set for recalculation.
 }
 
-// planner_recalculate() needs to go over the current plan twice. Once in reverse and once forward. This
-// implements the reverse pass.
+/**
+ * recalculate() needs to go over the current plan twice.
+ * Once in reverse and once forward. This implements the reverse pass.
+ */
 void planner_reverse_pass() {
-  uint8_t block_index = block_buffer_head;
 
-  //Make a local copy of block_buffer_tail, because the interrupt can alter it
-  CRITICAL_SECTION_START;
-    unsigned char tail = block_buffer_tail;
-  CRITICAL_SECTION_END
+  if (movesplanned() > 3) {
 
-  if (BLOCK_MOD(block_buffer_head - tail + BLOCK_BUFFER_SIZE) > 3) { // moves queued
-    block_index = BLOCK_MOD(block_buffer_head - 3);
     block_t* block[3] = { NULL, NULL, NULL };
-    while (block_index != tail) {
-      block_index = prev_block_index(block_index);
+
+    //Make a local copy of block_buffer_tail, because the interrupt can alter it
+    CRITICAL_SECTION_START;
+      uint8_t tail = block_buffer_tail;
+    CRITICAL_SECTION_END
+
+    uint8_t b = BLOCK_MOD(block_buffer_head - 3);
+    while (b != tail) {
+      b = prev_block_index(b);
       block[2] = block[1];
       block[1] = block[0];
-      block[0] = &block_buffer[block_index];
+      block[0] = &block_buffer[b];
       planner_reverse_pass_kernel(block[0], block[1], block[2]);
     }
   }
@@ -304,25 +312,27 @@ void planner_forward_pass_kernel(block_t* previous, block_t* current, block_t* n
   }
 }
 
-// planner_recalculate() needs to go over the current plan twice. Once in reverse and once forward. This
-// implements the forward pass.
+/**
+ * recalculate() needs to go over the current plan twice.
+ * Once in reverse and once forward. This implements the forward pass.
+ */
 void planner_forward_pass() {
-  uint8_t block_index = block_buffer_tail;
   block_t* block[3] = { NULL, NULL, NULL };
 
-  while (block_index != block_buffer_head) {
+  for (uint8_t b = block_buffer_tail; b != block_buffer_head; b = next_block_index(b)) {
     block[0] = block[1];
     block[1] = block[2];
-    block[2] = &block_buffer[block_index];
+    block[2] = &block_buffer[b];
     planner_forward_pass_kernel(block[0], block[1], block[2]);
-    block_index = next_block_index(block_index);
   }
   planner_forward_pass_kernel(block[1], block[2], NULL);
 }
 
-// Recalculates the trapezoid speed profiles for all blocks in the plan according to the
-// entry_factor for each junction. Must be called by planner_recalculate() after
-// updating the blocks.
+/**
+ * Recalculate the trapezoid speed profiles for all blocks in the plan
+ * according to the entry_factor for each junction. Must be called by
+ * recalculate() after updating the blocks.
+ */
 void planner_recalculate_trapezoids() {
   int8_t block_index = block_buffer_tail;
   block_t* current;
@@ -410,34 +420,42 @@ void plan_init() {
   }
 #endif //AUTOTEMP
 
+/**
+ * Maintain fans, paste extruder pressure, 
+ */
 void check_axes_activity() {
   unsigned char axis_active[NUM_AXIS] = { 0 },
                 tail_fan_speed = fanSpeed;
+
   #if ENABLED(BARICUDA)
     unsigned char tail_valve_pressure = ValvePressure,
                   tail_e_to_p_pressure = EtoPPressure;
   #endif
 
-  block_t* block;
-
   if (blocks_queued()) {
-    uint8_t block_index = block_buffer_tail;
-    tail_fan_speed = block_buffer[block_index].fan_speed;
+
+    tail_fan_speed = block_buffer[block_buffer_tail].fan_speed;
+
+    block_t* block;
+
     #if ENABLED(BARICUDA)
-      block = &block_buffer[block_index];
+      block = &block_buffer[block_buffer_tail];
       tail_valve_pressure = block->valve_pressure;
       tail_e_to_p_pressure = block->e_to_p_pressure;
     #endif
 
-    while (block_index != block_buffer_head) {
-      block = &block_buffer[block_index];
+    for (uint8_t b = block_buffer_tail; b != block_buffer_head; b = next_block_index(b)) {
+      block = &block_buffer[b];
       for (int i = 0; i < NUM_AXIS; i++) if (block->steps[i]) axis_active[i]++;
-      block_index = next_block_index(block_index);
     }
   }
   if (DISABLE_X && !axis_active[X_AXIS]) disable_x();
   if (DISABLE_Y && !axis_active[Y_AXIS]) disable_y();
-  if (DISABLE_Z && !axis_active[Z_AXIS]) disable_z();
+
+  #if DISABLED(LASERBEAM)
+    if (DISABLE_Z && !axis_active[Z_AXIS]) disable_z();
+  #endif
+
   if (DISABLE_E && !axis_active[E_AXIS]) {
     disable_e0();
     disable_e1();
@@ -455,19 +473,24 @@ void check_axes_activity() {
           fan_kick_end = ms + FAN_KICKSTART_TIME;
           tail_fan_speed = 255;
         }
-        else if (fan_kick_end > ms)
-          // Fan still spinning up.
-          tail_fan_speed = 255;
-        }
         else {
-          fan_kick_end = 0;
+          if (PENDING(ms, fan_kick_end)) {
+            // Fan still spinning up.
+            tail_fan_speed = 255;
+          }
         }
+      }
+      else {
+        fan_kick_end = 0;
+      }
     #endif //FAN_KICKSTART_TIME
+
     #if ENABLED(FAN_MIN_PWM)
       #define CALC_FAN_SPEED (tail_fan_speed ? ( FAN_MIN_PWM + (tail_fan_speed * (255 - (FAN_MIN_PWM))) / 255 ) : 0)
     #else
       #define CALC_FAN_SPEED tail_fan_speed
     #endif // FAN_MIN_PWM
+
     #if ENABLED(FAN_SOFT_PWM)
       fanSpeedSoftPwm = CALC_FAN_SPEED;
     #else
@@ -487,14 +510,19 @@ void check_axes_activity() {
       analogWrite(HEATER_2_PIN, tail_e_to_p_pressure);
     #endif
   #endif
-
 }
 
-float junction_deviation = 0.1;
-// Add a new linear movement to the buffer. steps[X_AXIS], _y and _z is the absolute position in
-// mm. Microseconds specify how many microseconds the move should take to perform. To aid acceleration
-// calculation the caller must also provide the physical length of the line in millimeters.
-#if ENABLED(AUTO_BED_LEVELING_FEATURE)
+/**
+ * Planner::buffer_line
+ *
+ * Add a new linear movement to the buffer.
+ *
+ *  x,y,z,e   - target position in mm
+ *  feed_rate - (target) speed of the move
+ *  extruder  - target extruder
+ */
+
+#if ENABLED(AUTO_BED_LEVELING_FEATURE) || ENABLED(MESH_BED_LEVELING)
   void plan_buffer_line(float x, float y, float z, const float& e, float feed_rate, const uint8_t extruder, const uint8_t driver)
 #else
   void plan_buffer_line(const float& x, const float& y, const float& z, const float& e, float feed_rate, const uint8_t extruder, const uint8_t driver)
@@ -517,14 +545,16 @@ float junction_deviation = 0.1;
   // Rest here until there is room in the buffer.
   while (block_buffer_tail == next_buffer_head) idle();
 
-  #if ENABLED(AUTO_BED_LEVELING_FEATURE)
-    apply_rotation_xyz(plan_bed_level_matrix, x, y, z);
+  #if ENABLED(MESH_BED_LEVELING)
+    if (mbl.active) z += mbl.get_z(x - home_offset[X_AXIS], y - home_offset[Y_AXIS]);
+  #elif ENABLED(AUTO_BED_LEVELING_FEATURE)
+    apply_rotation_xyz(bed_level_matrix, x, y, z);
   #endif
 
   // The target position of the tool in absolute steps
   // Calculate target position in absolute steps
   // this should be done after the wait, because otherwise a M92 code within the gcode disrupts this calculation somehow
-  int32_t target[NUM_AXIS] = {
+  long target[NUM_AXIS] = {
     lround(x * axis_steps_per_unit[X_AXIS]),
     lround(y * axis_steps_per_unit[Y_AXIS]),
     lround(z * axis_steps_per_unit[Z_AXIS]),
@@ -542,23 +572,10 @@ float junction_deviation = 0.1;
     }
   #endif
 
-  int32_t dx = target[X_AXIS] - position[X_AXIS],
-          dy = target[Y_AXIS] - position[Y_AXIS],
-          dz = target[Z_AXIS] - position[Z_AXIS],
-          de = target[E_AXIS] - position[E_AXIS];
-  #if MECH(COREXY)
-    int32_t da = dx + COREX_YZ_FACTOR * dy;
-    int32_t db = dx - COREX_YZ_FACTOR * dy;
-  #elif MECH(COREYX)
-    int32_t da = dy + COREX_YZ_FACTOR * dx;
-    int32_t db = dy - COREX_YZ_FACTOR * dx;
-  #elif MECH(COREXZ)
-    int32_t da = dx + COREX_YZ_FACTOR * dz;
-    int32_t dc = dx - COREX_YZ_FACTOR * dz;
-  #elif MECH(COREZX)
-    int32_t da = dz + COREX_YZ_FACTOR * dx;
-    int32_t dc = dz - COREX_YZ_FACTOR * dx;
-  #endif
+  long  dx = target[X_AXIS] - position[X_AXIS],
+        dy = target[Y_AXIS] - position[Y_AXIS],
+        dz = target[Z_AXIS] - position[Z_AXIS],
+        de = target[E_AXIS] - position[E_AXIS];
 
   #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
     if (de) {
@@ -595,6 +612,20 @@ float junction_deviation = 0.1;
 
   // Mark block as not busy (Not executed by the stepper interrupt)
   block->busy = false;
+
+  #if MECH(COREXY)
+    long da = dx + COREX_YZ_FACTOR * dy;
+    long db = dx - COREX_YZ_FACTOR * dy;
+  #elif MECH(COREYX)
+    long da = dy + COREX_YZ_FACTOR * dx;
+    long db = dy - COREX_YZ_FACTOR * dx;
+  #elif MECH(COREXZ)
+    long da = dx + COREX_YZ_FACTOR * dz;
+    long dc = dx - COREX_YZ_FACTOR * dz;
+  #elif MECH(COREZX)
+    long da = dz + COREX_YZ_FACTOR * dx;
+    long dc = dz - COREX_YZ_FACTOR * dx;
+  #endif
 
   // Number of steps for each axis
   #if MECH(COREXY) || MECH(COREYX)
@@ -873,6 +904,7 @@ float junction_deviation = 0.1;
     block->laser_duration = laser.duration;
     block->laser_status = laser.status;
     block->laser_mode = laser.mode;
+
     // When operating in PULSED or RASTER modes, laser pulsing must operate in sync with movement.
     // Calculate steps between laser firings (steps_l) and consider that when determining largest
     // interval between steps for X, Y, Z, E, L to feed to the motion control code.
@@ -971,7 +1003,7 @@ float junction_deviation = 0.1;
 
   // Calculate and limit speed in mm/sec for each axis
   float current_speed[NUM_AXIS];
-  float speed_factor = 1.0; //factor <=1 do decrease speed
+  float speed_factor = 1.0; // factor <=1 do decrease speed
   for (int i = 0; i < NUM_AXIS; i++) {
     current_speed[i] = delta_mm[i] * inverse_second;
     float cs = fabs(current_speed[i]), mf = max_feedrate[i];
@@ -1057,6 +1089,9 @@ float junction_deviation = 0.1;
   #endif
 
   #if 0  // Use old jerk for now
+
+    float junction_deviation = 0.1;
+
     // Compute path unit vector
     double unit_vec[3];
 
@@ -1194,13 +1229,15 @@ float junction_deviation = 0.1;
    *
    * On CORE machines XYZ is derived from ABC.
    */
-  vector_3 plan_get_position() {
+  vector_3 plan_adjusted_position() {
     vector_3 position = vector_3(st_get_axis_position_mm(X_AXIS), st_get_axis_position_mm(Y_AXIS), st_get_axis_position_mm(Z_AXIS));
 
     //position.debug("in plan_get position");
-    //plan_bed_level_matrix.debug("in plan_get_position");
+    //plan_bed_level_matrix.debug("in plan_adjusted_position");
+
     matrix_3x3 inverse = matrix_3x3::transpose(plan_bed_level_matrix);
     //inverse.debug("in plan_get inverse");
+
     position.apply_rotation(inverse);
     //position.debug("after rotation");
 
@@ -1213,13 +1250,15 @@ float junction_deviation = 0.1;
  *
  * On CORE machines stepper ABC will be translated from the given XYZ.
  */
-#if ENABLED(AUTO_BED_LEVELING_FEATURE)
+#if ENABLED(AUTO_BED_LEVELING_FEATURE) || ENABLED(MESH_BED_LEVELING)
   void plan_set_position(float x, float y, float z, const float& e)
 #else
   void plan_set_position(const float& x, const float& y, const float& z, const float& e)
-#endif // AUTO_BED_LEVELING_FEATURE
+#endif // AUTO_BED_LEVELING_FEATURE || MESH_BED_LEVELING
 {
-  #if ENABLED(AUTO_BED_LEVELING_FEATURE)
+  #if ENABLED(MESH_BED_LEVELING)
+    if (mbl.active) z += mbl.get_z(x - home_offset[X_AXIS], y - home_offset[Y_AXIS]);
+  #elif ENABLED(AUTO_BED_LEVELING_FEATURE)
     apply_rotation_xyz(plan_bed_level_matrix, x, y, z);
   #endif
 

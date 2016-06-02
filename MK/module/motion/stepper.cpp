@@ -1104,14 +1104,14 @@ long st_get_position(uint8_t axis) {
 float st_get_axis_position_mm(AxisEnum axis) {
   float axis_pos;
   #if MECH(COREXY) || MECH(COREYX) || MECH(COREXZ) || MECH(COREZX)
-    if (axis == X_AXIS || axis == CORE_AXIS_2) {
+    if (axis == CORE_AXIS_1 || axis == CORE_AXIS_2) {
       CRITICAL_SECTION_START;
-      long  pos1 = count_position[A_AXIS],
+      long  pos1 = count_position[CORE_AXIS_1],
             pos2 = count_position[CORE_AXIS_2];
       CRITICAL_SECTION_END;
       // ((a1+a2)+(a1-a2))/2 -> (a1+a2+a1-a2)/2 -> (a1+a1)/2 -> a1
       // ((a1+a2)-(a1-a2))/2 -> (a1+a2-a1+a2)/2 -> (a2+a2)/2 -> a2
-      axis_pos = (pos1 + ((axis == X_AXIS) ? pos2 : -pos2)) / 2.0f;
+      axis_pos = (pos1 + ((axis == CORE_AXIS_1) ? pos2 : -pos2)) / 2.0f;
     }
     else
       axis_pos = st_get_position(axis);
@@ -1160,10 +1160,10 @@ void endstop_triggered(AxisEnum axis) {
   #if MECH(COREXY) || MECH(COREYX) || MECH(COREXZ) || MECH(COREZX)
 
     float axis_pos = count_position[axis];
-    if (axis == A_AXIS)
+    if (axis == CORE_AXIS_1)
       axis_pos = (axis_pos + count_position[CORE_AXIS_2]) / 2;
     else if (axis == CORE_AXIS_2)
-      axis_pos = (count_position[A_AXIS] - axis_pos) / 2;
+      axis_pos = (count_position[CORE_AXIS_1] - axis_pos) / 2;
     endstops_trigsteps[axis] = axis_pos;
 
   #else // ! COREXY || COREYX || COREXZ || COREZX
