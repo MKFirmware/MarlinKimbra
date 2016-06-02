@@ -5626,6 +5626,7 @@ inline void gcode_M81() {
       laser_peripherals_off();
     #endif
   #endif
+
   delay_ms(1000); // Wait 1 second before switching off
 
   #if HAS(SUICIDE)

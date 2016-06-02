@@ -35,6 +35,7 @@
  *       either sets a Sane Default, or results in No Change to the existing value.
  *
  */
+
 #include "base.h"
 
 #define EEPROM_VERSION "MKV428"
