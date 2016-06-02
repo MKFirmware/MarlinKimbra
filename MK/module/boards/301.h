@@ -74,25 +74,6 @@
 #define KILL_PIN           -1 // 80 with Smart Controller LCD
 #define SUICIDE_PIN        -1 // PIN that has to be turned on right after start, to keep power flowing.
 
-#undef LASER_TTL_PIN
-#undef LASER_PWR_PIN
-#if LASER_CONTROL == 1
-   #define LASER_PWR_PIN    5
-   #define LASER_TTL_PIN -1
-#endif
-#if LASER_CONTROL == 2
-   #define LASER_TTL_PIN 5 // Digital pins 2, 3, 5, 6, 7, 8 are attached to timers we can use
-   #define LASER_PWR_PIN   2
-#endif
-
-#if ENABLED(LASER_PERIPHERALS)
-   #undef LASER_PERIPHERALS_PIN
-   #undef LASER_PERIPHERALS_STATUS_PIN
-   #define LASER_PERIPHERALS_PIN       11
-   #define LASER_PERIPHERALS_STATUS_PIN      4
-#endif
-
-
 
 #if ENABLED(ULTRA_LCD)
   #define KILL_PIN 80

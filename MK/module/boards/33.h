@@ -71,36 +71,6 @@
 #define ORIG_TEMP_BED_PIN       14  // ANALOG NUMBERING
 
 
-#if ENABLED(LASERBEAM)
-	#undef LASER_TTL_PIN
-	#undef LASER_PWR_PIN
-	#if LASER_CONTROL == 1
-  		#define LASER_PWR_PIN    5
-  		#define LASER_TTL_PIN -1
-	#endif
-	#if LASER_CONTROL == 2
-   	#define LASER_TTL_PIN 6 // Digital pins 2, 3, 5, 6, 7, 8 are attached to timers we can use
-   	#define LASER_PWR_PIN  5 
-	#endif
-#endif
-#if ENABLED(LASER_PERIPHERALS)
-   #undef LASER_PERIPHERALS_PIN
-   #undef LASER_PERIPHERALS_STATUS_PIN
-   #define LASER_PERIPHERALS_PIN       11
-   #define LASER_PERIPHERALS_STATUS_PIN      4
-#endif
-
-#if ENABLED(PIDTEMPCOOLER)
-   #undef COOLER_PIN
-	#define COOLER_PIN 2
-#endif
-
-#if ENABLED(FLOWMETER_SENSOR)
-  #undef FLOWMETER_PIN
-  #define FLOWMETER_PIN 21
-#endif
-
-
 #if ENABLED(REPRAP_DISCOUNT_SMART_CONTROLLER) || ENABLED(G3D_PANEL)
   #define KILL_PIN              41
 #else
