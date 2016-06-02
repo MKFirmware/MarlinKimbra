@@ -4988,9 +4988,7 @@ inline void gcode_G92() {
       current_position[i] = v;
 
       if (i == E_AXIS) {
-        #if DISABLED(MUVE_Z_PEEL)
-          plan_set_e_position(v);
-        #endif
+        plan_set_e_position(v);
       }
       else {
         position_shift[i] += v - p; // Offset the coordinate space
