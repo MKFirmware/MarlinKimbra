@@ -1176,7 +1176,7 @@ static void update_software_endstops(AxisEnum axis) {
       }
       else if (dual_x_carriage_mode == DXC_DUPLICATION_MODE) {
         sw_endstop_min[X_AXIS] = base_min_pos(X_AXIS) + offs;
-        sw_endstop_max[X_AXIS] = min(base_max_pos(X_AXIS), dual_max_x - duplicate_extruder_x_offset) + offs;
+        sw_endstop_max[X_AXIS] = min(base_max_pos(X_AXIS), dual_max_x - duplicate_hotend_x_offset) + offs;
         return;
       }
     }
