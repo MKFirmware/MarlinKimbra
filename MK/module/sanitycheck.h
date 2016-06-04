@@ -588,9 +588,6 @@
     #if DISABLED(Z_PROBE_OFFSET_FROM_EXTRUDER)
       #error DEPENDENCY ERROR: Missing setting Z_PROBE_OFFSET_FROM_EXTRUDER
     #endif
-    #if DISABLED(Z_RAISE_BEFORE_HOMING)
-      #error DEPENDENCY ERROR: Missing setting Z_RAISE_BEFORE_HOMING
-    #endif
     #if DISABLED(Z_RAISE_BEFORE_PROBING)
       #error DEPENDENCY ERROR: Missing setting Z_RAISE_BEFORE_PROBING
     #endif
