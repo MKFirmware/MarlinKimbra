@@ -12,17 +12,17 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
 /**
  * cartesian_correction.cpp
- * A class that manages hysteresis by inserting extra plan_buffer_line when necessary
+ * A class that manages hysteresis by inserting extra planner.buffer_line when necessary
  * A class that manages ZWobble
  *
  * Copyright (c) 2012 Neil James Martin
@@ -86,7 +86,7 @@
   //===========================================================================
   void Hysteresis::calcSteps() {
     for (uint8_t i = 0; i < NUM_AXIS; i++)
-      m_hysteresis_steps[i] = (long)(m_hysteresis_mm[i] * axis_steps_per_unit[i]);
+      m_hysteresis_steps[i] = (long)(m_hysteresis_mm[i] * planner.axis_steps_per_unit[i]);
   }
 
   //===========================================================================
@@ -135,9 +135,9 @@
   }
 
   //===========================================================================
-  // insert a plan_buffer_line if required to handle any hysteresis
+  // insert a planner.buffer_line if required to handle any hysteresis
   void Hysteresis::InsertCorrection(const float x, const float y, const float z, const float e) {
-    long destination[NUM_AXIS] = {x * axis_steps_per_unit[X_AXIS], y * axis_steps_per_unit[Y_AXIS], z * axis_steps_per_unit[Z_AXIS], e * axis_steps_per_unit[E_AXIS + active_extruder]};
+    long destination[NUM_AXIS] = {x * planner.axis_steps_per_unit[X_AXIS], y * planner.axis_steps_per_unit[Y_AXIS], z * planner.axis_steps_per_unit[Z_AXIS], e * planner.axis_steps_per_unit[E_AXIS + active_extruder]};
     uint8_t direction_bits = calc_direction_bits(position, destination);
     uint8_t move_bits = calc_move_bits(position, destination);
 
@@ -459,12 +459,12 @@
   }
 
   //===========================================================================
-  // insert a plan_buffer_line if required to handle any hysteresis
+  // insert a planner.buffer_line if required to handle any hysteresis
   void ZWobble::InsertCorrection(const float targetZ) {
 
     if (!m_consistent) return; // don't go through consistency checks all the time; just check one bool
 
-    float originZ = (float)position[Z_AXIS] / axis_steps_per_unit[Z_AXIS];
+    float originZ = (float)position[Z_AXIS] / planner.axis_steps_per_unit[Z_AXIS];
 
     if (originZ < ZWOBBLE_MIN_Z || targetZ < ZWOBBLE_MIN_Z) return;
 
@@ -492,7 +492,7 @@
       ECHO_MV(" Target Rod: ", targetZRod);
 
     // difference in steps between the correct movement (originZRod->targetZRod) and the planned movement
-    long stepDiff = lround((targetZRod - originZRod) * axis_steps_per_unit[Z_AXIS]) - (lround(targetZ * axis_steps_per_unit[Z_AXIS]) - position[Z_AXIS]);
+    long stepDiff = lround((targetZRod - originZRod) * planner.axis_steps_per_unit[Z_AXIS]) - (lround(targetZ * planner.axis_steps_per_unit[Z_AXIS]) - position[Z_AXIS]);
 
     if (DEBUGGING(DEBUG))
       ECHO_EMV(" stepDiff: ", stepDiff);

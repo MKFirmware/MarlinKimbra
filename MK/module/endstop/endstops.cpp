@@ -25,7 +25,7 @@
  */
 
 #include "../../base.h"
-#include "endstops.h"
+//#include "endstops.h"
 
 // TEST_ENDSTOP: test the old and the current status of an endstop
 #define TEST_ENDSTOP(ENDSTOP) (TEST(current_endstop_bits & old_endstop_bits, ENDSTOP))
@@ -189,6 +189,9 @@ void Endstops::report_state() {
         card.sdprinting = false;
         card.closeFile();
         quickStop();
+        #if NOMECH(DELTA) && NOMECH(SCARA)
+          set_current_position_from_planner();
+        #endif
         disable_all_heaters(); // switch off all heaters.
         disable_all_coolers();
       }

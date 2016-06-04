@@ -12,17 +12,17 @@
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
 /**
  * cartesian_correction.h
- * A class that manages hysteresis by inserting extra plan_buffer_line when necessary
+ * A class that manages hysteresis by inserting extra planner.buffer_line when necessary
  * A class that manages ZWobble
  *
  * Copyright (c) 2012 Neil James Martin
