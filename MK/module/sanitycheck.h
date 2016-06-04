@@ -1624,8 +1624,8 @@
         #if Z_ENDSTOP_SERVO_NR < 0
           #error DEPENDENCY ERROR: You must have Z_ENDSTOP_SERVO_NR set to at least 0 or above to use Z_PROBE_ENDSTOP.
         #endif
-        #if DISABLED(SERVO_ENDSTOP_ANGLES)
-          #error DEPENDENCY ERROR: You must have SERVO_ENDSTOP_ANGLES EXIST for Z Extend and Retract to use Z_PROBE_ENDSTOP.
+        #if DISABLED(Z_ENDSTOP_SERVO_ANGLES)
+          #error DEPENDENCY ERROR: You must have Z_ENDSTOP_SERVO_ANGLES EXIST for Z Extend and Retract to use Z_PROBE_ENDSTOP.
         #endif
       #endif
     #endif
