@@ -3881,11 +3881,10 @@ inline void gcode_G28() {
              */
             destination[X_AXIS] = round(Z_SAFE_HOMING_X_POINT - (X_PROBE_OFFSET_FROM_EXTRUDER));
             destination[Y_AXIS] = round(Z_SAFE_HOMING_Y_POINT - (Y_PROBE_OFFSET_FROM_EXTRUDER));
-            destination[Z_AXIS] = -(Z_RAISE_BEFORE_HOMING) * home_dir(Z_AXIS);  // Set destination away from bed
+            destination[Z_AXIS] = current_position[Z_AXIS]; //z is already at the right height
             feedrate = xy_travel_speed;
 
             if (DEBUGGING(INFO)) {
-              ECHO_LMV(INFO, "Raise Z (before homing) by ", (float)Z_RAISE_BEFORE_HOMING);
               DEBUG_POS("> Z_SAFE_HOMING > home_all_axis", current_position);
               DEBUG_POS("> Z_SAFE_HOMING > home_all_axis", destination);
             }
