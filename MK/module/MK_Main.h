@@ -79,8 +79,12 @@ void prepare_move();
 void kill(const char *);
 void Stop();
 
+#if !MECH(DELTA) && !MECH(SCARA)
+  void set_current_position_from_planner();
+#endif
+
 #if ENABLED(FILAMENT_RUNOUT_SENSOR)
-  void filrunout();
+  void handle_filament_runout();
 #endif
 
 /**

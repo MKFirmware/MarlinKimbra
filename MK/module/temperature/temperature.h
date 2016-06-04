@@ -33,11 +33,11 @@
 
   Grbl is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
   GNU General Public License for more details.
 
   You should have received a copy of the GNU General Public License
-  along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
+  along with Grbl. If not, see <http://www.gnu.org/licenses/>.
 */
 
 #ifndef TEMPERATURE_H
@@ -198,6 +198,12 @@ FORCE_INLINE bool isCoolingHotend(uint8_t hotend) { return target_temperature[HO
 FORCE_INLINE bool isCoolingBed() { return target_temperature_bed < current_temperature_bed; }
 FORCE_INLINE bool isCoolingChamber() { return target_temperature_chamber < current_temperature_chamber; }
 FORCE_INLINE bool isCoolingCooler() { return target_temperature_cooler < current_temperature_cooler; } 
+
+#if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
+  FORCE_INLINE bool tooColdToHotend(uint8_t h) { return degHotend(h) < extrude_min_temp; }
+#else
+  FORCE_INLINE bool tooColdToHotend(uint8_t h) { UNUSED(h); return false; }
+#endif
 
 #define HOTEND_ROUTINES(NR) \
   FORCE_INLINE float degHotend##NR() { return degHotend(NR); } \

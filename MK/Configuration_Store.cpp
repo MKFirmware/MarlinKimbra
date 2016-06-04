@@ -43,21 +43,30 @@
 /**
  * MKV428 EEPROM Layout:
  *
- *  ver
- *  M92   XYZ E0 ...      axis_steps_per_unit X,Y,Z,E0 ... (per extruder)
- *  M203  XYZ E0 ...      max_feedrate X,Y,Z,E0 ... (per extruder)
- *  M201  XYZ E0 ...      max_acceleration_units_per_sq_second X,Y,Z,E0 ... (per extruder)
- *  M204  P               acceleration
- *  M204  R   E0 ...      retract_acceleration (per extruder)
- *  M204  T               travel_acceleration
- *  M205  S               minimumfeedrate
- *  M205  T               mintravelfeedrate
- *  M205  B               minsegmenttime
- *  M205  X               max_xy_jerk
- *  M205  Z               max_z_jerk
- *  M205  E   E0 ...      max_e_jerk (per extruder)
+ *  Version
+ *
+ *  M92   XYZ E0 ...      planner.axis_steps_per_unit X,Y,Z,E0 ... (per extruder)
+ *  M203  XYZ E0 ...      planner.max_feedrate X,Y,Z,E0 ... (per extruder)
+ *  M201  XYZ E0 ...      planner.max_acceleration_units_per_sq_second X,Y,Z,E0 ... (per extruder)
+ *  M204  P               planner.acceleration
+ *  M204  R   E0 ...      planner.retract_acceleration (per extruder)
+ *  M204  T               planner.travel_acceleration
+ *  M205  S               planner.min_feedrate
+ *  M205  T               planner.min_travel_feedrate
+ *  M205  B               planner.min_segment_time
+ *  M205  X               planner.max_xy_jerk
+ *  M205  Z               planner.max_z_jerk
+ *  M205  E   E0 ...      planner.max_e_jerk (per extruder)
  *  M206  XYZ             home_offset (x3)
  *  M218  T   XY          hotend_offset (x4) (T0..3)
+ *
+ * Mesh bed leveling:
+ *  M420  S               status (uint8)
+ *                        z_offset (float)
+ *                        mesh_num_x (uint8 as set in firmware)
+ *                        mesh_num_y (uint8 as set in firmware)
+ *  G29   S3  XYZ         z_values[][] (float)
+ *
  *  M666  P               zprobe_zoffset
  *
  * HOTENDS AD595:
@@ -164,26 +173,31 @@ void Config_StoreSettings() {
   char ver[7] = "000000";
   int i = EEPROM_OFFSET;
   EEPROM_WRITE_VAR(i, ver); // invalidate data first
-  EEPROM_WRITE_VAR(i, axis_steps_per_unit);
-  EEPROM_WRITE_VAR(i, max_feedrate);
-  EEPROM_WRITE_VAR(i, max_acceleration_units_per_sq_second);
-  EEPROM_WRITE_VAR(i, acceleration);
-  EEPROM_WRITE_VAR(i, retract_acceleration);
-  EEPROM_WRITE_VAR(i, travel_acceleration);
-  EEPROM_WRITE_VAR(i, minimumfeedrate);
-  EEPROM_WRITE_VAR(i, mintravelfeedrate);
-  EEPROM_WRITE_VAR(i, minsegmenttime);
-  EEPROM_WRITE_VAR(i, max_xy_jerk);
-  EEPROM_WRITE_VAR(i, max_z_jerk);
-  EEPROM_WRITE_VAR(i, max_e_jerk);
+  EEPROM_WRITE_VAR(i, planner.axis_steps_per_unit);
+  EEPROM_WRITE_VAR(i, planner.max_feedrate);
+  EEPROM_WRITE_VAR(i, planner.max_acceleration_units_per_sq_second);
+  EEPROM_WRITE_VAR(i, planner.acceleration);
+  EEPROM_WRITE_VAR(i, planner.retract_acceleration);
+  EEPROM_WRITE_VAR(i, planner.travel_acceleration);
+  EEPROM_WRITE_VAR(i, planner.min_feedrate);
+  EEPROM_WRITE_VAR(i, planner.min_travel_feedrate);
+  EEPROM_WRITE_VAR(i, planner.min_segment_time);
+  EEPROM_WRITE_VAR(i, planner.max_xy_jerk);
+  EEPROM_WRITE_VAR(i, planner.max_z_jerk);
+  EEPROM_WRITE_VAR(i, planner.max_e_jerk);
   EEPROM_WRITE_VAR(i, home_offset);
   EEPROM_WRITE_VAR(i, hotend_offset);
 
   #if ENABLED(MESH_BED_LEVELING)
     // Compile time test that sizeof(mbl.z_values) is as expected
     typedef char c_assert[(sizeof(mbl.z_values) == (MESH_NUM_X_POINTS) * (MESH_NUM_Y_POINTS) * sizeof(dummy)) ? 1 : -1];
-    EEPROM_WRITE_VAR(i, mbl.active);
+    uint8_t mesh_num_x  = MESH_NUM_X_POINTS,
+            mesh_num_y  = MESH_NUM_Y_POINTS,
+            dummy_uint8 = mbl.status & _BV(MBL_STATUS_HAS_MESH_BIT);
+    EEPROM_WRITE_VAR(i, dummy_uint8);
     EEPROM_WRITE_VAR(i, mbl.z_offset);
+    EEPROM_WRITE_VAR(i, mesh_num_x);
+    EEPROM_WRITE_VAR(i, mesh_num_y);
     EEPROM_WRITE_VAR(i, mbl.z_values);
   #endif
 
@@ -327,28 +341,31 @@ void Config_RetrieveSettings() {
     float dummy = 0;
 
     // version number match
-    EEPROM_READ_VAR(i, axis_steps_per_unit);
-    EEPROM_READ_VAR(i, max_feedrate);
-    EEPROM_READ_VAR(i, max_acceleration_units_per_sq_second);
+    EEPROM_READ_VAR(i, planner.axis_steps_per_unit);
+    EEPROM_READ_VAR(i, planner.max_feedrate);
+    EEPROM_READ_VAR(i, planner.max_acceleration_units_per_sq_second);
 
     // steps per sq second need to be updated to agree with the units per sq second (as they are what is used in the planner)
-    reset_acceleration_rates();
+    planner.reset_acceleration_rates();
 
-    EEPROM_READ_VAR(i, acceleration);
-    EEPROM_READ_VAR(i, retract_acceleration);
-    EEPROM_READ_VAR(i, travel_acceleration);
-    EEPROM_READ_VAR(i, minimumfeedrate);
-    EEPROM_READ_VAR(i, mintravelfeedrate);
-    EEPROM_READ_VAR(i, minsegmenttime);
-    EEPROM_READ_VAR(i, max_xy_jerk);
-    EEPROM_READ_VAR(i, max_z_jerk);
-    EEPROM_READ_VAR(i, max_e_jerk);
+    EEPROM_READ_VAR(i, planner.acceleration);
+    EEPROM_READ_VAR(i, planner.retract_acceleration);
+    EEPROM_READ_VAR(i, planner.travel_acceleration);
+    EEPROM_READ_VAR(i, planner.min_feedrate);
+    EEPROM_READ_VAR(i, planner.min_travel_feedrate);
+    EEPROM_READ_VAR(i, planner.min_segment_time);
+    EEPROM_READ_VAR(i, planner.max_xy_jerk);
+    EEPROM_READ_VAR(i, planner.max_z_jerk);
+    EEPROM_READ_VAR(i, planner.max_e_jerk);
     EEPROM_READ_VAR(i, home_offset);
     EEPROM_READ_VAR(i, hotend_offset);
 
     #if ENABLED(MESH_BED_LEVELING)
-      EPROM_READ_VAR(i, mbl.active);
+      uint8_t mesh_num_x = 0, mesh_num_y = 0;
+      EEPROM_READ_VAR(i, mbl.status);
       EEPROM_READ_VAR(i, mbl.z_offset);
+      EEPROM_READ_VAR(i, mesh_num_x);
+      EEPROM_READ_VAR(i, mesh_num_y);
       EEPROM_READ_VAR(i, mbl.z_values);
     #endif
 
@@ -508,14 +525,14 @@ void Config_ResetDefault() {
   #endif
 
   for (int8_t i = 0; i < 3 + EXTRUDERS; i++) {
-    axis_steps_per_unit[i] = tmp1[i];
-    max_feedrate[i] = tmp2[i];
-    max_acceleration_units_per_sq_second[i] = tmp3[i];
+    planner.axis_steps_per_unit[i] = tmp1[i];
+    planner.max_feedrate[i] = tmp2[i];
+    planner.max_acceleration_units_per_sq_second[i] = tmp3[i];
   }
 
   for (int8_t i = 0; i < EXTRUDERS; i++) {
-    retract_acceleration[i] = tmp4[i];
-    max_e_jerk[i] = tmp5[i];
+    planner.retract_acceleration[i] = tmp4[i];
+    planner.max_e_jerk[i] = tmp5[i];
   }
 
   #if MB(ALLIGATOR)
@@ -543,19 +560,19 @@ void Config_ResetDefault() {
   #endif
 
   // steps per sq second need to be updated to agree with the units per sq second
-  reset_acceleration_rates();
+  planner.reset_acceleration_rates();
 
-  acceleration = DEFAULT_ACCELERATION;
-  travel_acceleration = DEFAULT_TRAVEL_ACCELERATION;
-  minimumfeedrate = DEFAULT_MINIMUMFEEDRATE;
-  minsegmenttime = DEFAULT_MINSEGMENTTIME;
-  mintravelfeedrate = DEFAULT_MINTRAVELFEEDRATE;
-  max_xy_jerk = DEFAULT_XYJERK;
-  max_z_jerk = DEFAULT_ZJERK;
+  planner.acceleration = DEFAULT_ACCELERATION;
+  planner.travel_acceleration = DEFAULT_TRAVEL_ACCELERATION;
+  planner.min_feedrate = DEFAULT_MINIMUMFEEDRATE;
+  planner.min_segment_time = DEFAULT_MINSEGMENTTIME;
+  planner.min_travel_feedrate = DEFAULT_MINTRAVELFEEDRATE;
+  planner.max_xy_jerk = DEFAULT_XYJERK;
+  planner.max_z_jerk = DEFAULT_ZJERK;
   home_offset[X_AXIS] = home_offset[Y_AXIS] = home_offset[Z_AXIS] = 0;
 
   #if ENABLED(MESH_BED_LEVELING)
-    mbl.active = false;
+    mbl.reset();
   #endif
 
   #if ENABLED(AUTO_BED_LEVELING_FEATURE)
@@ -669,14 +686,14 @@ void Config_ResetDefault() {
     if (!forReplay) {
       ECHO_LM(CFG, "Steps per unit:");
     }
-    ECHO_SMV(CFG, "  M92 X", axis_steps_per_unit[X_AXIS]);
-    ECHO_MV(" Y", axis_steps_per_unit[Y_AXIS]);
-    ECHO_MV(" Z", axis_steps_per_unit[Z_AXIS]);
-    ECHO_EMV(" E", axis_steps_per_unit[E_AXIS]);
+    ECHO_SMV(CFG, "  M92 X", planner.axis_steps_per_unit[X_AXIS]);
+    ECHO_MV(" Y", planner.axis_steps_per_unit[Y_AXIS]);
+    ECHO_MV(" Z", planner.axis_steps_per_unit[Z_AXIS]);
+    ECHO_EMV(" E", planner.axis_steps_per_unit[E_AXIS]);
     #if EXTRUDERS > 1
       for (short i = 1; i < EXTRUDERS; i++) {
         ECHO_SMV(CFG, "  M92 T", i);
-        ECHO_EMV(" E", axis_steps_per_unit[E_AXIS + i]);
+        ECHO_EMV(" E", planner.axis_steps_per_unit[E_AXIS + i]);
       }
     #endif //EXTRUDERS > 1
 
@@ -692,28 +709,28 @@ void Config_ResetDefault() {
     if (!forReplay) {
       ECHO_LM(CFG, "Maximum feedrates (mm/s):");
     }
-    ECHO_SMV(CFG, "  M203 X", max_feedrate[X_AXIS]);
-    ECHO_MV(" Y", max_feedrate[Y_AXIS] );
-    ECHO_MV(" Z", max_feedrate[Z_AXIS] );
-    ECHO_EMV(" E", max_feedrate[E_AXIS]);
+    ECHO_SMV(CFG, "  M203 X", planner.max_feedrate[X_AXIS]);
+    ECHO_MV(" Y", planner.max_feedrate[Y_AXIS] );
+    ECHO_MV(" Z", planner.max_feedrate[Z_AXIS] );
+    ECHO_EMV(" E", planner.max_feedrate[E_AXIS]);
     #if EXTRUDERS > 1
       for (short i = 1; i < EXTRUDERS; i++) {
         ECHO_SMV(CFG, "  M203 T", i);
-        ECHO_EMV(" E", max_feedrate[E_AXIS + i]);
+        ECHO_EMV(" E", planner.max_acceleration_units_per_sq_second[E_AXIS + i]);
       }
     #endif //EXTRUDERS > 1
 
     if (!forReplay) {
       ECHO_LM(CFG, "Maximum Acceleration (mm/s2):");
     }
-    ECHO_SMV(CFG, "  M201 X", max_acceleration_units_per_sq_second[X_AXIS] );
-    ECHO_MV(" Y", max_acceleration_units_per_sq_second[Y_AXIS] );
-    ECHO_MV(" Z", max_acceleration_units_per_sq_second[Z_AXIS] );
-    ECHO_EMV(" E", max_acceleration_units_per_sq_second[E_AXIS]);
+    ECHO_SMV(CFG, "  M201 X", planner.max_acceleration_units_per_sq_second[X_AXIS] );
+    ECHO_MV(" Y", planner.max_acceleration_units_per_sq_second[Y_AXIS] );
+    ECHO_MV(" Z", planner.max_acceleration_units_per_sq_second[Z_AXIS] );
+    ECHO_EMV(" E", planner.max_acceleration_units_per_sq_second[E_AXIS]);
     #if EXTRUDERS > 1
       for (int8_t i = 1; i < EXTRUDERS; i++) {
         ECHO_SMV(CFG, "  M201 T", i);
-        ECHO_EMV(" E", max_acceleration_units_per_sq_second[E_AXIS + i]);
+        ECHO_EMV(" E", planner.max_acceleration_units_per_sq_second[E_AXIS + i]);
       }
     #endif //EXTRUDERS > 1
     ECHO_E;
@@ -721,28 +738,28 @@ void Config_ResetDefault() {
     if (!forReplay) {
       ECHO_LM(CFG, "Accelerations: P=printing, V=travel and T* R=retract");
     }
-    ECHO_SMV(CFG,"  M204 P", acceleration);
-    ECHO_EMV(" V", travel_acceleration);
+    ECHO_SMV(CFG,"  M204 P", planner.acceleration);
+    ECHO_EMV(" V", planner.travel_acceleration);
     #if EXTRUDERS > 0
       for (int8_t i = 0; i < EXTRUDERS; i++) {
         ECHO_SMV(CFG, "  M204 T", i);
-        ECHO_EMV(" R", retract_acceleration[i]);
+        ECHO_EMV(" R", planner.retract_acceleration[i]);
       }
     #endif
 
     if (!forReplay) {
       ECHO_LM(CFG, "Advanced variables: S=Min feedrate (mm/s), V=Min travel feedrate (mm/s), B=minimum segment time (ms), X=maximum XY jerk (mm/s),  Z=maximum Z jerk (mm/s),  E=maximum E jerk (mm/s)");
     }
-    ECHO_SMV(CFG, "  M205 S", minimumfeedrate );
-    ECHO_MV(" V", mintravelfeedrate );
-    ECHO_MV(" B", minsegmenttime );
-    ECHO_MV(" X", max_xy_jerk );
-    ECHO_MV(" Z", max_z_jerk);
-    ECHO_EMV(" E", max_e_jerk[0]);
+    ECHO_SMV(CFG, "  M205 S", planner.min_feedrate );
+    ECHO_MV(" V", planner.min_travel_feedrate );
+    ECHO_MV(" B", planner.min_segment_time );
+    ECHO_MV(" X", planner.max_xy_jerk );
+    ECHO_MV(" Z", planner.max_z_jerk);
+    ECHO_EMV(" E", planner.max_e_jerk[0]);
     #if (EXTRUDERS > 1)
       for(int8_t i = 1; i < EXTRUDERS; i++) {
         ECHO_SMV(CFG, "  M205 T", i);
-        ECHO_EMV(" E" , max_e_jerk[i]);
+        ECHO_EMV(" E" , planner.max_e_jerk[i]);
       }
     #endif
 
@@ -767,12 +784,13 @@ void Config_ResetDefault() {
       if (!forReplay) {
         ECHO_LM(CFG, "Mesh bed leveling:");
       }
-      ECHO_SMV(CFG, "  M420 S", mbl.active);
+      ECHO_SMV(CFG, "  M420 S", mbl.has_mesh() ? 1 : 0);
       ECHO_MV(" X", MESH_NUM_X_POINTS);
-      ECHO_EMV(" Y", MESH_NUM_Y_POINTS);
+      ECHO_MV(" Y", MESH_NUM_Y_POINTS);
+      ECHO_E;
 
-      for (int py = 1; py <= MESH_NUM_Y_POINTS; py++) {
-        for (int px = 1; px <= MESH_NUM_X_POINTS; px++) {
+      for (uint8_t py = 1; py <= MESH_NUM_Y_POINTS; py++) {
+        for (uint8_t px = 1; px <= MESH_NUM_X_POINTS; px++) {
           ECHO_SMV(CFG, "  G29 S3 X", px);
           ECHO_MV(" Y", py);
           ECHO_EMV(" Z", mbl.z_values[py-1][px-1], 5);

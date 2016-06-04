@@ -417,7 +417,7 @@ ISR(TIMER1_COMPA_vect) {
 
   if (cleaning_buffer_counter) {
     current_block = NULL;
-    plan_discard_current_block();
+    planner.discard_current_block();
     #if ENABLED(SD_FINISHED_RELEASECOMMAND)
       if ((cleaning_buffer_counter == 1) && (SD_FINISHED_STEPPERRELEASE)) enqueue_and_echo_commands_P(PSTR(SD_FINISHED_RELEASECOMMAND));
     #endif
@@ -438,7 +438,7 @@ ISR(TIMER1_COMPA_vect) {
   // If there is no current block, attempt to pop one from the buffer
   if (!current_block) {
     // Anything in the buffer?
-    current_block = plan_get_current_block();
+    current_block = planner.get_current_block();
     if (current_block) {
       current_block->busy = true;
       trapezoid_generator_reset();
@@ -651,12 +651,6 @@ ISR(TIMER1_COMPA_vect) {
         #endif
       #endif // LASERBEAM
 
-      // safe check for erroneous calculated events count
-      if(current_block->step_event_count >= MAX_EVENTS_COUNT) {
-         kill_current_block();
-         break;
-      }
-
       step_events_completed++;
       if (step_events_completed >= current_block->step_event_count) break;
     }
@@ -710,7 +704,6 @@ ISR(TIMER1_COMPA_vect) {
 
       if (step_rate <= acc_step_rate) {
         step_rate = acc_step_rate - step_rate; // Decelerate from acceleration end point.
-        // lower limit
         NOLESS(step_rate, current_block->final_rate);
       }
       else {
@@ -763,7 +756,7 @@ ISR(TIMER1_COMPA_vect) {
     // If current block is finished, reset pointer
     if (step_events_completed >= current_block->step_event_count) {
       current_block = NULL;
-      plan_discard_current_block();
+      planner.discard_current_block();
       #if ENABLED(LASERBEAM) && ENABLED(LASER_PULSE_METHOD)
         if (current_block->laser_mode == CONTINUOUS && current_block->laser_status == LASER_ON)
           laser_extinguish();
@@ -1043,7 +1036,7 @@ void st_init() {
 /**
  * Block until all buffered steps are executed
  */
-void st_synchronize() { while (blocks_queued()) idle(); }
+void st_synchronize() { while (planner.blocks_queued()) idle(); }
 
 /**
  * Set the stepper positions directly in steps
@@ -1119,7 +1112,7 @@ float st_get_axis_position_mm(AxisEnum axis) {
     axis_pos = st_get_position(axis);
   #endif
 
-  return axis_pos / axis_steps_per_unit[axis];
+  return axis_pos / planner.axis_steps_per_unit[axis];
 }
 
 void enable_all_steppers() {
@@ -1150,7 +1143,7 @@ void finishAndDisableSteppers() {
 void quickStop() {
   cleaning_buffer_counter = 5000;
   DISABLE_STEPPER_DRIVER_INTERRUPT();
-  while (blocks_queued()) plan_discard_current_block();
+  while (planner.blocks_queued()) planner.discard_current_block();
   current_block = NULL;
   ENABLE_STEPPER_DRIVER_INTERRUPT();
 }
@@ -1217,7 +1210,7 @@ void kill_current_block() {
 }
 
 float triggered_position_mm(AxisEnum axis) {
-  return endstops_trigsteps[axis] / axis_steps_per_unit[axis];
+  return endstops_trigsteps[axis] / planner.axis_steps_per_unit[axis];
 }
 
 bool motor_direction(AxisEnum axis) { return TEST(last_direction_bits, axis); }
@@ -1456,7 +1449,7 @@ void microstep_readings() {
 }
 
 #if ENABLED(Z_DUAL_ENDSTOPS)
-  void In_Homing_Process(bool state) { performing_homing = state; }
-  void Lock_z_motor(bool state) { locked_z_motor = state; }
-  void Lock_z2_motor(bool state) { locked_z2_motor = state; }
+  void set_homing_flag(bool state) { performing_homing = state; }
+  void set_z_lock(bool state) { locked_z_motor = state; }
+  void set_z2_lock(bool state) { locked_z2_motor = state; }
 #endif
