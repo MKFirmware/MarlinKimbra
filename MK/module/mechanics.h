@@ -33,6 +33,7 @@
   #define MECH_DELTA       3
   #define MECH_SCARA       4
 
-  #define MECH(mech)  (MECHANISM == MECH_##mech)
+  #define MECH(mech)    (MECHANISM == MECH_##mech)
+  #define NOMECH(mech)  (MECHANISM != MECH_##mech)
 
 #endif
