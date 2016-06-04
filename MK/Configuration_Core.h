@@ -16,8 +16,8 @@
  * - Disables axis
  * - Travel limits
  * - Axis relative mode
- * - MBL or ABL
- * - Auto bed levelling
+ * - Mesh Bed Leveling (MBL)
+ * - Auto Bed Leveling (ABL)
  * - Z probe endstop
  * - Safe Z homing
  * - Manual home positions
@@ -28,6 +28,7 @@
  * - Hotend offset
  *
  * Basic-settings can be found in Configuration_Basic.h
+ * Temperature-settings can be found in Configuration_Temperature.h
  * Feature-settings can be found in Configuration_Feature.h
  * Pins-settings can be found in "Configuration_Pins.h"
  */
@@ -251,24 +252,7 @@
 
 
 /*****************************************************************************************
- ************************************** MBL or ABL ***************************************
- *****************************************************************************************
- *                                                                                       *
- * Manual Bed Leveling (MBL) or Auto Bed Leveling (ABL) settings                         *
- * Set the rectangle in which to probe in MBL or ABL.                                    *
- *                                                                                       *
- *****************************************************************************************/
-#define LEFT_PROBE_BED_POSITION 20
-#define RIGHT_PROBE_BED_POSITION 180
-#define FRONT_PROBE_BED_POSITION 20
-#define BACK_PROBE_BED_POSITION 180
-
-#define XY_TRAVEL_SPEED 10000     // X and Y axis travel speed between probes, in mm/min
-/*****************************************************************************************/
-
-
-/*****************************************************************************************
- ******************************* Mesh bed leveling ***************************************
+ ******************************* Mesh Bed Leveling ***************************************
  *****************************************************************************************/
 //#define MESH_BED_LEVELING
 
@@ -288,7 +272,7 @@
 
 
 /*****************************************************************************************
- ******************************* Auto bed leveling ***************************************
+ ******************************* Auto Bed Leveling ***************************************
  *****************************************************************************************
  *                                                                                       *
  * There are 2 different ways to specify probing locations                               *
@@ -303,7 +287,7 @@
  *   You specify the XY coordinates of all 3 points.                                     *
  *                                                                                       *
  *                                                                                       *
- * Uncomment AUTO_BED_LEVELING_FEATURE to enable                                         *
+ * Uncomment AUTO BED LEVELING FEATURE to enable                                         *
  *                                                                                       *
  *****************************************************************************************/
 //#define AUTO_BED_LEVELING_FEATURE
@@ -313,14 +297,22 @@
 // Note: this feature generates 10KB extra code size
 #define AUTO_BED_LEVELING_GRID
 
-// yes AUTO_BED_LEVELING_GRID
-#define MIN_PROBE_EDGE 10 // The probe square sides can be no smaller than this
+// START yes AUTO BED LEVELING GRID
+#define LEFT_PROBE_BED_POSITION 20
+#define RIGHT_PROBE_BED_POSITION 180
+#define FRONT_PROBE_BED_POSITION 20
+#define BACK_PROBE_BED_POSITION 180
+
+// The probe square sides can be no smaller than this
+#define MIN_PROBE_EDGE 10
+
 // Set the number of grid points per dimension
 // You probably don't need more than 3 (squared=9)
 #define AUTO_BED_LEVELING_GRID_POINTS 2
-// yes AUTO_BED_LEVELING_GRID
+// END yes AUTO BED LEVELING GRID
 
-// no AUTO_BED_LEVELING_GRID
+
+// START no AUTO BED LEVELING GRID
 // Arbitrary points to probe. A simple cross-product
 // is used to estimate the plane of the bed.
 #define ABL_PROBE_PT_1_X 15
@@ -329,7 +321,7 @@
 #define ABL_PROBE_PT_2_Y 15
 #define ABL_PROBE_PT_3_X 180
 #define ABL_PROBE_PT_3_Y 15
-// no AUTO_BED_LEVELING_GRID
+// END no AUTO BED LEVELING GRID
 
 // Offsets to the probe relative to the extruder tip (Hotend - Probe)
 // X and Y offsets MUST be INTEGERS
@@ -343,9 +335,12 @@
 //    |  P (-)    | T <-- probe (-10,-10)
 //    |           |
 //    O-- FRONT --+
+//  (0,0)
 #define X_PROBE_OFFSET_FROM_EXTRUDER  0     // X offset: -left  [of the nozzle] +right
 #define Y_PROBE_OFFSET_FROM_EXTRUDER  0     // Y offset: -front [of the nozzle] +behind
 #define Z_PROBE_OFFSET_FROM_EXTRUDER -1     // Z offset: -below [of the nozzle] (always negative!)
+
+#define XY_TRAVEL_SPEED 10000               // X and Y axis travel speed between probes, in mm/min
 
 #define Z_RAISE_BEFORE_PROBING       10     //How much the extruder will be raised before travelling to the first probing point.
 #define Z_RAISE_BETWEEN_PROBINGS      5     //How much the extruder will be raised when travelling from between next probing points

@@ -9,6 +9,7 @@
  * - Endstop pullup resistors
  * - Endstops logic
  * - Endstops min or max
+ * - Min Z height for homing
  * - Stepper enable logic
  * - Stepper step logic
  * - Stepper direction
@@ -24,6 +25,7 @@
  * - Hotend offset
  *
  * Basic-settings can be found in Configuration_Basic.h
+ * Temperature-settings can be found in Configuration_Temperature.h
  * Feature-settings can be found in Configuration_Feature.h
  * Pins-settings can be found in "Configuration_Pins.h"
  */
@@ -121,6 +123,18 @@
 #define Y_HOME_DIR 1
 #define Z_HOME_DIR -1
 #define E_HOME_DIR -1
+/*****************************************************************************************/
+
+
+/*****************************************************************************************
+ ***************************** MIN Z HEIGHT FOR HOMING **********************************
+ *****************************************************************************************
+ *                                                                                       *
+ * (in mm) Minimal z height before homing (G28) for Z clearance above the bed, clamps,   *
+ * Be sure you have this distance over your Z_MAX_POS in case.                           *
+ *                                                                                       *
+ *****************************************************************************************/
+#define MIN_Z_HEIGHT_FOR_HOMING   0
 /*****************************************************************************************/
 
 
