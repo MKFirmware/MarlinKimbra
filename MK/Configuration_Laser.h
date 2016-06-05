@@ -14,6 +14,7 @@
 // The following define to use the new HakanBasted laser_pulse method to fire laser. It should be more efficient, but it's less tested.
 // Thanks for it to HakanBastedt that has implemented it for Marlin at https://github.com/HakanBastedt/Marlin
 // Uncomment to enable it *USE AT YOUR OWN RISK*, it should work but it's *NOT WELL TESTED YET*
+// Only for MEGA. On DUE processor is automatic.
 //#define LASER_PULSE_METHOD
 
 // If your machine has laser focuser, set this to true and it will use Z axis for focus or disable it.

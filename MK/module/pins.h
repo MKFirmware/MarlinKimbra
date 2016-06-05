@@ -230,14 +230,15 @@
 #include "../Configuration_Pins.h"
 /****************************************************************************************/
 
-
-#if X_HOME_DIR > 0    // Home X to MAX
-  #undef X_MIN_PIN
-  #define X_MIN_PIN -1
-#elif X_HOME_DIR < 0  // Home X to MIN
-  #undef X_MAX_PIN
-  #define X_MAX_PIN -1
-#endif //X_HOME_DIR > 0
+#if DISABLED(DUAL_X_CARRIAGE)
+  #if X_HOME_DIR > 0    // Home X to MAX
+    #undef X_MIN_PIN
+    #define X_MIN_PIN -1
+  #elif X_HOME_DIR < 0  // Home X to MIN
+    #undef X_MAX_PIN
+    #define X_MAX_PIN -1
+  #endif // X_HOME_DIR > 0
+#endif // DISABLED(DUAL_X_CARRIAGE)
 
 #if Y_HOME_DIR > 0    // Home Y to MAX
   #undef Y_MIN_PIN
@@ -245,7 +246,7 @@
 #elif Y_HOME_DIR < 0  // Home Y to MIN
   #undef Y_MAX_PIN
   #define Y_MAX_PIN -1
-#endif //Y_HOME_DIR > 0
+#endif // Y_HOME_DIR > 0
 
 #if Z_HOME_DIR > 0    // Home Z to MAX
   #undef Z_MIN_PIN
@@ -253,7 +254,7 @@
 #elif Z_HOME_DIR < 0  // Home Z to MIN
   #undef Z_MAX_PIN
   #define Z_MAX_PIN -1
-#endif //Z_HOME_DIR > 0
+#endif // Z_HOME_DIR > 0
 
 #if DISABLED(Z_PROBE_ENDSTOP) // Allow code to compile regardless of Z_PROBE_ENDSTOP setting.
   #define Z_PROBE_PIN -1
