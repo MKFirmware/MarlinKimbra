@@ -92,7 +92,7 @@ volatile long endstops_stepsTotal, endstops_stepsDone;
   #if ENABLED(ADVANCE)
     static long advance_rate, advance, final_advance = 0;
     static long old_advance = 0;
-    static long e_steps[6];
+    static long e_steps[EXTRUDERS];
   #elif ENABLED(ADVANCE_LPC)
     int extruder_advance_k = ADVANCE_LPC_K;
     volatile int e_steps[EXTRUDERS] = ARRAY_BY_EXTRUDERS(0);
@@ -130,7 +130,7 @@ volatile signed char count_direction[NUM_AXIS] = { 1, 1, 1, 1 };
 
 #if ENABLED(DUAL_X_CARRIAGE)
   #define X_APPLY_DIR(v,ALWAYS) \
-    if (extruder_duplication_enabled || ALWAYS) { \
+    if (hotend_duplication_enabled || ALWAYS) { \
       X_DIR_WRITE(v); \
       X2_DIR_WRITE(v); \
     } \
@@ -138,7 +138,7 @@ volatile signed char count_direction[NUM_AXIS] = { 1, 1, 1, 1 };
       if (current_block->active_driver) X2_DIR_WRITE(v); else X_DIR_WRITE(v); \
     }
   #define X_APPLY_STEP(v,ALWAYS) \
-    if (extruder_duplication_enabled || ALWAYS) { \
+    if (hotend_duplication_enabled || ALWAYS) { \
       X_STEP_WRITE(v); \
       X2_STEP_WRITE(v); \
     } \
@@ -1010,7 +1010,7 @@ void st_init() {
 
   #if ENABLED(ADVANCE) || ENABLED(ADVANCE_LPC)
     #if ENABLED(ADVANCE)
-      e_steps[0] = e_steps[1] = e_steps[2] = e_steps[3] = e_steps[4] = e_steps[5] = 0;
+      for (uint8_t i = 0; i < EXTRUDERS; i++) e_steps[i] = 0;
     #elif ENABLED(ADVANCE_LPC)
       for (uint8_t i = 0; i < EXTRUDERS; i++) {
         e_steps[i] = 0;

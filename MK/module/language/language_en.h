@@ -79,6 +79,8 @@
 #define MSG_SPEED                           "Speed"
 #define MSG_NOZZLE                          "Nozzle"
 #define MSG_BED                             "Bed"
+#define MSG_CHAMBER                         "Chamber"
+#define MSG_COOLER                          "Cooler"
 #define MSG_BED_Z                           "Bed Z"
 #define MSG_FAN_SPEED                       "Fan speed"
 #define MSG_FLOW                            "Flow"
