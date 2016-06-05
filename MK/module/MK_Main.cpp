@@ -348,6 +348,8 @@ void stop();
 void get_available_commands();
 void process_next_command();
 
+inline void sync_plan_position();
+
 void delay_ms(millis_t ms) {
   ms += millis();
   while (millis() < ms) idle();
@@ -699,7 +701,11 @@ void setup() {
 
   lcd_init();     // Initialize LCD
   tp_init();      // Initialize temperature loop
-  planner.init(); // Initialize planner;
+
+  #if MECH(DELTA) || MECH(SCARA)
+    // Vital to init kinematic equivalent for X0 Y0 Z0
+    sync_plan_position();
+  #endif
 
   #if ENABLED(USE_WATCHDOG)
     watchdog_init();
@@ -1310,28 +1316,53 @@ inline void set_homing_bump_feedrate(AxisEnum axis) {
   }
   feedrate = homing_feedrate[axis] / hbd;
 }
+/**
+ * line_to_current_position
+ * Move the planner to the current position from wherever it last moved
+ * (or from wherever it has been told it is located).
+ */
 inline void line_to_current_position() {
   planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], feedrate/60, active_extruder, active_driver);
 }
 inline void line_to_z(float zPosition) {
   planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], zPosition, current_position[E_AXIS], feedrate/60, active_extruder, active_driver);
 }
+/**
+ * line_to_destination
+ * Move the planner, not necessarily synced with current_position
+ */
 inline void line_to_destination(float mm_m) {
   planner.buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], mm_m/60, active_extruder, active_driver);
 }
 inline void line_to_destination() {
   line_to_destination(feedrate);
 }
-inline void sync_plan_position() {
-  planner.set_position_mm(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
-}
+
 #if MECH(DELTA) || MECH(SCARA)
-  inline void sync_plan_position_delta() {
-    if (DEBUGGING(INFO)) DEBUG_POS(" > sync_plan_position_delta", current_position);
+  /**
+   * sync_plan_position
+   * Set planner / stepper positions to the cartesian current_position.
+   * The stepper code translates these coordinates into step units.
+   * Allows translation between steps and units (mm) for Delta & Scara
+   */
+  inline void sync_plan_position() {
+    if (DEBUGGING(INFO)) DEBUG_POS("sync_plan_position", current_position);
     calculate_delta(current_position);
     planner.set_position_mm(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], current_position[E_AXIS]);
   }
+#else
+  /**
+   * sync_plan_position
+   * Set planner / stepper positions to the cartesian current_position.
+   * The stepper code translates these coordinates into step units.
+   * Allows translation between steps and units (mm) for cartesian & core robots
+   */
+  inline void sync_plan_position() {
+    if (DEBUGGING(INFO)) DEBUG_POS("sync_plan_position", current_position);
+    planner.set_position_mm(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+  }
 #endif
+
 inline void sync_plan_position_e() { planner.set_e_position_mm(current_position[E_AXIS]); }
 inline void set_current_to_destination() { memcpy(current_position, destination, sizeof(current_position)); }
 inline void set_destination_to_current() { memcpy(destination, current_position, sizeof(destination)); }
@@ -2006,7 +2037,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       #endif
 
       endstops.enable_z_probe();
-      sync_plan_position_delta();
+      sync_plan_position();
     }
 
     static void retract_z_probe() {
@@ -2043,7 +2074,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       #endif
 
       endstops.enable_z_probe(false);
-      sync_plan_position_delta();
+      sync_plan_position();
     }
 
     static void run_z_probe() {
@@ -2063,7 +2094,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       long stop_steps = st_get_position(Z_AXIS);
       float mm = start_z - float(start_steps - stop_steps) / planner.axis_steps_per_unit[Z_AXIS];
       current_position[Z_AXIS] = mm;
-      sync_plan_position_delta();
+      sync_plan_position();
     }
 
     // Probe bed height at position (x,y), returns the measured z value
@@ -2717,7 +2748,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
     HOMEAXIS(Y);
     HOMEAXIS(Z);
 
-    sync_plan_position_delta();
+    sync_plan_position();
 
     endstops.hit_on_purpose(); // clear endstop hit flags
   }
@@ -2863,22 +2894,14 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
       if (retract_zlift > 0.01) {
         current_position[Z_AXIS] -= retract_zlift;
-        #if MECH(DELTA)
-          sync_plan_position_delta();
-        #else
-          sync_plan_position();
-        #endif
+        sync_plan_position();
         prepare_move();
       }
     }
     else {
       if (retract_zlift > 0.01) {
         current_position[Z_AXIS] += retract_zlift;
-        #if MECH(DELTA)
-          sync_plan_position_delta();
-        #else
-          sync_plan_position();
-        #endif
+        sync_plan_position();
       }
 
       feedrate = retract_recover_feedrate * 60;
@@ -3117,77 +3140,79 @@ inline void wait_heater(bool no_wait_for_cooling = true) {
   KEEPALIVE_STATE(IN_HANDLER);
 }
 
-inline void wait_bed(bool no_wait_for_cooling = true) {
-
-  #if TEMP_BED_RESIDENCY_TIME > 0
-    millis_t residency_start_ms = 0;
-    // Loop until the temperature has stabilized
-    #define TEMP_BED_CONDITIONS (!residency_start_ms || PENDING(now, residency_start_ms + (TEMP_BED_RESIDENCY_TIME) * 1000UL))
-  #else
-    // Loop until the temperature is very close target
-    #define TEMP_BED_CONDITIONS (wants_to_cool ? isCoolingBed() : isHeatingBed())
-  #endif // TEMP_BED_RESIDENCY_TIME > 0
-
-  float theTarget = -1;
-  bool wants_to_cool;
-  cancel_heatup = false;
-  millis_t now, next_temp_ms = 0;
-
-  KEEPALIVE_STATE(NOT_BUSY);
-
-  // Wait for temperature to come close enough
-  do {
-    now = millis();
-    if (ELAPSED(now, next_temp_ms)) { //Print Temp Reading every 1 second while heating up.
-      next_temp_ms = now + 1000UL;
-      print_heaterstates();
-      #if TEMP_BED_RESIDENCY_TIME > 0
-        ECHO_M(SERIAL_W);
-        if (residency_start_ms) {
-          long rem = (((TEMP_BED_RESIDENCY_TIME) * 1000UL) - (now - residency_start_ms)) / 1000UL;
-          ECHO_EV(rem);
-        }
-        else {
-          ECHO_EM("?");
-        }
-      #else
-        ECHO_E;
-      #endif
-    }
-
-    // Target temperature might be changed during the loop
-    if (theTarget != degTargetBed()) {
-      wants_to_cool = isCoolingBed();
-      theTarget = degTargetBed();
-
-      // Exit if S<lower>, continue if S<higher>, R<lower>, or R<higher>
-      if (no_wait_for_cooling && wants_to_cool) break;
-
-      // Prevent a wait-forever situation if R is misused i.e. M190 R0
-      // Simply don't wait to cool a bed under 30C
-      if (wants_to_cool && theTarget < 30) break;
-    }
-
-    idle();
-    refresh_cmd_timeout(); // to prevent stepper_inactive_time from running out
+#if HAS(TEMP_BED)
+  inline void wait_bed(bool no_wait_for_cooling = true) {
 
     #if TEMP_BED_RESIDENCY_TIME > 0
-      float temp_diff = fabs(theTarget - degTargetBed());
+      millis_t residency_start_ms = 0;
+      // Loop until the temperature has stabilized
+      #define TEMP_BED_CONDITIONS (!residency_start_ms || PENDING(now, residency_start_ms + (TEMP_BED_RESIDENCY_TIME) * 1000UL))
+    #else
+      // Loop until the temperature is very close target
+      #define TEMP_BED_CONDITIONS (wants_to_cool ? isCoolingBed() : isHeatingBed())
+    #endif // TEMP_BED_RESIDENCY_TIME > 0
 
-      if (!residency_start_ms) {
-        // Start the TEMP_BED_RESIDENCY_TIME timer when we reach target temp for the first time.
-        if (temp_diff < TEMP_BED_WINDOW) residency_start_ms = millis();
-      }
-      else if (temp_diff > TEMP_BED_HYSTERESIS) {
-        // Restart the timer whenever the temperature falls outside the hysteresis.
-        residency_start_ms = millis();
-      }
-    #endif //TEMP_BED_RESIDENCY_TIME > 0
+    float theTarget = -1;
+    bool wants_to_cool;
+    cancel_heatup = false;
+    millis_t now, next_temp_ms = 0;
 
-  } while (!cancel_heatup && TEMP_BED_CONDITIONS);
-  LCD_MESSAGEPGM(MSG_BED_DONE);
-  KEEPALIVE_STATE(IN_HANDLER);
-}
+    KEEPALIVE_STATE(NOT_BUSY);
+
+    // Wait for temperature to come close enough
+    do {
+      now = millis();
+      if (ELAPSED(now, next_temp_ms)) { //Print Temp Reading every 1 second while heating up.
+        next_temp_ms = now + 1000UL;
+        print_heaterstates();
+        #if TEMP_BED_RESIDENCY_TIME > 0
+          ECHO_M(SERIAL_W);
+          if (residency_start_ms) {
+            long rem = (((TEMP_BED_RESIDENCY_TIME) * 1000UL) - (now - residency_start_ms)) / 1000UL;
+            ECHO_EV(rem);
+          }
+          else {
+            ECHO_EM("?");
+          }
+        #else
+          ECHO_E;
+        #endif
+      }
+
+      // Target temperature might be changed during the loop
+      if (theTarget != degTargetBed()) {
+        wants_to_cool = isCoolingBed();
+        theTarget = degTargetBed();
+
+        // Exit if S<lower>, continue if S<higher>, R<lower>, or R<higher>
+        if (no_wait_for_cooling && wants_to_cool) break;
+
+        // Prevent a wait-forever situation if R is misused i.e. M190 R0
+        // Simply don't wait to cool a bed under 30C
+        if (wants_to_cool && theTarget < 30) break;
+      }
+
+      idle();
+      refresh_cmd_timeout(); // to prevent stepper_inactive_time from running out
+
+      #if TEMP_BED_RESIDENCY_TIME > 0
+        float temp_diff = fabs(theTarget - degTargetBed());
+
+        if (!residency_start_ms) {
+          // Start the TEMP_BED_RESIDENCY_TIME timer when we reach target temp for the first time.
+          if (temp_diff < TEMP_BED_WINDOW) residency_start_ms = millis();
+        }
+        else if (temp_diff > TEMP_BED_HYSTERESIS) {
+          // Restart the timer whenever the temperature falls outside the hysteresis.
+          residency_start_ms = millis();
+        }
+      #endif //TEMP_BED_RESIDENCY_TIME > 0
+
+    } while (!cancel_heatup && TEMP_BED_CONDITIONS);
+    LCD_MESSAGEPGM(MSG_BED_DONE);
+    KEEPALIVE_STATE(IN_HANDLER);
+  }
+#endif // HAS(TEMP_BED)
 
 #if HAS(TEMP_CHAMBER)
   inline void wait_chamber(bool no_wait_for_heating = true) {
@@ -4049,7 +4074,7 @@ inline void gcode_G28() {
   #endif // !DELTA
 
   #if MECH(SCARA)
-    sync_plan_position_delta();
+    sync_plan_position();
   #endif
 
   #if ENABLED(ENDSTOPS_ONLY_FOR_HOMING)
@@ -5094,16 +5119,11 @@ inline void gcode_G92() {
       }
     }
   }
-  if (didXYZ) {
-    #if MECH(DELTA) || MECH(SCARA)
-      sync_plan_position_delta();
-    #else
-      sync_plan_position();
-    #endif
-  }
-  else if (didE) {
+
+  if (didXYZ)
+    sync_plan_position();
+  else if (didE)
     sync_plan_position_e();
-  }
 }
 
 #if ENABLED(ULTIPANEL)
@@ -7212,7 +7232,7 @@ inline void gcode_M226() {
  */
 inline void gcode_M400() { st_synchronize(); }
 
-#if (ENABLED(AUTO_BED_LEVELING_FEATURE) && DISABLED(Z_PROBE_SLED) && HAS(SERVO_ENDSTOPS)) || MECH(DELTA)
+#if (ENABLED(AUTO_BED_LEVELING_FEATURE) && DISABLED(Z_PROBE_SLED) && HAS(SERVO_ENDSTOPS)) || (MECH(DELTA) && ENABLED(Z_PROBE_ENDSTOP))
 
   /**
    * M401: Engage Z Servo endstop if available
@@ -7632,11 +7652,7 @@ inline void gcode_M428() {
   }
 
   if (!err) {
-    #if MECH(DELTA) || MECH(SCARA)
-      sync_plan_position_delta();
-    #else
-      sync_plan_position();
-    #endif
+    sync_plan_position();
     report_current_position();
     ECHO_LM(DB, "Offset applied.");
     LCD_MESSAGEPGM("Offset applied.");
@@ -8486,11 +8502,7 @@ inline void gcode_T(uint8_t tmp_extruder) {
 
             // Raise Z before switch servo
             if (diff < 0) {
-              #if MECH(DELTA)
-                sync_plan_position_delta();
-              #else
-                sync_plan_position();
-              #endif
+              sync_plan_position();
               // Move to the "old position" (move the extruder into place)
               if (IsRunning()) prepare_move();
             }
@@ -8506,11 +8518,7 @@ inline void gcode_T(uint8_t tmp_extruder) {
             #endif
 
             if (diff >= 0) {
-              #if MECH(DELTA)
-                sync_plan_position_delta();
-              #else
-                sync_plan_position();
-              #endif
+              sync_plan_position();
               // Move to the "old position" (move the extruder into place)
               if (IsRunning()) prepare_move();
             }
@@ -8543,11 +8551,7 @@ inline void gcode_T(uint8_t tmp_extruder) {
           #endif
 
           // Tell the planner the new "current position"
-          #if MECH(DELTA)
-            sync_plan_position_delta();
-            // Move to the "old position" (move the extruder into place)
-            if (IsRunning()) prepare_move();
-          #elif HASNT(DONDOLO) // NO DONDOLO
+          #if HASNT(DONDOLO) // NO DONDOLO
             sync_plan_position();
             // Move to the "old position" (move the extruder into place)
             if (IsRunning()) prepare_move();
@@ -9051,7 +9055,7 @@ void process_next_command() {
       case 400: // M400 finish all moves
         gcode_M400(); break;
 
-      #if (ENABLED(AUTO_BED_LEVELING_FEATURE) && DISABLED(Z_PROBE_SLED) && HAS(SERVO_ENDSTOPS)) || MECH(DELTA)
+      #if (ENABLED(AUTO_BED_LEVELING_FEATURE) && DISABLED(Z_PROBE_SLED) && HAS(SERVO_ENDSTOPS)) || (MECH(DELTA) && ENABLED(Z_PROBE_ENDSTOP))
         case 401:
           gcode_M401(); break;
         case 402:
@@ -10111,7 +10115,7 @@ void kill(const char* lcd_msg) {
 
 #if ENABLED(FAST_PWM_FAN) || ENABLED(FAST_PWM_COOLER)
 
-  void setPwmFrequency(uint8_t pin, int val) {
+  void setPwmFrequency(uint8_t pin, uint8_t val) {
     val &= 0x07;
     switch(digitalPinToTimer(pin)) {
 
