@@ -887,7 +887,7 @@ float get_pid_output(int h) {
       pid_output = constrain(target_temperature_chamber, 0, MAX_CHAMBER_POWER);
     #else
       pid_error_chamber = target_temperature_chamber - current_temperature_chamber;
-      pTerm_chamber = bedKp * pid_error_chamber;
+      pTerm_chamber = chamberKp * pid_error_chamber;
       temp_iState_chamber += pid_error_chamber;
       temp_iState_chamber = constrain(temp_iState_chamber, temp_iState_min_chamber, temp_iState_max_chamber);
       iTerm_chamber = chamberKi * temp_iState_chamber;

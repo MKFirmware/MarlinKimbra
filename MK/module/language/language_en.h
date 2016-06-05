@@ -145,6 +145,7 @@
 #define MSG_PAUSE_PRINT                     "Pause print"
 #define MSG_RESUME_PRINT                    "Resume print"
 #define MSG_STOP_PRINT                      "Stop print"
+#define MSG_STOP_SAVE_PRINT                 "Stop and Save"
 #define MSG_CARD_MENU                       "Print from " MSG_SD
 #define MSG_NO_CARD                         "No " MSG_SD
 #define MSG_DWELL                           "Sleep..."
@@ -245,6 +246,8 @@
 #define MSG_HEATING_COMPLETE                "Heating done."
 #define MSG_BED_HEATING                     "Bed Heating."
 #define MSG_BED_DONE                        "Bed done."
+#define MSG_CHAMBER_HEATING                 "Chamber Heating."
+#define MSG_CHAMBER_DONE                    "Chamber done."
 #define MSG_COOLER_COOLING                  "Cooling..."
 #define MSG_COOLER_DONE                     "Cooling done."
 

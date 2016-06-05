@@ -24,7 +24,9 @@
 
 #if ENABLED(SDSUPPORT)
 
-#include "cardreader.h"
+#ifdef __SAM3X8E__
+  #include <avr/dtostrf.h>
+#endif
 
 char tempLongFilename[LONG_FILENAME_LENGTH + 1];
 char fullName[LONG_FILENAME_LENGTH * SD_MAX_FOLDER_DEPTH + SD_MAX_FOLDER_DEPTH + 1];
@@ -183,6 +185,11 @@ bool CardReader::selectFile(const char* filename, bool silent/*=false*/) {
 
   file.close();
 
+  if (!file.exists("restart.gcode")) {
+    file.createContiguous(&workDir, "restart.gcode", 1);
+    file.close();
+  }
+
   if (file.open(curDir, filename, O_READ)) {
     if ((oldP = strrchr(filename, '/')) != NULL)
       oldP++;
@@ -192,6 +199,11 @@ bool CardReader::selectFile(const char* filename, bool silent/*=false*/) {
       ECHO_MT(SERIAL_SD_FILE_OPENED, oldP);
       ECHO_EMV(SERIAL_SD_SIZE, file.fileSize());
     }
+
+    for (int c = 0; c <= sizeof(fullName); c++)
+  		const_cast<char&>(fullName[c]) = '\0';
+    strncpy(fullName, filename, strlen(filename));
+
     #if ENABLED(JSON_OUTPUT)
       parsejson(file);
     #endif
@@ -316,8 +328,114 @@ void CardReader::closeFile(bool store_location /*=false*/) {
   saving = false;
 
   if (store_location) {
-    //future: store printer state, filename and position for continuing a stopped print
-    // so one can unplug the printer and continue printing the next day.
+    char bufferFilerestart[50];
+    char bufferX[11];
+    char bufferY[11];
+    char bufferZ[11];
+    char bufferE[11];
+    char bufferCoord[50];
+    char bufferCoord1[50];
+    char bufferCoord2[50];
+    char bufferSdpos[11];
+    char nameFile[15];
+    snprintf(bufferSdpos, sizeof bufferSdpos, "%lu", (unsigned long)sdpos);
+
+    strcpy(nameFile, "restart.gcode");
+    if (!fileRestart.exists(nameFile)) {
+      fileRestart.createContiguous(&workDir, nameFile, 1);
+      fileRestart.close();
+    }
+
+    fileRestart.open(&workDir, nameFile, O_WRITE);
+    fileRestart.truncate(0);
+
+    dtostrf(current_position[X_AXIS], 1, 3, bufferX);
+    dtostrf(current_position[Y_AXIS], 1, 3, bufferY);
+    dtostrf(current_position[Z_AXIS], 1, 3, bufferZ);
+    dtostrf(current_position[E_AXIS], 1, 3, bufferE);
+
+    #if MECH(DELTA)
+      strcpy(bufferCoord1, "G1 Z");
+      strcat(bufferCoord1, bufferZ);
+      strcat(bufferCoord1, " F8000");
+    #else
+      strcpy(bufferCoord1, "G92 Z");
+      strcat(bufferCoord1, bufferZ);
+    #endif
+
+    strcpy(bufferCoord, "G1 X");
+    strcat(bufferCoord, bufferX);
+    strcat(bufferCoord, " Y");
+    strcat(bufferCoord, bufferY);
+    strcat(bufferCoord, " Z");
+    strcat(bufferCoord, bufferZ);
+    strcat(bufferCoord, " F3600");
+    strcpy(bufferCoord2, "G92 E");
+    strcat(bufferCoord2, bufferE);
+
+    for (int8_t i = 0; i < (int8_t)strlen(fullName); i++)
+      fullName[i] = tolower(fullName[i]);
+
+    strcpy(bufferFilerestart, "M34 S");
+    strcat(bufferFilerestart, bufferSdpos);
+    strcat(bufferFilerestart, " @");
+    strcat(bufferFilerestart, fullName);
+
+    #if MECH(DELTA)
+      fileRestart.write("G28\n");
+    #else
+      fileRestart.write(bufferCoord1);
+      fileRestart.write("\n");
+      fileRestart.write("G28 X Y\n");
+    #endif
+
+    if (degTargetBed() > 0) {
+      char Bedtemp[15];
+      sprintf(Bedtemp, "M190 S%i\n", degTargetBed());
+      fileRestart.write(Bedtemp);
+    }
+    
+    for (uint8_t h = 0; h < HOTENDS; h++) {
+      if (degTargetHotend(h) > 0) {
+        char Hotendtemp[15];
+        sprintf(Hotendtemp, "M109 T%i S%i\n", h, (int)degTargetHotend(h));
+        fileRestart.write(Hotendtemp);
+      }
+    }
+
+    #if MECH(DELTA)
+      fileRestart.write(bufferCoord1);
+      fileRestart.write("\n");
+    #endif
+
+    fileRestart.write(bufferCoord);
+    fileRestart.write("\n");
+
+   	if (fanSpeed > 0) {
+      char fanSp[15];
+      sprintf(fanSp, "M106 S%i\n", fanSpeed);
+      fileRestart.write(fanSp);
+    }
+
+    fileRestart.write(bufferCoord2);
+    fileRestart.write("\n");
+    fileRestart.write(bufferFilerestart);
+    fileRestart.write("\n");
+
+    fileRestart.sync();
+    fileRestart.close();
+
+    HAL::delayMilliseconds(200);
+
+    #if MECH(DELTA)
+      enqueue_and_echo_commands_P(PSTR("G28"));
+    #else
+      enqueue_and_echo_commands_P(PSTR("G28 X0 Y0"));
+    #endif
+
+    disable_all_heaters();
+    disable_all_coolers();
+    fanSpeed = 0;
   }
 }
 
