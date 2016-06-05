@@ -41,12 +41,17 @@
     #define ULTIMAKERCONTROLLER //as available from the Ultimaker online store.
 
     #if ENABLED(miniVIKI)
+      #define LCD_CONTRAST_MIN  75
+      #define LCD_CONTRAST_MAX 115
       #define DEFAULT_LCD_CONTRAST 95
     #elif ENABLED(VIKI2)
       #define DEFAULT_LCD_CONTRAST 40
     #elif ENABLED(ELB_FULL_GRAPHIC_CONTROLLER)
+      #define LCD_CONTRAST_MIN  90
+      #define LCD_CONTRAST_MAX 130
       #define DEFAULT_LCD_CONTRAST 110
       #define U8GLIB_LM6059_AF
+      #define SD_DETECT_INVERTED
     #endif
 
     #define ENCODER_PULSES_PER_STEP 4

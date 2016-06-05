@@ -238,9 +238,9 @@
     #define NORM_E_DIR()    { switch(current_block->active_driver) { case 1: E1_DIR_WRITE(!INVERT_E1_DIR); break; case 0: E0_DIR_WRITE(!INVERT_E0_DIR); break; }}
     #define REV_E_DIR()     { switch(current_block->active_driver) { case 1: E1_DIR_WRITE( INVERT_E1_DIR); break; case 0: E0_DIR_WRITE( INVERT_E0_DIR); break; }}
   #else
-    #define E_STEP_WRITE(v) { if(extruder_duplication_enabled) { E0_STEP_WRITE(v); E1_STEP_WRITE(v); } else if(current_block->active_driver == 1) { E1_STEP_WRITE(v); } else { E0_STEP_WRITE(v); }}
-    #define NORM_E_DIR()    { if(extruder_duplication_enabled) { E0_DIR_WRITE(!INVERT_E0_DIR); E1_DIR_WRITE(!INVERT_E1_DIR); } else if(current_block->active_driver == 1) { E1_DIR_WRITE(!INVERT_E1_DIR); } else { E0_DIR_WRITE(!INVERT_E0_DIR); }}
-    #define REV_E_DIR()     { if(extruder_duplication_enabled) { E0_DIR_WRITE( INVERT_E0_DIR); E1_DIR_WRITE( INVERT_E1_DIR); } else if(current_block->active_driver == 1) { E1_DIR_WRITE( INVERT_E1_DIR); } else { E0_DIR_WRITE( INVERT_E0_DIR); }}
+    #define E_STEP_WRITE(v) { if(hotend_duplication_enabled) { E0_STEP_WRITE(v); E1_STEP_WRITE(v); } else if(current_block->active_driver == 1) { E1_STEP_WRITE(v); } else { E0_STEP_WRITE(v); }}
+    #define NORM_E_DIR()    { if(hotend_duplication_enabled) { E0_DIR_WRITE(!INVERT_E0_DIR); E1_DIR_WRITE(!INVERT_E1_DIR); } else if(current_block->active_driver == 1) { E1_DIR_WRITE(!INVERT_E1_DIR); } else { E0_DIR_WRITE(!INVERT_E0_DIR); }}
+    #define REV_E_DIR()     { if(hotend_duplication_enabled) { E0_DIR_WRITE( INVERT_E0_DIR); E1_DIR_WRITE( INVERT_E1_DIR); } else if(current_block->active_driver == 1) { E1_DIR_WRITE( INVERT_E1_DIR); } else { E0_DIR_WRITE( INVERT_E0_DIR); }}
   #endif
 #else
   #if ENABLED(DONDOLO_SINGLE_MOTOR)
