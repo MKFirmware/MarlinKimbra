@@ -121,7 +121,7 @@ inline void refresh_cmd_timeout() { previous_cmd_ms = millis(); }
 extern void delay_ms(millis_t ms);
 
 #if ENABLED(FAST_PWM_FAN) || ENABLED(FAST_PWM_COOLER)
-  void setPwmFrequency(uint8_t pin, uint8_t val);
+  void setPwmFrequency(uint8_t pin, int val);
 #endif
 
 extern float homing_feedrate[];
