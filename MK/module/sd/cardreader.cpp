@@ -200,7 +200,7 @@ bool CardReader::selectFile(const char* filename, bool silent/*=false*/) {
       ECHO_EMV(SERIAL_SD_SIZE, file.fileSize());
     }
 
-    for (int c = 0; c <= sizeof(fullName); c++)
+    for (int c = 0; c < sizeof(fullName); c++)
   		const_cast<char&>(fullName[c]) = '\0';
     strncpy(fullName, filename, strlen(filename));
 
