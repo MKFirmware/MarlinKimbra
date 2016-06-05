@@ -127,6 +127,23 @@ static uint8_t target_extruder;
 
 bool software_endstops = true;
 
+// Extruder offsets
+#if EXTRUDERS > 1
+  #ifndef EXTRUDER_OFFSET_X
+    #define EXTRUDER_OFFSET_X { 0 } // X offsets for each extruder
+  #endif
+  #ifndef EXTRUDER_OFFSET_Y
+    #define EXTRUDER_OFFSET_Y { 0 } // Y offsets for each extruder
+  #endif
+  float extruder_offset[][EXTRUDERS] = {
+    EXTRUDER_OFFSET_X,
+    EXTRUDER_OFFSET_Y
+    #if ENABLED(DUAL_X_CARRIAGE)
+      , { 0 } // Z offsets for each extruder
+    #endif
+  };
+#endif
+
 #if !MECH(DELTA)
   int xy_travel_speed = XY_TRAVEL_SPEED;
   float zprobe_zoffset = 0;
