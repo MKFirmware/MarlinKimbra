@@ -23,6 +23,7 @@
  * - Software endstops
  * - Endstops only for homing
  * - Abort on endstop hit feature
+ * - Mesh Level Area
  * - R/C Servo
  * - Late Z axis
  * - Ahead slowdown
@@ -437,6 +438,23 @@
  **************************************************************************/
 //#define ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED
 #define ABORT_ON_ENDSTOP_HIT_INIT true
+/**************************************************************************/
+
+
+/**************************************************************************
+ *************************** Mesh Level Area ******************************
+ **************************************************************************
+ *                                                                        *
+ * Default mesh area is an area with an inset margin on the print area.   *
+ * Below are the macros that are used to define the borders for the mesh  *
+ * area, made available here for specialized needs.                       *
+ *                                                                        *
+ **************************************************************************/
+#define MESH_MIN_X (X_MIN_POS + MESH_INSET)
+#define MESH_MAX_X (X_MAX_POS - (MESH_INSET))
+#define MESH_MIN_Y (Y_MIN_POS + MESH_INSET)
+#define MESH_MAX_Y (Y_MAX_POS - (MESH_INSET))
+/**************************************************************************/
 
 
 /**************************************************************************
@@ -1195,9 +1213,9 @@
  ************************** Motor's current ****************************
  ***********************************************************************/
 // Motor Current setting (Only functional on ALLIGATOR BOARD)
-#define MOTOR_CURRENT {1, 1, 1, 1, 1, 1, 1} // X Y Z E0 E1 E2 E3 - Values 0 - 2.5 A
+#define MOTOR_CURRENT {1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0} // X Y Z E0 E1 E2 E3 - Values 0 - 2.5 A
 // Motor Current setting (Only functional when motor driver current ref pins are connected to a digital trimpot on supported boards)
-#define DIGIPOT_MOTOR_CURRENT {135,135,135,135,135} // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
+#define DIGIPOT_MOTOR_CURRENT {135, 135, 135, 135, 135} // Values 0-255 (RAMBO 135 = ~0.75A, 185 = ~1A)
 /***********************************************************************/
 
 

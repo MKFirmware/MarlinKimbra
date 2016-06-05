@@ -114,6 +114,7 @@
   #elif LASER_CONTROL == 2
     #define LASER_PWR_PIN 6
     #define LASER_TTL_PIN 5
+  #endif
   #if ENABLED(LASER_PERIPHERALS)
     #define LASER_PERIPHERALS_PIN         11
     #define LASER_PERIPHERALS_STATUS_PIN  14
