@@ -44,6 +44,7 @@ class CardReader {
 public:
   SdFat fat;
   SdFile file;
+  SdFile fileRestart;
   CardReader();
 
   void initsd();

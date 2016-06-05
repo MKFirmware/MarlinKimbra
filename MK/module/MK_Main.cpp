@@ -5350,6 +5350,46 @@ inline void gcode_M17() {
     }
   }
 
+  /**
+   * M33: Close File and save restart.gcode
+   */
+  inline void gcode_M33() {
+    if (card.cardOK) {
+      ECHO_LM(DB, "Close file and save restart.gcode");
+      card.closeFile(true);
+    }
+  }
+
+  /**
+   * M34: Select file and start SD print
+   */
+  inline void gcode_M34() {
+    if (card.sdprinting)
+      st_synchronize();
+
+    if( card.cardOK ) {
+      char* namestartpos = (strchr(current_command_args, '@'));
+      if(namestartpos == NULL) {
+        namestartpos = current_command_args ; // default name position
+      }
+      else
+        namestartpos++; // to skip the '@'
+
+      ECHO_SMT(DB, "Open file: ", namestartpos);
+      ECHO_EM(" and start print.");
+      card.selectFile(namestartpos);
+      if(code_seen('S')) card.setIndex(code_value_long());
+
+      feedrate = 1200.0;   // 20 mm/sec
+      feedrate_multiplier = 100;	 // 100% feedrate
+      card.startPrint();
+      print_job_counter.start();
+      #if HAS(POWER_CONSUMPTION_SENSOR)
+        startpower = power_consumption_hour;
+      #endif
+    }
+  }
+
   #if ENABLED(NEXTION)
     /**
      * M35: Upload Firmware to Nextion from SD
@@ -8707,6 +8747,10 @@ void process_next_command() {
           gcode_M31(); break;
         case 32: // M32 - Make directory
           gcode_M32(); break;
+        case 33: // M33 - Stop printing, close file and save restart.gcode
+          gcode_M33(); break;
+        case 34: // M34 - Select file and start SD print
+          gcode_M34(); break;
         #if ENABLED(NEXTION)
           case 35: // M35 - Upload Firmware to Nextion from SD
             gcode_M35(); break;

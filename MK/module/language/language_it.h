@@ -141,6 +141,7 @@
 #define MSG_PAUSE_PRINT                     "Pausa"
 #define MSG_RESUME_PRINT                    "Riprendi stampa"
 #define MSG_STOP_PRINT                      "Arresta stampa"
+#define MSG_STOP_SAVE_PRINT                 "Arresta e Salva"
 #define MSG_CARD_MENU                       "SD Card Menu"
 #define MSG_NO_CARD                         "No SD Card"
 #define MSG_DWELL                           "Sospensione..."
@@ -241,6 +242,8 @@
 #define MSG_HEATING_COMPLETE                "Riscaldamento finito."
 #define MSG_BED_HEATING                     "Riscaldamento piatto."
 #define MSG_BED_DONE                        "Piatto riscaldato."
+#define MSG_CHAMBER_HEATING                 "Riscaldamento camera."
+#define MSG_CHAMBER_DONE                    "Camera riscaldata."
 #define MSG_COOLER_COOLING                  "Raffreddamento..."
 #define MSG_COOLER_DONE                     "Raffreddamento finito."
 

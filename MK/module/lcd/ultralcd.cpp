@@ -568,6 +568,15 @@ inline void line_to_current(AxisEnum axis) {
     lcd_setstatus(MSG_PRINT_ABORTED, true);
   }
 
+  static void lcd_sdcard_stop_save() {
+    card.sdprinting = false;
+    print_job_counter.stop();
+    quickStop();
+    card.closeFile(true);
+    autotempShutdown();
+    cancel_heatup = true;
+  }
+
 #endif // SDSUPPORT
 
 /**
@@ -606,6 +615,7 @@ static void lcd_main_menu() {
         else
           MENU_ITEM(function, MSG_RESUME_PRINT, lcd_sdcard_resume);
         MENU_ITEM(function, MSG_STOP_PRINT, lcd_sdcard_stop);
+        MENU_ITEM(function, MSG_STOP_SAVE_PRINT, lcd_sdcard_stop_save);
       }
       else {
         MENU_ITEM(submenu, MSG_CARD_MENU, lcd_sdcard_menu);
