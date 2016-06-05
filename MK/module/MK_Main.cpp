@@ -3117,77 +3117,79 @@ inline void wait_heater(bool no_wait_for_cooling = true) {
   KEEPALIVE_STATE(IN_HANDLER);
 }
 
-inline void wait_bed(bool no_wait_for_cooling = true) {
-
-  #if TEMP_BED_RESIDENCY_TIME > 0
-    millis_t residency_start_ms = 0;
-    // Loop until the temperature has stabilized
-    #define TEMP_BED_CONDITIONS (!residency_start_ms || PENDING(now, residency_start_ms + (TEMP_BED_RESIDENCY_TIME) * 1000UL))
-  #else
-    // Loop until the temperature is very close target
-    #define TEMP_BED_CONDITIONS (wants_to_cool ? isCoolingBed() : isHeatingBed())
-  #endif // TEMP_BED_RESIDENCY_TIME > 0
-
-  float theTarget = -1;
-  bool wants_to_cool;
-  cancel_heatup = false;
-  millis_t now, next_temp_ms = 0;
-
-  KEEPALIVE_STATE(NOT_BUSY);
-
-  // Wait for temperature to come close enough
-  do {
-    now = millis();
-    if (ELAPSED(now, next_temp_ms)) { //Print Temp Reading every 1 second while heating up.
-      next_temp_ms = now + 1000UL;
-      print_heaterstates();
-      #if TEMP_BED_RESIDENCY_TIME > 0
-        ECHO_M(SERIAL_W);
-        if (residency_start_ms) {
-          long rem = (((TEMP_BED_RESIDENCY_TIME) * 1000UL) - (now - residency_start_ms)) / 1000UL;
-          ECHO_EV(rem);
-        }
-        else {
-          ECHO_EM("?");
-        }
-      #else
-        ECHO_E;
-      #endif
-    }
-
-    // Target temperature might be changed during the loop
-    if (theTarget != degTargetBed()) {
-      wants_to_cool = isCoolingBed();
-      theTarget = degTargetBed();
-
-      // Exit if S<lower>, continue if S<higher>, R<lower>, or R<higher>
-      if (no_wait_for_cooling && wants_to_cool) break;
-
-      // Prevent a wait-forever situation if R is misused i.e. M190 R0
-      // Simply don't wait to cool a bed under 30C
-      if (wants_to_cool && theTarget < 30) break;
-    }
-
-    idle();
-    refresh_cmd_timeout(); // to prevent stepper_inactive_time from running out
+#if HAS(TEMP_BED)
+  inline void wait_bed(bool no_wait_for_cooling = true) {
 
     #if TEMP_BED_RESIDENCY_TIME > 0
-      float temp_diff = fabs(theTarget - degTargetBed());
+      millis_t residency_start_ms = 0;
+      // Loop until the temperature has stabilized
+      #define TEMP_BED_CONDITIONS (!residency_start_ms || PENDING(now, residency_start_ms + (TEMP_BED_RESIDENCY_TIME) * 1000UL))
+    #else
+      // Loop until the temperature is very close target
+      #define TEMP_BED_CONDITIONS (wants_to_cool ? isCoolingBed() : isHeatingBed())
+    #endif // TEMP_BED_RESIDENCY_TIME > 0
 
-      if (!residency_start_ms) {
-        // Start the TEMP_BED_RESIDENCY_TIME timer when we reach target temp for the first time.
-        if (temp_diff < TEMP_BED_WINDOW) residency_start_ms = millis();
-      }
-      else if (temp_diff > TEMP_BED_HYSTERESIS) {
-        // Restart the timer whenever the temperature falls outside the hysteresis.
-        residency_start_ms = millis();
-      }
-    #endif //TEMP_BED_RESIDENCY_TIME > 0
+    float theTarget = -1;
+    bool wants_to_cool;
+    cancel_heatup = false;
+    millis_t now, next_temp_ms = 0;
 
-  } while (!cancel_heatup && TEMP_BED_CONDITIONS);
-  LCD_MESSAGEPGM(MSG_BED_DONE);
-  KEEPALIVE_STATE(IN_HANDLER);
-}
+    KEEPALIVE_STATE(NOT_BUSY);
+
+    // Wait for temperature to come close enough
+    do {
+      now = millis();
+      if (ELAPSED(now, next_temp_ms)) { //Print Temp Reading every 1 second while heating up.
+        next_temp_ms = now + 1000UL;
+        print_heaterstates();
+        #if TEMP_BED_RESIDENCY_TIME > 0
+          ECHO_M(SERIAL_W);
+          if (residency_start_ms) {
+            long rem = (((TEMP_BED_RESIDENCY_TIME) * 1000UL) - (now - residency_start_ms)) / 1000UL;
+            ECHO_EV(rem);
+          }
+          else {
+            ECHO_EM("?");
+          }
+        #else
+          ECHO_E;
+        #endif
+      }
+
+      // Target temperature might be changed during the loop
+      if (theTarget != degTargetBed()) {
+        wants_to_cool = isCoolingBed();
+        theTarget = degTargetBed();
+
+        // Exit if S<lower>, continue if S<higher>, R<lower>, or R<higher>
+        if (no_wait_for_cooling && wants_to_cool) break;
+
+        // Prevent a wait-forever situation if R is misused i.e. M190 R0
+        // Simply don't wait to cool a bed under 30C
+        if (wants_to_cool && theTarget < 30) break;
+      }
+
+      idle();
+      refresh_cmd_timeout(); // to prevent stepper_inactive_time from running out
+
+      #if TEMP_BED_RESIDENCY_TIME > 0
+        float temp_diff = fabs(theTarget - degTargetBed());
+
+        if (!residency_start_ms) {
+          // Start the TEMP_BED_RESIDENCY_TIME timer when we reach target temp for the first time.
+          if (temp_diff < TEMP_BED_WINDOW) residency_start_ms = millis();
+        }
+        else if (temp_diff > TEMP_BED_HYSTERESIS) {
+          // Restart the timer whenever the temperature falls outside the hysteresis.
+          residency_start_ms = millis();
+        }
+      #endif //TEMP_BED_RESIDENCY_TIME > 0
+
+    } while (!cancel_heatup && TEMP_BED_CONDITIONS);
+    LCD_MESSAGEPGM(MSG_BED_DONE);
+    KEEPALIVE_STATE(IN_HANDLER);
+  }
+#endif // HAS(TEMP_BED)
 
 #if HAS(TEMP_CHAMBER)
   inline void wait_chamber(bool no_wait_for_heating = true) {
@@ -7882,8 +7884,10 @@ inline void gcode_M503() {
         setTargetHotend(old_target_temperature[e], e);
         wait_heater();
       }
-      setTargetBed(old_target_temperature_bed);
-      wait_bed();
+      #if HAS(TEMP_BED)
+        setTargetBed(old_target_temperature_bed);
+        wait_bed();
+      #endif
     }
 
     // Show load message
@@ -10111,7 +10115,7 @@ void kill(const char* lcd_msg) {
 
 #if ENABLED(FAST_PWM_FAN) || ENABLED(FAST_PWM_COOLER)
 
-  void setPwmFrequency(uint8_t pin, int val) {
+  void setPwmFrequency(uint8_t pin, uint8_t val) {
     val &= 0x07;
     switch(digitalPinToTimer(pin)) {
 
