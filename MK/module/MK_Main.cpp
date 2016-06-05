@@ -1151,13 +1151,13 @@ XYZ_CONSTS_FROM_CONFIG(signed char, home_dir,  HOME_DIR);
     return (extruder == 0) ? X_HOME_DIR : X2_HOME_DIR;
   }
 
-  static float inactive_extruder_x_pos = X2_MAX_POS; // used in mode 0 & 1
-  static bool active_extruder_parked = false; // used in mode 1 & 2
+  static float inactive_hotend_x_pos = X2_MAX_POS; // used in mode 0 & 1
+  static bool active_hotend_parked = false; // used in mode 1 & 2
   static float raised_parked_position[NUM_AXIS]; // used in mode 1
   static millis_t delayed_move_time = 0; // used in mode 1
   static float duplicate_hotend_x_offset = DEFAULT_DUPLICATION_X_OFFSET; // used in mode 2
-  static float duplicate_extruder_temp_offset = 0; // used in mode 2
-  bool extruder_duplication_enabled = false; // used in mode 2
+  static float duplicate_hotend_temp_offset = 0; // used in mode 2
+  bool hotend_duplication_enabled = false; // used in mode 2
 
 #endif //DUAL_X_CARRIAGE
 
@@ -1175,7 +1175,7 @@ static void update_software_endstops(AxisEnum axis) {
   float offs = home_offset[axis] + position_shift[axis];
   #if ENABLED(DUAL_X_CARRIAGE)
     if (axis == X_AXIS) {
-      float dual_max_x = max(extruder_offset[X_AXIS][1], X2_MAX_POS);
+      float dual_max_x = max(hotend_offset[X_AXIS][1], X2_MAX_POS);
       if (active_extruder != 0) {
         sw_endstop_min[X_AXIS] = X2_MIN_POS + offs;
         sw_endstop_max[X_AXIS] = dual_max_x + offs;
@@ -1183,7 +1183,7 @@ static void update_software_endstops(AxisEnum axis) {
       }
       else if (dual_x_carriage_mode == DXC_DUPLICATION_MODE) {
         sw_endstop_min[X_AXIS] = base_min_pos(X_AXIS) + offs;
-        sw_endstop_max[X_AXIS] = min(base_max_pos(X_AXIS), dual_max_x - duplicate_extruder_x_offset) + offs;
+        sw_endstop_max[X_AXIS] = min(base_max_pos(X_AXIS), dual_max_x - duplicate_hotend_x_offset) + offs;
         return;
       }
     }
@@ -3833,7 +3833,7 @@ inline void gcode_G28() {
 
         #if ENABLED(DUAL_X_CARRIAGE)
           int x_axis_home_dir = x_home_dir(active_extruder);
-          extruder_duplication_enabled = false;
+          hotend_duplication_enabled = false;
         #else
           int x_axis_home_dir = home_dir(X_AXIS);
         #endif
@@ -3887,16 +3887,16 @@ inline void gcode_G28() {
     if (home_all_axis || homeX) {
       #if ENABLED(DUAL_X_CARRIAGE)
         int tmp_extruder = active_extruder;
-        extruder_duplication_enabled = false;
+        hotend_duplication_enabled = false;
         active_extruder = !active_extruder;
         HOMEAXIS(X);
-        inactive_extruder_x_pos = current_position[X_AXIS];
+        inactive_hotend_x_pos = current_position[X_AXIS];
         active_extruder = tmp_extruder;
         HOMEAXIS(X);
         // reset state used by the different modes
         memcpy(raised_parked_position, current_position, sizeof(raised_parked_position));
         delayed_move_time = 0;
-        active_extruder_parked = true;
+        active_hotend_parked = true;
       #else
         HOMEAXIS(X);
       #endif
@@ -6082,7 +6082,7 @@ inline void gcode_M104() {
     setTargetHotend(temp, target_extruder);
     #if ENABLED(DUAL_X_CARRIAGE)
       if (dual_x_carriage_mode == DXC_DUPLICATION_MODE && target_extruder == 0)
-        setTargetHotend1(temp == 0.0 ? 0.0 : temp + duplicate_extruder_temp_offset);
+        setTargetHotend1(temp == 0.0 ? 0.0 : temp + duplicate_hotend_temp_offset);
     #endif
 
     /**
@@ -6163,7 +6163,7 @@ inline void gcode_M109() {
     setTargetHotend(temp, target_extruder);
     #if ENABLED(DUAL_X_CARRIAGE)
       if (dual_x_carriage_mode == DXC_DUPLICATION_MODE && target_extruder == 0)
-        setTargetHotend1(temp == 0.0 ? 0.0 : temp + duplicate_extruder_temp_offset);
+        setTargetHotend1(temp == 0.0 ? 0.0 : temp + duplicate_hotend_temp_offset);
     #endif
 
     /**
@@ -7965,7 +7965,7 @@ inline void gcode_M503() {
     switch(dual_x_carriage_mode) {
       case DXC_DUPLICATION_MODE:
         if (code_seen('X')) duplicate_hotend_x_offset = max(code_value(), X2_MIN_POS - x_home_pos(0));
-        if (code_seen('R')) duplicate_extruder_temp_offset = code_value();
+        if (code_seen('R')) duplicate_hotend_temp_offset = code_value();
         ECHO_SM(DB, SERIAL_HOTEND_OFFSET);
         ECHO_MV(" ", hotend_offset[X_AXIS][0]);
         ECHO_MV(",", hotend_offset[Y_AXIS][0]);
@@ -7979,8 +7979,8 @@ inline void gcode_M503() {
         dual_x_carriage_mode = DEFAULT_DUAL_X_CARRIAGE_MODE;
         break;
     }
-    active_extruder_parked = false;
-    extruder_duplication_enabled = false;
+    active_hotend_parked = false;
+    hotend_duplication_enabled = false;
     delayed_move_time = 0;
   }
 #endif // DUAL_X_CARRIAGE
@@ -8279,31 +8279,34 @@ inline void gcode_T(uint8_t tmp_extruder) {
               st_synchronize();
             }
 
+            // apply Y & Z extruder offset (x offset is already used in determining home pos)
+            current_position[Y_AXIS] -= hotend_offset[Y_AXIS][active_extruder] - hotend_offset[Y_AXIS][tmp_extruder];
+            current_position[Z_AXIS] -= hotend_offset[Z_AXIS][active_extruder] - hotend_offset[Z_AXIS][tmp_extruder];
             active_extruder = target_extruder;
 
             // This function resets the max/min values - the current position may be overwritten below.
             set_axis_is_at_home(X_AXIS);
 
             if (dual_x_carriage_mode == DXC_FULL_CONTROL_MODE) {
-              current_position[X_AXIS] = inactive_extruder_x_pos;
-              inactive_extruder_x_pos = destination[X_AXIS];
+              current_position[X_AXIS] = inactive_hotend_x_pos;
+              inactive_hotend_x_pos = destination[X_AXIS];
             }
             else if (dual_x_carriage_mode == DXC_DUPLICATION_MODE) {
-              active_extruder_parked = (active_extruder == 0); // this triggers the second extruder to move into the duplication position
+              active_hotend_parked = (active_extruder == 0); // this triggers the second extruder to move into the duplication position
 
-              if (active_extruder == 0 || active_extruder_parked)
-                current_position[X_AXIS] = inactive_extruder_x_pos;
+              if (active_hotend_parked)
+                current_position[X_AXIS] = inactive_hotend_x_pos;
               else
                 current_position[X_AXIS] = destination[X_AXIS] + duplicate_hotend_x_offset;
 
-              inactive_extruder_x_pos = destination[X_AXIS];
-              extruder_duplication_enabled = false;
+              inactive_hotend_x_pos = destination[X_AXIS];
+              hotend_duplication_enabled = false;
             }
             else {
               // record raised toolhead position for use by unpark
               memcpy(raised_parked_position, current_position, sizeof(raised_parked_position));
               raised_parked_position[Z_AXIS] += TOOLCHANGE_UNPARK_ZLIFT;
-              active_extruder_parked = true;
+              active_hotend_parked = true;
               delayed_move_time = 0;
             }
 
@@ -9422,15 +9425,15 @@ static void report_current_position() {
 #if ENABLED(DUAL_X_CARRIAGE)
 
   inline bool prepare_move_dual_x_carriage() {
-    if (active_extruder_parked) {
+    if (active_hotend_parked) {
       if (dual_x_carriage_mode == DXC_DUPLICATION_MODE && active_extruder == 0) {
         // move duplicate extruder into correct duplication position.
-        planner.set_position_mm(inactive_extruder_x_pos, current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+        planner.set_position_mm(inactive_hotend_x_pos, current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
         planner.buffer_line(current_position[X_AXIS] + duplicate_hotend_x_offset, current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], planner.max_planner.acceleration_units_per_sq_second[X_AXIS], 1, active_driver);
         sync_plan_position();
         st_synchronize();
-        extruder_duplication_enabled = true;
-        active_extruder_parked = false;
+        hotend_duplication_enabled = true;
+        active_hotend_parked = false;
       }
       else if (dual_x_carriage_mode == DXC_AUTO_PARK_MODE) { // handle unparking of head
         if (current_position[E_AXIS] == destination[E_AXIS]) {
@@ -9449,7 +9452,7 @@ static void report_current_position() {
         planner.buffer_line(raised_parked_position[X_AXIS], raised_parked_position[Y_AXIS], raised_parked_position[Z_AXIS], current_position[E_AXIS], planner.max_planner.acceleration_units_per_sq_second[Z_AXIS], active_extruder, active_driver);
         planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], raised_parked_position[Z_AXIS], current_position[E_AXIS], min(planner.max_planner.acceleration_units_per_sq_second[X_AXIS], planner.max_planner.acceleration_units_per_sq_second[Y_AXIS]), active_extruder, active_driver);
         planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], planner.max_planner.acceleration_units_per_sq_second[Z_AXIS], active_extruder, active_driver);
-        active_extruder_parked = false;
+        active_hotend_parked = false;
       }
     }
     return true;

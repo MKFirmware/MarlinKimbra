@@ -37,7 +37,7 @@ void idle(
 void manage_inactivity(bool ignore_stepper_queue = false);
 
 #if ENABLED(DUAL_X_CARRIAGE)
-  extern bool extruder_duplication_enabled;
+  extern bool hotend_duplication_enabled;
 #endif
 
 void FlushSerialRequestResend();

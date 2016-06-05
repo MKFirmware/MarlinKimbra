@@ -75,6 +75,8 @@
 #define MSG_SPEED                           "Velocita"
 #define MSG_NOZZLE                          "Ugello"
 #define MSG_BED                             "Piatto"
+#define MSG_CHAMBER                         "Camera"
+#define MSG_COOLER                          "Raffreddamento"
 #define MSG_BED_Z                           "piatto Z"
 #define MSG_FAN_SPEED                       "Ventola"
 #define MSG_FLOW                            "Flusso"

@@ -42,7 +42,7 @@
 
 #ifndef STEPPER_H
   #define STEPPER_H
-  
+
   /**
    * Axis indices as enumerated constants
    *
@@ -50,7 +50,7 @@
    * A_AXIS and C_AXIS are used by COREXZ or COREZX printers
    * X_HEAD and Y_HEAD and Z_HEAD is used for systems that don't have a 1:1 relationship between X_AXIS and X Head movement, like CoreXY bots.
    */
-  enum AxisEnum {X_AXIS = 0, A_AXIS = 0, Y_AXIS = 1, B_AXIS = 1, Z_AXIS = 2, C_AXIS = 2, E_AXIS = 3, X_HEAD = 4, Y_HEAD = 5, Z_HEAD = 5};
+  enum AxisEnum {NO_AXIS = -1, X_AXIS = 0, A_AXIS = 0, Y_AXIS = 1, B_AXIS = 1, Z_AXIS = 2, C_AXIS = 2, E_AXIS = 3, X_HEAD = 4, Y_HEAD = 5, Z_HEAD = 5};
 
   #if ENABLED(ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED)
     #if ENABLED(ABORT_ON_ENDSTOP_HIT_INIT)
