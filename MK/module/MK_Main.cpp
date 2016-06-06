@@ -348,7 +348,9 @@ void stop();
 void get_available_commands();
 void process_next_command();
 
-inline void sync_plan_position();
+#if MECH(DELTA) || MECH(SCARA)
+  inline void sync_plan_position_delta();
+#endif
 
 void delay_ms(millis_t ms) {
   ms += millis();
@@ -704,7 +706,7 @@ void setup() {
 
   #if MECH(DELTA) || MECH(SCARA)
     // Vital to init kinematic equivalent for X0 Y0 Z0
-    sync_plan_position();
+    sync_plan_position_delta();
   #endif
 
   #if ENABLED(USE_WATCHDOG)
@@ -1337,7 +1339,16 @@ inline void line_to_destination(float mm_m) {
 inline void line_to_destination() {
   line_to_destination(feedrate);
 }
-
+/**
+ * sync_plan_position
+ * Set planner / stepper positions to the cartesian current_position.
+ * The stepper code translates these coordinates into step units.
+ * Allows translation between steps and units (mm) for cartesian & core robots
+ */
+inline void sync_plan_position() {
+  if (DEBUGGING(INFO)) DEBUG_POS("sync_plan_position", current_position);
+  planner.set_position_mm(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+}
 #if MECH(DELTA) || MECH(SCARA)
   /**
    * sync_plan_position
@@ -1345,21 +1356,10 @@ inline void line_to_destination() {
    * The stepper code translates these coordinates into step units.
    * Allows translation between steps and units (mm) for Delta & Scara
    */
-  inline void sync_plan_position() {
-    if (DEBUGGING(INFO)) DEBUG_POS("sync_plan_position", current_position);
+  inline void sync_plan_position_delta() {
+    if (DEBUGGING(INFO)) DEBUG_POS("sync_plan_position_delta", current_position);
     calculate_delta(current_position);
     planner.set_position_mm(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], current_position[E_AXIS]);
-  }
-#else
-  /**
-   * sync_plan_position
-   * Set planner / stepper positions to the cartesian current_position.
-   * The stepper code translates these coordinates into step units.
-   * Allows translation between steps and units (mm) for cartesian & core robots
-   */
-  inline void sync_plan_position() {
-    if (DEBUGGING(INFO)) DEBUG_POS("sync_plan_position", current_position);
-    planner.set_position_mm(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
   }
 #endif
 
@@ -2037,7 +2037,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       #endif
 
       endstops.enable_z_probe();
-      sync_plan_position();
+      sync_plan_position_delta();
     }
 
     static void retract_z_probe() {
@@ -2074,7 +2074,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       #endif
 
       endstops.enable_z_probe(false);
-      sync_plan_position();
+      sync_plan_position_delta();
     }
 
     static void run_z_probe() {
@@ -2094,7 +2094,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       long stop_steps = st_get_position(Z_AXIS);
       float mm = start_z - float(start_steps - stop_steps) / planner.axis_steps_per_unit[Z_AXIS];
       current_position[Z_AXIS] = mm;
-      sync_plan_position();
+      sync_plan_position_delta();
     }
 
     // Probe bed height at position (x,y), returns the measured z value
@@ -2748,7 +2748,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
     HOMEAXIS(Y);
     HOMEAXIS(Z);
 
-    sync_plan_position();
+    sync_plan_position_delta();
 
     endstops.hit_on_purpose(); // clear endstop hit flags
   }
@@ -2894,14 +2894,22 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
       if (retract_zlift > 0.01) {
         current_position[Z_AXIS] -= retract_zlift;
-        sync_plan_position();
+        #if MECH(DELTA)
+          sync_plan_position_delta();
+        #else
+          sync_plan_position();
+        #endif
         prepare_move();
       }
     }
     else {
       if (retract_zlift > 0.01) {
         current_position[Z_AXIS] += retract_zlift;
-        sync_plan_position();
+        #if MECH(DELTA)
+          sync_plan_position_delta();
+        #else
+          sync_plan_position();
+        #endif
       }
 
       feedrate = retract_recover_feedrate * 60;
@@ -4074,7 +4082,7 @@ inline void gcode_G28() {
   #endif // !DELTA
 
   #if MECH(SCARA)
-    sync_plan_position();
+    sync_plan_position_delta();
   #endif
 
   #if ENABLED(ENDSTOPS_ONLY_FOR_HOMING)
@@ -5119,11 +5127,16 @@ inline void gcode_G92() {
       }
     }
   }
-
-  if (didXYZ)
-    sync_plan_position();
-  else if (didE)
+  if (didXYZ) {
+    #if MECH(DELTA) || MECH(SCARA)
+      sync_plan_position_delta();
+    #else
+      sync_plan_position();
+    #endif
+  }
+  else if (didE) {
     sync_plan_position_e();
+  }
 }
 
 #if ENABLED(ULTIPANEL)
@@ -7652,7 +7665,11 @@ inline void gcode_M428() {
   }
 
   if (!err) {
-    sync_plan_position();
+    #if MECH(DELTA) || MECH(SCARA)
+      sync_plan_position_delta();
+    #else
+      sync_plan_position();
+    #endif
     report_current_position();
     ECHO_LM(DB, "Offset applied.");
     LCD_MESSAGEPGM("Offset applied.");
@@ -8502,7 +8519,11 @@ inline void gcode_T(uint8_t tmp_extruder) {
 
             // Raise Z before switch servo
             if (diff < 0) {
-              sync_plan_position();
+              #if MECH(DELTA)
+                sync_plan_position_delta();
+              #else
+                sync_plan_position();
+              #endif
               // Move to the "old position" (move the extruder into place)
               if (IsRunning()) prepare_move();
             }
@@ -8518,7 +8539,11 @@ inline void gcode_T(uint8_t tmp_extruder) {
             #endif
 
             if (diff >= 0) {
-              sync_plan_position();
+              #if MECH(DELTA)
+                sync_plan_position_delta();
+              #else
+                sync_plan_position();
+              #endif
               // Move to the "old position" (move the extruder into place)
               if (IsRunning()) prepare_move();
             }
@@ -8551,7 +8576,11 @@ inline void gcode_T(uint8_t tmp_extruder) {
           #endif
 
           // Tell the planner the new "current position"
-          #if HASNT(DONDOLO) // NO DONDOLO
+          #if MECH(DELTA)
+            sync_plan_position_delta();
+            // Move to the "old position" (move the extruder into place)
+            if (IsRunning()) prepare_move();
+          #elif HASNT(DONDOLO) // NO DONDOLO
             sync_plan_position();
             // Move to the "old position" (move the extruder into place)
             if (IsRunning()) prepare_move();
