@@ -1578,18 +1578,14 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       if (DEBUGGING(INFO))
         DEBUG_POS("deploy_z_probe", current_position);
 
-      #if HAS(Z_PROBE)
-        if (endstops.z_probe_enabled) return;
-      #endif
+      if (endstops.z_probe_enabled) return;
 
       #if HAS(SERVO_ENDSTOPS)
         // Engage Z Servo endstop if enabled
         if (servo_endstop_id[Z_AXIS] >= 0) servo[servo_endstop_id[Z_AXIS]].move(servo_endstop_angle[Z_AXIS][0]);
       #endif
 
-      #if HAS(Z_PROBE)
-        endstops.enable_z_probe();
-      #endif
+      endstops.enable_z_probe();
     }
 
     static void stow_z_probe(bool doRaise = true) {
@@ -1600,9 +1596,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       if (DEBUGGING(INFO))
         DEBUG_POS("stow_z_probe", current_position);
 
-      #if HAS(Z_PROBE)
-        if (!endstops.z_probe_enabled) return;
-      #endif
+      if (!endstops.z_probe_enabled) return;
 
       #if HAS(SERVO_ENDSTOPS)
         // Retract Z Servo endstop if enabled
@@ -1620,9 +1614,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
         }
       #endif
 
-      #if HAS(Z_PROBE)
-        endstops.enable_z_probe(false);
-      #endif
+      endstops.enable_z_probe(false);
     }
 
     enum ProbeAction {
@@ -1748,9 +1740,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
         // Engage an X, Y (or Z) Servo endstop if enabled
         if (_Z_SERVO_TEST && servo_endstop_id[axis] >= 0) {
           servo[servo_endstop_id[axis]].move(servo_endstop_angle[axis][0]);
-          #if HAS(Z_PROBE)
-            if (_Z_SERVO_SUBTEST) endstops.z_probe_enabled = true;
-          #endif
+          if (_Z_SERVO_SUBTEST) endstops.z_probe_enabled = true;
         }
       #endif
 
@@ -1778,7 +1768,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       st_synchronize();
 
       if (DEBUGGING(INFO)) ECHO_LM(INFO, "> endstops.enable(true)");
-      endstops.enable(); // Enable endstops for next homing move
+      endstops.enable(true); // Enable endstops for next homing move
 
       // Slow down the feedrate for the next move
       set_homing_bump_feedrate(axis);
@@ -1788,7 +1778,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       line_to_destination();
       st_synchronize();
 
-      if (DEBUGGING(INFO)) DEBUG_POS(" > TRIGGER ENDSTOP", current_position);
+      if (DEBUGGING(INFO)) DEBUG_POS("> TRIGGER ENDSTOP", current_position);
 
       #if ENABLED(Z_DUAL_ENDSTOPS)
         if (axis == Z_AXIS) {
@@ -1852,9 +1842,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
           if (DEBUGGING(INFO)) ECHO_LM(INFO, "> SERVO_ENDSTOPS > Stow with servo.move()");
           servo[servo_endstop_id[axis]].move(servo_endstop_angle[axis][1]);
-          #if HAS(Z_PROBE)
-            if (_Z_SERVO_SUBTEST) endstops.enable_z_probe(false);
-          #endif
+          if (_Z_SERVO_SUBTEST) endstops.enable_z_probe(false);
         }
       #endif // HAS(SERVO_ENDSTOPS)
 
@@ -1963,7 +1951,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
     delta_tower3_y = (delta_radius + tower_adj[5]) * sin((90 + tower_adj[2]) * M_PI/180); 
   }
 
-  #if ENABLED(Z_PROBE_ENDSTOP)
+  #if HAS(BED_PROBE)
 
     bool Equal_AB(const float A, const float B, const float prec = ac_prec) {
       if (abs(A - B) <= prec) return true;
@@ -2019,9 +2007,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
       if (DEBUGGING(INFO)) DEBUG_POS("deploy_z_probe", current_position);
 
-      #if HAS(Z_PROBE)
-        if (endstops.z_probe_enabled) return;
-      #endif
+      if (endstops.z_probe_enabled) return;
 
       #if HAS(SERVO_ENDSTOPS)
         feedrate = homing_feedrate[Z_AXIS];
@@ -2058,9 +2044,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
       if (DEBUGGING(INFO)) DEBUG_POS("retract_z_probe", current_position);
 
-      #if HAS(Z_PROBE)
-        if (!endstops.z_probe_enabled) return;
-      #endif
+      if (!endstops.z_probe_enabled) return;
 
       #if HAS(SERVO_ENDSTOPS)
         // Retract Z Servo endstop if enabled
@@ -2727,7 +2711,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       ECHO_E;
     }
 
-  #endif
+  #endif // HAS BED_PROBE
 
   // Reset calibration results to zero.
   static void reset_bed_level() {
@@ -4811,7 +4795,7 @@ inline void gcode_G28() {
   #endif // !Z_PROBE_SLED
 #endif // AUTO_BED_LEVELING_FEATURE
 
-#if MECH(DELTA) && ENABLED(Z_PROBE_ENDSTOP)
+#if MECH(DELTA) && HAS(BED_PROBE)
 
   /**
    * G29: Delta Z-Probe, probes the bed at more points.
@@ -5049,7 +5033,7 @@ inline void gcode_G28() {
     report_current_position();
     KEEPALIVE_STATE(IN_HANDLER);
   }
-#endif // DELTA && Z_PROBE_ENDSTOP
+#endif // DELTA && HAS BED_PROBE
 
 /**
  * G60:  save current position

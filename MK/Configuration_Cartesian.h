@@ -327,8 +327,23 @@
 //#define Z_PROBE_END_SCRIPT "G1 Z10 F8000\nG1 X10 Y10\nG1 Z0.5"  // These commands will be executed in the end of G29 routine.
                                                                   // Useful to retract a deployable Z probe.
 
+// Probes are sensors/switches that need to be activated before they can be used
+// and deactivated after their use.
+// Servo Probes, Z Sled Probes, Mechanical Probes, Fix mounted Probes, ... .
+// You have to activate one of these for the AUTO BED LEVELING FEATURE
+// A Servo Probe can be defined in the servo section
+
+// Enable if you have a Z probe mounted on a sled like those designed by Charles Bell.
 //#define Z_PROBE_SLED          // turn on if you have a z-probe mounted on a sled like those designed by Charles Bell
 #define SLED_DOCKING_OFFSET 5   // the extra distance the X axis must travel to pick up the sled. 0 should be fine but you can push it further if you'd like.
+
+// A Mechanical Probe is any probe that either doesn't deploy or needs manual deployment
+// For example any setup that uses the nozzle itself as a probe.
+//#define Z_PROBE_MECHANICAL
+
+// A fix mounted probe, like the normal inductive probe, must be deactivated to go below Z_PROBE_OFFSET_FROM_EXTRUDER
+// when the hardware endstops are active.
+//#define Z_PROBE_FIX_MOUNTED
 /*****************************************************************************************/
 
 
