@@ -549,6 +549,22 @@
   #endif
 
   /**
+   * Probes
+   */
+  #if PROBE_SELECTED
+    #if !PROBE_PIN_CONFIGURED
+      #error "A probe needs a pin! Use Z_MIN_PIN or Z_PROBE_PIN."
+    #endif
+  #else
+    /**
+     * Require some kind of probe for bed leveling
+     */
+    #if ENABLED(AUTO_BED_LEVELING_FEATURE)
+      #error "AUTO_BED_LEVELING_FEATURE requires a probe! Define a Z Servo, Z_PROBE_FIX_MOUNTED, Z_PROBE_MECHANICAL, or Z_PROBE_SLED."
+    #endif
+  #endif
+
+  /**
    * Auto Bed Leveling
    */
   #if ENABLED(AUTO_BED_LEVELING_FEATURE)

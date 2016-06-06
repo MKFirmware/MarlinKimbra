@@ -78,7 +78,7 @@ class Endstops {
     static void hit_on_purpose() { endstop_hit_bits = 0; }
 
     // Enable / disable endstop z-probe checking
-    #if HAS(Z_PROBE)
+    #if HAS(BED_PROBE)
       static volatile bool z_probe_enabled;
       static void enable_z_probe(bool onoff = true) { z_probe_enabled = onoff; }
     #endif
