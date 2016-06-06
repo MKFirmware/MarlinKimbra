@@ -1578,14 +1578,18 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       if (DEBUGGING(INFO))
         DEBUG_POS("deploy_z_probe", current_position);
 
-      if (endstops.z_probe_enabled) return;
+      #if HAS(Z_PROBE)
+        if (endstops.z_probe_enabled) return;
+      #endif
 
       #if HAS(SERVO_ENDSTOPS)
         // Engage Z Servo endstop if enabled
         if (servo_endstop_id[Z_AXIS] >= 0) servo[servo_endstop_id[Z_AXIS]].move(servo_endstop_angle[Z_AXIS][0]);
       #endif
 
-      endstops.enable_z_probe();
+      #if HAS(Z_PROBE)
+        endstops.enable_z_probe();
+      #endif
     }
 
     static void stow_z_probe(bool doRaise = true) {
@@ -1596,7 +1600,9 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       if (DEBUGGING(INFO))
         DEBUG_POS("stow_z_probe", current_position);
 
-      if (!endstops.z_probe_enabled) return;
+      #if HAS(Z_PROBE)
+        if (!endstops.z_probe_enabled) return;
+      #endif
 
       #if HAS(SERVO_ENDSTOPS)
         // Retract Z Servo endstop if enabled
@@ -1614,7 +1620,9 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
         }
       #endif
 
-      endstops.enable_z_probe(false);
+      #if HAS(Z_PROBE)
+        endstops.enable_z_probe(false);
+      #endif
     }
 
     enum ProbeAction {
@@ -1740,7 +1748,9 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
         // Engage an X, Y (or Z) Servo endstop if enabled
         if (_Z_SERVO_TEST && servo_endstop_id[axis] >= 0) {
           servo[servo_endstop_id[axis]].move(servo_endstop_angle[axis][0]);
-          if (_Z_SERVO_SUBTEST) endstops.z_probe_enabled = true;
+          #if HAS(Z_PROBE)
+            if (_Z_SERVO_SUBTEST) endstops.z_probe_enabled = true;
+          #endif
         }
       #endif
 
@@ -1842,7 +1852,9 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
           if (DEBUGGING(INFO)) ECHO_LM(INFO, "> SERVO_ENDSTOPS > Stow with servo.move()");
           servo[servo_endstop_id[axis]].move(servo_endstop_angle[axis][1]);
-          if (_Z_SERVO_SUBTEST) endstops.enable_z_probe(false);
+          #if HAS(Z_PROBE)
+            if (_Z_SERVO_SUBTEST) endstops.enable_z_probe(false);
+          #endif
         }
       #endif // HAS(SERVO_ENDSTOPS)
 
@@ -2007,7 +2019,9 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
       if (DEBUGGING(INFO)) DEBUG_POS("deploy_z_probe", current_position);
 
-      if (endstops.z_probe_enabled) return;
+      #if HAS(Z_PROBE)
+        if (endstops.z_probe_enabled) return;
+      #endif
 
       #if HAS(SERVO_ENDSTOPS)
         feedrate = homing_feedrate[Z_AXIS];
@@ -2044,7 +2058,9 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
       if (DEBUGGING(INFO)) DEBUG_POS("retract_z_probe", current_position);
 
-      if (!endstops.z_probe_enabled) return;
+      #if HAS(Z_PROBE)
+        if (!endstops.z_probe_enabled) return;
+      #endif
 
       #if HAS(SERVO_ENDSTOPS)
         // Retract Z Servo endstop if enabled
