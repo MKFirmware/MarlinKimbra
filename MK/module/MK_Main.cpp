@@ -363,6 +363,7 @@ void gcode_M114();
 
 static void report_current_position();
 
+// PRINT XYZ for DEBUG
 void print_xyz(const char* prefix, const float x, const float y, const float z) {
   ECHO_T(prefix);
   ECHO_MV(": (", x);
@@ -371,11 +372,10 @@ void print_xyz(const char* prefix, const float x, const float y, const float z) 
   ECHO_M(")");
   ECHO_E;
 }
-
 void print_xyz(const char* prefix, const float xyz[]) {
   print_xyz(prefix, xyz[X_AXIS], xyz[Y_AXIS], xyz[Z_AXIS]);
 }
-#if ENABLED(AUTO_BED_LEVELING_FEATURE)
+#if ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
   void print_xyz(const char* prefix, const vector_3 &xyz) {
     print_xyz(prefix, xyz.x, xyz.y, xyz.z);
   }
@@ -428,7 +428,6 @@ void print_xyz(const char* prefix, const float xyz[]) {
     }
     return -1;
   }
-
 #endif
 
 /**
@@ -1292,7 +1291,7 @@ static void set_axis_is_at_home(AxisEnum axis) {
     update_software_endstops(axis);
   #endif
 
-  #if ENABLED(AUTO_BED_LEVELING_FEATURE) && Z_HOME_DIR < 0
+  #if ENABLED(AUTO_BED_LEVELING_FEATURE) && (Z_HOME_DIR < 0) && NOMECH(DELTA)
     if (axis == Z_AXIS) {
       current_position[Z_AXIS] -= zprobe_zoffset;
       if (DEBUGGING(INFO))
@@ -1303,6 +1302,8 @@ static void set_axis_is_at_home(AxisEnum axis) {
   if (DEBUGGING(INFO)) {
     ECHO_LMV(INFO, " > home_offset[axis]==", home_offset[axis]);
     DEBUG_POS("", current_position);
+    ECHO_SMV(INFO, "<<< set_axis_is_at_home(", axis);
+    ECHO_EM(")");
   }
 }
 
@@ -1442,16 +1443,12 @@ inline void do_blocking_move_to_xy(float x, float y) { do_blocking_move_to(x, y,
 inline void do_blocking_move_to_x(float x) { do_blocking_move_to(x, current_position[Y_AXIS], current_position[Z_AXIS]); }
 inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], z); }
 
-#if ENABLED(AUTO_BED_LEVELING_FEATURE)
-  inline void raise_z_after_probing() {
-    #if Z_RAISE_AFTER_PROBING > 0
-      if (DEBUGGING(INFO)) ECHO_LM(INFO, "raise_z_after_probing()");
-      do_blocking_move_to_z(current_position[Z_AXIS] + Z_RAISE_AFTER_PROBING);
-    #endif
-  }
-#endif
 
-#if NOMECH(DELTA) && NOMECH(SCARA)
+/**
+ * Function for Cartesian, Core & Scara mechanism
+ */
+#if MECH(CARTESIAN) || MECH(COREXY) || MECH(COREYX) || MECH(COREXZ) || MECH(COREZX) || MECH(SCARA)
+
   void set_current_position_from_planner() {
     st_synchronize();
     #if ENABLED(AUTO_BED_LEVELING_FEATURE)
@@ -1466,11 +1463,15 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
     #endif
     sync_plan_position();                       // ...re-apply to planner position
   }
-#endif
-
-#if MECH(CARTESIAN) || MECH(COREXY) || MECH(COREYX) || MECH(COREXZ) || MECH(COREZX) || MECH(SCARA)
 
   #if ENABLED(AUTO_BED_LEVELING_FEATURE)
+    inline void raise_z_after_probing() {
+      #if Z_RAISE_AFTER_PROBING > 0
+        if (DEBUGGING(INFO)) ECHO_LM(INFO, "raise_z_after_probing()");
+        do_blocking_move_to_z(current_position[Z_AXIS] + Z_RAISE_AFTER_PROBING);
+      #endif
+    }
+
     #if ENABLED(AUTO_BED_LEVELING_GRID)
       static void set_bed_level_equation_lsq(double *plane_equation_coefficients) {
         if (DEBUGGING(INFO)) {
@@ -1692,7 +1693,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
     ((LETTER##_MIN_PIN > -1 && LETTER##_HOME_DIR==-1) || (LETTER##_MAX_PIN > -1 && LETTER##_HOME_DIR==1))
 
     if (DEBUGGING(INFO)) {
-      ECHO_SMV(INFO, ">>> homeaxis(", (unsigned long)axis);
+      ECHO_SMV(INFO, ">>> homeaxis(", axis);
       ECHO_EM(")");
     }
 
@@ -1717,7 +1718,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
         #define _Z_SERVO_SUBTEST    false                 // Z will never be invoked
         #define _Z_DEPLOY           (dock_sled(false))
         #define _Z_STOW             (dock_sled(true))
-      #elif SERVO_LEVELING
+      #elif SERVO_LEVELING || ENABLED(Z_PROBE_FIX_MOUNTED)
         #define _Z_SERVO_TEST       (axis != Z_AXIS)      // already deployed Z
         #define _Z_SERVO_SUBTEST    false                 // Z will never be invoked
         #define _Z_DEPLOY           (deploy_z_probe())
@@ -1728,7 +1729,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       #endif
 
       // If there's a Z probe that needs deployment...
-      #if HAS(Z_PROBE_SLED) || SERVO_LEVELING
+      #if HAS(Z_PROBE_SLED) || SERVO_LEVELING || ENABLED(Z_PROBE_FIX_MOUNTED)
         // ...and homing Z towards the bed? Deploy it.
         if (axis == Z_AXIS && axis_home_dir < 0) {
           if (DEBUGGING(INFO)) ECHO_LM(INFO, "> SERVO_LEVELING > " STRINGIFY(_Z_DEPLOY));
@@ -1818,7 +1819,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       axis_homed[axis] = true;
 
       // Put away the Z probe with a function
-      #if HAS(Z_PROBE_SLED) || SERVO_LEVELING
+      #if HAS(Z_PROBE_SLED) || SERVO_LEVELING || ENABLED(Z_PROBE_FIX_MOUNTED)
         if (axis == Z_AXIS && axis_home_dir < 0) {
           if (DEBUGGING(INFO)) ECHO_LM(INFO, "> SERVO_LEVELING > " STRINGIFY(_Z_STOW));
           _Z_STOW;
@@ -1860,10 +1861,19 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
   #define HOMEAXIS(LETTER) homeaxis(LETTER##_AXIS)
 #endif // CARTESIAN || COREXY || COREYX || COREXZ || COREZX || SCARA
 
+
+/**
+ * Function for DELTA
+ */
 #if MECH(DELTA)
   static void homeaxis(AxisEnum axis) {
     #define HOMEAXIS_DO(LETTER) \
       ((LETTER##_MIN_PIN > -1 && LETTER##_HOME_DIR==-1) || (LETTER##_MAX_PIN > -1 && LETTER##_HOME_DIR==1))
+
+    if (DEBUGGING(INFO)) {
+      ECHO_SMV(INFO, ">>> homeaxis(", axis);
+      ECHO_EM(")");
+    }
 
     if (axis == X_AXIS ? HOMEAXIS_DO(X) : 
         axis == Y_AXIS ? HOMEAXIS_DO(Y) :
@@ -1871,6 +1881,8 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
         0) {
 
       int axis_home_dir = home_dir(axis);
+
+      // Set the axis position as setup for the move
       current_position[axis] = 0;
       sync_plan_position();
 
@@ -1884,6 +1896,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       current_position[axis] = 0;
       sync_plan_position();
 
+      if (DEBUGGING(INFO)) ECHO_LM(INFO, "> endstops.enable(false)");
       endstops.enable(false); // Disable endstops while moving away
 
       // Move away from the endstop by the axis HOME_BUMP_MM
@@ -1891,6 +1904,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       line_to_destination();
       st_synchronize();
 
+      if (DEBUGGING(INFO)) ECHO_LM(INFO, "> endstops.enable(true)");
       endstops.enable(); // Enable endstops for next homing move
 
       // Slow down the feedrate for the next move
@@ -1903,6 +1917,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
       // retrace by the amount specified in endstop_adj
       if (endstop_adj[axis] * axis_home_dir < 0) {
+        if (DEBUGGING(INFO)) ECHO_LM(INFO, "> endstops.enable(false)");
         endstops.enable(false); // Disable Endstops while moving away
         sync_plan_position();
         destination[axis] = endstop_adj[axis];
@@ -1912,17 +1927,17 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
         }
         line_to_destination();
         st_synchronize();
+        if (DEBUGGING(INFO)) ECHO_LM(INFO, "> endstops.enable(true)");
         endstops.enable(); // Enable Endstops for next homing move
       }
 
-      if (DEBUGGING(INFO)) ECHO_LMV(INFO, " > endstop_adj * axis_home_dir = ", endstop_adj[axis] * axis_home_dir);
+      if (DEBUGGING(INFO)) ECHO_LMV(INFO, "> endstop_adj * axis_home_dir = ", endstop_adj[axis] * axis_home_dir);
 
       // Set the axis position to its home position (plus home offsets)
       set_axis_is_at_home(axis);
       sync_plan_position();
 
-      if (DEBUGGING(INFO))
-        DEBUG_POS(" > AFTER set_axis_is_at_home", current_position);
+      if (DEBUGGING(INFO)) DEBUG_POS("> AFTER set_axis_is_at_home", current_position);
 
       destination[axis] = current_position[axis];
       feedrate = 0.0;
@@ -1951,7 +1966,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
     delta_tower3_y = (delta_radius + tower_adj[5]) * sin((90 + tower_adj[2]) * M_PI/180); 
   }
 
-  #if HAS(BED_PROBE)
+  #if ENABLED(AUTO_BED_LEVELING_FEATURE)
 
     bool Equal_AB(const float A, const float B, const float prec = ac_prec) {
       if (abs(A - B) <= prec) return true;
@@ -2009,16 +2024,18 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
       if (endstops.z_probe_enabled) return;
 
-      #if HAS(SERVO_ENDSTOPS)
+      #if HAS(SERVO_ENDSTOPS) || ENABLED(Z_PROBE_FIX_MOUNTED) || ENABLED(Z_PROBE_MECHANICAL)
         feedrate = homing_feedrate[Z_AXIS];
         do_blocking_move_to_z(  z_probe_deploy_start_location[Z_AXIS]);
         do_blocking_move_to_xy( z_probe_deploy_start_location[X_AXIS],
                                 z_probe_deploy_start_location[Y_AXIS]);
 
-        // Engage Z Servo endstop if enabled
-        if (servo_endstop_id[Z_AXIS] >= 0)
-          servo[servo_endstop_id[Z_AXIS]].move(servo_endstop_angle[Z_AXIS][0]);
-      #else
+        #if HAS(SERVO_ENDSTOPS)
+          // Engage Z Servo endstop if enabled
+          if (servo_endstop_id[Z_AXIS] >= 0)
+            servo[servo_endstop_id[Z_AXIS]].move(servo_endstop_angle[Z_AXIS][0]);
+        #endif
+      #else // ALLEN KEY
         feedrate = homing_feedrate[Z_AXIS];
         do_blocking_move_to_z(  z_probe_deploy_start_location[Z_AXIS]);
         do_blocking_move_to_xy( z_probe_deploy_start_location[X_AXIS],
@@ -2046,16 +2063,18 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
       if (!endstops.z_probe_enabled) return;
 
-      #if HAS(SERVO_ENDSTOPS)
-        // Retract Z Servo endstop if enabled
-        if (servo_endstop_id[Z_AXIS] >= 0)
-          servo[servo_endstop_id[Z_AXIS]].move(servo_endstop_angle[Z_AXIS][1]);
-
+      #if HAS(SERVO_ENDSTOPS) || ENABLED(Z_PROBE_FIX_MOUNTED) || ENABLED(Z_PROBE_MECHANICAL)
         feedrate = homing_feedrate[Z_AXIS];
         do_blocking_move_to(z_probe_retract_start_location[X_AXIS],
                             z_probe_retract_start_location[Y_AXIS],
                             z_probe_retract_start_location[Z_AXIS]);
-      #else
+
+        #if HAS(SERVO_ENDSTOPS)
+          // Retract Z Servo endstop if enabled
+          if (servo_endstop_id[Z_AXIS] >= 0)
+            servo[servo_endstop_id[Z_AXIS]].move(servo_endstop_angle[Z_AXIS][1]);
+        #endif
+      #else // ALLEN KEY
         feedrate = homing_feedrate[Z_AXIS];
         do_blocking_move_to(z_probe_retract_start_location[X_AXIS],
                             z_probe_retract_start_location[Y_AXIS],
@@ -2080,7 +2099,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
     static void run_z_probe() {
       refresh_cmd_timeout();
 
-      endstops.enable();
+      endstops.enable_z_probe();
       float start_z = current_position[Z_AXIS];
       long start_steps = st_get_position(Z_AXIS);
 
@@ -2090,7 +2109,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       st_synchronize();
       endstops.hit_on_purpose(); // clear endstop hit flags
 
-      endstops.enable(false);
+      endstops.enable_z_probe(false);
       long stop_steps = st_get_position(Z_AXIS);
       float mm = start_z - float(start_steps - stop_steps) / planner.axis_steps_per_unit[Z_AXIS];
       current_position[Z_AXIS] = mm;
@@ -2113,7 +2132,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       if (DEBUGGING(INFO)) {
         ECHO_LM(INFO, "probe_bed >>>");
         DEBUG_POS("", current_position);
-        ECHO_SMV(INFO, " > do_blocking_move_to_xy ", Dx);
+        ECHO_SMV(INFO, "> do_blocking_move_to_xy ", Dx);
         ECHO_EMV(", ", Dy);
       }
 
@@ -2711,17 +2730,17 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       ECHO_E;
     }
 
-  #endif // HAS BED_PROBE
-
-  // Reset calibration results to zero.
-  static void reset_bed_level() {
-    if (DEBUGGING(INFO)) ECHO_LM(INFO, "reset_bed_level");
-    for (int y = 0; y < AUTO_BED_LEVELING_GRID_POINTS; y++) {
-      for (int x = 0; x < AUTO_BED_LEVELING_GRID_POINTS; x++) {
-        bed_level[x][y] = 0.0;
+    // Reset calibration results to zero.
+    static void reset_bed_level() {
+      if (DEBUGGING(INFO)) ECHO_LM(INFO, "reset_bed_level");
+      for (int y = 0; y < AUTO_BED_LEVELING_GRID_POINTS; y++) {
+        for (int x = 0; x < AUTO_BED_LEVELING_GRID_POINTS; x++) {
+          bed_level[x][y] = 0.0;
+        }
       }
     }
-  }
+
+  #endif // AUTO_BED_LEVELING_FEATURE
 
   static void home_delta_axis() {
 
@@ -3755,9 +3774,9 @@ inline void gcode_G28() {
   #endif
 
   // For auto bed leveling, clear the level matrix
-  #if ENABLED(AUTO_BED_LEVELING_FEATURE)
+  #if ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
     planner.bed_level_matrix.set_to_identity();
-  #elif MECH(DELTA)
+  #elif ENABLED(AUTO_BED_LEVELING_FEATURE) && MECH(DELTA)
     reset_bed_level();
   #endif
 
@@ -3839,7 +3858,7 @@ inline void gcode_G28() {
       // Raise Z before homing any other axes and z is not already high enough (never lower z)
       if (current_position[Z_AXIS] <= MIN_Z_HEIGHT_FOR_HOMING) {
         destination[Z_AXIS] = MIN_Z_HEIGHT_FOR_HOMING;
-        feedrate = planner.max_planner.acceleration_units_per_sq_second[Z_AXIS] * 60;  // feedrate (mm/m) = planner.max_planner.acceleration_units_per_sq_second (mm/s)
+        feedrate = planner.max_feedrate[Z_AXIS] * 60;  // feedrate (mm/m) = planner.max_feedrate (mm/s)
         if (DEBUGGING(INFO)) {
           ECHO_EMV("Raise Z (before homing) to ", (MIN_Z_HEIGHT_FOR_HOMING));
           DEBUG_POS("> (home_all_axis || homeZ)", current_position);
@@ -3874,7 +3893,7 @@ inline void gcode_G28() {
         sync_plan_position();
 
         float mlx = max_length(X_AXIS), mly = max_length(Y_AXIS),
-              mlratio = mlx>mly ? mly/mlx : mlx/mly;
+              mlratio = mlx > mly ? mly / mlx : mlx / mly;
 
         destination[X_AXIS] = 1.5 * mlx * x_axis_home_dir;
         destination[Y_AXIS] = 1.5 * mly * home_dir(Y_AXIS);
@@ -4167,7 +4186,7 @@ inline void gcode_G28() {
   report_current_position();
 }
 
-#if ENABLED(MESH_BED_LEVELING)
+#if ENABLED(MESH_BED_LEVELING) && NOMECH(DELTA)
 
   enum MeshLevelingState { MeshReport, MeshStart, MeshNext, MeshSet, MeshSetZOffset, MeshReset };
 
@@ -4361,7 +4380,7 @@ inline void gcode_G28() {
     report_current_position();
   }
 
-#elif ENABLED(AUTO_BED_LEVELING_FEATURE)
+#elif ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
 
   void out_of_range_error(const char* p_edge) {
     ECHO_M("?Probe ");
@@ -4793,9 +4812,8 @@ inline void gcode_G28() {
       gcode_M114(); // Send end position to RepetierHost
     }
   #endif // !Z_PROBE_SLED
-#endif // AUTO_BED_LEVELING_FEATURE
 
-#if MECH(DELTA) && HAS(BED_PROBE)
+#elif ENABLED(AUTO_BED_LEVELING_FEATURE) && MECH(DELTA)
 
   /**
    * G29: Delta Z-Probe, probes the bed at more points.
@@ -4828,7 +4846,8 @@ inline void gcode_G28() {
     KEEPALIVE_STATE(IN_HANDLER);
   }
 
-  /* G30: Delta AutoCalibration
+  /**
+   * G30: Delta AutoCalibration
    *
    * Parameters:
    * X Y:           Probe specified X,Y point
@@ -5033,7 +5052,7 @@ inline void gcode_G28() {
     report_current_position();
     KEEPALIVE_STATE(IN_HANDLER);
   }
-#endif // DELTA && HAS BED_PROBE
+#endif // AUTO_BED_LEVELING_FEATURE && DELTA
 
 /**
  * G60:  save current position
@@ -5463,7 +5482,7 @@ inline void gcode_M42() {
   } // code_seen('S')
 }
 
-#if ENABLED(AUTO_BED_LEVELING_FEATURE) && ENABLED(Z_PROBE_REPEATABILITY_TEST)
+#if ENABLED(AUTO_BED_LEVELING_FEATURE) && ENABLED(Z_PROBE_REPEATABILITY_TEST) && NOMECH(DELTA)
   /**
    * M48: Z-Probe repeatability measurement function.
    *
@@ -7245,7 +7264,7 @@ inline void gcode_M226() {
  */
 inline void gcode_M400() { st_synchronize(); }
 
-#if (ENABLED(AUTO_BED_LEVELING_FEATURE) && DISABLED(Z_PROBE_SLED) && HAS(SERVO_ENDSTOPS)) || (MECH(DELTA) && ENABLED(Z_PROBE_ENDSTOP))
+#if (ENABLED(AUTO_BED_LEVELING_FEATURE) && DISABLED(Z_PROBE_SLED) && HAS(SERVO_ENDSTOPS))
 
   /**
    * M401: Engage Z Servo endstop if available
@@ -7271,7 +7290,7 @@ inline void gcode_M400() { st_synchronize(); }
     #endif
   }
 
-#endif // (ENABLED(AUTO_BED_LEVELING_FEATURE) && DISABLED(Z_PROBE_SLED) && HAS(SERVO_ENDSTOPS)) || MECH(DELTA)
+#endif // (ENABLED(AUTO_BED_LEVELING_FEATURE) && DISABLED(Z_PROBE_SLED) && HAS(SERVO_ENDSTOPS))
 
 #if ENABLED(FILAMENT_SENSOR)
 
@@ -7510,14 +7529,14 @@ inline void gcode_M400() { st_synchronize(); }
         ECHO_M(",");
         ECHO_V((int) Z_MAX_POS);
         ECHO_M("],\"planner.accelerations\":[");
-        ECHO_V(planner.max_planner.acceleration_units_per_sq_second[X_AXIS]);
+        ECHO_V(planner.acceleration_units_per_sq_second[X_AXIS]);
         ECHO_M(",");
-        ECHO_V(planner.max_planner.acceleration_units_per_sq_second[Y_AXIS]);
+        ECHO_V(planner.acceleration_units_per_sq_second[Y_AXIS]);
         ECHO_M(",");
-        ECHO_V(planner.max_planner.acceleration_units_per_sq_second[Z_AXIS]);
+        ECHO_V(planner.acceleration_units_per_sq_second[Z_AXIS]);
         for (uint8_t i = 0; i < EXTRUDERS; i++) {
           ECHO_M(",");
-          ECHO_V(planner.max_planner.acceleration_units_per_sq_second[E_AXIS + i]);
+          ECHO_V(planner.acceleration_units_per_sq_second[E_AXIS + i]);
         }
         ECHO_M("],");
 
@@ -7559,14 +7578,14 @@ inline void gcode_M400() { st_synchronize(); }
           ECHO_M(",0");
         }
         ECHO_M("],\"maxFeedrates\":[");
-        ECHO_V(planner.max_planner.acceleration_units_per_sq_second[X_AXIS]);
+        ECHO_V(planner.max_feedrate[X_AXIS]);
         ECHO_M(",");
-        ECHO_V(planner.max_planner.acceleration_units_per_sq_second[Y_AXIS]);
+        ECHO_V(planner.max_feedrate[Y_AXIS]);
         ECHO_M(",");
-        ECHO_V(planner.max_planner.acceleration_units_per_sq_second[Z_AXIS]);
+        ECHO_V(planner.max_feedrate[Z_AXIS]);
         for (uint8_t i = 0; i < EXTRUDERS; i++) {
           ECHO_M(",");
-          ECHO_V(planner.max_planner.acceleration_units_per_sq_second[E_AXIS + i]);
+          ECHO_V(planner.max_feedrate[E_AXIS + i]);
         }
         ECHO_M("]");
         break;
@@ -7588,7 +7607,7 @@ inline void gcode_M410() {
   #endif
 }
 
-#if ENABLED(MESH_BED_LEVELING)
+#if ENABLED(MESH_BED_LEVELING) && NOMECH(DELTA)
   /**
    * M420: Enable/Disable Mesh Bed Leveling
    */
@@ -7627,7 +7646,7 @@ inline void gcode_M410() {
       ECHO_LM(ER, SERIAL_ERR_M421_PARAMETERS);
     }
   }
-#endif
+#endif // MESH_BED_LEVELING && NO DELTA
 
 /**
  * M428: Set home_offset based on the distance between the
@@ -8044,7 +8063,7 @@ inline void gcode_M503() {
   }
 #endif // LASERBEAM
 
-#if ENABLED(AUTO_BED_LEVELING_FEATURE)
+#if ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
   //M666: Set Z probe offset
   inline void gcode_M666() {
     if (code_seen('P')) {
@@ -8055,9 +8074,9 @@ inline void gcode_M503() {
       ECHO_LMV(DB, "P (Z-Probe Offset):", zprobe_zoffset);
     }
   }
-#endif
 
-#if MECH(DELTA)
+#elif MECH(DELTA)
+
   //M666: Set delta endstop and geometry adjustment
   inline void gcode_M666() {
     if (code_seen('A')) {
@@ -8146,7 +8165,7 @@ inline void gcode_M503() {
       ECHO_LMV(CFG, "H (Z-Height): ", sw_endstop_max[Z_AXIS]);
     }
   }
-#endif
+#endif // MECH DELTA
 
 #if ENABLED(ADVANCE_LPC)
   /**
@@ -8699,12 +8718,15 @@ void process_next_command() {
       case 28: //G28: Home all axes, one at a time
         gcode_G28(); break;
 
-      #if ENABLED(AUTO_BED_LEVELING_FEATURE) || ENABLED(MESH_BED_LEVELING)
-        case 29: // G29 Detailed Z-Probe, probes the bed at 3 or more points.
-          gcode_G29(); break;
-      #endif
+      #if ENABLED(MESH_BED_LEVELING) && NOMECH(DELTA)
 
-      #if ENABLED(AUTO_BED_LEVELING_FEATURE)
+        case 29: // G29 Mesh Bed Level
+          gcode_G29(); break;
+
+      #elif ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
+
+        case 29: // G29 Mesh Bed Level
+          gcode_G29(); break;
         #if HASNT(Z_PROBE_SLED)
           case 30: // G30 Single Z Probe
             gcode_G30(); break;
@@ -8713,14 +8735,15 @@ void process_next_command() {
           case 32: // G32: undock the sled
             dock_sled(codenum == 31); break;
         #endif // Z_PROBE_SLED
-      #endif // AUTO_BED_LEVELING_FEATURE
 
-      #if MECH(DELTA) && ENABLED(Z_PROBE_ENDSTOP)
+      #elif ENABLED(AUTO_BED_LEVELING_FEATURE) && MECH(DELTA)
+
         case 29: // G29 Detailed Z-Probe, probes the bed at more points.
           gcode_G29(); break;
         case 30:  // G30 Delta AutoCalibration
           gcode_G30(); break;
-      #endif // DELTA && Z_PROBE_ENDSTOP
+
+      #endif // AUTO_BED_LEVELING_FEATURE & DELTA
 
       case 60: // G60 Saved Coordinates
         gcode_G60(); break;
@@ -8796,7 +8819,7 @@ void process_next_command() {
       case 42: // M42 -Change pin status via gcode
         gcode_M42(); break;
 
-      #if ENABLED(AUTO_BED_LEVELING_FEATURE) && ENABLED(Z_PROBE_REPEATABILITY_TEST)
+      #if ENABLED(AUTO_BED_LEVELING_FEATURE) && ENABLED(Z_PROBE_REPEATABILITY_TEST) && NOMECH(DELTA)
         case 48: // M48 Z-Probe repeatability
           gcode_M48(); break;
       #endif
@@ -9084,7 +9107,7 @@ void process_next_command() {
       case 400: // M400 finish all moves
         gcode_M400(); break;
 
-      #if (ENABLED(AUTO_BED_LEVELING_FEATURE) && DISABLED(Z_PROBE_SLED) && HAS(SERVO_ENDSTOPS)) || (MECH(DELTA) && ENABLED(Z_PROBE_ENDSTOP))
+      #if (ENABLED(AUTO_BED_LEVELING_FEATURE) && DISABLED(Z_PROBE_SLED) && HAS(SERVO_ENDSTOPS))
         case 401:
           gcode_M401(); break;
         case 402:
@@ -9110,7 +9133,7 @@ void process_next_command() {
       case 410: // M410 quickstop - Abort all the planned moves.
         gcode_M410(); break;
 
-      #if ENABLED(MESH_BED_LEVELING)
+      #if ENABLED(MESH_BED_LEVELING) && NOMECH(DELTA)
         case 420: // M420 Enable/Disable Mesh Bed Leveling
           gcode_M420(); break;
         case 421: // M421 Set a Mesh Bed Leveling Z coordinate
@@ -9277,7 +9300,7 @@ static void report_current_position() {
   #endif
 }
 
-#if ENABLED(MESH_BED_LEVELING)
+#if ENABLED(MESH_BED_LEVELING) && NOMECH(DELTA)
   // This function is used to split lines on mesh borders so each segment is only part of one mesh area
   void mesh_buffer_line(float x, float y, float z, const float e, float feed_rate, const uint8_t& extruder, const uint8_t& driver, uint8_t x_splits = 0xff, uint8_t y_splits = 0xff) {
     if (!mbl.active()) {
@@ -9462,7 +9485,7 @@ static void report_current_position() {
       if (dual_x_carriage_mode == DXC_DUPLICATION_MODE && active_extruder == 0) {
         // move duplicate extruder into correct duplication position.
         planner.set_position_mm(inactive_hotend_x_pos, current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
-        planner.buffer_line(current_position[X_AXIS] + duplicate_hotend_x_offset, current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], planner.max_planner.acceleration_units_per_sq_second[X_AXIS], 1, active_driver);
+        planner.buffer_line(current_position[X_AXIS] + duplicate_hotend_x_offset, current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], planner.max_feedrate[X_AXIS], 1, active_driver);
         sync_plan_position();
         st_synchronize();
         hotend_duplication_enabled = true;
@@ -9482,9 +9505,9 @@ static void report_current_position() {
         }
         delayed_move_time = 0;
         // unpark extruder: 1) raise, 2) move into starting XY position, 3) lower
-        planner.buffer_line(raised_parked_position[X_AXIS], raised_parked_position[Y_AXIS], raised_parked_position[Z_AXIS], current_position[E_AXIS], planner.max_planner.acceleration_units_per_sq_second[Z_AXIS], active_extruder, active_driver);
-        planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], raised_parked_position[Z_AXIS], current_position[E_AXIS], min(planner.max_planner.acceleration_units_per_sq_second[X_AXIS], planner.max_planner.acceleration_units_per_sq_second[Y_AXIS]), active_extruder, active_driver);
-        planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], planner.max_planner.acceleration_units_per_sq_second[Z_AXIS], active_extruder, active_driver);
+        planner.buffer_line(raised_parked_position[X_AXIS], raised_parked_position[Y_AXIS], raised_parked_position[Z_AXIS], current_position[E_AXIS], planner.max_feedrate[Z_AXIS], active_extruder, active_driver);
+        planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], raised_parked_position[Z_AXIS], current_position[E_AXIS], min(planner.max_feedrate[X_AXIS], planner.max_feedrate[Y_AXIS]), active_extruder, active_driver);
+        planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], planner.max_feedrate[Z_AXIS], active_extruder, active_driver);
         active_hotend_parked = false;
       }
     }
@@ -9565,17 +9588,17 @@ void plan_arc(
 ) {
 
   float radius = hypot(offset[X_AXIS], offset[Y_AXIS]),
-        center_axis0 = current_position[X_AXIS] + offset[X_AXIS],
-        center_axis1 = current_position[Y_AXIS] + offset[Y_AXIS],
+        center_X = current_position[X_AXIS] + offset[X_AXIS],
+        center_Y = current_position[Y_AXIS] + offset[Y_AXIS],
         linear_travel = target[Z_AXIS] - current_position[Z_AXIS],
         extruder_travel = target[E_AXIS] - current_position[E_AXIS],
-        r_axis0 = -offset[X_AXIS],  // Radius vector from center to current location
-        r_axis1 = -offset[Y_AXIS],
-        rt_axis0 = target[X_AXIS] - center_axis0,
-        rt_axis1 = target[Y_AXIS] - center_axis1;
+        r_X = -offset[X_AXIS],  // Radius vector from center to current location
+        r_Y = -offset[Y_AXIS],
+        rt_X = target[X_AXIS] - center_X,
+        rt_Y = target[Y_AXIS] - center_Y;
   
   // CCW angle of rotation between position and target from the circle center. Only one atan2() trig computation required.
-  float angular_travel = atan2(r_axis0*rt_axis1-r_axis1*rt_axis0, r_axis0*rt_axis0+r_axis1*rt_axis1);
+  float angular_travel = atan2(r_X * rt_Y - r_Y * rt_X, r_X * rt_X + r_Y * rt_Y);
   if (angular_travel < 0) { angular_travel += RADIANS(360); }
   if (clockwise) { angular_travel -= RADIANS(360); }
   
@@ -9583,48 +9606,47 @@ void plan_arc(
   if (current_position[X_AXIS] == target[X_AXIS] && current_position[Y_AXIS] == target[Y_AXIS] && angular_travel == 0)
     angular_travel += RADIANS(360);
   
-  float mm_of_travel = hypot(angular_travel*radius, fabs(linear_travel));
+  float mm_of_travel = hypot(angular_travel * radius, fabs(linear_travel));
   if (mm_of_travel < 0.001) { return; }
   uint16_t segments = floor(mm_of_travel / (MM_PER_ARC_SEGMENT));
   if (segments == 0) segments = 1;
   
-  float theta_per_segment = angular_travel/segments;
-  float linear_per_segment = linear_travel/segments;
-  float extruder_per_segment = extruder_travel/segments;
+  float theta_per_segment = angular_travel / segments;
+  float linear_per_segment = linear_travel / segments;
+  float extruder_per_segment = extruder_travel / segments;
   
-  /* Vector rotation by transformation matrix: r is the original vector, r_T is the rotated vector,
-     and phi is the angle of rotation. Based on the solution approach by Jens Geisler.
-         r_T = [cos(phi) -sin(phi);
-                sin(phi)  cos(phi] * r ;
-     
-     For arc generation, the center of the circle is the axis of rotation and the radius vector is 
-     defined from the circle center to the initial position. Each line segment is formed by successive
-     vector rotations. This requires only two cos() and sin() computations to form the rotation
-     matrix for the duration of the entire arc. Error may accumulate from numerical round-off, since
-     all double numbers are single precision on the Arduino. (True double precision will not have
-     round off issues for CNC applications.) Single precision error can accumulate to be greater than
-     tool precision in some cases. Therefore, arc path correction is implemented. 
-
-     Small angle approximation may be used to reduce computation overhead further. This approximation
-     holds for everything, but very small circles and large MM_PER_ARC_SEGMENT values. In other words,
-     theta_per_segment would need to be greater than 0.1 rad and N_ARC_CORRECTION would need to be large
-     to cause an appreciable drift error. N_ARC_CORRECTION~=25 is more than small enough to correct for 
-     numerical drift error. N_ARC_CORRECTION may be on the order a hundred(s) before error becomes an
-     issue for CNC machines with the single precision Arduino calculations.
-     
-     This approximation also allows plan_arc to immediately insert a line segment into the planner 
-     without the initial overhead of computing cos() or sin(). By the time the arc needs to be applied
-     a correction, the planner should have caught up to the lag caused by the initial plan_arc overhead. 
-     This is important when there are successive arc motions. 
-  */
+  /**
+   * Vector rotation by transformation matrix: r is the original vector, r_T is the rotated vector,
+   * and phi is the angle of rotation. Based on the solution approach by Jens Geisler.
+   *     r_T = [cos(phi) -sin(phi);
+   *            sin(phi)  cos(phi] * r ;
+   *
+   * For arc generation, the center of the circle is the axis of rotation and the radius vector is
+   * defined from the circle center to the initial position. Each line segment is formed by successive
+   * vector rotations. This requires only two cos() and sin() computations to form the rotation
+   * matrix for the duration of the entire arc. Error may accumulate from numerical round-off, since
+   * all double numbers are single precision on the Arduino. (True double precision will not have
+   * round off issues for CNC applications.) Single precision error can accumulate to be greater than
+   * tool precision in some cases. Therefore, arc path correction is implemented.
+   *
+   * Small angle approximation may be used to reduce computation overhead further. This approximation
+   * holds for everything, but very small circles and large MM_PER_ARC_SEGMENT values. In other words,
+   * theta_per_segment would need to be greater than 0.1 rad and N_ARC_CORRECTION would need to be large
+   * to cause an appreciable drift error. N_ARC_CORRECTION~=25 is more than small enough to correct for
+   * numerical drift error. N_ARC_CORRECTION may be on the order a hundred(s) before error becomes an
+   * issue for CNC machines with the single precision Arduino calculations.
+   *
+   * This approximation also allows plan_arc to immediately insert a line segment into the planner
+   * without the initial overhead of computing cos() or sin(). By the time the arc needs to be applied
+   * a correction, the planner should have caught up to the lag caused by the initial plan_arc overhead.
+   * This is important when there are successive arc motions.
+   */
   // Vector rotation matrix values
-  float cos_T = 1-0.5*theta_per_segment*theta_per_segment; // Small angle approximation
+  float cos_T = 1 - 0.5 * theta_per_segment * theta_per_segment; // Small angle approximation
   float sin_T = theta_per_segment;
   
   float arc_target[NUM_AXIS];
-  float sin_Ti;
-  float cos_Ti;
-  float r_axisi;
+  float sin_Ti, cos_Ti, r_new_Y;
   uint16_t i;
   int8_t count = 0;
 
@@ -9636,35 +9658,48 @@ void plan_arc(
 
   float feed_rate = feedrate * feedrate_multiplier / 60 / 100.0;
 
+  millis_t next_idle_ms = millis() + 200UL;
+
   for (i = 1; i < segments; i++) { // Increment (segments-1)
 
-    if (count < N_ARC_CORRECTION) {
-      // Apply vector rotation matrix to previous r_axis0 / 1
-      r_axisi = r_axis0*sin_T + r_axis1*cos_T;
-      r_axis0 = r_axis0*cos_T - r_axis1*sin_T;
-      r_axis1 = r_axisi;
-      count++;
+    manage_temp_controller();
+    millis_t now = millis();
+    if (ELAPSED(now, next_idle_ms)) {
+      next_idle_ms = now + 200UL;
+      idle();
+    }
+
+    if (++count < N_ARC_CORRECTION) {
+      // Apply vector rotation matrix to previous r_X / 1
+      r_new_Y = r_X * sin_T + r_Y * cos_T;
+      r_X = r_X * cos_T - r_Y * sin_T;
+      r_Y = r_new_Y;
     }
     else {
       // Arc correction to radius vector. Computed only every N_ARC_CORRECTION increments.
       // Compute exact location by applying transformation matrix from initial radius vector(=-offset).
-      cos_Ti = cos(i*theta_per_segment);
-      sin_Ti = sin(i*theta_per_segment);
-      r_axis0 = -offset[X_AXIS]*cos_Ti + offset[Y_AXIS]*sin_Ti;
-      r_axis1 = -offset[X_AXIS]*sin_Ti - offset[Y_AXIS]*cos_Ti;
+      // To reduce stuttering, the sin and cos could be computed at different times.
+      // For now, compute both at the same time.
+      cos_Ti = cos(i * theta_per_segment);
+      sin_Ti = sin(i * theta_per_segment);
+      r_X = -offset[X_AXIS] * cos_Ti + offset[Y_AXIS] * sin_Ti;
+      r_Y = -offset[X_AXIS] * sin_Ti - offset[Y_AXIS] * cos_Ti;
       count = 0;
     }
 
     // Update arc_target location
-    arc_target[X_AXIS] = center_axis0 + r_axis0;
-    arc_target[Y_AXIS] = center_axis1 + r_axis1;
+    arc_target[X_AXIS] = center_X + r_X;
+    arc_target[Y_AXIS] = center_Y + r_Y;
     arc_target[Z_AXIS] += linear_per_segment;
     arc_target[E_AXIS] += extruder_per_segment;
 
     clamp_to_software_endstops(arc_target);
+
     #if MECH(DELTA) || MECH(SCARA)
       calculate_delta(arc_target);
-      adjust_delta(arc_target);
+      #if ENABLED(AUTO_BED_LEVELING_FEATURE)
+        adjust_delta(arc_target);
+      #endif
       planner.buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], arc_target[E_AXIS], feed_rate, active_extruder, active_driver);
     #else
       planner.buffer_line(arc_target[X_AXIS], arc_target[Y_AXIS], arc_target[Z_AXIS], arc_target[E_AXIS], feed_rate, active_extruder, active_driver);
@@ -9674,7 +9709,9 @@ void plan_arc(
   // Ensure last segment arrives at target location.
   #if MECH(DELTA) || MECH(SCARA)
     calculate_delta(target);
-    adjust_delta(target);
+    #if ENABLED(AUTO_BED_LEVELING_FEATURE)
+      adjust_delta(target);
+    #endif
     planner.buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], target[E_AXIS], feed_rate, active_extruder, active_driver);
   #else
     planner.buffer_line(target[X_AXIS], target[Y_AXIS], target[Z_AXIS], target[E_AXIS], feed_rate, active_extruder, active_driver);
@@ -9991,8 +10028,8 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
         }
         float oldepos = current_position[E_AXIS], oldedes = destination[E_AXIS];
         planner.buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS],
-                        destination[E_AXIS] + (EXTRUDER_RUNOUT_EXTRUDE) * (EXTRUDER_RUNOUT_ESTEPS) / planner.axis_steps_per_unit[E_AXIS],
-                        (EXTRUDER_RUNOUT_SPEED) / 60. * (EXTRUDER_RUNOUT_ESTEPS) / planner.axis_steps_per_unit[E_AXIS], active_extruder, active_driver);
+                        destination[E_AXIS] + (EXTRUDER_RUNOUT_EXTRUDE) * (EXTRUDER_RUNOUT_ESTEPS) / planner.axis_steps_per_unit[E_AXIS + active_extruder],
+                        (EXTRUDER_RUNOUT_SPEED) / 60. * (EXTRUDER_RUNOUT_ESTEPS) / planner.axis_steps_per_unit[E_AXIS + active_extruder], active_extruder, active_driver);
         current_position[E_AXIS] = oldepos;
         destination[E_AXIS] = oldedes;
         planner.set_e_position_mm(oldepos);

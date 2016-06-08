@@ -139,7 +139,7 @@ void Endstops::init() {
     #endif
   #endif
 
-  #if HAS(Z_PROBE) // Check for Z_PROBE_ENDSTOP so we don't pull a pin high unless it's to be used.
+  #if HAS(Z_PROBE_PIN) // Check for Z_PROBE_ENDSTOP so we don't pull a pin high unless it's to be used.
     SET_INPUT(Z_PROBE_PIN);
     #if ENABLED(ENDSTOPPULLUP_ZPROBE)
       PULLUP(Z_PROBE_PIN, HIGH);
@@ -222,7 +222,7 @@ void Endstops::M119() {
   #if HAS(Z2_MAX)
     ECHO_EMT(SERIAL_Z2_MAX, ((READ(Z2_MAX_PIN)^Z2_MAX_ENDSTOP_INVERTING)?SERIAL_ENDSTOP_HIT:SERIAL_ENDSTOP_OPEN));
   #endif
-  #if HAS(Z_PROBE)
+  #if HAS(Z_PROBE_PIN)
     ECHO_EMT(SERIAL_Z_PROBE, ((READ(Z_PROBE_PIN)^Z_PROBE_ENDSTOP_INVERTING)?SERIAL_ENDSTOP_HIT:SERIAL_ENDSTOP_OPEN));
   #endif
   #if HAS(E_MIN)
@@ -348,7 +348,7 @@ void Endstops::update() {
 
           #else // !Z_DUAL_ENDSTOPS
 
-            #if HAS(BED_PROBE) && HASNT(Z_PROBE)
+            #if HAS(BED_PROBE) && HASNT(Z_PROBE_PIN)
               if (z_probe_enabled) UPDATE_ENDSTOP(Z, MIN);
             #else
               UPDATE_ENDSTOP(Z, MIN);
@@ -357,7 +357,7 @@ void Endstops::update() {
           #endif // !Z_DUAL_ENDSTOPS
         #endif // HAS_Z_MIN
 
-        #if HAS(BED_PROBE) && HAS(Z_PROBE)
+        #if HAS(BED_PROBE) && HAS(Z_PROBE_PIN)
           if (z_probe_enabled) {
             UPDATE_ENDSTOP(Z, PROBE);
             if (TEST_ENDSTOP(Z_PROBE)) SBI(endstop_hit_bits, Z_PROBE);
