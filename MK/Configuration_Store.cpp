@@ -201,7 +201,7 @@ void Config_StoreSettings() {
     EEPROM_WRITE_VAR(i, mbl.z_values);
   #endif
 
-  #if !MECH(DELTA)
+  #if NOMECH(DELTA)
     EEPROM_WRITE_VAR(i, zprobe_zoffset);
   #endif
 
@@ -369,7 +369,7 @@ void Config_RetrieveSettings() {
       EEPROM_READ_VAR(i, mbl.z_values);
     #endif
 
-    #if !MECH(DELTA)
+    #if NOMECH(DELTA)
       EEPROM_READ_VAR(i, zprobe_zoffset);
     #endif
 
@@ -575,9 +575,9 @@ void Config_ResetDefault() {
     mbl.reset();
   #endif
 
-  #if ENABLED(AUTO_BED_LEVELING_FEATURE)
+  #if ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
     zprobe_zoffset = Z_PROBE_OFFSET_FROM_EXTRUDER;
-  #elif !MECH(DELTA)
+  #elif NOMECH(DELTA)
     zprobe_zoffset = 0;
   #endif
 

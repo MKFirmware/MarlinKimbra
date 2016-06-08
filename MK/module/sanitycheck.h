@@ -560,14 +560,14 @@
      * Require some kind of probe for bed leveling
      */
     #if ENABLED(AUTO_BED_LEVELING_FEATURE)
-      #error "AUTO_BED_LEVELING_FEATURE requires a probe! Define a Z Servo, Z_PROBE_FIX_MOUNTED, Z_PROBE_MECHANICAL, or Z_PROBE_SLED."
+      #error "AUTO_BED_LEVELING_FEATURE requires a probe! Define a Z Servo, Z_PROBE_FIX_MOUNTED, Z_PROBE_MECHANICAL, Z_PROBE_SLED, or Z_PROBE_ALLEN_KEY."
     #endif
   #endif
 
   /**
    * Auto Bed Leveling
    */
-  #if ENABLED(AUTO_BED_LEVELING_FEATURE)
+  #if ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
     #if ENABLED(AUTO_BED_LEVELING_GRID)
       #if DISABLED(MIN_PROBE_EDGE)
         #error DEPENDENCY ERROR: Missing setting MIN_PROBE_EDGE
@@ -1322,15 +1322,6 @@
   #endif
   #if DISABLED(HOMING_BUMP_DIVISOR)
     #error DEPENDENCY ERROR: Missing setting HOMING_BUMP_DIVISOR
-  #endif
-  #if DISABLED(LEFT_PROBE_BED_POSITION)
-    #error DEPENDENCY ERROR: Missing setting LEFT_PROBE_BED_POSITION
-  #endif
-  #if DISABLED(RIGHT_PROBE_BED_POSITION)
-    #error DEPENDENCY ERROR: Missing setting RIGHT_PROBE_BED_POSITION
-  #endif
-  #if DISABLED(FRONT_PROBE_BED_POSITION)
-    #error DEPENDENCY ERROR: Missing setting FRONT_PROBE_BED_POSITION
   #endif
   #if !MECH(DELTA)
     #if DISABLED(XY_TRAVEL_SPEED)

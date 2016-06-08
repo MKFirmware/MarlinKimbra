@@ -6,7 +6,7 @@
  *
  * - Machine name
  * - Delta settings
- * - Z probe endstop
+ * - Auto Bed Leveling (ABL)
  * - Endstop pullup resistors
  * - Endstops logic
  * - Endstops min or max
@@ -116,24 +116,16 @@
 
 
 /*****************************************************************************************
- ******************************* Z probe endstop *****************************************
+ ******************************* Auto Bed Leveling (ABL) *********************************
  *****************************************************************************************
  *                                                                                       *
- * If you enabled Z_PROBE_ENDSTOP this add the support for autocalibration               *
- * and auto bed level                                                                    *
- * To use Z PROBE endstop, you must have a Z_PROBE_PIN                                   *
- * defined in the Configuration_pins.h file for your control board.                      *
- * If you are using a servo based Z PROBE, you will need to enable                       *
- * NUM_SERVOS, SERVO_ENDSTOPS and SERVO_ENDSTOPS_ANGLES in                               *
- * Configuration_Feature R/C Servo section.                                              *
- *                                                                                       *
- * WARNING: Setting the wrong pin may have unexpected and potentially                    *
- * disastrous outcomes. Use with caution and do your homework.                           *
- *                                                                                       *
- * Uncomment Z_PROBE_ENDSTOP to enable.                                                  *
+ * If you enabled Auto Bed Leveling (ABL) this add the support for auto bed level and    *
+ * Autocalibration Delta system                                                          *
+ * To use ABL you must have a PROBE, please define you type probe.                       *
+ * Servo Probes, probe Allen Key, Mechanical Probe, Fix mounted Probe, ... .             *
  *                                                                                       *
  *****************************************************************************************/
-//#define Z_PROBE_ENDSTOP
+//#define AUTO_BED_LEVELING_FEATURE
 
 // Speed for autocalibration travel and probing moves
 #define AUTOCAL_TRAVELRATE 100  // mm/sec
@@ -171,6 +163,56 @@
 // Define the grid for bed level AUTO BED LEVELING GRID POINTS X AUTO BED LEVELING GRID POINTS.
 #define AUTO_BED_LEVELING_GRID_POINTS 9
 
+// Probes are sensors/switches that need to be activated before they can be used
+// and deactivated after their use.
+// Servo Probes, probe Allen Key, Mechanical Probe, Fix mounted Probe, ... .
+// You have to activate one of these for the AUTO BED LEVELING FEATURE
+// A Servo Probe can be defined in the servo section
+
+// Allen key retractable z-probe as seen on many Kossel delta printers - http://reprap.org/wiki/Kossel#Automatic_bed_leveling_probe
+// Deploys by touching z-axis belt. Retracts by pushing the probe down.
+//#define Z_PROBE_ALLEN_KEY
+
+// A Mechanical Probe is any probe that either doesn't deploy or needs manual deployment
+// For example any setup that uses the nozzle itself as a probe.
+//#define Z_PROBE_MECHANICAL
+
+// A fix mounted probe, like the normal inductive probe, must be deactivated to go below Z_PROBE_OFFSET_FROM_EXTRUDER
+// when the hardware endstops are active.
+//#define Z_PROBE_FIX_MOUNTED
+/*****************************************************************************************/
+
+
+/*****************************************************************************************
+ ******************************* Z probe endstop *****************************************
+ *****************************************************************************************
+ *                                                                                       *
+ * If you have enabled the Auto bed levelling this add the Support for                   *
+ * a dedicated Z PROBE endstop separate from the Z MIN endstop.                          *
+ * If you would like to use both a Z PROBE and a Z MIN endstop together                  *
+ * or just a Z PROBE with a custom pin, uncomment #define Z PROBE ENDSTOP                *
+ * and read the instructions below.                                                      *
+ *                                                                                       *
+ * If you want to still use the Z min endstop for homing,                                *
+ * disable Z SAFE HOMING.                                                                *
+ * Eg: to park the head outside the bed area when homing with G28.                       *
+ *                                                                                       *
+ * WARNING: The Z MIN endstop will need to set properly as it would                      *
+ * without a Z PROBE to prevent head crashes and premature stopping                      *
+ * during a print.                                                                       *
+ * To use a separte Z PROBE endstop, you must have a Z PROBE PIN                         *
+ * defined in the pins.h file for your control board.                                    *
+ * If you are using a servo based Z PROBE, you will need to enable                       *
+ * NUM SERVOS, SERVO ENDSTOPS and SERVO ENDSTOPS ANGLES in                               *
+ * Configuration_Feature R/C Servo section.                                              *
+ *                                                                                       *
+ * WARNING: Setting the wrong pin may have unexpected and potentially                    *
+ * disastrous outcomes. Use with caution and do your homework.                           *
+ *                                                                                       *
+ * Uncomment Z PROBE ENDSTOP to enable.                                                  *
+ *                                                                                       *
+ *****************************************************************************************/
+//#define Z_PROBE_ENDSTOP
 /*****************************************************************************************/
 
 

@@ -351,7 +351,7 @@
 
 // Probes are sensors/switches that need to be activated before they can be used
 // and deactivated after their use.
-// Servo Probes, Z Sled Probes, Mechanical Probes, Fix mounted Probes, ... .
+// Servo Probes, Z Sled Probe, Mechanical Probe, Fix mounted Probe, ... .
 // You have to activate one of these for the AUTO BED LEVELING FEATURE
 // A Servo Probe can be defined in the servo section
 
