@@ -81,6 +81,14 @@ static unsigned int cleaning_buffer_counter = 0;
               locked_z2_motor = false;
 #endif
 
+#if ENABLED(ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED)
+  #if ENABLED(ABORT_ON_ENDSTOP_HIT_INIT)
+    bool abort_on_endstop_hit = ABORT_ON_ENDSTOP_HIT_INIT;
+  #else
+    bool abort_on_endstop_hit = false;
+  #endif
+#endif
+
 // Counter variables for the Bresenham line tracer
 static long counter_X, counter_Y, counter_Z, counter_E;
 volatile unsigned long step_events_completed; // The number of step events executed in the current block

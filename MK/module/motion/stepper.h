@@ -53,11 +53,7 @@
   enum AxisEnum {NO_AXIS = -1, X_AXIS = 0, A_AXIS = 0, Y_AXIS = 1, B_AXIS = 1, Z_AXIS = 2, C_AXIS = 2, E_AXIS = 3, X_HEAD = 4, Y_HEAD = 5, Z_HEAD = 5};
 
   #if ENABLED(ABORT_ON_ENDSTOP_HIT_FEATURE_ENABLED)
-    #if ENABLED(ABORT_ON_ENDSTOP_HIT_INIT)
-      bool abort_on_endstop_hit = ABORT_ON_ENDSTOP_HIT_INIT;
-    #else
-      bool abort_on_endstop_hit = false;
-    #endif
+    extern bool abort_on_endstop_hit;
   #endif
 
   // Initialize and start the stepper motor subsystem
