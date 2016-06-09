@@ -1,4 +1,3 @@
-#define KNOWN_MECH
 /**
  * MK & MK4due 3D Printer Firmware
  *
