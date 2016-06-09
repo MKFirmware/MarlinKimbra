@@ -249,10 +249,8 @@
 #endif // Y_HOME_DIR > 0
 
 #if Z_HOME_DIR > 0    // Home Z to MAX
-  #if !(ENABLED(AUTO_BED_LEVELING_FEATURE) && MECH(DELTA) && DISABLED(Z_PROBE_ENDSTOP))
-    #undef Z_MIN_PIN
-    #define Z_MIN_PIN -1
-  #endif
+  #undef Z_MIN_PIN
+  #define Z_MIN_PIN -1
 #elif Z_HOME_DIR < 0  // Home Z to MIN
   #undef Z_MAX_PIN
   #define Z_MAX_PIN -1
