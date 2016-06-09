@@ -255,6 +255,16 @@
     #endif
   #endif
 
+  /**
+   * DELTA && AUTO_BED_LEVELING_FEATURE enable Z_PROBE_ENDSTOP
+   */
+  #if MECH(DELTA) && ENABLED(AUTO_BED_LEVELING_FEATURE)
+    #define Z_PROBE_ENDSTOP
+  #endif
+
+  /**
+   * Call pins.h
+   */
   #include "pins.h"
 
   /**
