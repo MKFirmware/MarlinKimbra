@@ -200,10 +200,6 @@ bool software_endstops = true;
 #endif
 
 #if MECH(DELTA)
-  #define TOWER_1 X_AXIS
-  #define TOWER_2 Y_AXIS
-  #define TOWER_3 Z_AXIS
-
   float delta[3] = { 0.0 };
   float delta_tmp[3] = { 0.0 };
   float endstop_adj[3] = { 0 };
