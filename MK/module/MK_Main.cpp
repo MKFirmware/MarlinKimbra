@@ -7934,8 +7934,10 @@ inline void gcode_M503() {
         setTargetHotend(old_target_temperature[e], e);
         wait_heater();
       }
-      setTargetBed(old_target_temperature_bed);
-      wait_bed();
+      #if HAS(TEMP_BED)
+        setTargetBed(old_target_temperature_bed);
+        wait_bed();
+      #endif
     }
 
     // Show load message
