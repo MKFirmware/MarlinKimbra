@@ -336,7 +336,7 @@ void FirmwareTest() {
   // Reset position to 0
   st_synchronize();
   for (int8_t i = 0; i < NUM_AXIS; i++) current_position[i] = 0;
-  plan_set_position(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
+  planner.set_position_mm(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 
   ECHO_EM("***** TEST MOTOR  *****");
   ECHO_EV(MSG_FWTEST_ATTENTION);

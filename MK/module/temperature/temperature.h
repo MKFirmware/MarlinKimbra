@@ -200,9 +200,9 @@ FORCE_INLINE bool isCoolingChamber() { return target_temperature_chamber < curre
 FORCE_INLINE bool isCoolingCooler() { return target_temperature_cooler < current_temperature_cooler; } 
 
 #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
-  FORCE_INLINE bool tooColdToHotend(uint8_t h) { return degHotend(h) < extrude_min_temp; }
+  FORCE_INLINE bool tooColdToExtrude(uint8_t hotend) { return degHotend(HOTEND_ARG) < extrude_min_temp; }
 #else
-  FORCE_INLINE bool tooColdToHotend(uint8_t h) { UNUSED(h); return false; }
+  FORCE_INLINE bool tooColdToExtrude(uint8_t hotend) { UNUSED(hotend); return false; }
 #endif
 
 #define HOTEND_ROUTINES(NR) \

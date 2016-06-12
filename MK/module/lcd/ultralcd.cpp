@@ -2625,9 +2625,8 @@ bool lcd_blink() {
 void lcd_update() {
   #if ENABLED(ULTIPANEL)
     static millis_t return_to_status_ms = 0;
+    manage_manual_move();
   #endif
-
-  manage_manual_move();
 
   lcd_buttons_update();
 
