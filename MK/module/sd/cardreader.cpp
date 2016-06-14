@@ -394,7 +394,11 @@ void CardReader::closeFile(bool store_location /*=false*/) {
       sprintf(Bedtemp, "M190 S%i\n", degTargetBed());
       fileRestart.write(Bedtemp);
     }
-    
+
+    char CurrHotend[10];
+    sprintf(CurrHotend, "T%i\n", active_extruder);
+    fileRestart.write(CurrHotend);
+
     for (uint8_t h = 0; h < HOTENDS; h++) {
       if (degTargetHotend(h) > 0) {
         char Hotendtemp[15];

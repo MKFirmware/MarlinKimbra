@@ -1,5 +1,5 @@
 /**
- * MK 3D Printer Firmware
+ * MarlinKimbra 3D Printer Firmware
  *
  * Based on Marlin, Sprinter and grbl
  * Copyright (C) 2011 Camiel Gubbels / Erik van der Zalm
@@ -43,6 +43,8 @@
  * G7  - Laser raster base64
  * G10 - retract filament according to settings of M207
  * G11 - retract recover filament according to settings of M208
+ * G20 - Set input units to inches
+ * G21 - Set input units to millimeters
  * G28 - X Y Z Home all Axis. M for bed manual setting with LCD. B return to back point
  * G29 - Detailed Z-Probe, probes the bed at 3 or more points.  Will fail if you haven't homed yet.
  * G30 - Single Z Probe, probes bed at current XY location. - Bed Probe and Delta geometry Autocalibration
@@ -125,6 +127,7 @@
  * M141 - Set hot chamber target temp
  * M142 - Set cooler target temp
  * M145 - Set the heatup state H<hotend> B<bed> F<fan speed> for S<material> (0=PLA, 1=ABS)
+ * M149 - Set temperature units
  * M150 - Set BlinkM Color Output R: Red<0-255> U(!): Green<0-255> B: Blue<0-255> over i2c, G for green does not work.
  * M163 - Set a single proportion for a mixing extruder. Requires COLOR_MIXING_EXTRUDER.
  * M164 - Save the mix as a virtual extruder. Requires COLOR_MIXING_EXTRUDER and MIXING_VIRTUAL_TOOLS.

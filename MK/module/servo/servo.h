@@ -74,7 +74,7 @@
     #include <inttypes.h>
     #include "ServoTimers.h"
 
-    /*
+    /**
      * Defines for 16 bit timers used with  Servo library
      *
      * If _useTimerX is defined then TimerX is a 16 bit timer on the current board
@@ -101,8 +101,8 @@
 
     typedef struct {
       ServoPin_t Pin;
-      volatile unsigned int ticks;
-    } servo_t;
+      unsigned int ticks;
+    } ServoInfo_t;
 
     class Servo {
       public:

@@ -186,7 +186,7 @@ static volatile bool temp_meas_ready = false;
   static float temp_iState_min_bed;
   static float temp_iState_max_bed;
 #else // PIDTEMPBED
-  static millis_t  next_bed_check_ms;
+  static millis_t next_bed_check_ms;
 #endif // !PIDTEMPBED
 #if ENABLED(PIDTEMPCHAMBER)
   //static cannot be external:
@@ -200,7 +200,7 @@ static volatile bool temp_meas_ready = false;
   static float temp_iState_min_chamber;
   static float temp_iState_max_chamber;
 #else // PIDTEMPCHAMBER
-  static millis_t  next_chamber_check_ms;
+  static millis_t next_chamber_check_ms;
 #endif // !PIDTEMPCHAMBER
 #if ENABLED(PIDTEMPCOOLER)
   //static cannot be external:
@@ -214,7 +214,7 @@ static volatile bool temp_meas_ready = false;
   static float temp_iState_min_cooler;
   static float temp_iState_max_cooler;
 #else // PIDTEMPCOOLER
-  static millis_t  next_cooler_check_ms;
+  static millis_t next_cooler_check_ms;
 #endif // !PIDTEMPCOOLER
 
 static unsigned char soft_pwm[HOTENDS];
@@ -789,7 +789,7 @@ float get_pid_output(int h) {
               lpq[lpq_ptr++] = 0;
             }
             if (lpq_ptr >= lpq_len) lpq_ptr = 0;
-            cTerm[0] = (lpq[lpq_ptr] / planner.axis_steps_per_unit[E_AXIS + active_extruder]) * PID_PARAM(Kc, 0);
+            cTerm[0] = (lpq[lpq_ptr] / planner.axis_steps_per_mm[E_AXIS + active_extruder]) * PID_PARAM(Kc, 0);
             pid_output += cTerm[0] / 100.0;
           #else  
             if (h == active_extruder) {
@@ -802,7 +802,7 @@ float get_pid_output(int h) {
                 lpq[lpq_ptr++] = 0;
               }
               if (lpq_ptr >= lpq_len) lpq_ptr = 0;
-              cTerm[h] = (lpq[lpq_ptr] / planner.axis_steps_per_unit[E_AXIS + active_extruder]) * PID_PARAM(Kc, h);
+              cTerm[h] = (lpq[lpq_ptr] / planner.axis_steps_per_mm[E_AXIS + active_extruder]) * PID_PARAM(Kc, h);
               pid_output += cTerm[h] / 100.0;
             }
           #endif // SINGLENOZZLE
@@ -1858,7 +1858,7 @@ void disable_all_heaters() {
   print_job_counter.stop();
 
   #define DISABLE_HEATER(NR) { \
-    target_temperature[NR] = 0; \
+    setTargetHotend(0, NR); \
     soft_pwm[NR] = 0; \
     WRITE_HEATER_ ## NR (LOW); \
   }
@@ -2527,6 +2527,7 @@ ISR(TIMER0_COMPB_vect) {
     temp_count = 0;
     for (int i = 0; i < 4; i++) raw_temp_value[i] = 0;
     raw_temp_bed_value = 0;
+    raw_temp_chamber_value = 0;
     raw_temp_cooler_value = 0;
 
     #if HAS(POWER_CONSUMPTION_SENSOR)

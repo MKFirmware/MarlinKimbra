@@ -53,6 +53,8 @@
   #if ENABLED(DOGLCD)
     extern int lcd_contrast;
     void set_lcd_contrast(int value);
+  #elif ENABLED(SHOW_BOOTSCREEN)
+    void bootscreen();
   #endif
 
   #define LCD_MESSAGEPGM(x) lcd_setstatuspgm(PSTR(x))
@@ -62,8 +64,8 @@
   #define LCD_TIMEOUT_TO_STATUS 15000
 
   #if ENABLED(ULTIPANEL)
-    void lcd_buttons_update();
     extern volatile uint8_t buttons;  // the last checked buttons in a bit array.
+    void lcd_buttons_update();
     #if ENABLED(FILAMENT_CHANGE_FEATURE)
       enum FilamentChangeMessage {
         FILAMENT_CHANGE_MESSAGE_INIT,
@@ -77,6 +79,9 @@
       };
       void lcd_filament_change_show_message(FilamentChangeMessage message);
     #endif
+    void lcd_quick_feedback(); // Audible feedback for a button click - could also be visual
+    bool lcd_clicked();
+    void lcd_ignore_click(bool b=true);
   #else
     FORCE_INLINE void lcd_buttons_update() {}
   #endif
@@ -96,12 +101,10 @@
   #if HAS(LCD_FILAMENT_SENSOR) || HAS(LCD_POWER_SENSOR)
     extern millis_t previous_lcd_status_ms;
   #endif
-  void lcd_quick_feedback(); // Audible feedback for a button click - could also be visual
-  bool lcd_clicked();
-  void lcd_ignore_click(bool b=true);
+
   bool lcd_blink();
 
-  #if ENABLED(ULTIPANEL) && ENABLED(REPRAPWORLD_KEYPAD)
+  #if ENABLED(REPRAPWORLD_KEYPAD)
 
     #define REPRAPWORLD_BTN_OFFSET 0 // bit offset into buttons for shift register values
 
@@ -131,7 +134,7 @@
     #define REPRAPWORLD_KEYPAD_MOVE_Y_UP    (buttons_reprapworld_keypad & EN_REPRAPWORLD_KEYPAD_UP)
     #define REPRAPWORLD_KEYPAD_MOVE_X_LEFT  (buttons_reprapworld_keypad & EN_REPRAPWORLD_KEYPAD_LEFT)
 
-  #endif // ULTIPANEL && REPRAPWORLD_KEYPAD
+  #endif // REPRAPWORLD_KEYPAD
 
   #if ENABLED(NEWPANEL)
 

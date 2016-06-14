@@ -373,6 +373,7 @@
                         _H0_PINS _H1_PINS _H2_PINS _H3_PINS \
                         _E0_PINS _E1_PINS _E2_PINS _E3_PINS _E4_PINS _E5_PINS \
                         analogInputToDigitalPin(TEMP_BED_PIN), \
+                        analogInputToDigitalPin(TEMP_CHAMBER_PIN), \
                         analogInputToDigitalPin(TEMP_COOLER_PIN), \
                         COOLER_PIN, LASER_PWR_PIN, LASER_TTL_PIN, \
                         FLOWMETER_PIN \

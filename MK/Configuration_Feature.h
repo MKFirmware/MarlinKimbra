@@ -1429,6 +1429,7 @@
 #define DEFAULT_MINSEGMENTTIME  20000   // minimum time in microseconds that a movement needs to take if the buffer is emptied.
 
 // Arc interpretation settings:
+#define ARC_SUPPORT  // Disabling this saves ~2738 bytes
 #define MM_PER_ARC_SEGMENT 1
 #define N_ARC_CORRECTION 25
 

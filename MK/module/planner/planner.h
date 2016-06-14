@@ -60,16 +60,16 @@ typedef struct {
     unsigned long mix_event_count[DRIVER_EXTRUDERS];  // Step count for each stepper in a mixing extruder
   #endif
 
-  long accelerate_until;                    // The index of the step event on which to stop acceleration
-  long decelerate_after;                    // The index of the step event on which to start decelerating
-  long acceleration_rate;                   // The acceleration rate used for acceleration calculation
+  long accelerate_until,                    // The index of the step event on which to stop acceleration
+       decelerate_after,                    // The index of the step event on which to start decelerating
+       acceleration_rate;                   // The acceleration rate used for acceleration calculation
 
   unsigned char direction_bits;             // The direction bit set for this block (refers to *_DIRECTION_BIT in config.h)
 
   #if ENABLED(ADVANCE)
     long advance_rate;
-    volatile long initial_advance;
-    volatile long final_advance;
+    volatile long initial_advance,
+                  final_advance;
     float advance;
   #elif ENABLED(ADVANCE_LPC)
     bool use_advance_lead;
@@ -77,24 +77,24 @@ typedef struct {
   #endif
 
   // Fields used by the motion planner to manage acceleration
-  float nominal_speed;                               // The nominal speed for this block in mm/sec
-  float entry_speed;                                 // Entry speed at previous-current junction in mm/sec
-  float max_entry_speed;                             // Maximum allowable junction entry speed in mm/sec
-  float millimeters;                                 // The total travel of this block in mm
-  float acceleration;                                // acceleration mm/sec^2
-  unsigned char recalculate_flag;                    // Planner flag to recalculate trapezoids on entry junction
-  unsigned char nominal_length_flag;                 // Planner flag for nominal speed always reached
+  float nominal_speed,                               // The nominal speed for this block in mm/sec
+        entry_speed,                                 // Entry speed at previous-current junction in mm/sec
+        max_entry_speed,                             // Maximum allowable junction entry speed in mm/sec
+        millimeters,                                 // The total travel of this block in mm
+        acceleration;                                // acceleration mm/sec^2
+  unsigned char recalculate_flag,                    // Planner flag to recalculate trapezoids on entry junction
+                nominal_length_flag;                 // Planner flag for nominal speed always reached
 
   // Settings for the trapezoid generator
-  unsigned long nominal_rate;                        // The nominal step rate for this block in step_events/sec
-  unsigned long initial_rate;                        // The jerk-adjusted step rate at start of block
-  unsigned long final_rate;                          // The minimal rate at exit
-  unsigned long acceleration_st;                     // acceleration steps/sec^2
+  unsigned long nominal_rate,                        // The nominal step rate for this block in step_events/sec
+                initial_rate,                        // The jerk-adjusted step rate at start of block
+                final_rate,                          // The minimal rate at exit
+                acceleration_steps_per_s2;           // acceleration steps/sec^2
+
   unsigned long fan_speed;
 
   #if ENABLED(BARICUDA)
-    unsigned long valve_pressure;
-    unsigned long e_to_p_pressure;
+    unsigned long valve_pressure, e_to_p_pressure;
   #endif
 
   #if ENABLED(LASERBEAM)
@@ -127,9 +127,9 @@ class Planner {
     static volatile uint8_t block_buffer_tail;
 
     static float max_feedrate[3 + EXTRUDERS]; // Max speeds in mm per minute
-    static float axis_steps_per_unit[3 + EXTRUDERS];
-    static unsigned long axis_steps_per_sqr_second[3 + EXTRUDERS];
-    static unsigned long max_acceleration_units_per_sq_second[3 + EXTRUDERS]; // Use M201 to override by software
+    static float axis_steps_per_mm[3 + EXTRUDERS];
+    static unsigned long max_acceleration_steps_per_s2[3 + EXTRUDERS];
+    static unsigned long max_acceleration_mm_per_s2[3 + EXTRUDERS]; // Use M201 to override by software
 
     static millis_t min_segment_time;
     static float min_feedrate;
@@ -149,7 +149,7 @@ class Planner {
 
     /**
      * The current position of the tool in absolute steps
-     * Reclculated if any axis_steps_per_unit are changed by gcode
+     * Reclculated if any axis_steps_per_mm are changed by gcode
      */
     static long position[NUM_AXIS];
 
@@ -232,7 +232,7 @@ class Planner {
        * Set the planner.position and individual stepper positions.
        * Used by G92, G28, G29, and other procedures.
        *
-       * Multiplies by axis_steps_per_unit[] and does necessary conversion
+       * Multiplies by axis_steps_per_mm[] and does necessary conversion
        * for COREXY / COREXZ / COREYZ to set the corresponding stepper positions.
        *
        * Clears previous speed values.
