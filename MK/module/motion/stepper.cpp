@@ -1120,7 +1120,7 @@ float st_get_axis_position_mm(AxisEnum axis) {
     axis_pos = st_get_position(axis);
   #endif
 
-  return axis_pos / planner.axis_steps_per_unit[axis];
+  return axis_pos / planner.axis_steps_per_mm[axis];
 }
 
 void enable_all_steppers() {
@@ -1218,7 +1218,7 @@ void kill_current_block() {
 }
 
 float triggered_position_mm(AxisEnum axis) {
-  return endstops_trigsteps[axis] / planner.axis_steps_per_unit[axis];
+  return endstops_trigsteps[axis] / planner.axis_steps_per_mm[axis];
 }
 
 bool motor_direction(AxisEnum axis) { return TEST(last_direction_bits, axis); }

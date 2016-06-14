@@ -42,8 +42,12 @@
 #define MSG_AUTOSTART                       "Autostart"
 #define MSG_DISABLE_STEPPERS                "Disabilita Motori"
 #define MSG_AUTO_HOME                       "Auto Home"
+#define MSG_AUTO_HOME_X                     "Home asse X"
+#define MSG_AUTO_HOME_Y                     "Home asse Y"
+#define MSG_AUTO_HOME_Z                     "Home asse Z"
 #define MSG_LEVEL_BED_HOMING                "Home assi XYZ"
 #define MSG_LEVEL_BED_WAITING               "Premi per iniziare"
+#define MSG_LEVEL_BED_NEXT_POINT            "Punto successivo"
 #define MSG_LEVEL_BED_DONE                  "Livel. terminato!"
 #define MSG_LEVEL_BED_CANCEL                "Annulla"
 #define MSG_SET_HOME_OFFSETS                "Setta offset home"
@@ -188,7 +192,7 @@
 #define MSG_END_HOUR                        "ore"
 #define MSG_END_MINUTE                      "minuti"
 
-#define MSG_ENDSTOPS_HIT                    "endstops hit: "
+#define MSG_ENDSTOPS_HIT                    "Endstop hit: "
 #define MSG_BABYSTEPPING                    "Babystepping"
 #define MSG_BABYSTEPPING_X                  MSG_BABYSTEPPING " " MSG_X
 #define MSG_BABYSTEPPING_Y                  MSG_BABYSTEPPING " " MSG_Y

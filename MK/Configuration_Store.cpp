@@ -45,9 +45,9 @@
  *
  *  Version
  *
- *  M92   XYZ E0 ...      planner.axis_steps_per_unit X,Y,Z,E0 ... (per extruder)
+ *  M92   XYZ E0 ...      planner.axis_steps_per_mm X,Y,Z,E0 ... (per extruder)
  *  M203  XYZ E0 ...      planner.max_feedrate X,Y,Z,E0 ... (per extruder)
- *  M201  XYZ E0 ...      planner.max_acceleration_units_per_sq_second X,Y,Z,E0 ... (per extruder)
+ *  M201  XYZ E0 ...      planner.max_acceleration_mm_per_s2 X,Y,Z,E0 ... (per extruder)
  *  M204  P               planner.acceleration
  *  M204  R   E0 ...      planner.retract_acceleration (per extruder)
  *  M204  T               planner.travel_acceleration
@@ -173,9 +173,9 @@ void Config_StoreSettings() {
   char ver[7] = "000000";
   int i = EEPROM_OFFSET;
   EEPROM_WRITE_VAR(i, ver); // invalidate data first
-  EEPROM_WRITE_VAR(i, planner.axis_steps_per_unit);
+  EEPROM_WRITE_VAR(i, planner.axis_steps_per_mm);
   EEPROM_WRITE_VAR(i, planner.max_feedrate);
-  EEPROM_WRITE_VAR(i, planner.max_acceleration_units_per_sq_second);
+  EEPROM_WRITE_VAR(i, planner.max_acceleration_mm_per_s2);
   EEPROM_WRITE_VAR(i, planner.acceleration);
   EEPROM_WRITE_VAR(i, planner.retract_acceleration);
   EEPROM_WRITE_VAR(i, planner.travel_acceleration);
@@ -341,9 +341,9 @@ void Config_RetrieveSettings() {
     float dummy = 0;
 
     // version number match
-    EEPROM_READ_VAR(i, planner.axis_steps_per_unit);
+    EEPROM_READ_VAR(i, planner.axis_steps_per_mm);
     EEPROM_READ_VAR(i, planner.max_feedrate);
-    EEPROM_READ_VAR(i, planner.max_acceleration_units_per_sq_second);
+    EEPROM_READ_VAR(i, planner.max_acceleration_mm_per_s2);
 
     // steps per sq second need to be updated to agree with the units per sq second (as they are what is used in the planner)
     planner.reset_acceleration_rates();
@@ -525,9 +525,9 @@ void Config_ResetDefault() {
   #endif
 
   for (int8_t i = 0; i < 3 + EXTRUDERS; i++) {
-    planner.axis_steps_per_unit[i] = tmp1[i];
+    planner.axis_steps_per_mm[i] = tmp1[i];
     planner.max_feedrate[i] = tmp2[i];
-    planner.max_acceleration_units_per_sq_second[i] = tmp3[i];
+    planner.max_acceleration_mm_per_s2[i] = tmp3[i];
   }
 
   for (int8_t i = 0; i < EXTRUDERS; i++) {
@@ -686,14 +686,14 @@ void Config_ResetDefault() {
     if (!forReplay) {
       ECHO_LM(CFG, "Steps per unit:");
     }
-    ECHO_SMV(CFG, "  M92 X", planner.axis_steps_per_unit[X_AXIS]);
-    ECHO_MV(" Y", planner.axis_steps_per_unit[Y_AXIS]);
-    ECHO_MV(" Z", planner.axis_steps_per_unit[Z_AXIS]);
-    ECHO_EMV(" E", planner.axis_steps_per_unit[E_AXIS]);
+    ECHO_SMV(CFG, "  M92 X", planner.axis_steps_per_mm[X_AXIS]);
+    ECHO_MV(" Y", planner.axis_steps_per_mm[Y_AXIS]);
+    ECHO_MV(" Z", planner.axis_steps_per_mm[Z_AXIS]);
+    ECHO_EMV(" E", planner.axis_steps_per_mm[E_AXIS]);
     #if EXTRUDERS > 1
       for (short i = 1; i < EXTRUDERS; i++) {
         ECHO_SMV(CFG, "  M92 T", i);
-        ECHO_EMV(" E", planner.axis_steps_per_unit[E_AXIS + i]);
+        ECHO_EMV(" E", planner.axis_steps_per_mm[E_AXIS + i]);
       }
     #endif //EXTRUDERS > 1
 
@@ -716,21 +716,21 @@ void Config_ResetDefault() {
     #if EXTRUDERS > 1
       for (short i = 1; i < EXTRUDERS; i++) {
         ECHO_SMV(CFG, "  M203 T", i);
-        ECHO_EMV(" E", planner.max_acceleration_units_per_sq_second[E_AXIS + i]);
+        ECHO_EMV(" E", planner.max_acceleration_mm_per_s2[E_AXIS + i]);
       }
     #endif //EXTRUDERS > 1
 
     if (!forReplay) {
       ECHO_LM(CFG, "Maximum Acceleration (mm/s2):");
     }
-    ECHO_SMV(CFG, "  M201 X", planner.max_acceleration_units_per_sq_second[X_AXIS] );
-    ECHO_MV(" Y", planner.max_acceleration_units_per_sq_second[Y_AXIS] );
-    ECHO_MV(" Z", planner.max_acceleration_units_per_sq_second[Z_AXIS] );
-    ECHO_EMV(" E", planner.max_acceleration_units_per_sq_second[E_AXIS]);
+    ECHO_SMV(CFG, "  M201 X", planner.max_acceleration_mm_per_s2[X_AXIS] );
+    ECHO_MV(" Y", planner.max_acceleration_mm_per_s2[Y_AXIS] );
+    ECHO_MV(" Z", planner.max_acceleration_mm_per_s2[Z_AXIS] );
+    ECHO_EMV(" E", planner.max_acceleration_mm_per_s2[E_AXIS]);
     #if EXTRUDERS > 1
       for (int8_t i = 1; i < EXTRUDERS; i++) {
         ECHO_SMV(CFG, "  M201 T", i);
-        ECHO_EMV(" E", planner.max_acceleration_units_per_sq_second[E_AXIS + i]);
+        ECHO_EMV(" E", planner.max_acceleration_mm_per_s2[E_AXIS + i]);
       }
     #endif //EXTRUDERS > 1
     ECHO_E;

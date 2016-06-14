@@ -26,6 +26,9 @@
 #include <math.h>
 #include <stdint.h>
 
+typedef enum { LINEARUNIT_MM = 0, LINEARUNIT_INCH = 1 } LinearUnit;
+typedef enum { TEMPUNIT_C = 0, TEMPUNIT_K = 1, TEMPUNIT_F = 2 } TempUnit;
+
 void get_command();
 
 void idle(
@@ -47,8 +50,8 @@ void ok_to_send();
   void set_delta_constants();
   void calculate_delta(float cartesian[3]);
   static float probe_bed(float x, float y);
-  static void adj_tower_delta(int tower);
-  static void adj_tower_radius(int tower);
+  static void adj_tower_delta(uint8_t tower);
+  static void adj_tower_radius(uint8_t tower);
   static void home_delta_axis();
   static void calibration_report();
   static void bed_probe_all();
@@ -144,9 +147,9 @@ extern float zprobe_zoffset;
 
 // GCode support for external objects
 bool code_seen(char);
-float code_value();
-long code_value_long();
-int16_t code_value_short();
+int code_value_int();
+float code_value_temp_abs();
+float code_value_temp_diff();
 
 #if ENABLED(ADVANCE_LPC)
   extern int extruder_advance_k;

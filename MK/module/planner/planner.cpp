@@ -72,9 +72,9 @@ volatile uint8_t Planner::block_buffer_head = 0;           // Index of the next 
 volatile uint8_t Planner::block_buffer_tail = 0;
 
 float Planner::max_feedrate[3 + EXTRUDERS]; // Max speeds in mm per minute
-float Planner::axis_steps_per_unit[3 + EXTRUDERS];
-unsigned long Planner::axis_steps_per_sqr_second[3 + EXTRUDERS];
-unsigned long Planner::max_acceleration_units_per_sq_second[3 + EXTRUDERS]; // Use M201 to override by software
+float Planner::axis_steps_per_mm[3 + EXTRUDERS];
+unsigned long Planner::max_acceleration_steps_per_s2[3 + EXTRUDERS];
+unsigned long Planner::max_acceleration_mm_per_s2[3 + EXTRUDERS]; // Use M201 to override by software
 
 millis_t Planner::min_segment_time;
 float Planner::min_feedrate;
@@ -148,7 +148,7 @@ void Planner::calculate_trapezoid_for_block(block_t* block, float entry_factor, 
   NOLESS(initial_rate, 120);
   NOLESS(final_rate, 120);
 
-  long accel = block->acceleration_st;
+  long accel = block->acceleration_steps_per_s2;
   int32_t accelerate_steps = ceil(estimate_acceleration_distance(initial_rate, block->nominal_rate, accel));
   int32_t decelerate_steps = floor(estimate_acceleration_distance(block->nominal_rate, final_rate, -accel));
 
@@ -504,19 +504,19 @@ void Planner::check_axes_activity() {
   // Calculate target position in absolute steps
   // this should be done after the wait, because otherwise a M92 code within the gcode disrupts this calculation somehow
   long target[NUM_AXIS] = {
-    lround(x * axis_steps_per_unit[X_AXIS]),
-    lround(y * axis_steps_per_unit[Y_AXIS]),
-    lround(z * axis_steps_per_unit[Z_AXIS]),
-    lround(e * axis_steps_per_unit[E_AXIS + extruder])
+    lround(x * axis_steps_per_mm[X_AXIS]),
+    lround(y * axis_steps_per_mm[Y_AXIS]),
+    lround(z * axis_steps_per_mm[Z_AXIS]),
+    lround(e * axis_steps_per_mm[E_AXIS + extruder])
   };
 
   // If changing extruder have to recalculate current position based on 
   // the steps-per-mm value for the new extruder.
   #if EXTRUDERS > 1
-    if(last_extruder != extruder && axis_steps_per_unit[E_AXIS + extruder] != 
-                                    axis_steps_per_unit[E_AXIS + last_extruder]) {
-      float factor = float(axis_steps_per_unit[E_AXIS + extruder]) /
-                     float(axis_steps_per_unit[E_AXIS + last_extruder]);
+    if(last_extruder != extruder && axis_steps_per_mm[E_AXIS + extruder] != 
+                                    axis_steps_per_mm[E_AXIS + last_extruder]) {
+      float factor = float(axis_steps_per_mm[E_AXIS + extruder]) /
+                     float(axis_steps_per_mm[E_AXIS + last_extruder]);
       position[E_AXIS] = lround(position[E_AXIS] * factor);
     }
   #endif
@@ -540,7 +540,7 @@ void Planner::check_axes_activity() {
         }
 
       #if ENABLED(PREVENT_LENGTHY_EXTRUDE)
-        if (labs(de) > axis_steps_per_unit[E_AXIS + extruder] * (EXTRUDE_MAXLENGTH)) {
+        if (labs(de) > axis_steps_per_mm[E_AXIS + extruder] * (EXTRUDE_MAXLENGTH)) {
           #if ENABLED(EASY_LOAD)
             if (!allow_lengthy_extrude_once) {
           #endif
@@ -813,25 +813,25 @@ void Planner::check_axes_activity() {
    */
   #if MECH(COREXY) || MECH(COREYX)
     float delta_mm[6];
-    delta_mm[X_HEAD] = dx / axis_steps_per_unit[A_AXIS];
-    delta_mm[Y_HEAD] = dy / axis_steps_per_unit[B_AXIS];
-    delta_mm[Z_AXIS] = dz / axis_steps_per_unit[Z_AXIS];
-    delta_mm[A_AXIS] = da / axis_steps_per_unit[A_AXIS];
-    delta_mm[B_AXIS] = db / axis_steps_per_unit[B_AXIS];
+    delta_mm[X_HEAD] = dx / axis_steps_per_mm[A_AXIS];
+    delta_mm[Y_HEAD] = dy / axis_steps_per_mm[B_AXIS];
+    delta_mm[Z_AXIS] = dz / axis_steps_per_mm[Z_AXIS];
+    delta_mm[A_AXIS] = da / axis_steps_per_mm[A_AXIS];
+    delta_mm[B_AXIS] = db / axis_steps_per_mm[B_AXIS];
   #elif MECH(COREXZ) || MECH(COREZX)
     float delta_mm[6];
-    delta_mm[X_HEAD] = dx / axis_steps_per_unit[A_AXIS];
-    delta_mm[Y_AXIS] = dy / axis_steps_per_unit[Y_AXIS];
-    delta_mm[Z_HEAD] = dz / axis_steps_per_unit[C_AXIS];
-    delta_mm[A_AXIS] = da / axis_steps_per_unit[A_AXIS];
-    delta_mm[C_AXIS] = dc / axis_steps_per_unit[C_AXIS];
+    delta_mm[X_HEAD] = dx / axis_steps_per_mm[A_AXIS];
+    delta_mm[Y_AXIS] = dy / axis_steps_per_mm[Y_AXIS];
+    delta_mm[Z_HEAD] = dz / axis_steps_per_mm[C_AXIS];
+    delta_mm[A_AXIS] = da / axis_steps_per_mm[A_AXIS];
+    delta_mm[C_AXIS] = dc / axis_steps_per_mm[C_AXIS];
   #else
     float delta_mm[4];
-    delta_mm[X_AXIS] = dx / axis_steps_per_unit[X_AXIS];
-    delta_mm[Y_AXIS] = dy / axis_steps_per_unit[Y_AXIS];
-    delta_mm[Z_AXIS] = dz / axis_steps_per_unit[Z_AXIS];
+    delta_mm[X_AXIS] = dx / axis_steps_per_mm[X_AXIS];
+    delta_mm[Y_AXIS] = dy / axis_steps_per_mm[Y_AXIS];
+    delta_mm[Z_AXIS] = dz / axis_steps_per_mm[Z_AXIS];
   #endif
-  delta_mm[E_AXIS] = (de / axis_steps_per_unit[E_AXIS + extruder]) * volumetric_multiplier[extruder] * extruder_multiplier[extruder] / 100.0;
+  delta_mm[E_AXIS] = (de / axis_steps_per_mm[E_AXIS + extruder]) * volumetric_multiplier[extruder] * extruder_multiplier[extruder] / 100.0;
 
   if (block->steps[X_AXIS] <= DROP_SEGMENTS && block->steps[Y_AXIS] <= DROP_SEGMENTS && block->steps[Z_AXIS] <= DROP_SEGMENTS) {
     block->millimeters = fabs(delta_mm[E_AXIS]);
@@ -1002,27 +1002,27 @@ void Planner::check_axes_activity() {
   float steps_per_mm = block->step_event_count / block->millimeters;
   long bsx = block->steps[X_AXIS], bsy = block->steps[Y_AXIS], bsz = block->steps[Z_AXIS], bse = block->steps[E_AXIS];
   if (bsx == 0 && bsy == 0 && bsz == 0) {
-    block->acceleration_st = ceil(retract_acceleration[extruder] * steps_per_mm); // convert to: acceleration steps/sec^2
+    block->acceleration_steps_per_s2 = ceil(retract_acceleration[extruder] * steps_per_mm); // convert to: acceleration steps/sec^2
   }
   else if (bse == 0) {
-    block->acceleration_st = ceil(travel_acceleration * steps_per_mm); // convert to: acceleration steps/sec^2
+    block->acceleration_steps_per_s2 = ceil(travel_acceleration * steps_per_mm); // convert to: acceleration steps/sec^2
   }
   else {
-    block->acceleration_st = ceil(acceleration * steps_per_mm); // convert to: acceleration steps/sec^2
+    block->acceleration_steps_per_s2 = ceil(acceleration * steps_per_mm); // convert to: acceleration steps/sec^2
   }
   // Limit acceleration per axis
-  unsigned long acc_st = block->acceleration_st,
-                xsteps = axis_steps_per_sqr_second[X_AXIS],
-                ysteps = axis_steps_per_sqr_second[Y_AXIS],
-                zsteps = axis_steps_per_sqr_second[Z_AXIS],
-                esteps = axis_steps_per_sqr_second[E_AXIS + extruder],
+  unsigned long acc_st = block->acceleration_steps_per_s2,
+                xsteps = max_acceleration_steps_per_s2[X_AXIS],
+                ysteps = max_acceleration_steps_per_s2[Y_AXIS],
+                zsteps = max_acceleration_steps_per_s2[Z_AXIS],
+                esteps = max_acceleration_steps_per_s2[E_AXIS + extruder],
                 allsteps = block->step_event_count;
   if (xsteps < (acc_st * bsx) / allsteps) acc_st = (xsteps * allsteps) / bsx;
   if (ysteps < (acc_st * bsy) / allsteps) acc_st = (ysteps * allsteps) / bsy;
   if (zsteps < (acc_st * bsz) / allsteps) acc_st = (zsteps * allsteps) / bsz;
   if (esteps < (acc_st * bse) / allsteps) acc_st = (esteps * allsteps) / bse;
 
-  block->acceleration_st = acc_st;
+  block->acceleration_steps_per_s2 = acc_st;
   block->acceleration = acc_st / steps_per_mm;
 
   #ifdef __SAM3X8E__
@@ -1128,7 +1128,7 @@ void Planner::check_axes_activity() {
       block->advance = 0;
     }
     else {
-      long acc_dist = estimate_acceleration_distance(0, block->nominal_rate, block->acceleration_st);
+      long acc_dist = estimate_acceleration_distance(0, block->nominal_rate, block->acceleration_steps_per_s2);
       float advance = ((STEPS_PER_CUBIC_MM_E) * (EXTRUDER_ADVANCE_K)) * (cse * cse * (EXTRUSION_AREA) * (EXTRUSION_AREA)) * 256;
       block->advance = advance;
       block->advance_rate = acc_dist ? advance / (float)acc_dist : 0;
@@ -1207,10 +1207,10 @@ void Planner::check_axes_activity() {
     apply_rotation_xyz(bed_level_matrix, x, y, z);
   #endif
 
-  long  nx = position[X_AXIS] = lround(x * axis_steps_per_unit[X_AXIS]),
-        ny = position[Y_AXIS] = lround(y * axis_steps_per_unit[Y_AXIS]),
-        nz = position[Z_AXIS] = lround(z * axis_steps_per_unit[Z_AXIS]),
-        ne = position[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + active_extruder]);
+  long  nx = position[X_AXIS] = lround(x * axis_steps_per_mm[X_AXIS]),
+        ny = position[Y_AXIS] = lround(y * axis_steps_per_mm[Y_AXIS]),
+        nz = position[Z_AXIS] = lround(z * axis_steps_per_mm[Z_AXIS]),
+        ne = position[E_AXIS] = lround(e * axis_steps_per_mm[E_AXIS + active_extruder]);
   last_extruder = active_extruder;
   st_set_position(nx, ny, nz, ne);
   previous_nominal_speed = 0.0; // Resets planner junction speeds. Assumes start from rest.
@@ -1222,7 +1222,7 @@ void Planner::check_axes_activity() {
  * Directly set the planner E position (hence the stepper E position).
  */
 void Planner::set_e_position_mm(const float& e) {
-  position[E_AXIS] = lround(e * axis_steps_per_unit[E_AXIS + active_extruder]);
+  position[E_AXIS] = lround(e * axis_steps_per_mm[E_AXIS + active_extruder]);
   last_extruder = active_extruder;
   st_set_e_position(position[E_AXIS]);
 }
@@ -1230,16 +1230,16 @@ void Planner::set_e_position_mm(const float& e) {
 // Recalculate the steps/s^2 acceleration rates, based on the mm/s^2
 void Planner::reset_acceleration_rates() {
   for (int i = 0; i < 3 + EXTRUDERS; i++)
-    axis_steps_per_sqr_second[i] = max_acceleration_units_per_sq_second[i] * axis_steps_per_unit[i];
+    max_acceleration_steps_per_s2[i] = max_acceleration_mm_per_s2[i] * axis_steps_per_mm[i];
 }
 
 #if ENABLED(AUTOTEMP)
 
   void Planner::autotemp_M109() {
     autotemp_enabled = code_seen('F');
-    if (autotemp_enabled) autotemp_factor = code_value();
-    if (code_seen('S')) autotemp_min = code_value();
-    if (code_seen('B')) autotemp_max = code_value();
+    if (autotemp_enabled) autotemp_factor = code_value_temp_diff();
+    if (code_seen('S')) autotemp_min = code_value_temp_abs();
+    if (code_seen('B')) autotemp_max = code_value_temp_abs();
   }
 
 #endif
