@@ -3321,7 +3321,7 @@ char* ltostr7(const long& x) {
         u8g.setColorIndex(1);
         u8g.drawPixel(0, 0); // draw sd dot
         u8g.setColorIndex(1); // black on white
-        (*currentMenu)();
+        (*currentScreen)();
       } while( u8g.nextPage() );
     #endif
   }
@@ -3332,7 +3332,7 @@ char* ltostr7(const long& x) {
         u8g.setColorIndex(0);
         u8g.drawPixel(0, 0); // draw sd dot
         u8g.setColorIndex(1); // black on white
-        (*currentMenu)();
+        (*currentScreen)();
       } while( u8g.nextPage() );
     #endif
   }
