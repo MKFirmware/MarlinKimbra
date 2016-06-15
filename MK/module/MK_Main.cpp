@@ -8368,7 +8368,7 @@ inline void gcode_T(uint8_t tmp_extruder) {
       target_extruder = tmp_extruder;
 
       if (code_seen('F')) {
-        float next_feedrate = code_value_linear_units();
+        float next_feedrate = code_value_axis_units(X_AXIS);
         if (next_feedrate > 0.0) stored_feedrate = feedrate = next_feedrate;
       }
       else {
