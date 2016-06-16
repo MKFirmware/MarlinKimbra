@@ -84,6 +84,7 @@
  * - L6470 motor drivers
  * ADVANCED FEATURES:
  * - Buffer stuff
+ * - G20/G21 Inch mode support
  * - Report JSON-style response
  * - Whatchdog
  * - Start / Stop Gcode
@@ -1436,6 +1437,13 @@
 //#define M100_FREE_MEMORY_WATCHER    // Uncomment to add the M100 Free Memory Watcher for debug purpose
 #define M100_FREE_MEMORY_DUMPER       // Comment out to remove Dump sub-command
 #define M100_FREE_MEMORY_CORRUPTOR    // Comment out to remove Corrupt sub-command
+/****************************************************************************************/
+
+
+/*****************************************************************************************
+ ****************************** G20/G21 Inch mode support ********************************
+ *****************************************************************************************/
+//#define INCH_MODE_SUPPORT
 /****************************************************************************************/
 
 

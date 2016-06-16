@@ -473,7 +473,7 @@ unsigned lcd_print(char c) { return charset_mapper(c); }
       strncpy_P(tmp, text + i, min(len, LCD_WIDTH));
       lcd.setCursor(col, line);
       lcd_print(tmp);
-      delay(time / max(n, 1));
+      HAL::delayMilliseconds(time / max(n, 1));
     }
   }
 
@@ -482,6 +482,15 @@ unsigned lcd_print(char c) { return charset_mapper(c); }
     lcd.setCursor(indent, 0); lcd.print('\x00'); lcd_printPGM(PSTR( "------------" ));  lcd.print('\x01');
     lcd.setCursor(indent, 1);                    lcd_printPGM(PSTR("|MarlinKimbra|"));  lcd_printPGM(extra);
     lcd.setCursor(indent, 2); lcd.print('\x02'); lcd_printPGM(PSTR( "------------" ));  lcd.print('\x03');
+  }
+
+  void safe_delay(uint16_t del) {
+    while (del > 50) {
+      del -= 50;
+      HAL::delayMilliseconds(50);
+      manage_temp_controller();
+    }
+    HAL::delayMilliseconds(del);
   }
 
   void bootscreen() {
@@ -557,7 +566,7 @@ unsigned lcd_print(char c) { return charset_mapper(c); }
         #if ENABLED(STRING_SPLASH_LINE2)
           CENTER_OR_SCROLL(STRING_SPLASH_LINE2, 2000);
         #else
-          HAL::delayMilliseconds(2000);
+          safe_delay(2000);
         #endif
       }
       else {
@@ -582,7 +591,7 @@ unsigned lcd_print(char c) { return charset_mapper(c); }
       //
       if (LCD_EXTRA_SPACE >= strlen(STRING_SPLASH_LINE2) + 1) {
         logo_lines(PSTR(" " STRING_SPLASH_LINE2));
-        HAL::delayMilliseconds(2000);
+        safe_delay(2000);
       }
       else {
         logo_lines(PSTR(""));
@@ -593,9 +602,13 @@ unsigned lcd_print(char c) { return charset_mapper(c); }
       // Show only the MarlinKimbra logo
       //
       logo_lines(PSTR(""));
-      HAL::delayMilliseconds(2000);
+      safe_delay(2000);
     #endif
-
+    lcd_set_custom_characters(
+    #if ENABLED(LCD_PROGRESS_BAR)
+      false
+    #endif
+    );
   }
 
 #endif // SHOW_BOOTSCREEN
