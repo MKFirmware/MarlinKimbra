@@ -1047,6 +1047,10 @@
 //#define ELB_FULL_GRAPHIC_CONTROLLER
 //#define SD_DETECT_INVERTED
 
+// The RepRapWorld Graphical LCD
+// https://reprapworld.com/?products_details&products_id/1218
+//#define REPRAPWORLD_GRAPHICAL_LCD
+
 // The RepRapDiscount Smart Controller (white PCB)
 // http://reprap.org/wiki/RepRapDiscount_Smart_Controller
 //#define REPRAP_DISCOUNT_SMART_CONTROLLER
