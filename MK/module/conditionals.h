@@ -94,6 +94,12 @@
       #define U8GLIB_ST7920
       #define REPRAP_DISCOUNT_SMART_CONTROLLER
     #endif
+    
+    #if ENABLED(REPRAPWORLD_GRAPHICAL_LCD)
+      #define DOGLCD
+      #define U8GLIB_ST7920
+      #define REPRAP_DISCOUNT_SMART_CONTROLLER
+    #endif
 
     #if ENABLED(REPRAPWORLD_GRAPHICAL_LCD)
       #define DOGLCD
