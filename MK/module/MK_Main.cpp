@@ -30,7 +30,7 @@
 
 #include "../base.h"
 
-#if ENABLED(AUTO_BED_LEVELING_FEATURE)
+#if ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
   #include "planner/vector_3.h"
   #if ENABLED(AUTO_BED_LEVELING_GRID)
     #include "planner/qr_solve.h"
@@ -2200,7 +2200,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
        */
       refresh_cmd_timeout();
 
-      endstops.enable_z_probe();
+      //endstops.enable_z_probe();
       float start_z = current_position[Z_AXIS];
       long start_steps = st_get_position(Z_AXIS);
 
@@ -2210,7 +2210,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       st_synchronize();
       endstops.hit_on_purpose(); // clear endstop hit flags
 
-      endstops.enable_z_probe(false);
+      //endstops.enable_z_probe(false);
       long stop_steps = st_get_position(Z_AXIS);
       float mm = start_z - float(start_steps - stop_steps) / planner.axis_steps_per_mm[Z_AXIS];
       current_position[Z_AXIS] = mm;
