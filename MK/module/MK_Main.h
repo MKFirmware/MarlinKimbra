@@ -58,7 +58,7 @@ void ok_to_send();
   static void adjust_delta(float cartesian[3]);
   static void adj_endstops();
   static void reset_bed_level();
-  static void prepare_move_raw();
+  static void prepare_move_to_destination_raw();
   extern float delta[3];
   extern float delta_tmp[3];
   extern float delta_tower1_x, delta_tower1_y;
@@ -76,8 +76,6 @@ void ok_to_send();
   void calculate_delta(float cartesian[3]);
   void calculate_SCARA_forward_Transform(float f_scara[3]);
 #endif
-
-void prepare_move();
 
 void kill(const char *);
 void Stop();
