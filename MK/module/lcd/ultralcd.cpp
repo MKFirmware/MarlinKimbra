@@ -1327,7 +1327,7 @@ static void lcd_status_screen() {
     //
     // Level Bed
     //
-    #if ENABLED(AUTO_BED_LEVELING_FEATURE)
+    #if ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
       MENU_ITEM(gcode, MSG_LEVEL_BED,
         axis_homed[X_AXIS] && axis_homed[Y_AXIS] ? PSTR("G29") : PSTR("G28\nG29")
       );
@@ -1938,8 +1938,10 @@ static void lcd_status_screen() {
   static void lcd_control_motion_menu() {
     START_MENU();
     MENU_ITEM(back, MSG_CONTROL);
-    #if ENABLED(AUTO_BED_LEVELING_FEATURE)
+    #if ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
       MENU_ITEM_EDIT(float32, MSG_ZPROBE_ZOFFSET, &zprobe_zoffset, -50, 50);
+    #elif ENABLED(AUTO_BED_LEVELING_FEATURE) && MECH(DELTA)
+      MENU_ITEM_EDIT(float32, MSG_ZPROBE_ZOFFSET, &z_probe_offset[Z_AXIS], -50, 50);
     #endif
     // Manual bed leveling, Bed Z:
     #if ENABLED(MANUAL_BED_LEVELING)
