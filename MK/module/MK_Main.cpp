@@ -353,6 +353,7 @@ void stop();
 
 void get_available_commands();
 void process_next_command();
+void prepare_move_to_destination();
 
 #if MECH(DELTA) || MECH(SCARA)
   inline void sync_plan_position_delta();
@@ -1492,7 +1493,7 @@ static void axis_unhomed_error(bool xyz = false) {
  *  The final current_position may not be the one that was requested
  */
 static void do_blocking_move_to(float x, float y, float z) {
-  float oldFeedRate = feedrate;
+  float old_feedrate = feedrate;
 
   if (DEBUGGING(INFO)) {
     ECHO_S(INFO);
@@ -1508,11 +1509,9 @@ static void do_blocking_move_to(float x, float y, float z) {
     destination[Z_AXIS] = z;
 
     if (x == current_position[X_AXIS] && y == current_position[Y_AXIS])
-      prepare_move_raw(); // this will also set_current_to_destination
+      prepare_move_to_destination_raw(); // this will also set_current_to_destination
     else
-      prepare_move();     // this will also set_current_to_destination
-
-    st_synchronize();
+      prepare_move_to_destination();     // this will also set_current_to_destination
 
   #else
 
@@ -1527,11 +1526,12 @@ static void do_blocking_move_to(float x, float y, float z) {
     current_position[X_AXIS] = x;
     current_position[Y_AXIS] = y;
     line_to_current_position();
-    st_synchronize();
 
   #endif
 
-  feedrate = oldFeedRate;
+  st_synchronize();
+
+  feedrate = old_feedrate;
 }
 
 inline void do_blocking_move_to_xy(float x, float y) { do_blocking_move_to(x, y, current_position[Z_AXIS]); }
@@ -1630,6 +1630,8 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
     static void run_z_probe() {
 
+      float old_feedrate = feedrate;
+
       /**
        * To prevent stepper_inactive_time from running out and
        * EXTRUDER_RUNOUT_PREVENT from extruding
@@ -1671,6 +1673,8 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
       if (DEBUGGING(INFO))
         DEBUG_POS("run_z_probe", current_position);
+
+      feedrate = old_feedrate;
     }
 
     static void deploy_z_probe() {
@@ -2181,7 +2185,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
       feedrate = AUTOCAL_PROBERATE * 60;
       destination[Z_AXIS] = -20;
-      prepare_move_raw();
+      prepare_move_to_destination_raw();
       st_synchronize();
       endstops.hit_on_purpose(); // clear endstop hit flags
 
@@ -2848,7 +2852,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
     endstops.hit_on_purpose(); // clear endstop hit flags
   }
 
-  static void prepare_move_raw() {
+  static void prepare_move_to_destination_raw() {
     if (DEBUGGING(INFO))
       DEBUG_POS("prepare_move_raw", destination);
 
@@ -2948,24 +2952,24 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 #if ENABLED(IDLE_OOZING_PREVENT)
   void IDLE_OOZING_retract(bool retracting) {  
     if (retracting && !IDLE_OOZING_retracted[active_extruder]) {
-      float oldFeedrate = feedrate;
+      float old_feedrate = feedrate;
       set_destination_to_current();
       current_position[E_AXIS] += IDLE_OOZING_LENGTH / volumetric_multiplier[active_extruder];
       feedrate = IDLE_OOZING_FEEDRATE * 60;
       planner.set_e_position_mm(current_position[E_AXIS]);
-      prepare_move();
-      feedrate = oldFeedrate;
+      prepare_move_to_destination();
+      feedrate = old_feedrate;
       IDLE_OOZING_retracted[active_extruder] = true;
       //ECHO_EM("-");
     }
     else if (!retracting && IDLE_OOZING_retracted[active_extruder]) {
-      float oldFeedrate = feedrate;
+      float old_feedrate = feedrate;
       set_destination_to_current();
       current_position[E_AXIS] -= (IDLE_OOZING_LENGTH+IDLE_OOZING_RECOVER_LENGTH) / volumetric_multiplier[active_extruder];
       feedrate = IDLE_OOZING_RECOVER_FEEDRATE * 60;
       planner.set_e_position_mm(current_position[E_AXIS]);
-      prepare_move();
-      feedrate = oldFeedrate;
+      prepare_move_to_destination();
+      feedrate = old_feedrate;
       IDLE_OOZING_retracted[active_extruder] = false;
       //ECHO_EM("+");
     }
@@ -2977,7 +2981,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
     if (retracting == retracted[active_extruder]) return;
 
-    float oldFeedrate = feedrate;
+    float old_feedrate = feedrate;
 
     set_destination_to_current();
 
@@ -2985,7 +2989,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       feedrate = retract_feedrate * 60;
       current_position[E_AXIS] += (swapping ? retract_length_swap : retract_length) / volumetric_multiplier[active_extruder];
       sync_plan_position_e();
-      prepare_move();
+      prepare_move_to_destination();
 
       if (retract_zlift > 0.01) {
         current_position[Z_AXIS] -= retract_zlift;
@@ -2994,7 +2998,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
         #else
           sync_plan_position();
         #endif
-        prepare_move();
+        prepare_move_to_destination();
       }
     }
     else {
@@ -3011,10 +3015,10 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       float move_e = swapping ? retract_length_swap + retract_recover_length_swap : retract_length + retract_recover_length;
       current_position[E_AXIS] -= move_e / volumetric_multiplier[active_extruder];
       planner.set_e_position_mm(current_position[E_AXIS]);
-      prepare_move();
+      prepare_move_to_destination();
     }
 
-    feedrate = oldFeedrate;
+    feedrate = old_feedrate;
     retracted[active_extruder] = retracting;
 
   }
@@ -3172,7 +3176,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 inline void wait_heater(bool no_wait_for_cooling = true) {
 
   #if ENABLED(TEMP_RESIDENCY_TIME)
-    millis_t residency_start_ms = -1;
+    millis_t residency_start_ms = 0;
     // Loop until the temperature has stabilized
     #define TEMP_CONDITIONS (!residency_start_ms || PENDING(now, residency_start_ms + (TEMP_RESIDENCY_TIME) * 1000UL))
   #else
@@ -3188,12 +3192,23 @@ inline void wait_heater(bool no_wait_for_cooling = true) {
   KEEPALIVE_STATE(NOT_BUSY);
 
   do {
+    // Target temperature might be changed during the loop
+    if (theTarget != degTargetHotend(target_extruder)) {
+      wants_to_cool = isCoolingHotend(target_extruder);
+      theTarget = degTargetHotend(target_extruder);
+
+      // Exit if S<lower>, continue if S<higher>, R<lower>, or R<higher>
+      if (no_wait_for_cooling && wants_to_cool) break;
+
+      // Prevent a wait-forever situation if R is misused i.e. M109 R0
+      // Try to calculate a ballpark safe margin by halving EXTRUDE_MINTEMP
+      if (wants_to_cool && theTarget < (EXTRUDE_MINTEMP) / 2) break;
+    }
+
     now = millis();
     if (ELAPSED(now, next_temp_ms)) { //Print temp & remaining time every 1s while waiting
       next_temp_ms = now + 1000UL;
-      #if HAS(TEMP_HOTEND) || HAS(TEMP_BED)
-        print_heaterstates();
-      #endif
+      print_heaterstates();
       #if TEMP_RESIDENCY_TIME > 0
         ECHO_M(SERIAL_W);
         if (residency_start_ms) {
@@ -3208,33 +3223,22 @@ inline void wait_heater(bool no_wait_for_cooling = true) {
       #endif
     }
 
-    // Target temperature might be changed during the loop
-    if (theTarget != degTargetHotend(target_extruder)) {
-      wants_to_cool = isCoolingHotend(target_extruder);
-      theTarget = degTargetHotend(target_extruder);
-
-      // Exit if S<lower>, continue if S<higher>, R<lower>, or R<higher>
-      if (no_wait_for_cooling && wants_to_cool) break;
-
-      // Prevent a wait-forever situation if R is misused i.e. M109 R0
-      // Try to calculate a ballpark safe margin by halving EXTRUDE_MINTEMP
-      if (wants_to_cool && theTarget < (EXTRUDE_MINTEMP) / 2) break;
-    }
-
     idle();
     refresh_cmd_timeout(); // to prevent stepper_inactive_time from running out
 
     #if TEMP_RESIDENCY_TIME > 0
+
       float temp_diff = fabs(theTarget - degHotend(target_extruder));
 
       if (!residency_start_ms) {
         // Start the TEMP_RESIDENCY_TIME timer when we reach target temp for the first time.
-        if (temp_diff < TEMP_WINDOW) residency_start_ms = millis();
+        if (temp_diff < TEMP_WINDOW) residency_start_ms = now;
       }
       else if (temp_diff > TEMP_HYSTERESIS) {
         // Restart the timer whenever the temperature falls outside the hysteresis.
-        residency_start_ms = millis();
+        residency_start_ms = now;
       }
+
     #endif //TEMP_RESIDENCY_TIME > 0
 
   } while(!cancel_heatup && TEMP_CONDITIONS);
@@ -3264,8 +3268,21 @@ inline void wait_heater(bool no_wait_for_cooling = true) {
 
     // Wait for temperature to come close enough
     do {
+      // Target temperature might be changed during the loop
+      if (theTarget != degTargetBed()) {
+        wants_to_cool = isCoolingBed();
+        theTarget = degTargetBed();
+
+        // Exit if S<lower>, continue if S<higher>, R<lower>, or R<higher>
+        if (no_wait_for_cooling && wants_to_cool) break;
+
+        // Prevent a wait-forever situation if R is misused i.e. M190 R0
+        // Simply don't wait to cool a bed under 30C
+        if (wants_to_cool && theTarget < 30) break;
+      }
+
       now = millis();
-      if (ELAPSED(now, next_temp_ms)) { //Print Temp Reading every 1 second while heating up.
+      if (ELAPSED(now, next_temp_ms)) { // Print Temp Reading every 1 second while heating up.
         next_temp_ms = now + 1000UL;
         print_heaterstates();
         #if TEMP_BED_RESIDENCY_TIME > 0
@@ -3282,33 +3299,22 @@ inline void wait_heater(bool no_wait_for_cooling = true) {
         #endif
       }
 
-      // Target temperature might be changed during the loop
-      if (theTarget != degTargetBed()) {
-        wants_to_cool = isCoolingBed();
-        theTarget = degTargetBed();
-
-        // Exit if S<lower>, continue if S<higher>, R<lower>, or R<higher>
-        if (no_wait_for_cooling && wants_to_cool) break;
-
-        // Prevent a wait-forever situation if R is misused i.e. M190 R0
-        // Simply don't wait to cool a bed under 30C
-        if (wants_to_cool && theTarget < 30) break;
-      }
-
       idle();
       refresh_cmd_timeout(); // to prevent stepper_inactive_time from running out
 
       #if TEMP_BED_RESIDENCY_TIME > 0
+
         float temp_diff = fabs(theTarget - degTargetBed());
 
         if (!residency_start_ms) {
           // Start the TEMP_BED_RESIDENCY_TIME timer when we reach target temp for the first time.
-          if (temp_diff < TEMP_BED_WINDOW) residency_start_ms = millis();
+          if (temp_diff < TEMP_BED_WINDOW) residency_start_ms = now;
         }
         else if (temp_diff > TEMP_BED_HYSTERESIS) {
           // Restart the timer whenever the temperature falls outside the hysteresis.
-          residency_start_ms = millis();
+          residency_start_ms = now;
         }
+
       #endif //TEMP_BED_RESIDENCY_TIME > 0
 
     } while (!cancel_heatup && TEMP_BED_CONDITIONS);
@@ -3337,8 +3343,21 @@ inline void wait_heater(bool no_wait_for_cooling = true) {
 
     // Wait for temperature to come close enough
     do {
+      // Target temperature might be changed during the loop
+      if (theTarget != degTargetChamber()) {
+        wants_to_heat = isHeatingChamber();
+        theTarget = degTargetChamber();
+
+        // Exit if S<higher>, continue if S<lower>, R<higher>, or R<lower>
+        if (no_wait_for_heating && wants_to_heat) break;
+
+        // Prevent a wait-forever situation if R is misused i.e. M190 C R50
+        // Simply don't wait to heat a chamber over 25C
+        if (wants_to_heat && theTarget > 25) break;
+      }
+
       now = millis();
-      if (ELAPSED(now, next_temp_ms)) { //Print Temp Reading every 1 second while heating up.
+      if (ELAPSED(now, next_temp_ms)) { // Print Temp Reading every 1 second while heating up.
         next_temp_ms = now + 1000UL;
         print_chamberstate();
         #if TEMP_CHAMBER_RESIDENCY_TIME > 0
@@ -3355,33 +3374,22 @@ inline void wait_heater(bool no_wait_for_cooling = true) {
         #endif
       }
 
-      // Target temperature might be changed during the loop
-      if (theTarget != degTargetChamber()) {
-        wants_to_heat = isHeatingChamber();
-        theTarget = degTargetChamber();
-
-        // Exit if S<higher>, continue if S<lower>, R<higher>, or R<lower>
-        if (no_wait_for_heating && wants_to_heat) break;
-
-        // Prevent a wait-forever situation if R is misused i.e. M190 C R50
-        // Simply don't wait to heat a chamber over 25C
-        if (wants_to_heat && theTarget > 25) break;
-      }
-
 		idle();
 		refresh_cmd_timeout(); // to prevent stepper_inactive_time from running out
 	
       #if TEMP_CHAMBER_RESIDENCY_TIME > 0
-        float temp_diff = fabs(degTargetBed() - theTarget);
+
+        float temp_diff = fabs(theTarget - degTargetChamber());
 
         if (!residency_start_ms) {
           // Start the TEMP_CHAMBER_RESIDENCY_TIME timer when we reach target temp for the first time.
-          if (temp_diff < TEMP_CHAMBER_WINDOW) residency_start_ms = millis();
+          if (temp_diff < TEMP_CHAMBER_WINDOW) residency_start_ms = now;
         }
         else if (temp_diff > TEMP_CHAMBER_HYSTERESIS) {
           // Restart the timer whenever the temperature falls outside the hysteresis.
-          residency_start_ms = millis();
+          residency_start_ms = now;
         }
+
       #endif //TEMP_CHAMBER_RESIDENCY_TIME > 0
 
     } while (!cancel_cooldown && TEMP_CHAMBER_CONDITIONS);
@@ -3410,6 +3418,19 @@ inline void wait_heater(bool no_wait_for_cooling = true) {
 
     // Wait for temperature to come close enough
     do {
+      // Target temperature might be changed during the loop
+      if (theTarget != degTargetCooler()) {
+        wants_to_heat = isHeatingCooler();
+        theTarget = degTargetCooler();
+
+        // Exit if S<higher>, continue if S<lower>, R<higher>, or R<lower>
+        if (no_wait_for_heating && wants_to_heat) break;
+
+        // Prevent a wait-forever situation if R is misused i.e. M190 C R50
+        // Simply don't wait to heat a cooler over 25C
+        if (wants_to_heat && theTarget > 25) break;
+      }
+
       now = millis();
       if (ELAPSED(now, next_temp_ms)) { //Print Temp Reading every 1 second while heating up.
         next_temp_ms = now + 1000UL;
@@ -3428,33 +3449,22 @@ inline void wait_heater(bool no_wait_for_cooling = true) {
         #endif
       }
 
-      // Target temperature might be changed during the loop
-      if (theTarget != degTargetCooler()) {
-        wants_to_heat = isHeatingCooler();
-        theTarget = degTargetCooler();
-
-        // Exit if S<higher>, continue if S<lower>, R<higher>, or R<lower>
-        if (no_wait_for_heating && wants_to_heat) break;
-
-        // Prevent a wait-forever situation if R is misused i.e. M190 C R50
-        // Simply don't wait to heat a cooler over 25C
-        if (wants_to_heat && theTarget > 25) break;
-      }
-
 		idle();
 		refresh_cmd_timeout(); // to prevent stepper_inactive_time from running out
 	
       #if TEMP_COOLER_RESIDENCY_TIME > 0
-        float temp_diff = fabs(degTargetBed() - theTarget);
+
+        float temp_diff = fabs(theTarget - degTargetCooler());
 
         if (!residency_start_ms) {
           // Start the TEMP_COOLER_RESIDENCY_TIME timer when we reach target temp for the first time.
-          if (temp_diff < TEMP_COOLER_WINDOW) residency_start_ms = millis();
+          if (temp_diff < TEMP_COOLER_WINDOW) residency_start_ms = now;
         }
         else if (temp_diff > TEMP_COOLER_HYSTERESIS) {
           // Restart the timer whenever the temperature falls outside the hysteresis.
-          residency_start_ms = millis();
+          residency_start_ms = now;
         }
+
       #endif //TEMP_COOLER_RESIDENCY_TIME > 0
 
     } while (!cancel_cooldown && TEMP_COOLER_CONDITIONS);
@@ -3583,7 +3593,7 @@ inline void gcode_G0_G1(bool lfire) {
       }
     #endif
 
-    prepare_move();
+    prepare_move_to_destination();
 
     #if ENABLED(LASERBEAM) && ENABLED(LASER_FIRE_G1)
       if(lfire) laser.status = LASER_OFF;
@@ -3738,7 +3748,7 @@ inline void gcode_G4() {
     laser.mode = RASTER;
     laser.status = LASER_ON;
     laser.fired = RASTER;
-    prepare_move();
+    prepare_move_to_destination();
   }
 #endif
 
@@ -4154,23 +4164,23 @@ inline void gcode_G28() {
     #if MECH(DELTA)
       feedrate = 1.732 * homing_feedrate[X_AXIS];
       memcpy(destination, lastpos, sizeof(destination));
-      prepare_move();
+      prepare_move_to_destination();
       feedrate = oldfeedrate;
     #else
       if(homeX) {
         feedrate = homing_feedrate[X_AXIS];
         destination[X_AXIS] = lastpos[X_AXIS];
-        prepare_move();
+        prepare_move_to_destination();
       }
       if(homeY) {
         feedrate = homing_feedrate[Y_AXIS];
         destination[Y_AXIS] = lastpos[Y_AXIS];
-        prepare_move();
+        prepare_move_to_destination();
       }
       if(homeZ) {
         feedrate = homing_feedrate[Z_AXIS];
         destination[Z_AXIS] = lastpos[Z_AXIS];
-        prepare_move();
+        prepare_move_to_destination();
       }
       feedrate = oldfeedrate;
     #endif
@@ -5144,7 +5154,7 @@ inline void gcode_G61() {
   ECHO_E;
 
   // finish moves
-  prepare_move();
+  prepare_move_to_destination();
   st_synchronize();
 }
 
@@ -5254,7 +5264,7 @@ inline void gcode_G92() {
 
     lcd_update();
 
-    prepare_move();
+    prepare_move_to_destination();
   }
 
   /**
@@ -5268,7 +5278,7 @@ inline void gcode_G92() {
 
       lcd_update();
 
-      prepare_move();
+      prepare_move_to_destination();
 
       if (laser.diagnostics)
         ECHO_LM(INFO, "Laser M5 called and laser OFF");
@@ -6251,7 +6261,7 @@ inline void gcode_M109() {
   if (get_target_extruder_from_command(109)) return;
   if (DEBUGGING(DRYRUN)) return;
 
-  #if HOTENDS == 1
+  #if ENABLED(SINGLENOZZLE)
     if (target_extruder != active_extruder) return;
   #endif
 
@@ -6261,7 +6271,7 @@ inline void gcode_M109() {
     setTargetHotend(temp, target_extruder);
     #if ENABLED(DUAL_X_CARRIAGE)
       if (dual_x_carriage_mode == DXC_DUPLICATION_MODE && target_extruder == 0)
-        setTargetHotend1(temp == 0.0 ? 0.0 : temp + duplicate_hotend_temp_offset);
+        setTargetHotend(temp == 0.0 ? 0.0 : temp + duplicate_hotend_temp_offset, 1);
     #endif
 
     /**
@@ -7218,7 +7228,7 @@ inline void gcode_M226() {
       calculate_SCARA_forward_Transform(delta);
       destination[X_AXIS] = delta[X_AXIS]/axis_scaling[X_AXIS];
       destination[Y_AXIS] = delta[Y_AXIS]/axis_scaling[Y_AXIS];
-      prepare_move();
+      prepare_move_to_destination();
       //ok_to_send();
       return true;
     }
@@ -8614,7 +8624,7 @@ inline void gcode_T(uint8_t tmp_extruder) {
                 sync_plan_position();
               #endif
               // Move to the "old position" (move the extruder into place)
-              if (IsRunning()) prepare_move();
+              if (IsRunning()) prepare_move_to_destination();
             }
 
             if (target_extruder == 0)
@@ -8634,7 +8644,7 @@ inline void gcode_T(uint8_t tmp_extruder) {
                 sync_plan_position();
               #endif
               // Move to the "old position" (move the extruder into place)
-              if (IsRunning()) prepare_move();
+              if (IsRunning()) prepare_move_to_destination();
             }
 
             previous_extruder = active_extruder;
@@ -8668,11 +8678,11 @@ inline void gcode_T(uint8_t tmp_extruder) {
           #if MECH(DELTA)
             sync_plan_position_delta();
             // Move to the "old position" (move the extruder into place)
-            if (IsRunning()) prepare_move();
+            if (IsRunning()) prepare_move_to_destination();
           #elif HASNT(DONDOLO) // NO DONDOLO
             sync_plan_position();
             // Move to the "old position" (move the extruder into place)
-            if (IsRunning()) prepare_move();
+            if (IsRunning()) prepare_move_to_destination();
           #endif // !DELTA
 
         }
@@ -9482,7 +9492,7 @@ static void report_current_position() {
 
 #if MECH(DELTA) || MECH(SCARA)
 
-  inline bool prepare_move_delta(float target[NUM_AXIS]) {
+  inline bool prepare_delta_move_to(float target[NUM_AXIS]) {
     float difference[NUM_AXIS];
     float addDistance[NUM_AXIS];
     float fractions[NUM_AXIS];
@@ -9541,8 +9551,8 @@ static void report_current_position() {
       if (!delta_leveling_in_progress) adjust_delta(target);
 
       if (DEBUGGING(DEBUG)) {
-        DEBUG_POS("prepare_move_delta", target);
-        DEBUG_POS("prepare_move_delta", delta);
+        DEBUG_POS("prepare_delta_move_to", target);
+        DEBUG_POS("prepare_delta_move_to", delta);
       }
 
       planner.buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], target[E_AXIS], _feedrate, active_extruder, active_driver);
@@ -9553,7 +9563,7 @@ static void report_current_position() {
 #endif // DELTA || SCARA
 
 #if MECH(SCARA)
-  inline bool prepare_move_scara(float target[NUM_AXIS]) { return prepare_move_delta(target); }
+  inline bool prepare_scara_move_to(float target[NUM_AXIS]) { return prepare_delta_move_to(target); }
 #endif
 
 #if ENABLED(DUAL_X_CARRIAGE)
@@ -9596,7 +9606,7 @@ static void report_current_position() {
 
 #if MECH(CARTESIAN) || MECH(COREXY) || MECH(COREYX) || MECH(COREXZ) || MECH(COREZX)
 
-  inline bool prepare_move_cartesian() {
+  inline bool prepare_cartesian_move_to_destination() {
     #if ENABLED(LASERBEAM) && ENABLED(LASER_FIRE_E)
       if (current_position[E_AXIS] != destination[E_AXIS] && ((current_position[X_AXIS] != destination [X_AXIS]) || (current_position[Y_AXIS] != destination [Y_AXIS]))){
         laser.status = LASER_ON;
@@ -9628,7 +9638,7 @@ static void report_current_position() {
  * (This may call planner.buffer_line several times to put
  *  smaller moves into the planner for DELTA or SCARA.)
  */
-void prepare_move() {
+void prepare_move_to_destination() {
   clamp_to_software_endstops(destination);
   refresh_cmd_timeout();
 
@@ -9637,14 +9647,14 @@ void prepare_move() {
   #endif
 
   #if MECH(SCARA)
-    if (!prepare_move_scara(destination)) return;
+    if (!prepare_scara_move_to(destination)) return;
   #elif MECH(DELTA)
-    if (!prepare_move_delta(destination)) return;
+    if (!prepare_delta_move_to(destination)) return;
   #else
     #if ENABLED(DUAL_X_CARRIAGE)
       if (!prepare_move_dual_x_carriage()) return;
     #endif
-    if (!prepare_move_cartesian()) return;
+    if (!prepare_cartesian_move_to_destination()) return;
   #endif
 
   set_current_to_destination();
@@ -10143,7 +10153,7 @@ void manage_inactivity(bool ignore_stepper_queue/*=false*/) {
       // travel moves have been received so enact them
       delayed_move_time = 0xFFFFFFFFUL; // force moves to be done
       set_destination_to_current();
-      prepare_move();
+      prepare_move_to_destination();
     }
   #endif
 
