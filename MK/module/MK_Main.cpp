@@ -167,9 +167,8 @@ bool software_endstops = true;
   bool Spool_must_write[EXTRUDERS]  = ARRAY_BY_EXTRUDERS (false);
 #endif
 
-#if HAS(SERVO_ENDSTOPS)
-  const int servo_endstop_id[] = SERVO_ENDSTOP_IDS;
-  const int servo_endstop_angle[][2] = {X_ENDSTOP_SERVO_ANGLES, Y_ENDSTOP_SERVO_ANGLES, Z_ENDSTOP_SERVO_ANGLES};
+#if HAS(Z_SERVO_ENDSTOP)
+  const int z_servo_angle[2] = Z_ENDSTOP_SERVO_ANGLES;
 #endif
 
 #if ENABLED(BARICUDA)
@@ -311,10 +310,8 @@ static bool send_ok[BUFSIZE];
 #if HAS(SERVOS)
   Servo servo[NUM_SERVOS];
   #define MOVE_SERVO(I, P) servo[I].move(P)
-  #define SERVO_ENDSTOP_EXISTS(I) (servo_endstop_id[I] >= 0)
-  #define MOVE_SERVO_ENDSTOP(I, J) MOVE_SERVO(servo_endstop_id[I], servo_endstop_angle[I][J])
-  #define DEPLOY_SERVO_ENDSTOP(I) MOVE_SERVO_ENDSTOP(I, 0)
-  #define STOW_SERVO_ENDSTOP(I) MOVE_SERVO_ENDSTOP(I, 1)
+  #define DEPLOY_Z_SERVO() MOVE_SERVO(Z_ENDSTOP_SERVO_NR, z_servo_angle[0])
+  #define STOW_Z_SERVO()   MOVE_SERVO(Z_ENDSTOP_SERVO_NR, z_servo_angle[1])
 #endif
 
 #if HAS(CHDK)
@@ -598,20 +595,20 @@ bool enqueue_and_echo_command(const char* cmd, bool say_ok/*=false*/) {
   	#endif
 
     // Set position of Servo Endstops that are defined
-    #if HAS(SERVO_ENDSTOPS)
+    #if HAS(Z_SERVO_ENDSTOP)
 
       endstops.enable_z_probe(false);
 
-      #if HAS(DONDOLO)
-        for (int i = 0; i < 3; i++)
-          if (SERVO_ENDSTOP_EXISTS(i) && servo_endstop_id[i] != DONDOLO_SERVO_INDEX)
-            STOW_SERVO_ENDSTOP(i);
-      #else
-        for (int i = 0; i < 3; i++)
-          if (SERVO_ENDSTOP_EXISTS(i))
-            STOW_SERVO_ENDSTOP(i);
-      #endif
-
+      /**
+       * Set position of Z Servo Endstop
+       *
+       * The servo might be deployed and positioned too low to stow
+       * when starting up the machine or rebooting the board.
+       * There's no way to know where the nozzle is positioned until
+       * homing has been done - no homing with z-probe without init!
+       *
+       */
+      STOW_Z_SERVO();
     #endif
   }
 #endif
@@ -1112,14 +1109,14 @@ inline bool code_value_bool() { return code_value_byte() > 0; }
   }
 
   inline float code_value_linear_units() { return code_value_float() * linear_unit_factor; }
-  inline float code_value_per_axis_unit(int axis) { return code_value_float() / axis_unit_factor(axis); }
   inline float code_value_axis_units(int axis) { return code_value_float() * axis_unit_factor(axis); }
+  inline float code_value_per_axis_unit(int axis) { return code_value_float() / axis_unit_factor(axis); }
 
 #else
 
   inline float code_value_linear_units() { return code_value_float(); }
-  inline float code_value_per_axis_unit(int axis) { return code_value_float(); }
-  inline float code_value_axis_units(int axis) { return code_value_float(); }
+  inline float code_value_axis_units(int axis) { UNUSED(axis); return code_value_float(); }
+  inline float code_value_per_axis_unit(int axis) { UNUSED(axis); return code_value_float(); }
 
 #endif
 
@@ -1479,9 +1476,15 @@ static void clean_up_after_endstop_move() {
   refresh_cmd_timeout();
 }
 
-static void axis_unhomed_error() {
-  LCD_MESSAGEPGM(MSG_POSITION_UNKNOWN);
-  ECHO_LM(ER, MSG_POSITION_UNKNOWN);
+static void axis_unhomed_error(bool xyz = false) {
+  if (xyz) {
+    LCD_MESSAGEPGM(MSG_XYZ_UNHOMED);
+    ECHO_LM(ER, MSG_XYZ_UNHOMED);
+  }
+  else {
+    LCD_MESSAGEPGM(MSG_YX_UNHOMED);
+    ECHO_LM(ER, MSG_YX_UNHOMED);
+  }
 }
 
 /**
@@ -1676,17 +1679,16 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
       if (endstops.z_probe_enabled) return;
 
-      #if HAS(SERVO_ENDSTOPS)
+      #if HAS(Z_SERVO_ENDSTOP)
         // Engage Z Servo endstop if enabled
-        if (SERVO_ENDSTOP_EXISTS(Z_AXIS))
-          DEPLOY_SERVO_ENDSTOP(Z_AXIS);;
+        DEPLOY_Z_SERVO();
       #endif
 
       endstops.enable_z_probe();
     }
 
     static void stow_z_probe(bool doRaise = true) {
-      #if !(HAS(SERVO_ENDSTOPS) && (Z_RAISE_AFTER_PROBING > 0))
+      #if !(HAS(Z_SERVO_ENDSTOP) && (Z_RAISE_AFTER_PROBING > 0))
         UNUSED(doRaise);
       #endif
 
@@ -1695,20 +1697,17 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
       if (!endstops.z_probe_enabled) return;
 
-      #if HAS(SERVO_ENDSTOPS)
+      #if HAS(Z_SERVO_ENDSTOP)
         // Retract Z Servo endstop if enabled
-        if (SERVO_ENDSTOP_EXISTS(Z_AXIS)) {
+        #if Z_RAISE_AFTER_PROBING > 0
+          if (doRaise) {
+            raise_z_after_probing(); // this also updates current_position
+            st_synchronize();
+          }
+        #endif
 
-          #if Z_RAISE_AFTER_PROBING > 0
-            if (doRaise) {
-              raise_z_after_probing(); // this also updates current_position
-              st_synchronize();
-            }
-          #endif
-
-          // Change the Z servo angle
-          STOW_SERVO_ENDSTOP(Z_AXIS);
-        }
+        // Change the Z servo angle
+        STOW_Z_SERVO();
       #endif
 
       endstops.enable_z_probe(false);
@@ -1770,15 +1769,24 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       return measured_z;
     }
     
-    #if HAS(SERVO_ENDSTOPS) && HASNT(Z_PROBE_SLED)
-      void raise_z_for_servo() {
-        float zpos = current_position[Z_AXIS], z_dest = Z_RAISE_BEFORE_PROBING;
-        /**
-         * The zprobe_zoffset is negative any switch below the nozzle, so
-         * multiply by Z_HOME_DIR (-1) to move enough away from bed for the probe
-         */
-        z_dest += axis_homed[Z_AXIS] ? zprobe_zoffset * Z_HOME_DIR : zpos;
-        if (zpos < z_dest) do_blocking_move_to_z(z_dest); // also updates current_position
+    #if HAS(Z_SERVO_ENDSTOP)
+      /**
+       * Raise Z to a minimum height to make room for a servo to move
+       *
+       * zprobe_zoffset: Negative of the Z height where the probe engages
+       *         z_dest: The before / after probing raise distance
+       *
+       * The zprobe_zoffset is negative for a switch below the nozzle, so
+       * multiply by Z_HOME_DIR (-1) to move enough away from the bed.
+       */
+      void raise_z_for_servo(float z_dest) {
+        z_dest += home_offset[Z_AXIS];
+
+        if ((Z_HOME_DIR) < 0 && zprobe_zoffset < 0)
+          z_dest -= zprobe_zoffset;
+
+        if (z_dest > current_position[Z_AXIS])
+          do_blocking_move_to_z(z_dest); // also updates current_position
       }
     #endif
 
@@ -1810,34 +1818,22 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       sync_plan_position();
 
       #if HAS(Z_PROBE_SLED)
-        #define _Z_SERVO_TEST       (axis != Z_AXIS)      // already deployed Z
-        #define _Z_SERVO_SUBTEST    false                 // Z will never be invoked
         #define _Z_DEPLOY           (dock_sled(false))
         #define _Z_STOW             (dock_sled(true))
       #elif SERVO_LEVELING || ENABLED(Z_PROBE_FIX_MOUNTED)
-        #define _Z_SERVO_TEST       (axis != Z_AXIS)      // already deployed Z
-        #define _Z_SERVO_SUBTEST    false                 // Z will never be invoked
         #define _Z_DEPLOY           (deploy_z_probe())
         #define _Z_STOW             (stow_z_probe())
-      #elif HAS(SERVO_ENDSTOPS)
-        #define _Z_SERVO_TEST       true                  // Z not deployed yet
-        #define _Z_SERVO_SUBTEST    (axis == Z_AXIS)      // Z is a probe
+      #elif HAS(Z_SERVO_ENDSTOP)
+        #define _Z_DEPLOY           do{ raise_z_for_servo(Z_RAISE_BEFORE_PROBING); DEPLOY_Z_SERVO(); endstops.z_probe_enabled = true; }while(0)
+        #define _Z_STOW             do{ raise_z_for_servo(Z_RAISE_AFTER_PROBING); STOW_Z_SERVO(); endstops.z_probe_enabled = false; }while(0)
       #endif
 
-      // If there's a Z probe that needs deployment...
-      #if HAS(Z_PROBE_SLED) || SERVO_LEVELING || ENABLED(Z_PROBE_FIX_MOUNTED)
+      // Homing Z towards the bed? Deploy the Z probe or endstop.
+      #if HAS(Z_PROBE_SLED) || SERVO_LEVELING || ENABLED(Z_PROBE_FIX_MOUNTED) || HAS(Z_SERVO_ENDSTOP)
         // ...and homing Z towards the bed? Deploy it.
         if (axis == Z_AXIS && axis_home_dir < 0) {
           if (DEBUGGING(INFO)) ECHO_LM(INFO, "> SERVO_LEVELING > " STRINGIFY(_Z_DEPLOY));
           _Z_DEPLOY;
-        }
-      #endif
-
-      #if HAS(SERVO_ENDSTOPS)
-        // Engage an X, Y (or Z) Servo endstop if enabled
-        if (_Z_SERVO_TEST && SERVO_ENDSTOP_EXISTS(axis)) {
-          DEPLOY_SERVO_ENDSTOP(axis);
-          if (_Z_SERVO_SUBTEST) endstops.z_probe_enabled = true;
         }
       #endif
 
@@ -1915,33 +1911,12 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       axis_homed[axis] = true;
 
       // Put away the Z probe with a function
-      #if HAS(Z_PROBE_SLED) || SERVO_LEVELING || ENABLED(Z_PROBE_FIX_MOUNTED)
+      #if HAS(Z_PROBE_SLED) || SERVO_LEVELING || ENABLED(Z_PROBE_FIX_MOUNTED) || HAS(Z_SERVO_ENDSTOP)
         if (axis == Z_AXIS && axis_home_dir < 0) {
           if (DEBUGGING(INFO)) ECHO_LM(INFO, "> SERVO_LEVELING > " STRINGIFY(_Z_STOW));
           _Z_STOW;
         }
       #endif
-
-      #if HAS(SERVO_ENDSTOPS)
-        if (_Z_SERVO_TEST && SERVO_ENDSTOP_EXISTS(axis)) {
-          // Raise the servo probe before stow outside ABL context.
-          // This is a workaround to allow use of a Servo Probe without
-          // ABL until more global probe handling is implemented.
-          #if Z_RAISE_AFTER_PROBING > 0
-            if (axis == Z_AXIS) {
-              if (DEBUGGING(INFO)) ECHO_LMV(INFO, "Raise Z (after) by ", Z_RAISE_AFTER_PROBING);
-              current_position[Z_AXIS] = Z_RAISE_AFTER_PROBING;
-              feedrate = homing_feedrate[Z_AXIS];
-              line_to_current_position();
-              st_synchronize();
-            }
-          #endif
-
-          if (DEBUGGING(INFO)) ECHO_LM(INFO, "> SERVO_ENDSTOPS > Stow with servo.move()");
-          STOW_SERVO_ENDSTOP(axis);
-          if (_Z_SERVO_SUBTEST) endstops.enable_z_probe(false);
-        }
-      #endif // HAS(SERVO_ENDSTOPS)
 
     }
 
@@ -2120,17 +2095,17 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
       if (endstops.z_probe_enabled) return;
 
-      #if HAS(SERVO_ENDSTOPS) || ENABLED(Z_PROBE_FIX_MOUNTED) || ENABLED(Z_PROBE_MECHANICAL)
+      #if HAS(Z_SERVO_ENDSTOP) || ENABLED(Z_PROBE_FIX_MOUNTED) || ENABLED(Z_PROBE_MECHANICAL)
         feedrate = homing_feedrate[Z_AXIS];
         do_blocking_move_to_z(  z_probe_deploy_start_location[Z_AXIS]);
         do_blocking_move_to_xy( z_probe_deploy_start_location[X_AXIS],
                                 z_probe_deploy_start_location[Y_AXIS]);
 
-        #if HAS(SERVO_ENDSTOPS)
+        #if HAS(Z_SERVO_ENDSTOP)
           // Engage Z Servo endstop if enabled
-          if (SERVO_ENDSTOP_EXISTS(Z_AXIS))
-            DEPLOY_SERVO_ENDSTOP(Z_AXIS);
+          DEPLOY_Z_SERVO();
         #endif
+
       #else // ALLEN KEY
         feedrate = homing_feedrate[Z_AXIS];
         do_blocking_move_to_z(  z_probe_deploy_start_location[Z_AXIS]);
@@ -2159,17 +2134,17 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
       if (!endstops.z_probe_enabled) return;
 
-      #if HAS(SERVO_ENDSTOPS) || ENABLED(Z_PROBE_FIX_MOUNTED) || ENABLED(Z_PROBE_MECHANICAL)
+      #if HAS(Z_SERVO_ENDSTOP) || ENABLED(Z_PROBE_FIX_MOUNTED) || ENABLED(Z_PROBE_MECHANICAL)
         feedrate = homing_feedrate[Z_AXIS];
         do_blocking_move_to(z_probe_retract_start_location[X_AXIS],
                             z_probe_retract_start_location[Y_AXIS],
                             z_probe_retract_start_location[Z_AXIS]);
 
-        #if HAS(SERVO_ENDSTOPS)
+        #if HAS(Z_SERVO_ENDSTOP)
           // Retract Z Servo endstop if enabled
-          if (SERVO_ENDSTOP_EXISTS(Z_AXIS))
-            STOW_SERVO_ENDSTOP(Z_AXIS);
+          STOW_Z_SERVO();
         #endif
+
       #else // ALLEN KEY
         feedrate = homing_feedrate[Z_AXIS];
         do_blocking_move_to(z_probe_retract_start_location[X_AXIS],
@@ -4464,7 +4439,7 @@ inline void gcode_G28() {
 
     // Don't allow auto-levelling without homing first
     if (!axis_homed[X_AXIS] || !axis_homed[Y_AXIS] || !axis_homed[Z_AXIS]) {
-      axis_unhomed_error();
+      axis_unhomed_error(true);
       return;
     }
 
@@ -4530,12 +4505,6 @@ inline void gcode_G28() {
 
     #endif // AUTO_BED_LEVELING_GRID
 
-    #if HAS(Z_PROBE_SLED)
-      dock_sled(false); // engage (un-dock) the probe
-    #endif
-
-    st_synchronize();
-
     if (!dryrun) {
       // make sure the bed_level_rotation_matrix is identity or the planner will get it wrong
       planner.bed_level_matrix.set_to_identity();
@@ -4550,6 +4519,13 @@ inline void gcode_G28() {
       sync_plan_position();
     }
 
+    #if ENABLED(Z_PROBE_SLED)
+      dock_sled(false); // engage (un-dock) the Z probe
+    #elif ENABLED(Z_PROBE_FIX_MOUNTED) || ENABLED(Z_PROBE_MECHANICAL)
+      deploy_z_probe();
+    #endif
+
+    st_synchronize();
     setup_for_endstop_move();
     feedrate = homing_feedrate[Z_AXIS];
 
@@ -4559,11 +4535,14 @@ inline void gcode_G28() {
       const int xGridSpacing = (right_probe_bed_position - left_probe_bed_position) / (auto_bed_leveling_grid_points - 1),
                 yGridSpacing = (back_probe_bed_position - front_probe_bed_position) / (auto_bed_leveling_grid_points - 1);
 
-      // solve the plane equation ax + by + d = z
-      // A is the matrix with rows [x y 1] for all the probed points
-      // B is the vector of the Z positions
-      // the normal vector to the plane is formed by the coefficients of the plane equation in the standard form, which is Vx*x+Vy*y+Vz*z+d = 0
-      // so Vx = -a Vy = -b Vz = 1 (we want the vector facing towards positive Z
+      /**
+       * solve the plane equation ax + by + d = z
+       * A is the matrix with rows [x y 1] for all the probed points
+       * B is the vector of the Z positions
+       * the normal vector to the plane is formed by the coefficients of the
+       * plane equation in the standard form, which is Vx*x+Vy*y+Vz*z+d = 0
+       * so Vx = -a Vy = -b Vz = 1 (we want the vector facing towards positive Z
+       */
 
       int abl2 = auto_bed_leveling_grid_points * auto_bed_leveling_grid_points;
 
@@ -4741,9 +4720,11 @@ inline void gcode_G28() {
       planner.bed_level_matrix.debug(" Bed Level Correction Matrix:");
 
     if (!dryrun) {
-      // Correct the Z height difference from Z probe position and nozzle tip position.
-      // The Z height on homing is measured by Z probe, but the Z probe is quite far from the nozzle.
-      // When the bed is uneven, this height must be corrected.
+      /**
+       * Correct the Z height difference from Z probe position and nozzle tip position.
+       * The Z height on homing is measured by Z probe, but the Z probe is quite far
+       * from the nozzle. When the bed is uneven, this height must be corrected.
+       */
       float x_tmp = current_position[X_AXIS] + X_PROBE_OFFSET_FROM_EXTRUDER,
             y_tmp = current_position[Y_AXIS] + Y_PROBE_OFFSET_FROM_EXTRUDER,
             z_tmp = current_position[Z_AXIS],
@@ -4756,27 +4737,33 @@ inline void gcode_G28() {
 
       apply_rotation_xyz(planner.bed_level_matrix, x_tmp, y_tmp, z_tmp); // Apply the correction sending the Z probe offset
 
-      // Get the current Z position and send it to the planner.
-      //
-      // >> (z_tmp - real_z) : The rotated current Z minus the uncorrected Z (most recent planner.set_position_mm/sync_plan_position)
-      //
-      // >> zprobe_zoffset : Z distance from nozzle to Z probe (set by default, M851, EEPROM, or Menu)
-      //
-      // >> Z_RAISE_AFTER_PROBING : The distance the Z probe will have lifted after the last probe
-      //
-      // >> Should home_offset[Z_AXIS] be included?
-      //
-      //      Discussion: home_offset[Z_AXIS] was applied in G28 to set the starting Z.
-      //      If Z is not tweaked in G29 -and- the Z probe in G29 is not actually "homing" Z...
-      //      then perhaps it should not be included here. The purpose of home_offset[] is to
-      //      adjust for inaccurate endstops, not for reasonably accurate probes. If it were
-      //      added here, it could be seen as a compensating factor for the Z probe.
-      //
+      /**
+       * Get the current Z position and send it to the planner.
+       *
+       * >> (z_tmp - real_z) : The rotated current Z minus the uncorrected Z
+       * (most recent planner.set_position_mm/sync_plan_position)
+       *
+       * >> zprobe_zoffset : Z distance from nozzle to Z probe
+       * (set by default, M851, EEPROM, or Menu)
+       *
+       * >> Z_RAISE_AFTER_PROBING : The distance the Z probe will have lifted
+       * after the last probe
+       *
+       * >> Should home_offset[Z_AXIS] be included?
+       *
+       *
+       *   Discussion: home_offset[Z_AXIS] was applied in G28 to set the
+       *   starting Z. If Z is not tweaked in G29 -and- the Z probe in G29 is
+       *   not actually "homing" Z... then perhaps it should not be included
+       *   here. The purpose of home_offset[] is to adjust for inaccurate
+       *   endstops, not for reasonably accurate probes. If it were added
+       *   here, it could be seen as a compensating factor for the Z probe.
+       */
       if (DEBUGGING(INFO))
         ECHO_LMV(INFO, "> AFTER apply_rotation_xyz > z_tmp  = ", z_tmp);
 
       current_position[Z_AXIS] = -zprobe_zoffset + (z_tmp - real_z)
-        #if HAS(SERVO_ENDSTOPS) || ENABLED(Z_PROBE_SLED)
+        #if HAS(Z_SERVO_ENDSTOP) || ENABLED(Z_PROBE_SLED)
           + Z_RAISE_AFTER_PROBING
         #endif
         ;
@@ -4790,9 +4777,13 @@ inline void gcode_G28() {
     // Sled assembly for Cartesian bots
     #if HAS(Z_PROBE_SLED)
       dock_sled(true); // dock the probe
-    #elif HASNT(SERVO_ENDSTOPS) && Z_RAISE_AFTER_PROBING > 0
+    #elif HASNT(Z_SERVO_ENDSTOP)
       // Raise Z axis for non servo based probes
       raise_z_after_probing();
+    #endif
+
+    #if ENABLED(Z_PROBE_MECHANICAL)
+      stow_z_probe();
     #endif
 
     #if ENABLED(Z_PROBE_END_SCRIPT)
@@ -4801,13 +4792,15 @@ inline void gcode_G28() {
         ECHO_EM(Z_PROBE_END_SCRIPT);
       }
       enqueue_and_echo_commands_P(PSTR(Z_PROBE_END_SCRIPT));
+      #if HAS(BED_PROBE)
+        endstops.enable_z_probe(false);
+      #endif
       st_synchronize();
     #endif
 
-    KEEPALIVE_STATE(IN_HANDLER);
-
     if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< gcode_G29");
     report_current_position();
+    KEEPALIVE_STATE(IN_HANDLER);
   }
 
   #if HASNT(Z_PROBE_SLED)
@@ -4817,8 +4810,8 @@ inline void gcode_G28() {
     inline void gcode_G30() {
       if (DEBUGGING(INFO)) ECHO_LM(INFO, "gcode_G30 >>>");
 
-      #if HAS(SERVO_ENDSTOPS)
-        raise_z_for_servo();
+      #if HAS(Z_SERVO_ENDSTOP)
+        raise_z_for_servo(Z_RAISE_BEFORE_PROBING);
       #endif
       deploy_z_probe(); // Engage Z Servo endstop if available
 
@@ -4837,10 +4830,10 @@ inline void gcode_G28() {
 
       clean_up_after_endstop_move();
 
-      #if HAS(SERVO_ENDSTOPS)
-        raise_z_for_servo();
+      #if HAS(Z_SERVO_ENDSTOP)
+        raise_z_for_servo(Z_RAISE_AFTER_PROBING);
       #endif
-      stow_z_probe(); // Retract Z Servo endstop if available
+      stow_z_probe(false); // Retract Z Servo endstop if available
 
       if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< gcode_G30");
 
@@ -5539,7 +5532,7 @@ inline void gcode_M42() {
     if (DEBUGGING(INFO)) ECHO_LM(INFO, "gcode_M48 >>>");
 
     if (!axis_homed[X_AXIS] || !axis_homed[Y_AXIS] || !axis_homed[Z_AXIS]) {
-      axis_unhomed_error();
+      axis_unhomed_error(true);
       return;
     }
 
@@ -6301,11 +6294,17 @@ inline void gcode_M109() {
  * M111: Debug mode Repetier Host compatibile
  */
 inline void gcode_M111() {
-  mk_debug_flags = code_seen('S') ? code_value_byte() : DEBUG_NONE;
+  mk_debug_flags = code_seen('S') ? code_value_byte() : (uint8_t) DEBUG_NONE;
 
-  const static char* const debug_strings[] {
-    SERIAL_DEBUG_ECHO, SERIAL_DEBUG_INFO, SERIAL_DEBUG_ERRORS,
-    SERIAL_DEBUG_DRYRUN, SERIAL_DEBUG_COMMUNICATION, SERIAL_DEBUG_DEBUG
+  const static char str_debug_1[] PROGMEM = SERIAL_DEBUG_ECHO;
+  const static char str_debug_2[] PROGMEM = SERIAL_DEBUG_INFO;
+  const static char str_debug_4[] PROGMEM = SERIAL_DEBUG_ERRORS;
+  const static char str_debug_8[] PROGMEM = SERIAL_DEBUG_DRYRUN;
+  const static char str_debug_16[] PROGMEM = SERIAL_DEBUG_COMMUNICATION;
+  const static char str_debug_32[] PROGMEM = SERIAL_DEBUG_DEBUG;
+
+  const static char* const debug_strings[] PROGMEM = {
+    str_debug_1, str_debug_2, str_debug_4, str_debug_8, str_debug_16, str_debug_32
   };
 
   ECHO_M(SERIAL_DEBUG_PREFIX);
@@ -7331,14 +7330,14 @@ inline void gcode_M226() {
  */
 inline void gcode_M400() { st_synchronize(); }
 
-#if (ENABLED(AUTO_BED_LEVELING_FEATURE) && DISABLED(Z_PROBE_SLED) && HAS(SERVO_ENDSTOPS))
+#if (ENABLED(AUTO_BED_LEVELING_FEATURE) && DISABLED(Z_PROBE_SLED) && HAS(Z_SERVO_ENDSTOP))
 
   /**
    * M401: Engage Z Servo endstop if available
    */
   inline void gcode_M401() {
     #if ENABLED(HAS_SERVO_ENDSTOPS) && NOMECH(DELTA)
-      raise_z_for_servo();
+      raise_z_for_servo(Z_RAISE_BEFORE_PROBING);
     #endif
     deploy_z_probe();
   }
@@ -7348,7 +7347,7 @@ inline void gcode_M400() { st_synchronize(); }
    */
   inline void gcode_M402() {
     #if ENABLED(HAS_SERVO_ENDSTOPS) && NOMECH(DELTA)
-      raise_z_for_servo();
+      raise_z_for_servo(Z_RAISE_AFTER_PROBING);
     #endif
     #if MECH(DELTA)
       retract_z_probe();
@@ -7357,7 +7356,7 @@ inline void gcode_M400() { st_synchronize(); }
     #endif
   }
 
-#endif // (ENABLED(AUTO_BED_LEVELING_FEATURE) && DISABLED(Z_PROBE_SLED) && HAS(SERVO_ENDSTOPS))
+#endif // (ENABLED(AUTO_BED_LEVELING_FEATURE) && DISABLED(Z_PROBE_SLED) && HAS(Z_SERVO_ENDSTOP))
 
 #if ENABLED(FILAMENT_SENSOR)
 
@@ -9186,7 +9185,7 @@ void process_next_command() {
       case 400: // M400 finish all moves
         gcode_M400(); break;
 
-      #if (ENABLED(AUTO_BED_LEVELING_FEATURE) && DISABLED(Z_PROBE_SLED) && HAS(SERVO_ENDSTOPS))
+      #if (ENABLED(AUTO_BED_LEVELING_FEATURE) && DISABLED(Z_PROBE_SLED) && HAS(Z_SERVO_ENDSTOP))
         case 401:
           gcode_M401(); break;
         case 402:

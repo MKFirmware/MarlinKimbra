@@ -29,6 +29,16 @@
 #ifndef SANITYCHECK_H
   #define SANITYCHECK_H
 
+  /**
+   * Due to the high number of issues related with old versions of Arduino IDE
+   * we are now warning our users to update their toolkits. In a future Marlin
+   * release we will stop supporting old IDE versions and will require user
+   * action to proceed with compilation in such environments.
+   */
+  #if !defined(ARDUINO) || ARDUINO < 10608
+    #error "Versions of Arduino IDE prior to 1.6.8 are no longer supported, please update your toolkit."
+  #endif
+
   // Start check
   #if DISABLED(SERIAL_PORT)
     #error DEPENDENCY ERROR: Missing setting SERIAL_PORT
@@ -632,24 +642,8 @@
       #error DEPENDENCY ERROR: Missing setting NUM_SERVOS
     #endif
     #if NUM_SERVOS > 0
-      #if DISABLED(X_ENDSTOP_SERVO_NR)
-        #error DEPENDENCY ERROR: Missing setting X_ENDSTOP_SERVO_NR
-      #endif
-      #if DISABLED(Y_ENDSTOP_SERVO_NR)
-        #error DEPENDENCY ERROR: Missing setting Y_ENDSTOP_SERVO_NR
-      #endif
       #if DISABLED(Z_ENDSTOP_SERVO_NR)
         #error DEPENDENCY ERROR: Missing setting Z_ENDSTOP_SERVO_NR
-      #endif
-      #if ENABLED(X_ENDSTOP_SERVO_NR) && X_ENDSTOP_SERVO_NR > -1
-        #if DISABLED(X_ENDSTOP_SERVO_ANGLES)
-          #error DEPENDENCY ERROR: Missing setting X_ENDSTOP_SERVO_ANGLES
-        #endif
-      #endif
-      #if ENABLED(Y_ENDSTOP_SERVO_NR) && Y_ENDSTOP_SERVO_NR > -1
-        #if DISABLED(Y_ENDSTOP_SERVO_ANGLES)
-          #error DEPENDENCY ERROR: Missing setting Y_ENDSTOP_SERVO_ANGLES
-        #endif
       #endif
       #if ENABLED(Z_ENDSTOP_SERVO_NR) && Z_ENDSTOP_SERVO_NR > -1
         #if DISABLED(Z_ENDSTOP_SERVO_ANGLES)
@@ -1567,12 +1561,8 @@
     #if NUM_SERVOS < 1
       #error CONFLICT ERROR: NUM_SERVOS has to be at least one if you enable ENABLE_SERVOS
     #endif
-    #if X_ENDSTOP_SERVO_NR >= 0 || Y_ENDSTOP_SERVO_NR >= 0 || Z_ENDSTOP_SERVO_NR >= 0
-      #if X_ENDSTOP_SERVO_NR >= NUM_SERVOS
-        #error CONFLICT ERROR: X_ENDSTOP_SERVO_NR must be smaller than NUM_SERVOS.
-      #elif Y_ENDSTOP_SERVO_NR >= NUM_SERVOS
-        #error CONFLICT ERROR: Y_ENDSTOP_SERVO_NR must be smaller than NUM_SERVOS.
-      #elif Z_ENDSTOP_SERVO_NR >= NUM_SERVOS
+    #if Z_ENDSTOP_SERVO_NR >= 0
+      #if Z_ENDSTOP_SERVO_NR >= NUM_SERVOS
         #error CONFLICT ERROR: Z_ENDSTOP_SERVO_NR must be smaller than NUM_SERVOS.
       #endif
     #endif
@@ -1581,8 +1571,8 @@
   /**
    * Servo deactivation depends on servo endstops
    */
-  #if ENABLED(DEACTIVATE_SERVOS_AFTER_MOVE) && HASNT(SERVO_ENDSTOPS)
-    #error DEPENDENCY ERROR: At least one of the ?_ENDSTOP_SERVO_NR is required for DEACTIVATE_SERVOS_AFTER_MOVE.
+  #if ENABLED(DEACTIVATE_SERVOS_AFTER_MOVE) && HASNT(Z_SERVO_ENDSTOP)
+    #error DEPENDENCY ERROR: At least one of the Z_ENDSTOP_SERVO_NR is required for DEACTIVATE_SERVOS_AFTER_MOVE.
   #endif
 
   /**
