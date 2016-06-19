@@ -354,6 +354,7 @@ void stop();
 void get_available_commands();
 void process_next_command();
 void prepare_move_to_destination();
+void prepare_move_to_destination_raw();
 
 #if MECH(DELTA) || MECH(SCARA)
   inline void sync_plan_position_delta();
@@ -1796,6 +1797,12 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
 
   #endif //AUTO_BED_LEVELING_FEATURE
 
+  /**
+   * Home an individual axis
+   */
+
+  #define HOMEAXIS(LETTER) homeaxis(LETTER##_AXIS)
+
   static void homeaxis(AxisEnum axis) {
   #define HOMEAXIS_DO(LETTER) \
     ((LETTER##_MIN_PIN > -1 && LETTER##_HOME_DIR==-1) || (LETTER##_MAX_PIN > -1 && LETTER##_HOME_DIR==1))
@@ -1933,7 +1940,7 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       ECHO_EM(")");
     }
   }
-  #define HOMEAXIS(LETTER) homeaxis(LETTER##_AXIS)
+
 #endif // CARTESIAN || COREXY || COREYX || COREXZ || COREZX || SCARA
 
 
@@ -1941,6 +1948,25 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
  * Function for DELTA
  */
 #if MECH(DELTA)
+  /**
+   * Calculate delta, start a line, and set current_position to destination
+   */
+  void prepare_move_to_destination_raw() {
+    if (DEBUGGING(INFO))
+      DEBUG_POS("prepare_move_raw", destination);
+
+    refresh_cmd_timeout();
+    calculate_delta(destination);
+    planner.buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], destination[E_AXIS], feedrate * feedrate_multiplier / 60 / 100.0, active_extruder, active_driver);
+    set_current_to_destination();
+  }
+
+  /**
+   * Home an individual axis
+   */
+
+  #define HOMEAXIS(LETTER) homeaxis(LETTER##_AXIS)
+
   static void homeaxis(AxisEnum axis) {
     #define HOMEAXIS_DO(LETTER) \
       ((LETTER##_MIN_PIN > -1 && LETTER##_HOME_DIR==-1) || (LETTER##_MAX_PIN > -1 && LETTER##_HOME_DIR==1))
@@ -2021,7 +2047,51 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       axis_homed[axis] = true;
     }
   }
-  #define HOMEAXIS(LETTER) homeaxis(LETTER##_AXIS)
+
+  static void home_delta_axis() {
+
+    set_destination_to_current();
+
+    feedrate = 0.0;
+
+    // Pretend the current position is 0,0,0
+    for (int i = X_AXIS; i <= Z_AXIS; i++) current_position[i] = 0;
+    sync_plan_position();
+
+    // Move all carriages up together until the first endstop is hit.
+    for (int i = X_AXIS; i <= Z_AXIS; i++) destination[i] = 3 * max_length[Z_AXIS];
+    feedrate = 1.732 * homing_feedrate[X_AXIS];
+    line_to_destination();
+    st_synchronize();
+    endstops.hit_on_purpose(); // clear endstop hit flags
+
+    // Destination reached
+    set_current_to_destination();
+
+    // take care of back off and re home now we are all at the top
+    HOMEAXIS(X);
+    HOMEAXIS(Y);
+    HOMEAXIS(Z);
+
+    sync_plan_position_delta();
+
+    endstops.hit_on_purpose(); // clear endstop hit flags
+  }
+
+  void calculate_delta(float cartesian[3]) {
+    delta[TOWER_1] = sqrt(delta_diagonal_rod_1
+                         - sq(delta_tower1_x - cartesian[X_AXIS])
+                         - sq(delta_tower1_y - cartesian[Y_AXIS])
+                         ) + cartesian[Z_AXIS];
+    delta[TOWER_2] = sqrt(delta_diagonal_rod_2
+                         - sq(delta_tower2_x - cartesian[X_AXIS])
+                         - sq(delta_tower2_y - cartesian[Y_AXIS])
+                         ) + cartesian[Z_AXIS];
+    delta[TOWER_3] = sqrt(delta_diagonal_rod_3
+                         - sq(delta_tower3_x - cartesian[X_AXIS])
+                         - sq(delta_tower3_y - cartesian[Y_AXIS])
+                         ) + cartesian[Z_AXIS];
+  }
 
   void set_delta_constants() {
     max_length[Z_AXIS]    = sw_endstop_max[Z_AXIS] - Z_MIN_POS;
@@ -2044,10 +2114,13 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
   #if ENABLED(AUTO_BED_LEVELING_FEATURE)
 
     bool Equal_AB(const float A, const float B, const float prec = ac_prec) {
-      if (abs(A - B) <= prec) return true;
+      if (abs(abs(A) - abs(B)) <= prec) return true;
       return false;
     }
 
+    /**
+     * All DELTA leveling in the MarlinKimbra uses NONLINEAR_BED_LEVELING
+     */
     static void extrapolate_one_point(int x, int y, int xdir, int ydir) {
       if (bed_level[x][y] != 0.0) {
         return;  // Don't overwrite good values.
@@ -2059,37 +2132,54 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       if (a < b) {
         if (b < c) median = b;
         if (c < a) median = a;
-      } else {  // b <= a
+      }
+      else {  // b <= a
         if (c < b) median = b;
         if (a < c) median = a;
       }
       bed_level[x][y] = median;
     }
 
-    // Fill in the unprobed points (corners of circular print surface)
-    // using linear extrapolation, away from the center.
+    /**
+     * Fill in the unprobed points (corners of circular print surface)
+     * using linear extrapolation, away from the center.
+     */
     static void extrapolate_unprobed_bed_level() {
       int half = (AUTO_BED_LEVELING_GRID_POINTS - 1) / 2;
       for (int y = 0; y <= half; y++) {
         for (int x = 0; x <= half; x++) {
           if (x + y < 3) continue;
-          extrapolate_one_point(half - x, half - y, x > 1 ? +1:0, y > 1 ? +1:0);
-          extrapolate_one_point(half + x, half - y, x > 1 ? -1:0, y > 1 ? +1:0);
-          extrapolate_one_point(half - x, half + y, x > 1 ? +1:0, y > 1 ? -1:0);
-          extrapolate_one_point(half + x, half + y, x > 1 ? -1:0, y > 1 ? -1:0);
+          extrapolate_one_point(half - x, half - y, x > 1 ? +1 : 0, y > 1 ? +1 : 0);
+          extrapolate_one_point(half + x, half - y, x > 1 ? -1 : 0, y > 1 ? +1 : 0);
+          extrapolate_one_point(half - x, half + y, x > 1 ? +1 : 0, y > 1 ? -1 : 0);
+          extrapolate_one_point(half + x, half + y, x > 1 ? -1 : 0, y > 1 ? -1 : 0);
         }
       }
     }
 
-    // Print calibration results for plotting or manual frame adjustment.
+    /**
+     * Print calibration results for plotting or manual frame adjustment.
+     */
     static void print_bed_level() {
       for (int y = 0; y < AUTO_BED_LEVELING_GRID_POINTS; y++) {
         ECHO_S(DB);
         for (int x = 0; x < AUTO_BED_LEVELING_GRID_POINTS; x++) {
-          if(bed_level[x][y] >= 0) ECHO_M(" ");
-          ECHO_VM(bed_level[x][y], " ", 3);
+          if (bed_level[x][y] >= 0) ECHO_M(" ");
+          ECHO_VM(bed_level[x][y], " ", 2);
         }
         ECHO_E;
+      }
+    }
+
+    /**
+     * Reset calibration results to zero.
+     */
+    static void reset_bed_level() {
+      if (DEBUGGING(INFO)) ECHO_LM(INFO, "reset_bed_level");
+      for (int y = 0; y < AUTO_BED_LEVELING_GRID_POINTS; y++) {
+        for (int x = 0; x < AUTO_BED_LEVELING_GRID_POINTS; x++) {
+          bed_level[x][y] = 0.0;
+        }
       }
     }
 
@@ -2132,9 +2222,9 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       sync_plan_position_delta();
     }
 
-    static void retract_z_probe() {
+    static void stow_z_probe() {
 
-      if (DEBUGGING(INFO)) DEBUG_POS("retract_z_probe", current_position);
+      if (DEBUGGING(INFO)) DEBUG_POS("stow_z_probe", current_position);
 
       if (!endstops.z_probe_enabled) return;
 
@@ -2196,7 +2286,9 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       sync_plan_position_delta();
     }
 
-    // Probe bed height at position (x,y), returns the measured z value
+    /**
+     * Probe bed height at position (x,y), returns the measured z value
+     */
     static float probe_bed(float x, float y) {
 
       // Move Z up to the bed_safe_z
@@ -2810,111 +2902,48 @@ inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_positio
       ECHO_E;
     }
 
-    // Reset calibration results to zero.
-    static void reset_bed_level() {
-      if (DEBUGGING(INFO)) ECHO_LM(INFO, "reset_bed_level");
-      for (int y = 0; y < AUTO_BED_LEVELING_GRID_POINTS; y++) {
-        for (int x = 0; x < AUTO_BED_LEVELING_GRID_POINTS; x++) {
-          bed_level[x][y] = 0.0;
-        }
+    /**
+     * Adjust print surface height by linear interpolation over the bed_level array.
+     */
+    static void adjust_delta(float cartesian[3]) {
+      if (delta_grid_spacing[0] == 0 || delta_grid_spacing[1] == 0) return; // G29 not done!
+
+      int half = (AUTO_BED_LEVELING_GRID_POINTS - 1) / 2;
+      float h1 = 0.001 - half, h2 = half - 0.001,
+            grid_x = max(h1, min(h2, cartesian[X_AXIS] / delta_grid_spacing[0])),
+            grid_y = max(h1, min(h2, cartesian[Y_AXIS] / delta_grid_spacing[1]));
+      int floor_x = floor(grid_x), floor_y = floor(grid_y);
+      float ratio_x = grid_x - floor_x, ratio_y = grid_y - floor_y,
+            z1 = bed_level[floor_x + half][floor_y + half],
+            z2 = bed_level[floor_x + half][floor_y + half + 1],
+            z3 = bed_level[floor_x + half + 1][floor_y + half],
+            z4 = bed_level[floor_x + half + 1][floor_y + half + 1],
+            left = (1 - ratio_y) * z1 + ratio_y * z2,
+            right = (1 - ratio_y) * z3 + ratio_y * z4,
+            offset = (1 - ratio_x) * left + ratio_x * right;
+
+      delta[TOWER_1] += offset;
+      delta[TOWER_2] += offset;
+      delta[TOWER_3] += offset;
+
+      if (DEBUGGING(DEBUG)) {
+        ECHO_SMV(DEB, "grid_x=", grid_x);
+        ECHO_MV(" grid_y=", grid_y);
+        ECHO_MV(" floor_x=", floor_x);
+        ECHO_MV(" floor_y=", floor_y);
+        ECHO_MV(" ratio_x=", ratio_x);
+        ECHO_MV(" ratio_y=", ratio_y);
+        ECHO_MV(" z1=", z1);
+        ECHO_MV(" z2=", z2);
+        ECHO_MV(" z3=", z3);
+        ECHO_MV(" z4=", z4);
+        ECHO_MV(" left=", left);
+        ECHO_MV(" right=", right);
+        ECHO_EMV(" offset=", offset);
       }
     }
 
   #endif // AUTO_BED_LEVELING_FEATURE
-
-  static void home_delta_axis() {
-
-    set_destination_to_current();
-
-    feedrate = 0.0;
-
-    // Pretend the current position is 0,0,0
-    for (int i = X_AXIS; i <= Z_AXIS; i++) current_position[i] = 0;
-    sync_plan_position();
-
-    // Move all carriages up together until the first endstop is hit.
-    for (int i = X_AXIS; i <= Z_AXIS; i++) destination[i] = 3 * max_length[Z_AXIS];
-    feedrate = 1.732 * homing_feedrate[X_AXIS];
-    line_to_destination();
-    st_synchronize();
-    endstops.hit_on_purpose(); // clear endstop hit flags
-
-    // Destination reached
-    set_current_to_destination();
-
-    // take care of back off and re home now we are all at the top
-    HOMEAXIS(X);
-    HOMEAXIS(Y);
-    HOMEAXIS(Z);
-
-    sync_plan_position_delta();
-
-    endstops.hit_on_purpose(); // clear endstop hit flags
-  }
-
-  static void prepare_move_to_destination_raw() {
-    if (DEBUGGING(INFO))
-      DEBUG_POS("prepare_move_raw", destination);
-
-    refresh_cmd_timeout();
-    calculate_delta(destination);
-    planner.buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], destination[E_AXIS], feedrate * feedrate_multiplier / 60 / 100.0, active_extruder, active_driver);
-    set_current_to_destination();
-  }
-
-  void calculate_delta(float cartesian[3]) {
-    delta[TOWER_1] = sqrt(delta_diagonal_rod_1
-                         - sq(delta_tower1_x - cartesian[X_AXIS])
-                         - sq(delta_tower1_y - cartesian[Y_AXIS])
-                         ) + cartesian[Z_AXIS];
-    delta[TOWER_2] = sqrt(delta_diagonal_rod_2
-                         - sq(delta_tower2_x - cartesian[X_AXIS])
-                         - sq(delta_tower2_y - cartesian[Y_AXIS])
-                         ) + cartesian[Z_AXIS];
-    delta[TOWER_3] = sqrt(delta_diagonal_rod_3
-                         - sq(delta_tower3_x - cartesian[X_AXIS])
-                         - sq(delta_tower3_y - cartesian[Y_AXIS])
-                         ) + cartesian[Z_AXIS];
-  }
-
-  // Adjust print surface height by linear interpolation over the bed_level array.
-  static void adjust_delta(float cartesian[3]) {
-    if (delta_grid_spacing[0] == 0 || delta_grid_spacing[1] == 0) return; // G29 not done!
-
-    int half = (AUTO_BED_LEVELING_GRID_POINTS - 1) / 2;
-    float h1 = 0.001 - half, h2 = half - 0.001,
-          grid_x = max(h1, min(h2, cartesian[X_AXIS] / delta_grid_spacing[0])),
-          grid_y = max(h1, min(h2, cartesian[Y_AXIS] / delta_grid_spacing[1]));
-    int floor_x = floor(grid_x), floor_y = floor(grid_y);
-    float ratio_x = grid_x - floor_x, ratio_y = grid_y - floor_y,
-          z1 = bed_level[floor_x + half][floor_y + half],
-          z2 = bed_level[floor_x + half][floor_y + half + 1],
-          z3 = bed_level[floor_x + half + 1][floor_y + half],
-          z4 = bed_level[floor_x + half + 1][floor_y + half + 1],
-          left = (1 - ratio_y) * z1 + ratio_y * z2,
-          right = (1 - ratio_y) * z3 + ratio_y * z4,
-          offset = (1 - ratio_x) * left + ratio_x * right;
-
-    delta[TOWER_1] += offset;
-    delta[TOWER_2] += offset;
-    delta[TOWER_3] += offset;
-
-    if (DEBUGGING(DEBUG)) {
-      ECHO_SMV(DEB, "grid_x=", grid_x);
-      ECHO_MV(" grid_y=", grid_y);
-      ECHO_MV(" floor_x=", floor_x);
-      ECHO_MV(" floor_y=", floor_y);
-      ECHO_MV(" ratio_x=", ratio_x);
-      ECHO_MV(" ratio_y=", ratio_y);
-      ECHO_MV(" z1=", z1);
-      ECHO_MV(" z2=", z2);
-      ECHO_MV(" z3=", z3);
-      ECHO_MV(" z4=", z4);
-      ECHO_MV(" left=", left);
-      ECHO_MV(" right=", right);
-      ECHO_EMV(" offset=", offset);
-    }
-  }
 
 #endif // DELTA
 
@@ -3581,7 +3610,7 @@ inline void gcode_G0_G1(bool lfire) {
     #endif // FWRETRACT
 
     #if ENABLED(LASERBEAM) && ENABLED(LASER_FIRE_G1)
-      if(lfire) {
+      if (lfire) {
         if (code_seen('S') && IsRunning()) laser.intensity = (float) code_value();
         if (code_seen('L') && IsRunning()) laser.duration = (unsigned long) labs(code_value());
         if (code_seen('P') && IsRunning()) laser.ppm = (float) code_value();
@@ -3596,7 +3625,7 @@ inline void gcode_G0_G1(bool lfire) {
     prepare_move_to_destination();
 
     #if ENABLED(LASERBEAM) && ENABLED(LASER_FIRE_G1)
-      if(lfire) laser.status = LASER_OFF;
+      if (lfire) laser.status = LASER_OFF;
     #endif
 
   }
@@ -3827,9 +3856,9 @@ inline void gcode_G28() {
 
   bool come_back = code_seen('B');
   float lastpos[NUM_AXIS];
-  float oldfeedrate;
-  if(come_back) {
-    oldfeedrate = feedrate;
+  float old_feedrate;
+  if (come_back) {
+    old_feedrate = feedrate;
     memcpy(lastpos, current_position, sizeof(lastpos));
   }
 
@@ -3843,7 +3872,7 @@ inline void gcode_G28() {
   home_all_axis = (!homeX && !homeY && !homeZ && !homeE) || (homeX && homeY && homeZ);
 
   #if ENABLED(NPR2)
-    if((home_all_axis) || (code_seen(axis_codes[E_AXIS]))) {
+    if ((home_all_axis) || (code_seen(axis_codes[E_AXIS]))) {
       active_driver = active_extruder = 1;
       planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], -200, COLOR_HOMERATE, active_extruder, active_driver);
       st_synchronize();
@@ -4165,7 +4194,7 @@ inline void gcode_G28() {
       feedrate = 1.732 * homing_feedrate[X_AXIS];
       memcpy(destination, lastpos, sizeof(destination));
       prepare_move_to_destination();
-      feedrate = oldfeedrate;
+      feedrate = old_feedrate;
     #else
       if(homeX) {
         feedrate = homing_feedrate[X_AXIS];
@@ -4182,7 +4211,7 @@ inline void gcode_G28() {
         destination[Z_AXIS] = lastpos[Z_AXIS];
         prepare_move_to_destination();
       }
-      feedrate = oldfeedrate;
+      feedrate = old_feedrate;
     #endif
   }
 
@@ -4516,6 +4545,13 @@ inline void gcode_G28() {
     #endif // AUTO_BED_LEVELING_GRID
 
     if (!dryrun) {
+
+      if (DEBUGGING(INFO)) {
+        vector_3 corrected_position = planner.adjusted_position();
+        DEBUG_POS("BEFORE matrix.set_to_identity", corrected_position);
+        DEBUG_POS("BEFORE matrix.set_to_identity", current_position);
+      }
+
       // make sure the bed_level_rotation_matrix is identity or the planner will get it wrong
       planner.bed_level_matrix.set_to_identity();
 
@@ -4526,6 +4562,9 @@ inline void gcode_G28() {
       current_position[X_AXIS] = uncorrected_position.x;
       current_position[Y_AXIS] = uncorrected_position.y;
       current_position[Z_AXIS] = uncorrected_position.z;
+
+      if (DEBUGGING(INFO)) DEBUG_POS("AFTER matrix.set_to_identity", uncorrected_position);
+
       sync_plan_position();
     }
 
@@ -4562,7 +4601,7 @@ inline void gcode_G28() {
       int8_t indexIntoAB[auto_bed_leveling_grid_points][auto_bed_leveling_grid_points];
 
       int probePointCounter = 0;
-      bool zig = (auto_bed_leveling_grid_points & 1) ? true : false; //always end at [RIGHT_PROBE_BED_POSITION, BACK_PROBE_BED_POSITION]
+      bool zig = (auto_bed_leveling_grid_points & 1) ? true : false; // always end at [RIGHT_PROBE_BED_POSITION, BACK_PROBE_BED_POSITION]
 
       for (int yCount = 0; yCount < auto_bed_leveling_grid_points; yCount++) {
         double yProbe = front_probe_bed_position + yGridSpacing * yCount;
@@ -4586,13 +4625,13 @@ inline void gcode_G28() {
 
           // raise extruder
           float measured_z,
-                z_before = probePointCounter ? Z_RAISE_BETWEEN_PROBINGS + current_position[Z_AXIS] : Z_RAISE_BEFORE_PROBING + current_position[Z_AXIS];
+                z_before = probePointCounter ? Z_RAISE_BETWEEN_PROBINGS + current_position[Z_AXIS] : Z_RAISE_BEFORE_PROBING + home_offset[Z_AXIS];
 
           if (DEBUGGING(INFO)) {
             if (probePointCounter)
-              ECHO_LMV(INFO, "z_before = (between) ", (float)(Z_RAISE_BETWEEN_PROBINGS + current_position[Z_AXIS]));
+              ECHO_LMV(INFO, "z_before = (between) ", Z_RAISE_BETWEEN_PROBINGS + current_position[Z_AXIS]);
             else
-              ECHO_LMV(INFO, "z_before = (before) ", (float)Z_RAISE_BEFORE_PROBING + current_position[Z_AXIS]);
+              ECHO_LMV(INFO, "z_before = (before) ", Z_RAISE_BEFORE_PROBING + home_offset[Z_AXIS]);
           }
 
           ProbeAction act;
@@ -4692,8 +4731,8 @@ inline void gcode_G28() {
                     z_tmp = 0;
 
               apply_rotation_xyz(planner.bed_level_matrix, x_tmp, y_tmp, z_tmp);
-              float diff = eqnBVector[ind] - min_diff;
 
+              float diff = eqnBVector[ind] - min_diff;
               if (diff >= 0.0)
                 ECHO_M(" +");   // Include + for column alignment
               else
@@ -4718,16 +4757,25 @@ inline void gcode_G28() {
         p1 = ProbeDeploy, p2 = ProbeStay, p3 = ProbeStow;
 
       // Probe at 3 arbitrary points
-      float z_at_pt_1 = probe_pt(ABL_PROBE_PT_1_X, ABL_PROBE_PT_1_Y, Z_RAISE_BEFORE_PROBING, p1, verbose_level),
-            z_at_pt_2 = probe_pt(ABL_PROBE_PT_2_X, ABL_PROBE_PT_2_Y, current_position[Z_AXIS] + Z_RAISE_BETWEEN_PROBINGS, p2, verbose_level),
-            z_at_pt_3 = probe_pt(ABL_PROBE_PT_3_X, ABL_PROBE_PT_3_Y, current_position[Z_AXIS] + Z_RAISE_BETWEEN_PROBINGS, p3, verbose_level);
+      float z_at_pt_1 = probe_pt( ABL_PROBE_PT_1_X + home_offset[X_AXIS],
+                                  ABL_PROBE_PT_1_Y + home_offset[Y_AXIS],
+                                  Z_RAISE_BEFORE_PROBING + home_offset[Z_AXIS],
+                                  p1, verbose_level),
+            z_at_pt_2 = probe_pt( ABL_PROBE_PT_2_X + home_offset[X_AXIS],
+                                  ABL_PROBE_PT_2_Y + home_offset[Y_AXIS],
+                                  current_position[Z_AXIS] + Z_RAISE_BETWEEN_PROBINGS,
+                                  p2, verbose_level),
+            z_at_pt_3 = probe_pt( ABL_PROBE_PT_3_X + home_offset[X_AXIS],
+                                  ABL_PROBE_PT_3_Y + home_offset[Y_AXIS],
+                                  current_position[Z_AXIS] + Z_RAISE_BETWEEN_PROBINGS,
+                                  p3, verbose_level);
       clean_up_after_endstop_move();
       if (!dryrun) set_bed_level_equation_3pts(z_at_pt_1, z_at_pt_2, z_at_pt_3);
 
     #endif // !AUTO_BED_LEVELING_GRID
 
     if (verbose_level > 0)
-      planner.bed_level_matrix.debug(" Bed Level Correction Matrix:");
+      planner.bed_level_matrix.debug(" \n\nBed Level Correction Matrix:");
 
     if (!dryrun) {
       /**
@@ -4738,7 +4786,7 @@ inline void gcode_G28() {
       float x_tmp = current_position[X_AXIS] + X_PROBE_OFFSET_FROM_EXTRUDER,
             y_tmp = current_position[Y_AXIS] + Y_PROBE_OFFSET_FROM_EXTRUDER,
             z_tmp = current_position[Z_AXIS],
-            real_z = st_get_axis_position_mm(Z_AXIS);  //get the real Z (since planner.adjusted_position is now correcting the plane)
+            real_z = st_get_axis_position_mm(Z_AXIS);  // get the real Z (since planner.adjusted_position is now correcting the plane)
 
       if (DEBUGGING(INFO)) {
         ECHO_LMV(INFO, "> BEFORE apply_rotation_xyz > z_tmp  = ", z_tmp);
@@ -4874,7 +4922,7 @@ inline void gcode_G28() {
     deploy_z_probe();
     bed_safe_z = current_position[Z_AXIS];
     calibrate_print_surface();
-    retract_z_probe();
+    stow_z_probe();
     clean_up_after_endstop_move();
 
     if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< gcode_G29");
@@ -4923,7 +4971,7 @@ inline void gcode_G28() {
       ECHO_MV(" Y:", y);
       ECHO_EMV(" = ", probe_value, 4);
 
-      retract_z_probe();
+      stow_z_probe();
       return;
     }
 
@@ -5077,7 +5125,7 @@ inline void gcode_G28() {
       ECHO_LM(DB, "Autocalibration Complete");
     }
 
-    retract_z_probe();
+    stow_z_probe();
 
     // reset LCD alert message
     lcd_reset_alert_level();
@@ -5524,7 +5572,7 @@ inline void gcode_M42() {
    * M48: Z-Probe repeatability measurement function.
    *
    * Usage:
-   *   M48 <P#> <X#> <Y#> <V#> <E> <L#>
+   *   M48 <P#> <X#> <Y#> <V#> <E> <L#> <S>
    *     P = Number of sampled points (4-50, default 10)
    *     X = Sample X position
    *     Y = Sample Y position
@@ -5546,67 +5594,48 @@ inline void gcode_M42() {
       return;
     }
 
-    double sum = 0.0, mean = 0.0, sigma = 0.0, sample_set[50];
-    uint8_t verbose_level = 1, n_samples = 10, n_legs = 0, schizoid_flag = 0;
-
-    if (code_seen('V') || code_seen('v')) {
-      verbose_level = code_value_byte();
-      if (verbose_level < 0 || verbose_level > 4 ) {
-        ECHO_LM(ER,"?Verbose Level not plausible (0-4).");
-        return;
-      }
+    int8_t verbose_level = code_seen('V') ? code_value_byte() : 1;
+    if (verbose_level < 0 || verbose_level > 4 ) {
+      ECHO_LM(ER, "?Verbose Level not plausible (0-4).");
+      return;
     }
 
     if (verbose_level > 0)
       ECHO_LM(DB, "M48 Z-Probe Repeatability test");
 
-    if (code_seen('P') || code_seen('p')) {
-      n_samples = code_value_byte();
-      if (n_samples < 4 || n_samples > 50) {
-        ECHO_LM(ER, "?Sample size not plausible (4-50).");
-        return;
-      }
+    int8_t n_samples = code_seen('P') ? code_value_byte() : 10;
+    if (n_samples < 4 || n_samples > 50) {
+      ECHO_LM(ER, "?Sample size not plausible (4-50).");
+      return;
     }
 
     float  X_current = current_position[X_AXIS],
            Y_current = current_position[Y_AXIS],
-           Z_current = current_position[Z_AXIS],
-           X_probe_location = X_current + X_PROBE_OFFSET_FROM_EXTRUDER,
-           Y_probe_location = Y_current + Y_PROBE_OFFSET_FROM_EXTRUDER,
-           Z_start_location = Z_current + Z_RAISE_BEFORE_PROBING;
+           Z_start_location = current_position[Z_AXIS] + Z_RAISE_BEFORE_PROBING;
     bool deploy_probe_for_each_reading = code_seen('E');
 
-    if (code_seen('X')) {
-      X_probe_location = code_value_axis_units(X_AXIS);
-      if (X_probe_location < MIN_PROBE_X || X_probe_location > MAX_PROBE_X) {
-        out_of_range_error(PSTR("X"));
-        return;
-      }
+    float X_probe_location = code_seen('X') ? code_value_axis_units(X_AXIS) : X_current + X_PROBE_OFFSET_FROM_EXTRUDER;
+    if (X_probe_location < MIN_PROBE_X || X_probe_location > MAX_PROBE_X) {
+      out_of_range_error(PSTR("X"));
+      return;
     }
 
-    if (code_seen('Y')) {
-      Y_probe_location = code_value_axis_units(Y_AXIS);
-      if (Y_probe_location < MIN_PROBE_Y || Y_probe_location > MAX_PROBE_Y) {
-        out_of_range_error(PSTR("Y"));
-        return;
-      }
+    float Y_probe_location = code_seen('Y') ? code_value_axis_units(Y_AXIS) : Y_current + Y_PROBE_OFFSET_FROM_EXTRUDER;
+    if (Y_probe_location < MIN_PROBE_Y || Y_probe_location > MAX_PROBE_Y) {
+      out_of_range_error(PSTR("Y"));
+      return;
     }
 
     bool seen_L = code_seen('L');
-
-    if (seen_L) {
-      n_legs = code_value_byte();
-      if (n_legs < 0 || n_legs > 15) {
-        ECHO_LM(ER, "?Number of legs in movement not plausible (0-15).");
-        return;
-      }
-      if (n_legs == 1) n_legs = 2;
+    uint8_t n_legs = seen_L ? code_value_byte() : 0;
+    if (n_legs < 0 || n_legs > 15) {
+      ECHO_LM(ER, "?Number of legs in movement not plausible (0-15).");
+      return;
     }
+    if (n_legs == 1) n_legs = 2;
 
-    if (code_seen('S')) {
-      schizoid_flag++;
-      if (!seen_L) n_legs = 7;
-    }
+    bool schizoid_flag = code_seen('S');
+    if (schizoid_flag && !seen_L) n_legs = 7;
 
     /**
      * Now get everything to the specified probe point So we can safely do a
@@ -5630,20 +5659,23 @@ inline void gcode_M42() {
      */
     setup_for_endstop_move();
 
-    probe_pt(X_probe_location, Y_probe_location, Z_RAISE_BEFORE_PROBING,
+    // Height before each probe (except the first)
+    float z_between = home_offset[Z_AXIS] + (deploy_probe_for_each_reading ? Z_RAISE_BEFORE_PROBING : Z_RAISE_BETWEEN_PROBINGS);
+
+    // Deploy the probe and probe the first point
+    probe_pt(X_probe_location, Y_probe_location,
+      home_offset[Z_AXIS] + Z_RAISE_BEFORE_PROBING,
       deploy_probe_for_each_reading ? ProbeDeployAndStow : ProbeDeploy,
       verbose_level);
 
-    raise_z_after_probing();
+    randomSeed(millis());
 
+    double mean, sigma, sample_set[n_samples];
     for (uint8_t n = 0; n < n_samples; n++) {
-      randomSeed(millis());
-      delay(500);
       if (n_legs) {
-        float radius, angle = random(0.0, 360.0);
         int dir = (random(0, 10) > 5.0) ? -1 : 1;  // clockwise or counter clockwise
-
-        radius = random(5, X_MAX_LENGTH / 8);
+        float angle = random(0.0, 360.0),
+              radius = random(5, X_MAX_LENGTH / 8);
 
         if (verbose_level > 3) {
           ECHO_SMV(DB, "Starting radius: ", radius);
@@ -5693,36 +5725,21 @@ inline void gcode_M42() {
         } // n_legs loop
       } // n_legs
 
-      /**
-       * We don't really have to do this move, but if we don't we can see a
-       * funny shift in the Z Height because the user might not have the
-       * Z_RAISE_BEFORE_PROBING height identical to the Z_RAISE_BETWEEN_PROBING
-       * height. This gets us back to the probe location at the same height that
-       * we have been running around the circle at.
-       */
-      do_blocking_move_to_xy(X_probe_location - (X_PROBE_OFFSET_FROM_EXTRUDER), Y_probe_location - (Y_PROBE_OFFSET_FROM_EXTRUDER));
-      if (deploy_probe_for_each_reading)
-        sample_set[n] = probe_pt(X_probe_location, Y_probe_location, Z_RAISE_BEFORE_PROBING, ProbeDeployAndStow, verbose_level);
-      else {
-        if (n == n_samples - 1)
-          sample_set[n] = probe_pt(X_probe_location, Y_probe_location, Z_RAISE_BEFORE_PROBING, ProbeStow, verbose_level); else
-          sample_set[n] = probe_pt(X_probe_location, Y_probe_location, Z_RAISE_BEFORE_PROBING, ProbeStay, verbose_level);
-      }
+      // The last probe will differ
+      bool last_probe = (n == n_samples - 1);
 
-      setup_for_endstop_move();
-      run_z_probe();
-
-      sample_set[n] = current_position[Z_AXIS];
-
-      // Get the current mean for the data points we have so far
-      sum = 0.0;
-      for (uint8_t j = 0; j <= n; j++) sum += sample_set[j];
-      mean = sum / (n + 1);
+      // Probe a single point
+      sample_set[n] = probe_pt(
+        X_probe_location, Y_probe_location,
+        z_between,
+        deploy_probe_for_each_reading ? ProbeDeployAndStow : last_probe ? ProbeStow : ProbeStay,
+        verbose_level
+      );
 
       /**
        * Get the current mean for the data points we have so far
        */
-      sum = 0.0;
+      double sum = 0.0;
       for (uint8_t j = 0; j <= n; j++) sum += sample_set[j];
       mean = sum / (n + 1);
 
@@ -5736,22 +5753,28 @@ inline void gcode_M42() {
         sum += ss * ss;
       }
       sigma = sqrt(sum / (n + 1));
-
-      if (verbose_level > 1) {
-        ECHO_SV(DB, n + 1);
-        ECHO_MV(" of ", (int)n_samples);
-        ECHO_EM(" samples");
-        ECHO_MV("   z: ", current_position[Z_AXIS], 6);
-        HAL::delayMilliseconds(50);
-        if (verbose_level > 2) {
-          ECHO_MV(" mean: ", mean, 6);
-          ECHO_MV("   sigma: ", sigma, 6);
+      if (verbose_level > 0) {
+        if (verbose_level > 1) {
+          ECHO_SV(DB, n + 1);
+          ECHO_MV(" of ", (int)n_samples);
+          ECHO_EM(" samples");
+          ECHO_MV("   z: ", current_position[Z_AXIS], 6);
+          HAL::delayMilliseconds(50);
+          if (verbose_level > 2) {
+            ECHO_MV(" mean: ", mean, 6);
+            ECHO_MV("   sigma: ", sigma, 6);
+          }
         }
+        ECHO_E;
       }
 
-      if (verbose_level > 0) ECHO_E;
-      HAL::delayMilliseconds(50);
-      do_blocking_move_to_z(current_position[Z_AXIS] + Z_RAISE_BETWEEN_PROBINGS);
+      // Raise before the next loop for the legs,
+      // or do the final raise after the last probe
+      if (n_legs || last_probe) {
+        do_blocking_move_to_z(last_probe ? home_offset[Z_AXIS] + Z_RAISE_AFTER_PROBING : z_between);
+        if (!last_probe) delay(500);
+      }
+
     }  // End of probe loop code
 
     if (verbose_level > 0) {
@@ -7360,7 +7383,7 @@ inline void gcode_M400() { st_synchronize(); }
       raise_z_for_servo(Z_RAISE_AFTER_PROBING);
     #endif
     #if MECH(DELTA)
-      retract_z_probe();
+      stow_z_probe();
     #else
       stow_z_probe(false);
     #endif
@@ -8147,7 +8170,7 @@ inline void gcode_M503() {
   //M666: Set Z probe offset
   inline void gcode_M666() {
     if (code_seen('P')) {
-      zprobe_zoffset = code_value_float();
+      zprobe_zoffset = code_value_axis_units(Z_AXIS);
       ECHO_LM(DB, MSG_ZPROBE_ZOFFSET " " OK);
     }
     if (code_seen('L')) {
