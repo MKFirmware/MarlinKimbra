@@ -4732,7 +4732,7 @@ inline void gcode_G28() {
 
               apply_rotation_xyz(planner.bed_level_matrix, x_tmp, y_tmp, z_tmp);
 
-              float diff = eqnBVector[ind] - min_diff;
+              float diff = eqnBVector[ind] - z_tmp - min_diff;
               if (diff >= 0.0)
                 ECHO_M(" +");   // Include + for column alignment
               else
