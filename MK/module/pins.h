@@ -256,9 +256,6 @@
   #define Z_MAX_PIN -1
 #endif // Z_HOME_DIR > 0
 
-#if DISABLED(Z_PROBE_ENDSTOP) // Allow code to compile regardless of Z_PROBE_ENDSTOP setting.
-  #define Z_PROBE_PIN -1
-#endif
 /****************************************************************************************/
 
 #if ENABLED(DISABLE_XMAX_ENDSTOP)

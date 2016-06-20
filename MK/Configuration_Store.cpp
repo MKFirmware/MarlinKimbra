@@ -67,8 +67,6 @@
  *                        mesh_num_y (uint8 as set in firmware)
  *  G29   S3  XYZ         z_values[][] (float)
  *
- *  M666  P               zprobe_zoffset
- *
  * HOTENDS AD595:
  *  M595  H OS            Hotend AD595 Offset & Gain
  *
@@ -79,10 +77,12 @@
  *  M666  H               Z sw_endstop_max
  *  M666  ABCIJK          tower_adj (x6)
  *  M666  UVW             diagrod_adj (x3)
- *  M666  P XYZ           XYZ probe_offset (x3)
  *
- * Z_DUAL_ENDSTOPS
+ * Z_DUAL_ENDSTOPS:
  *  M666  Z               z_endstop_adj
+ *
+ * Z PROBE:
+ *  M666  P               zprobe_zoffset
  *
  * ULTIPANEL:
  *  M145  S0  H           plaPreheatHotendTemp
@@ -201,10 +201,6 @@ void Config_StoreSettings() {
     EEPROM_WRITE_VAR(i, mbl.z_values);
   #endif
 
-  #if NOMECH(DELTA)
-    EEPROM_WRITE_VAR(i, zprobe_zoffset);
-  #endif
-
   #if HEATER_USES_AD595
     EEPROM_WRITE_VAR(i, ad595_offset);
     EEPROM_WRITE_VAR(i, ad595_gain);
@@ -217,10 +213,14 @@ void Config_StoreSettings() {
     EEPROM_WRITE_VAR(i, sw_endstop_max);
     EEPROM_WRITE_VAR(i, tower_adj);
     EEPROM_WRITE_VAR(i, diagrod_adj);
-    EEPROM_WRITE_VAR(i, z_probe_offset);
   #elif ENABLED(Z_DUAL_ENDSTOPS)
-    EEPROM_WRITE_VAR(i, z_endstop_adj);            // 1 floats
+    EEPROM_WRITE_VAR(i, z_endstop_adj);
   #endif
+
+  #if HASNT(BED_PROBE)
+    float zprobe_zoffset = 0;
+  #endif
+  EEPROM_WRITE_VAR(i, zprobe_zoffset);
 
   #if DISABLED(ULTIPANEL)
     int plaPreheatHotendTemp = PLA_PREHEAT_HOTEND_TEMP, plaPreheatHPBTemp = PLA_PREHEAT_HPB_TEMP, plaPreheatFanSpeed = PLA_PREHEAT_FAN_SPEED,
@@ -369,10 +369,6 @@ void Config_RetrieveSettings() {
       EEPROM_READ_VAR(i, mbl.z_values);
     #endif
 
-    #if NOMECH(DELTA)
-      EEPROM_READ_VAR(i, zprobe_zoffset);
-    #endif
-
     #if HEATER_USES_AD595
       EEPROM_READ_VAR(i, ad595_offset);
       EEPROM_READ_VAR(i, ad595_gain);
@@ -387,10 +383,14 @@ void Config_RetrieveSettings() {
       EEPROM_READ_VAR(i, sw_endstop_max);
       EEPROM_READ_VAR(i, tower_adj);
       EEPROM_READ_VAR(i, diagrod_adj);
-      EEPROM_READ_VAR(i, z_probe_offset);
       // Update delta constants for updated delta_radius & tower_adj values
       set_delta_constants();
     #endif //DELTA
+
+    #if HASNT(BED_PROBE)
+      float zprobe_zoffset = 0;
+    #endif
+    EEPROM_READ_VAR(i, zprobe_zoffset);
 
     #if DISABLED(ULTIPANEL)
       int plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed,
@@ -575,10 +575,8 @@ void Config_ResetDefault() {
     mbl.reset();
   #endif
 
-  #if ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
-    zprobe_zoffset = Z_PROBE_OFFSET_FROM_EXTRUDER;
-  #elif NOMECH(DELTA)
-    zprobe_zoffset = 0;
+  #if HAS(BED_PROBE)
+    zprobe_zoffset = Z_PROBE_OFFSET_FROM_NOZZLE;
   #endif
 
   #if MECH(DELTA)
@@ -596,9 +594,6 @@ void Config_ResetDefault() {
     diagrod_adj[0] = TOWER_A_DIAGROD_ADJ;
     diagrod_adj[1] = TOWER_B_DIAGROD_ADJ;
     diagrod_adj[2] = TOWER_C_DIAGROD_ADJ;
-    z_probe_offset[0] = X_PROBE_OFFSET_FROM_EXTRUDER;
-    z_probe_offset[1] = Y_PROBE_OFFSET_FROM_EXTRUDER;
-    z_probe_offset[2] = Z_PROBE_OFFSET_FROM_EXTRUDER;
     set_delta_constants();
   #endif
 
@@ -833,19 +828,17 @@ void Config_ResetDefault() {
       ECHO_MV(" Y", endstop_adj[Y_AXIS]);
       ECHO_EMV(" Z", endstop_adj[Z_AXIS]);
 
-      if (!forReplay) {
-        ECHO_LM(CFG, "Z-Probe Offset:");
-      }
-      ECHO_SMV(CFG, "  M666 P X", z_probe_offset[0]);
-      ECHO_MV(" Y", z_probe_offset[1]);
-      ECHO_EMV(" Z", z_probe_offset[2]);
-
     #elif ENABLED(Z_DUAL_ENDSTOPS)
       if (!forReplay) {
         ECHO_LM(CFG, "Z2 Endstop adjustement (mm):");
       }
       ECHO_LMV(CFG, "  M666 Z", z_endstop_adj );
-    #elif ENABLED(AUTO_BED_LEVELING_FEATURE)
+    #endif // DELTA
+    
+    /**
+     * Auto Bed Leveling
+     */
+    #if HAS(BED_PROBE)
       if (!forReplay) {
         ECHO_LM(CFG, "Z Probe offset (mm)");
       }

@@ -143,6 +143,7 @@
 #define SERIAL_SD_PRINTING_BYTE                 "SD printing byte "
 #define SERIAL_SD_NOT_PRINTING                  "Not SD printing"
 #define SERIAL_SD_ERR_WRITE_TO_FILE             "error writing to file"
+#define SERIAL_SD_ERR_READ                      "SD read error"
 #define SERIAL_SD_CANT_ENTER_SUBDIR             "Cannot enter subdir: "
 #define SERIAL_SD_FILE_DELETED                  "File deleted"
 #define SERIAL_SD_FILE_DELETION_ERR             "Deletion failed"

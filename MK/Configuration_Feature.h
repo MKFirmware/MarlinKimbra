@@ -488,16 +488,8 @@
 // leaving it defining as 0 will disable the servo subsystem
 #define NUM_SERVOS 0
 // Servo index starts with 0 for M280 command
-
-// Z Servo Endstops
-// This allows for servo actuated endstops, primary usage is for the Z Axis to eliminate calibration or bed height changes.
-// Use M666 H to set the z-probe vertical offset from the nozzle. Store that setting with M500.
-// Define nr servo for endstop -1 not define. Servo index start 0
-#define Z_ENDSTOP_SERVO_NR -1
-#define Z_ENDSTOP_SERVO_ANGLES {90,0} // Z Axis Extend and Retract angles
-
-// Servo deactivation
 //
+// Servo deactivation
 // With this option servos are powered only during movement, then turned off to prevent jitter.
 //#define DEACTIVATE_SERVOS_AFTER_MOVE
 

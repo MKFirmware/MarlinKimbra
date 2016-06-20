@@ -148,7 +148,8 @@
  * If you enabled Auto Bed Leveling (ABL) this add the support for auto bed level and    *
  * Autocalibration Delta system                                                          *
  * To use ABL you must have a PROBE, please define you type probe.                       *
- * Servo Probes, probe Allen Key, Mechanical Probe, Fix mounted Probe, ... .             *
+ * Servo Probes, probe Allen Key, Mechanical Probe, Fix mounted Probe, ...               *
+ * You must set Z PROBE PIN in Configuration_Pins.h                                      *
  *                                                                                       *
  *****************************************************************************************/
 //#define AUTO_BED_LEVELING_FEATURE
@@ -160,8 +161,42 @@
 // Precision for G30 delta autocalibration function
 #define AUTOCALIBRATION_PRECISION 0.1 // mm
 
+// How much the nozzle will be raised when travelling from between next probing points
+#define Z_RAISE_BETWEEN_PROBINGS 30
+
+// Define the grid for bed level AUTO BED LEVELING GRID POINTS X AUTO BED LEVELING GRID POINTS.
+#define AUTO_BED_LEVELING_GRID_POINTS 9
+
+// Probes are sensors/switches that need to be activated before they can be used
+// and deactivated after their use.
+// Servo Probes, Z Sled Probe, Mechanical Probe, Fix mounted Probe, ... .
+
+// Z Servo Endstop
+// Remember active servos in Configuration_Feature.h
+// Define nr servo for endstop -1 not define. Servo index start 0
+#define Z_ENDSTOP_SERVO_NR -1
+#define Z_ENDSTOP_SERVO_ANGLES {90,0} // Z Axis Extend and Retract angles
+
+// A fix mounted probe, like the normal inductive probe, must be deactivated to go
+// below Z PROBE OFFSET FROM NOZZLE when the hardware endstops are active.
+//#define Z_PROBE_FIX_MOUNTED
+
+// A Mechanical Probe is any probe that either doesn't deploy or needs manual deployment
+// For example any setup that uses the nozzle itself as a probe.
+//#define Z_PROBE_MECHANICAL
+
+// Allen key retractable z-probe as seen on many Kossel delta printers - http://reprap.org/wiki/Kossel#Automatic_bed_leveling_probe
+// Deploys by touching z-axis belt. Retracts by pushing the probe down.
+//#define Z_PROBE_ALLEN_KEY
+
+// Start and end location values are used to deploy/retract the probe (will move from start to end and back again)
+#define Z_PROBE_DEPLOY_START_LOCATION {0, 0, 30}   // X, Y, Z, E start location for z-probe deployment sequence
+#define Z_PROBE_DEPLOY_END_LOCATION {0, 0, 30}     // X, Y, Z, E end location for z-probe deployment sequence
+#define Z_PROBE_RETRACT_START_LOCATION {0, 0, 30}  // X, Y, Z, E start location for z-probe retract sequence
+#define Z_PROBE_RETRACT_END_LOCATION {0, 0, 30}    // X, Y, Z, E end location for z-probe retract sequence
+
 // Z-Probe variables
-// Offsets to the probe relative to the extruder tip (Hotend - Probe)
+// Offsets to the probe relative to the nozzle tip (Nozzle - Probe)
 // X and Y offsets MUST be INTEGERS
 //
 //    +-- BACK ---+
@@ -173,72 +208,9 @@
 //    |  P (-)    | T <-- probe (-10,-10)
 //    |           |
 //    O-- FRONT --+
-#define X_PROBE_OFFSET_FROM_EXTRUDER  0     // X offset: -left  [of the nozzle] +right
-#define Y_PROBE_OFFSET_FROM_EXTRUDER  0     // Y offset: -front [of the nozzle] +behind
-#define Z_PROBE_OFFSET_FROM_EXTRUDER -1     // Z offset: -below [of the nozzle] (always negative!)
-
-// Start and end location values are used to deploy/retract the probe (will move from start to end and back again)
-#define Z_PROBE_DEPLOY_START_LOCATION {0, 0, 30}   // X, Y, Z, E start location for z-probe deployment sequence
-#define Z_PROBE_DEPLOY_END_LOCATION {0, 0, 30}     // X, Y, Z, E end location for z-probe deployment sequence
-#define Z_PROBE_RETRACT_START_LOCATION {0, 0, 30}  // X, Y, Z, E start location for z-probe retract sequence
-#define Z_PROBE_RETRACT_END_LOCATION {0, 0, 30}    // X, Y, Z, E end location for z-probe retract sequence
-
-// How much the nozzle will be raised when travelling from between next probing points
-#define Z_RAISE_BETWEEN_PROBINGS 30
-
-// Define the grid for bed level AUTO BED LEVELING GRID POINTS X AUTO BED LEVELING GRID POINTS.
-#define AUTO_BED_LEVELING_GRID_POINTS 9
-
-// Probes are sensors/switches that need to be activated before they can be used
-// and deactivated after their use.
-// Servo Probes, probe Allen Key, Mechanical Probe, Fix mounted Probe, ... .
-// You have to activate one of these for the AUTO BED LEVELING FEATURE
-// A Servo Probe can be defined in the servo section
-
-// Allen key retractable z-probe as seen on many Kossel delta printers - http://reprap.org/wiki/Kossel#Automatic_bed_leveling_probe
-// Deploys by touching z-axis belt. Retracts by pushing the probe down.
-//#define Z_PROBE_ALLEN_KEY
-
-// A Mechanical Probe is any probe that either doesn't deploy or needs manual deployment
-// For example any setup that uses the nozzle itself as a probe.
-//#define Z_PROBE_MECHANICAL
-
-// A fix mounted probe, like the normal inductive probe, must be deactivated to go below Z_PROBE_OFFSET_FROM_EXTRUDER
-// when the hardware endstops are active.
-//#define Z_PROBE_FIX_MOUNTED
-/*****************************************************************************************/
-
-
-/*****************************************************************************************
- ******************************* Z probe endstop *****************************************
- *****************************************************************************************
- *                                                                                       *
- * If you have enabled the Auto bed levelling this add the Support for                   *
- * a dedicated Z PROBE endstop separate from the Z MIN endstop.                          *
- * If you would like to use both a Z PROBE and a Z MIN endstop together                  *
- * or just a Z PROBE with a custom pin, uncomment #define Z PROBE ENDSTOP                *
- * and read the instructions below.                                                      *
- *                                                                                       *
- * If you want to still use the Z min endstop for homing,                                *
- * disable Z SAFE HOMING.                                                                *
- * Eg: to park the head outside the bed area when homing with G28.                       *
- *                                                                                       *
- * WARNING: The Z MIN endstop will need to set properly as it would                      *
- * without a Z PROBE to prevent head crashes and premature stopping                      *
- * during a print.                                                                       *
- * To use a separte Z PROBE endstop, you must have a Z PROBE PIN                         *
- * defined in the pins.h file for your control board.                                    *
- * If you are using a servo based Z PROBE, you will need to enable                       *
- * NUM SERVOS, SERVO ENDSTOPS and SERVO ENDSTOPS ANGLES in                               *
- * Configuration_Feature R/C Servo section.                                              *
- *                                                                                       *
- * WARNING: Setting the wrong pin may have unexpected and potentially                    *
- * disastrous outcomes. Use with caution and do your homework.                           *
- *                                                                                       *
- * Uncomment Z PROBE ENDSTOP to enable.                                                  *
- *                                                                                       *
- *****************************************************************************************/
-//#define Z_PROBE_ENDSTOP
+#define X_PROBE_OFFSET_FROM_NOZZLE  0     // X offset: -left  [of the nozzle] +right
+#define Y_PROBE_OFFSET_FROM_NOZZLE  0     // Y offset: -front [of the nozzle] +behind
+#define Z_PROBE_OFFSET_FROM_NOZZLE -1     // Z offset: -below [of the nozzle] (always negative!)
 /*****************************************************************************************/
 
 

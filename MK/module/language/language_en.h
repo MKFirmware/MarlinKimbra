@@ -171,7 +171,7 @@
 #define MSG_ZPROBE_OUT                      "Z probe out. bed"
 #define MSG_YX_UNHOMED                      "Home X/Y before Z"
 #define MSG_XYZ_UNHOMED                     "Home XYZ first"
-#define MSG_ZPROBE_ZOFFSET                  "Z Offset"
+#define MSG_ZPROBE_ZOFFSET                  "ZProbe ZOffset"
 #define MSG_BABYSTEP                        "Babystep"
 #define MSG_BABYSTEP_X                      MSG_BABYSTEP " " MSG_X
 #define MSG_BABYSTEP_Y                      MSG_BABYSTEP " " MSG_Y
