@@ -28,6 +28,7 @@
  * - Machine name
  * - Endstop pullup resistors
  * - Endstops logic
+ * - Z probe endstop
  * - Endstops min or max
  * - Min Z height for homing
  * - Stepper enable logic
@@ -38,7 +39,6 @@
  * - Axis relative mode
  * - Mesh Bed Leveling (MBL)
  * - Auto Bed Leveling (ABL)
- * - Z probe endstop
  * - Safe Z homing
  * - Manual home positions
  * - Axis steps per unit
@@ -58,7 +58,7 @@
 #define CONFIGURATION_MECHANISM
 
 #define KNOWN_MECH
- 
+
 /*****************************************************************************************
  *********************************** Machine name ****************************************
  *****************************************************************************************
@@ -115,6 +115,77 @@
 #define Z2_MAX_ENDSTOP_LOGIC  false   // set to true to invert the logic of the endstop.
 #define Z_PROBE_ENDSTOP_LOGIC false   // set to true to invert the logic of the endstop.
 #define E_MIN_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
+/*****************************************************************************************/
+
+
+/*****************************************************************************************
+ ******************************* Z probe Options *****************************************
+ *****************************************************************************************
+ *                                                                                       *
+ * Probes are sensors/switches that need to be activated before they can be used         *
+ * and deactivated after their use.                                                      *
+ * Servo Probes, Z Sled Probe, Mechanical Probe, Fix mounted Probe, ... .                *
+ * You must activate one of these to use AUTO BED LEVELING FEATURE below.                *
+ *                                                                                       *
+ * If you want to still use the Z min endstop for homing,                                *
+ * disable Z SAFE HOMING.                                                                *
+ * Eg: to park the head outside the bed area when homing with G28.                       *
+ *                                                                                       *
+ * WARNING: The Z MIN endstop will need to set properly as it would                      *
+ * without a Z PROBE to prevent head crashes and premature stopping                      *
+ * during a print.                                                                       *
+ * To use a separte Z PROBE endstop, you must have a Z PROBE PIN                         *
+ * defined in the Configuration_Pins.h file for your control board.                      *
+ *                                                                                       *
+ * Use M666 P to set the Z probe vertical offset from the nozzle. Store with M500.       *
+ * WARNING: Setting the wrong pin may have unexpected and potentially                    *
+ * disastrous outcomes. Use with caution and do your homework.                           *
+ *                                                                                       *
+ *****************************************************************************************/
+// Z Servo Endstop
+// Remember active servos in Configuration_Feature.h
+// Define nr servo for endstop -1 not define. Servo index start 0
+#define Z_ENDSTOP_SERVO_NR -1
+#define Z_ENDSTOP_SERVO_ANGLES {90,0} // Z Axis Extend and Retract angles
+
+// A fix mounted probe, like the normal inductive probe, must be deactivated to go
+// below Z PROBE OFFSET FROM NOZZLE when the hardware endstops are active.
+//#define Z_PROBE_FIX_MOUNTED
+
+// Enable if you have a Z probe mounted on a sled like those designed by Charles Bell.
+//#define Z_PROBE_SLED
+// The extra distance the X axis must travel to pick up the sled.
+// 0 should be fine but you can push it further if you'd like.
+#define SLED_DOCKING_OFFSET 5
+
+// A Mechanical Probe is any probe that either doesn't deploy or needs manual deployment
+// For example any setup that uses the nozzle itself as a probe.
+//#define Z_PROBE_MECHANICAL
+
+// Offsets to the probe relative to the nozzle tip (Nozzle - Probe)
+// X and Y offsets MUST be INTEGERS
+//
+//    +-- BACK ---+
+//    |           |
+//  L |    (+) P  | R <-- probe (10,10)
+//  E |           | I
+//  F | (-) N (+) | G <-- nozzle (0,0)
+//  T |           | H
+//    |  P (-)    | T <-- probe (-10,-10)
+//    |           |
+//    O-- FRONT --+
+//  (0,0)
+#define X_PROBE_OFFSET_FROM_NOZZLE  0     // X offset: -left  [of the nozzle] +right
+#define Y_PROBE_OFFSET_FROM_NOZZLE  0     // Y offset: -front [of the nozzle] +behind
+#define Z_PROBE_OFFSET_FROM_NOZZLE -1     // Z offset: -below [of the nozzle] (always negative!)
+
+//
+// Probe Raise options provide clearance for the probe to deploy and stow.
+//
+// For G28 these apply when the probe deploys and stows.
+// For G29 these apply before and after the full procedure.
+#define Z_RAISE_BEFORE_PROBING  10  // Raise before probe deploy (e.g., the first probe).
+#define Z_RAISE_AFTER_PROBING    5  // Raise before probe stow (e.g., the last probe).
 /*****************************************************************************************/
 
 
@@ -290,7 +361,7 @@
  *   Probe 3 arbitrary points on the bed (that aren't colinear)                          *
  *   You specify the XY coordinates of all 3 points.                                     *
  *                                                                                       *
- *                                                                                       *
+ * Remember you must define type of probe                                                *
  * Uncomment AUTO BED LEVELING FEATURE to enable                                         *
  *                                                                                       *
  *****************************************************************************************/
@@ -327,82 +398,12 @@
 #define ABL_PROBE_PT_3_Y 15
 // END no AUTO BED LEVELING GRID
 
-// Offsets to the probe relative to the extruder tip (Hotend - Probe)
-// X and Y offsets MUST be INTEGERS
-//
-//    +-- BACK ---+
-//    |           |
-//  L |    (+) P  | R <-- probe (10,10)
-//  E |           | I
-//  F | (-) N (+) | G <-- nozzle (0,0)
-//  T |           | H
-//    |  P (-)    | T <-- probe (-10,-10)
-//    |           |
-//    O-- FRONT --+
-//  (0,0)
-#define X_PROBE_OFFSET_FROM_EXTRUDER  0     // X offset: -left  [of the nozzle] +right
-#define Y_PROBE_OFFSET_FROM_EXTRUDER  0     // Y offset: -front [of the nozzle] +behind
-#define Z_PROBE_OFFSET_FROM_EXTRUDER -1     // Z offset: -below [of the nozzle] (always negative!)
+#define XY_TRAVEL_SPEED           10000 // X and Y axis travel speed between probes, in mm/min
+#define Z_RAISE_BETWEEN_PROBINGS      5 // How much the extruder will be raised when travelling from between next probing points.
 
-#define XY_TRAVEL_SPEED 10000               // X and Y axis travel speed between probes, in mm/min
-
-#define Z_RAISE_BEFORE_PROBING       10     //How much the extruder will be raised before travelling to the first probing point.
-#define Z_RAISE_BETWEEN_PROBINGS      5     //How much the extruder will be raised when travelling from between next probing points
-#define Z_RAISE_AFTER_PROBING         5     //How much the extruder will be raised after the last probing point.
-
-//#define Z_PROBE_END_SCRIPT "G1 Z10 F8000\nG1 X10 Y10\nG1 Z0.5"  // These commands will be executed in the end of G29 routine.
-                                                                  // Useful to retract a deployable Z probe.
-
-// Probes are sensors/switches that need to be activated before they can be used
-// and deactivated after their use.
-// Servo Probes, Z Sled Probe, Mechanical Probe, Fix mounted Probe, ... .
-// You have to activate one of these for the AUTO BED LEVELING FEATURE
-// A Servo Probe can be defined in the servo section
-
-// Enable if you have a Z probe mounted on a sled like those designed by Charles Bell.
-//#define Z_PROBE_SLED          // turn on if you have a z-probe mounted on a sled like those designed by Charles Bell
-#define SLED_DOCKING_OFFSET 5   // the extra distance the X axis must travel to pick up the sled. 0 should be fine but you can push it further if you'd like.
-
-// A Mechanical Probe is any probe that either doesn't deploy or needs manual deployment
-// For example any setup that uses the nozzle itself as a probe.
-//#define Z_PROBE_MECHANICAL
-
-// A fix mounted probe, like the normal inductive probe, must be deactivated to go below Z_PROBE_OFFSET_FROM_EXTRUDER
-// when the hardware endstops are active.
-//#define Z_PROBE_FIX_MOUNTED
-/*****************************************************************************************/
-
-
-/*****************************************************************************************
- ******************************* Z probe endstop *****************************************
- *****************************************************************************************
- *                                                                                       *
- * If you have enabled the Auto bed levelling this add the Support for                   *
- * a dedicated Z PROBE endstop separate from the Z MIN endstop.                          *
- * If you would like to use both a Z PROBE and a Z MIN endstop together                  *
- * or just a Z PROBE with a custom pin, uncomment #define Z PROBE ENDSTOP                *
- * and read the instructions below.                                                      *
- *                                                                                       *
- * If you want to still use the Z min endstop for homing,                                *
- * disable Z SAFE HOMING.                                                                *
- * Eg: to park the head outside the bed area when homing with G28.                       *
- *                                                                                       *
- * WARNING: The Z MIN endstop will need to set properly as it would                      *
- * without a Z PROBE to prevent head crashes and premature stopping                      *
- * during a print.                                                                       *
- * To use a separte Z PROBE endstop, you must have a Z PROBE PIN                         *
- * defined in the pins.h file for your control board.                                    *
- * If you are using a servo based Z PROBE, you will need to enable                       *
- * NUM SERVOS, SERVO ENDSTOPS and SERVO ENDSTOPS ANGLES in                               *
- * Configuration_Feature R/C Servo section.                                              *
- *                                                                                       *
- * WARNING: Setting the wrong pin may have unexpected and potentially                    *
- * disastrous outcomes. Use with caution and do your homework.                           *
- *                                                                                       *
- * Uncomment Z PROBE ENDSTOP to enable.                                                  *
- *                                                                                       *
- *****************************************************************************************/
-//#define Z_PROBE_ENDSTOP
+// These commands will be executed in the end of G29 routine.
+// Useful to retract a deployable Z probe.
+//#define Z_PROBE_END_SCRIPT "G1 Z10 F8000\nG1 X10 Y10\nG1 Z0.5"
 /*****************************************************************************************/
 
 

@@ -605,14 +605,14 @@
         #error DEPENDENCY ERROR: Missing setting ABL_PROBE_PT_3_Y
       #endif
     #endif
-    #if DISABLED(X_PROBE_OFFSET_FROM_EXTRUDER)
-      #error DEPENDENCY ERROR: Missing setting X_PROBE_OFFSET_FROM_EXTRUDER
+    #if DISABLED(X_PROBE_OFFSET_FROM_NOZZLE)
+      #error DEPENDENCY ERROR: Missing setting X_PROBE_OFFSET_FROM_NOZZLE
     #endif
-    #if DISABLED(Y_PROBE_OFFSET_FROM_EXTRUDER)
-      #error DEPENDENCY ERROR: Missing setting Y_PROBE_OFFSET_FROM_EXTRUDER
+    #if DISABLED(Y_PROBE_OFFSET_FROM_NOZZLE)
+      #error DEPENDENCY ERROR: Missing setting Y_PROBE_OFFSET_FROM_NOZZLE
     #endif
-    #if DISABLED(Z_PROBE_OFFSET_FROM_EXTRUDER)
-      #error DEPENDENCY ERROR: Missing setting Z_PROBE_OFFSET_FROM_EXTRUDER
+    #if DISABLED(Z_PROBE_OFFSET_FROM_NOZZLE)
+      #error DEPENDENCY ERROR: Missing setting Z_PROBE_OFFSET_FROM_NOZZLE
     #endif
     #if DISABLED(Z_RAISE_BEFORE_PROBING)
       #error DEPENDENCY ERROR: Missing setting Z_RAISE_BEFORE_PROBING
@@ -1423,14 +1423,14 @@
     #if DISABLED(TOWER_C_DIAGROD_ADJ)
       #error DEPENDENCY ERROR: Missing setting TOWER_C_DIAGROD_ADJ
     #endif
-    #if DISABLED(X_PROBE_OFFSET_FROM_EXTRUDER)
-      #error DEPENDENCY ERROR: Missing setting X_PROBE_OFFSET_FROM_EXTRUDER
+    #if DISABLED(X_PROBE_OFFSET_FROM_NOZZLE)
+      #error DEPENDENCY ERROR: Missing setting X_PROBE_OFFSET_FROM_NOZZLE
     #endif
-    #if DISABLED(Y_PROBE_OFFSET_FROM_EXTRUDER)
-      #error DEPENDENCY ERROR: Missing setting Y_PROBE_OFFSET_FROM_EXTRUDER
+    #if DISABLED(Y_PROBE_OFFSET_FROM_NOZZLE)
+      #error DEPENDENCY ERROR: Missing setting Y_PROBE_OFFSET_FROM_NOZZLE
     #endif
-    #if DISABLED(Z_PROBE_OFFSET_FROM_EXTRUDER)
-      #error DEPENDENCY ERROR: Missing setting Z_PROBE_OFFSET_FROM_EXTRUDER
+    #if DISABLED(Z_PROBE_OFFSET_FROM_NOZZLE)
+      #error DEPENDENCY ERROR: Missing setting Z_PROBE_OFFSET_FROM_NOZZLE
     #endif
     #if DISABLED(Z_PROBE_DEPLOY_START_LOCATION)
       #error DEPENDENCY ERROR: Missing setting Z_PROBE_DEPLOY_START_LOCATION
@@ -1590,52 +1590,32 @@
   #endif
 
   /**
-   * Auto Bed Leveling
+   * Auto Bed Leveling Require a Z Min pin
    */
   #if ENABLED(AUTO_BED_LEVELING_FEATURE)
-
-    /**
-     * Require a Z Min pin
-     */
-    #if Z_MIN_PIN == -1
-      #if Z_PROBE_PIN == -1 || DISABLED(Z_PROBE_ENDSTOP) // It's possible for someone to set a pin for the Z Probe, but not enable it.
-        #if ENABLED(Z_PROBE_REPEATABILITY_TEST)
-          #error DEPENDENCY ERROR: You must have a Z_MIN or Z_PROBE endstop to enable Z_PROBE_REPEATABILITY_TEST.
-        #else
-          #error DEPENDENCY ERROR: AUTO_BED_LEVELING_FEATURE requires a Z_MIN or Z_PROBE endstop. Z_MIN_PIN or Z_PROBE_PIN must point to a valid hardware pin.
-        #endif
+    #if !PIN_EXISTS(Z_MIN) && !PIN_EXISTS(Z_PROBE)
+      #if ENABLED(Z_PROBE_REPEATABILITY_TEST)
+        #error "Z_PROBE_REPEATABILITY_TEST requires a Z_MIN or Z_PROBE endstop. Z_MIN_PIN or Z_PROBE_PIN must point to a valid hardware pin."
+      #else
+        #error "AUTO_BED_LEVELING_FEATURE requires a Z_MIN or Z_PROBE endstop. Z_MIN_PIN or Z_PROBE_PIN must point to a valid hardware pin."
       #endif
     #endif
+  #endif
+  
+  /**
+   * Auto Bed Leveling Cartesian & Core
+   */
+  #if ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
 
-    /**
-     * Require a Z Probe Pin if Z_PROBE_ENDSTOP is enabled.
-     */
-    #if ENABLED(Z_PROBE_ENDSTOP)
-      #if !PIN_EXISTS(Z_PROBE)
-        #error DEPENDENCY ERROR: You must set Z_PROBE_PIN to a valid pin if you enable Z_PROBE_ENDSTOP
-      #endif
-      #if ENABLED(ENABLE_SERVOS)
-        #if NUM_SERVOS < 1
-          #error DEPENDENCY ERROR: You must have at least 1 servo EXIST for NUM_SERVOS to use Z_PROBE_ENDSTOP.
-        #endif
-        #if Z_ENDSTOP_SERVO_NR < 0
-          #error DEPENDENCY ERROR: You must have Z_ENDSTOP_SERVO_NR set to at least 0 or above to use Z_PROBE_ENDSTOP.
-        #endif
-        #if DISABLED(Z_ENDSTOP_SERVO_ANGLES)
-          #error DEPENDENCY ERROR: You must have Z_ENDSTOP_SERVO_ANGLES EXIST for Z Extend and Retract to use Z_PROBE_ENDSTOP.
-        #endif
-      #endif
-    #endif
-    /**
-     * Check if Probe_Offset * Grid Points is greater than Probing Range
-     */
     #if ENABLED(AUTO_BED_LEVELING_GRID)
+
       // Be sure points are in the right order
       #if LEFT_PROBE_BED_POSITION > RIGHT_PROBE_BED_POSITION
         #error CONFLICT ERROR: LEFT_PROBE_BED_POSITION must be less than RIGHT_PROBE_BED_POSITION.
       #elif FRONT_PROBE_BED_POSITION > BACK_PROBE_BED_POSITION
         #error CONFLICT ERROR: FRONT_PROBE_BED_POSITION must be less than BACK_PROBE_BED_POSITION.
       #endif
+
     #else // !AUTO_BED_LEVELING_GRID
 
       // Check the triangulation points
@@ -1662,15 +1642,6 @@
    */
   #if ENABLED(ULTIPANEL) && DISABLED(NEWPANEL) && DISABLED(SR_LCD_2W_NL) && DISABLED(SHIFT_CLK)
     #error DEPENDENCY ERROR: ULTIPANEL requires some kind of encoder.
-  #endif
-
-  /**
-   * Delta & Z_PROBE_ENDSTOP
-   */
-  #if MECH(DELTA) && ENABLED(Z_PROBE_ENDSTOP)
-    #if !PIN_EXISTS(Z_PROBE)
-      #error DEPENDENCY ERROR: You must set Z_PROBE_PIN to a valid pin if you enable Z_PROBE_ENDSTOP
-    #endif
   #endif
 
   /**

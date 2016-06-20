@@ -285,13 +285,6 @@
   #endif // CONFIGURATION_LCD
 
   /**
-   * DELTA && AUTO_BED_LEVELING_FEATURE enable Z_PROBE_ENDSTOP
-   */
-  #if MECH(DELTA) && ENABLED(AUTO_BED_LEVELING_FEATURE)
-    #define Z_PROBE_ENDSTOP
-  #endif
-
-  /**
    * Call pins.h
    */
   #include "pins.h"
@@ -487,10 +480,10 @@
    */
   #if ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
     // Boundaries for probing based on set limits
-    #define MIN_PROBE_X (max(X_MIN_POS, X_MIN_POS + X_PROBE_OFFSET_FROM_EXTRUDER))
-    #define MAX_PROBE_X (min(X_MAX_POS, X_MAX_POS + X_PROBE_OFFSET_FROM_EXTRUDER))
-    #define MIN_PROBE_Y (max(Y_MIN_POS, Y_MIN_POS + Y_PROBE_OFFSET_FROM_EXTRUDER))
-    #define MAX_PROBE_Y (min(Y_MAX_POS, Y_MAX_POS + Y_PROBE_OFFSET_FROM_EXTRUDER))
+    #define MIN_PROBE_X (max(X_MIN_POS, X_MIN_POS + X_PROBE_OFFSET_FROM_NOZZLE))
+    #define MAX_PROBE_X (min(X_MAX_POS, X_MAX_POS + X_PROBE_OFFSET_FROM_NOZZLE))
+    #define MIN_PROBE_Y (max(Y_MIN_POS, Y_MIN_POS + Y_PROBE_OFFSET_FROM_NOZZLE))
+    #define MAX_PROBE_Y (min(Y_MAX_POS, Y_MAX_POS + Y_PROBE_OFFSET_FROM_NOZZLE))
 
     // Make sure probing points are reachable
     #if LEFT_PROBE_BED_POSITION < MIN_PROBE_X
@@ -771,7 +764,7 @@
   #define HAS_Z_MAX (PIN_EXISTS(Z_MAX))
   #define HAS_Z2_MIN (PIN_EXISTS(Z2_MIN))
   #define HAS_Z2_MAX (PIN_EXISTS(Z2_MAX))
-  #define HAS_Z_PROBE_PIN (ENABLED(Z_PROBE_ENDSTOP) && PIN_EXISTS(Z_PROBE))
+  #define HAS_Z_PROBE_PIN (PIN_EXISTS(Z_PROBE))
   #define HAS_E_MIN (PIN_EXISTS(E_MIN))
   #define HAS_SOLENOID_1 (PIN_EXISTS(SOL1))
   #define HAS_SOLENOID_2 (PIN_EXISTS(SOL2))
@@ -920,14 +913,37 @@
     #endif
   #endif
 
-  #define HAS_Z_SERVO_ENDSTOP (ENABLED(Z_ENDSTOP_SERVO_NR) && Z_ENDSTOP_SERVO_NR >= 0)
-  #define SERVO_LEVELING (ENABLED(AUTO_BED_LEVELING_FEATURE) && HAS_Z_SERVO_ENDSTOP)
-
+  /**
+   * Probe
+   */
+  #define HAS_Z_SERVO_ENDSTOP (HAS_SERVOS && ENABLED(Z_ENDSTOP_SERVO_NR) && Z_ENDSTOP_SERVO_NR >= 0)
   #define PROBE_SELECTED (ENABLED(Z_PROBE_FIX_MOUNTED) || ENABLED(Z_PROBE_MECHANICAL) || ENABLED(Z_PROBE_SLED) || ENABLED(Z_PROBE_ALLEN_KEY) || HAS_Z_SERVO_ENDSTOP)
-
   #define PROBE_PIN_CONFIGURED (HAS_Z_PROBE_PIN || HAS_Z_MIN)
-
   #define HAS_BED_PROBE (PROBE_SELECTED && PROBE_PIN_CONFIGURED)
+
+  /**
+   * Bed Probe dependencies
+   */
+  #if HAS_BED_PROBE
+    #ifndef X_PROBE_OFFSET_FROM_NOZZLE
+      #define X_PROBE_OFFSET_FROM_NOZZLE 0
+    #endif
+    #ifndef Y_PROBE_OFFSET_FROM_NOZZLE
+      #define Y_PROBE_OFFSET_FROM_NOZZLE 0
+    #endif
+    #ifndef Z_PROBE_OFFSET_FROM_NOZZLE
+      #define Z_PROBE_OFFSET_FROM_NOZZLE 0
+    #endif
+    #ifndef Z_PROBE_OFFSET_RANGE_MIN
+      #define Z_PROBE_OFFSET_RANGE_MIN -20
+    #endif
+    #ifndef Z_PROBE_OFFSET_RANGE_MAX
+      #define Z_PROBE_OFFSET_RANGE_MAX 20
+    #endif
+    #ifndef XY_TRAVEL_SPEED
+      #define XY_TRAVEL_SPEED 4000
+    #endif
+  #endif
 
   /**
    * The axis order in all axis related arrays is X, Y, Z, E

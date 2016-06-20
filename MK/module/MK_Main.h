@@ -49,29 +49,16 @@ void ok_to_send();
 #if MECH(DELTA)
   void set_delta_constants();
   void calculate_delta(float cartesian[3]);
-  static float probe_bed(float x, float y);
-  static void adj_tower_delta(uint8_t tower);
-  static void adj_tower_radius(uint8_t tower);
-  static void home_delta_axis();
-  static void calibration_report();
-  static void bed_probe_all();
-  static void adjust_delta(float cartesian[3]);
-  static void adj_endstops();
-  static void reset_bed_level();
   extern float delta[3];
-  extern float delta_tmp[3];
-  extern float delta_tower1_x, delta_tower1_y;
-  extern float delta_tower2_x, delta_tower2_y;
-  extern float delta_tower3_x, delta_tower3_y;
-  extern float z_probe_offset[3];
   extern float endstop_adj[3];
-  extern float tower_adj[6];
   extern float diagrod_adj[3];
+  extern float tower_adj[6];
   extern float delta_radius;
   extern float delta_diagonal_rod;
 #endif
 
 #if MECH(SCARA)
+  extern float axis_scaling[3];  // Build size scaling
   void calculate_delta(float cartesian[3]);
   void calculate_SCARA_forward_Transform(float f_scara[3]);
 #endif
@@ -140,7 +127,6 @@ extern float sw_endstop_min[3];
 extern float sw_endstop_max[3];
 extern bool axis_known_position[3];
 extern bool axis_homed[3];
-extern float zprobe_zoffset;
 
 // GCode support for external objects
 bool code_seen(char);
@@ -165,8 +151,8 @@ float code_value_temp_diff();
   extern float z_endstop_adj;
 #endif
 
-#if MECH(SCARA)
-  extern float axis_scaling[3];  // Build size scaling
+#if HAS(BED_PROBE)
+  extern float zprobe_zoffset;
 #endif
 
 #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)

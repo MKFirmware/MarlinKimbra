@@ -91,6 +91,8 @@
 #define Y_MAX_PIN       ORIG_Y_MAX_PIN
 #define Z_MIN_PIN       ORIG_Z_MIN_PIN
 #define Z_MAX_PIN       ORIG_Z_MAX_PIN
+#define E_MIN_PIN       -1
+#define Z_PROBE_PIN     -1
 
 // HEATER pin
 #define HEATER_0_PIN        ORIG_HEATER_0_PIN
@@ -130,10 +132,6 @@
   #define E0E4_CHOICE_PIN -1
   #define E0E5_CHOICE_PIN -1
   #define E1E3_CHOICE_PIN -1
-#endif
-
-#if ENABLED(NPR2)
-  #define E_MIN_PIN -1
 #endif
 
 #if ENABLED(LASERBEAM)
@@ -188,10 +186,6 @@
 
 #if ENABLED(Z_PROBE_SLED)
   #define SLED_PIN -1
-#endif
-
-#if ENABLED(Z_PROBE_ENDSTOP)
-  #define Z_PROBE_PIN -1
 #endif
 
 //============================================================================
