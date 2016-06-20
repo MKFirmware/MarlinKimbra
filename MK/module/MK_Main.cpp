@@ -9571,7 +9571,9 @@ static void report_current_position() {
 
       calculate_delta(target);
 
-      if (!delta_leveling_in_progress) adjust_delta(target);
+      #if ENABLED(AUTO_BED_LEVELING_FEATURE)
+        if (!delta_leveling_in_progress) adjust_delta(target);
+      #endif
 
       if (DEBUGGING(DEBUG)) {
         DEBUG_POS("prepare_delta_move_to", target);
