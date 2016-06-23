@@ -83,7 +83,7 @@ static char command_queue[BUFSIZE][MAX_CMD_SIZE];
   TempUnit input_temp_units = TEMPUNIT_C;
 #endif
 
-float homing_feedrate[] = HOMING_FEEDRATE;
+const float homing_feedrate[] = HOMING_FEEDRATE;
 bool axis_relative_modes[] = AXIS_RELATIVE_MODES;
 int feedrate_multiplier = 100; // 100->1 200->2
 int saved_feedrate_multiplier;
@@ -149,7 +149,12 @@ bool software_endstops = true;
 #endif
 
 #if ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
-  int xy_travel_speed = XY_TRAVEL_SPEED;
+  int xy_probe_speed = XY_PROBE_SPEED;
+  #define XY_PROBE_FEEDRATE xy_probe_speed
+#elif defined(XY_PROBE_SPEED)
+  #define XY_PROBE_FEEDRATE XY_PROBE_SPEED
+#else
+  #define XY_PROBE_FEEDRATE (min(planner.max_feedrate[X_AXIS], planner.max_feedrate[Y_AXIS]) * 60)
 #endif
 
 #if ENABLED(Z_DUAL_ENDSTOPS) && NOMECH(DELTA)
@@ -1283,6 +1288,7 @@ XYZ_CONSTS_FROM_CONFIG(signed char, home_dir,  HOME_DIR);
  */
 static void update_software_endstops(AxisEnum axis) {
   float offs = home_offset[axis] + position_shift[axis];
+
   #if ENABLED(DUAL_X_CARRIAGE)
     if (axis == X_AXIS) {
       float dual_max_x = max(hotend_offset[X_AXIS][1], X2_MAX_POS);
@@ -1394,7 +1400,7 @@ static void set_axis_is_at_home(AxisEnum axis) {
     update_software_endstops(axis);
   #endif
 
-  #if ENABLED(AUTO_BED_LEVELING_FEATURE) && (Z_HOME_DIR < 0) && NOMECH(DELTA)
+  #if HAS_BED_PROBE && (Z_HOME_DIR < 0) && NOMECH(DELTA)
     if (axis == Z_AXIS) {
       current_position[Z_AXIS] -= zprobe_zoffset;
       if (DEBUGGING(INFO))
@@ -1428,17 +1434,17 @@ inline void set_homing_bump_feedrate(AxisEnum axis) {
  * (or from wherever it has been told it is located).
  */
 inline void line_to_current_position() {
-  planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], feedrate/60, active_extruder, active_driver);
+  planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], feedrate / 60, active_extruder, active_driver);
 }
 inline void line_to_z(float zPosition) {
-  planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], zPosition, current_position[E_AXIS], feedrate/60, active_extruder, active_driver);
+  planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], zPosition, current_position[E_AXIS], feedrate / 60, active_extruder, active_driver);
 }
 /**
  * line_to_destination
  * Move the planner, not necessarily synced with current_position
  */
 inline void line_to_destination(float mm_m) {
-  planner.buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], mm_m/60, active_extruder, active_driver);
+  planner.buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], mm_m / 60, active_extruder, active_driver);
 }
 inline void line_to_destination() {
   line_to_destination(feedrate);
@@ -1471,20 +1477,34 @@ inline void sync_plan_position_e() { planner.set_e_position_mm(current_position[
 inline void set_current_to_destination() { memcpy(current_position, destination, sizeof(current_position)); }
 inline void set_destination_to_current() { memcpy(destination, current_position, sizeof(destination)); }
 
-static void setup_for_endstop_move() {
+//
+// Prepare to do endstop or probe moves
+// with custom feedrates.
+//
+//  - Save current feedrates
+//  - Reset the rate multiplier
+//  - Reset the command timeout
+//  - Enable the endstops (for endstop moves)
+//
+// clean_up_after_endstop_move() restores
+// feedrates, sets endstops back to global state.
+//
+static void setup_for_endstop_or_probe_move() {
+  if (DEBUGGING(INFO)) DEBUG_POS("setup_for_endstop_or_probe_move", current_position);
+
   saved_feedrate = feedrate;
   saved_feedrate_multiplier = feedrate_multiplier;
   feedrate_multiplier = 100;
   refresh_cmd_timeout();
-  if (DEBUGGING(INFO)) ECHO_LM(INFO, "setup_for_endstop_move > endstops.enable()");
+}
+static void setup_for_endstop_move() {
+  setup_for_endstop_or_probe_move();
   endstops.enable();
 }
 
-static void clean_up_after_endstop_move() {
-  #if ENABLED(ENDSTOPS_ONLY_FOR_HOMING)
-    if (DEBUGGING(INFO)) ECHO_LM(INFO, "clean_up_after_endstop_move > ENDSTOPS_ONLY_FOR_HOMING > endstops.not_homing()");
-  #endif
-  endstops.not_homing();
+static void clean_up_after_endstop_or_probe_move() {
+  if (DEBUGGING(INFO)) DEBUG_POS("clean_up_after_endstop_or_probe_move", current_position);
+
   feedrate = saved_feedrate;
   feedrate_multiplier = saved_feedrate_multiplier;
   refresh_cmd_timeout();
@@ -1503,13 +1523,18 @@ static void axis_unhomed_error(bool xyz = false) {
 
 #if HAS(BED_PROBE)
 
+  static void clean_up_after_endstop_move() {
+    clean_up_after_endstop_or_probe_move();
+    endstops.not_homing();
+  }
+
   #if MECH(DELTA)
     /**
      * Calculate delta, start a line, and set current_position to destination
      */
     void prepare_move_to_destination_raw() {
       if (DEBUGGING(INFO))
-        DEBUG_POS("prepare_move_raw", destination);
+        DEBUG_POS("prepare_move_to_destination_raw", destination);
 
       refresh_cmd_timeout();
       calculate_delta(destination);
@@ -1532,7 +1557,7 @@ static void axis_unhomed_error(bool xyz = false) {
 
     #if MECH(DELTA)
 
-      feedrate = AUTOCAL_TRAVELRATE * 60;
+      feedrate = XY_PROBE_FEEDRATE;
 
       destination[X_AXIS] = x;
       destination[Y_AXIS] = y;
@@ -1551,13 +1576,7 @@ static void axis_unhomed_error(bool xyz = false) {
       line_to_current_position();
       st_synchronize();
 
-      feedrate =
-        #if ENABLED(AUTO_BED_LEVELING_FEATURE)
-          xy_travel_speed
-        #else
-          min(planner.max_feedrate[X_AXIS], planner.max_feedrate[Y_AXIS]) * 60
-        #endif
-      ;
+      feedrate = XY_PROBE_FEEDRATE;
 
       current_position[X_AXIS] = x;
       current_position[Y_AXIS] = y;
@@ -1574,30 +1593,275 @@ static void axis_unhomed_error(bool xyz = false) {
   inline void do_blocking_move_to_x(float x) { do_blocking_move_to(x, current_position[Y_AXIS], current_position[Z_AXIS]); }
   inline void do_blocking_move_to_z(float z) { do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], z); }
 
-#endif
-
-#if HAS(Z_SERVO_ENDSTOP) && NOMECH(DELTA)
   /**
    * Raise Z to a minimum height to make room for a servo to move
    *
    * zprobe_zoffset: Negative of the Z height where the probe engages
-   *         z_dest: The before / after probing raise distance
+   *        z_raise: The probing raise distance
    *
    * The zprobe_zoffset is negative for a switch below the nozzle, so
    * multiply by Z HOME DIR (-1) to move enough away from the bed.
    */
-  void raise_z_for_servo(float z_dest) {
-    z_dest += home_offset[Z_AXIS];
+  void do_probe_raise(float z_raise) {
+    if (DEBUGGING(INFO)) {
+      ECHO_SMV(INFO, "do_probe_raise(", z_raise);
+      ECHO_EM(")");
+    }
+
+    float z_dest = home_offset[Z_AXIS] + z_raise;
 
     if ((Z_HOME_DIR) < 0 && zprobe_zoffset < 0)
       z_dest -= zprobe_zoffset;
 
-    if (z_dest > current_position[Z_AXIS])
-      do_blocking_move_to_z(z_dest); // also updates current_position
+    #if MECH(DELTA)
+      float old_feedrate = feedrate;
+      feedrate = homing_feedrate[Z_AXIS];
+      do_blocking_move_to_z(z_dest);
+      feedrate = old_feedrate;
+    #else
+      if (z_dest > current_position[Z_AXIS]) {
+        float old_feedrate = feedrate;
+        feedrate = homing_feedrate[Z_AXIS];
+        do_blocking_move_to_z(z_dest);
+        feedrate = old_feedrate;
+      }
+    #endif
   }
-#endif
+  
+  inline void raise_z_after_probing() {
+    #if Z_RAISE_AFTER_PROBING > 0
+      if (DEBUGGING(INFO)) ECHO_LM(INFO, "raise_z_after_probing()");
+      do_blocking_move_to_z(current_position[Z_AXIS] + Z_RAISE_AFTER_PROBING);
+    #endif
+  }
 
- 
+  #if HAS(Z_PROBE_SLED)
+    #if DISABLED(SLED_DOCKING_OFFSET)
+      #define SLED_DOCKING_OFFSET 0
+    #endif
+
+    /**
+     * Method to dock/undock a sled designed by Charles Bell.
+     *
+     * dock[in]     If true, move to MAX_X and engage the electromagnet
+     * offset[in]   The additional distance to move to adjust docking location
+     */
+    static void dock_sled(bool dock, int offset = 0) {
+      if (DEBUGGING(INFO)) ECHO_LMV(INFO, "dock_sled", dock);
+
+      if (!axis_homed[X_AXIS] || !axis_homed[Y_AXIS] || !axis_homed[Z_AXIS]) {
+        axis_unhomed_error(true);
+        return;
+      }
+
+      if (endstops.z_probe_enabled == !dock) return; // already docked/undocked?
+
+      float oldXpos = current_position[X_AXIS]; // save x position
+      float old_feedrate = feedrate;
+      if (dock) {
+        raise_z_after_probing(); // raise Z
+        // Dock sled a bit closer to ensure proper capturing
+        feedrate = XY_PROBE_FEEDRATE;
+        do_blocking_move_to_x(X_MAX_POS + SLED_DOCKING_OFFSET + offset - 1);  // Dock sled a bit closer to ensure proper capturing
+        digitalWrite(SLED_PIN, LOW); // turn off magnet
+      }
+      else {
+        feedrate = XY_PROBE_FEEDRATE;
+        float z_loc = current_position[Z_AXIS];
+        if (z_loc < Z_RAISE_BEFORE_PROBING + 5) z_loc = Z_RAISE_BEFORE_PROBING;
+        do_blocking_move_to(X_MAX_POS + SLED_DOCKING_OFFSET + offset, current_position[Y_AXIS], z_loc); // this also updates current_position
+        digitalWrite(SLED_PIN, HIGH); // turn on magnet
+      }
+      do_blocking_move_to_x(oldXpos); // return to position before docking
+
+      feedrate = old_feedrate;
+    }
+  #endif // Z_PROBE_SLED
+
+  static void deploy_z_probe() {
+    if (DEBUGGING(INFO)) DEBUG_POS("deploy_z_probe", current_position);
+
+    if (endstops.z_probe_enabled) return;
+
+    #if ENABLED(Z_PROBE_SLED)
+
+      dock_sled(false);
+
+    #elif HAS(Z_SERVO_ENDSTOP)
+
+      // Make room for Z Servo
+      do_probe_raise(Z_RAISE_BEFORE_PROBING);
+
+      // Engage Z Servo endstop if enabled
+      DEPLOY_Z_SERVO();
+
+    #elif ENABLED(Z_PROBE_ALLEN_KEY)
+
+      float old_feedrate = feedrate;
+
+      feedrate = homing_feedrate[Z_AXIS];
+      do_blocking_move_to_z(  z_probe_deploy_start_location[Z_AXIS]);
+      do_blocking_move_to_xy( z_probe_deploy_start_location[X_AXIS],
+                              z_probe_deploy_start_location[Y_AXIS]);
+
+      feedrate = homing_feedrate[Z_AXIS] / 10;
+      do_blocking_move_to(z_probe_deploy_end_location[X_AXIS],
+                          z_probe_deploy_end_location[Y_AXIS],
+                          z_probe_deploy_end_location[Z_AXIS]);
+
+      feedrate = homing_feedrate[Z_AXIS];
+      
+      do_blocking_move_to(z_probe_deploy_start_location[X_AXIS],
+                          z_probe_deploy_start_location[Y_AXIS],
+                          z_probe_deploy_start_location[Z_AXIS]);
+
+      feedrate = old_feedrate;
+
+    #else
+
+      // Nothing to be done. Just enable_z_probe below...
+
+    #endif
+
+    endstops.enable_z_probe();
+  }
+
+  static void stow_z_probe() {
+    if (DEBUGGING(INFO)) DEBUG_POS("stow_z_probe", current_position);
+
+    if (!endstops.z_probe_enabled) return;
+
+    #if ENABLED(Z_PROBE_SLED)
+
+      dock_sled(true);
+
+    #elif HAS(Z_SERVO_ENDSTOP)
+
+      // Make room for the servo
+      do_probe_raise(Z_RAISE_AFTER_PROBING);
+
+      // Change the Z servo angle
+      STOW_Z_SERVO();
+
+    #elif ENABLED(Z_PROBE_ALLEN_KEY)
+
+      float old_feedrate = feedrate;
+
+      feedrate = homing_feedrate[Z_AXIS];
+      do_blocking_move_to(z_probe_retract_start_location[X_AXIS],
+                          z_probe_retract_start_location[Y_AXIS],
+                          z_probe_retract_start_location[Z_AXIS]);
+
+      // Move the nozzle below the print surface to push the probe up.
+      feedrate = homing_feedrate[Z_AXIS]/10;
+      do_blocking_move_to(z_probe_retract_end_location[X_AXIS],
+                          z_probe_retract_end_location[Y_AXIS],
+                          z_probe_retract_end_location[Z_AXIS]);
+
+      feedrate = homing_feedrate[Z_AXIS];
+      do_blocking_move_to(z_probe_retract_start_location[X_AXIS],
+                          z_probe_retract_start_location[Y_AXIS],
+                          z_probe_retract_start_location[Z_AXIS]);
+
+      feedrate = old_feedrate;
+
+    #else
+
+      // Nothing to do here. Just clear endstops.z_probe_enabled
+
+    #endif
+
+    endstops.enable_z_probe(false);
+  }
+
+  // Do a single Z probe and return with current_position[Z_AXIS]
+  // at the height where the probe triggered.
+  static float run_z_probe() {
+
+    float old_feedrate = feedrate;
+
+    /**
+     * To prevent stepper_inactive_time from running out and
+     * EXTRUDER_RUNOUT_PREVENT from extruding
+     */
+    refresh_cmd_timeout();
+
+    #if MECH(DELTA)
+
+      float start_z = current_position[Z_AXIS];
+      long start_steps = st_get_position(Z_AXIS);
+
+      if (DEBUGGING(INFO)) ECHO_LM(INFO, "run_z_probe (DELTA) 1");
+
+      // move down slowly until you find the bed
+      feedrate = Z_PROBE_SPEED;
+      destination[Z_AXIS] = -10;
+      prepare_move_to_destination_raw();
+      st_synchronize();
+      endstops.hit_on_purpose(); // clear endstop hit flags
+
+      /**
+       * We have to let the planner know where we are right now as it
+       * is not where we said to go.
+       */
+      long stop_steps = st_get_position(Z_AXIS);
+      float mm = start_z - float(start_steps - stop_steps) / planner.axis_steps_per_mm[Z_AXIS];
+      current_position[Z_AXIS] = mm;
+
+      if (DEBUGGING(INFO)) DEBUG_POS("run_z_probe (DELTA) 2", current_position);
+
+      sync_plan_position_delta();
+      
+    #else // NOMECH(DELTA)
+
+      #if ENABLED(AUTO_BED_LEVELING_FEATURE)
+        planner.bed_level_matrix.set_to_identity();
+      #endif
+
+      feedrate = homing_feedrate[Z_AXIS];
+
+      // Move down until the probe (or endstop?) is triggered
+      float zPosition = -(Z_MAX_LENGTH + 10);
+      line_to_z(zPosition);
+      st_synchronize();
+
+      // Tell the planner where we ended up - Get this from the stepper handler
+      zPosition = st_get_axis_position_mm(Z_AXIS);
+      planner.set_position_mm(
+        current_position[X_AXIS], current_position[Y_AXIS], zPosition,
+        current_position[E_AXIS]
+      );
+
+      // move up the retract distance
+      zPosition += home_bump_mm(Z_AXIS);
+      line_to_z(zPosition);
+      st_synchronize();
+      endstops.hit_on_purpose(); // clear endstop hit flags
+
+      // move back down slowly to find bed
+      set_homing_bump_feedrate(Z_AXIS);
+
+      zPosition -= home_bump_mm(Z_AXIS) * 2;
+      line_to_z(zPosition);
+      st_synchronize();
+      endstops.hit_on_purpose(); // clear endstop hit flags
+
+      // Get the current stepper position after bumping an endstop
+      current_position[Z_AXIS] = st_get_axis_position_mm(Z_AXIS);
+      sync_plan_position();
+
+      if (DEBUGGING(INFO)) DEBUG_POS("run_z_probe", current_position);
+
+    #endif
+
+    feedrate = old_feedrate;
+
+    return current_position[Z_AXIS];
+  }
+
+#endif // HAS(BED_PROBE)
+
+
 /**
  * Function for Cartesian, Core & Scara mechanism
  */
@@ -1615,7 +1879,8 @@ static void axis_unhomed_error(bool xyz = false) {
       current_position[Y_AXIS] = st_get_axis_position_mm(Y_AXIS);
       current_position[Z_AXIS] = st_get_axis_position_mm(Z_AXIS);
     #endif
-    sync_plan_position();                       // ...re-apply to planner position
+
+    sync_plan_position(); // ...re-apply to planner position
   }
 
   #if ENABLED(AUTO_BED_LEVELING_FEATURE)
@@ -1650,6 +1915,11 @@ static void axis_unhomed_error(bool xyz = false) {
 
         planner.bed_level_matrix.set_to_identity();
 
+        if (DEBUGGING(INFO)) {
+          vector_3 uncorrected_position = planner.adjusted_position();
+          DEBUG_POS("set_bed_level_equation_3pts", uncorrected_position);
+        }
+
         vector_3 pt1 = vector_3(ABL_PROBE_PT_1_X, ABL_PROBE_PT_1_Y, z_at_pt_1);
         vector_3 pt2 = vector_3(ABL_PROBE_PT_2_X, ABL_PROBE_PT_2_Y, z_at_pt_2);
         vector_3 pt3 = vector_3(ABL_PROBE_PT_3_X, ABL_PROBE_PT_3_Y, z_at_pt_3);
@@ -1662,121 +1932,18 @@ static void axis_unhomed_error(bool xyz = false) {
         }
 
         planner.bed_level_matrix = matrix_3x3::create_look_at(planeNormal);
-
         vector_3 corrected_position = planner.adjusted_position();
-
-        if (DEBUGGING(INFO)) {
-          vector_3 uncorrected_position = corrected_position;
-          DEBUG_POS("set_bed_level_equation_3pts", uncorrected_position);
-        }
 
         current_position[X_AXIS] = corrected_position.x;
         current_position[Y_AXIS] = corrected_position.y;
         current_position[Z_AXIS] = corrected_position.z;
 
-        if (DEBUGGING(INFO))
-          DEBUG_POS("set_bed_level_equation_3pts", current_position);
+        if (DEBUGGING(INFO)) DEBUG_POS("set_bed_level_equation_3pts", corrected_position);
 
         sync_plan_position();
       }
 
     #endif // AUTO_BED_LEVELING_GRID
-
-    static void run_z_probe() {
-
-      float old_feedrate = feedrate;
-
-      /**
-       * To prevent stepper_inactive_time from running out and
-       * EXTRUDER_RUNOUT_PREVENT from extruding
-       */
-      refresh_cmd_timeout();
-
-      planner.bed_level_matrix.set_to_identity();
-      feedrate = homing_feedrate[Z_AXIS];
-
-      // Move down until the probe (or endstop?) is triggered
-      float zPosition = -(Z_MAX_LENGTH + 10);
-      line_to_z(zPosition);
-      st_synchronize();
-
-      // Tell the planner where we ended up - Get this from the stepper handler
-      zPosition = st_get_axis_position_mm(Z_AXIS);
-      planner.set_position_mm(
-        current_position[X_AXIS], current_position[Y_AXIS], zPosition,
-        current_position[E_AXIS]
-      );
-
-      // move up the retract distance
-      zPosition += home_bump_mm(Z_AXIS);
-      line_to_z(zPosition);
-      st_synchronize();
-      endstops.hit_on_purpose(); // clear endstop hit flags
-
-      // move back down slowly to find bed
-      set_homing_bump_feedrate(Z_AXIS);
-
-      zPosition -= home_bump_mm(Z_AXIS) * 2;
-      line_to_z(zPosition);
-      st_synchronize();
-      endstops.hit_on_purpose(); // clear endstop hit flags
-
-      // Get the current stepper position after bumping an endstop
-      current_position[Z_AXIS] = st_get_axis_position_mm(Z_AXIS);
-      sync_plan_position();
-
-      if (DEBUGGING(INFO))
-        DEBUG_POS("run_z_probe", current_position);
-
-      feedrate = old_feedrate;
-    }
-
-    inline void raise_z_after_probing() {
-      #if Z_RAISE_AFTER_PROBING > 0
-        if (DEBUGGING(INFO)) ECHO_LM(INFO, "raise_z_after_probing()");
-        do_blocking_move_to_z(current_position[Z_AXIS] + Z_RAISE_AFTER_PROBING);
-      #endif
-    }
-
-    static void deploy_z_probe() {
-      if (DEBUGGING(INFO))
-        DEBUG_POS("deploy_z_probe", current_position);
-
-      if (endstops.z_probe_enabled) return;
-
-      #if HAS(Z_SERVO_ENDSTOP)
-        // Engage Z Servo endstop if enabled
-        DEPLOY_Z_SERVO();
-      #endif
-
-      endstops.enable_z_probe();
-    }
-
-    static void stow_z_probe(bool doRaise = true) {
-      #if !(HAS(Z_SERVO_ENDSTOP) && (Z_RAISE_AFTER_PROBING > 0))
-        UNUSED(doRaise);
-      #endif
-
-      if (DEBUGGING(INFO))
-        DEBUG_POS("stow_z_probe", current_position);
-
-      if (!endstops.z_probe_enabled) return;
-
-      #if HAS(Z_SERVO_ENDSTOP)
-        // Retract Z Servo endstop if enabled
-        #if Z_RAISE_AFTER_PROBING > 0
-          if (doRaise) {
-            raise_z_after_probing(); // this also updates current_position
-            st_synchronize();
-          }
-        #endif
-
-        // Change the Z servo angle
-        STOW_Z_SERVO();
-      #endif
-
-      endstops.enable_z_probe(false);
-    }
 
     enum ProbeAction {
       ProbeStay             = 0,
@@ -1786,41 +1953,38 @@ static void axis_unhomed_error(bool xyz = false) {
     };
 
     // Probe bed height at position (x,y), returns the measured z value
-    static float probe_pt(float x, float y, float z_before, ProbeAction probe_action = ProbeDeployAndStow, int verbose_level = 1) {
+    static float probe_pt(float x, float y, float z_raise, ProbeAction probe_action = ProbeDeployAndStow, int verbose_level = 1) {
       if (DEBUGGING(INFO)) {
         ECHO_LM(INFO, "probe_pt >>>");
         ECHO_LMV(INFO, "> ProbeAction:", probe_action);
         DEBUG_POS("", current_position);
-        ECHO_SMV(INFO, "Z Raise to z_before ", z_before);
-        ECHO_EMV(" > do_blocking_move_to_z ", z_before);
+        ECHO_LMV(INFO, "Z Raise by z_raise ", z_raise);
       }
 
-      // Move Z up to the z_before height, then move the probe to the given XY
-      do_blocking_move_to_z(z_before); // this also updates current_position
+      float old_feedrate = feedrate;
+
+      do_probe_raise(z_raise); // this also updates current_position
 
       if (DEBUGGING(INFO)) {
-        ECHO_SMV(INFO, " > do_blocking_move_to_xy ", x - (X_PROBE_OFFSET_FROM_NOZZLE));
+        ECHO_SMV(INFO, "> do_blocking_move_to_xy ", x - (X_PROBE_OFFSET_FROM_NOZZLE));
         ECHO_EMV(", ", y - (Y_PROBE_OFFSET_FROM_NOZZLE));
       }
 
+      // this also updates current_position
+      feedrate = XY_PROBE_FEEDRATE;
       do_blocking_move_to_xy(x - (X_PROBE_OFFSET_FROM_NOZZLE), y - (Y_PROBE_OFFSET_FROM_NOZZLE)); // this also updates current_position
 
-      #if HASNT(Z_PROBE_SLED)
-        if (probe_action & ProbeDeploy) {
-          if (DEBUGGING(INFO)) ECHO_LM(INFO, "> ProbeDeploy");
-          deploy_z_probe();
-        }
-      #endif
+      if (probe_action & ProbeDeploy) {
+        if (DEBUGGING(INFO)) ECHO_LM(INFO, "> ProbeDeploy");
+        deploy_z_probe();
+      }
 
-      run_z_probe();
-      float measured_z = current_position[Z_AXIS];
+      float measured_z = run_z_probe();
 
-      #if HASNT(Z_PROBE_SLED)
-        if (probe_action & ProbeStow) {
-          if (DEBUGGING(INFO)) ECHO_LM(INFO, "> ProbeStow (stow_z_probe will do Z Raise)");
-          stow_z_probe();
-        }
-      #endif
+      if (probe_action & ProbeStow) {
+        if (DEBUGGING(INFO)) ECHO_LM(INFO, "> ProbeStow (stow_z_probe will do Z Raise)");
+        stow_z_probe();
+      }
 
       if (verbose_level > 2) {
         ECHO_SM(DB, SERIAL_BED_LEVELLING_BED);
@@ -1830,6 +1994,8 @@ static void axis_unhomed_error(bool xyz = false) {
       }
 
       if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< probe_pt");
+
+      feedrate = old_feedrate;
 
       return measured_z;
     }
@@ -1867,22 +2033,11 @@ static void axis_unhomed_error(bool xyz = false) {
       current_position[axis] = 0;
       sync_plan_position();
 
-      #if HAS(Z_PROBE_SLED)
-        #define _Z_DEPLOY           (dock_sled(false))
-        #define _Z_STOW             (dock_sled(true))
-      #elif ENABLED(AUTO_BED_LEVELING_FEATURE) && (HAS(Z_SERVO_ENDSTOP) || ENABLED(Z_PROBE_FIX_MOUNTED))
-        #define _Z_DEPLOY           (deploy_z_probe())
-        #define _Z_STOW             (stow_z_probe())
-      #elif HAS(Z_SERVO_ENDSTOP)
-        #define _Z_DEPLOY           do{ raise_z_for_servo(Z_RAISE_BEFORE_PROBING); DEPLOY_Z_SERVO(); endstops.z_probe_enabled = true; }while(0)
-        #define _Z_STOW             do{ raise_z_for_servo(Z_RAISE_AFTER_PROBING); STOW_Z_SERVO(); endstops.z_probe_enabled = false; }while(0)
-      #endif
-
       // Homing Z towards the bed? Deploy the Z probe or endstop.
-      #if HAS(Z_SERVO_ENDSTOP) || HAS(Z_PROBE_SLED) || ENABLED(Z_PROBE_FIX_MOUNTED)
+      #if HAS(BED_PROBE)
         if (axis == Z_AXIS && axis_home_dir < 0) {
-          if (DEBUGGING(INFO)) ECHO_LM(INFO, " > " STRINGIFY(_Z_DEPLOY));
-          _Z_DEPLOY;
+          if (DEBUGGING(INFO)) ECHO_LM(INFO, " > deploy_z_probe()");
+          deploy_z_probe();
         }
       #endif
 
@@ -1960,10 +2115,10 @@ static void axis_unhomed_error(bool xyz = false) {
       axis_homed[axis] = true;
 
       // Put away the Z probe with a function
-      #if HAS(Z_SERVO_ENDSTOP) || HAS(Z_PROBE_SLED) || ENABLED(Z_PROBE_FIX_MOUNTED)
+      #if HAS(BED_PROBE)
         if (axis == Z_AXIS && axis_home_dir < 0) {
-          if (DEBUGGING(INFO)) ECHO_LM(INFO, "> SERVO_LEVELING > " STRINGIFY(_Z_STOW));
-          _Z_STOW;
+          if (DEBUGGING(INFO)) ECHO_LM(INFO, " > stow_z_probe()");
+          stow_z_probe();
         }
       #endif
 
@@ -1974,7 +2129,7 @@ static void axis_unhomed_error(bool xyz = false) {
 #endif
 
     if (DEBUGGING(INFO)) {
-      ECHO_SMV(INFO, "<<< homeaxis(", (unsigned long)axis);
+      ECHO_SMV(INFO, "<<< homeaxis(", axis);
       ECHO_EM(")");
     }
   }
@@ -2208,136 +2363,38 @@ static void axis_unhomed_error(bool xyz = false) {
       }
     }
 
-    static void deploy_z_probe() {
-
-      if (DEBUGGING(INFO)) DEBUG_POS("deploy_z_probe", current_position);
-
-      if (endstops.z_probe_enabled) return;
-
-      #if HAS(Z_SERVO_ENDSTOP) || ENABLED(Z_PROBE_FIX_MOUNTED) || ENABLED(Z_PROBE_MECHANICAL)
-        feedrate = homing_feedrate[Z_AXIS];
-        do_blocking_move_to_z(  z_probe_deploy_start_location[Z_AXIS]);
-        do_blocking_move_to_xy( z_probe_deploy_start_location[X_AXIS],
-                                z_probe_deploy_start_location[Y_AXIS]);
-
-        #if HAS(Z_SERVO_ENDSTOP)
-          // Engage Z Servo endstop if enabled
-          DEPLOY_Z_SERVO();
-        #endif
-
-      #else // ALLEN KEY
-        feedrate = homing_feedrate[Z_AXIS];
-        do_blocking_move_to_z(  z_probe_deploy_start_location[Z_AXIS]);
-        do_blocking_move_to_xy( z_probe_deploy_start_location[X_AXIS],
-                                z_probe_deploy_start_location[Y_AXIS]);
-
-        feedrate = homing_feedrate[Z_AXIS]/10;
-        do_blocking_move_to(z_probe_deploy_end_location[X_AXIS],
-                            z_probe_deploy_end_location[Y_AXIS],
-                            z_probe_deploy_end_location[Z_AXIS]);
-
-        feedrate = homing_feedrate[Z_AXIS];
-        
-        do_blocking_move_to(z_probe_deploy_start_location[X_AXIS],
-                            z_probe_deploy_start_location[Y_AXIS],
-                            z_probe_deploy_start_location[Z_AXIS]);
-      #endif
-
-      endstops.enable_z_probe();
-      sync_plan_position_delta();
-    }
-
-    static void stow_z_probe() {
-
-      if (DEBUGGING(INFO)) DEBUG_POS("stow_z_probe", current_position);
-
-      if (!endstops.z_probe_enabled) return;
-
-      #if HAS(Z_SERVO_ENDSTOP) || ENABLED(Z_PROBE_FIX_MOUNTED) || ENABLED(Z_PROBE_MECHANICAL)
-        feedrate = homing_feedrate[Z_AXIS];
-        do_blocking_move_to(z_probe_retract_start_location[X_AXIS],
-                            z_probe_retract_start_location[Y_AXIS],
-                            z_probe_retract_start_location[Z_AXIS]);
-
-        #if HAS(Z_SERVO_ENDSTOP)
-          // Retract Z Servo endstop if enabled
-          STOW_Z_SERVO();
-        #endif
-
-      #else // ALLEN KEY
-        feedrate = homing_feedrate[Z_AXIS];
-        do_blocking_move_to(z_probe_retract_start_location[X_AXIS],
-                            z_probe_retract_start_location[Y_AXIS],
-                            z_probe_retract_start_location[Z_AXIS]);
-
-        // Move the nozzle below the print surface to push the probe up.
-        feedrate = homing_feedrate[Z_AXIS]/10;
-        do_blocking_move_to(z_probe_retract_end_location[X_AXIS],
-                            z_probe_retract_end_location[Y_AXIS],
-                            z_probe_retract_end_location[Z_AXIS]);
-
-        feedrate = homing_feedrate[Z_AXIS];
-        do_blocking_move_to(z_probe_retract_start_location[X_AXIS],
-                            z_probe_retract_start_location[Y_AXIS],
-                            z_probe_retract_start_location[Z_AXIS]);
-      #endif
-
-      endstops.enable_z_probe(false);
-      sync_plan_position_delta();
-    }
-
-    static void run_z_probe() {
-
-      /**
-       * To prevent stepper_inactive_time from running out and
-       * EXTRUDER_RUNOUT_PREVENT from extruding
-       */
-      refresh_cmd_timeout();
-
-      //endstops.enable_z_probe();
-      float start_z = current_position[Z_AXIS];
-      long start_steps = st_get_position(Z_AXIS);
-
-      feedrate = AUTOCAL_PROBERATE * 60;
-      destination[Z_AXIS] = -20;
-      prepare_move_to_destination_raw();
-      st_synchronize();
-      endstops.hit_on_purpose(); // clear endstop hit flags
-
-      //endstops.enable_z_probe(false);
-      long stop_steps = st_get_position(Z_AXIS);
-      float mm = start_z - float(start_steps - stop_steps) / planner.axis_steps_per_mm[Z_AXIS];
-      current_position[Z_AXIS] = mm;
-      sync_plan_position_delta();
-    }
-
     /**
      * Probe bed height at position (x,y), returns the measured z value
      */
     static float probe_bed(float x, float y) {
+      if (DEBUGGING(INFO)) {
+        ECHO_LM(INFO, "probe_bed >>>");
+        DEBUG_POS("", current_position);
+        ECHO_LMV(INFO, "Z Raise by bed_safe_z ", bed_safe_z);
+      }
+
+      float old_feedrate = feedrate;
 
       // Move Z up to the bed_safe_z
-      do_blocking_move_to_z(bed_safe_z);
+      do_probe_raise(bed_safe_z);
 
-      float Dx = x - X_PROBE_OFFSET_FROM_NOZZLE;
+      float Dx = x - (X_PROBE_OFFSET_FROM_NOZZLE);
       NOLESS(Dx, X_MIN_POS);
       NOMORE(Dx, X_MAX_POS);
-      float Dy = y - Y_PROBE_OFFSET_FROM_NOZZLE;
+      float Dy = y - (Y_PROBE_OFFSET_FROM_NOZZLE);
       NOLESS(Dy, Y_MIN_POS);
       NOMORE(Dy, Y_MAX_POS);
 
       if (DEBUGGING(INFO)) {
-        ECHO_LM(INFO, "probe_bed >>>");
-        DEBUG_POS("", current_position);
         ECHO_SMV(INFO, "> do_blocking_move_to_xy ", Dx);
         ECHO_EMV(", ", Dy);
       }
 
       // this also updates current_position
+      feedrate = XY_PROBE_FEEDRATE;
       do_blocking_move_to_xy(Dx, Dy);
 
-      run_z_probe();
-      float probe_z = current_position[Z_AXIS] + zprobe_zoffset;
+      float probe_z = run_z_probe() + zprobe_zoffset;
 
       if (DEBUGGING(INFO)) {
         ECHO_SM(INFO, "Bed probe heights: ");
@@ -3079,46 +3136,6 @@ static void axis_unhomed_error(bool xyz = false) {
   }
 #endif // FWRETRACT
 
-#if HAS(Z_PROBE_SLED)
-
-  #if DISABLED(SLED_DOCKING_OFFSET)
-    #define SLED_DOCKING_OFFSET 0
-  #endif
-
-  /**
-   * Method to dock/undock a sled designed by Charles Bell.
-   *
-   * dock[in]     If true, move to MAX_X and engage the electromagnet
-   * offset[in]   The additional distance to move to adjust docking location
-   */
-  static void dock_sled(bool dock, int offset=0) {
-    if (DEBUGGING(INFO)) ECHO_LMV(INFO, "dock_sled", dock);
-
-    if (!axis_homed[X_AXIS] || !axis_homed[Y_AXIS] || !axis_homed[Z_AXIS]) {
-      axis_unhomed_error(true);
-      return;
-    }
-
-    if (endstops.z_probe_enabled == !dock) return; // already docked/undocked?
-
-    float oldXpos = current_position[X_AXIS]; // save x position
-    if (dock) {
-      raise_z_after_probing(); // raise Z
-      // Dock sled a bit closer to ensure proper capturing
-      do_blocking_move_to_x(X_MAX_POS + SLED_DOCKING_OFFSET + offset - 1);  // Dock sled a bit closer to ensure proper capturing
-      digitalWrite(SLED_PIN, LOW); // turn off magnet
-    }
-    else {
-      float z_loc = current_position[Z_AXIS];
-      if (z_loc < Z_RAISE_BEFORE_PROBING + 5) z_loc = Z_RAISE_BEFORE_PROBING;
-      do_blocking_move_to(X_MAX_POS + SLED_DOCKING_OFFSET + offset, current_position[Y_AXIS], z_loc); // this also updates current_position
-      digitalWrite(SLED_PIN, HIGH); // turn on magnet
-    }
-    do_blocking_move_to_x(oldXpos); // return to position before docking
-
-    endstops.enable_z_probe(!dock); // logically disable docked probe
-  }
-#endif // Z_PROBE_SLED
 
 #if HAS(TEMP_0) || HAS(TEMP_BED) || ENABLED(HEATER_0_USES_MAX6675)
   void print_heaterstates() {
@@ -4070,7 +4087,8 @@ inline void gcode_G28() {
             destination[X_AXIS] = round(Z_SAFE_HOMING_X_POINT - (X_PROBE_OFFSET_FROM_NOZZLE));
             destination[Y_AXIS] = round(Z_SAFE_HOMING_Y_POINT - (Y_PROBE_OFFSET_FROM_NOZZLE));
             destination[Z_AXIS] = current_position[Z_AXIS]; //z is already at the right height
-            feedrate = xy_travel_speed;
+
+            feedrate = XY_PROBE_FEEDRATE;
 
             if (DEBUGGING(INFO)) {
               DEBUG_POS("> Z_SAFE_HOMING > home_all_axis", current_position);
@@ -4082,7 +4100,8 @@ inline void gcode_G28() {
             st_synchronize();
 
             /**
-             * Update the current positions for XY
+             * Update the current positions for XY, Z is still at least at
+             * MIN_Z_HEIGHT_FOR_HOMING height, no changes there.
              */  
             current_position[X_AXIS] = destination[X_AXIS];
             current_position[Y_AXIS] = destination[Y_AXIS];
@@ -4135,7 +4154,8 @@ inline void gcode_G28() {
               destination[X_AXIS] = round(Z_SAFE_HOMING_X_POINT);
               destination[Y_AXIS] = round(Z_SAFE_HOMING_Y_POINT);
               destination[Z_AXIS] = current_position[Z_AXIS] = 0;
-              feedrate = xy_travel_speed;
+
+              feedrate = XY_PROBE_FEEDRATE;
 
               if (DEBUGGING(INFO)) {
                 DEBUG_POS("> Z_SAFE_HOMING > home_all_axis", current_position);
@@ -4152,8 +4172,7 @@ inline void gcode_G28() {
               HOMEAXIS(Z);
             }
             else {
-              LCD_MESSAGEPGM(MSG_POSITION_UNKNOWN);
-              ECHO_LM(ER, MSG_POSITION_UNKNOWN);
+              axis_unhomed_error();
             }
           }
 
@@ -4514,8 +4533,11 @@ inline void gcode_G28() {
       return;
     }
 
-    bool dryrun = code_seen('D'),
-         deploy_probe_for_each_reading = code_seen('E');
+    bool dryrun = code_seen('D');
+
+    #if DISABLED(Z_PROBE_SLED)
+      bool deploy_probe_for_each_reading = code_seen('E');
+    #endif
 
     #if ENABLED(AUTO_BED_LEVELING_GRID)
 
@@ -4532,7 +4554,7 @@ inline void gcode_G28() {
         return;
       }
 
-      xy_travel_speed = code_seen('S') ? (int)code_value_linear_units() : XY_TRAVEL_SPEED;
+      xy_probe_speed = code_seen('S') ? (int)code_value_linear_units() : XY_PROBE_SPEED;
 
       int left_probe_bed_position = code_seen('L') ? (int)code_value_axis_units(X_AXIS) : LEFT_PROBE_BED_POSITION,
           right_probe_bed_position = code_seen('R') ? (int)code_value_axis_units(X_AXIS) : RIGHT_PROBE_BED_POSITION,
@@ -4594,15 +4616,11 @@ inline void gcode_G28() {
       sync_plan_position();
     }
 
-    #if ENABLED(Z_PROBE_SLED)
-      dock_sled(false); // engage (un-dock) the Z probe
-    #elif ENABLED(Z_PROBE_FIX_MOUNTED) || ENABLED(Z_PROBE_MECHANICAL)
-      deploy_z_probe();
-    #endif
-
     st_synchronize();
-    setup_for_endstop_move();
-    feedrate = homing_feedrate[Z_AXIS];
+    setup_for_endstop_or_probe_move();
+
+    // Deploy the probe. Servo will raise if needed.
+    deploy_z_probe();
 
     #if ENABLED(AUTO_BED_LEVELING_GRID)
 
@@ -4651,26 +4669,33 @@ inline void gcode_G28() {
 
           // raise extruder
           float measured_z,
-                z_before = probePointCounter ? Z_RAISE_BETWEEN_PROBINGS + current_position[Z_AXIS] : Z_RAISE_BEFORE_PROBING + home_offset[Z_AXIS];
+                z_raise = probePointCounter ? Z_RAISE_BETWEEN_PROBINGS : Z_RAISE_BEFORE_PROBING;
 
           if (DEBUGGING(INFO)) {
+            ECHO_SM(INFO, "z_raise = (");
             if (probePointCounter)
-              ECHO_LMV(INFO, "z_before = (between) ", Z_RAISE_BETWEEN_PROBINGS + current_position[Z_AXIS]);
+              ECHO_M("between) ");
             else
-              ECHO_LMV(INFO, "z_before = (before) ", Z_RAISE_BEFORE_PROBING + home_offset[Z_AXIS]);
+              ECHO_M("before) ");
+            ECHO_EV(z_raise);
           }
 
-          ProbeAction act;
-          if (deploy_probe_for_each_reading) // G29 E - Stow between probes
-            act = ProbeDeployAndStow;
-          else if (yCount == 0 && xCount == xStart)
-            act = ProbeDeploy;
-          else if (yCount == auto_bed_leveling_grid_points - 1 && xCount == xStop - xInc)
-            act = ProbeStow;
-          else
-            act = ProbeStay;
+          #if ENABLED(Z_PROBE_SLED)
+            const ProbeAction act = ProbeStay;
+          #else
+            ProbeAction act;
+            if (deploy_probe_for_each_reading) // G29 E - Stow between probes
+              act = ProbeDeployAndStow;
+            else if (yCount == 0 && xCount == xStart)
+              act = ProbeDeploy;
+            else if (yCount == auto_bed_leveling_grid_points - 1 && xCount == xStop - xInc)
+              act = ProbeStow;
+            else
+              act = ProbeStay;
+          #endif
 
-          measured_z = probe_pt(xProbe, yProbe, z_before, act, verbose_level);
+          measured_z = probe_pt(xProbe, yProbe, z_raise, act, verbose_level);
+
           mean += measured_z;
 
           eqnBVector[probePointCounter] = measured_z;
@@ -4854,21 +4879,17 @@ inline void gcode_G28() {
       // current_position[Z_AXIS] += home_offset[Z_AXIS]; // The Z probe determines Z=0, not "Z home"
       sync_plan_position();
 
-      if (DEBUGGING(INFO))
-        DEBUG_POS(" > corrected Z in G29", current_position);
+      if (DEBUGGING(INFO)) DEBUG_POS(" > corrected Z in G29", current_position);
     }
 
-    // Sled assembly for Cartesian bots
-    #if HAS(Z_PROBE_SLED)
-      dock_sled(true); // dock the probe
-    #elif HASNT(Z_SERVO_ENDSTOP)
-      // Raise Z axis for non servo based probes
-      raise_z_after_probing();
-    #endif
+    // Final raise of Z axis after probing.
+    raise_z_after_probing();
 
-    #if ENABLED(Z_PROBE_MECHANICAL)
-      stow_z_probe();
-    #endif
+    // Stow the probe. Servo will raise if needed.
+    stow_z_probe();
+
+    // Restore state after probing
+    clean_up_after_endstop_or_probe_move();
 
     #if ENABLED(Z_PROBE_END_SCRIPT)
       if (DEBUGGING(INFO)) {
@@ -4876,9 +4897,6 @@ inline void gcode_G28() {
         ECHO_EM(Z_PROBE_END_SCRIPT);
       }
       enqueue_and_echo_commands_P(PSTR(Z_PROBE_END_SCRIPT));
-      #if HAS(BED_PROBE)
-        endstops.enable_z_probe(false);
-      #endif
       st_synchronize();
     #endif
 
@@ -4887,43 +4905,41 @@ inline void gcode_G28() {
     KEEPALIVE_STATE(IN_HANDLER);
   }
 
-  #if HASNT(Z_PROBE_SLED)
-    /**
-     * G30: Do a single Z probe at the current XY
-     */
-    inline void gcode_G30() {
-      if (DEBUGGING(INFO)) ECHO_LM(INFO, "gcode_G30 >>>");
+#endif // AUTO_BED_LEVELING_FEATURE && NOMECH(DELTA)
 
-      #if HAS(Z_SERVO_ENDSTOP)
-        raise_z_for_servo(Z_RAISE_BEFORE_PROBING);
-      #endif
-      deploy_z_probe(); // Engage Z Servo endstop if available
+#if HAS(BED_PROBE) && NOMECH(DELTA)
 
-      st_synchronize();
-      // TODO: clear the leveling matrix or the planner will be set incorrectly
-      setup_for_endstop_move();
+  /**
+   * G30: Do a single Z probe at the current XY
+   */
+  inline void gcode_G30() {
+    if (DEBUGGING(INFO)) ECHO_LM(INFO, "gcode_G30 >>>");
 
-      feedrate = homing_feedrate[Z_AXIS];
+    setup_for_endstop_or_probe_move();
 
-      run_z_probe();
-      ECHO_SM(DB, "Bed");
-      ECHO_MV(" X: ", current_position[X_AXIS] + 0.0001);
-      ECHO_MV(" Y: ", current_position[Y_AXIS] + 0.0001);
-      ECHO_MV(" Z: ", current_position[Z_AXIS] + 0.0001);
-      ECHO_E;
+    deploy_z_probe();
 
-      clean_up_after_endstop_move();
+    st_synchronize();
 
-      #if HAS(Z_SERVO_ENDSTOP)
-        raise_z_for_servo(Z_RAISE_AFTER_PROBING);
-      #endif
-      stow_z_probe(false); // Retract Z Servo endstop if available
+    // TODO: clear the leveling matrix or the planner will be set incorrectly
+    float measured_z = run_z_probe(); // clears the ABL non-delta matrix only
 
-      if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< gcode_G30");
+    ECHO_SM(DB, "Bed");
+    ECHO_MV(" X: ", current_position[X_AXIS] + X_PROBE_OFFSET_FROM_NOZZLE + 0.0001);
+    ECHO_MV(" Y: ", current_position[Y_AXIS] + Y_PROBE_OFFSET_FROM_NOZZLE + 0.0001);
+    ECHO_MV(" Z: ", measured_z + 0.0001);
+    ECHO_E;
 
-      gcode_M114(); // Send end position to RepetierHost
-    }
-  #endif // !Z_PROBE_SLED
+    stow_z_probe();
+
+    clean_up_after_endstop_or_probe_move();
+
+    report_current_position();
+
+    if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< gcode_G30");
+
+    gcode_M114(); // Send end position to RepetierHost
+  }
 
 #elif ENABLED(AUTO_BED_LEVELING_FEATURE) && MECH(DELTA)
 
@@ -4939,7 +4955,7 @@ inline void gcode_G28() {
       return;
     }
 
-    setup_for_endstop_move();
+    setup_for_endstop_or_probe_move();
 
     if (!axis_homed[X_AXIS] || !axis_homed[Y_AXIS] || !axis_homed[Z_AXIS])
       home_delta_axis();
@@ -4949,7 +4965,7 @@ inline void gcode_G28() {
     bed_safe_z = current_position[Z_AXIS];
     calibrate_print_surface();
     stow_z_probe();
-    clean_up_after_endstop_move();
+    clean_up_after_endstop_or_probe_move();
 
     if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< gcode_G29");
 
@@ -4973,7 +4989,7 @@ inline void gcode_G28() {
   inline void gcode_G30() {
     if (DEBUGGING(INFO)) ECHO_LM(INFO, "gcode_G30 >>>");
 
-    setup_for_endstop_move();
+    setup_for_endstop_or_probe_move();
 
     // Reset the bed level array
     reset_bed_level();
@@ -5156,7 +5172,7 @@ inline void gcode_G28() {
     // reset LCD alert message
     lcd_reset_alert_level();
 
-    clean_up_after_endstop_move();
+    clean_up_after_endstop_or_probe_move();
 
     if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< gcode_G30");
 
@@ -5636,9 +5652,13 @@ inline void gcode_M42() {
     }
 
     float  X_current = current_position[X_AXIS],
-           Y_current = current_position[Y_AXIS],
-           Z_start_location = current_position[Z_AXIS] + Z_RAISE_BEFORE_PROBING;
-    bool deploy_probe_for_each_reading = code_seen('E');
+           Y_current = current_position[Y_AXIS];
+
+    #if ENABLED(Z_PROBE_SLED)
+      const bool deploy_probe_for_each_reading = false;
+    #else
+      bool deploy_probe_for_each_reading = code_seen('E');
+    #endif
 
     float X_probe_location = code_seen('X') ? code_value_axis_units(X_AXIS) : X_current + X_PROBE_OFFSET_FROM_NOZZLE;
     if (X_probe_location < MIN_PROBE_X || X_probe_location > MAX_PROBE_X) {
@@ -5671,12 +5691,16 @@ inline void gcode_M42() {
     if (verbose_level > 2)
       ECHO_LM(DB, "Positioning the probe...");
 
-    // we don't do bed level correction in M48 because we want the raw data when we probe
-    planner.bed_level_matrix.set_to_identity();
+    #if ENABLED(AUTO_BED_LEVELING_FEATURE)
+      // we don't do bed level correction in M48 because we want the raw data when we probe
+      planner.bed_level_matrix.set_to_identity();
+    #endif
 
-    if (Z_start_location < Z_RAISE_BEFORE_PROBING * 2.0)
-      do_blocking_move_to_z(Z_start_location);
+    setup_for_endstop_or_probe_move();
 
+    do_probe_raise(Z_RAISE_BEFORE_PROBING);
+
+    feedrate = XY_PROBE_FEEDRATE;
     do_blocking_move_to_xy(X_probe_location - (X_PROBE_OFFSET_FROM_NOZZLE), Y_probe_location - (Y_PROBE_OFFSET_FROM_NOZZLE));
 
     /**
@@ -5686,11 +5710,11 @@ inline void gcode_M42() {
     setup_for_endstop_move();
 
     // Height before each probe (except the first)
-    float z_between = home_offset[Z_AXIS] + (deploy_probe_for_each_reading ? Z_RAISE_BEFORE_PROBING : Z_RAISE_BETWEEN_PROBINGS);
+    float z_between = deploy_probe_for_each_reading ? Z_RAISE_BEFORE_PROBING : Z_RAISE_BETWEEN_PROBINGS;
 
     // Deploy the probe and probe the first point
     probe_pt(X_probe_location, Y_probe_location,
-      home_offset[Z_AXIS] + Z_RAISE_BEFORE_PROBING,
+      Z_RAISE_BEFORE_PROBING,
       deploy_probe_for_each_reading ? ProbeDeployAndStow : ProbeDeploy,
       verbose_level);
 
@@ -5783,7 +5807,6 @@ inline void gcode_M42() {
         if (verbose_level > 1) {
           ECHO_SV(DB, n + 1);
           ECHO_MV(" of ", (int)n_samples);
-          ECHO_EM(" samples");
           ECHO_MV("   z: ", current_position[Z_AXIS], 6);
           HAL::delayMilliseconds(50);
           if (verbose_level > 2) {
@@ -5796,25 +5819,24 @@ inline void gcode_M42() {
 
       // Raise before the next loop for the legs,
       // or do the final raise after the last probe
-      if (n_legs || last_probe) {
-        do_blocking_move_to_z(last_probe ? home_offset[Z_AXIS] + Z_RAISE_AFTER_PROBING : z_between);
-        if (!last_probe) delay(500);
+      if (last_probe)
+        do_probe_raise(Z_RAISE_AFTER_PROBING);
+      else if (n_legs) {
+        do_probe_raise(z_between);
+        if (!last_probe) HAL::delayMilliseconds(500);
       }
 
-    }  // End of probe loop code
+    }  // End of probe loop
 
-    if (verbose_level > 0) {
-      ECHO_EMV("Mean: ", mean, 6);
-      HAL::delayMilliseconds(25);
-    }
+    if (verbose_level > 0) ECHO_EMV("Mean: ", mean, 6);
 
     ECHO_EMV("Standard Deviation: ", sigma, 6);
     ECHO_E;
-    HAL::delayMilliseconds(25);
 
     if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< gcode_M48");
 
-    clean_up_after_endstop_move();
+    clean_up_after_endstop_or_probe_move();
+
     report_current_position();
   }
 
@@ -7389,31 +7411,17 @@ inline void gcode_M226() {
  */
 inline void gcode_M400() { st_synchronize(); }
 
-#if (ENABLED(AUTO_BED_LEVELING_FEATURE) && DISABLED(Z_PROBE_SLED) && HAS(Z_SERVO_ENDSTOP))
+#if HAS(BED_PROBE)
 
   /**
    * M401: Engage Z Servo endstop if available
    */
-  inline void gcode_M401() {
-    #if ENABLED(HAS_SERVO_ENDSTOPS) && NOMECH(DELTA)
-      raise_z_for_servo(Z_RAISE_BEFORE_PROBING);
-    #endif
-    deploy_z_probe();
-  }
+  inline void gcode_M401() { deploy_z_probe(); }
 
   /**
    * M402: Retract Z Servo endstop if enabled
    */
-  inline void gcode_M402() {
-    #if ENABLED(HAS_SERVO_ENDSTOPS) && NOMECH(DELTA)
-      raise_z_for_servo(Z_RAISE_AFTER_PROBING);
-    #endif
-    #if MECH(DELTA)
-      stow_z_probe();
-    #else
-      stow_z_probe(false);
-    #endif
-  }
+  inline void gcode_M402() { stow_z_probe(); }
 
 #endif // (ENABLED(AUTO_BED_LEVELING_FEATURE) && DISABLED(Z_PROBE_SLED) && HAS(Z_SERVO_ENDSTOP))
 
@@ -8432,10 +8440,10 @@ inline void gcode_T(uint8_t tmp_extruder) {
         if (next_feedrate > 0.0) stored_feedrate = feedrate = next_feedrate;
       }
       else {
-        #if ENABLED(XY_TRAVEL_SPEED)
-          feedrate = XY_TRAVEL_SPEED;
+        #if ENABLED(XY_PROBE_SPEED)
+          feedrate = XY_PROBE_SPEED;
         #else
-          feedrate = min(planner.max_feedrate[X_AXIS], planner.max_feedrate[Y_AXIS]);
+          feedrate = min(planner.max_feedrate[X_AXIS], planner.max_feedrate[Y_AXIS]) * 60;
         #endif
       }
 
@@ -8864,15 +8872,20 @@ void process_next_command() {
 
       #elif ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
 
-        case 29: // G29 Mesh Bed Level
+        case 29: // G29 Auto bed level
           gcode_G29(); break;
-        #if HASNT(Z_PROBE_SLED)
-          case 30: // G30 Single Z Probe
-            gcode_G30(); break;
-        #else // Z_PROBE_SLED
+
+      #endif
+      
+      #if HAS(BED_PROBE) && NOMECH(DELTA)
+        case 30: // G30 Single Z Probe
+          gcode_G30(); break;
+        
+        #if ENABLED(Z_PROBE_SLED)
           case 31: // G31: dock the sled
+            stow_z_probe(); break;
           case 32: // G32: undock the sled
-            dock_sled(codenum == 31); break;
+            deploy_z_probe(); break;
         #endif // Z_PROBE_SLED
 
       #elif ENABLED(AUTO_BED_LEVELING_FEATURE) && MECH(DELTA)
@@ -9246,7 +9259,7 @@ void process_next_command() {
       case 400: // M400 finish all moves
         gcode_M400(); break;
 
-      #if (ENABLED(AUTO_BED_LEVELING_FEATURE) && DISABLED(Z_PROBE_SLED) && HAS(Z_SERVO_ENDSTOP))
+      #if HAS(BED_PROBE)
         case 401:
           gcode_M401(); break;
         case 402:

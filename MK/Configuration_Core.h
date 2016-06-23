@@ -29,7 +29,7 @@
  * - Core settings
  * - Endstop pullup resistors
  * - Endstops logic
- * - Z probe endstop
+ * - Z probe Options
  * - Endstops min or max
  * - Min Z height for homing
  * - Stepper enable logic
@@ -146,7 +146,7 @@
  *                                                                                       *
  * Probes are sensors/switches that need to be activated before they can be used         *
  * and deactivated after their use.                                                      *
- * Servo Probes, Z Sled Probe, Mechanical Probe, Fix mounted Probe, ... .                *
+ * Servo Probes, Z Sled Probe, Fix mounted Probe, etc.                                   *
  * You must activate one of these to use AUTO BED LEVELING FEATURE below.                *
  *                                                                                       *
  * If you want to still use the Z min endstop for homing,                                *
@@ -168,10 +168,12 @@
 // Remember active servos in Configuration_Feature.h
 // Define nr servo for endstop -1 not define. Servo index start 0
 #define Z_ENDSTOP_SERVO_NR -1
-#define Z_ENDSTOP_SERVO_ANGLES {90,0} // Z Axis Extend and Retract angles
+#define Z_ENDSTOP_SERVO_ANGLES {90,0} // Z Servo Deploy and Stow angles
 
-// A fix mounted probe, like the normal inductive probe, must be deactivated to go
-// below Z PROBE OFFSET FROM NOZZLE when the hardware endstops are active.
+// A Fix-Mounted Probe either doesn't deploy or needs manual deployment.
+// For example an inductive probe, or a setup that uses the nozzle to probe.
+// An inductive probe must be deactivated to go below
+// its trigger-point if hardware endstops are active.
 //#define Z_PROBE_FIX_MOUNTED
 
 // Enable if you have a Z probe mounted on a sled like those designed by Charles Bell.
@@ -179,10 +181,6 @@
 // The extra distance the X axis must travel to pick up the sled.
 // 0 should be fine but you can push it further if you'd like.
 #define SLED_DOCKING_OFFSET 5
-
-// A Mechanical Probe is any probe that either doesn't deploy or needs manual deployment
-// For example any setup that uses the nozzle itself as a probe.
-//#define Z_PROBE_MECHANICAL
 
 // Offsets to the probe relative to the nozzle tip (Nozzle - Probe)
 // X and Y offsets MUST be INTEGERS
@@ -201,13 +199,23 @@
 #define Y_PROBE_OFFSET_FROM_NOZZLE  0     // Y offset: -front [of the nozzle] +behind
 #define Z_PROBE_OFFSET_FROM_NOZZLE -1     // Z offset: -below [of the nozzle] (always negative!)
 
+// X and Y axis travel speed between probes, in mm/min
+#define XY_PROBE_SPEED            10000
+
 //
 // Probe Raise options provide clearance for the probe to deploy and stow.
 //
 // For G28 these apply when the probe deploys and stows.
 // For G29 these apply before and after the full procedure.
-#define Z_RAISE_BEFORE_PROBING  10  // Raise before probe deploy (e.g., the first probe).
-#define Z_RAISE_AFTER_PROBING    5  // Raise before probe stow (e.g., the last probe).
+#define Z_RAISE_BEFORE_PROBING    15  // Raise before probe deploy (e.g., the first probe).
+#define Z_RAISE_AFTER_PROBING     15  // Raise before probe stow (e.g., the last probe).
+#define Z_RAISE_BETWEEN_PROBINGS   5  // Raise between probing points.
+
+//
+// For M666 give a range for adjusting the Z probe offset
+//
+#define Z_PROBE_OFFSET_RANGE_MIN -20
+#define Z_PROBE_OFFSET_RANGE_MAX  20
 /*****************************************************************************************/
 
 
@@ -400,7 +408,7 @@
 #define FRONT_PROBE_BED_POSITION 20
 #define BACK_PROBE_BED_POSITION 180
 
-// The probe square sides can be no smaller than this
+// The Z probe minimum square sides can be no smaller than this.
 #define MIN_PROBE_EDGE 10
 
 // Set the number of grid points per dimension
@@ -419,9 +427,6 @@
 #define ABL_PROBE_PT_3_X 180
 #define ABL_PROBE_PT_3_Y 15
 // END no AUTO BED LEVELING GRID
-
-#define XY_TRAVEL_SPEED           10000 // X and Y axis travel speed between probes, in mm/min
-#define Z_RAISE_BETWEEN_PROBINGS      5 // How much the extruder will be raised when travelling from between next probing points.
 
 // These commands will be executed in the end of G29 routine.
 // Useful to retract a deployable Z probe.

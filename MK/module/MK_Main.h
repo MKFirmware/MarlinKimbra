@@ -111,7 +111,6 @@ extern void delay_ms(millis_t ms);
   void setPwmFrequency(uint8_t pin, uint8_t val);
 #endif
 
-extern float homing_feedrate[];
 extern bool axis_relative_modes[];
 extern int feedrate_multiplier;
 extern bool volumetric_enabled;
