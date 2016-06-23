@@ -562,15 +562,39 @@
    * Probes
    */
   #if PROBE_SELECTED
+
+    /**
+     * NUM_SERVOS is required for a Z servo probe
+     */
+    #if HAS(Z_SERVO_ENDSTOP)
+      #ifndef NUM_SERVOS
+        #error "You must set NUM_SERVOS for a Z servo probe (Z_ENDSTOP_SERVO_NR)."
+      #elif Z_ENDSTOP_SERVO_NR >= NUM_SERVOS
+        #error "Z_ENDSTOP_SERVO_NR must be less than NUM_SERVOS."
+      #endif
+    #endif
+
+    /**
+     * A probe needs a pin
+     */
     #if !PROBE_PIN_CONFIGURED
       #error "A probe needs a pin! Use Z_MIN_PIN or Z_PROBE_PIN."
+    #endif
+
+    /**
+     * Only allow one probe option to be defined
+     */
+    #if (ENABLED(Z_PROBE_FIX_MOUNTED) && (ENABLED(Z_PROBE_ALLEN_KEY) || HAS_Z_SERVO_ENDSTOP || ENABLED(Z_PROBE_SLED))) \
+         || (ENABLED(Z_PROBE_ALLEN_KEY) && (HAS_Z_SERVO_ENDSTOP || ENABLED(Z_PROBE_SLED))) \
+         || (HAS_Z_SERVO_ENDSTOP && ENABLED(Z_PROBE_SLED))
+      #error "Please define only one type of probe: Z Servo, Z_PROBE_ALLEN_KEY, Z_PROBE_SLED, or Z_PROBE_FIX_MOUNTED."
     #endif
   #else
     /**
      * Require some kind of probe for bed leveling
      */
     #if ENABLED(AUTO_BED_LEVELING_FEATURE)
-      #error "AUTO_BED_LEVELING_FEATURE requires a probe! Define a Z Servo, Z_PROBE_FIX_MOUNTED, Z_PROBE_MECHANICAL, Z_PROBE_SLED, or Z_PROBE_ALLEN_KEY."
+      #error "AUTO_BED_LEVELING_FEATURE requires a probe! Define a Z Servo, Z_PROBE_FIX_MOUNTED, Z_PROBE_SLED, or Z_PROBE_ALLEN_KEY."
     #endif
   #endif
 
@@ -1318,8 +1342,8 @@
     #error DEPENDENCY ERROR: Missing setting HOMING_BUMP_DIVISOR
   #endif
   #if !MECH(DELTA)
-    #if DISABLED(XY_TRAVEL_SPEED)
-      #error DEPENDENCY ERROR: Missing setting XY_TRAVEL_SPEED
+    #if DISABLED(XY_PROBE_SPEED)
+      #error DEPENDENCY ERROR: Missing setting XY_PROBE_SPEED
     #endif
   #endif
   #if ENABLED(MANUAL_HOME_POSITIONS)
@@ -1378,11 +1402,11 @@
     #if DISABLED(DEFAULT_DELTA_RADIUS)
       #error DEPENDENCY ERROR: Missing setting DEFAULT_DELTA_RADIUS
     #endif
-    #if DISABLED(AUTOCAL_TRAVELRATE)
-      #error DEPENDENCY ERROR: Missing setting AUTOCAL_TRAVELRATE
+    #if DISABLED(XY_PROBE_SPEED)
+      #error DEPENDENCY ERROR: Missing setting XY_PROBE_SPEED
     #endif
-    #if DISABLED(AUTOCAL_PROBERATE)
-      #error DEPENDENCY ERROR: Missing setting AUTOCAL_PROBERATE
+    #if DISABLED(Z_PROBE_SPEED)
+      #error DEPENDENCY ERROR: Missing setting Z_PROBE_SPEED
     #endif
     #if DISABLED(AUTOCALIBRATION_PRECISION)
       #error DEPENDENCY ERROR: Missing setting AUTOCALIBRATION_PRECISION

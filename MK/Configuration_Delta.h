@@ -27,17 +27,18 @@
  *
  * - Machine name
  * - Delta settings
- * - Auto Bed Leveling (ABL)
  * - Endstop pullup resistors
  * - Endstops logic
+ * - Z probe Options
  * - Endstops min or max
  * - Stepper enable logic
  * - Stepper step logic
  * - Stepper direction
  * - Disables axis
- * - Manual home positions
  * - Travel limits
  * - Axis relative mode
+ * - Auto Bed Leveling (ABL)
+ * - Manual home positions
  * - Axis steps per unit
  * - Axis feedrate
  * - Axis accelleration
@@ -62,7 +63,7 @@
  * Displayed in the LCD "Ready" message.                                                 *
  *                                                                                       *
  *****************************************************************************************/
-#define CUSTOM_MACHINE_NAME "Prusa"
+#define CUSTOM_MACHINE_NAME "Delta"
 /*****************************************************************************************/
 
 
@@ -142,79 +143,6 @@
 
 
 /*****************************************************************************************
- ******************************* Auto Bed Leveling (ABL) *********************************
- *****************************************************************************************
- *                                                                                       *
- * If you enabled Auto Bed Leveling (ABL) this add the support for auto bed level and    *
- * Autocalibration Delta system                                                          *
- * To use ABL you must have a PROBE, please define you type probe.                       *
- * Servo Probes, probe Allen Key, Mechanical Probe, Fix mounted Probe, ...               *
- * You must set Z PROBE PIN in Configuration_Pins.h                                      *
- *                                                                                       *
- *****************************************************************************************/
-//#define AUTO_BED_LEVELING_FEATURE
-
-// Speed for autocalibration travel and probing moves
-#define AUTOCAL_TRAVELRATE 100  // mm/sec
-#define AUTOCAL_PROBERATE   50  // mm/sec
-
-// Precision for G30 delta autocalibration function
-#define AUTOCALIBRATION_PRECISION 0.1 // mm
-
-// How much the nozzle will be raised when travelling from between next probing points
-#define Z_RAISE_BETWEEN_PROBINGS 30
-
-// Define the grid for bed level AUTO BED LEVELING GRID POINTS X AUTO BED LEVELING GRID POINTS.
-#define AUTO_BED_LEVELING_GRID_POINTS 9
-
-// Probes are sensors/switches that need to be activated before they can be used
-// and deactivated after their use.
-// Servo Probes, Z Sled Probe, Mechanical Probe, Fix mounted Probe, ... .
-
-// Z Servo Endstop
-// Remember active servos in Configuration_Feature.h
-// Define nr servo for endstop -1 not define. Servo index start 0
-#define Z_ENDSTOP_SERVO_NR -1
-#define Z_ENDSTOP_SERVO_ANGLES {90,0} // Z Axis Extend and Retract angles
-
-// A fix mounted probe, like the normal inductive probe, must be deactivated to go
-// below Z PROBE OFFSET FROM NOZZLE when the hardware endstops are active.
-//#define Z_PROBE_FIX_MOUNTED
-
-// A Mechanical Probe is any probe that either doesn't deploy or needs manual deployment
-// For example any setup that uses the nozzle itself as a probe.
-//#define Z_PROBE_MECHANICAL
-
-// Allen key retractable z-probe as seen on many Kossel delta printers - http://reprap.org/wiki/Kossel#Automatic_bed_leveling_probe
-// Deploys by touching z-axis belt. Retracts by pushing the probe down.
-//#define Z_PROBE_ALLEN_KEY
-
-// Start and end location values are used to deploy/retract the probe (will move from start to end and back again)
-#define Z_PROBE_DEPLOY_START_LOCATION {0, 0, 30}   // X, Y, Z, E start location for z-probe deployment sequence
-#define Z_PROBE_DEPLOY_END_LOCATION {0, 0, 30}     // X, Y, Z, E end location for z-probe deployment sequence
-#define Z_PROBE_RETRACT_START_LOCATION {0, 0, 30}  // X, Y, Z, E start location for z-probe retract sequence
-#define Z_PROBE_RETRACT_END_LOCATION {0, 0, 30}    // X, Y, Z, E end location for z-probe retract sequence
-
-// Z-Probe variables
-// Offsets to the probe relative to the nozzle tip (Nozzle - Probe)
-// X and Y offsets MUST be INTEGERS
-//
-//    +-- BACK ---+
-//    |           |
-//  L |    (+) P  | R <-- probe (10,10)
-//  E |           | I
-//  F | (-) N (+) | G <-- nozzle (0,0)
-//  T |           | H
-//    |  P (-)    | T <-- probe (-10,-10)
-//    |           |
-//    O-- FRONT --+
-#define X_PROBE_OFFSET_FROM_NOZZLE  0     // X offset: -left  [of the nozzle] +right
-#define Y_PROBE_OFFSET_FROM_NOZZLE  0     // Y offset: -front [of the nozzle] +behind
-#define Z_PROBE_OFFSET_FROM_NOZZLE -1     // Z offset: -below [of the nozzle] (always negative!)
-/*****************************************************************************************/
-
-
-/*****************************************************************************************
  ************************* Endstop pullup resistors **************************************
  *****************************************************************************************
  *                                                                                       *
@@ -258,6 +186,91 @@
 #define Z2_MAX_ENDSTOP_LOGIC  false   // set to true to invert the logic of the endstop.
 #define Z_PROBE_ENDSTOP_LOGIC false   // set to true to invert the logic of the endstop.
 #define E_MIN_ENDSTOP_LOGIC   false   // set to true to invert the logic of the endstop.
+/*****************************************************************************************/
+
+
+/*****************************************************************************************
+ ******************************* Z probe Options *****************************************
+ *****************************************************************************************
+ *                                                                                       *
+ * Probes are sensors/switches that need to be activated before they can be used         *
+ * and deactivated after their use.                                                      *
+ * Servo Probes, Z Allen Key, Fix mounted Probe, etc.                                    *
+ * You must activate one of these to use AUTO BED LEVELING FEATURE below.                *
+ *                                                                                       *
+ * If you want to still use the Z min endstop for homing,                                *
+ * disable Z SAFE HOMING.                                                                *
+ * Eg: to park the head outside the bed area when homing with G28.                       *
+ *                                                                                       *
+ * WARNING: The Z MIN endstop will need to set properly as it would                      *
+ * without a Z PROBE to prevent head crashes and premature stopping                      *
+ * during a print.                                                                       *
+ * To use a separte Z PROBE endstop, you must have a Z PROBE PIN                         *
+ * defined in the Configuration_Pins.h file for your control board.                      *
+ *                                                                                       *
+ * Use M666 P to set the Z probe vertical offset from the nozzle. Store with M500.       *
+ * WARNING: Setting the wrong pin may have unexpected and potentially                    *
+ * disastrous outcomes. Use with caution and do your homework.                           *
+ *                                                                                       *
+ *****************************************************************************************/
+// Z Servo Endstop
+// Remember active servos in Configuration_Feature.h
+// Define nr servo for endstop -1 not define. Servo index start 0
+#define Z_ENDSTOP_SERVO_NR -1
+#define Z_ENDSTOP_SERVO_ANGLES {90,0} // Z Servo Deploy and Stow angles
+
+// A Fix-Mounted Probe either doesn't deploy or needs manual deployment.
+// For example an inductive probe, or a setup that uses the nozzle to probe.
+// An inductive probe must be deactivated to go below
+// its trigger-point if hardware endstops are active.
+//#define Z_PROBE_FIX_MOUNTED
+
+// Allen key retractable z-probe as seen on many Kossel delta printers - http://reprap.org/wiki/Kossel#Automatic_bed_leveling_probe
+// Deploys by touching z-axis belt. Retracts by pushing the probe down.
+//#define Z_PROBE_ALLEN_KEY
+
+// Start and end location values are used to deploy/retract the probe (will move from start to end and back again)
+#define Z_PROBE_DEPLOY_START_LOCATION {0, 0, 30}   // X, Y, Z, E start location for z-probe deployment sequence
+#define Z_PROBE_DEPLOY_END_LOCATION {0, 0, 30}     // X, Y, Z, E end location for z-probe deployment sequence
+#define Z_PROBE_RETRACT_START_LOCATION {0, 0, 30}  // X, Y, Z, E start location for z-probe retract sequence
+#define Z_PROBE_RETRACT_END_LOCATION {0, 0, 30}    // X, Y, Z, E end location for z-probe retract sequence
+
+// Offsets to the probe relative to the nozzle tip (Nozzle - Probe)
+// X and Y offsets MUST be INTEGERS
+//
+//    +-- BACK ---+
+//    |           |
+//  L |    (+) P  | R <-- probe (10,10)
+//  E |           | I
+//  F | (-) N (+) | G <-- nozzle (0,0)
+//  T |           | H
+//    |  P (-)    | T <-- probe (-10,-10)
+//    |           |
+//    O-- FRONT --+
+//  (0,0)
+#define X_PROBE_OFFSET_FROM_NOZZLE  0     // X offset: -left  [of the nozzle] +right
+#define Y_PROBE_OFFSET_FROM_NOZZLE  0     // Y offset: -front [of the nozzle] +behind
+#define Z_PROBE_OFFSET_FROM_NOZZLE -1     // Z offset: -below [of the nozzle] (always negative!)
+
+// X and Y axis travel speed between probes, in mm/min
+#define XY_PROBE_SPEED    10000
+// Z probe speed, in mm/min
+#define Z_PROBE_SPEED      3000
+
+//
+// Probe Raise options provide clearance for the probe to deploy and stow.
+//
+// For G28 these apply when the probe deploys and stows.
+// For G29 these apply before and after the full procedure.
+#define Z_RAISE_BEFORE_PROBING    30  // Raise before probe deploy (e.g., the first probe).
+#define Z_RAISE_AFTER_PROBING     30  // Raise before probe stow (e.g., the last probe).
+#define Z_RAISE_BETWEEN_PROBINGS  30  // Raise between probing points.
+
+//
+// For M666 give a range for adjusting the Z probe offset
+//
+#define Z_PROBE_OFFSET_RANGE_MIN -20
+#define Z_PROBE_OFFSET_RANGE_MAX  20
 /*****************************************************************************************/
 
 
@@ -343,20 +356,6 @@
 
 
 /*****************************************************************************************
- ******************************** Manual home positions **********************************
- *****************************************************************************************/
-// The position of the homing switches
-#define MANUAL_HOME_POSITIONS   // If defined, MANUAL_*_HOME_POS below will be used
-#define BED_CENTER_AT_0_0       // If defined, the center of the bed is at (X=0, Y=0)
-
-//Manual homing switch locations:
-#define MANUAL_X_HOME_POS 0
-#define MANUAL_Y_HOME_POS 0
-#define MANUAL_Z_HOME_POS 200      // Distance between nozzle and print surface after homing.
-/*****************************************************************************************/
-
-
-/*****************************************************************************************
  ************************************ Travel limits **************************************
  *****************************************************************************************
  *                                                                                       *
@@ -377,6 +376,39 @@
  ********************************** Axis relative mode ***********************************
  *****************************************************************************************/
 #define AXIS_RELATIVE_MODES {false, false, false, false}
+/*****************************************************************************************/
+
+
+/*****************************************************************************************
+ ******************************* Auto Bed Leveling (ABL) *********************************
+ *****************************************************************************************
+ *                                                                                       *
+ * If you enabled Auto Bed Leveling (ABL) this add the support for auto bed level and    *
+ * Autocalibration Delta system                                                          *
+ * To use ABL you must have a PROBE, please define you type probe.                       *
+ *                                                                                       *
+ *****************************************************************************************/
+//#define AUTO_BED_LEVELING_FEATURE
+
+// Precision for G30 delta autocalibration function
+#define AUTOCALIBRATION_PRECISION 0.1 // mm
+
+// Define the grid for bed level AUTO BED LEVELING GRID POINTS X AUTO BED LEVELING GRID POINTS.
+#define AUTO_BED_LEVELING_GRID_POINTS 9
+/*****************************************************************************************/
+
+
+/*****************************************************************************************
+ ******************************** Manual home positions **********************************
+ *****************************************************************************************/
+// The position of the homing switches
+#define MANUAL_HOME_POSITIONS   // If defined, MANUAL_*_HOME_POS below will be used
+#define BED_CENTER_AT_0_0       // If defined, the center of the bed is at (X=0, Y=0)
+
+//Manual homing switch locations:
+#define MANUAL_X_HOME_POS 0
+#define MANUAL_Y_HOME_POS 0
+#define MANUAL_Z_HOME_POS 200      // Distance between nozzle and print surface after homing.
 /*****************************************************************************************/
 
 
@@ -436,8 +468,10 @@
 /*****************************************************************************************
  ************************************ Homing feedrate ************************************
  *****************************************************************************************/
-// set the homing speeds (mm/min)       X,      Y,      Z
-#define HOMING_FEEDRATE           {100*60, 100*60, 100*60, 0}
+// delta homing speeds must be the same on xyz
+#define HOMING_FEEDRATE_XYZ (200*60)
+#define HOMING_FEEDRATE_E 0
+#define HOMING_FEEDRATE { HOMING_FEEDRATE_XYZ, HOMING_FEEDRATE_XYZ, HOMING_FEEDRATE_XYZ, HOMING_FEEDRATE_E }
 // homing hits the endstop, then retracts by this distance, before it tries to slowly bump again:
 #define XYZ_HOME_BUMP_MM 5
 // Re-Bump Speed Divisor (Divides the Homing Feedrate)
