@@ -1246,6 +1246,10 @@ static void lcd_status_screen() {
       if (LCD_CLICKED) {
         _lcd_level_bed_position = 0;
         current_position[Z_AXIS] = MESH_HOME_SEARCH_Z;
+          #if Z_HOME_DIR > 0
+            + Z_MAX_POS
+          #endif
+        ;
         planner.set_position_mm(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
         lcd_goto_screen(_lcd_level_goto_next_point, true);
       }
