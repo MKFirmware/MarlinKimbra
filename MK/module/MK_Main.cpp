@@ -1873,14 +1873,15 @@ static void axis_unhomed_error(bool xyz = false) {
 
       float old_feedrate = feedrate;
 
-      // Raise by z_raise, then move the Z probe to the given XY
-      if (DEBUGGING(INFO)) {
-        ECHO_SMV(INFO, "> do_blocking_move_to_xy ", x - (X_PROBE_OFFSET_FROM_NOZZLE));
-        ECHO_MV(", ", y - (Y_PROBE_OFFSET_FROM_NOZZLE));
-        ECHO_MV(", ", max(current_position[Z_AXIS], Z_RAISE_BETWEEN_PROBINGS));
-        ECHO_E;
-      }
+      // Ensure a minimum height before moving the probe
+      do_probe_raise(Z_RAISE_BETWEEN_PROBINGS);
 
+      // Move to the XY where we shall probe
+      if (DEBUGGING(INFO)) {
+        ECHO_SMV(INFO, "> do_blocking_move_to_xy(", x - (X_PROBE_OFFSET_FROM_NOZZLE));
+        ECHO_MV(", ", y - (Y_PROBE_OFFSET_FROM_NOZZLE));
+        ECHO_EM(")");
+      }
       feedrate = XY_PROBE_FEEDRATE;
       do_blocking_move_to_xy(x - (X_PROBE_OFFSET_FROM_NOZZLE), y - (Y_PROBE_OFFSET_FROM_NOZZLE));
 
@@ -4197,17 +4198,17 @@ inline void gcode_G28() {
     sync_plan_position_delta();
   #endif
 
-  #if ENABLED(ENDSTOPS_ONLY_FOR_HOMING)
-    endstops.enable(false);
-     if (DEBUGGING(INFO))
-       ECHO_LM(INFO, "ENDSTOPS_ONLY_FOR_HOMING endstops.enable(false)");
-  #endif
+  endstops.not_homing();
 
   // Enable mesh leveling again
   #if ENABLED(MESH_BED_LEVELING)
     if (mbl.has_mesh()) {
       if (home_all_axis || (axis_homed[X_AXIS] && axis_homed[Y_AXIS] && homeZ)) {
-        current_position[Z_AXIS] = MESH_HOME_SEARCH_Z;
+        current_position[Z_AXIS] = MESH_HOME_SEARCH_Z
+          #if Z_HOME_DIR > 0
+            + Z_MAX_POS
+          #endif
+        ;
         sync_plan_position();
         mbl.set_active(true);
         #if ENABLED(MESH_G28_REST_ORIGIN)
@@ -4219,7 +4220,11 @@ inline void gcode_G28() {
         #else
           current_position[Z_AXIS] = MESH_HOME_SEARCH_Z -
             mbl.get_z(current_position[X_AXIS] - home_offset[X_AXIS],
-                      current_position[Y_AXIS] - home_offset[Y_AXIS]);
+                      current_position[Y_AXIS] - home_offset[Y_AXIS])
+            #if Z_HOME_DIR > 0
+              + Z_MAX_POS
+            #endif
+          ;
         #endif
       }
       else if ((axis_homed[X_AXIS] && axis_homed[Y_AXIS] && axis_homed[Z_AXIS]) && (homeX || homeY)) {
@@ -4269,9 +4274,8 @@ inline void gcode_G28() {
     #endif
   #endif
 
-  feedrate = saved_feedrate;
-  feedrate_multiplier = saved_feedrate_multiplier;
-  refresh_cmd_timeout();
+  clean_up_after_endstop_or_probe_move();
+
   endstops.hit_on_purpose(); // clear endstop hit flags
 
   if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< gcode_G28");
@@ -4382,7 +4386,11 @@ inline void gcode_G28() {
         // For each G29 S2...
         if (probe_point == 0) {
           // For the intial G29 S2 make Z a positive value (e.g., 4.0)
-          current_position[Z_AXIS] = MESH_HOME_SEARCH_Z;
+          current_position[Z_AXIS] = MESH_HOME_SEARCH_Z
+            #if Z_HOME_DIR > 0
+              + Z_MAX_POS
+            #endif
+          ;
           sync_plan_position();
         }
         else {
