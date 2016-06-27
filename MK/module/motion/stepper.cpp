@@ -421,7 +421,9 @@ FORCE_INLINE void trapezoid_generator_reset() {
 
 // "The Stepper Driver Interrupt" - This timer interrupt is the workhorse.
 // It pops blocks from the block_buffer and executes them by pulsing the stepper pins appropriately.
-ISR(TIMER1_COMPA_vect) {
+ISR(TIMER1_COMPA_vect) { isr(); }
+
+void isr() {
 
   if (cleaning_buffer_counter) {
     current_block = NULL;
@@ -704,7 +706,7 @@ ISR(TIMER1_COMPA_vect) {
       #endif
 
       #if ENABLED(ADVANCE) || ENABLED(ADVANCE_LPC)
-        eISR_Rate = (timer >> 2) / e_steps[current_block->active_driver];
+        eISR_Rate = (timer >> 2) * step_loops / abs(e_steps[current_block->active_driver]);
       #endif
     }
     else if (step_events_completed > (unsigned long)current_block->decelerate_after) {
@@ -744,14 +746,15 @@ ISR(TIMER1_COMPA_vect) {
       #endif
 
       #if ENABLED(ADVANCE) || ENABLED(ADVANCE_LPC)
-        eISR_Rate = (timer >> 2) / e_steps[current_block->active_driver];
+        eISR_Rate = (timer >> 2) * step_loops / abs(e_steps[current_block->active_driver]);
       #endif
     }
     else {
       #if ENABLED(ADVANCE_LPC)
         if (current_block->use_advance_lead)
           current_estep_rate[current_block->active_driver] = final_estep_rate;
-        eISR_Rate = (OCR1A_nominal >> 2) / e_steps[current_block->active_driver];
+
+        eISR_Rate = (OCR1A_nominal >> 2) * step_loops_nominal / abs(e_steps[current_block->active_driver]);
       #endif
 
       OCR1A = OCR1A_nominal;
@@ -777,7 +780,9 @@ ISR(TIMER1_COMPA_vect) {
 
   // Timer interrupt for E. e_steps is set in the main routine;
   // Timer 0 is shared with millies
-  ISR(TIMER0_COMPA_vect) {
+  ISR(TIMER0_COMPA_vect) { advance_isr(); }
+
+  void advance_isr() {
 
     old_OCR0A += eISR_Rate;
     OCR0A = old_OCR0A;
@@ -797,22 +802,24 @@ ISR(TIMER1_COMPA_vect) {
       }
 
     // Step all E steppers that have steps
-    STEP_E_ONCE(0);
-    #if EXTRUDERS > 1
-      STEP_E_ONCE(1);
-      #if EXTRUDERS > 2
-        STEP_E_ONCE(2);
-        #if EXTRUDERS > 3
-          STEP_E_ONCE(3);
-          #if EXTRUDERS > 4
-            STEP_E_ONCE(4);
-            #if EXTRUDERS > 5
-              STEP_E_ONCE(5);
+    for (uint8_t i = 0; i < step_loops; i++) {
+      STEP_E_ONCE(0);
+      #if EXTRUDERS > 1
+        STEP_E_ONCE(1);
+        #if EXTRUDERS > 2
+          STEP_E_ONCE(2);
+          #if EXTRUDERS > 3
+            STEP_E_ONCE(3);
+            #if EXTRUDERS > 4
+              STEP_E_ONCE(4);
+              #if EXTRUDERS > 5
+                STEP_E_ONCE(5);
+              #endif
             #endif
           #endif
         #endif
       #endif
-    #endif
+    }
   }
 #endif
 
@@ -1333,18 +1340,24 @@ void digipot_init() {
 
     SPI.begin();
     pinMode(DIGIPOTSS_PIN, OUTPUT);
-    for (int i = 0; i <= 4; i++) {
+    for (uint8_t i = 0; i < COUNT(digipot_motor_current); i++) {
       //digitalPotWrite(digipot_ch[i], digipot_motor_current[i]);
       digipot_current(i, digipot_motor_current[i]);
     }
   #endif
   #if HAS(MOTOR_CURRENT_PWM_XY)
-    pinMode(MOTOR_CURRENT_PWM_XY_PIN, OUTPUT);
-    pinMode(MOTOR_CURRENT_PWM_Z_PIN, OUTPUT);
-    pinMode(MOTOR_CURRENT_PWM_E_PIN, OUTPUT);
-    digipot_current(0, motor_current_setting[0]);
-    digipot_current(1, motor_current_setting[1]);
-    digipot_current(2, motor_current_setting[2]);
+    #if PIN_EXISTS(MOTOR_CURRENT_PWM_XY)
+      pinMode(MOTOR_CURRENT_PWM_XY_PIN, OUTPUT);
+      digipot_current(0, motor_current_setting[0]);
+    #endif
+    #if PIN_EXISTS(MOTOR_CURRENT_PWM_Z)
+      pinMode(MOTOR_CURRENT_PWM_Z_PIN, OUTPUT);
+      digipot_current(1, motor_current_setting[1]);
+    #endif
+    #if PIN_EXISTS(MOTOR_CURRENT_PWM_E)
+      pinMode(MOTOR_CURRENT_PWM_E_PIN, OUTPUT);
+      digipot_current(2, motor_current_setting[2]);
+    #endif
     //Set timer5 to 31khz so the PWM of the motor power is as constant as possible. (removes a buzzing noise)
     TCCR5B = (TCCR5B & ~(_BV(CS50) | _BV(CS51) | _BV(CS52))) | _BV(CS50);
   #endif
