@@ -1648,8 +1648,8 @@ static void axis_unhomed_error(bool xyz = false) {
       float oldXpos = current_position[X_AXIS]; // save x position
       float old_feedrate = feedrate;
       if (dock) {
-        #if Z_RAISE_AFTER_PROBING > 0
-          do_probe_raise(Z_RAISE_AFTER_PROBING);
+        #if _Z_RAISE_PROBE_DEPLOY_STOW > 0
+          do_probe_raise(_Z_RAISE_PROBE_DEPLOY_STOW);
         #endif
         // Dock sled a bit closer to ensure proper capturing
         feedrate = XY_PROBE_FEEDRATE;
@@ -1659,7 +1659,7 @@ static void axis_unhomed_error(bool xyz = false) {
       else {
         feedrate = XY_PROBE_FEEDRATE;
         float z_loc = current_position[Z_AXIS];
-        if (z_loc < Z_RAISE_BEFORE_PROBING + 5) z_loc = Z_RAISE_BEFORE_PROBING;
+        if (z_loc < _Z_RAISE_PROBE_DEPLOY_STOW + 5) z_loc = _Z_RAISE_PROBE_DEPLOY_STOW;
         do_blocking_move_to(X_MAX_POS + SLED_DOCKING_OFFSET + offset, current_position[Y_AXIS], z_loc); // this also updates current_position
         digitalWrite(SLED_PIN, HIGH); // turn on magnet
       }
@@ -1675,8 +1675,8 @@ static void axis_unhomed_error(bool xyz = false) {
     if (endstops.z_probe_enabled) return;
 
     // Make room for Z Servo
-    #if Z_RAISE_BEFORE_PROBING > 0
-      do_probe_raise(Z_RAISE_BEFORE_PROBING);
+    #if _Z_RAISE_PROBE_DEPLOY_STOW > 0
+      do_probe_raise(_Z_RAISE_PROBE_DEPLOY_STOW);
     #endif
 
     #if ENABLED(Z_PROBE_SLED)
@@ -1692,23 +1692,60 @@ static void axis_unhomed_error(bool xyz = false) {
 
       float old_feedrate = feedrate;
 
-      feedrate = homing_feedrate[Z_AXIS];
-      do_blocking_move_to_z(  z_probe_deploy_start_location[Z_AXIS]);
-      do_blocking_move_to_xy( z_probe_deploy_start_location[X_AXIS],
-                              z_probe_deploy_start_location[Y_AXIS]);
+      // If endstop is already false, the Z probe is deployed
+      #if HAS(Z_PROBE_PIN)
+        bool z_probe_endstop = (READ(Z_PROBE_PIN) != Z_PROBE_ENDSTOP_INVERTING);
+        if (z_probe_endstop)
+      #else
+        bool z_min_endstop = (READ(Z_MIN_PIN) != Z_MIN_ENDSTOP_INVERTING);
+        if (z_min_endstop)
+      #endif
+        {
+          // Move to the start position to initiate deployment
+          feedrate = homing_feedrate[Z_AXIS];
+          destination[X_AXIS] = z_probe_deploy_start_location[X_AXIS];
+          destination[Y_AXIS] = z_probe_deploy_start_location[Y_AXIS];
+          destination[Z_AXIS] = z_probe_deploy_start_location[Z_AXIS];
+          prepare_move_to_destination_raw(); // this will also set_current_to_destination
 
-      feedrate = homing_feedrate[Z_AXIS] / 10;
-      do_blocking_move_to(z_probe_deploy_end_location[X_AXIS],
-                          z_probe_deploy_end_location[Y_AXIS],
-                          z_probe_deploy_end_location[Z_AXIS]);
+          // Move to engage deployment
+          feedrate = homing_feedrate[Z_AXIS] / 10;
+          destination[X_AXIS] = z_probe_deploy_end_location[X_AXIS];
+          destination[Y_AXIS] = z_probe_deploy_end_location[Y_AXIS];
+          destination[Z_AXIS] = z_probe_deploy_end_location[Z_AXIS];
+          prepare_move_to_destination_raw();
 
-      feedrate = homing_feedrate[Z_AXIS];
-      
-      do_blocking_move_to(z_probe_deploy_start_location[X_AXIS],
-                          z_probe_deploy_start_location[Y_AXIS],
-                          z_probe_deploy_start_location[Z_AXIS]);
+          // Move to trigger deployment
+          feedrate = homing_feedrate[Z_AXIS];
+          destination[X_AXIS] = z_probe_deploy_start_location[X_AXIS];
+          destination[Y_AXIS] = z_probe_deploy_start_location[Y_AXIS];
+          destination[Z_AXIS] = z_probe_deploy_start_location[Z_AXIS];
+          prepare_move_to_destination_raw();
+        }
+
+      // Partially Home X,Y for safety
+      destination[X_AXIS] *= 0.75;
+      destination[Y_AXIS] *= 0.75;
+      prepare_move_to_destination_raw(); // this will also set_current_to_destination
 
       feedrate = old_feedrate;
+
+      st_synchronize();
+
+      #if HAS(Z_PROBE_PIN)
+        z_probe_endstop = (READ(Z_PROBE_PIN) != Z_PROBE_ENDSTOP_INVERTING);
+        if (z_probe_endstop)
+      #else
+        z_min_endstop = (READ(Z_MIN_PIN) != Z_MIN_ENDSTOP_INVERTING);
+        if (z_min_endstop)
+      #endif
+        {
+          if (IsRunning()) {
+            ECHO_LM(ER, "Z-Probe failed to engage!");
+            LCD_ALERTMESSAGEPGM("Err: ZPROBE");
+          }
+          stop();
+        }
 
     #else
 
@@ -1725,8 +1762,8 @@ static void axis_unhomed_error(bool xyz = false) {
     if (!endstops.z_probe_enabled) return;
 
     // Make more room for the servo
-    #if Z_RAISE_AFTER_PROBING > 0
-      do_probe_raise(Z_RAISE_AFTER_PROBING);
+    #if _Z_RAISE_PROBE_DEPLOY_STOW > 0
+      do_probe_raise(_Z_RAISE_PROBE_DEPLOY_STOW);
     #endif
 
     #if ENABLED(Z_PROBE_SLED)
@@ -1743,22 +1780,57 @@ static void axis_unhomed_error(bool xyz = false) {
       float old_feedrate = feedrate;
 
       feedrate = homing_feedrate[Z_AXIS];
-      do_blocking_move_to(z_probe_retract_start_location[X_AXIS],
-                          z_probe_retract_start_location[Y_AXIS],
-                          z_probe_retract_start_location[Z_AXIS]);
 
-      // Move the nozzle below the print surface to push the probe up.
-      feedrate = homing_feedrate[Z_AXIS]/10;
-      do_blocking_move_to(z_probe_retract_end_location[X_AXIS],
-                          z_probe_retract_end_location[Y_AXIS],
-                          z_probe_retract_end_location[Z_AXIS]);
+      // Move up for safety
+      #if _Z_RAISE_PROBE_DEPLOY_STOW > 0
+        destination[Z_AXIS] = current_position[Z_AXIS] + _Z_RAISE_PROBE_DEPLOY_STOW;
+        prepare_move_to_destination_raw(); // this will also set_current_to_destination
+      #endif
 
+      // Move to the start position to initiate retraction
+      destination[X_AXIS] = z_probe_retract_start_location[X_AXIS];
+      destination[Y_AXIS] = z_probe_retract_start_location[Y_AXIS];
+      destination[Z_AXIS] = z_probe_retract_start_location[Z_AXIS];
+      prepare_move_to_destination_raw();
+
+      // Move the nozzle down to push the Z probe into retracted position
+      feedrate = homing_feedrate[Z_AXIS] / 10;
+      destination[X_AXIS] = z_probe_retract_end_location[X_AXIS];
+      destination[Y_AXIS] = z_probe_retract_end_location[Y_AXIS];
+      destination[Z_AXIS] = z_probe_retract_end_location[Z_AXIS];
+      prepare_move_to_destination_raw();
+
+      // Move up for safety
       feedrate = homing_feedrate[Z_AXIS];
-      do_blocking_move_to(z_probe_retract_start_location[X_AXIS],
-                          z_probe_retract_start_location[Y_AXIS],
-                          z_probe_retract_start_location[Z_AXIS]);
+      destination[X_AXIS] = z_probe_retract_start_location[X_AXIS];
+      destination[Y_AXIS] = z_probe_retract_start_location[Y_AXIS];
+      destination[Z_AXIS] = z_probe_retract_start_location[Z_AXIS];
+      prepare_move_to_destination_raw();
+
+      // Home XY for safety
+      feedrate = homing_feedrate[X_AXIS] / 2;
+      destination[X_AXIS] = 0;
+      destination[Y_AXIS] = 0;
+      prepare_move_to_destination_raw(); // this will also set_current_to_destination
 
       feedrate = old_feedrate;
+
+      st_synchronize();
+
+      #if HAS(Z_PROBE_PIN)
+        bool z_probe_endstop = (READ(Z_PROBE_PIN) != Z_PROBE_ENDSTOP_INVERTING);
+        if (!z_probe_endstop)
+      #else
+        bool z_min_endstop = (READ(Z_MIN_PIN) != Z_MIN_ENDSTOP_INVERTING);
+        if (!z_min_endstop)
+      #endif
+        {
+          if (IsRunning()) {
+            ECHO_LM(ER, "Z-Probe failed to retract!");
+            LCD_ALERTMESSAGEPGM("Err: ZPROBE");
+          }
+          stop();
+        }
 
     #else
 
@@ -4292,7 +4364,9 @@ inline void gcode_G28() {
     feedrate = homing_feedrate[X_AXIS];
 
     current_position[Z_AXIS] = MESH_HOME_SEARCH_Z
-      #if MIN_Z_HEIGHT_FOR_HOMING > 0
+      #if Z_RAISE_BETWEEN_PROBINGS > MIN_Z_HEIGHT_FOR_HOMING
+        + Z_RAISE_BETWEEN_PROBINGS
+      #elif MIN_Z_HEIGHT_FOR_HOMING > 0
         + MIN_Z_HEIGHT_FOR_HOMING
       #endif
     ;
@@ -4302,7 +4376,7 @@ inline void gcode_G28() {
     current_position[Y_AXIS] = y + home_offset[Y_AXIS];
     line_to_current_position();
 
-    #if MIN_Z_HEIGHT_FOR_HOMING > 0
+    #if Z_RAISE_BETWEEN_PROBINGS > 0 || MIN_Z_HEIGHT_FOR_HOMING > 0
       current_position[Z_AXIS] = MESH_HOME_SEARCH_Z;
       line_to_current_position();
     #endif
@@ -4406,7 +4480,9 @@ inline void gcode_G28() {
         else {
           // One last "return to the bed" (as originally coded) at completion
           current_position[Z_AXIS] = MESH_HOME_SEARCH_Z
-            #if MIN_Z_HEIGHT_FOR_HOMING > 0
+            #if Z_RAISE_BETWEEN_PROBINGS > MIN_Z_HEIGHT_FOR_HOMING
+              + Z_RAISE_BETWEEN_PROBINGS
+            #elif MIN_Z_HEIGHT_FOR_HOMING > 0
               + MIN_Z_HEIGHT_FOR_HOMING
             #endif
           ;
@@ -4715,7 +4791,7 @@ inline void gcode_G28() {
 
     #endif // !AUTO_BED_LEVELING_GRID
 
-    // Raise to Z_RAISE_AFTER_PROBING. Stow the probe.
+    // Raise to _Z_RAISE_PROBE_DEPLOY_STOW. Stow the probe.
     stow_z_probe();
 
     // Restore state after probing
