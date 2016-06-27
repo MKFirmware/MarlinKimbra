@@ -60,15 +60,6 @@
   // Initialize and start the stepper motor subsystem
   void st_init();
 
-  //
-  // Interrupt Service Routines
-  //
-  static void isr();
-
-  #if ENABLED(ADVANCE) || ENABLED(ADVANCE_LPC)
-    static void advance_isr();
-  #endif
-
   // Block until all buffered steps are executed
   void st_synchronize();
 

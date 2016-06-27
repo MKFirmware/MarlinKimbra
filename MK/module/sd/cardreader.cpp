@@ -391,7 +391,7 @@ void CardReader::closeFile(bool store_location /*=false*/) {
 
     if (degTargetBed() > 0) {
       char Bedtemp[15];
-      sprintf(Bedtemp, "M190 S%i\n", degTargetBed());
+      sprintf(Bedtemp, "M190 S%i\n", (int)degTargetBed());
       fileRestart.write(Bedtemp);
     }
 

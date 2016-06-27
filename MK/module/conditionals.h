@@ -947,7 +947,6 @@
         #define XY_PROBE_SPEED 4000
       #endif
     #endif
-    #define _Z_RAISE_PROBE_DEPLOY_STOW (max(Z_RAISE_PROBE_DEPLOY_STOW, Z_RAISE_BETWEEN_PROBINGS))
   #endif
 
   /**
