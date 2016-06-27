@@ -533,7 +533,7 @@ bool enqueue_and_echo_command(const char* cmd, bool say_ok/*=false*/) {
 #if HAS(KILL)
   void setup_killpin() {
     SET_INPUT(KILL_PIN);
-    WRITE(KILL_PIN, HIGH);
+    PULLUP(KILL_PIN, HIGH);
   }
 #endif
 
@@ -541,7 +541,7 @@ bool enqueue_and_echo_command(const char* cmd, bool say_ok/*=false*/) {
   void setup_filrunoutpin() {
     pinMode(FILRUNOUT_PIN, INPUT);
     #if ENABLED(ENDSTOPPULLUP_FIL_RUNOUT)
-      WRITE(FILRUNOUT_PIN, HIGH);
+      PULLUP(FILRUNOUT_PIN, HIGH);
     #endif
   }
 #endif
@@ -550,7 +550,7 @@ bool enqueue_and_echo_command(const char* cmd, bool say_ok/*=false*/) {
 #if HAS(HOME)
   void setup_homepin(void) {
     SET_INPUT(HOME_PIN);
-    WRITE(HOME_PIN, HIGH);
+    PULLUP(HOME_PIN, HIGH);
   }
 #endif
 
