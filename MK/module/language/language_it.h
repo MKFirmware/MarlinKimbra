@@ -169,8 +169,8 @@
 #define MSG_INIT_SDCARD                     "Iniz. SD-Card"
 #define MSG_CNG_SDCARD                      "Cambia SD-Card"
 #define MSG_ZPROBE_OUT                      "Z probe out. bed"
-#define MSG_YX_UNHOMED                      "Home X/Y prima di Z"
-#define MSG_XYZ_UNHOMED                     "Home XYZ prima"
+#define MSG_HOME                            "Home"
+#define MSG_FIRST                           "prima"
 #define MSG_ZPROBE_ZOFFSET                  "Zprobe ZOffset"
 #define MSG_BABYSTEP                        "Babystep"
 #define MSG_BABYSTEP_X                      MSG_BABYSTEP " " MSG_X
