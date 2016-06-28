@@ -266,8 +266,8 @@
 //
 // For M666 give a range for adjusting the Z probe offset
 //
-#define Z_PROBE_OFFSET_RANGE_MIN -20
-#define Z_PROBE_OFFSET_RANGE_MAX  20
+#define Z_PROBE_OFFSET_RANGE_MIN -50
+#define Z_PROBE_OFFSET_RANGE_MAX  50
 /*****************************************************************************************/
 
 

@@ -399,7 +399,7 @@ void print_xyz(const char* prefix, const float xyz[]) {
     print_xyz(prefix, xyz.x, xyz.y, xyz.z);
   }
 #endif
-#define DEBUG_POS(PREFIX, VAR) do{ ECHO_SM(INFO,PREFIX); print_xyz(" > " STRINGIFY(VAR), VAR); }while(0)
+#define DEBUG_POS(PREFIX,VAR) do{ ECHO_M(PREFIX); print_xyz(" > " STRINGIFY(VAR), VAR); }while(0)
 
 #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
   float extrude_min_temp = EXTRUDE_MINTEMP;
@@ -1331,7 +1331,7 @@ static void set_home_offset(AxisEnum axis, float v) {
 static void set_axis_is_at_home(AxisEnum axis) {
   if (DEBUGGING(INFO)) {
     ECHO_SMT(INFO, "set_axis_is_at_home(", axis);
-    ECHO_EM(") >>>");
+    ECHO_EM(")");
   }
 
   position_shift[axis] = 0;
@@ -1398,7 +1398,7 @@ static void set_axis_is_at_home(AxisEnum axis) {
     update_software_endstops(axis);
   #endif
 
-  #if HAS_BED_PROBE && (Z_HOME_DIR < 0) && NOMECH(DELTA)
+  #if HAS(BED_PROBE) && (Z_HOME_DIR < 0)
     if (axis == Z_AXIS) {
       current_position[Z_AXIS] -= zprobe_zoffset;
       if (DEBUGGING(INFO))
@@ -1407,7 +1407,7 @@ static void set_axis_is_at_home(AxisEnum axis) {
   #endif
 
   if (DEBUGGING(INFO)) {
-    ECHO_LMV(INFO, " > home_offset[axis]==", home_offset[axis]);
+    ECHO_LMV(INFO, "> home_offset[axis]==", home_offset[axis]);
     DEBUG_POS("", current_position);
     ECHO_SMV(INFO, "<<< set_axis_is_at_home(", axis);
     ECHO_EM(")");
@@ -1505,15 +1505,29 @@ static void clean_up_after_endstop_or_probe_move() {
   refresh_cmd_timeout();
 }
 
-static void axis_unhomed_error(bool xyz = false) {
-  if (xyz) {
-    LCD_MESSAGEPGM(MSG_XYZ_UNHOMED);
-    ECHO_LM(ER, MSG_XYZ_UNHOMED);
+static bool axis_unhomed_error(const bool x, const bool y, const bool z) {
+  const bool  xx = x && !axis_homed[X_AXIS],
+              yy = y && !axis_homed[Y_AXIS],
+              zz = z && !axis_homed[Z_AXIS];
+  if (xx || yy || zz) {
+    ECHO_SM(ER, MSG_HOME " ");
+    if (xx) ECHO_M(MSG_X);
+    if (yy) ECHO_M(MSG_Y);
+    if (zz) ECHO_M(MSG_Z);
+    ECHO_EM(" " MSG_FIRST);
+
+    #if ENABLED(ULTRA_LCD)
+      char message[3 * (LCD_WIDTH) + 1] = ""; // worst case is kana.utf with up to 3*LCD_WIDTH+1
+      strcat_P(message, PSTR(MSG_HOME " "));
+      if (xx) strcat_P(message, PSTR(MSG_X));
+      if (yy) strcat_P(message, PSTR(MSG_Y));
+      if (zz) strcat_P(message, PSTR(MSG_Z));
+      strcat_P(message, PSTR(" " MSG_FIRST));
+      lcd_setstatus(message);
+    #endif
+    return true;
   }
-  else {
-    LCD_MESSAGEPGM(MSG_YX_UNHOMED);
-    ECHO_LM(ER, MSG_YX_UNHOMED);
-  }
+  return false;
 }
 
 #if HAS(BED_PROBE)
@@ -1603,24 +1617,16 @@ static void axis_unhomed_error(bool xyz = false) {
       ECHO_SMV(INFO, "do_probe_raise(", z_raise);
       ECHO_EM(")");
     }
-
     float z_dest = home_offset[Z_AXIS] + z_raise;
 
     if ((Z_HOME_DIR) < 0 && zprobe_zoffset < 0)
       z_dest -= zprobe_zoffset;
 
     #if MECH(DELTA)
-      float old_feedrate = feedrate;
-      feedrate = homing_feedrate[Z_AXIS];
       do_blocking_move_to_z(z_dest);
-      feedrate = old_feedrate;
     #else
-      if (z_dest > current_position[Z_AXIS]) {
-        float old_feedrate = feedrate;
-        feedrate = homing_feedrate[Z_AXIS];
+      if (z_dest > current_position[Z_AXIS])
         do_blocking_move_to_z(z_dest);
-        feedrate = old_feedrate;
-      }
     #endif
   }
 
@@ -1632,40 +1638,24 @@ static void axis_unhomed_error(bool xyz = false) {
     /**
      * Method to dock/undock a sled designed by Charles Bell.
      *
-     * dock[in]     If true, move to MAX_X and engage the electromagnet
-     * offset[in]   The additional distance to move to adjust docking location
+     * stow[in]     If false, move to MAX_X and engage the solenoid
+     *              If true, move to MAX_X and release the solenoid
      */
-    static void dock_sled(bool dock, int offset = 0) {
-      if (DEBUGGING(INFO)) ECHO_LMV(INFO, "dock_sled", dock);
-
-      if (!axis_homed[X_AXIS] || !axis_homed[Y_AXIS] || !axis_homed[Z_AXIS]) {
-        axis_unhomed_error(true);
-        return;
+    static void dock_sled(bool stow) {
+      if (DEBUGGING(INFO)) {
+        ECHO_SMV(INFO, "dock_sled(", stow);
+        ECHO_EM(")");
       }
 
-      if (endstops.z_probe_enabled == !dock) return; // already docked/undocked?
+      if (axis_unhomed_error(true, false, false)) return;
 
       float oldXpos = current_position[X_AXIS]; // save x position
-      float old_feedrate = feedrate;
-      if (dock) {
-        #if _Z_RAISE_PROBE_DEPLOY_STOW > 0
-          do_probe_raise(_Z_RAISE_PROBE_DEPLOY_STOW);
-        #endif
-        // Dock sled a bit closer to ensure proper capturing
-        feedrate = XY_PROBE_FEEDRATE;
-        do_blocking_move_to_x(X_MAX_POS + SLED_DOCKING_OFFSET + offset - 1);  // Dock sled a bit closer to ensure proper capturing
-        digitalWrite(SLED_PIN, LOW); // turn off magnet
-      }
-      else {
-        feedrate = XY_PROBE_FEEDRATE;
-        float z_loc = current_position[Z_AXIS];
-        if (z_loc < _Z_RAISE_PROBE_DEPLOY_STOW + 5) z_loc = _Z_RAISE_PROBE_DEPLOY_STOW;
-        do_blocking_move_to(X_MAX_POS + SLED_DOCKING_OFFSET + offset, current_position[Y_AXIS], z_loc); // this also updates current_position
-        digitalWrite(SLED_PIN, HIGH); // turn on magnet
-      }
-      do_blocking_move_to_x(oldXpos); // return to position before docking
 
-      feedrate = old_feedrate;
+      // Dock sled a bit closer to ensure proper capturing
+      do_blocking_move_to_x(X_MAX_POS + SLED_DOCKING_OFFSET - ((stow) ? 1 : 0));
+      digitalWrite(SLED_PIN, !stow); // switch solenoid
+
+      do_blocking_move_to_x(oldXpos); // return to position before docking
     }
   #endif // Z_PROBE_SLED
 
@@ -1675,9 +1665,7 @@ static void axis_unhomed_error(bool xyz = false) {
     if (endstops.z_probe_enabled) return;
 
     // Make room for Z Servo
-    #if _Z_RAISE_PROBE_DEPLOY_STOW > 0
-      do_probe_raise(_Z_RAISE_PROBE_DEPLOY_STOW);
-    #endif
+    do_probe_raise(_Z_RAISE_PROBE_DEPLOY_STOW);
 
     #if ENABLED(Z_PROBE_SLED)
 
@@ -1762,9 +1750,7 @@ static void axis_unhomed_error(bool xyz = false) {
     if (!endstops.z_probe_enabled) return;
 
     // Make more room for the servo
-    #if _Z_RAISE_PROBE_DEPLOY_STOW > 0
-      do_probe_raise(_Z_RAISE_PROBE_DEPLOY_STOW);
-    #endif
+    do_probe_raise(_Z_RAISE_PROBE_DEPLOY_STOW);
 
     #if ENABLED(Z_PROBE_SLED)
 
@@ -1938,8 +1924,10 @@ static void axis_unhomed_error(bool xyz = false) {
     //
     static float probe_pt(float x, float y, bool stow = true, int verbose_level = 1) {
       if (DEBUGGING(INFO)) {
-        ECHO_LM(INFO, "probe_pt >>>");
-        ECHO_LMV(INFO, "> stow:", stow);
+        ECHO_LMV(INFO, ">>> probe_pt(", x);
+        ECHO_MV(", ", y);
+        ECHO_MT(", ", stow ? "stow" : "no stow");
+        ECHO_EM(")");
         DEBUG_POS("", current_position);
       }
 
@@ -1957,13 +1945,13 @@ static void axis_unhomed_error(bool xyz = false) {
       feedrate = XY_PROBE_FEEDRATE;
       do_blocking_move_to_xy(x - (X_PROBE_OFFSET_FROM_NOZZLE), y - (Y_PROBE_OFFSET_FROM_NOZZLE));
 
-      if (DEBUGGING(INFO)) ECHO_LM(INFO, "> deploy_z_probe");
+      if (DEBUGGING(INFO)) ECHO_SM(INFO, "> ");
       deploy_z_probe();
 
       float measured_z = run_z_probe();
 
       if (stow) {
-        if (DEBUGGING(INFO)) ECHO_LM(INFO, "> stow_z_probe");
+        if (DEBUGGING(INFO)) ECHO_SM(INFO, "> ");
         stow_z_probe();
       }
       #if Z_RAISE_BETWEEN_PROBINGS > 0
@@ -2108,7 +2096,7 @@ static void axis_unhomed_error(bool xyz = false) {
       // Homing Z towards the bed? Deploy the Z probe or endstop.
       #if HAS(BED_PROBE)
         if (axis == Z_AXIS && axis_home_dir < 0) {
-          if (DEBUGGING(INFO)) ECHO_LM(INFO, " > deploy_z_probe()");
+          if (DEBUGGING(INFO)) ECHO_SM(INFO, "> ");
           deploy_z_probe();
         }
       #endif
@@ -2189,7 +2177,7 @@ static void axis_unhomed_error(bool xyz = false) {
       // Put away the Z probe with a function
       #if HAS(BED_PROBE)
         if (axis == Z_AXIS && axis_home_dir < 0) {
-          if (DEBUGGING(INFO)) ECHO_LM(INFO, " > stow_z_probe()");
+          if (DEBUGGING(INFO)) ECHO_SM(INFO, "> ");
           stow_z_probe();
         }
       #endif
@@ -3672,7 +3660,8 @@ void gcode_get_destination() {
 }
 
 void unknown_command_error() {
-  ECHO_LMV(ER, SERIAL_UNKNOWN_COMMAND, current_command);
+  ECHO_SMV(ER, SERIAL_UNKNOWN_COMMAND, current_command);
+  ECHO_EM("\"");
 }
 
 #if ENABLED(HOST_KEEPALIVE_FEATURE)
@@ -3928,7 +3917,7 @@ inline void gcode_G4() {
  *
  */
 inline void gcode_G28() {
-  if (DEBUGGING(INFO)) ECHO_LM(INFO, "gcode_G28 >>>");
+  if (DEBUGGING(INFO)) ECHO_LM(INFO, ">>> gcode_G28");
 
   // Wait for planner moves to finish!
   st_synchronize();
@@ -4019,26 +4008,30 @@ inline void gcode_G28() {
 
     #elif ENABLED(MIN_Z_HEIGHT_FOR_HOMING) && MIN_Z_HEIGHT_FOR_HOMING > 0
 
-      // Raise Z before homing any other axes and z is not already high enough (never lower z)
-      if (current_position[Z_AXIS] <= MIN_Z_HEIGHT_FOR_HOMING) {
-        destination[Z_AXIS] = MIN_Z_HEIGHT_FOR_HOMING;
-        feedrate = planner.max_feedrate[Z_AXIS] * 60;  // feedrate (mm/m) = planner.max_feedrate (mm/s)
-        if (DEBUGGING(INFO)) {
-          ECHO_EMV("Raise Z (before homing) to ", (MIN_Z_HEIGHT_FOR_HOMING));
-          DEBUG_POS("> (home_all_axis || homeZ)", current_position);
-          DEBUG_POS("> (home_all_axis || homeZ)", destination);
+      #if HAS(BED_PROBE)
+        do_probe_raise(MIN_Z_HEIGHT_FOR_HOMING);
+        destination[Z_AXIS] = current_position[Z_AXIS];
+      #else
+        // Raise Z before homing any other axes and z is not already high enough (never lower z)
+        if (current_position[Z_AXIS] <= MIN_Z_HEIGHT_FOR_HOMING) {
+          destination[Z_AXIS] = MIN_Z_HEIGHT_FOR_HOMING;
+          feedrate = planner.max_feedrate[Z_AXIS] * 60;  // feedrate (mm/m) = planner.max_feedrate (mm/s)
+          if (DEBUGGING(INFO)) {
+            ECHO_EMV("Raise Z (before homing) to ", (MIN_Z_HEIGHT_FOR_HOMING));
+            DEBUG_POS("> (home_all_axis || homeZ)", current_position);
+            DEBUG_POS("> (home_all_axis || homeZ)", destination);
+          }
+          line_to_destination();
+          st_synchronize();
+
+          /**
+           * Update the current Z position even if it currently not real from
+           * Z-home otherwise each call to line_to_destination() will want to
+           * move Z-axis by MIN_Z_HEIGHT_FOR_HOMING.
+           */
+          current_position[Z_AXIS] = destination[Z_AXIS];
         }
-
-        line_to_destination();
-        st_synchronize();
-
-        /**
-         * Update the current Z position even if it currently not real from
-         * Z-home otherwise each call to line_to_destination() will want to
-         * move Z-axis by MIN_Z_HEIGHT_FOR_HOMING.
-         */
-        current_position[Z_AXIS] = destination[Z_AXIS];
-      }
+      #endif
     #endif
 
     #if ENABLED(QUICK_HOME)
@@ -4096,7 +4089,10 @@ inline void gcode_G28() {
 
     #if ENABLED(HOME_Y_BEFORE_X)
       // Home Y
-      if (home_all_axis || homeY) HOMEAXIS(Y);
+      if (home_all_axis || homeY) {
+        HOMEAXIS(Y);
+        if (DEBUGGING(INFO)) DEBUG_POS("> homeY", current_position);
+      }
     #endif
 
     // Home X
@@ -4116,20 +4112,14 @@ inline void gcode_G28() {
       #else
         HOMEAXIS(X);
       #endif
-      if (DEBUGGING(INFO)) {
-        ECHO_S(INFO);
-        DEBUG_POS(" > homeX", current_position);
-      }
+      if (DEBUGGING(INFO)) DEBUG_POS("> homeX", current_position);
     }
 
     #if DISABLED(HOME_Y_BEFORE_X)
       // Home Y
       if (home_all_axis || homeY) {
         HOMEAXIS(Y);
-        if (DEBUGGING(INFO)) {
-          ECHO_S(INFO);
-          DEBUG_POS(" > homeY", current_position);
-        }
+        if (DEBUGGING(INFO)) DEBUG_POS("> homeY", current_position);
       }
     #endif
 
@@ -4138,7 +4128,7 @@ inline void gcode_G28() {
 
       if (home_all_axis || homeZ) {
 
-        #if ENABLED(Z_SAFE_HOMING) && ENABLED(AUTO_BED_LEVELING_FEATURE)// Z Safe mode activated.
+        #if ENABLED(Z_SAFE_HOMING)
 
           if (DEBUGGING(INFO)) ECHO_LM(INFO, "> Z_SAFE_HOMING >>>");
 
@@ -4184,69 +4174,27 @@ inline void gcode_G28() {
           else if (homeZ) { // Don't need to Home Z twice
 
             // Let's see if X and Y are homed
-            if (axis_homed[X_AXIS] && axis_homed[Y_AXIS]) {
+            if (axis_unhomed_error(true, true, false)) return;
 
-              /**
-               * Make sure the Z probe is within the physical limits
-               * NOTE: This doesn't necessarily ensure the Z probe is also
-               * within the bed!
-               */
-              float cpx = current_position[X_AXIS], cpy = current_position[Y_AXIS];
-              if (   cpx >= X_MIN_POS - (X_PROBE_OFFSET_FROM_NOZZLE)
-                  && cpx <= X_MAX_POS - (X_PROBE_OFFSET_FROM_NOZZLE)
-                  && cpy >= Y_MIN_POS - (Y_PROBE_OFFSET_FROM_NOZZLE)
-                  && cpy <= Y_MAX_POS - (Y_PROBE_OFFSET_FROM_NOZZLE)) {
+            /**
+             * Make sure the Z probe is within the physical limits
+             * NOTE: This doesn't necessarily ensure the Z probe is also
+             * within the bed!
+             */
+            float cpx = current_position[X_AXIS], cpy = current_position[Y_AXIS];
+            if (   cpx >= X_MIN_POS - (X_PROBE_OFFSET_FROM_NOZZLE)
+                && cpx <= X_MAX_POS - (X_PROBE_OFFSET_FROM_NOZZLE)
+                && cpy >= Y_MIN_POS - (Y_PROBE_OFFSET_FROM_NOZZLE)
+                && cpy <= Y_MAX_POS - (Y_PROBE_OFFSET_FROM_NOZZLE)) {
 
-                // Home the Z axis
-                HOMEAXIS(Z);
-              }
-              else {
-                LCD_MESSAGEPGM(MSG_ZPROBE_OUT);
-                ECHO_LM(DB, MSG_ZPROBE_OUT);
-              }
-            }
-            else {
-              axis_unhomed_error();
-            }
-          } // !home_all_axes && homeZ
-
-          if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< Z_SAFE_HOMING");
-
-        #elif ENABLED(Z_SAFE_HOMING)
-
-          if (home_all_axis || homeZ) {
-
-            if (DEBUGGING(INFO)) ECHO_LM(INFO, "> Z_SAFE_HOMING >>>");
-
-            // Let's see if X and Y are homed
-            if (axis_homed[X_AXIS] && axis_homed[Y_AXIS]) {
-              current_position[Z_AXIS] = 0;
-              sync_plan_position();
-
-              destination[X_AXIS] = round(Z_SAFE_HOMING_X_POINT);
-              destination[Y_AXIS] = round(Z_SAFE_HOMING_Y_POINT);
-              destination[Z_AXIS] = current_position[Z_AXIS] = 0;
-
-              feedrate = XY_PROBE_FEEDRATE;
-
-              if (DEBUGGING(INFO)) {
-                DEBUG_POS("> Z_SAFE_HOMING > home_all_axis", current_position);
-                DEBUG_POS("> Z_SAFE_HOMING > home_all_axis", destination);
-              }
-
-              // This could potentially move X, Y, Z all together
-              line_to_destination();
-              st_synchronize();
-
-              // Set current X, Y is the Z_SAFE_HOMING_POINT minus PROBE_OFFSET_FROM_EXTRUDER
-              current_position[X_AXIS] = destination[X_AXIS];
-              current_position[Y_AXIS] = destination[Y_AXIS];
+              // Home the Z axis
               HOMEAXIS(Z);
             }
             else {
-              axis_unhomed_error();
+              LCD_MESSAGEPGM(MSG_ZPROBE_OUT);
+              ECHO_LM(DB, MSG_ZPROBE_OUT);
             }
-          }
+          } // !home_all_axes && homeZ
 
           if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< Z_SAFE_HOMING");
 
@@ -4265,10 +4213,6 @@ inline void gcode_G28() {
     sync_plan_position();
 
   #endif // !DELTA
-
-  #if MECH(SCARA)
-    sync_plan_position_delta();
-  #endif
 
   endstops.not_homing();
 
@@ -4421,20 +4365,12 @@ inline void gcode_G28() {
     switch (state) {
       case MeshReport:
         if (mbl.has_mesh()) {
-          ECHO_M("State: ");
-          if (mbl.active())
-            ECHO_M("On");
-          else
-            ECHO_EM("Off");
-          ECHO_M("Num X,Y: ");
-          ECHO_V(MESH_NUM_X_POINTS);
-          ECHO_C(',');
-          ECHO_V(MESH_NUM_Y_POINTS);
-          ECHO_M("\nZ search height: ");
-          ECHO_V(MESH_HOME_SEARCH_Z);
-          ECHO_M("\nZ offset: ");
-          ECHO_V(mbl.z_offset, 5);
-          ECHO_EM("\nMeasured points:");
+          ECHO_EMT("State: ", mbl.active() ? "On" : "Off");
+          ECHO_MV("Num X,Y: ", MESH_NUM_X_POINTS);
+          ECHO_EMV(",", MESH_NUM_Y_POINTS);
+          ECHO_EMV("Z search height: ", MESH_HOME_SEARCH_Z);
+          ECHO_EMV("Z offset: ", mbl.z_offset, 5);
+          ECHO_EM("Measured points:");
           for (py = 0; py < MESH_NUM_Y_POINTS; py++) {
             for (px = 0; px < MESH_NUM_X_POINTS; px++) {
               ECHO_MV("  ", mbl.z_values[py][px], 5);
@@ -4501,30 +4437,30 @@ inline void gcode_G28() {
         if (code_seen('X')) {
           px = code_value_int() - 1;
           if (px < 0 || px >= MESH_NUM_X_POINTS) {
-            ECHO_M("X out of range (1-" STRINGIFY(MESH_NUM_X_POINTS) ").\n");
+            ECHO_EM("X out of range (1-" STRINGIFY(MESH_NUM_X_POINTS) ").");
             return;
           }
         }
         else {
-          ECHO_M("X not entered.\n");
+          ECHO_EM("X not entered.");
           return;
         }
         if (code_seen('Y')) {
           py = code_value_int() - 1;
           if (py < 0 || py >= MESH_NUM_Y_POINTS) {
-            ECHO_M("Y out of range (1-" STRINGIFY(MESH_NUM_Y_POINTS) ").\n");
+            ECHO_EM("Y out of range (1-" STRINGIFY(MESH_NUM_Y_POINTS) ").");
             return;
           }
         }
         else {
-          ECHO_M("Y not entered.\n");
+          ECHO_EM("Y not entered.");
           return;
         }
         if (code_seen('Z')) {
           z = code_value_axis_units(Z_AXIS);
         }
         else {
-          ECHO_M("Z not entered.\n");
+          ECHO_EM("Z not entered.");
           return;
         }
         mbl.z_values[py][px] = z;
@@ -4535,7 +4471,7 @@ inline void gcode_G28() {
           z = code_value_axis_units(Z_AXIS);
         }
         else {
-          ECHO_M("Z not entered.\n");
+          ECHO_EM("Z not entered.");
           return;
         }
         mbl.z_offset = z;
@@ -4608,10 +4544,7 @@ inline void gcode_G28() {
     }
 
     // Don't allow auto-levelling without homing first
-    if (!axis_homed[X_AXIS] || !axis_homed[Y_AXIS] || !axis_homed[Z_AXIS]) {
-      axis_unhomed_error(true);
-      return;
-    }
+    if (axis_unhomed_error(true, true, true)) return;
 
     int verbose_level = code_seen('V') ? code_value_int() : 1;
     if (verbose_level < 0 || verbose_level > 4) {
@@ -4621,11 +4554,7 @@ inline void gcode_G28() {
 
     bool dryrun = code_seen('D');
 
-    #if ENABLED(Z_PROBE_SLED)
-      const bool stow_probe_after_each = false;
-    #else
-      bool stow_probe_after_each = code_seen('E');
-    #endif
+    bool stow_probe_after_each = code_seen('E');
 
     #if ENABLED(AUTO_BED_LEVELING_GRID)
 
@@ -5663,10 +5592,7 @@ inline void gcode_M42() {
   inline void gcode_M48() {
     if (DEBUGGING(INFO)) ECHO_LM(INFO, "gcode_M48 >>>");
 
-    if (!axis_homed[X_AXIS] || !axis_homed[Y_AXIS] || !axis_homed[Z_AXIS]) {
-      axis_unhomed_error(true);
-      return;
-    }
+    if (axis_unhomed_error(true, true, true)) return;
 
     int8_t verbose_level = code_seen('V') ? code_value_byte() : 1;
     if (verbose_level < 0 || verbose_level > 4 ) {
@@ -5686,11 +5612,7 @@ inline void gcode_M42() {
     float  X_current = current_position[X_AXIS],
            Y_current = current_position[Y_AXIS];
 
-    #if ENABLED(Z_PROBE_SLED)
-      const bool stow_probe_after_each = false;
-    #else
-      bool stow_probe_after_each = code_seen('E');
-    #endif
+    bool stow_probe_after_each = code_seen('E');
 
     float X_probe_location = code_seen('X') ? code_value_axis_units(X_AXIS) : X_current + X_PROBE_OFFSET_FROM_NOZZLE;
     if (X_probe_location < MIN_PROBE_X || X_probe_location > MAX_PROBE_X) {
@@ -5706,7 +5628,7 @@ inline void gcode_M42() {
 
     bool seen_L = code_seen('L');
     uint8_t n_legs = seen_L ? code_value_byte() : 0;
-    if (n_legs < 0 || n_legs > 15) {
+    if (n_legs > 15) {
       ECHO_LM(ER, "?Number of legs in movement not plausible (0-15).");
       return;
     }

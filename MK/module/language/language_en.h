@@ -169,8 +169,8 @@
 #define MSG_INIT_SDCARD                     "Init. " MSG_SD
 #define MSG_CNG_SDCARD                      "Change " MSG_SD
 #define MSG_ZPROBE_OUT                      "Z probe out. bed"
-#define MSG_YX_UNHOMED                      "Home X/Y before Z"
-#define MSG_XYZ_UNHOMED                     "Home XYZ first"
+#define MSG_HOME                            "Home"
+#define MSG_FIRST                           "first"
 #define MSG_ZPROBE_ZOFFSET                  "ZProbe ZOffset"
 #define MSG_BABYSTEP                        "Babystep"
 #define MSG_BABYSTEP_X                      MSG_BABYSTEP " " MSG_X

@@ -443,7 +443,6 @@ void Config_RetrieveSettings() {
     #if HASNT(LCD_CONTRAST)
       int lcd_contrast;
     #endif
-
     EEPROM_READ_VAR(i, lcd_contrast);
 
     #if MECH(SCARA)
@@ -675,12 +674,13 @@ void Config_ResetDefault() {
   /**
    * Print Configuration Settings - M503
    */
+
+  #define CONFIG_ECHO_START(str) do{ if (!forReplay) ECHO_LM(CFG, str); }while(0)
+
   void Config_PrintSettings(bool forReplay) {
     // Always have this function, even with EEPROM_SETTINGS disabled, the current values will be shown
 
-    if (!forReplay) {
-      ECHO_LM(CFG, "Steps per unit:");
-    }
+    CONFIG_ECHO_START("Steps per unit:");
     ECHO_SMV(CFG, "  M92 X", planner.axis_steps_per_mm[X_AXIS]);
     ECHO_MV(" Y", planner.axis_steps_per_mm[Y_AXIS]);
     ECHO_MV(" Z", planner.axis_steps_per_mm[Z_AXIS]);
@@ -693,17 +693,13 @@ void Config_ResetDefault() {
     #endif //EXTRUDERS > 1
 
     #if MECH(SCARA)
-      if (!forReplay) {
-        ECHO_LM(CFG, "Scaling factors:");
-      }
+      CONFIG_ECHO_START("Scaling factors:");
       ECHO_SMV(CFG, "  M365 X", axis_scaling[X_AXIS]);
       ECHO_MV(" Y", axis_scaling[Y_AXIS]);
       ECHO_EMV(" Z", axis_scaling[Z_AXIS]);
     #endif // SCARA
 
-    if (!forReplay) {
-      ECHO_LM(CFG, "Maximum feedrates (mm/s):");
-    }
+    CONFIG_ECHO_START("Maximum feedrates (mm/s):");
     ECHO_SMV(CFG, "  M203 X", planner.max_feedrate[X_AXIS]);
     ECHO_MV(" Y", planner.max_feedrate[Y_AXIS] );
     ECHO_MV(" Z", planner.max_feedrate[Z_AXIS] );
@@ -715,9 +711,7 @@ void Config_ResetDefault() {
       }
     #endif //EXTRUDERS > 1
 
-    if (!forReplay) {
-      ECHO_LM(CFG, "Maximum Acceleration (mm/s2):");
-    }
+    CONFIG_ECHO_START("Maximum Acceleration (mm/s2):");
     ECHO_SMV(CFG, "  M201 X", planner.max_acceleration_mm_per_s2[X_AXIS] );
     ECHO_MV(" Y", planner.max_acceleration_mm_per_s2[Y_AXIS] );
     ECHO_MV(" Z", planner.max_acceleration_mm_per_s2[Z_AXIS] );
@@ -728,11 +722,8 @@ void Config_ResetDefault() {
         ECHO_EMV(" E", planner.max_acceleration_mm_per_s2[E_AXIS + i]);
       }
     #endif //EXTRUDERS > 1
-    ECHO_E;
     
-    if (!forReplay) {
-      ECHO_LM(CFG, "Accelerations: P=printing, V=travel and T* R=retract");
-    }
+    CONFIG_ECHO_START("Accelerations: P=printing, V=travel and T* R=retract");
     ECHO_SMV(CFG,"  M204 P", planner.acceleration);
     ECHO_EMV(" V", planner.travel_acceleration);
     #if EXTRUDERS > 0
@@ -742,9 +733,7 @@ void Config_ResetDefault() {
       }
     #endif
 
-    if (!forReplay) {
-      ECHO_LM(CFG, "Advanced variables: S=Min feedrate (mm/s), V=Min travel feedrate (mm/s), B=minimum segment time (ms), X=maximum XY jerk (mm/s),  Z=maximum Z jerk (mm/s),  E=maximum E jerk (mm/s)");
-    }
+    CONFIG_ECHO_START("Advanced variables: S=Min feedrate (mm/s), V=Min travel feedrate (mm/s), B=minimum segment time (ms), X=maximum XY jerk (mm/s),  Z=maximum Z jerk (mm/s),  E=maximum E jerk (mm/s)");
     ECHO_SMV(CFG, "  M205 S", planner.min_feedrate );
     ECHO_MV(" V", planner.min_travel_feedrate );
     ECHO_MV(" B", planner.min_segment_time );
@@ -758,16 +747,12 @@ void Config_ResetDefault() {
       }
     #endif
 
-    if (!forReplay) {
-      ECHO_LM(CFG, "Home offset (mm):");
-    }
+    CONFIG_ECHO_START("Home offset (mm):");
     ECHO_SMV(CFG, "  M206 X", home_offset[X_AXIS] );
     ECHO_MV(" Y", home_offset[Y_AXIS] );
     ECHO_EMV(" Z", home_offset[Z_AXIS] );
 
-    if (!forReplay) {
-      ECHO_LM(CFG, "Hotend offset (mm):");
-    }
+    CONFIG_ECHO_START("Hotend offset (mm):");
     for (int8_t h = 0; h < HOTENDS; h++) {
       ECHO_SMV(CFG, "  M218 T", h);
       ECHO_MV(" X", hotend_offset[X_AXIS][h]);
@@ -775,10 +760,13 @@ void Config_ResetDefault() {
       ECHO_EMV(" Z", hotend_offset[Z_AXIS][h]);
     }
 
+    #if HAS(LCD_CONTRAST)
+      CONFIG_ECHO_START("LCD Contrast:");
+      ECHO_LMV(CFG, "  M250 C", lcd_contrast);
+    #endif
+
     #if ENABLED(MESH_BED_LEVELING)
-      if (!forReplay) {
-        ECHO_LM(CFG, "Mesh bed leveling:");
-      }
+      CONFIG_ECHO_START("Mesh bed leveling:");
       ECHO_SMV(CFG, "  M420 S", mbl.has_mesh() ? 1 : 0);
       ECHO_MV(" X", MESH_NUM_X_POINTS);
       ECHO_MV(" Y", MESH_NUM_Y_POINTS);
@@ -794,9 +782,7 @@ void Config_ResetDefault() {
     #endif
   
     #if HEATER_USES_AD595
-      if (!forReplay) {
-        ECHO_LM(CFG, "AD595 Offset and Gain:");
-      }
+      CONFIG_ECHO_START("AD595 Offset and Gain:");
       for (int8_t h = 0; h < HOTENDS; h++) {
         ECHO_SMV(CFG, "  M595 T", h);
         ECHO_MV(" O", ad595_offset[h]);
@@ -805,9 +791,7 @@ void Config_ResetDefault() {
     #endif // HEATER_USES_AD595
 
     #if MECH(DELTA)
-      if (!forReplay) {
-        ECHO_LM(CFG, "Delta Geometry adjustment:");
-      }
+      CONFIG_ECHO_START("Delta Geometry adjustment:");
       ECHO_SMV(CFG, "  M666 A", tower_adj[0], 3);
       ECHO_MV(" B", tower_adj[1], 3);
       ECHO_MV(" C", tower_adj[2], 3);
@@ -821,17 +805,13 @@ void Config_ResetDefault() {
       ECHO_MV(" D", delta_diagonal_rod);
       ECHO_EMV(" H", sw_endstop_max[2]);
 
-      if (!forReplay) {
-        ECHO_LM(CFG, "Endstop Offsets:");
-      }
+      CONFIG_ECHO_START("Endstop Offsets:");
       ECHO_SMV(CFG, "  M666 X", endstop_adj[X_AXIS]);
       ECHO_MV(" Y", endstop_adj[Y_AXIS]);
       ECHO_EMV(" Z", endstop_adj[Z_AXIS]);
 
     #elif ENABLED(Z_DUAL_ENDSTOPS)
-      if (!forReplay) {
-        ECHO_LM(CFG, "Z2 Endstop adjustement (mm):");
-      }
+      CONFIG_ECHO_START("Z2 Endstop adjustement (mm):");
       ECHO_LMV(CFG, "  M666 Z", z_endstop_adj );
     #endif // DELTA
     
@@ -839,16 +819,12 @@ void Config_ResetDefault() {
      * Auto Bed Leveling
      */
     #if HAS(BED_PROBE)
-      if (!forReplay) {
-        ECHO_LM(CFG, "Z Probe offset (mm)");
-      }
+      CONFIG_ECHO_START("Z Probe offset (mm):");
       ECHO_LMV(CFG, "  M666 P", zprobe_zoffset);
     #endif
 
     #if ENABLED(ULTIPANEL)
-      if (!forReplay) {
-        ECHO_LM(CFG, "Material heatup parameters:");
-      }
+      CONFIG_ECHO_START("Material heatup parameters:");
       ECHO_SMV(CFG, "  M145 S0 H", plaPreheatHotendTemp);
       ECHO_MV(" B", plaPreheatHPBTemp);
       ECHO_MV(" F", plaPreheatFanSpeed);
@@ -864,9 +840,7 @@ void Config_ResetDefault() {
     #endif // ULTIPANEL
 
     #if ENABLED(PIDTEMP) || ENABLED(PIDTEMPBED) || ENABLED(PIDTEMPCHAMBER) || ENABLED(PIDTEMPCOOLER)
-      if (!forReplay) {
-        ECHO_LM(CFG, "PID settings:");
-      }
+      CONFIG_ECHO_START("PID settings:");
       #if ENABLED(PIDTEMP)
         for (uint8_t h = 0; h < HOTENDS; h++) {
           ECHO_SMV(CFG, "  M301 H", h);
@@ -897,42 +871,30 @@ void Config_ResetDefault() {
         ECHO_MV(" I", unscalePID_i(coolerKi));
         ECHO_EMV(" D", unscalePID_d(coolerKd));
       #endif
-
     #endif
 
     #if ENABLED(FWRETRACT)
-      if (!forReplay) {
-        ECHO_LM(CFG, "Retract: S=Length (mm) F:Speed (mm/m) Z: ZLift (mm)");
-      }
+      CONFIG_ECHO_START("Retract: S=Length (mm) F:Speed (mm/m) Z: ZLift (mm)");
       ECHO_SMV(CFG, "  M207 S", retract_length);
-      ECHO_MV(" F", retract_feedrate*60);
-      ECHO_EMV(" Z", retract_zlift);
-      
-      if (!forReplay) {
-        ECHO_LM(CFG, "Recover: S=Extra length (mm) F:Speed (mm/m)");
-      }
-      ECHO_SMV(CFG, "  M208 S", retract_recover_length);
-      ECHO_MV(" F", retract_recover_feedrate*60);
-      
-      if (!forReplay) {
-        ECHO_LM(CFG, "Auto-Retract: S=0 to disable, 1 to interpret extrude-only moves as retracts or recoveries");
-      }
-      ECHO_LMV(CFG, "  M209 S", autoretract_enabled);
-
       #if EXTRUDERS > 1
-        if (!forReplay) {
-          ECHO_LM(CFG, "Multi-extruder settings:");
-          ECHO_LMV(CFG, "   Swap retract length (mm):    ", retract_length_swap);
-          ECHO_LMV(CFG, "   Swap rec. addl. length (mm): ", retract_recover_length_swap);
-        }
-      #endif // EXTRUDERS > 1
+        ECHO_MV(" W", retract_length_swap);
+      #endif
+      ECHO_MV(" F", retract_feedrate * 60);
+      ECHO_EMV(" Z", retract_zlift);
 
+      CONFIG_ECHO_START("Recover: S=Extra length (mm) F:Speed (mm/m)");
+      ECHO_SMV(CFG, "  M208 S", retract_recover_length);
+      #if EXTRUDERS > 1
+        ECHO_MV(" W", retract_recover_length_swap);
+      #endif
+      ECHO_MV(" F", retract_recover_feedrate * 60);
+
+      CONFIG_ECHO_START("Auto-Retract: S=0 to disable, 1 to interpret extrude-only moves as retracts or recoveries");
+      ECHO_LMV(CFG, "  M209 S", autoretract_enabled ? 1 : 0);
     #endif // FWRETRACT
 
     if (volumetric_enabled) {
-      if (!forReplay) {
-        ECHO_LM(CFG, "Filament settings:");
-      }
+      CONFIG_ECHO_START("Filament settings:");
       ECHO_LMV(CFG, "  M200 D", filament_size[0]);
 
       #if EXTRUDERS > 1
@@ -945,16 +907,12 @@ void Config_ResetDefault() {
         #endif
       #endif
 
-    } else {
-      if (!forReplay) {
-        ECHO_LM(CFG, "Filament settings: Disabled");
-      }
     }
+    else
+      CONFIG_ECHO_START("  M200 D0");
 
     #if MB(ALLIGATOR)
-      if (!forReplay) {
-        ECHO_LM(CFG, "Current:");
-      }
+      CONFIG_ECHO_START("Motor current:");
       ECHO_SMV(CFG, "  M906 X", motor_current[X_AXIS]);
       ECHO_MV(" Y", motor_current[Y_AXIS]);
       ECHO_MV(" Z", motor_current[Z_AXIS]);
@@ -975,9 +933,7 @@ void Config_ResetDefault() {
     // Always have this function, even with SD_SETTINGS disabled, the current values will be shown
 
     #if HAS(POWER_CONSUMPTION_SENSOR)
-      if (!forReplay) {
-        ECHO_LM(INFO, "Watt/h consumed:");
-      }
+      CONFIG_ECHO_START("Watt/h consumed:");
       ECHO_LVM(INFO, power_consumption_hour," Wh");
     #endif
 
