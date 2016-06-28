@@ -1889,7 +1889,7 @@
     #error DEPENDENCY ERROR: You have to set FILWIDTH_PIN to a valid pin if you enable FILAMENT_SENSOR
   #endif
 
-  #if ENABLED(FILAMENT_SENSOR) && !PIN_EXISTS(FLOWMETER)
+  #if ENABLED(FLOWMETER_SENSOR) && !PIN_EXISTS(FLOWMETER)
     #error DEPENDENCY ERROR: You have to set FLOWMETER_PIN to a valid pin if you enable FLOWMETER_SENSOR
   #endif
 
