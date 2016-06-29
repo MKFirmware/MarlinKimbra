@@ -541,7 +541,7 @@ static void lcd_implementation_status_screen() {
     u8g.setPrintPos(0, 63);
   #endif
   #if HAS(LCD_FILAMENT_SENSOR) || HAS(LCD_POWER_SENSOR)
-    if (PENDING(millis(), previous_lcd_status_ms + 5000UL)) {  //Display both Status message line and Filament display on the last line
+    if (PENDING(millis(), previous_lcd_status_ms + 5000UL)) // Display both Status message line and Filament display on the last line
       lcd_print(lcd_status_message);
     #if HAS(LCD_POWER_SENSOR)
       #if HAS(LCD_FILAMENT_SENSOR)

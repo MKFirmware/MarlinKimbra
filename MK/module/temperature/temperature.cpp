@@ -1056,8 +1056,8 @@ void manage_temp_controller() {
   // Control the extruder rate based on the width sensor
   #if ENABLED(FILAMENT_SENSOR)
     if (filament_sensor) {
-      meas_shift_index = delay_index1 - meas_delay_cm;
-      if (meas_shift_index < 0) meas_shift_index += MAX_MEASUREMENT_DELAY + 1;  //loop around buffer if needed
+      meas_shift_index = filwidth_delay_index1 - meas_delay_cm;
+      if (meas_shift_index < 0) meas_shift_index += MAX_MEASUREMENT_DELAY + 1;  // loop around buffer if needed
 
       // Get the delayed info and add 100 to reconstitute to a percent of
       // the nominal filament diameter then square it to get an area
