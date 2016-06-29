@@ -42,15 +42,14 @@
 #define MSG_AUTOSTART                       "Inici automatic"
 #define MSG_DISABLE_STEPPERS                "Apagar motors"
 #define MSG_AUTO_HOME                       "Home global"
-#define MSG_MBL_SETTING                     "Manual Bed Leveling"
-#define MSG_MBL_BUTTON                      " Press the button   "
-#define MSG_MBL_INTRO                       " Leveling bed...    "
-#define MSG_MBL_1                           " Adjust first point "
-#define MSG_MBL_2                           " Adjust second point"
-#define MSG_MBL_3                           " Adjust third point "
-#define MSG_MBL_4                           " Adjust fourth point"
-#define MSG_MBL_5                           "    Is it ok?       "
-#define MSG_MBL_6                           " BED leveled!       "
+#define MSG_AUTO_HOME_X                     "Home X"
+#define MSG_AUTO_HOME_Y                     "Home Y"
+#define MSG_AUTO_HOME_Z                     "Home Z"
+#define MSG_LEVEL_BED_HOMING                "Homing XYZ"
+#define MSG_LEVEL_BED_WAITING               "Click to Begin"
+#define MSG_LEVEL_BED_NEXT_POINT            "Next Point"
+#define MSG_LEVEL_BED_DONE                  "Leveling Done!"
+#define MSG_LEVEL_BED_CANCEL                "Cancel"
 #define MSG_SET_HOME_OFFSETS                "Set home offsets"
 #define MSG_SET_ORIGIN                      "Establir origen"
 #define MSG_ONFOR                           "On x:"
@@ -80,6 +79,9 @@
 #define MSG_SPEED                           "Velocitat"
 #define MSG_NOZZLE                          "Nozzle"
 #define MSG_BED                             "Llit"
+#define MSG_CHAMBER                         "Chamber"
+#define MSG_COOLER                          "Cooler"
+#define MSG_BED_Z                           "Bed Z"
 #define MSG_FAN_SPEED                       "Vel. Ventilador"
 #define MSG_FLOW                            "Fluxe"
 #define MSG_CONTROL                         "Control"
@@ -145,6 +147,7 @@
 #define MSG_PAUSE_PRINT                     "Pausa imp."
 #define MSG_RESUME_PRINT                    "Reprendre imp."
 #define MSG_STOP_PRINT                      "Parar inp."
+#define MSG_STOP_SAVE_PRINT                 "Stop and Save"
 #define MSG_CARD_MENU                       "Imprimir de " MSG_SD
 #define MSG_NO_CARD                         "Sense targeta " MSG_SD
 #define MSG_DWELL                           "Repos..."
@@ -162,12 +165,13 @@
 #define MSG_CONTROL_RETRACT_RECOVER_SWAP    "Swap DesRet +mm"
 #define MSG_CONTROL_RETRACT_RECOVERF        "DesRet  F"
 #define MSG_AUTORETRACT                     "AutoRetr."
-#define MSG_FILAMENTCHANGE                  "Canviar filament"
+#define MSG_FILAMENT_CHANGE                 "Canviar filament"
 #define MSG_INIT_SDCARD                     "Iniciant " MSG_SD
 #define MSG_CNG_SDCARD                      "Canviar " MSG_SD
 #define MSG_ZPROBE_OUT                      "Z probe out. bed"
-#define MSG_POSITION_UNKNOWN                "Home X/Y abans Z"
-#define MSG_ZPROBE_ZOFFSET                  "Z Offset"
+#define MSG_HOME                            "Home"
+#define MSG_FIRST                           "first"
+#define MSG_ZPROBE_ZOFFSET                  "ZProbe ZOffset"
 #define MSG_BABYSTEP                        "Babystep"
 #define MSG_BABYSTEP_X                      MSG_BABYSTEP " " MSG_X
 #define MSG_BABYSTEP_Y                      MSG_BABYSTEP " " MSG_Y
@@ -181,6 +185,8 @@
 #define MSG_ERR_MINTEMP                     "MINTEMP ERROR"
 #define MSG_ERR_MAXTEMP_BED                 "MAXTEMP BED ERROR"
 #define MSG_ERR_MINTEMP_BED                 "MINTEMP BED ERROR"
+#define MSG_ERR_MAXTEMP_CHAMBER             "MAXTEMP CHAMBER ERROR"
+#define MSG_ERR_MINTEMP_CHAMBER             "MINTEMP CHAMBER ERROR"
 #define MSG_ERR_MAXTEMP_COOLER              "MAXTEMP COOLER ERROR"
 #define MSG_ERR_MINTEMP_COOLER              "MINTEMP COOLER ERROR"
 #define MSG_END_DAY                         "days"
@@ -208,6 +214,30 @@
   #define MSG_DELTA_CALIBRATE_CENTER        "Calibrate Center"
 #endif // DELTA
 
+// FILAMENT_CHANGE_FEATURE
+#define MSG_FILAMENT_CHANGE_HEADER          "CHANGE FILAMENT"
+#define MSG_FILAMENT_CHANGE_INIT_1          "Wait for start"
+#define MSG_FILAMENT_CHANGE_INIT_2          "of the filament"
+#define MSG_FILAMENT_CHANGE_INIT_3          "change"
+#define MSG_FILAMENT_CHANGE_UNLOAD_1        "Wait for"
+#define MSG_FILAMENT_CHANGE_UNLOAD_2        "filament unload"
+#define MSG_FILAMENT_CHANGE_UNLOAD_3        ""
+#define MSG_FILAMENT_CHANGE_INSERT_1        "Insert filament"
+#define MSG_FILAMENT_CHANGE_INSERT_2        "and press button"
+#define MSG_FILAMENT_CHANGE_INSERT_3        "to continue..."
+#define MSG_FILAMENT_CHANGE_LOAD_1          "Wait for"
+#define MSG_FILAMENT_CHANGE_LOAD_2          "filament load"
+#define MSG_FILAMENT_CHANGE_LOAD_3          ""
+#define MSG_FILAMENT_CHANGE_EXTRUDE_1       "Wait for"
+#define MSG_FILAMENT_CHANGE_EXTRUDE_2       "filament extrude"
+#define MSG_FILAMENT_CHANGE_EXTRUDE_3       ""
+#define MSG_FILAMENT_CHANGE_OPTION_HEADER   "WHAT NEXT?"
+#define MSG_FILAMENT_CHANGE_OPTION_EXTRUDE  "Extrude more"
+#define MSG_FILAMENT_CHANGE_OPTION_RESUME   "Resume print"
+#define MSG_FILAMENT_CHANGE_RESUME_1        "Wait for print"
+#define MSG_FILAMENT_CHANGE_RESUME_2        "resume"
+#define MSG_FILAMENT_CHANGE_RESUME_3        ""
+
 // Scara
 #if MECH(SCARA)
   #define MSG_SCALE                         "Scale"
@@ -219,7 +249,8 @@
 #define MSG_HEATING_COMPLETE                "Heating done."
 #define MSG_BED_HEATING                     "Bed Heating."
 #define MSG_BED_DONE                        "Bed done."
-
+#define MSG_CHAMBER_HEATING                 "Chamber Heating."
+#define MSG_CHAMBER_DONE                    "Chamber done."
 #define MSG_COOLER_COOLING                  "Cooling..."
 #define MSG_COOLER_DONE                     "Cooling done."
 

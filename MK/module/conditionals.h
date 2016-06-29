@@ -935,10 +935,10 @@
       #define Z_PROBE_OFFSET_FROM_NOZZLE 0
     #endif
     #ifndef Z_PROBE_OFFSET_RANGE_MIN
-      #define Z_PROBE_OFFSET_RANGE_MIN -20
+      #define Z_PROBE_OFFSET_RANGE_MIN -50
     #endif
     #ifndef Z_PROBE_OFFSET_RANGE_MAX
-      #define Z_PROBE_OFFSET_RANGE_MAX 20
+      #define Z_PROBE_OFFSET_RANGE_MAX 50
     #endif
     #ifndef XY_PROBE_SPEED
       #ifdef HOMING_FEEDRATE_XYZ

@@ -254,7 +254,6 @@
 #define MSG_COOLER_COOLING                  "Cooling..."
 #define MSG_COOLER_DONE                     "Cooling done."
 
-
 // Extra
 #define MSG_LASER                           "Laser Preset"
 #define MSG_CONFIG                          "Configuration"
