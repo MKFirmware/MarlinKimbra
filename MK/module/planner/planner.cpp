@@ -920,7 +920,7 @@ void Planner::check_axes_activity() {
   #if ENABLED(FILAMENT_SENSOR)
     static float filwidth_e_count = 0, filwidth_delay_dist = 0;
 
-    //FMM update ring buffer used for delay with filament measurements
+    // FMM update ring buffer used for delay with filament measurements
     if (extruder == FILAMENT_SENSOR_EXTRUDER_NUM && filwidth_delay_index2 >= 0) {  //only for extruder with filament sensor and if ring buffer is initialized
 
       const int MMD_CM = MAX_MEASUREMENT_DELAY + 1, MMD_MM = MMD_CM * 10;
@@ -933,12 +933,10 @@ void Planner::check_axes_activity() {
       if (filwidth_e_count > 0.0001) {
 
         // Loop the delay distance counter (modulus by the mm length)
-
         while (filwidth_delay_dist >= MMD_MM) filwidth_delay_dist -= MMD_MM;
 
         // Convert into an index into the measurement array
         filwidth_delay_index1 = (int)(filwidth_delay_dist / 10.0 + 0.0001);
-
 
         // If the index has changed (must have gone forward)...
         if (filwidth_delay_index1 != filwidth_delay_index2) {
