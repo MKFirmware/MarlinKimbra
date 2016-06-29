@@ -38,103 +38,107 @@
 
 #include "base.h"
 
-#define EEPROM_VERSION "MKV428"
+#define EEPROM_VERSION "MKV28"
 
 /**
  * MKV428 EEPROM Layout:
  *
- *  Version
+ *  Version (char x6)
+ *  EEPROM Checksum (uint16_t)
  *
- *  M92   XYZ E0 ...      planner.axis_steps_per_mm X,Y,Z,E0 ... (per extruder)
- *  M203  XYZ E0 ...      planner.max_feedrate X,Y,Z,E0 ... (per extruder)
- *  M201  XYZ E0 ...      planner.max_acceleration_mm_per_s2 X,Y,Z,E0 ... (per extruder)
- *  M204  P               planner.acceleration
- *  M204  R   E0 ...      planner.retract_acceleration (per extruder)
- *  M204  T               planner.travel_acceleration
- *  M205  S               planner.min_feedrate
- *  M205  T               planner.min_travel_feedrate
- *  M205  B               planner.min_segment_time
- *  M205  X               planner.max_xy_jerk
- *  M205  Z               planner.max_z_jerk
- *  M205  E   E0 ...      planner.max_e_jerk (per extruder)
- *  M206  XYZ             home_offset (x3)
- *  M218  T   XY          hotend_offset (x4) (T0..3)
+ *  M92   XYZ E0 ...      planner.axis_steps_per_mm X,Y,Z,E0 ... (float x9)
+ *  M203  XYZ E0 ...      planner.max_feedrate X,Y,Z,E0 ... (float x9)
+ *  M201  XYZ E0 ...      planner.max_acceleration_mm_per_s2 X,Y,Z,E0 ... (uint32_t x9)
+ *  M204  P               planner.acceleration (float)
+ *  M204  R   E0 ...      planner.retract_acceleration (float x6)
+ *  M204  T               planner.travel_acceleration (float)
+ *  M205  S               planner.min_feedrate (float)
+ *  M205  T               planner.min_travel_feedrate (float)
+ *  M205  B               planner.min_segment_time (ulong)
+ *  M205  X               planner.max_xy_jerk (float)
+ *  M205  Z               planner.max_z_jerk (float)
+ *  M205  E   E0 ...      planner.max_e_jerk (float x6)
+ *  M206  XYZ             home_offset (float x3)
+ *  M218  T   XY          hotend_offset (float x6)
  *
  * Mesh bed leveling:
  *  M420  S               status (uint8)
  *                        z_offset (float)
  *                        mesh_num_x (uint8 as set in firmware)
  *                        mesh_num_y (uint8 as set in firmware)
- *  G29   S3  XYZ         z_values[][] (float)
+ *  G29   S3  XYZ         z_values[][] (float x9, by default)
  *
  * HOTENDS AD595:
  *  M595  H OS            Hotend AD595 Offset & Gain
  *
  * DELTA:
- *  M666  XYZ             endstop_adj (x3)
- *  M666  R               delta_radius
- *  M666  D               delta_diagonal_rod
- *  M666  H               Z sw_endstop_max
- *  M666  ABCIJK          tower_adj (x6)
- *  M666  UVW             diagrod_adj (x3)
+ *  M666  XYZ             endstop_adj (float x3)
+ *  M666  R               delta_radius (float)
+ *  M666  D               delta_diagonal_rod (float)
+ *  M666  H               Z sw_endstop_max (float)
+ *  M666  ABCIJK          tower_adj (float x6)
+ *  M666  UVW             diagrod_adj (float x3)
  *
  * Z_DUAL_ENDSTOPS:
- *  M666  Z               z_endstop_adj
+ *  M666  Z               z_endstop_adj (float)
  *
  * Z PROBE:
- *  M666  P               zprobe_zoffset
+ *  M666  P               zprobe_zoffset (float)
  *
  * ULTIPANEL:
- *  M145  S0  H           plaPreheatHotendTemp
- *  M145  S0  B           plaPreheatHPBTemp
- *  M145  S0  F           plaPreheatFanSpeed
- *  M145  S1  H           absPreheatHotendTemp
- *  M145  S1  B           absPreheatHPBTemp
- *  M145  S1  F           absPreheatFanSpeed
- *  M145  S2  H           gumPreheatHotendTemp
- *  M145  S2  B           gumPreheatHPBTemp
- *  M145  S2  F           gumPreheatFanSpeed
+ *  M145  S0  H           plaPreheatHotendTemp (int)
+ *  M145  S0  B           plaPreheatHPBTemp (int)
+ *  M145  S0  F           plaPreheatFanSpeed (int)
+ *  M145  S1  H           absPreheatHotendTemp (int)
+ *  M145  S1  B           absPreheatHPBTemp (int)
+ *  M145  S1  F           absPreheatFanSpeed (int)
+ *  M145  S2  H           gumPreheatHotendTemp (int)
+ *  M145  S2  B           gumPreheatHPBTemp (int)
+ *  M145  S2  F           gumPreheatFanSpeed (int)
  *
  * PIDTEMP:
- *  M301  E0  PIDC        Kp[0], Ki[0], Kd[0], Kc[0]
- *  M301  E1  PIDC        Kp[1], Ki[1], Kd[1], Kc[1]
- *  M301  E2  PIDC        Kp[2], Ki[2], Kd[2], Kc[2]
- *  M301  E3  PIDC        Kp[3], Ki[3], Kd[3], Kc[3]
+ *  M301  E0  PIDC        Kp[0], Ki[0], Kd[0], Kc[0] (float x4)
+ *  M301  E1  PIDC        Kp[1], Ki[1], Kd[1], Kc[1] (float x4)
+ *  M301  E2  PIDC        Kp[2], Ki[2], Kd[2], Kc[2] (float x4)
+ *  M301  E3  PIDC        Kp[3], Ki[3], Kd[3], Kc[3] (float x4)
  *  M301  L               lpq_len
  *
  * PIDTEMPBED:
- *  M304      PID         bedKp, bedKi, bedKd
+ *  M304      PID         bedKp, bedKi, bedKd (float x3)
  * PIDTEMPCHAMBER
- *  M305      PID         chamberKp, chamberKi, chamberKd
+ *  M305      PID         chamberKp, chamberKi, chamberKd (float x3)
  * PIDTEMPCOOLER
- *  M306      PID         coolerKp, coolerKi, coolerKd
+ *  M306      PID         coolerKp, coolerKi, coolerKd (float x3)
  *
  * DOGLCD:
- *  M250  C               lcd_contrast
+ *  M250  C               lcd_contrast (int)
  *
  * SCARA:
- *  M365  XYZ             axis_scaling (x3)
+ *  M365  XYZ             axis_scaling (float x3)
  *
  * FWRETRACT:
- *  M209  S               autoretract_enabled
- *  M207  S               retract_length
- *  M207  W               retract_length_swap
- *  M207  F               retract_feedrate
- *  M207  Z               retract_zlift
- *  M208  S               retract_recover_length
- *  M208  W               retract_recover_length_swap
- *  M208  F               retract_recover_feedrate
+ *  M209  S               autoretract_enabled (bool)
+ *  M207  S               retract_length (float)
+ *  M207  W               retract_length_swap (float)
+ *  M207  F               retract_feedrate (float)
+ *  M207  Z               retract_zlift (float)
+ *  M208  S               retract_recover_length (float)
+ *  M208  W               retract_recover_length_swap (float)
+ *  M208  F               retract_recover_feedrate (float)
  *
- *  M200  D               volumetric_enabled (D>0 makes this enabled)
+ *  M200  D               volumetric_enabled (bool)
  *
- *  M200  T D             filament_size (x4) (T0..3)
+ *  M200  T D             filament_size (float x6)
  *
  *  M???  S               IDLE_OOZING_enabled
  *
  * ALLIGATOR:
- *  M906  XYZ T0-4 E      Motor current
+ *  M906  XYZ T0-4 E      Motor current (float x7)
  *
  */
+
+uint16_t eeprom_checksum;
+const char version[6] = EEPROM_VERSION;
 
 void _EEPROM_writeData(int& pos, uint8_t* value, uint8_t size) {
   uint8_t c;
@@ -144,6 +148,7 @@ void _EEPROM_writeData(int& pos, uint8_t* value, uint8_t size) {
     if (c != *value) {
       ECHO_LM(ER, SERIAL_ERR_EEPROM_WRITE);
     }
+    eeprom_checksum += c;
     pos++;
     value++;
   };
@@ -151,7 +156,9 @@ void _EEPROM_writeData(int& pos, uint8_t* value, uint8_t size) {
 
 void _EEPROM_readData(int& pos, uint8_t* value, uint8_t size) {
   do {
-    *value = eeprom_read_byte((unsigned char*)pos);
+    byte c = eeprom_read_byte((unsigned char*)pos);
+    *value = c;
+    eeprom_checksum += c;
     pos++;
     value++;
   } while (--size);
@@ -160,19 +167,40 @@ void _EEPROM_readData(int& pos, uint8_t* value, uint8_t size) {
 #define EEPROM_WRITE_VAR(pos, value) _EEPROM_writeData(pos, (uint8_t*)&value, sizeof(value))
 #define EEPROM_READ_VAR(pos, value) _EEPROM_readData(pos, (uint8_t*)&value, sizeof(value))
 
-/**
- * Store Configuration Settings - M500
- */
-
 #define EEPROM_OFFSET 100
+
+/**
+ * Post-process after Retrieve or Reset
+ */
+void Config_Postprocess() {
+  // steps per s2 needs to be updated to agree with units per s2
+  planner.reset_acceleration_rates();
+
+  #if ENABLED(DELTA)
+    set_delta_constants();
+  #endif
+
+  #if ENABLED(PIDTEMP)
+    updatePID();
+  #endif
+
+  calculate_volumetric_multipliers();
+}
 
 #if ENABLED(EEPROM_SETTINGS)
 
+/**
+ * M500 - Store Configuration
+ */
 void Config_StoreSettings() {
   float dummy = 0.0f;
-  char ver[7] = "000000";
+  char ver[6] = "00000";
   int i = EEPROM_OFFSET;
   EEPROM_WRITE_VAR(i, ver); // invalidate data first
+  EEPROM_WRITE_VAR(i, eeprom_checksum);
+
+  // Start calc checksum
+  eeprom_checksum = 0;
   EEPROM_WRITE_VAR(i, planner.axis_steps_per_mm);
   EEPROM_WRITE_VAR(i, planner.max_feedrate);
   EEPROM_WRITE_VAR(i, planner.max_acceleration_mm_per_s2);
@@ -314,39 +342,43 @@ void Config_StoreSettings() {
     EEPROM_WRITE_VAR(i, motor_current);
   #endif
 
-  char ver2[7] = EEPROM_VERSION;
   int j = EEPROM_OFFSET;
-  EEPROM_WRITE_VAR(j, ver2); // validate data
+  uint16_t stored_checksum = eeprom_checksum;
+  EEPROM_WRITE_VAR(j, version);
+  EEPROM_WRITE_VAR(j, stored_checksum);
 
   // Report storage size
-  ECHO_SMV(DB, "Settings Stored (", (unsigned long)i);
+  ECHO_SMV(DB, "Settings Stored (", i);
   ECHO_EM(" bytes)");
 }
 
 /**
- * Retrieve Configuration Settings - M501
+ * M501 - Retrieve Configuration
  */
 void Config_RetrieveSettings() {
-
   int i = EEPROM_OFFSET;
-  char stored_ver[7];
-  char ver[7] = EEPROM_VERSION;
-  EEPROM_READ_VAR(i, stored_ver); // read stored version
-  //ECHO_EM("Version: [" << ver << "] Stored version: [" << stored_ver << "]");
+  char stored_ver[6];
+  uint16_t stored_checksum;
+  EEPROM_READ_VAR(i, stored_ver);
+  EEPROM_READ_VAR(i, stored_checksum);
 
-  if (strncmp(ver, stored_ver, 6) != 0) {
+  if (DEBUGGING(INFO)) {
+    ECHO_SMV(INFO, "Version: [", version);
+    ECHO_MV("] Stored version: [", stored_ver);
+    ECHO_EM("]");
+  }
+
+  if (strncmp(version, stored_ver, 5) != 0) {
     Config_ResetDefault();
   }
   else {
+    eeprom_checksum = 0;
     float dummy = 0;
 
     // version number match
     EEPROM_READ_VAR(i, planner.axis_steps_per_mm);
     EEPROM_READ_VAR(i, planner.max_feedrate);
     EEPROM_READ_VAR(i, planner.max_acceleration_mm_per_s2);
-
-    // steps per sq second need to be updated to agree with the units per sq second (as they are what is used in the planner)
-    planner.reset_acceleration_rates();
 
     EEPROM_READ_VAR(i, planner.acceleration);
     EEPROM_READ_VAR(i, planner.retract_acceleration);
@@ -383,8 +415,6 @@ void Config_RetrieveSettings() {
       EEPROM_READ_VAR(i, sw_endstop_max);
       EEPROM_READ_VAR(i, tower_adj);
       EEPROM_READ_VAR(i, diagrod_adj);
-      // Update delta constants for updated delta_radius & tower_adj values
-      set_delta_constants();
     #endif //DELTA
 
     #if HASNT(BED_PROBE)
@@ -473,8 +503,6 @@ void Config_RetrieveSettings() {
     for (int8_t e = 0; e < EXTRUDERS; e++)
       EEPROM_READ_VAR(i, filament_size[e]);
 
-    calculate_volumetric_multipliers();
-
     #if ENABLED(IDLE_OOZING_PREVENT)
       EEPROM_READ_VAR(i, IDLE_OOZING_enabled);
     #endif
@@ -483,13 +511,16 @@ void Config_RetrieveSettings() {
       EEPROM_READ_VAR(i, motor_current);
     #endif
 
-    // Call updatePID (similar to when we have processed M301)
-    updatePID();
-
-    // Report settings retrieved and length
-    ECHO_SV(DB, ver);
-    ECHO_MV(" stored settings retrieved (", (unsigned long)i);
-    ECHO_EM(" bytes)");
+    if (stored_checksum == eeprom_checksum) {
+      Config_Postprocess();
+      ECHO_SV(DB, version);
+      ECHO_MV(" stored settings retrieved (", i);
+      ECHO_EM(" bytes)");
+    }
+    else {
+      ECHO_LM(ER, "EEPROM checksum mismatch");
+      Config_ResetDefault();
+    }
   }
 
   #if ENABLED(EEPROM_CHITCHAT)
@@ -500,7 +531,7 @@ void Config_RetrieveSettings() {
 #endif // EEPROM_SETTINGS
 
 /**
- * Reset Configuration Settings - M502
+ * M502 - Reset Configuration
  */
 void Config_ResetDefault() {
   float tmp1[] = DEFAULT_AXIS_STEPS_PER_UNIT;
@@ -521,6 +552,8 @@ void Config_ResetDefault() {
 
   #if MB(ALLIGATOR)
     float tmp13[] = MOTOR_CURRENT;
+    for (int8_t i = 0; i < 3 + DRIVER_EXTRUDERS; i++)
+      motor_current[i] = tmp13[i];
   #endif
 
   for (int8_t i = 0; i < 3 + EXTRUDERS; i++) {
@@ -533,11 +566,6 @@ void Config_ResetDefault() {
     planner.retract_acceleration[i] = tmp4[i];
     planner.max_e_jerk[i] = tmp5[i];
   }
-
-  #if MB(ALLIGATOR)
-    for (int8_t i = 0; i < 3 + DRIVER_EXTRUDERS; i++)
-      motor_current[i] = tmp13[i];
-  #endif
 
   for (int8_t i = 0; i < HOTENDS; i++) {
     #if ENABLED(HOTEND_OFFSET_X) && ENABLED(HOTEND_OFFSET_Y) && ENABLED(HOTEND_OFFSET_Z)
@@ -593,7 +621,6 @@ void Config_ResetDefault() {
     diagrod_adj[0] = TOWER_A_DIAGROD_ADJ;
     diagrod_adj[1] = TOWER_B_DIAGROD_ADJ;
     diagrod_adj[2] = TOWER_C_DIAGROD_ADJ;
-    set_delta_constants();
   #endif
 
   #if ENABLED(ULTIPANEL)
@@ -622,8 +649,6 @@ void Config_ResetDefault() {
     #if ENABLED(PID_ADD_EXTRUSION_RATE)
       lpq_len = 20; // default last-position-queue size
     #endif
-    // call updatePID (similar to when we have processed M301)
-    updatePID();
   #endif // PIDTEMP
 
   #if ENABLED(PIDTEMPBED)
@@ -660,424 +685,427 @@ void Config_ResetDefault() {
   #endif
 
   volumetric_enabled = false;
-  calculate_volumetric_multipliers();
 
   #if ENABLED(IDLE_OOZING_PREVENT)
     IDLE_OOZING_enabled = true;
   #endif
+
+  Config_Postprocess();
 
   ECHO_LM(DB, "Hardcoded Default Settings Loaded");
 }
 
 #if DISABLED(DISABLE_M503)
 
-  /**
-   * Print Configuration Settings - M503
-   */
+#define CONFIG_ECHO_START(str) do{ if (!forReplay) ECHO_LM(CFG, str); }while(0)
 
-  #define CONFIG_ECHO_START(str) do{ if (!forReplay) ECHO_LM(CFG, str); }while(0)
+/**
+ * M503 - Print Configuration
+ */
+void Config_PrintSettings(bool forReplay) {
+  // Always have this function, even with EEPROM_SETTINGS disabled, the current values will be shown
 
-  void Config_PrintSettings(bool forReplay) {
-    // Always have this function, even with EEPROM_SETTINGS disabled, the current values will be shown
-
-    CONFIG_ECHO_START("Steps per unit:");
-    ECHO_SMV(CFG, "  M92 X", planner.axis_steps_per_mm[X_AXIS]);
-    ECHO_MV(" Y", planner.axis_steps_per_mm[Y_AXIS]);
-    ECHO_MV(" Z", planner.axis_steps_per_mm[Z_AXIS]);
-    ECHO_EMV(" E", planner.axis_steps_per_mm[E_AXIS]);
-    #if EXTRUDERS > 1
-      for (short i = 1; i < EXTRUDERS; i++) {
-        ECHO_SMV(CFG, "  M92 T", i);
-        ECHO_EMV(" E", planner.axis_steps_per_mm[E_AXIS + i]);
-      }
-    #endif //EXTRUDERS > 1
-
-    #if MECH(SCARA)
-      CONFIG_ECHO_START("Scaling factors:");
-      ECHO_SMV(CFG, "  M365 X", axis_scaling[X_AXIS]);
-      ECHO_MV(" Y", axis_scaling[Y_AXIS]);
-      ECHO_EMV(" Z", axis_scaling[Z_AXIS]);
-    #endif // SCARA
-
-    CONFIG_ECHO_START("Maximum feedrates (mm/s):");
-    ECHO_SMV(CFG, "  M203 X", planner.max_feedrate[X_AXIS]);
-    ECHO_MV(" Y", planner.max_feedrate[Y_AXIS] );
-    ECHO_MV(" Z", planner.max_feedrate[Z_AXIS] );
-    ECHO_EMV(" E", planner.max_feedrate[E_AXIS]);
-    #if EXTRUDERS > 1
-      for (short i = 1; i < EXTRUDERS; i++) {
-        ECHO_SMV(CFG, "  M203 T", i);
-        ECHO_EMV(" E", planner.max_acceleration_mm_per_s2[E_AXIS + i]);
-      }
-    #endif //EXTRUDERS > 1
-
-    CONFIG_ECHO_START("Maximum Acceleration (mm/s2):");
-    ECHO_SMV(CFG, "  M201 X", planner.max_acceleration_mm_per_s2[X_AXIS] );
-    ECHO_MV(" Y", planner.max_acceleration_mm_per_s2[Y_AXIS] );
-    ECHO_MV(" Z", planner.max_acceleration_mm_per_s2[Z_AXIS] );
-    ECHO_EMV(" E", planner.max_acceleration_mm_per_s2[E_AXIS]);
-    #if EXTRUDERS > 1
-      for (int8_t i = 1; i < EXTRUDERS; i++) {
-        ECHO_SMV(CFG, "  M201 T", i);
-        ECHO_EMV(" E", planner.max_acceleration_mm_per_s2[E_AXIS + i]);
-      }
-    #endif //EXTRUDERS > 1
-    
-    CONFIG_ECHO_START("Accelerations: P=printing, V=travel and T* R=retract");
-    ECHO_SMV(CFG,"  M204 P", planner.acceleration);
-    ECHO_EMV(" V", planner.travel_acceleration);
-    #if EXTRUDERS > 0
-      for (int8_t i = 0; i < EXTRUDERS; i++) {
-        ECHO_SMV(CFG, "  M204 T", i);
-        ECHO_EMV(" R", planner.retract_acceleration[i]);
-      }
-    #endif
-
-    CONFIG_ECHO_START("Advanced variables: S=Min feedrate (mm/s), V=Min travel feedrate (mm/s), B=minimum segment time (ms), X=maximum XY jerk (mm/s),  Z=maximum Z jerk (mm/s),  E=maximum E jerk (mm/s)");
-    ECHO_SMV(CFG, "  M205 S", planner.min_feedrate );
-    ECHO_MV(" V", planner.min_travel_feedrate );
-    ECHO_MV(" B", planner.min_segment_time );
-    ECHO_MV(" X", planner.max_xy_jerk );
-    ECHO_MV(" Z", planner.max_z_jerk);
-    ECHO_EMV(" E", planner.max_e_jerk[0]);
-    #if (EXTRUDERS > 1)
-      for(int8_t i = 1; i < EXTRUDERS; i++) {
-        ECHO_SMV(CFG, "  M205 T", i);
-        ECHO_EMV(" E" , planner.max_e_jerk[i]);
-      }
-    #endif
-
-    CONFIG_ECHO_START("Home offset (mm):");
-    ECHO_SMV(CFG, "  M206 X", home_offset[X_AXIS] );
-    ECHO_MV(" Y", home_offset[Y_AXIS] );
-    ECHO_EMV(" Z", home_offset[Z_AXIS] );
-
-    CONFIG_ECHO_START("Hotend offset (mm):");
-    for (int8_t h = 0; h < HOTENDS; h++) {
-      ECHO_SMV(CFG, "  M218 T", h);
-      ECHO_MV(" X", hotend_offset[X_AXIS][h]);
-      ECHO_MV(" Y", hotend_offset[Y_AXIS][h]);
-      ECHO_EMV(" Z", hotend_offset[Z_AXIS][h]);
+  CONFIG_ECHO_START("Steps per unit:");
+  ECHO_SMV(CFG, "  M92 X", planner.axis_steps_per_mm[X_AXIS]);
+  ECHO_MV(" Y", planner.axis_steps_per_mm[Y_AXIS]);
+  ECHO_MV(" Z", planner.axis_steps_per_mm[Z_AXIS]);
+  ECHO_EMV(" E", planner.axis_steps_per_mm[E_AXIS]);
+  #if EXTRUDERS > 1
+    for (short i = 1; i < EXTRUDERS; i++) {
+      ECHO_SMV(CFG, "  M92 T", i);
+      ECHO_EMV(" E", planner.axis_steps_per_mm[E_AXIS + i]);
     }
+  #endif //EXTRUDERS > 1
 
-    #if HAS(LCD_CONTRAST)
-      CONFIG_ECHO_START("LCD Contrast:");
-      ECHO_LMV(CFG, "  M250 C", lcd_contrast);
-    #endif
+  #if MECH(SCARA)
+    CONFIG_ECHO_START("Scaling factors:");
+    ECHO_SMV(CFG, "  M365 X", axis_scaling[X_AXIS]);
+    ECHO_MV(" Y", axis_scaling[Y_AXIS]);
+    ECHO_EMV(" Z", axis_scaling[Z_AXIS]);
+  #endif // SCARA
 
-    #if ENABLED(MESH_BED_LEVELING)
-      CONFIG_ECHO_START("Mesh bed leveling:");
-      ECHO_SMV(CFG, "  M420 S", mbl.has_mesh() ? 1 : 0);
-      ECHO_MV(" X", MESH_NUM_X_POINTS);
-      ECHO_MV(" Y", MESH_NUM_Y_POINTS);
-      ECHO_E;
+  CONFIG_ECHO_START("Maximum feedrates (mm/s):");
+  ECHO_SMV(CFG, "  M203 X", planner.max_feedrate[X_AXIS]);
+  ECHO_MV(" Y", planner.max_feedrate[Y_AXIS] );
+  ECHO_MV(" Z", planner.max_feedrate[Z_AXIS] );
+  ECHO_EMV(" E", planner.max_feedrate[E_AXIS]);
+  #if EXTRUDERS > 1
+    for (short i = 1; i < EXTRUDERS; i++) {
+      ECHO_SMV(CFG, "  M203 T", i);
+      ECHO_EMV(" E", planner.max_acceleration_mm_per_s2[E_AXIS + i]);
+    }
+  #endif //EXTRUDERS > 1
 
-      for (uint8_t py = 1; py <= MESH_NUM_Y_POINTS; py++) {
-        for (uint8_t px = 1; px <= MESH_NUM_X_POINTS; px++) {
-          ECHO_SMV(CFG, "  G29 S3 X", px);
-          ECHO_MV(" Y", py);
-          ECHO_EMV(" Z", mbl.z_values[py-1][px-1], 5);
-        }
-      }
-    #endif
+  CONFIG_ECHO_START("Maximum Acceleration (mm/s2):");
+  ECHO_SMV(CFG, "  M201 X", planner.max_acceleration_mm_per_s2[X_AXIS] );
+  ECHO_MV(" Y", planner.max_acceleration_mm_per_s2[Y_AXIS] );
+  ECHO_MV(" Z", planner.max_acceleration_mm_per_s2[Z_AXIS] );
+  ECHO_EMV(" E", planner.max_acceleration_mm_per_s2[E_AXIS]);
+  #if EXTRUDERS > 1
+    for (int8_t i = 1; i < EXTRUDERS; i++) {
+      ECHO_SMV(CFG, "  M201 T", i);
+      ECHO_EMV(" E", planner.max_acceleration_mm_per_s2[E_AXIS + i]);
+    }
+  #endif //EXTRUDERS > 1
   
-    #if HEATER_USES_AD595
-      CONFIG_ECHO_START("AD595 Offset and Gain:");
-      for (int8_t h = 0; h < HOTENDS; h++) {
-        ECHO_SMV(CFG, "  M595 T", h);
-        ECHO_MV(" O", ad595_offset[h]);
-        ECHO_EMV(", S", ad595_gain[h]);
-      }
-    #endif // HEATER_USES_AD595
-
-    #if MECH(DELTA)
-      CONFIG_ECHO_START("Delta Geometry adjustment:");
-      ECHO_SMV(CFG, "  M666 A", tower_adj[0], 3);
-      ECHO_MV(" B", tower_adj[1], 3);
-      ECHO_MV(" C", tower_adj[2], 3);
-      ECHO_MV(" I", tower_adj[3], 3);
-      ECHO_MV(" J", tower_adj[4], 3);
-      ECHO_MV(" K", tower_adj[5], 3);
-      ECHO_MV(" U", diagrod_adj[0], 3);
-      ECHO_MV(" V", diagrod_adj[1], 3);
-      ECHO_MV(" W", diagrod_adj[2], 3);
-      ECHO_MV(" R", delta_radius);
-      ECHO_MV(" D", delta_diagonal_rod);
-      ECHO_EMV(" H", sw_endstop_max[2]);
-
-      CONFIG_ECHO_START("Endstop Offsets:");
-      ECHO_SMV(CFG, "  M666 X", endstop_adj[X_AXIS]);
-      ECHO_MV(" Y", endstop_adj[Y_AXIS]);
-      ECHO_EMV(" Z", endstop_adj[Z_AXIS]);
-
-    #elif ENABLED(Z_DUAL_ENDSTOPS)
-      CONFIG_ECHO_START("Z2 Endstop adjustement (mm):");
-      ECHO_LMV(CFG, "  M666 Z", z_endstop_adj );
-    #endif // DELTA
-    
-    /**
-     * Auto Bed Leveling
-     */
-    #if HAS(BED_PROBE)
-      CONFIG_ECHO_START("Z Probe offset (mm):");
-      ECHO_LMV(CFG, "  M666 P", zprobe_zoffset);
-    #endif
-
-    #if ENABLED(ULTIPANEL)
-      CONFIG_ECHO_START("Material heatup parameters:");
-      ECHO_SMV(CFG, "  M145 S0 H", plaPreheatHotendTemp);
-      ECHO_MV(" B", plaPreheatHPBTemp);
-      ECHO_MV(" F", plaPreheatFanSpeed);
-      ECHO_EM(" (Material PLA)");
-      ECHO_SMV(CFG, "  M145 S1 H", absPreheatHotendTemp);
-      ECHO_MV(" B", absPreheatHPBTemp);
-      ECHO_MV(" F", absPreheatFanSpeed);
-      ECHO_EM(" (Material ABS)");
-      ECHO_SMV(CFG, "  M145 S2 H", gumPreheatHotendTemp);
-      ECHO_MV(" B", gumPreheatHPBTemp);
-      ECHO_MV(" F", gumPreheatFanSpeed);
-      ECHO_EM(" (Material GUM)");
-    #endif // ULTIPANEL
-
-    #if ENABLED(PIDTEMP) || ENABLED(PIDTEMPBED) || ENABLED(PIDTEMPCHAMBER) || ENABLED(PIDTEMPCOOLER)
-      CONFIG_ECHO_START("PID settings:");
-      #if ENABLED(PIDTEMP)
-        for (uint8_t h = 0; h < HOTENDS; h++) {
-          ECHO_SMV(CFG, "  M301 H", h);
-          ECHO_MV(" P", PID_PARAM(Kp, h));
-          ECHO_MV(" I", unscalePID_i(PID_PARAM(Ki, h)));
-          ECHO_MV(" D", unscalePID_d(PID_PARAM(Kd, h)));
-          #if ENABLED(PID_ADD_EXTRUSION_RATE)
-            ECHO_MV(" C", PID_PARAM(Kc, h));
-          #endif
-          ECHO_E;
-        }
-        #if ENABLED(PID_ADD_EXTRUSION_RATE)
-          ECHO_SMV(CFG, "  M301 L", lpq_len);
-        #endif
-      #endif
-      #if ENABLED(PIDTEMPBED)
-        ECHO_SMV(CFG, "  M304 P", bedKp);
-        ECHO_MV(" I", unscalePID_i(bedKi));
-        ECHO_EMV(" D", unscalePID_d(bedKd));
-      #endif
-      #if ENABLED(PIDTEMPCHAMBER)
-        ECHO_SMV(CFG, "  M305 P", chamberKp);
-        ECHO_MV(" I", unscalePID_i(chamberKi));
-        ECHO_EMV(" D", unscalePID_d(chamberKd));
-      #endif
-      #if ENABLED(PIDTEMPCOOLER)
-        ECHO_SMV(CFG, "  M306 P", coolerKp);
-        ECHO_MV(" I", unscalePID_i(coolerKi));
-        ECHO_EMV(" D", unscalePID_d(coolerKd));
-      #endif
-    #endif
-
-    #if ENABLED(FWRETRACT)
-      CONFIG_ECHO_START("Retract: S=Length (mm) F:Speed (mm/m) Z: ZLift (mm)");
-      ECHO_SMV(CFG, "  M207 S", retract_length);
-      #if EXTRUDERS > 1
-        ECHO_MV(" W", retract_length_swap);
-      #endif
-      ECHO_MV(" F", retract_feedrate * 60);
-      ECHO_EMV(" Z", retract_zlift);
-
-      CONFIG_ECHO_START("Recover: S=Extra length (mm) F:Speed (mm/m)");
-      ECHO_SMV(CFG, "  M208 S", retract_recover_length);
-      #if EXTRUDERS > 1
-        ECHO_MV(" W", retract_recover_length_swap);
-      #endif
-      ECHO_MV(" F", retract_recover_feedrate * 60);
-
-      CONFIG_ECHO_START("Auto-Retract: S=0 to disable, 1 to interpret extrude-only moves as retracts or recoveries");
-      ECHO_LMV(CFG, "  M209 S", autoretract_enabled ? 1 : 0);
-    #endif // FWRETRACT
-
-    if (volumetric_enabled) {
-      CONFIG_ECHO_START("Filament settings:");
-      ECHO_LMV(CFG, "  M200 D", filament_size[0]);
-
-      #if EXTRUDERS > 1
-        ECHO_LMV(CFG, "  M200 T1 D", filament_size[1]);
-        #if EXTRUDERS > 2
-          ECHO_LMV(CFG, "  M200 T2 D", filament_size[2]);
-          #if EXTRUDERS > 3
-            ECHO_LMV(CFG, "  M200 T3 D", filament_size[3]);
-          #endif
-        #endif
-      #endif
-
+  CONFIG_ECHO_START("Accelerations: P=printing, V=travel and T* R=retract");
+  ECHO_SMV(CFG,"  M204 P", planner.acceleration);
+  ECHO_EMV(" V", planner.travel_acceleration);
+  #if EXTRUDERS > 0
+    for (int8_t i = 0; i < EXTRUDERS; i++) {
+      ECHO_SMV(CFG, "  M204 T", i);
+      ECHO_EMV(" R", planner.retract_acceleration[i]);
     }
-    else
-      CONFIG_ECHO_START("  M200 D0");
+  #endif
 
-    #if MB(ALLIGATOR)
-      CONFIG_ECHO_START("Motor current:");
-      ECHO_SMV(CFG, "  M906 X", motor_current[X_AXIS]);
-      ECHO_MV(" Y", motor_current[Y_AXIS]);
-      ECHO_MV(" Z", motor_current[Z_AXIS]);
-      ECHO_EMV(" E", motor_current[E_AXIS]);
-      #if DRIVER_EXTRUDERS > 1
-        for (uint8_t i = 1; i < DRIVER_EXTRUDERS; i++) {
-          ECHO_SMV(CFG, "  M906 T", i);
-          ECHO_EMV(" E", motor_current[E_AXIS + i]);
-        }
-      #endif // DRIVER_EXTRUDERS > 1
-    #endif // ALLIGATOR
+  CONFIG_ECHO_START("Advanced variables: S=Min feedrate (mm/s), V=Min travel feedrate (mm/s), B=minimum segment time (ms), X=maximum XY jerk (mm/s),  Z=maximum Z jerk (mm/s),  E=maximum E jerk (mm/s)");
+  ECHO_SMV(CFG, "  M205 S", planner.min_feedrate );
+  ECHO_MV(" V", planner.min_travel_feedrate );
+  ECHO_MV(" B", planner.min_segment_time );
+  ECHO_MV(" X", planner.max_xy_jerk );
+  ECHO_MV(" Z", planner.max_z_jerk);
+  ECHO_EMV(" E", planner.max_e_jerk[0]);
+  #if (EXTRUDERS > 1)
+    for(int8_t i = 1; i < EXTRUDERS; i++) {
+      ECHO_SMV(CFG, "  M205 T", i);
+      ECHO_EMV(" E" , planner.max_e_jerk[i]);
+    }
+  #endif
 
-    ConfigSD_PrintSettings(forReplay);
+  CONFIG_ECHO_START("Home offset (mm):");
+  ECHO_SMV(CFG, "  M206 X", home_offset[X_AXIS] );
+  ECHO_MV(" Y", home_offset[Y_AXIS] );
+  ECHO_EMV(" Z", home_offset[Z_AXIS] );
 
+  CONFIG_ECHO_START("Hotend offset (mm):");
+  for (int8_t h = 0; h < HOTENDS; h++) {
+    ECHO_SMV(CFG, "  M218 T", h);
+    ECHO_MV(" X", hotend_offset[X_AXIS][h]);
+    ECHO_MV(" Y", hotend_offset[Y_AXIS][h]);
+    ECHO_EMV(" Z", hotend_offset[Z_AXIS][h]);
   }
 
-  void ConfigSD_PrintSettings(bool forReplay) {
-    // Always have this function, even with SD_SETTINGS disabled, the current values will be shown
+  #if HAS(LCD_CONTRAST)
+    CONFIG_ECHO_START("LCD Contrast:");
+    ECHO_LMV(CFG, "  M250 C", lcd_contrast);
+  #endif
 
-    #if HAS(POWER_CONSUMPTION_SENSOR)
-      CONFIG_ECHO_START("Watt/h consumed:");
-      ECHO_LVM(INFO, power_consumption_hour," Wh");
+  #if ENABLED(MESH_BED_LEVELING)
+    CONFIG_ECHO_START("Mesh bed leveling:");
+    ECHO_SMV(CFG, "  M420 S", mbl.has_mesh() ? 1 : 0);
+    ECHO_MV(" X", MESH_NUM_X_POINTS);
+    ECHO_MV(" Y", MESH_NUM_Y_POINTS);
+    ECHO_E;
+
+    for (uint8_t py = 1; py <= MESH_NUM_Y_POINTS; py++) {
+      for (uint8_t px = 1; px <= MESH_NUM_X_POINTS; px++) {
+        ECHO_SMV(CFG, "  G29 S3 X", px);
+        ECHO_MV(" Y", py);
+        ECHO_EMV(" Z", mbl.z_values[py-1][px-1], 5);
+      }
+    }
+  #endif
+
+  #if HEATER_USES_AD595
+    CONFIG_ECHO_START("AD595 Offset and Gain:");
+    for (int8_t h = 0; h < HOTENDS; h++) {
+      ECHO_SMV(CFG, "  M595 T", h);
+      ECHO_MV(" O", ad595_offset[h]);
+      ECHO_EMV(", S", ad595_gain[h]);
+    }
+  #endif // HEATER_USES_AD595
+
+  #if MECH(DELTA)
+    CONFIG_ECHO_START("Delta Geometry adjustment:");
+    ECHO_SMV(CFG, "  M666 A", tower_adj[0], 3);
+    ECHO_MV(" B", tower_adj[1], 3);
+    ECHO_MV(" C", tower_adj[2], 3);
+    ECHO_MV(" I", tower_adj[3], 3);
+    ECHO_MV(" J", tower_adj[4], 3);
+    ECHO_MV(" K", tower_adj[5], 3);
+    ECHO_MV(" U", diagrod_adj[0], 3);
+    ECHO_MV(" V", diagrod_adj[1], 3);
+    ECHO_MV(" W", diagrod_adj[2], 3);
+    ECHO_MV(" R", delta_radius);
+    ECHO_MV(" D", delta_diagonal_rod);
+    ECHO_EMV(" H", sw_endstop_max[2]);
+
+    CONFIG_ECHO_START("Endstop Offsets:");
+    ECHO_SMV(CFG, "  M666 X", endstop_adj[X_AXIS]);
+    ECHO_MV(" Y", endstop_adj[Y_AXIS]);
+    ECHO_EMV(" Z", endstop_adj[Z_AXIS]);
+
+  #elif ENABLED(Z_DUAL_ENDSTOPS)
+    CONFIG_ECHO_START("Z2 Endstop adjustement (mm):");
+    ECHO_LMV(CFG, "  M666 Z", z_endstop_adj );
+  #endif // DELTA
+  
+  /**
+   * Auto Bed Leveling
+   */
+  #if HAS(BED_PROBE)
+    CONFIG_ECHO_START("Z Probe offset (mm):");
+    ECHO_LMV(CFG, "  M666 P", zprobe_zoffset);
+  #endif
+
+  #if ENABLED(ULTIPANEL)
+    CONFIG_ECHO_START("Material heatup parameters:");
+    ECHO_SMV(CFG, "  M145 S0 H", plaPreheatHotendTemp);
+    ECHO_MV(" B", plaPreheatHPBTemp);
+    ECHO_MV(" F", plaPreheatFanSpeed);
+    ECHO_EM(" (Material PLA)");
+    ECHO_SMV(CFG, "  M145 S1 H", absPreheatHotendTemp);
+    ECHO_MV(" B", absPreheatHPBTemp);
+    ECHO_MV(" F", absPreheatFanSpeed);
+    ECHO_EM(" (Material ABS)");
+    ECHO_SMV(CFG, "  M145 S2 H", gumPreheatHotendTemp);
+    ECHO_MV(" B", gumPreheatHPBTemp);
+    ECHO_MV(" F", gumPreheatFanSpeed);
+    ECHO_EM(" (Material GUM)");
+  #endif // ULTIPANEL
+
+  #if ENABLED(PIDTEMP) || ENABLED(PIDTEMPBED) || ENABLED(PIDTEMPCHAMBER) || ENABLED(PIDTEMPCOOLER)
+    CONFIG_ECHO_START("PID settings:");
+    #if ENABLED(PIDTEMP)
+      for (uint8_t h = 0; h < HOTENDS; h++) {
+        ECHO_SMV(CFG, "  M301 H", h);
+        ECHO_MV(" P", PID_PARAM(Kp, h));
+        ECHO_MV(" I", unscalePID_i(PID_PARAM(Ki, h)));
+        ECHO_MV(" D", unscalePID_d(PID_PARAM(Kd, h)));
+        #if ENABLED(PID_ADD_EXTRUSION_RATE)
+          ECHO_MV(" C", PID_PARAM(Kc, h));
+        #endif
+        ECHO_E;
+      }
+      #if ENABLED(PID_ADD_EXTRUSION_RATE)
+        ECHO_SMV(CFG, "  M301 L", lpq_len);
+      #endif
+    #endif
+    #if ENABLED(PIDTEMPBED)
+      ECHO_SMV(CFG, "  M304 P", bedKp);
+      ECHO_MV(" I", unscalePID_i(bedKi));
+      ECHO_EMV(" D", unscalePID_d(bedKd));
+    #endif
+    #if ENABLED(PIDTEMPCHAMBER)
+      ECHO_SMV(CFG, "  M305 P", chamberKp);
+      ECHO_MV(" I", unscalePID_i(chamberKi));
+      ECHO_EMV(" D", unscalePID_d(chamberKd));
+    #endif
+    #if ENABLED(PIDTEMPCOOLER)
+      ECHO_SMV(CFG, "  M306 P", coolerKp);
+      ECHO_MV(" I", unscalePID_i(coolerKi));
+      ECHO_EMV(" D", unscalePID_d(coolerKd));
+    #endif
+  #endif
+
+  #if ENABLED(FWRETRACT)
+    CONFIG_ECHO_START("Retract: S=Length (mm) F:Speed (mm/m) Z: ZLift (mm)");
+    ECHO_SMV(CFG, "  M207 S", retract_length);
+    #if EXTRUDERS > 1
+      ECHO_MV(" W", retract_length_swap);
+    #endif
+    ECHO_MV(" F", retract_feedrate * 60);
+    ECHO_EMV(" Z", retract_zlift);
+
+    CONFIG_ECHO_START("Recover: S=Extra length (mm) F:Speed (mm/m)");
+    ECHO_SMV(CFG, "  M208 S", retract_recover_length);
+    #if EXTRUDERS > 1
+      ECHO_MV(" W", retract_recover_length_swap);
+    #endif
+    ECHO_MV(" F", retract_recover_feedrate * 60);
+
+    CONFIG_ECHO_START("Auto-Retract: S=0 to disable, 1 to interpret extrude-only moves as retracts or recoveries");
+    ECHO_LMV(CFG, "  M209 S", autoretract_enabled ? 1 : 0);
+  #endif // FWRETRACT
+
+  if (volumetric_enabled) {
+    CONFIG_ECHO_START("Filament settings:");
+    ECHO_LMV(CFG, "  M200 D", filament_size[0]);
+
+    #if EXTRUDERS > 1
+      ECHO_LMV(CFG, "  M200 T1 D", filament_size[1]);
+      #if EXTRUDERS > 2
+        ECHO_LMV(CFG, "  M200 T2 D", filament_size[2]);
+        #if EXTRUDERS > 3
+          ECHO_LMV(CFG, "  M200 T3 D", filament_size[3]);
+        #endif
+      #endif
     #endif
 
-    print_job_counter.showStats();
   }
+  else
+    CONFIG_ECHO_START("  M200 D0");
+
+  #if MB(ALLIGATOR)
+    CONFIG_ECHO_START("Motor current:");
+    ECHO_SMV(CFG, "  M906 X", motor_current[X_AXIS]);
+    ECHO_MV(" Y", motor_current[Y_AXIS]);
+    ECHO_MV(" Z", motor_current[Z_AXIS]);
+    ECHO_EMV(" E", motor_current[E_AXIS]);
+    #if DRIVER_EXTRUDERS > 1
+      for (uint8_t i = 1; i < DRIVER_EXTRUDERS; i++) {
+        ECHO_SMV(CFG, "  M906 T", i);
+        ECHO_EMV(" E", motor_current[E_AXIS + i]);
+      }
+    #endif // DRIVER_EXTRUDERS > 1
+  #endif // ALLIGATOR
+
+  ConfigSD_PrintSettings(forReplay);
+
+}
+
+void ConfigSD_PrintSettings(bool forReplay) {
+  // Always have this function, even with SD_SETTINGS disabled, the current values will be shown
+
+  #if HAS(POWER_CONSUMPTION_SENSOR)
+    CONFIG_ECHO_START("Watt/h consumed:");
+    ECHO_LVM(INFO, power_consumption_hour," Wh");
+  #endif
+
+  print_job_counter.showStats();
+}
 
 #endif // !DISABLE_M503
 
 /**
- * Configuration on SD card
- *
- * Author: Simone Primarosa
- *
- */
+* Configuration on SD card
+*
+* Author: Simone Primarosa
+*
+*/
 void ConfigSD_ResetDefault() {
   #if HAS(POWER_CONSUMPTION_SENSOR)
-   power_consumption_hour = 0;
+    power_consumption_hour = 0;
   #endif
   print_job_counter.initStats();
   ECHO_LM(OK, "Hardcoded SD Default Settings Loaded");
 }
 
 #if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
-  static const char *cfgSD_KEY[] = { // Keep this in lexicographical order for better search performance(O(Nlog2(N)) insted of O(N*N)) (if you don't keep this sorted, the algorithm for find the key index won't work, keep attention.)
-    "CPR",  // Number of complete prints
-    "FIL",  // Filament Usage
-    "NPR",  // Number of prints
+static const char *cfgSD_KEY[] = { // Keep this in lexicographical order for better search performance(O(Nlog2(N)) insted of O(N*N)) (if you don't keep this sorted, the algorithm for find the key index won't work, keep attention.)
+  "CPR",  // Number of complete prints
+  "FIL",  // Filament Usage
+  "NPR",  // Number of prints
+#if HAS(POWER_CONSUMPTION_SENSOR)
+  "PWR",  // Power Consumption
+#endif
+  "TME",  // Longest print job
+  "TPR"   // Total printing time
+};
+
+enum cfgSD_ENUM {   // This need to be in the same order as cfgSD_KEY
+  SD_CFG_CPR,
+  SD_CFG_FIL,
+  SD_CFG_NPR,
+#if HAS(POWER_CONSUMPTION_SENSOR)
+  SD_CFG_PWR,
+#endif
+  SD_CFG_TME,
+  SD_CFG_TPR,
+  SD_CFG_END // Leave this always as the last
+};
+
+void ConfigSD_StoreSettings() {
+  if(!IS_SD_INSERTED || card.isFileOpen() || card.sdprinting) return;
+
+  set_sd_dot();
+  card.setroot(true);
+  card.startWrite((char *)CFG_SD_FILE, false);
+  char buff[CFG_SD_MAX_VALUE_LEN];
+  ltoa(print_job_counter.data.completePrints, buff, 10);
+  card.unparseKeyLine(cfgSD_KEY[SD_CFG_CPR], buff);
+  ltoa(print_job_counter.data.printer_usage_filament, buff, 10);
+  card.unparseKeyLine(cfgSD_KEY[SD_CFG_FIL], buff);
+  ltoa(print_job_counter.data.numberPrints, buff, 10);
+  card.unparseKeyLine(cfgSD_KEY[SD_CFG_NPR], buff);
   #if HAS(POWER_CONSUMPTION_SENSOR)
-    "PWR",  // Power Consumption
+    ltoa(power_consumption_hour, buff, 10);
+    card.unparseKeyLine(cfgSD_KEY[SD_CFG_PWR], buff);
   #endif
-    "TME",  // Longest print job
-    "TPR"   // Total printing time
-  };
+  ltoa(print_job_counter.data.printer_usage_seconds, buff, 10);
+  card.unparseKeyLine(cfgSD_KEY[SD_CFG_TME], buff);
+  ltoa(print_job_counter.data.printTime, buff, 10);
+  card.unparseKeyLine(cfgSD_KEY[SD_CFG_TPR], buff);
 
-  enum cfgSD_ENUM {   // This need to be in the same order as cfgSD_KEY
-    SD_CFG_CPR,
-    SD_CFG_FIL,
-    SD_CFG_NPR,
-  #if HAS(POWER_CONSUMPTION_SENSOR)
-    SD_CFG_PWR,
-  #endif
-    SD_CFG_TME,
-    SD_CFG_TPR,
-    SD_CFG_END // Leave this always as the last
-  };
+  card.closeFile();
+  card.setlast();
+  unset_sd_dot();
+}
 
-  void ConfigSD_StoreSettings() {
-    if(!IS_SD_INSERTED || card.isFileOpen() || card.sdprinting) return;
-    set_sd_dot();
-    card.setroot(true);
-    card.startWrite((char *)CFG_SD_FILE, false);
-    char buff[CFG_SD_MAX_VALUE_LEN];
-    ltoa(print_job_counter.data.completePrints, buff, 10);
-    card.unparseKeyLine(cfgSD_KEY[SD_CFG_CPR], buff);
-    ltoa(print_job_counter.data.printer_usage_filament, buff, 10);
-    card.unparseKeyLine(cfgSD_KEY[SD_CFG_FIL], buff);
-    ltoa(print_job_counter.data.numberPrints, buff, 10);
-    card.unparseKeyLine(cfgSD_KEY[SD_CFG_NPR], buff);
-    #if HAS(POWER_CONSUMPTION_SENSOR)
-      ltoa(power_consumption_hour, buff, 10);
-      card.unparseKeyLine(cfgSD_KEY[SD_CFG_PWR], buff);
-    #endif
-    ltoa(print_job_counter.data.printer_usage_seconds, buff, 10);
-    card.unparseKeyLine(cfgSD_KEY[SD_CFG_TME], buff);
-    ltoa(print_job_counter.data.printTime, buff, 10);
-    card.unparseKeyLine(cfgSD_KEY[SD_CFG_TPR], buff);
+void ConfigSD_RetrieveSettings(bool addValue) {
+  if(!IS_SD_INSERTED || card.isFileOpen() || card.sdprinting || !card.cardOK) return;
 
-    card.closeFile();
-    card.setlast();
-    unset_sd_dot();
-  }
+  set_sd_dot();
+  char key[CFG_SD_MAX_KEY_LEN], value[CFG_SD_MAX_VALUE_LEN];
+  int k_idx;
+  int k_len, v_len;
+  card.setroot(true);
+  card.selectFile((char *)CFG_SD_FILE);
 
-  void ConfigSD_RetrieveSettings(bool addValue) {
-    if(!IS_SD_INSERTED || card.isFileOpen() || card.sdprinting || !card.cardOK) return;
-    set_sd_dot();
-    char key[CFG_SD_MAX_KEY_LEN], value[CFG_SD_MAX_VALUE_LEN];
-    int k_idx;
-    int k_len, v_len;
-    card.setroot(true);
-    card.selectFile((char *)CFG_SD_FILE);
-    while(true) {
-      k_len = CFG_SD_MAX_KEY_LEN;
-      v_len = CFG_SD_MAX_VALUE_LEN;
-      card.parseKeyLine(key, value, k_len, v_len);
+  while(true) {
+    k_len = CFG_SD_MAX_KEY_LEN;
+    v_len = CFG_SD_MAX_VALUE_LEN;
+    card.parseKeyLine(key, value, k_len, v_len);
 
-      if(k_len == 0 || v_len == 0) break; // no valid key or value founded
+    if(k_len == 0 || v_len == 0) break; // no valid key or value founded
 
-      k_idx = ConfigSD_KeyIndex(key);
-      if(k_idx == -1) continue;    // unknow key ignore it
+    k_idx = ConfigSD_KeyIndex(key);
+    if(k_idx == -1) continue;    // unknow key ignore it
 
-      switch(k_idx) {
-        case SD_CFG_CPR: {
-          if(addValue) print_job_counter.data.completePrints += (unsigned long)atol(value);
-          else print_job_counter.data.completePrints = (unsigned long)atol(value);
-        }
-        break;
-        case SD_CFG_FIL: {
-          if(addValue) print_job_counter.data.printer_usage_filament += (unsigned long)atol(value);
-          else print_job_counter.data.printer_usage_filament = (unsigned long)atol(value);
-        }
-        break;
-        case SD_CFG_NPR: {
-          if(addValue) print_job_counter.data.numberPrints += (unsigned long)atol(value);
-          else print_job_counter.data.numberPrints = (unsigned long)atol(value);
-        }
-        break;
-      #if HAS(POWER_CONSUMPTION_SENSOR)
-        case SD_CFG_PWR: {
-          if(addValue) power_consumption_hour += (unsigned long)atol(value);
-          else power_consumption_hour = (unsigned long)atol(value);
-        }
-        break;
-      #endif
-        case SD_CFG_TME: {
-          if(addValue) print_job_counter.data.printer_usage_seconds += (unsigned long)atol(value);
-          else print_job_counter.data.printer_usage_seconds = (unsigned long)atol(value);
-        }
-        break;
-        case SD_CFG_TPR: {
-          if(addValue) print_job_counter.data.printTime += (unsigned long)atol(value);
-          else print_job_counter.data.printTime = (unsigned long)atol(value);
-        }
-        break;
+    switch(k_idx) {
+      case SD_CFG_CPR: {
+        if(addValue) print_job_counter.data.completePrints += (unsigned long)atol(value);
+        else print_job_counter.data.completePrints = (unsigned long)atol(value);
       }
+      break;
+      case SD_CFG_FIL: {
+        if(addValue) print_job_counter.data.printer_usage_filament += (unsigned long)atol(value);
+        else print_job_counter.data.printer_usage_filament = (unsigned long)atol(value);
+      }
+      break;
+      case SD_CFG_NPR: {
+        if(addValue) print_job_counter.data.numberPrints += (unsigned long)atol(value);
+        else print_job_counter.data.numberPrints = (unsigned long)atol(value);
+      }
+      break;
+    #if HAS(POWER_CONSUMPTION_SENSOR)
+      case SD_CFG_PWR: {
+        if(addValue) power_consumption_hour += (unsigned long)atol(value);
+        else power_consumption_hour = (unsigned long)atol(value);
+      }
+      break;
+    #endif
+      case SD_CFG_TME: {
+        if(addValue) print_job_counter.data.printer_usage_seconds += (unsigned long)atol(value);
+        else print_job_counter.data.printer_usage_seconds = (unsigned long)atol(value);
+      }
+      break;
+      case SD_CFG_TPR: {
+        if(addValue) print_job_counter.data.printTime += (unsigned long)atol(value);
+        else print_job_counter.data.printTime = (unsigned long)atol(value);
+      }
+      break;
     }
-
-    print_job_counter.loaded = true;
-    card.closeFile();
-    card.setlast();
-    unset_sd_dot();
   }
 
-  int ConfigSD_KeyIndex(char *key) {  // At the moment a binary search algorithm is used for simplicity, if it will be necessary (Eg. tons of key), an hash search algorithm will be implemented.
-    int begin = 0, end = SD_CFG_END - 1, middle, cond;
+  print_job_counter.loaded = true;
+  card.closeFile();
+  card.setlast();
+  unset_sd_dot();
+}
 
-    while(begin <= end) {
-      middle = (begin + end) / 2;
-      cond = strcmp(cfgSD_KEY[middle], key);
-      if(!cond) return middle;
-      else if(cond < 0) begin = middle + 1;
-      else end = middle - 1;
-    }
+int ConfigSD_KeyIndex(char *key) {  // At the moment a binary search algorithm is used for simplicity, if it will be necessary (Eg. tons of key), an hash search algorithm will be implemented.
+  int begin = 0, end = SD_CFG_END - 1, middle, cond;
 
-    return -1;
+  while(begin <= end) {
+    middle = (begin + end) / 2;
+    cond = strcmp(cfgSD_KEY[middle], key);
+    if(!cond) return middle;
+    else if(cond < 0) begin = middle + 1;
+    else end = middle - 1;
   }
+
+  return -1;
+}
 
 #endif
