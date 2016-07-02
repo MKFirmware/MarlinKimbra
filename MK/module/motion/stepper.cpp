@@ -927,24 +927,23 @@ void st_init() {
     if (!E_ENABLE_ON) E5_ENABLE_WRITE(HIGH);
   #endif
 
-  //Choice E0-E1 or E0-E2 or E1-E3 pin
-  #if ENABLED(MKR4) && HAS(E0E1)
-    OUT_WRITE_RELE(E0E1_CHOICE_PIN, LOW);
-  #endif
-  #if ENABLED(MKR4) && HAS(E0E2)
-    OUT_WRITE_RELE(E0E2_CHOICE_PIN, LOW);
-  #endif
-  #if ENABLED(MKR4) && HAS(E0E3)
-    OUT_WRITE_RELE(E0E3_CHOICE_PIN, LOW);
-  #endif
-  #if ENABLED(MKR4) && HAS(E0E4)
-    OUT_WRITE_RELE(E0E4_CHOICE_PIN, LOW);
-  #endif
-  #if ENABLED(MKR4) && HAS(E0E5)
-    OUT_WRITE_RELE(E0E5_CHOICE_PIN, LOW);
-  #endif
-  #if ENABLED(MKR4) && HAS(E1E3)
-    OUT_WRITE_RELE(E1E3_CHOICE_PIN, LOW);
+  #if ENABLED(MKR4) // MKR4 System
+    #if HAS(E0E1)
+      OUT_WRITE_RELE(E0E1_CHOICE_PIN, LOW);
+    #endif
+    #if HAS(E0E2)
+      OUT_WRITE_RELE(E0E2_CHOICE_PIN, LOW);
+    #endif
+    #if HAS(E1E3)
+      OUT_WRITE_RELE(E1E3_CHOICE_PIN, LOW);
+    #endif
+  #elif ENABLED(MKR6) // MKR6 System
+    #if HAS(EX1)
+      OUT_WRITE_RELE(EX1_CHOICE_PIN, LOW);
+    #endif
+    #if HAS(EX2)
+      OUT_WRITE_RELE(EX2_CHOICE_PIN, LOW);
+    #endif
   #endif
 
   //

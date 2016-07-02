@@ -322,6 +322,12 @@
     #undef HOTENDS
     #define HOTENDS 1
     #undef TEMP_SENSOR_1_AS_REDUNDANT
+    #undef HOTEND_OFFSET_X
+    #undef HOTEND_OFFSET_Y
+    #undef HOTEND_OFFSET_Z
+    #define HOTEND_OFFSET_X { 0 }
+    #define HOTEND_OFFSET_Y { 0 }
+    #define HOTEND_OFFSET_Z { 0 }
   #else
     #undef HOTENDS
     #define HOTENDS EXTRUDERS
@@ -330,7 +336,7 @@
   /**
    * DRIVER_EXTRUDERS
    */
-  #if DISABLED(MKR4) && DISABLED(NPR2) && DISABLED(DONDOLO_SINGLE_MOTOR) && DISABLED(COLOR_MIXING_EXTRUDER)
+  #if DISABLED(MKR4) && DISABLED(MKR6) && DISABLED(NPR2) && DISABLED(DONDOLO_SINGLE_MOTOR) && DISABLED(COLOR_MIXING_EXTRUDER)
     #undef DRIVER_EXTRUDERS
     #define DRIVER_EXTRUDERS EXTRUDERS // This defines the number of Driver extruder
   #endif
@@ -681,42 +687,14 @@
   /**
    * ARRAY_BY_EXTRUDERS based on EXTRUDERS
    */
-  #if EXTRUDERS > 9
-    #define ARRAY_BY_EXTRUDERS(v1) { v1, v1, v1, v1, v1, v1, v1, v1, v1, v1 }
-  #elif EXTRUDERS > 8
-    #define ARRAY_BY_EXTRUDERS(v1) { v1, v1, v1, v1, v1, v1, v1, v1, v1 }
-  #elif EXTRUDERS > 7
-    #define ARRAY_BY_EXTRUDERS(v1) { v1, v1, v1, v1, v1, v1, v1, v1 }
-  #elif EXTRUDERS > 6
-    #define ARRAY_BY_EXTRUDERS(v1) { v1, v1, v1, v1, v1, v1, v1 }
-  #elif EXTRUDERS > 5
-    #define ARRAY_BY_EXTRUDERS(v1) { v1, v1, v1, v1, v1, v1 }
-  #elif EXTRUDERS > 4
-    #define ARRAY_BY_EXTRUDERS(v1) { v1, v1, v1, v1, v1 }
-  #elif EXTRUDERS > 3
-    #define ARRAY_BY_EXTRUDERS(v1) { v1, v1, v1, v1 }
-  #elif EXTRUDERS > 2
-    #define ARRAY_BY_EXTRUDERS(v1) { v1, v1, v1 }
-  #elif EXTRUDERS > 1
-    #define ARRAY_BY_EXTRUDERS(v1) { v1, v1 }
-  #else
-    #define ARRAY_BY_EXTRUDERS(v1) { v1 }
-  #endif
+  #define ARRAY_BY_EXTRUDERS_N(args...) ARRAY_N(EXTRUDERS, args)
+  #define ARRAY_BY_EXTRUDERS(v1) ARRAY_BY_EXTRUDERS_N(v1, v1, v1, v1, v1, v1)
 
   /**
    * ARRAY_BY_HOTENDS based on HOTENDS
    */
-  #if HOTENDS > 3
-    #define ARRAY_BY_HOTENDS(v1, v2, v3, v4) { v1, v2, v3, v4 }
-  #elif HOTENDS > 2
-    #define ARRAY_BY_HOTENDS(v1, v2, v3, v4) { v1, v2, v3 }
-  #elif HOTENDS > 1
-    #define ARRAY_BY_HOTENDS(v1, v2, v3, v4) { v1, v2 }
-  #else
-    #define ARRAY_BY_HOTENDS(v1, v2, v3, v4) { v1 }
-  #endif
-
-  #define ARRAY_BY_HOTENDS1(v1) ARRAY_BY_HOTENDS(v1, v1, v1, v1)
+  #define ARRAY_BY_HOTENDS_N(args...) ARRAY_N(HOTENDS, args)
+  #define ARRAY_BY_HOTENDS(v1) ARRAY_BY_HOTENDS_N(v1, v1, v1, v1, v1, v1)
 
   /**
    * Shorthand for pin tests, used wherever needed
@@ -812,10 +790,9 @@
   #define HAS_E5_STEP (PIN_EXISTS(E5_STEP))
   #define HAS_E0E1 (PIN_EXISTS(E0E1_CHOICE))
   #define HAS_E0E2 (PIN_EXISTS(E0E2_CHOICE))
-  #define HAS_E0E3 (PIN_EXISTS(E0E3_CHOICE))
-  #define HAS_E0E4 (PIN_EXISTS(E0E4_CHOICE))
-  #define HAS_E0E5 (PIN_EXISTS(E0E5_CHOICE))
   #define HAS_E1E3 (PIN_EXISTS(E1E3_CHOICE))
+  #define HAS_EX1 (PIN_EXISTS(EX1_CHOICE))
+  #define HAS_EX2 (PIN_EXISTS(EX2_CHOICE))
   #define HAS_BTN_BACK (PIN_EXISTS(BTN_BACK))
   #define HAS_POWER_SWITCH (POWER_SUPPLY > 0 && PIN_EXISTS(PS_ON))
   #define HAS_MOTOR_CURRENT_PWM_XY (PIN_EXISTS(MOTOR_CURRENT_PWM_XY))
@@ -886,7 +863,7 @@
       #define WRITE_FAN(v) WRITE(FAN_PIN, v)
     #endif
   #endif
-  #if ENABLED(MKR4)
+  #if ENABLED(MKR4) || ENABLED(MKR6)
     #if ENABLED(INVERTED_RELE_PINS)
       #define WRITE_RELE(pin, value) WRITE(pin, !value)
       #define OUT_WRITE_RELE(pin, value) OUT_WRITE(pin, !value)

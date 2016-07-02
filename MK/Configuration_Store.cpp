@@ -39,6 +39,7 @@
 #include "base.h"
 
 #define EEPROM_VERSION "MKV28"
+#define EEPROM_OFFSET 100
 
 /**
  * MKV428 EEPROM Layout:
@@ -164,11 +165,6 @@ void _EEPROM_readData(int& pos, uint8_t* value, uint8_t size) {
   } while (--size);
 }
 
-#define EEPROM_WRITE_VAR(pos, value) _EEPROM_writeData(pos, (uint8_t*)&value, sizeof(value))
-#define EEPROM_READ_VAR(pos, value) _EEPROM_readData(pos, (uint8_t*)&value, sizeof(value))
-
-#define EEPROM_OFFSET 100
-
 /**
  * Post-process after Retrieve or Reset
  */
@@ -189,6 +185,9 @@ void Config_Postprocess() {
 
 #if ENABLED(EEPROM_SETTINGS)
 
+#define EEPROM_WRITE_VAR(pos, value) _EEPROM_writeData(pos, (uint8_t*)&value, sizeof(value))
+#define EEPROM_READ_VAR(pos, value) _EEPROM_readData(pos, (uint8_t*)&value, sizeof(value))
+
 /**
  * M500 - Store Configuration
  */
@@ -196,11 +195,12 @@ void Config_StoreSettings() {
   float dummy = 0.0f;
   char ver[6] = "00000";
   int i = EEPROM_OFFSET;
-  EEPROM_WRITE_VAR(i, ver); // invalidate data first
-  EEPROM_WRITE_VAR(i, eeprom_checksum);
 
-  // Start calc checksum
-  eeprom_checksum = 0;
+  EEPROM_WRITE_VAR(i, ver);     // invalidate data first
+  i += sizeof(eeprom_checksum); // Skip the checksum slot
+
+  eeprom_checksum = 0; // clear before first "real data"
+
   EEPROM_WRITE_VAR(i, planner.axis_steps_per_mm);
   EEPROM_WRITE_VAR(i, planner.max_feedrate);
   EEPROM_WRITE_VAR(i, planner.max_acceleration_mm_per_s2);
@@ -342,10 +342,11 @@ void Config_StoreSettings() {
     EEPROM_WRITE_VAR(i, motor_current);
   #endif
 
+  uint16_t final_checksum = eeprom_checksum;
+
   int j = EEPROM_OFFSET;
-  uint16_t stored_checksum = eeprom_checksum;
   EEPROM_WRITE_VAR(j, version);
-  EEPROM_WRITE_VAR(j, stored_checksum);
+  EEPROM_WRITE_VAR(j, final_checksum);
 
   // Report storage size
   ECHO_SMV(DB, "Settings Stored (", i);
@@ -372,8 +373,9 @@ void Config_RetrieveSettings() {
     Config_ResetDefault();
   }
   else {
-    eeprom_checksum = 0;
     float dummy = 0;
+
+    eeprom_checksum = 0; // clear before reading first "real data"
 
     // version number match
     EEPROM_READ_VAR(i, planner.axis_steps_per_mm);
@@ -511,7 +513,7 @@ void Config_RetrieveSettings() {
       EEPROM_READ_VAR(i, motor_current);
     #endif
 
-    if (stored_checksum == eeprom_checksum) {
+    if (eeprom_checksum == stored_checksum) {
       Config_Postprocess();
       ECHO_SV(DB, version);
       ECHO_MV(" stored settings retrieved (", i);
@@ -982,6 +984,7 @@ void ConfigSD_ResetDefault() {
 }
 
 #if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
+
 static const char *cfgSD_KEY[] = { // Keep this in lexicographical order for better search performance(O(Nlog2(N)) insted of O(N*N)) (if you don't keep this sorted, the algorithm for find the key index won't work, keep attention.)
   "CPR",  // Number of complete prints
   "FIL",  // Filament Usage

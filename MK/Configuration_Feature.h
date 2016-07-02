@@ -32,7 +32,8 @@
  * - Single nozzle
  * - BariCUDA paste extruder
  * - Color Mixing Extruder
- * - Multiextruder MKR4
+ * - Multiextruder old MKR4
+ * - Multiextruder new MKR6
  * - Multiextruder NPr2
  * - Multiextruder DONDOLO
  * - Extruder idle oozing prevention
@@ -226,6 +227,7 @@
  ***********************************************************************
  *                                                                     *
  * Setting for more extruder width relay system                        *
+ * This is old system for 4 extruder and 8 relay.                      *
  * See Configuration_pins.h for pin command relay                      *
  *                                                                     *
  * Uncomment MKR4 to enable this feature                               *
@@ -233,6 +235,23 @@
  * Uncomment INVERTED_RELE_PINS if your relay switches with GND        *
  ***********************************************************************/
 //#define MKR4
+//#define INVERTED_RELE_PINS
+/***********************************************************************/
+
+
+/***********************************************************************
+ ************************* Multiextruder MKR6 **************************
+ ***********************************************************************
+ *                                                                     *
+ * Setting for more extruder width relay system                        *
+ * This is new system for 6 extruder width 2 driver and 6 relay.       *
+ * See Configuration_pins.h for pin command relay                      *
+ *                                                                     *
+ * Uncomment MKR6 to enable this feature                               *
+ *                                                                     *
+ * Uncomment INVERTED_RELE_PINS if your relay switches with GND        *
+ ***********************************************************************/
+//#define MKR6
 //#define INVERTED_RELE_PINS
 /***********************************************************************/
 
