@@ -1821,23 +1821,41 @@
       #endif
     #endif
   #endif
-  
+
+  #if ENABLED(MKR4) && ENABLED(MKR6)
+    #error DEPENDENCY ERROR: You must set only one MKR system
+  #endif
+
   #if ENABLED(MKR4)
     #if (EXTRUDERS == 2) && (DRIVER_EXTRUDERS == 1) && !PIN_EXISTS(E0E1_CHOICE)
-      #error DEPENDENCY ERROR: You have to set E0E1_CHOICE_PIN to a valid pin if you enable MKR4 with 2 extruder and 1 driver
-    #elif (EXTRUDERS == 3) && (DRIVER_EXTRUDERS == 1) && (!PIN_EXISTS(E0E1_CHOICE) || !PIN_EXISTS(E0E2_CHOICE))
-      #error DEPENDENCY ERROR: You have to set E0E1_CHOICE_PIN and E0E2_CHOICE_PIN to a valid pin if you enable MKR4 with 3 extruder and 1 driver
-    #elif (EXTRUDERS == 4) && (DRIVER_EXTRUDERS == 1) && (!PIN_EXISTS(E0E1_CHOICE) || !PIN_EXISTS(E0E2_CHOICE) || !PIN_EXISTS(E0E3_CHOICE))
-      #error DEPENDENCY ERROR: You have to set E0E1_CHOICE_PIN, E0E2_CHOICE_PIN and E0E3_CHOICE_PIN to a valid pin if you enable MKR4 with 4 extruder and 1 driver
-    #elif (EXTRUDERS == 5) && (DRIVER_EXTRUDERS == 1) && (!PIN_EXISTS(E0E1_CHOICE) || !PIN_EXISTS(E0E2_CHOICE) || !PIN_EXISTS(E0E3_CHOICE) || !PIN_EXISTS(E0E4_CHOICE))
-      #error DEPENDENCY ERROR: You have to set E0E1_CHOICE_PIN, E0E2_CHOICE_PIN and E0E3_CHOICE_PIN to a valid pin if you enable MKR4 with 4 extruder and 1 driver
-    #elif (EXTRUDERS == 6) && (DRIVER_EXTRUDERS == 1) && (!PIN_EXISTS(E0E1_CHOICE) || !PIN_EXISTS(E0E2_CHOICE) || !PIN_EXISTS(E0E3_CHOICE) || !PIN_EXISTS(E0E4_CHOICE) || !PIN_EXISTS(E0E5_CHOICE))
-      #error DEPENDENCY ERROR: You have to set E0E1_CHOICE_PIN, E0E2_CHOICE_PIN and E0E3_CHOICE_PIN to a valid pin if you enable MKR4 with 4 extruder and 1 driver
+      #error DEPENDENCY ERROR: You must set E0E1_CHOICE_PIN to a valid pin if you enable MKR4 with 2 extruder and 1 driver
+    #elif (EXTRUDERS > 2) && (DRIVER_EXTRUDERS == 1)
+      #error DEPENDENCY ERROR: For 3 or more extruder you must set 2 DRIVER_EXTRUDERS for MKR4 system#error DEPENDENCY ERROR: For 3 or more extruder you must set 2 DRIVER_EXTRUDERS for MKR4 system
+    #elif (EXTRUDERS > 2) && PIN_EXISTS(E0E1_CHOICE)
+      #error DEPENDENCY ERROR: For 3 or more extruder you must not E0E1_CHOICE_PIN for MKR4 system
     #elif (EXTRUDERS == 3) && (DRIVER_EXTRUDERS == 2) && !PIN_EXISTS(E0E2_CHOICE)
-      #error DEPENDENCY ERROR: You have to set E0E2_CHOICE_PIN to a valid pin if you enable MKR4 with 3 extruder and 2 driver
+      #error DEPENDENCY ERROR: You must set E0E2_CHOICE_PIN to a valid pin if you enable MKR4 with 3 extruder and 1 driver
     #elif (EXTRUDERS == 4) && (DRIVER_EXTRUDERS == 2) && (!PIN_EXISTS(E0E2_CHOICE) || !PIN_EXISTS(E1E3_CHOICE))
-      #error DEPENDENCY ERROR: You have to set E0E2_CHOICE_PIN and E1E3_CHOICE_PIN to a valid pin if you enable MKR4 with 4 extruder and 2 driver
+      #error DEPENDENCY ERROR: You must set E0E2_CHOICE_PIN and E1E3_CHOICE_PIN to a valid pin if you enable MKR4 with 4 extruder and 2 driver
+    #elif (EXTRUDERS > 4)
+      #error DEPENDENCY ERROR: MKR4 support only max 4 extruder
     #endif 
+  #elif ENABLED(MKR6)
+    #if (EXTRUDERS == 2) && (DRIVER_EXTRUDERS == 1) && !PIN_EXISTS(EX1_CHOICE)
+      #error DEPENDENCY ERROR: You must to set EX1_CHOICE_PIN to a valid pin if you enable MKR6 with 2 extruder and 1 driver
+    #elif (EXTRUDERS == 3) && (DRIVER_EXTRUDERS == 1) && (!PIN_EXISTS(EX1_CHOICE) || !PIN_EXISTS(EX2_CHOICE))
+      #error DEPENDENCY ERROR: You have to set EX1_CHOICE_PIN and EX2_CHOICE_PIN to a valid pin if you enable MKR6 with 3 extruder and 1 driver
+    #elif (EXTRUDERS >= 4) && (DRIVER_EXTRUDERS == 1)
+      #error DEPENDENCY ERROR: For 4 or more extruder you must set 2 DRIVER_EXTRUDERS for MKR6 system
+    #elif (EXTRUDERS == 4) && (DRIVER_EXTRUDERS == 2) && (!PIN_EXISTS(EX1_CHOICE) || !PIN_EXISTS(EX2_CHOICE))
+      #error DEPENDENCY ERROR: You have to set EX1_CHOICE_PIN and EX2_CHOICE_PIN to a valid pin if you enable MKR6 with 4 extruder and 2 driver
+    #elif (EXTRUDERS == 5) && (DRIVER_EXTRUDERS == 2) && (!PIN_EXISTS(EX1_CHOICE) || !PIN_EXISTS(EX2_CHOICE))
+      #error DEPENDENCY ERROR: You have to set EX1_CHOICE_PIN and EX2_CHOICE_PIN to a valid pin if you enable MKR6 with 5 extruder and 2 driver
+    #elif (EXTRUDERS == 6) && (DRIVER_EXTRUDERS == 2) && (!PIN_EXISTS(EX1_CHOICE) || !PIN_EXISTS(EX2_CHOICE))
+      #error DEPENDENCY ERROR: You have to set EX1_CHOICE_PIN and EX2_CHOICE_PIN to a valid pin if you enable MKR6 with 6 extruder and 2 driver
+    #elif (EXTRUDERS > 6)
+      #error DEPENDENCY ERROR: MKR6 support only max 6 extruder
+    #endif
   #endif
 
   #if ENABLED(NPR2) && !PIN_EXISTS(E_MIN)

@@ -667,8 +667,8 @@ void Planner::check_axes_activity() {
 
   // Enable extruder(s)
   if (block->steps[E_AXIS]) {
-    #if DISABLED(MKR4) && DISABLED(NPR2)
-      if (DISABLE_INACTIVE_EXTRUDER) { //enable only selected extruder
+    #if DISABLED(MKR4) && DISABLED(MKR6) && DISABLED(NPR2)
+      if (DISABLE_INACTIVE_EXTRUDER) { // enable only selected extruder
 
         for (int i = 0; i < EXTRUDERS; i++)
           if (g_uc_extruder_last_move[i] > 0) g_uc_extruder_last_move[i]--;
@@ -770,8 +770,7 @@ void Planner::check_axes_activity() {
           #endif // EXTRUDERS > 1
         }
       }
-      else //enable all
-      {
+      else { // enable all
         enable_e0();
         enable_e1();
         enable_e2();
@@ -779,9 +778,23 @@ void Planner::check_axes_activity() {
         enable_e4();
         enable_e5();
       }
-    #else //MKR4 or NPr2
-      switch(extruder)
-      {
+    #elif ENABLED(MKR6)
+      switch(extruder) {
+        case 0:
+        case 1:
+        case 2:
+          enable_e0();
+        break;
+        case 3:
+        case 4:
+        case 5:
+          enable_e1();
+        break;
+      }
+    #elif ENABLED(MKR4) && (EXTRUDERS == 2) && (DRIVER_EXTRUDERS == 1)
+      enable_e0();
+    #else // MKR4 or NPr2
+      switch(extruder) {
         case 0:
           enable_e0();
         break;
@@ -795,7 +808,7 @@ void Planner::check_axes_activity() {
           enable_e1();
         break;
       }
-    #endif //!MKR4 && !NPR2
+    #endif // MKR4 && NPR2
   }
 
   if (block->steps[E_AXIS])

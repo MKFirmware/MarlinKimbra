@@ -1,5 +1,7 @@
 ### Version 4.2.86
 * Fix Type probe
+* Add MKR6 system
+* Fix and clear code
 
 ### Version 4.2.85
 * Add Stop and Save for Restart (SSR)
