@@ -398,7 +398,7 @@ void print_xyz(const char* prefix, const float xyz[]) {
     print_xyz(prefix, xyz.x, xyz.y, xyz.z);
   }
 #endif
-#define DEBUG_POS(PREFIX,VAR) do{ ECHO_M(PREFIX); print_xyz(" > " STRINGIFY(VAR), VAR); }while(0)
+#define DEBUG_POS(PREFIX,VAR) do{ ECHO_SM(INFO, PREFIX); print_xyz(" > " STRINGIFY(VAR), VAR); }while(0)
 
 #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
   float extrude_min_temp = EXTRUDE_MINTEMP;
@@ -2427,7 +2427,6 @@ static bool axis_unhomed_error(const bool x, const bool y, const bool z) {
       if (DEBUGGING(INFO)) {
         ECHO_LM(INFO, "probe_bed >>>");
         DEBUG_POS("", current_position);
-        ECHO_LMV(INFO, "Z Raise by bed_safe_z ", bed_safe_z);
       }
 
       float old_feedrate = feedrate;
@@ -9909,7 +9908,7 @@ void plan_arc(
   }
 
   void calculate_delta(float cartesian[3]) {
-    //reverse kinematics.
+    // reverse kinematics.
     // Perform reversed kinematics, and place results in delta[3]
     // The maths and first version has been done by QHARLEY . Integrated into masterbranch 06/2014 and slightly restructured by Joachim Cerny in June 2014
 

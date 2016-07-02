@@ -172,7 +172,7 @@ void Config_Postprocess() {
   // steps per s2 needs to be updated to agree with units per s2
   planner.reset_acceleration_rates();
 
-  #if ENABLED(DELTA)
+  #if MECH(DELTA)
     set_delta_constants();
   #endif
 
