@@ -5,6 +5,7 @@
 ****************************************************************************************/
 
 #define KNOWN_BOARD
+#define BOARD_NAME "Alligator R2"
 
 #ifndef __SAM3X8E__
   #error Oops!  Make sure you have 'Alligator 3D Printer Board' selected from the 'Tools -> Boards' menu.

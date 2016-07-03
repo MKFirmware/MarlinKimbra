@@ -73,7 +73,7 @@ void PrintCounter::saveStats() {
 
 void PrintCounter::showStats() {
   char temp[30];
-  uint32_t day, hours, minutes;
+  uint16_t day, hours, minutes, t;
 
   ECHO_MV("Print statistics: Total: ", this->data.numberPrints);
   ECHO_MV(", Finished: ", this->data.completePrints);
@@ -81,25 +81,27 @@ void PrintCounter::showStats() {
   ECHO_EV (this->data.numberPrints - this->data.completePrints -
           ((this->isRunning() || this->isPaused()) ? 1 : 0)); // Removes 1 from failures with an active counter
 
-  day     = this->data.printTime / 60 / 60 / 24;
-  hours   = (this->data.printTime / 60 / 60) % 24;
-  minutes = (this->data.printTime / 60) % 60;
+  t       = this->data.printTime / 60;
+  day     = t / 60 / 24;
+  hours   = (t / 60) % 24;
+  minutes = t % 60;
 
-  sprintf_P(temp, PSTR("  %i " MSG_END_DAY " %i " MSG_END_HOUR " %i " MSG_END_MINUTE), day, hours, minutes);
+  sprintf_P(temp, PSTR("  %u " MSG_END_DAY " %u " MSG_END_HOUR " %u " MSG_END_MINUTE), day, hours, minutes);
   ECHO_EMT("Total print time: ", temp);
 
-  day     = this->data.printer_usage_seconds / 60 / 60 / 24;
-  hours   = (this->data.printer_usage_seconds / 60 / 60) % 24;
-  minutes = (this->data.printer_usage_seconds / 60) % 60;
+  t       = this->data.printer_usage_seconds / 60;
+  day     = t / 60 / 24;
+  hours   = (t / 60) % 24;
+  minutes = t % 60;
 
-  sprintf_P(temp, PSTR("  %i " MSG_END_DAY " %i " MSG_END_HOUR " %i " MSG_END_MINUTE), day, hours, minutes);
+  sprintf_P(temp, PSTR("  %u " MSG_END_DAY " %u " MSG_END_HOUR " %u " MSG_END_MINUTE), day, hours, minutes);
   ECHO_EMT("Power on time: ", temp);
 
-  uint32_t  kmeter = (long)this->data.printer_usage_filament / 1000 / 1000,
+  uint16_t  kmeter = (long)this->data.printer_usage_filament / 1000 / 1000,
             meter = ((long)this->data.printer_usage_filament / 1000) % 1000,
             centimeter = ((long)this->data.printer_usage_filament / 10) % 100,
             millimeter = ((long)this->data.printer_usage_filament) % 10;
-  sprintf_P(temp, PSTR("  %i Km %i m %i cm %i mm"), kmeter, meter, centimeter, millimeter);
+  sprintf_P(temp, PSTR("  %uKm %um %ucm %umm"), kmeter, meter, centimeter, millimeter);
 
   ECHO_EMT("Filament printed: ", temp);
 }
@@ -113,6 +115,7 @@ void PrintCounter::tick() {
 
   // Trying to get the amount of calculations down to the bare min
   const static uint16_t i = this->updateInterval * 1000;
+  const static uint32_t j = this->saveInterval * 1000;
 
   if (now - update_before >= i) {
     this->data.printer_usage_seconds += this->updateInterval;
@@ -132,7 +135,7 @@ void PrintCounter::tick() {
       this->loadStats();
       this->saveStats();
     }
-    else if (now - config_last_update >= this->saveInterval) {
+    else if (now - config_last_update >= j) {
       config_last_update = now;
       this->saveStats();
     }
@@ -182,11 +185,9 @@ void PrintCounter::reset() {
 #if ENABLED(DEBUG_PRINTCOUNTER)
 
   void PrintCounter::debug(const char func[]) {
-    if (DEBUGGING(INFO)) {
-      SERIAL_ECHOPGM("PrintCounter::");
-      serialprintPGM(func);
-      SERIAL_ECHOLNPGM("()");
-    }
+    ECHO_SM(DEB, "PrintCounter::");
+    PS_PGM(func);
+    ECHO_EM("()");
   }
 
 #endif
