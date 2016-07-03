@@ -5,6 +5,7 @@
 ****************************************************************************************/
 
 #define KNOWN_BOARD
+#define BOARD_NAME "RADDS"
 
 #ifndef __SAM3X8E__
   #error Oops! Make sure you have 'Arduino Due' selected from the 'Tools -> Boards' menu.

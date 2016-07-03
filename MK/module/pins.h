@@ -26,6 +26,10 @@
 #define AS_QUOTED_STRING(S) #S
 #define INCLUDE_BY_MB(M)    AS_QUOTED_STRING(boards/M.h)
 #include INCLUDE_BY_MB(MOTHERBOARD)
+
+#if DISABLED(BOARD_NAME)
+  #define BOARD_NAME "Unknow"
+#endif
 /****************************************************************************************/
 
 

@@ -5,6 +5,7 @@
 ****************************************************************************************/
 
 #define KNOWN_BOARD
+#define BOARD_NAME "RAMPS FD v2"
 
 #ifndef __SAM3X8E__
   #error Oops! Make sure you have 'Arduino Due' selected from the 'Tools -> Boards' menu.

@@ -52,9 +52,6 @@
 #define MSG_LEVEL_BED_CANCEL                "Annulla"
 #define MSG_SET_HOME_OFFSETS                "Setta offset home"
 #define MSG_SET_ORIGIN                      "Imposta Origine"
-#define MSG_ONFOR                           "On x:"
-#define MSG_PWRCONSUMED                     "P.za:"
-#define MSG_FILCONSUMED                     "F:"
 #define MSG_PREHEAT                         "Preriscalda"
 #define MSG_PREHEAT_PLA                     "Preriscalda PLA"
 #define MSG_PREHEAT_PLA_ALL                 "Prer. PLA Tutto"
@@ -85,7 +82,6 @@
 #define MSG_FAN_SPEED                       "Ventola"
 #define MSG_FLOW                            "Flusso"
 #define MSG_CONTROL                         "Controllo"
-#define MSG_STATS                           "Statistiche"
 #define MSG_FIX_LOSE_STEPS                  "Fix axis steps"
 #define MSG_MIN                             LCD_STR_THERMOMETER " Min"
 #define MSG_MAX                             LCD_STR_THERMOMETER " Max"
@@ -206,13 +202,34 @@
 #define MSG_ENDSTOP_ES                      MSG_E
 
 // Calibrate Delta
-#if MECH(DELTA)
-  #define MSG_DELTA_CALIBRATE               "Calibraz. Delta"
-  #define MSG_DELTA_CALIBRATE_X             "Calibra X"
-  #define MSG_DELTA_CALIBRATE_Y             "Calibra Y"
-  #define MSG_DELTA_CALIBRATE_Z             "Calibra Z"
-  #define MSG_DELTA_CALIBRATE_CENTER        "Calibra Centro"
-#endif // DELTA
+#define MSG_DELTA_CALIBRATE                 "Calibraz. Delta"
+#define MSG_DELTA_CALIBRATE_X               "Calibra X"
+#define MSG_DELTA_CALIBRATE_Y               "Calibra Y"
+#define MSG_DELTA_CALIBRATE_Z               "Calibra Z"
+#define MSG_DELTA_CALIBRATE_CENTER          "Calibra Centro"
+
+// Info printers
+#define MSG_INFO_MENU                       "About Stampante"
+#define MSG_INFO_FIRMWARE_MENU              "Info Firmware"
+#define MSG_INFO_STATS_MENU                 "Statistiche"
+#define MSG_INFO_BOARD_MENU                 "Info Scheda"
+#define MSG_INFO_THERMISTOR_MENU            "Termistori"
+#define MSG_INFO_EXTRUDERS                  "Estrusori"
+#define MSG_INFO_HOTENDS                    "Ugelli"
+#define MSG_INFO_BED                        "Letto"
+#define MSG_INFO_CHAMBER                    "Camera Calda"
+#define MSG_INFO_COOLER                     "Raffreddamento"
+#define MSG_INFO_BAUDRATE                   "Baud"
+#define MSG_INFO_PROTOCOL                   "Protocollo"
+#define MSG_INFO_TOTAL_PRINTS               "Stampe totali"
+#define MSG_INFO_FINISHED_PRINTS            "Stampe complete"
+#define MSG_INFO_ON_TIME                    "On x"
+#define MSG_INFO_PRINT_TIME                 "Pr x"
+#define MSG_INFO_FILAMENT_USAGE             "Filo"
+#define MSG_INFO_PWRCONSUMED                "PWR"
+#define MSG_INFO_MIN_TEMP                   "Min Temp"
+#define MSG_INFO_MAX_TEMP                   "Max Temp"
+#define MSG_INFO_PSU                        "Alimentatore"
 
 // FILAMENT_CHANGE_FEATURE
 #define MSG_FILAMENT_CHANGE_HEADER          "CAMBIO FILO"
@@ -239,12 +256,11 @@
 #define MSG_FILAMENT_CHANGE_RESUME_3        ""
 
 // Scara
-#if MECH(SCARA)
-  #define MSG_SCALE                         "Scale"
-  #define MSG_XSCALE                        MSG_X " " MSG_SCALE
-  #define MSG_YSCALE                        MSG_Y " " MSG_SCALE
-#endif
+#define MSG_SCALE                           "Scale"
+#define MSG_XSCALE                          MSG_X " " MSG_SCALE
+#define MSG_YSCALE                          MSG_Y " " MSG_SCALE
 
+// Heater
 #define MSG_HEATING                         "Riscaldamento..."
 #define MSG_HEATING_COMPLETE                "Riscaldamento finito."
 #define MSG_BED_HEATING                     "Riscaldamento piatto."
@@ -266,41 +282,37 @@
 #define MSG_INVALID_POS_SLOT                "Slot invalido, slot totali: "
 
 // Rfid module
-#if ENABLED(RFID_MODULE)
-  #define MSG_RFID_SPOOL                    "Bobina su E"
-  #define MSG_RFID_BRAND                    "Marca: "
-  #define MSG_RFID_TYPE                     "Tipo: "
-  #define MSG_RFID_COLOR                    "Colore: "
-  #define MSG_RFID_SIZE                     "Size: "
-  #define MSG_RFID_TEMP_HOTEND              "Temperatura Hotend: "
-  #define MSG_RFID_TEMP_BED                 "Temperatura Bed: "
-  #define MSG_RFID_TEMP_USER_HOTEND         "Temperatura utente Hotend: "
-  #define MSG_RFID_TEMP_USER_BED            "Temperatura utente Bed: "
-  #define MSG_RFID_DENSITY                  "Densita': "
-  #define MSG_RFID_SPOOL_LENGHT             "Lunghezza bobina: "
-#endif
+#define MSG_RFID_SPOOL                      "Bobina su E"
+#define MSG_RFID_BRAND                      "Marca: "
+#define MSG_RFID_TYPE                       "Tipo: "
+#define MSG_RFID_COLOR                      "Colore: "
+#define MSG_RFID_SIZE                       "Size: "
+#define MSG_RFID_TEMP_HOTEND                "Temperatura Hotend: "
+#define MSG_RFID_TEMP_BED                   "Temperatura Bed: "
+#define MSG_RFID_TEMP_USER_HOTEND           "Temperatura utente Hotend: "
+#define MSG_RFID_TEMP_USER_BED              "Temperatura utente Bed: "
+#define MSG_RFID_DENSITY                    "Densita': "
+#define MSG_RFID_SPOOL_LENGHT               "Lunghezza bobina: "
 
 // Firmware Test
-#if ENABLED(FIRMWARE_TEST)
-  #define MSG_FWTEST_YES                    "Dai il comando Y per andare avanti"
-  #define MSG_FWTEST_NO                     "Dai il comando N per andare avanti"
-  #define MSG_FWTEST_YES_NO                 "Dai il comando Y o N per andare avanti"
-  #define MSG_FWTEST_ENDSTOP_ERR            "ENDSTOP ERROR! Controllare cavi e connessioni"
-  #define MSG_FWTEST_PRESS                  "Premere e tenere premuto l'endstop "
-  #define MSG_FWTEST_INVERT                 "Invertire valore di "
-  #define MSG_FWTEST_XAXIS                  "Il nozzle si e' spostato a destra?"
-  #define MSG_FWTEST_YAXIS                  "Il nozzle si e' spostato in avanti?"
-  #define MSG_FWTEST_ZAXIS                  "Il nozzle si e' spostato in alto?"
-  #define MSG_FWTEST_01                     "Muovi manualmente gli assi X, Y e Z lontano dagli endstop"
-  #define MSG_FWTEST_02                     "Vuoi controllare gli ENDSTOP?"
-  #define MSG_FWTEST_03                     "Inizio controllo ENDSTOP"
-  #define MSG_FWTEST_04                     "Inizio controllo MOTORI"
-  #define MSG_FWTEST_ATTENTION              "ATTENZIONE! Controlla che i tre assi siano a piu' di 5 mm dagli endstop!"
-  #define MSG_FWTEST_END                    "Test finito. Disabilitare FIRMWARE_TEST e ricompilare."
-  #define MSG_FWTEST_INTO                   "in "
-  #define MSG_FWTEST_ERROR                  "ERRORE"
-  #define MSG_FWTEST_OK                     "OK"
-  #define MSG_FWTEST_NDEF                   "non definito"
-#endif // FIRMWARE_TEST
+#define MSG_FWTEST_YES                      "Dai il comando Y per andare avanti"
+#define MSG_FWTEST_NO                       "Dai il comando N per andare avanti"
+#define MSG_FWTEST_YES_NO                   "Dai il comando Y o N per andare avanti"
+#define MSG_FWTEST_ENDSTOP_ERR              "ENDSTOP ERROR! Controllare cavi e connessioni"
+#define MSG_FWTEST_PRESS                    "Premere e tenere premuto l'endstop "
+#define MSG_FWTEST_INVERT                   "Invertire valore di "
+#define MSG_FWTEST_XAXIS                    "Il nozzle si e' spostato a destra?"
+#define MSG_FWTEST_YAXIS                    "Il nozzle si e' spostato in avanti?"
+#define MSG_FWTEST_ZAXIS                    "Il nozzle si e' spostato in alto?"
+#define MSG_FWTEST_01                       "Muovi manualmente gli assi X, Y e Z lontano dagli endstop"
+#define MSG_FWTEST_02                       "Vuoi controllare gli ENDSTOP?"
+#define MSG_FWTEST_03                       "Inizio controllo ENDSTOP"
+#define MSG_FWTEST_04                       "Inizio controllo MOTORI"
+#define MSG_FWTEST_ATTENTION                "ATTENZIONE! Controlla che i tre assi siano a piu' di 5 mm dagli endstop!"
+#define MSG_FWTEST_END                      "Test finito. Disabilitare FIRMWARE_TEST e ricompilare."
+#define MSG_FWTEST_INTO                     "in "
+#define MSG_FWTEST_ERROR                    "ERRORE"
+#define MSG_FWTEST_OK                       "OK"
+#define MSG_FWTEST_NDEF                     "non definito"
 
 #endif // LANGUAGE_IT_H

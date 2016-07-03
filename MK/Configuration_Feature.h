@@ -62,7 +62,6 @@
  * - Filament diameter sensor
  * - Filament Runout sensor
  * - Power consumption sensor
- * - RFID card sensor
  * - Flow sensor
  * ADDON FEATURES:
  * - EEPROM
@@ -71,6 +70,7 @@
  * - LCD
  * - Canon RC-1 Remote
  * - Camera trigger
+ * - RFID card reader
  * - BLINKM
  * - Laser beam
  * ADVANCED MOTION FEATURES:
@@ -870,28 +870,6 @@
 /**************************************************************************/
 
 
-
-/**************************************************************************
- *********************** RIFD module card reader **************************
- **************************************************************************
- *                                                                        *
- * Support RFID module card reader width UART interface.                  *
- * This module mount chip MFRC522 designed to communicate with            *
- * ISO/IEC 14443 A/MIFARE cards and transponders without additional       *
- * active circuitry                                                       *
- *                                                                        *
- * New command for this system is:                                        *
- * M522 T<extruder> R<read> or W<write>                                   *
- *                                                                        *
- * Define if you used and Serial used.                                    *
- *                                                                        *
- **************************************************************************/
-//#define RFID_MODULE
-
-#define RFID_SERIAL 1
-/**************************************************************************/
-
-
 /**************************************************************************
  ****************************** Flow sensor *******************************
  **************************************************************************
@@ -969,20 +947,28 @@
 /*****************************************************************************************/
 
 
-/***********************************************************************
- *************************** LCD Language ******************************
- ***********************************************************************
- *                                                                     *
- * Here you may choose the language used by MK or MK4due               *
- * on the LCD menus, the following                                     *
- *                                                                     *
- * list of languages are available:                                    *
- *    en, pl, fr, de, es, ru, it, pt, fi, an, nl, ca, eu               *
- *    pt-br, bg, kana, kana_utf8, cn                                   *
- *                                                                     *
- ***********************************************************************/
+/*****************************************************************************************
+ *********************************** LCD Language ****************************************
+ *****************************************************************************************
+ *                                                                                       *
+ * Here you may choose the language used by MK or MK4due on the LCD menus,               *
+ * the following list of languages are available:                                        *
+ *    en, an, bg, ca, cn, cz, de, es, eu, fi, fr, gl, hr, it, kana, kana_utf8, nl, pl,   *
+ *    pt, pt_utf8, pt-br, pt-br_utf8, ru                                                 *
+ *                                                                                       *
+ * 'en':'English',        'an':'Aragonese',   'bg':'Bulgarian',   'ca':'Catalan',        *
+ * 'cn':'Chinese',        'cz':'Czech',       'de':'German',      'es':'Spanish',        *
+ * 'eu':'Basque-Euskera', 'fi':'Finnish',     'fr':'French',      'gl':'Galician',       *
+ * 'hr':'Croatian',       'it':'Italian',     'kana':'Japanese',  'nl':'Dutch',          *
+ * 'pl':'Polish',         'pt':'Portuguese',  'ru':'Russian',                            *
+ * 'kana_utf8':'Japanese (UTF8)',                                                        *
+ * 'pt_utf8':'Portuguese (UTF8)',                                                        *
+ * 'pt-br':'Portuguese (Brazilian)',                                                     *
+ * 'pt-br_utf8':'Portuguese (Brazilian UTF8)',                                           *
+ *                                                                                       *
+ *****************************************************************************************/
 #define LCD_LANGUAGE en
-/***********************************************************************/
+/*****************************************************************************************/
 
 
 /***********************************************************************
@@ -1029,6 +1015,9 @@
 //Display Voltage Logic Selector on Alligator Board
 //#define UI_VOLTAGE_LEVEL 0 // 3.3 V
 #define UI_VOLTAGE_LEVEL 1   // 5 V
+
+// Include a page of printer information in the LCD Main Menu
+#define LCD_INFO_MENU
 
 // Original RADDS Display from Willy
 // http://max3dshop.org/index.php/default/elektronik/radds-lcd-sd-display-with-reset-and-back-buttom.html
@@ -1145,6 +1134,7 @@
 //#define PHOTOGRAPH
 /**************************************************************************/
 
+
 /**************************************************************************
  ***************************** Camera trigger *****************************
  **************************************************************************
@@ -1159,6 +1149,27 @@
 //#define CHDK
 
 #define CHDK_DELAY 50   //How long in ms the pin should stay HIGH before going LOW again
+/**************************************************************************/
+
+
+/**************************************************************************
+ *********************** RIFD module card reader **************************
+ **************************************************************************
+ *                                                                        *
+ * Support RFID module card reader width UART interface.                  *
+ * This module mount chip MFRC522 designed to communicate with            *
+ * ISO/IEC 14443 A/MIFARE cards and transponders without additional       *
+ * active circuitry                                                       *
+ *                                                                        *
+ * New command for this system is:                                        *
+ * M522 T<extruder> R<read> or W<write>                                   *
+ *                                                                        *
+ * Define if you used and Serial used.                                    *
+ *                                                                        *
+ **************************************************************************/
+//#define RFID_MODULE
+
+#define RFID_SERIAL 1
 /**************************************************************************/
 
 

@@ -6300,14 +6300,14 @@ inline void gcode_M109() {
 inline void gcode_M111() {
   mk_debug_flags = code_seen('S') ? code_value_byte() : (uint8_t) DEBUG_NONE;
 
-  const static char str_debug_1[] PROGMEM = SERIAL_DEBUG_ECHO;
-  const static char str_debug_2[] PROGMEM = SERIAL_DEBUG_INFO;
-  const static char str_debug_4[] PROGMEM = SERIAL_DEBUG_ERRORS;
-  const static char str_debug_8[] PROGMEM = SERIAL_DEBUG_DRYRUN;
-  const static char str_debug_16[] PROGMEM = SERIAL_DEBUG_COMMUNICATION;
-  const static char str_debug_32[] PROGMEM = SERIAL_DEBUG_DEBUG;
+  const static char str_debug_1[]   = SERIAL_DEBUG_ECHO;
+  const static char str_debug_2[]   = SERIAL_DEBUG_INFO;
+  const static char str_debug_4[]   = SERIAL_DEBUG_ERRORS;
+  const static char str_debug_8[]   = SERIAL_DEBUG_DRYRUN;
+  const static char str_debug_16[]  = SERIAL_DEBUG_COMMUNICATION;
+  const static char str_debug_32[]  = SERIAL_DEBUG_DEBUG;
 
-  const static char* const debug_strings[] PROGMEM = {
+  const static char* const debug_strings[] = {
     str_debug_1, str_debug_2, str_debug_4, str_debug_8, str_debug_16, str_debug_32
   };
 

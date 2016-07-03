@@ -135,7 +135,6 @@ uint8_t lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW; // Set when the LCD needs to 
   static void lcd_prepare_menu();
   static void lcd_move_menu();
   static void lcd_control_menu();
-  static void lcd_stats_menu();
   #if DISABLED(LASERBEAM)
     static void lcd_control_temperature_menu();
     static void lcd_control_temperature_preheat_pla_settings_menu();
@@ -146,6 +145,14 @@ uint8_t lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW; // Set when the LCD needs to 
 
   #if DISABLED(LASERBEAM)
     static void lcd_control_volumetric_menu();
+  #endif
+
+  #if ENABLED(LCD_INFO_MENU)
+    static void lcd_info_stats_menu();
+    static void lcd_info_firmware_menu();
+    static void lcd_info_thermistors_menu();
+    static void lcd_info_board_menu();
+    static void lcd_info_menu();
   #endif
 
   #if ENABLED(FILAMENT_CHANGE_FEATURE)
@@ -226,6 +233,12 @@ uint8_t lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW; // Set when the LCD needs to 
 
   /**
    * START_MENU generates the init code for a menu function
+   *
+   *   encoderLine is the position based on the encoder
+   *   currentMenuViewOffset is the top menu line to display
+   *   _drawLineNr is the index of the LCD line (0-3)
+   *   _lineNr is the menu item to draw and process
+   *   _menuItemNr is the index of each MENU_ITEM
    */
   #if ENABLED(BTN_BACK) && BTN_BACK > 0
     #define START_MENU() do { \
@@ -296,6 +309,16 @@ uint8_t lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW; // Set when the LCD needs to 
       _MENU_ITEM_PART_1(type, label, ## args); \
       _MENU_ITEM_PART_2(type, ## args); \
     } while(0)
+
+  // Used to print static text with no visible cursor.
+  #define STATIC_ITEM(label, args...) \
+    if (_menuItemNr == _lineNr) { \
+      if (encoderLine == _menuItemNr && _menuItemNr < LCD_HEIGHT - 1) \
+        encoderPosition += ENCODER_STEPS_PER_MENU_ITEM; \
+      if (lcdDrawUpdate) \
+        lcd_implementation_drawmenu_static(_drawLineNr, PSTR(label), ## args); \
+    } \
+    _menuItemNr++
 
   #if ENABLED(ENCODER_RATE_MULTIPLIER)
 
@@ -615,7 +638,6 @@ static void lcd_status_screen() {
       #endif
     }
     MENU_ITEM(submenu, MSG_CONTROL, lcd_control_menu);
-    MENU_ITEM(submenu, MSG_STATS, lcd_stats_menu);
 
     #if ENABLED(SDSUPPORT)
       if (card.cardOK) {
@@ -641,6 +663,10 @@ static void lcd_status_screen() {
         #endif
       }
     #endif // SDSUPPORT
+
+    #if ENABLED(LCD_INFO_MENU)
+      MENU_ITEM(submenu, MSG_INFO_MENU, lcd_info_menu);
+    #endif
 
     END_MENU();
   }
@@ -1632,31 +1658,6 @@ static void lcd_status_screen() {
 
   /**
    *
-   * "Statistics" submenu
-   *
-   */
-
-  static void lcd_stats_menu() {
-    char row[30];
-    int day = print_job_counter.data.printer_usage_seconds / 60 / 60 / 24, hours = (print_job_counter.data.printer_usage_seconds / 60 / 60) % 24, minutes = (print_job_counter.data.printer_usage_seconds / 60) % 60;
-    sprintf_P(row, PSTR(MSG_ONFOR " %id %ih %im"), day, hours, minutes);
-    LCD_Printpos(0, 0); lcd_print(row);
-    #if HAS(POWER_CONSUMPTION_SENSOR)
-      sprintf_P(row, PSTR(MSG_PWRCONSUMED " %iWh"), power_consumption_hour);
-      LCD_Printpos(0, 1); lcd_print(row);
-    #endif
-    char lung[30];
-    unsigned int  kmeter = (long)print_job_counter.data.printer_usage_filament / 1000 / 1000,
-                  meter = ((long)print_job_counter.data.printer_usage_filament / 1000) % 1000,
-                  centimeter = ((long)print_job_counter.data.printer_usage_filament / 10) % 100,
-                  millimeter = ((long)print_job_counter.data.printer_usage_filament) % 10;
-    sprintf_P(lung, PSTR(MSG_FILCONSUMED "%i Km %i m %i cm %i mm"), kmeter, meter, centimeter, millimeter);
-    LCD_Printpos(0, 2); lcd_print(lung);
-    if (LCD_CLICKED) lcd_goto_screen(lcd_main_menu);
-  }
-
-  /**
-   *
    * "Temperature" submenu
    *
    */
@@ -2228,6 +2229,161 @@ static void lcd_status_screen() {
     }
 
   #endif // SDSUPPORT
+
+  #if ENABLED(LCD_INFO_MENU)
+    /**
+     *
+     * About Printer > Stastics submenu
+     *
+     */
+
+    static void lcd_info_stats_menu() {
+      uint16_t day, hours, minutes, kmeter, meter, centimeter, t;
+      char lifeTime[20];
+      char Filamentlung[20];
+      char printTime[20];
+
+      t       = print_job_counter.data.printer_usage_seconds / 60;
+      day     = t / 60 / 24;
+      hours   = (t / 60) % 24;
+      minutes = t % 60;
+      sprintf(lifeTime, "%ud %uh %um", day, hours, minutes);
+
+      t       = print_job_counter.data.printTime / 60;
+      day     = t / 60 / 24;
+      hours   = (t / 60) % 2;
+      minutes = t % 60;
+      sprintf(printTime, "%ud %uh %um", day, hours, minutes);
+
+      kmeter      = (long)print_job_counter.data.printer_usage_filament / 1000 / 1000;
+      meter       = ((long)print_job_counter.data.printer_usage_filament / 1000) % 1000;
+      centimeter  = ((long)print_job_counter.data.printer_usage_filament / 10) % 100;
+      sprintf(Filamentlung, "%uKm %um %ucm", kmeter, meter, centimeter);
+
+      #if HAS(POWER_CONSUMPTION_SENSOR)
+        char Power[10];
+        sprintf(Power, "%uWh"), power_consumption_hour);
+      #endif
+
+      if (LCD_CLICKED) lcd_goto_previous_menu(true);
+      START_MENU();
+      STATIC_ITEM(MSG_INFO_TOTAL_PRINTS ": ", itostr3left(print_job_counter.data.numberPrints));
+      STATIC_ITEM(MSG_INFO_FINISHED_PRINTS ": ", itostr3left(print_job_counter.data.completePrints));
+      STATIC_ITEM(MSG_INFO_ON_TIME ": ", lifeTime);
+      STATIC_ITEM(MSG_INFO_PRINT_TIME ": ", printTime);
+      STATIC_ITEM(MSG_INFO_FILAMENT_USAGE ": ", Filamentlung);
+      #if HAS(POWER_CONSUMPTION_SENSOR)
+        STATIC_ITEM(MSG_INFO_PWRCONSUMED ": ", Power);
+      #endif
+      END_MENU();
+    }
+
+    /**
+     *
+     * About Printer > Thermistors
+     *
+     */
+    static void lcd_info_thermistors_menu() {
+      if (LCD_CLICKED) lcd_goto_previous_menu(true);
+      START_MENU();
+      #define THERMISTOR_ID TEMP_SENSOR_0
+      #include "../temperature/thermistornames.h"
+      STATIC_ITEM("T0: " THERMISTOR_NAME);
+      STATIC_ITEM(MSG_INFO_MIN_TEMP ": " STRINGIFY(HEATER_0_MINTEMP));
+      STATIC_ITEM(MSG_INFO_MAX_TEMP ": " STRINGIFY(HEATER_0_MAXTEMP));
+
+      #if TEMP_SENSOR_1 != 0
+        #undef THERMISTOR_ID
+        #define THERMISTOR_ID TEMP_SENSOR_1
+        #include "../temperature/thermistornames.h"
+        STATIC_ITEM("T1: " THERMISTOR_NAME);
+        STATIC_ITEM(MSG_INFO_MIN_TEMP ": " STRINGIFY(HEATER_1_MINTEMP));
+        STATIC_ITEM(MSG_INFO_MAX_TEMP ": " STRINGIFY(HEATER_1_MAXTEMP));
+      #endif
+
+      #if TEMP_SENSOR_2 != 0
+        #undef THERMISTOR_ID
+        #define THERMISTOR_ID TEMP_SENSOR_2
+        #include "../temperature/thermistornames.h"
+        STATIC_ITEM("T2: " THERMISTOR_NAME);
+        STATIC_ITEM(MSG_INFO_MIN_TEMP ": " STRINGIFY(HEATER_2_MINTEMP));
+        STATIC_ITEM(MSG_INFO_MAX_TEMP ": " STRINGIFY(HEATER_2_MAXTEMP));
+      #endif
+
+      #if TEMP_SENSOR_3 != 0
+        #undef THERMISTOR_ID
+        #define THERMISTOR_ID TEMP_SENSOR_3
+        #include "../temperature/thermistornames.h"
+        STATIC_ITEM("T3: " THERMISTOR_NAME);
+        STATIC_ITEM(MSG_INFO_MIN_TEMP ": " STRINGIFY(HEATER_3_MINTEMP));
+        STATIC_ITEM(MSG_INFO_MAX_TEMP ": " STRINGIFY(HEATER_3_MAXTEMP));
+      #endif
+
+      #if TEMP_SENSOR_BED != 0
+        #undef THERMISTOR_ID
+        #define THERMISTOR_ID TEMP_SENSOR_BED
+        #include "../temperature/thermistornames.h"
+        STATIC_ITEM("TBed:" THERMISTOR_NAME);
+        STATIC_ITEM(MSG_INFO_MIN_TEMP ": " STRINGIFY(BED_MINTEMP));
+        STATIC_ITEM(MSG_INFO_MAX_TEMP ": " STRINGIFY(BED_MAXTEMP));
+      #endif
+      END_MENU();
+    }
+
+    /**
+     *
+     * About Printer > Board Info
+     *
+     */
+    static void lcd_info_board_menu() {
+      if (LCD_CLICKED) lcd_goto_previous_menu(true);
+      START_MENU();
+      STATIC_ITEM(BOARD_NAME);                                 // MyPrinterController
+      STATIC_ITEM(MSG_INFO_BAUDRATE ": " STRINGIFY(BAUDRATE)); // Baud: 250000
+      STATIC_ITEM(MSG_INFO_PROTOCOL ": " PROTOCOL_VERSION);    // Protocol: 1.0
+      #if (POWER_SUPPLY == 0)
+        STATIC_ITEM(MSG_INFO_PSU ": Normal"); // Power Supply: Normal
+      #elif (POWER_SUPPLY == 1)
+        STATIC_ITEM(MSG_INFO_PSU ": ATX");    // Power Supply: ATX
+      #elif (POWER_SUPPLY == 2)
+        STATIC_ITEM(MSG_INFO_PSU ": XBox");   // Power Supply: XBox
+      #endif
+      END_MENU();
+    }
+
+    /**
+     *
+     * About Printer > Firmware Info
+     *
+     */
+    static void lcd_info_firmware_menu() {
+      if (LCD_CLICKED) lcd_goto_previous_menu(true);
+      START_MENU();
+      STATIC_ITEM(FIRMWARE_NAME);
+      STATIC_ITEM(SHORT_BUILD_VERSION);
+      STATIC_ITEM(STRING_DISTRIBUTION_DATE);
+      STATIC_ITEM(MACHINE_NAME);
+      STATIC_ITEM(FIRMWARE_URL);
+      STATIC_ITEM(MSG_INFO_EXTRUDERS ": " STRINGIFY(EXTRUDERS));
+      STATIC_ITEM(MSG_INFO_HOTENDS ": " STRINGIFY(HOTENDS));
+      END_MENU();
+    }
+
+    /**
+     *
+     * "About Printer" submenu
+     *
+     */
+    static void lcd_info_menu() {
+      START_MENU();
+      MENU_ITEM(back, MSG_MAIN);
+      MENU_ITEM(submenu, MSG_INFO_FIRMWARE_MENU, lcd_info_firmware_menu);        // Printer Info >
+      MENU_ITEM(submenu, MSG_INFO_BOARD_MENU, lcd_info_board_menu);            // Board Info >
+      MENU_ITEM(submenu, MSG_INFO_THERMISTOR_MENU, lcd_info_thermistors_menu); // Thermistors >
+      MENU_ITEM(submenu, MSG_INFO_STATS_MENU, lcd_info_stats_menu);          // Printer Statistics >
+      END_MENU();
+    }
+  #endif // LCD_INFO_MENU
 
   #if ENABLED(FILAMENT_CHANGE_FEATURE)
 

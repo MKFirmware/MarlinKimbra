@@ -51,7 +51,7 @@
        * @brief Interval in seconds between SDCARD saves
        * @details This const value defines what will be the time between each
        */
-      const uint32_t saveInterval = (uint16_t)SD_CFG_SECONDS * 1000;
+      const uint32_t saveInterval = (SD_CFG_SECONDS);
 
       /**
        * @brief Timestamp of the last call to deltaDuration()
