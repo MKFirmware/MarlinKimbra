@@ -96,7 +96,7 @@
   extern int gumPreheatHPBTemp;
   extern int gumPreheatFanSpeed;
 
-  extern bool cancel_heatup;
+  extern bool wait_for_heatup;
 
   #if HAS(LCD_FILAMENT_SENSOR) || HAS(LCD_POWER_SENSOR)
     extern millis_t previous_lcd_status_ms;

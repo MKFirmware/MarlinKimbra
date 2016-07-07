@@ -4,6 +4,7 @@
 *****************************************************************************************/
 
 #define KNOWN_BOARD
+#define BOARD_NAME "Ultratronics v1.0"
 
 #ifndef __SAM3X8E__
   #error Oops!  Make sure you have 'Arduino Due' selected from the 'Tools -> Boards' menu.
@@ -75,3 +76,10 @@
 #define ORIG_TEMP_3_PIN        4  // ANALOG NUMBERING
 
 #define ORIG_BEEPER_PIN       27
+
+#if NUM_SERVOS > 0
+  #define SERVO0_PIN          11
+  #if NUM_SERVOS > 1
+    #define SERVO1_PIN        12
+  #endif
+#endif

@@ -232,7 +232,7 @@ uint8_t lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW; // Set when the LCD needs to 
   /* Helper macros for menus */
 
   /**
-   * START_MENU generates the init code for a menu function
+   * START_SCREEN generates the init code for a menu function
    *
    *   encoderLine is the position based on the encoder
    *   currentMenuViewOffset is the top menu line to display
@@ -241,14 +241,14 @@ uint8_t lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW; // Set when the LCD needs to 
    *   _menuItemNr is the index of each MENU_ITEM
    */
   #if ENABLED(BTN_BACK) && BTN_BACK > 0
-    #define START_MENU() do { \
+    #define _START_SCREEN(CODE) do { \
       ENCODER_DIRECTION_MENUS(); \
       encoderRateMultiplierEnabled = false; \
       if (encoderPosition > 0x8000) encoderPosition = 0; \
       uint8_t encoderLine = encoderPosition / ENCODER_STEPS_PER_MENU_ITEM; \
       NOMORE(currentMenuViewOffset, encoderLine); \
       uint8_t _lineNr = currentMenuViewOffset, _menuItemNr; \
-      bool wasClicked = LCD_CLICKED, itemSelected; \
+      CODE; \
       bool wasBackClicked = LCD_BACK_CLICKED; \
       if (wasBackClicked) { \
         lcd_quick_feedback(); \
@@ -257,17 +257,26 @@ uint8_t lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW; // Set when the LCD needs to 
       for (uint8_t _drawLineNr = 0; _drawLineNr < LCD_HEIGHT; _drawLineNr++, _lineNr++) { \
         _menuItemNr = 0;
   #else
-    #define START_MENU() do { \
+    #define _START_SCREEN(CODE) do { \
       ENCODER_DIRECTION_MENUS(); \
       encoderRateMultiplierEnabled = false; \
       if (encoderPosition > 0x8000) encoderPosition = 0; \
       uint8_t encoderLine = encoderPosition / ENCODER_STEPS_PER_MENU_ITEM; \
       NOMORE(currentMenuViewOffset, encoderLine); \
       uint8_t _lineNr = currentMenuViewOffset, _menuItemNr; \
-      bool wasClicked = LCD_CLICKED, itemSelected; \
+      CODE; \
       for (uint8_t _drawLineNr = 0; _drawLineNr < LCD_HEIGHT; _drawLineNr++, _lineNr++) { \
         _menuItemNr = 0;
   #endif
+
+  #define START_SCREEN() _START_SCREEN(0)
+
+  /**
+   * START_MENU generates the init code for a menu function
+   *
+   *   wasClicked indicates the controller was clicked
+   */
+  #define START_MENU() _START_SCREEN(bool wasClicked = LCD_CLICKED)
 
   /**
    * MENU_ITEM generates draw & handler code for a menu item, potentially calling:
@@ -292,10 +301,9 @@ uint8_t lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW; // Set when the LCD needs to 
    */
   #define _MENU_ITEM_PART_1(type, label, args...) \
     if (_menuItemNr == _lineNr) { \
-      itemSelected = encoderLine == _menuItemNr; \
       if (lcdDrawUpdate) \
-        lcd_implementation_drawmenu_ ## type(itemSelected, _drawLineNr, PSTR(label), ## args); \
-      if (wasClicked && itemSelected) { \
+        lcd_implementation_drawmenu_ ## type(encoderLine == _menuItemNr, _drawLineNr, PSTR(label), ## args); \
+      if (wasClicked && encoderLine == _menuItemNr) { \
         lcd_quick_feedback()
 
   #define _MENU_ITEM_PART_2(type, args...) \
@@ -319,6 +327,21 @@ uint8_t lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW; // Set when the LCD needs to 
         lcd_implementation_drawmenu_static(_drawLineNr, PSTR(label), ## args); \
     } \
     _menuItemNr++
+
+  #define END_SCREEN() \
+      if (encoderLine >= _menuItemNr) { \
+        encoderPosition = _menuItemNr * (ENCODER_STEPS_PER_MENU_ITEM) - 1; \
+        encoderLine = _menuItemNr - 1; \
+      } \
+      if (encoderLine >= currentMenuViewOffset + LCD_HEIGHT) { \
+        currentMenuViewOffset = encoderLine - (LCD_HEIGHT) + 1; \
+        lcdDrawUpdate = LCDVIEW_CALL_REDRAW_NEXT; \
+        _lineNr = currentMenuViewOffset - 1; \
+        _drawLineNr = -1; \
+      } \
+    } } while(0)
+
+  #define END_MENU() END_SCREEN()
 
   #if ENABLED(ENCODER_RATE_MULTIPLIER)
 
@@ -346,10 +369,6 @@ uint8_t lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW; // Set when the LCD needs to 
     #define MENU_MULTIPLIER_ITEM_EDIT(type, label, args...) MENU_ITEM(setting_edit_ ## type, label, PSTR(label), ## args)
     #define MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(type, label, args...) MENU_ITEM(setting_edit_callback_ ## type, label, PSTR(label), ## args)
   #endif // !ENCODER_RATE_MULTIPLIER
-  #define END_MENU() \
-      if (encoderLine >= _menuItemNr) { encoderPosition = _menuItemNr * (ENCODER_STEPS_PER_MENU_ITEM) - 1; encoderLine = _menuItemNr - 1; }\
-      if (encoderLine >= currentMenuViewOffset + LCD_HEIGHT) { currentMenuViewOffset = encoderLine - (LCD_HEIGHT) + 1; lcdDrawUpdate = LCDVIEW_CALL_REDRAW_NEXT; _lineNr = currentMenuViewOffset - 1; _drawLineNr = -1; } \
-      } } while(0)
 
   /** Used variables to keep track of the menu */
   volatile uint8_t buttons;  //the last checked buttons in a bit array.
@@ -597,7 +616,7 @@ static void lcd_status_screen() {
       card.closeFile();
       print_job_counter.stop();
       autotempShutdown();
-      cancel_heatup = true;
+      wait_for_heatup = false;
       lcd_setstatus(MSG_PRINT_ABORTED, true);
     }
 
@@ -607,7 +626,7 @@ static void lcd_status_screen() {
       quickStop();
       card.closeFile(true);
       autotempShutdown();
-      cancel_heatup = true;
+      wait_for_heatup = false;
     }
 
   #endif // SDSUPPORT
@@ -2266,7 +2285,7 @@ static void lcd_status_screen() {
       #endif
 
       if (LCD_CLICKED) lcd_goto_previous_menu(true);
-      START_MENU();
+      START_SCREEN();
       STATIC_ITEM(MSG_INFO_TOTAL_PRINTS ": ", itostr3left(print_job_counter.data.numberPrints));
       STATIC_ITEM(MSG_INFO_FINISHED_PRINTS ": ", itostr3left(print_job_counter.data.completePrints));
       STATIC_ITEM(MSG_INFO_ON_TIME ": ", lifeTime);
@@ -2275,7 +2294,7 @@ static void lcd_status_screen() {
       #if HAS(POWER_CONSUMPTION_SENSOR)
         STATIC_ITEM(MSG_INFO_PWRCONSUMED ": ", Power);
       #endif
-      END_MENU();
+      END_SCREEN();
     }
 
     /**
@@ -2285,7 +2304,7 @@ static void lcd_status_screen() {
      */
     static void lcd_info_thermistors_menu() {
       if (LCD_CLICKED) lcd_goto_previous_menu(true);
-      START_MENU();
+      START_SCREEN();
       #define THERMISTOR_ID TEMP_SENSOR_0
       #include "../temperature/thermistornames.h"
       STATIC_ITEM("T0: " THERMISTOR_NAME);
@@ -2327,7 +2346,7 @@ static void lcd_status_screen() {
         STATIC_ITEM(MSG_INFO_MIN_TEMP ": " STRINGIFY(BED_MINTEMP));
         STATIC_ITEM(MSG_INFO_MAX_TEMP ": " STRINGIFY(BED_MAXTEMP));
       #endif
-      END_MENU();
+      END_SCREEN();
     }
 
     /**
@@ -2337,7 +2356,7 @@ static void lcd_status_screen() {
      */
     static void lcd_info_board_menu() {
       if (LCD_CLICKED) lcd_goto_previous_menu(true);
-      START_MENU();
+      START_SCREEN();
       STATIC_ITEM(BOARD_NAME);                                 // MyPrinterController
       STATIC_ITEM(MSG_INFO_BAUDRATE ": " STRINGIFY(BAUDRATE)); // Baud: 250000
       STATIC_ITEM(MSG_INFO_PROTOCOL ": " PROTOCOL_VERSION);    // Protocol: 1.0
@@ -2348,7 +2367,7 @@ static void lcd_status_screen() {
       #elif (POWER_SUPPLY == 2)
         STATIC_ITEM(MSG_INFO_PSU ": XBox");   // Power Supply: XBox
       #endif
-      END_MENU();
+      END_SCREEN();
     }
 
     /**
@@ -2358,7 +2377,7 @@ static void lcd_status_screen() {
      */
     static void lcd_info_firmware_menu() {
       if (LCD_CLICKED) lcd_goto_previous_menu(true);
-      START_MENU();
+      START_SCREEN();
       STATIC_ITEM(FIRMWARE_NAME);
       STATIC_ITEM(SHORT_BUILD_VERSION);
       STATIC_ITEM(STRING_DISTRIBUTION_DATE);
@@ -2366,7 +2385,7 @@ static void lcd_status_screen() {
       STATIC_ITEM(FIRMWARE_URL);
       STATIC_ITEM(MSG_INFO_EXTRUDERS ": " STRINGIFY(EXTRUDERS));
       STATIC_ITEM(MSG_INFO_HOTENDS ": " STRINGIFY(HOTENDS));
-      END_MENU();
+      END_SCREEN();
     }
 
     /**
@@ -2407,57 +2426,57 @@ static void lcd_status_screen() {
     }
 
     static void lcd_filament_change_init_message() {
-      START_MENU();
+      START_SCREEN();
       MENU_ITEM(function, MSG_FILAMENT_CHANGE_HEADER, lcd_filament_change_nothing);
       MENU_ITEM(function, MSG_FILAMENT_CHANGE_INIT_1, lcd_filament_change_nothing);
       MENU_ITEM(function, MSG_FILAMENT_CHANGE_INIT_2, lcd_filament_change_nothing);
       MENU_ITEM(function, MSG_FILAMENT_CHANGE_INIT_3, lcd_filament_change_nothing);
-      END_MENU();
+      END_SCREEN();
     }
 
     static void lcd_filament_change_unload_message() {
-      START_MENU();
+      START_SCREEN();
       MENU_ITEM(function, MSG_FILAMENT_CHANGE_HEADER, lcd_filament_change_nothing);
       MENU_ITEM(function, MSG_FILAMENT_CHANGE_UNLOAD_1, lcd_filament_change_nothing);
       MENU_ITEM(function, MSG_FILAMENT_CHANGE_UNLOAD_2, lcd_filament_change_nothing);
       MENU_ITEM(function, MSG_FILAMENT_CHANGE_UNLOAD_3, lcd_filament_change_nothing);
-      END_MENU();
+      END_SCREEN();
     }
 
     static void lcd_filament_change_insert_message() {
-      START_MENU();
+      START_SCREEN();
       MENU_ITEM(function, MSG_FILAMENT_CHANGE_HEADER, lcd_filament_change_nothing);
       MENU_ITEM(function, MSG_FILAMENT_CHANGE_INSERT_1, lcd_filament_change_nothing);
       MENU_ITEM(function, MSG_FILAMENT_CHANGE_INSERT_2, lcd_filament_change_nothing);
       MENU_ITEM(function, MSG_FILAMENT_CHANGE_INSERT_3, lcd_filament_change_nothing);
-      END_MENU();
+      END_SCREEN();
     }
 
     static void lcd_filament_change_load_message() {
-      START_MENU();
+      START_SCREEN();
       MENU_ITEM(function, MSG_FILAMENT_CHANGE_HEADER, lcd_filament_change_nothing);
       MENU_ITEM(function, MSG_FILAMENT_CHANGE_LOAD_1, lcd_filament_change_nothing);
       MENU_ITEM(function, MSG_FILAMENT_CHANGE_LOAD_2, lcd_filament_change_nothing);
       MENU_ITEM(function, MSG_FILAMENT_CHANGE_LOAD_3, lcd_filament_change_nothing);
-      END_MENU();
+      END_SCREEN();
     }
 
     static void lcd_filament_change_extrude_message() {
-      START_MENU();
+      START_SCREEN();
       MENU_ITEM(function, MSG_FILAMENT_CHANGE_HEADER, lcd_filament_change_nothing);
       MENU_ITEM(function, MSG_FILAMENT_CHANGE_EXTRUDE_1, lcd_filament_change_nothing);
       MENU_ITEM(function, MSG_FILAMENT_CHANGE_EXTRUDE_2, lcd_filament_change_nothing);
       MENU_ITEM(function, MSG_FILAMENT_CHANGE_EXTRUDE_3, lcd_filament_change_nothing);
-      END_MENU();
+      END_SCREEN();
     }
 
     static void lcd_filament_change_resume_message() {
-      START_MENU();
+      START_SCREEN();
       MENU_ITEM(function, MSG_FILAMENT_CHANGE_HEADER, lcd_filament_change_nothing);
       MENU_ITEM(function, MSG_FILAMENT_CHANGE_RESUME_1, lcd_filament_change_nothing);
       MENU_ITEM(function, MSG_FILAMENT_CHANGE_RESUME_2, lcd_filament_change_nothing);
       MENU_ITEM(function, MSG_FILAMENT_CHANGE_RESUME_3, lcd_filament_change_nothing);
-      END_MENU();
+      END_SCREEN();
     }
 
     void lcd_filament_change_show_message(FilamentChangeMessage message) {
