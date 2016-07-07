@@ -25,6 +25,7 @@
 #define ORIG_Z_DIR_PIN           3
 #define ORIG_Z_ENABLE_PIN       15
 
+// Note that on the Due pin A0 on the board is channel 2 on the ARM chip
 #define ORIG_X_MIN_PIN          28
 #define ORIG_X_MAX_PIN          34
 #define ORIG_Y_MIN_PIN          30
@@ -70,11 +71,15 @@
 #define ORIG_HEATER_1_PIN       12
 #define ORIG_HEATER_2_PIN       11
 
-#define ORIG_TEMP_BED_PIN        4  // ANALOG NUMBERING
-#define ORIG_TEMP_0_PIN          0  // ANALOG NUMBERING
-#define ORIG_TEMP_1_PIN          1  // ANALOG NUMBERING
-#define ORIG_TEMP_2_PIN          2  // ANALOG NUMBERING
-#define ORIG_TEMP_3_PIN          3  // ANALOG NUMBERING
+#define ORIG_TEMP_BED_PIN        4  // ANALOG NUMBERING #57
+#define ORIG_TEMP_0_PIN          7  // ANALOG NUMBERING #54
+#define ORIG_TEMP_1_PIN          3  // ANALOG NUMBERING #58
+#define ORIG_TEMP_2_PIN          6  // ANALOG NUMBERING #55
+#define ORIG_TEMP_3_PIN          5  // ANALOG NUMBERING #56
+
+// #define THERMOCOUPLE_0_PIN  2   // Dua analog pin #59 = A5 -> AD 2
+
+// http://doku.radds.org/wp-content/uploads/2015/02/RADDS_Wiring.png
 
 #if NUM_SERVOS > 0
   #define SERVO0_PIN           5
@@ -108,7 +113,7 @@
     #define BTN_BACK        71
 
     #undef SDSS
-    #define SDSS            10
+    #define SDSS            10 // 4,10,52 if using HW SPI.
     #define SD_DETECT_PIN   14
 
   #elif ENABLED(REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER)
