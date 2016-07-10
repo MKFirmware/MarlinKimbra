@@ -41,27 +41,27 @@
   #define DISCONNECT  "//action:disconnect" // command for host that support action
 
   #define SERIAL_INIT(baud)           MKSERIAL.begin(baud), HAL::delayMilliseconds(1)
-  #define SERIAL_WRITE(x)             MKSERIAL.write(x)
+  #define SERIAL_CHAR(x)              MKSERIAL.write(x)
   #define SERIAL_PRINT(msg, args...)  MKSERIAL.print(msg, ##args)
-  #define SERIAL_ENDL                 MKSERIAL.println()
+  #define SERIAL_EOL                  SERIAL_CHAR('\n')
 
   FORCE_INLINE void PS_PGM(const char *str) {
     char c;
     while (c = pgm_read_byte(str)) {
-      SERIAL_WRITE(c);
+      MKSERIAL.write(c);
       str++;
     }
   }
 
-  #define ECHO_ENDL                         SERIAL_ENDL
-  #define ECHO_PGM(message)                 PS_PGM(PSTR(message))
+  #define ECHO_PGM(x)                       PS_PGM(PSTR(x))
+  #define ECHO_LNPGM(x)                     do{ PS_PGM(PSTR(x "\n")); }while(0)
 
   #define ECHO_S(srt)                       ECHO_PGM(srt)
   #define ECHO_M(msg)                       ECHO_PGM(msg)
   #define ECHO_T                            SERIAL_PRINT
   #define ECHO_V                            SERIAL_PRINT
-  #define ECHO_C                            SERIAL_WRITE
-  #define ECHO_E                            SERIAL_ENDL
+  #define ECHO_C                            SERIAL_CHAR
+  #define ECHO_E                            SERIAL_EOL
 
   #define ECHO_MV(msg, val, args...)        ECHO_M(msg),ECHO_V(val, ##args)
   #define ECHO_VM(val, msg, args...)        ECHO_V(val, ##args),ECHO_M(msg)

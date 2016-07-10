@@ -383,7 +383,11 @@ void autotempShutdown() {
       ECHO_SMV(DB, "Hotend: ", temp_controller);
     }
     ECHO_MV(" Temp: ", temp);
-    ECHO_EMV(" Cycles: ", ncycles);
+    ECHO_MV(" Cycles: ", ncycles);
+    if (set_result)
+      ECHO_EM(" Apply result");
+    else
+      ECHO_E;
 
     disable_all_heaters(); // switch off all heaters.
     disable_all_coolers(); // switch off all coolers.
@@ -543,9 +547,9 @@ void autotempShutdown() {
 
         #if ENABLED(PIDTEMP)
           if (temp_controller >= 0) {
-            ECHO_SMV(DB, SERIAL_KP, PID_PARAM(Kp, temp_controller));
-            ECHO_MV(SERIAL_KI, unscalePID_i(PID_PARAM(Ki, temp_controller)));
-            ECHO_EMV(SERIAL_KD, unscalePID_d(PID_PARAM(Kd, temp_controller)));
+            ECHO_SMV(DB, SERIAL_KP, workKp);
+            ECHO_MV(SERIAL_KI, workKi);
+            ECHO_EMV(SERIAL_KD, workKd);
             if (set_result) {
               PID_PARAM(Kp, temp_controller) = workKp;
               PID_PARAM(Ki, temp_controller) = scalePID_i(workKi);
@@ -558,8 +562,8 @@ void autotempShutdown() {
         #if ENABLED(PIDTEMPBED)
           if (temp_controller == -1) {
             ECHO_LMV(DB, "#define DEFAULT_bedKp ", workKp);
-            ECHO_LMV(DB, "#define DEFAULT_bedKi ", unscalePID_i(workKi));
-            ECHO_LMV(DB, "#define DEFAULT_bedKd ", unscalePID_d(workKd));
+            ECHO_LMV(DB, "#define DEFAULT_bedKi ", workKi);
+            ECHO_LMV(DB, "#define DEFAULT_bedKd ", workKd);
             if (set_result) {
               bedKp = workKp;
               bedKi = scalePID_i(workKi);
@@ -572,8 +576,8 @@ void autotempShutdown() {
         #if ENABLED(PIDTEMPCOOLER)
           if (temp_controller == -3) {
             ECHO_LMV(DB, "#define DEFAULT_coolerKp ", workKp);
-            ECHO_LMV(DB, "#define DEFAULT_coolerKi ", unscalePID_i(workKi));
-            ECHO_LMV(DB, "#define DEFAULT_coolerKd ", unscalePID_d(workKd));
+            ECHO_LMV(DB, "#define DEFAULT_coolerKi ", workKi);
+            ECHO_LMV(DB, "#define DEFAULT_coolerKd ", workKd);
             if (set_result) {
               coolerKp = workKp;
               coolerKi = scalePID_i(workKi);

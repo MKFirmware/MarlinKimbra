@@ -41,7 +41,7 @@
 
 #include "../../base.h"
 
-#if ENABLED(AUTO_BED_LEVELING_FEATURE)
+#if ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
 #include <math.h>
 #include "vector_3.h"
 
