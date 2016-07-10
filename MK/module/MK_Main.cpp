@@ -509,8 +509,7 @@ void enqueue_and_echo_command_now(const char* cmd) {
  */
 bool enqueue_and_echo_command(const char* cmd, bool say_ok/*=false*/) {
   if (_enqueuecommand(cmd, say_ok)) {
-    ECHO_SM(DB, SERIAL_ENQUEUEING);
-    ECHO_M(cmd);
+    ECHO_SMT(DB, SERIAL_ENQUEUEING, cmd);
     ECHO_LNPGM("\"");
     return true;
   }
@@ -859,8 +858,8 @@ void loop() {
 }
 
 void gcode_line_error(const char* err, bool doFlush = true) {
-  ECHO_SM(ER, err);
-  ECHO_ET(gcode_LastN);
+  ECHO_ST(ER, err);
+  ECHO_EV(gcode_LastN);
   //Serial.println(gcode_N);
   if (doFlush) FlushSerialRequestResend();
   serial_count = 0;
