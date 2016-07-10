@@ -185,6 +185,8 @@
 #define MSG_ERR_MINTEMP_CHAMBER             "MINTEMP CHAMBER ERROR"
 #define MSG_ERR_MAXTEMP_COOLER              "MAXTEMP COOLER ERROR"
 #define MSG_ERR_MINTEMP_COOLER              "MINTEMP COOLER ERROR"
+#define MSG_HALTED                          "PRINTER HALTED"
+#define MSG_PLEASE_RESET                    "Please reset"
 #define MSG_END_DAY                         "days"
 #define MSG_END_HOUR                        "hours"
 #define MSG_END_MINUTE                      "minutes"

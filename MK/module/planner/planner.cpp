@@ -86,7 +86,7 @@ float Planner::max_z_jerk;
 float Planner::max_e_jerk[EXTRUDERS];
 float Planner::min_travel_feedrate;
 
-#if ENABLED(AUTO_BED_LEVELING_FEATURE)
+#if ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
   matrix_3x3 Planner::bed_level_matrix; // Transform to compensate for bed level
 #endif
 
@@ -123,7 +123,7 @@ uint8_t Planner::last_extruder;
  */
 
 Planner::Planner() {
-  #if ENABLED(AUTO_BED_LEVELING_FEATURE)
+  #if ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
     bed_level_matrix.set_to_identity();
   #endif
   init();
@@ -470,7 +470,7 @@ void Planner::check_axes_activity() {
  *  extruder  - target extruder
  */
 
-#if ENABLED(AUTO_BED_LEVELING_FEATURE) || ENABLED(MESH_BED_LEVELING)
+#if (ENABLED(AUTO_BED_LEVELING_FEATURE) || ENABLED(MESH_BED_LEVELING)) && NOMECH(DELTA)
   void Planner::buffer_line(float x, float y, float z, const float& e, float feed_rate, const uint8_t extruder, const uint8_t driver)
 #else
   void Planner::buffer_line(const float& x, const float& y, const float& z, const float& e, float feed_rate, const uint8_t extruder, const uint8_t driver)
@@ -493,10 +493,10 @@ void Planner::check_axes_activity() {
   // Rest here until there is room in the buffer.
   while (block_buffer_tail == next_buffer_head) idle();
 
-  #if ENABLED(MESH_BED_LEVELING)
+  #if ENABLED(MESH_BED_LEVELING) && NOMECH(DELTA)
     if (mbl.active())
       z += mbl.get_z(x - home_offset[X_AXIS], y - home_offset[Y_AXIS]);
-  #elif ENABLED(AUTO_BED_LEVELING_FEATURE)
+  #elif ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
     apply_rotation_xyz(bed_level_matrix, x, y, z);
   #endif
 
@@ -1186,7 +1186,7 @@ void Planner::check_axes_activity() {
 
 } // buffer_line()
 
-#if ENABLED(AUTO_BED_LEVELING_FEATURE)
+#if ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
 
   /**
    * Get the XYZ position of the steppers as a vector_3.
@@ -1214,16 +1214,16 @@ void Planner::check_axes_activity() {
  *
  * On CORE machines stepper ABC will be translated from the given XYZ.
  */
-#if ENABLED(AUTO_BED_LEVELING_FEATURE) || ENABLED(MESH_BED_LEVELING)
+#if (ENABLED(AUTO_BED_LEVELING_FEATURE) || ENABLED(MESH_BED_LEVELING)) && NOMECH(DELTA)
   void Planner::set_position_mm(float x, float y, float z, const float& e)
 #else
   void Planner::set_position_mm(const float& x, const float& y, const float& z, const float& e)
 #endif // AUTO_BED_LEVELING_FEATURE || MESH_BED_LEVELING
 {
-  #if ENABLED(MESH_BED_LEVELING)
+  #if ENABLED(MESH_BED_LEVELING) && NOMECH(DELTA)
     if (mbl.active())
       z += mbl.get_z(x - home_offset[X_AXIS], y - home_offset[Y_AXIS]);
-  #elif ENABLED(AUTO_BED_LEVELING_FEATURE)
+  #elif ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
     apply_rotation_xyz(bed_level_matrix, x, y, z);
   #endif
 
