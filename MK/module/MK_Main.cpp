@@ -385,13 +385,21 @@ static void report_current_position();
 
 // PRINT XYZ for DEBUG
 void print_xyz(const char* suffix, const float x, const float y, const float z) {
+  ECHO_PS(suffix);
   ECHO_MV("(", x);
   ECHO_MV(", ", y);
   ECHO_MV(", ", z);
-  ECHO_EMT(")", suffix);
+  ECHO_EM(")");
 }
 void print_xyz(const char* suffix, const float xyz[]) {
-  print_xyz(suffix, xyz[X_AXIS], xyz[Y_AXIS], xyz[Z_AXIS]);
+  if (xyz == current_position) {
+    ECHO_PS(suffix);
+    ECHO_M(" > ");
+    report_current_position();
+  }
+  else {
+    print_xyz(suffix, xyz[X_AXIS], xyz[Y_AXIS], xyz[Z_AXIS]);
+  }
 }
 #if ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
   void print_xyz(const char* suffix, const vector_3 &xyz) {
