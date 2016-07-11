@@ -154,10 +154,6 @@ float code_value_temp_diff();
   extern float zprobe_zoffset;
 #endif
 
-#if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
-  extern float extrude_min_temp;
-#endif
-
 #if ENABLED(HOST_KEEPALIVE_FEATURE)
   extern uint8_t host_keepalive_interval;
 #endif

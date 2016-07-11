@@ -400,10 +400,6 @@ void print_xyz(const char* suffix, const float xyz[]) {
 #endif
 #define DEBUG_POS(PREFIX,VAR) do{ ECHO_SM(INFO, PREFIX); print_xyz(" > " STRINGIFY(VAR), VAR); }while(0)
 
-#if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
-  float extrude_min_temp = EXTRUDE_MINTEMP;
-#endif
-
 #if ENABLED(M100_FREE_MEMORY_WATCHER)
   // top_of_stack() returns the location of a variable on its stack frame.  The value returned is above
   // the stack once the function returns to the caller.
@@ -420,29 +416,28 @@ void print_xyz(const char* suffix, const float xyz[]) {
     if ( n <= 9 )
       ECHO_V(n);
     else
-      ECHO_V( (char) ('A'+n-10) );
+      ECHO_T((char)('A' + n - 10));
     HAL::delayMilliseconds(2);
   }
 
   void prt_hex_byte(unsigned int b) {
-    prt_hex_nibble( ( b & 0xf0 ) >> 4 );
-    prt_hex_nibble(  b & 0x0f );
+    prt_hex_nibble(( b & 0xf0) >> 4);
+    prt_hex_nibble(b & 0x0f);
   }
 
   void prt_hex_word(unsigned int w) {
-    prt_hex_byte( ( w & 0xff00 ) >> 8 );
-    prt_hex_byte(  w & 0x0ff );
+    prt_hex_byte((w & 0xff00) >> 8);
+    prt_hex_byte(w & 0x0ff);
   }
 
   // how_many_E5s_are_here() is a utility function to easily find out how many 0xE5's are
-  // at the specified location.  Having this logic as a function simplifies the search code.
+  // at the specified location. Having this logic as a function simplifies the search code.
   //
   int how_many_E5s_are_here( unsigned char* p) {
     int n;
-
-    for(n = 0; n < 32000; n++) {
-      if ( *(p+n) != (unsigned char) 0xe5)
-        return n-1;
+    for (n = 0; n < 32000; n++) {
+      if (*(p + n) != (unsigned char) 0xe5)
+        return n - 1;
     }
     return -1;
   }
@@ -858,7 +853,8 @@ void loop() {
 }
 
 void gcode_line_error(const char* err, bool doFlush = true) {
-  ECHO_ST(ER, err);
+  ECHO_S(ER);
+  ECHO_PS(err);
   ECHO_EV(gcode_LastN);
   //Serial.println(gcode_N);
   if (doFlush) FlushSerialRequestResend();
@@ -3049,8 +3045,8 @@ AvoidLaserFocus:
       ECHO_MV(" /", degTargetBed(), 1);
     #endif
     #if HOTENDS > 1
-      for (uint8_t h = 0; h < HOTENDS; ++h) {
-        ECHO_MV(" T", (int)h);
+      for (int8_t h = 0; h < HOTENDS; ++h) {
+        ECHO_MV(" T", h);
         ECHO_C(':');
         ECHO_V(degHotend(h), 1);
         ECHO_MV(" /", degTargetHotend(h), 1);
@@ -3071,8 +3067,8 @@ AvoidLaserFocus:
       ECHO_V(getHeaterPower(target_extruder));
     #endif
     #if HOTENDS > 1
-      for (uint8_t h = 0; h < HOTENDS; ++h) {
-        ECHO_MV(SERIAL_AT, (int)h);
+      for (int8_t h = 0; h < HOTENDS; ++h) {
+        ECHO_MV(SERIAL_AT, h);
         ECHO_C(':');
         #if ENABLED(HOTEND_WATTS)
           ECHO_VM(((HOTEND_WATTS) * getHeaterPower(h)) / 127, "W");
@@ -3086,8 +3082,8 @@ AvoidLaserFocus:
         ECHO_MV("    ADC B:", degBed(), 1);
         ECHO_MV("C->", rawBedTemp() / OVERSAMPLENR, 0);
       #endif
-      for (uint8_t h = 0; h < HOTENDS; ++h) {
-        ECHO_MV("  T", (int)h);
+      for (int8_t h = 0; h < HOTENDS; ++h) {
+        ECHO_MV("  T", h);
         ECHO_C(':');
         ECHO_V(degHotend(h), 1);
         ECHO_MV("C->", rawHotendTemp(h) / OVERSAMPLENR, 0);
@@ -4339,7 +4335,7 @@ inline void gcode_G28() {
 
   void out_of_range_error(const char* p_edge) {
     ECHO_M("?Probe ");
-    ECHO_M(p_edge);
+    ECHO_PS(p_edge);
     ECHO_EM(" position out of range.");
   }
 
@@ -5852,7 +5848,7 @@ inline void gcode_M92() {
     // the block of 0xE5's.  If there is, that would indicate memory corruption
     // probably caused by bad pointers.  Any unexpected values will be flagged in
     // the right hand column to help spotting them.
-    #if ENABLED(M100_FREE_MEMORY_DUMPER)      // Comment out to remove Dump sub-command
+    #if ENABLED(M100_FREE_MEMORY_DUMPER) // Disable to remove Dump sub-command
       if (code_seen('D')) {
         ptr = (unsigned char*) __brkval;
 
@@ -5861,131 +5857,131 @@ inline void gcode_M92() {
         //
         ECHO_M("\n__brkval : ");
         prt_hex_word((unsigned int) ptr);
-        ptr = (unsigned char*) ((unsigned long) ptr & 0xfff0);
-
+        ptr = (unsigned char*)((unsigned long) ptr & 0xfff0);
         sp = top_of_stack();
         ECHO_M("\nStack Pointer : ");
         prt_hex_word((unsigned int) sp);
-        ECHO_M("\n");
-
-        sp = (unsigned char*) ((unsigned long) sp | 0x000f);
+        ECHO_E;
+        sp = (unsigned char*)((unsigned long) sp | 0x000f);
         n = sp - ptr;
-
+        //
         // This is the main loop of the Dump command.
+        //
         while (ptr < sp) {
           prt_hex_word((unsigned int) ptr);  // Print the address
           ECHO_M(":");
-          for(i = 0; i < 16; i++) {     // and 16 data bytes
-            prt_hex_byte( *(ptr+i));
-            ECHO_M(" ");
+          for (i = 0; i < 16; i++) {     // and 16 data bytes
+            prt_hex_byte(*(ptr+i));
+            ECHO_C(' ');
             HAL::delayMilliseconds(2);
           }
-
           ECHO_M("|");        // now show where non 0xE5's are
-          for(i = 0; i < 16; i++) {
+          for (i = 0; i < 16; i++) {
             HAL::delayMilliseconds(2);
-            if ( *(ptr+i)==0xe5)
-              ECHO_M(" ");
+            if (*(ptr + i) == 0xe5)
+              ECHO_c(' ');
             else
-              ECHO_M("?");
+              ECHO_C('?');
           }
-          ECHO_M("\n");
-
+          ECHO_E;
           ptr += 16;
           HAL::delayMilliseconds(2);
         }
-        ECHO_M("Done.\n");
+        ECHO_EM("Done.");
         return;
       }
     #endif
 
+    //
     // M100 F   requests the code to return the number of free bytes in the memory pool along with
     // other vital statistics that define the memory pool.
+    //
     if (code_seen('F')) {
-      int max_addr = (int) __brkval;
-      int max_cnt = 0;
+      #if 0
+        int max_addr = (int) __brkval;
+        int max_cnt = 0;
+      #endif
       int block_cnt = 0;
       ptr = (unsigned char*) __brkval;
       sp = top_of_stack();
       n = sp - ptr;
-
       // Scan through the range looking for the biggest block of 0xE5's we can find
       for (i = 0; i < n; i++) {
-        if ( *(ptr+i) == (unsigned char) 0xe5) {
+        if (*(ptr + i) == (unsigned char) 0xe5) {
           j = how_many_E5s_are_here((unsigned char*) ptr + i);
           if ( j > 8) {
-            ECHO_MV("Found ", j );
+            ECHO_MV("Found ", j);
             ECHO_M(" bytes free at 0x");
             prt_hex_word((int) ptr + i);
-            ECHO_M("\n");
+            ECHO_E;
             i += j;
             block_cnt++;
           }
-          if (j > max_cnt) {  // We don't do anything with this information yet
-            max_cnt  = j;     // but we do know where the biggest free memory block is.
-            max_addr = (int) ptr + i;
-          }
+          #if 0
+            if (j > max_cnt) {  // We don't do anything with this information yet
+              max_cnt  = j;     // but we do know where the biggest free memory block is.
+              max_addr = (int) ptr + i;
+            }
+          #endif
         }
       }
       if (block_cnt > 1)
           ECHO_EM("\nMemory Corruption detected in free memory area.\n");
 
-      ECHO_M("\nDone.\n");
+      ECHO_EM("\nDone.");
       return;
     }
 
+    //
     // M100 C x  Corrupts x locations in the free memory pool and reports the locations of the corruption.
     // This is useful to check the correctness of the M100 D and the M100 F commands.
+    //
     #if ENABLED(M100_FREE_MEMORY_CORRUPTOR)
       if (code_seen('C')) {
-        int x;    // x gets the # of locations to corrupt within the memory pool
-        x = code_value_int();
+        int x = code_value_int(); // x gets the # of locations to corrupt within the memory pool
         ECHO_EM("Corrupting free memory block.\n");
         ptr = (unsigned char*) __brkval;
-        ECHO_MV("\n__brkval : ",(long) ptr);
+        ECHO_MV("\n__brkval : ", ptr);
         ptr += 8;
-
         sp = top_of_stack();
-        ECHO_MV("\nStack Pointer : ",(long) sp);
+        ECHO_MV("\nStack Pointer : ", sp);
         ECHO_EM("\n");
-
-        n = sp - ptr - 64;    // -64 just to keep us from finding interrupt activity that
-                              // has altered the stack.
+        n = sp - ptr - 64;  // -64 just to keep us from finding interrupt activity that
+        // has altered the stack.
         j = n / (x + 1);
-        for(i = 1; i <= x; i++) {
+        for (i = 1; i <= x; i++) {
           *(ptr + (i * j)) = i;
           ECHO_M("\nCorrupting address: 0x");
-          prt_hex_word((unsigned int) (ptr + (i * j)));
+          prt_hex_word((unsigned int)(ptr + (i * j)));
         }
         ECHO_EM("\n");
         return;
       }
     #endif
 
+    //
     // M100 I    Initializes the free memory pool so it can be watched and prints vital
     // statistics that define the free memory pool.
+    //
     if (m100_not_initialized || code_seen('I')) {     // If no sub-command is specified, the first time
       ECHO_EM("Initializing free memory block.\n");   // this happens, it will Initialize.
       ptr = (unsigned char*) __brkval;        // Repeated M100 with no sub-command will not destroy the
       ECHO_MV("\n__brkval : ",(long) ptr);    // state of the initialized free memory pool.
       ptr += 8;
-
       sp = top_of_stack();
-      ECHO_MV("\nStack Pointer : ",(long) sp );
+      ECHO_MV("\nStack Pointer : ", sp);
       ECHO_EM("\n");
-
       n = sp - ptr - 64;    // -64 just to keep us from finding interrupt activity that
-                            // has altered the stack.
-
-      ECHO_V( n );
+      // has altered the stack.
+      ECHO_V(n);
       ECHO_EM(" bytes of memory initialized.\n");
 
-      for(i = 0; i < n; i++)
+      for (i = 0; i < n; i++)
         *(ptr+i) = (unsigned char) 0xe5;
 
-      for(i = 0; i < n; i++) {
+      for (i = 0; i < n; i++) {
         if ( *(ptr + i) != (unsigned char) 0xe5) {
-          ECHO_MV("? address : ", (unsigned long) ptr + i);
+          ECHO_MV("? address : ", ptr + i);
           ECHO_MV("=", *(ptr + i));
           ECHO_EM("\n");
         }
@@ -6719,7 +6715,7 @@ inline void gcode_M218() {
   if (code_seen('Z')) hotend_offset[Z_AXIS][target_extruder] = code_value_axis_units(Z_AXIS);
 
   ECHO_SM(DB, SERIAL_HOTEND_OFFSET);
-  for (uint8_t h = 0; h < HOTENDS; h++) {
+  for (int8_t h = 0; h < HOTENDS; h++) {
     ECHO_MV(" ", hotend_offset[X_AXIS][h]);
     ECHO_MV(",", hotend_offset[Y_AXIS][h]);
     ECHO_MV(",", hotend_offset[Z_AXIS][h]);
@@ -6949,13 +6945,36 @@ inline void gcode_M226() {
 #endif // PIDTEMP
 
 #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
-  void set_extrude_min_temp(float temp) { extrude_min_temp = temp; }
-
   /**
-   * M302: Allow cold extrudes, or set the minimum extrude S<temperature>.
+   * M302: Allow cold extrudes, or set the minimum extrude temperature
+   *
+   *       S<temperature> sets the minimum extrude temperature
+   *       P<bool> enables (1) or disables (0) cold extrusion
+   *
+   *  Examples:
+   *
+   *       M302         ; report current cold extrusion state
+   *       M302 P0      ; enable cold extrusion checking
+   *       M302 P1      ; disables cold extrusion checking
+   *       M302 S0      ; always allow extrusion (disables checking)
+   *       M302 S170    ; only allow extrusion above 170
+   *       M302 S170 P1 ; set min extrude temp to 170 but leave disabled
    */
   inline void gcode_M302() {
-    set_extrude_min_temp(code_seen('S') ? code_value_temp_abs() : 0);
+    bool seen_S = code_seen('S');
+    if (seen_S) {
+      extrude_min_temp = code_value_temp_abs();
+      allow_cold_extrude = (extrude_min_temp == 0);
+    }
+
+    if (code_seen('P'))
+      allow_cold_extrude = (extrude_min_temp == 0) || code_value_bool();
+    else if (!seen_S) {
+      // Report current state
+      ECHO_SMT(DB, "Cold extrudes are ", (allow_cold_extrude ? "en" : "dis"));
+      ECHO_MV("abled (min temp ", int(extrude_min_temp + 0.5));
+      ECHO_EM("C)");
+    }
   }
 #endif // PREVENT_DANGEROUS_EXTRUDE
 
@@ -7308,21 +7327,21 @@ inline void gcode_M400() { st_synchronize(); }
     #endif
     ECHO_M("\"heads\": {\"current\":[");
     firstOccurrence = true;
-    for (uint8_t h = 0; h < HOTENDS; h++) {
+    for (int8_t h = 0; h < HOTENDS; h++) {
       if (!firstOccurrence) ECHO_M(",");
       ECHO_V(degHotend(h), 1);
       firstOccurrence = false;
     }
     ECHO_M("],\"active\":[");
     firstOccurrence = true;
-    for (uint8_t h = 0; h < HOTENDS; h++) {
+    for (int8_t h = 0; h < HOTENDS; h++) {
       if (!firstOccurrence) ECHO_M(",");
       ECHO_V(degTargetHotend(h), 1);
       firstOccurrence = false;
     }
     ECHO_M("],\"state\":[");
     firstOccurrence = true;
-    for (uint8_t h = 0; h < HOTENDS; h++) {
+    for (int8_t h = 0; h < HOTENDS; h++) {
       if (!firstOccurrence) ECHO_M(",");
       ECHO_M(degTargetHotend(h) > EXTRUDER_AUTO_FAN_TEMPERATURE ? "2" : "1");
       firstOccurrence = false;
@@ -7684,13 +7703,13 @@ inline void gcode_M503() {
     if (code_seen('O')) ad595_offset[target_extruder] = code_value_float();
     if (code_seen('S')) ad595_gain[target_extruder] = code_value_float();
 
-    for (uint8_t h = 0; h < HOTENDS; h++) {
+    for (int8_t h = 0; h < HOTENDS; h++) {
       // if gain == 0 you get MINTEMP!
       if (ad595_gain[h] == 0) ad595_gain[h]= 1;
     }
 
     ECHO_LM(DB, MSG_AD595);
-    for (uint8_t h = 0; h < HOTENDS; h++) {
+    for (int8_t h = 0; h < HOTENDS; h++) {
       ECHO_SMV(DB, "T", h);
       ECHO_MV(" Offset: ", ad595_offset[h]);
       ECHO_EMV(", Gain: ", ad595_gain[h]);
@@ -7793,8 +7812,8 @@ inline void gcode_M503() {
     uint8_t cnt = 0;
 
     int old_target_temperature[HOTENDS] = { 0 };
-    for (uint8_t e = 0; e < HOTENDS; e++) {
-      old_target_temperature[e] = target_temperature[e];
+    for (int8_t h = 0; h < HOTENDS; h++) {
+      old_target_temperature[h] = target_temperature[h];
     }
     int old_target_temperature_bed = target_temperature_bed;
     millis_t last_set = millis();
@@ -9811,8 +9830,8 @@ void plan_arc(
     float max_temp = 0.0;
     if (millis() > next_status_led_update_ms) {
       next_status_led_update_ms += 500; // Update every 0.5s
-      for (uint8_t h = 0; h < HOTENDS; ++h)
-         max_temp = max(max(max_temp, degHotend(h)), degTargetHotend(h));
+      for (int8_t h = 0; h < HOTENDS; ++h)
+        max_temp = max(max(max_temp, degHotend(h)), degTargetHotend(h));
       #if HAS(TEMP_BED)
         max_temp = max(max(max_temp, degTargetBed()), degBed());
       #endif

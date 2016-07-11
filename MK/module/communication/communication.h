@@ -53,6 +53,7 @@
     }
   }
 
+  #define ECHO_PS(x)                        PS_PGM(x)
   #define ECHO_PGM(x)                       PS_PGM(PSTR(x))
   #define ECHO_LNPGM(x)                     do{ PS_PGM(PSTR(x "\n")); }while(0)
 
