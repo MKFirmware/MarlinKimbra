@@ -3903,6 +3903,8 @@ inline void gcode_G28() {
 
   #else // NOT DELTA
 
+    set_destination_to_current();
+
     #if Z_HOME_DIR > 0  // If homing away from BED do Z first
 
       if (home_all_axis || homeZ) {
@@ -3910,23 +3912,18 @@ inline void gcode_G28() {
         if (DEBUGGING(INFO)) DEBUG_POS("> HOMEAXIS(Z)", current_position);
       }
 
-    #elif ENABLED(MIN_Z_HEIGHT_FOR_HOMING) && MIN_Z_HEIGHT_FOR_HOMING > 0
+    #else
 
-      // Raise Z before homing, if specified
       if (home_all_axis || homeX || homeY) {
+        // Raise Z before homing any other axes and z is not already high enough (never lower z)
         float z_dest = home_offset[Z_AXIS] + MIN_Z_HEIGHT_FOR_HOMING;
         if (z_dest > current_position[Z_AXIS]) {
-          if (DEBUGGING(INFO)) ECHO_LMV(INFO, "Raise Z (before homing) to ", destination[Z_AXIS]);
+
+          if (DEBUGGING(INFO)) ECHO_LMV(INFO, "Raise Z (before homing) to ", z_dest);
 
           feedrate = homing_feedrate[Z_AXIS];
-
-          #if HAS(BED_PROBE)
-            do_blocking_move_to_z(z_dest);
-          #else
-            line_to_z(z_dest);
-            st_synchronize();
-          #endif
-
+          line_to_z(z_dest);
+          st_synchronize();
           destination[Z_AXIS] = current_position[Z_AXIS] = z_dest;
         }
       }
