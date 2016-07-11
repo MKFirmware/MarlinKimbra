@@ -284,6 +284,11 @@ static void updateTemperaturesFromRawValues();
   millis_t watch_bed_next_ms = 0;
 #endif
 
+#if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
+  float extrude_min_temp = EXTRUDE_MINTEMP;
+  bool allow_cold_extrude = false;
+#endif
+
 #if ENABLED(THERMAL_PROTECTION_CHAMBER)
   int watch_target_temp_chamber = 0;
   millis_t watch_chamber_next_ms = 0;
@@ -303,7 +308,7 @@ static void updateTemperaturesFromRawValues();
 #endif
 
 #if ENABLED(HEATER_0_USES_MAX6675)
-  static int read_max6675();
+  static int16_t read_max6675();
 #endif
 
 //===========================================================================
@@ -332,8 +337,8 @@ void autotempShutdown() {
   #if ENABLED(AUTOTEMP)
     if (planner.autotemp_enabled) {
       planner.autotemp_enabled = false;
-      if (degTargetHotend(active_extruder) > planner.autotemp_min)
-        setTargetHotend(0, active_extruder);
+      if (degTargetHotend(EXTRUDER_IDX) > planner.autotemp_min)
+        setTargetHotend(0, EXTRUDER_IDX);
     }
   #endif
 }
@@ -752,92 +757,87 @@ void min_temp_error(uint8_t h) {
   _temp_error(h, PSTR(SERIAL_T_MINTEMP), PSTR(MSG_ERR_MINTEMP));
 }
 
-float get_pid_output(int h) {
+float get_pid_output(int e) {
+  #if HOTENDS == 1
+    UNUSED(e);
+    #define _HOTEND_TEST     true
+    #define _HOTEND_EXTRUDER active_extruder
+  #else
+    #define _HOTEND_TEST     e == active_extruder
+    #define _HOTEND_EXTRUDER e
+  #endif
+
   float pid_output;
   #if ENABLED(PIDTEMP)
     #if ENABLED(PID_OPENLOOP)
-      pid_output = constrain(target_temperature[h], 0, PID_MAX);
+      pid_output = constrain(target_temperature[HOTEND_INDEX], 0, PID_MAX);
     #else
-      pid_error[h] = target_temperature[h] - current_temperature[h];
-      dTerm[h] = K2 * PID_PARAM(Kd, h) * (current_temperature[h] - temp_dState[h]) + K1 * dTerm[h];
-      temp_dState[h] = current_temperature[h];
-      if (pid_error[h] > PID_FUNCTIONAL_RANGE) {
+      pid_error[HOTEND_INDEX] = target_temperature[HOTEND_INDEX] - current_temperature[HOTEND_INDEX];
+      dTerm[HOTEND_INDEX] = K2 * PID_PARAM(Kd, HOTEND_INDEX) * (current_temperature[HOTEND_INDEX] - temp_dState[HOTEND_INDEX]) + K1 * dTerm[HOTEND_INDEX];
+      temp_dState[HOTEND_INDEX] = current_temperature[HOTEND_INDEX];
+      if (pid_error[HOTEND_INDEX] > PID_FUNCTIONAL_RANGE) {
         pid_output = BANG_MAX;
-        pid_reset[h] = true;
+        pid_reset[HOTEND_INDEX] = true;
       }
-      else if (pid_error[h] < -PID_FUNCTIONAL_RANGE || target_temperature[h] == 0) {
+      else if (pid_error[HOTEND_INDEX] < -PID_FUNCTIONAL_RANGE || target_temperature[HOTEND_INDEX] == 0) {
         pid_output = 0;
-        pid_reset[h] = true;
+        pid_reset[HOTEND_INDEX] = true;
       }
       else {
-        if (pid_reset[h]) {
-          temp_iState[h] = 0.0;
-          pid_reset[h] = false;
+        if (pid_reset[HOTEND_INDEX]) {
+          temp_iState[HOTEND_INDEX] = 0.0;
+          pid_reset[HOTEND_INDEX] = false;
         }
-        pTerm[h] = PID_PARAM(Kp, h) * pid_error[h];
-        temp_iState[h] += pid_error[h];
-        temp_iState[h] = constrain(temp_iState[h], temp_iState_min[h], temp_iState_max[h]);
-        iTerm[h] = PID_PARAM(Ki, h) * temp_iState[h];
+        pTerm[HOTEND_INDEX] = PID_PARAM(Kp, HOTEND_INDEX) * pid_error[HOTEND_INDEX];
+        temp_iState[HOTEND_INDEX] += pid_error[HOTEND_INDEX];
+        temp_iState[HOTEND_INDEX] = constrain(temp_iState[HOTEND_INDEX], temp_iState_min[HOTEND_INDEX], temp_iState_max[HOTEND_INDEX]);
+        iTerm[HOTEND_INDEX] = PID_PARAM(Ki, HOTEND_INDEX) * temp_iState[HOTEND_INDEX];
 
-        pid_output = pTerm[h] + iTerm[h] - dTerm[h];
+        pid_output = pTerm[HOTEND_INDEX] + iTerm[HOTEND_INDEX] - dTerm[HOTEND_INDEX];
 
         #if ENABLED(PID_ADD_EXTRUSION_RATE)
-          cTerm[h] = 0;
-          #if ENABLED(SINGLENOZZLE)
+          cTerm[HOTEND_INDEX] = 0;
+          if (_HOTEND_TEST) {
             long e_position = st_get_position(E_AXIS);
-            if (e_position > last_position[active_extruder]) {
-              lpq[lpq_ptr++] = e_position - last_position[active_extruder];
-              last_position[active_extruder] = e_position;
+            if (e_position > last_position[_HOTEND_EXTRUDER]) {
+              lpq[lpq_ptr++] = e_position - last_position[_HOTEND_EXTRUDER];
+              last_position[_HOTEND_EXTRUDER] = e_position;
             }
             else {
               lpq[lpq_ptr++] = 0;
             }
             if (lpq_ptr >= lpq_len) lpq_ptr = 0;
-            cTerm[0] = (lpq[lpq_ptr] / planner.axis_steps_per_mm[E_AXIS + active_extruder]) * PID_PARAM(Kc, 0);
-            pid_output += cTerm[0] / 100.0;
-          #else  
-            if (h == active_extruder) {
-              long e_position = st_get_position(E_AXIS);
-              if (e_position > last_position[h]) {
-                lpq[lpq_ptr++] = e_position - last_position[h];
-                last_position[h] = e_position;
-              }
-              else {
-                lpq[lpq_ptr++] = 0;
-              }
-              if (lpq_ptr >= lpq_len) lpq_ptr = 0;
-              cTerm[h] = (lpq[lpq_ptr] / planner.axis_steps_per_mm[E_AXIS + active_extruder]) * PID_PARAM(Kc, h);
-              pid_output += cTerm[h] / 100.0;
-            }
-          #endif // SINGLENOZZLE
+            cTerm[_HOTEND_EXTRUDER] = (lpq[lpq_ptr] / planner.axis_steps_per_mm[E_AXIS + active_extruder]) * PID_PARAM(Kc, 0);
+            pid_output += cTerm[_HOTEND_EXTRUDER];
+          }
         #endif // PID_ADD_EXTRUSION_RATE
 
         if (pid_output > PID_MAX) {
-          if (pid_error[h] > 0) temp_iState[h] -= pid_error[h]; // conditional un-integration
+          if (pid_error[HOTEND_INDEX] > 0) temp_iState[HOTEND_INDEX] -= pid_error[HOTEND_INDEX]; // conditional un-integration
           pid_output = PID_MAX;
         }
         else if (pid_output < 0) {
-          if (pid_error[h] < 0) temp_iState[h] -= pid_error[h]; // conditional un-integration
+          if (pid_error[HOTEND_INDEX] < 0) temp_iState[HOTEND_INDEX] -= pid_error[HOTEND_INDEX]; // conditional un-integration
           pid_output = 0;
         }
       }
     #endif // PID_OPENLOOP
 
     #if ENABLED(PID_DEBUG)
-      ECHO_SMV(DB, SERIAL_PID_DEBUG, h);
-      ECHO_MV(SERIAL_PID_DEBUG_INPUT, current_temperature[h]);
+      ECHO_SMV(DB, SERIAL_PID_DEBUG, HOTEND_INDEX);
+      ECHO_MV(SERIAL_PID_DEBUG_INPUT, current_temperature[HOTEND_INDEX]);
       ECHO_MV(SERIAL_PID_DEBUG_OUTPUT, pid_output);
-      ECHO_MV(SERIAL_PID_DEBUG_PTERM, pTerm[h]);
-      ECHO_MV(SERIAL_PID_DEBUG_ITERM, iTerm[h]);
-      ECHO_MV(SERIAL_PID_DEBUG_DTERM, dTerm[h]);
+      ECHO_MV(SERIAL_PID_DEBUG_PTERM, pTerm[HOTEND_INDEX]);
+      ECHO_MV(SERIAL_PID_DEBUG_ITERM, iTerm[HOTEND_INDEX]);
+      ECHO_MV(SERIAL_PID_DEBUG_DTERM, dTerm[HOTEND_INDEX]);
       #if ENABLED(PID_ADD_EXTRUSION_RATE)
-        ECHO_MV(SERIAL_PID_DEBUG_CTERM, cTerm[h]);
+        ECHO_MV(SERIAL_PID_DEBUG_CTERM, cTerm[HOTEND_INDEX]);
       #endif
       ECHO_E;
     #endif // PID_DEBUG
 
   #else /* PID off */
-    pid_output = (current_temperature[h] < target_temperature[h]) ? PID_MAX : 0;
+    pid_output = (current_temperature[HOTEND_INDEX] < target_temperature[HOTEND_INDEX]) ? PID_MAX : 0;
   #endif
 
   return pid_output;
@@ -995,30 +995,30 @@ void manage_temp_controller() {
   #endif
 
   // Loop through all hotends
-  for (int h = 0; h < HOTENDS; h++) {
+  for (uint8_t e = 0; e < HOTENDS; e++) {
 
     #if ENABLED(THERMAL_PROTECTION_HOTENDS)
-      thermal_runaway_protection(&thermal_runaway_state_machine[h], &thermal_runaway_timer[h], current_temperature[h], target_temperature[h], h, THERMAL_PROTECTION_PERIOD, THERMAL_PROTECTION_HYSTERESIS);
+      thermal_runaway_protection(&thermal_runaway_state_machine[e], &thermal_runaway_timer[e], current_temperature[e], target_temperature[e], e, THERMAL_PROTECTION_PERIOD, THERMAL_PROTECTION_HYSTERESIS);
     #endif
 
-    float pid_output = get_pid_output(h);
+    float pid_output = get_pid_output(e);
 
     // Check if temperature is within the correct range
-    soft_pwm[h] = current_temperature[h] > minttemp[h] && current_temperature[h] < maxttemp[h] ? (int)pid_output >> 1 : 0;
+    soft_pwm[e] = current_temperature[e] > minttemp[e] && current_temperature[e] < maxttemp[e] ? (int)pid_output >> 1 : 0;
 
     // Check if the temperature is failing to increase
     #if ENABLED(THERMAL_PROTECTION_HOTENDS)
 
       // Is it time to check this extruder's heater?
-      if (watch_heater_next_ms[h] && ms > watch_heater_next_ms[h]) {
+      if (watch_heater_next_ms[e] && ms > watch_heater_next_ms[e]) {
         // Has it failed to increase enough?
-        if (degHotend(h) < watch_target_temp[h]) {
+        if (degHotend(e) < watch_target_temp[e]) {
           // Stop!
-          _temp_error(h, PSTR(SERIAL_T_HEATING_FAILED), PSTR(MSG_HEATING_FAILED_LCD));
+          _temp_error(e, PSTR(SERIAL_T_HEATING_FAILED), PSTR(MSG_HEATING_FAILED_LCD));
         }
         else {
           // Start again if the target is still far off
-          start_watching_heater(h);
+          start_watching_heater(e);
         }
       }
 
@@ -1193,28 +1193,28 @@ void manage_temp_controller() {
 #define PGM_RD_W(x)   (short)pgm_read_word(&x)
 // Derived from RepRap FiveD extruder::getTemperature()
 // For hot end temperature measurement.
-static float analog2temp(int raw, uint8_t h) {
+static float analog2temp(int raw, uint8_t e) {
   #if ENABLED(TEMP_SENSOR_1_AS_REDUNDANT)
-    if (h > HOTENDS)
+    if (e > HOTENDS)
   #else
-    if (h >= HOTENDS)
+    if (e >= HOTENDS)
   #endif
     {
-      ECHO_LVM(ER, (int)h, SERIAL_INVALID_EXTRUDER_NUM);
+      ECHO_LVM(ER, (int)e, SERIAL_INVALID_EXTRUDER_NUM);
       kill(PSTR(MSG_KILLED));
       return 0.0;
     }
 
   #if ENABLED(HEATER_0_USES_MAX6675)
-    if (h == 0) return (float)raw / 4.0;
+    if (e == 0) return 0.25 * raw;
   #endif
 
-  if (heater_ttbl_map[h] != NULL) {
+  if (heater_ttbl_map[e] != NULL) {
     float celsius = 0;
     uint8_t i;
-    short(*tt)[][2] = (short(*)[][2])(heater_ttbl_map[h]);
+    short(*tt)[][2] = (short(*)[][2])(heater_ttbl_map[e]);
 
-    for (i = 1; i < heater_ttbllen_map[h]; i++) {
+    for (i = 1; i < heater_ttbllen_map[e]; i++) {
       if (PGM_RD_W((*tt)[i][0]) > raw) {
         celsius = PGM_RD_W((*tt)[i - 1][1]) +
                   (raw - PGM_RD_W((*tt)[i - 1][0])) *
@@ -1225,16 +1225,16 @@ static float analog2temp(int raw, uint8_t h) {
     }
 
     // Overflow: Set to last value in the table
-    if (i == heater_ttbllen_map[h]) celsius = PGM_RD_W((*tt)[i - 1][1]);
+    if (i == heater_ttbllen_map[e]) celsius = PGM_RD_W((*tt)[i - 1][1]);
 
     return celsius;
   }
 
   #if HEATER_USES_AD595
     #ifdef __SAM3X8E__
-      return ((raw * ((3.3 * 100.0) / 1024.0) / OVERSAMPLENR) * ad595_gain[h]) + ad595_offset[h];
+      return ((raw * ((3.3 * 100.0) / 1024.0) / OVERSAMPLENR) * ad595_gain[e]) + ad595_offset[e];
     #else
-      return ((raw * ((5.0 * 100.0) / 1024.0) / OVERSAMPLENR) * ad595_gain[h]) + ad595_offset[h];
+      return ((raw * ((5.0 * 100.0) / 1024.0) / OVERSAMPLENR) * ad595_gain[e]) + ad595_offset[e];
     #endif
   #else
     return 0;
@@ -1349,9 +1349,8 @@ static void updateTemperaturesFromRawValues() {
     current_temperature_raw[0] = read_max6675();
   #endif
 
-  for (uint8_t h = 0; h < HOTENDS; h++) {
-    current_temperature[h] = analog2temp(current_temperature_raw[h], h);
-  }
+  for (uint8_t e = 0; e < HOTENDS; e++)
+    current_temperature[e] = analog2temp(current_temperature_raw[e], e);
 
   current_temperature_bed = analog2tempBed(current_temperature_bed_raw);
 
@@ -1457,12 +1456,12 @@ void tp_init() {
   #endif
 
   // Finish init of mult hotends arrays
-  for (int h = 0; h < HOTENDS; h++) {
+  for (uint8_t e = 0; e < HOTENDS; e++) {
     // populate with the first value
-    maxttemp[h] = maxttemp[0];
+    maxttemp[e] = maxttemp[0];
     #if ENABLED(PIDTEMP)
-      temp_iState_min[h] = 0.0;
-      temp_iState_max[h] = PID_INTEGRAL_DRIVE_MAX / PID_PARAM(Ki, h);
+      temp_iState_min[e] = 0.0;
+      temp_iState_max[e] = PID_INTEGRAL_DRIVE_MAX / PID_PARAM(Ki, e);
     #endif //PIDTEMP
   }
 
@@ -1733,13 +1732,13 @@ void tp_init() {
    * their target temperature by a configurable margin.
    * This is called when the temperature is set. (M104, M109)
    */
-  void start_watching_heater(int h) {
-    if (degHotend(h) < degTargetHotend(h) - (WATCH_TEMP_INCREASE + TEMP_HYSTERESIS + 1)) {
-      watch_target_temp[h] = degHotend(h) + WATCH_TEMP_INCREASE;
-      watch_heater_next_ms[h] = millis() + WATCH_TEMP_PERIOD * 1000UL;
+  void start_watching_heater(int e) {
+    if (degHotend(e) < degTargetHotend(e) - (WATCH_TEMP_INCREASE + TEMP_HYSTERESIS + 1)) {
+      watch_target_temp[e] = degHotend(e) + WATCH_TEMP_INCREASE;
+      watch_heater_next_ms[e] = millis() + WATCH_TEMP_PERIOD * 1000UL;
     }
     else
-      watch_heater_next_ms[h] = 0;
+      watch_heater_next_ms[e] = 0;
   }
 #endif
 

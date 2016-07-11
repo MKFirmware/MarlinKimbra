@@ -869,7 +869,7 @@ void Config_PrintSettings(bool forReplay) {
   #if ENABLED(PIDTEMP) || ENABLED(PIDTEMPBED) || ENABLED(PIDTEMPCHAMBER) || ENABLED(PIDTEMPCOOLER)
     CONFIG_ECHO_START("PID settings:");
     #if ENABLED(PIDTEMP)
-      for (uint8_t h = 0; h < HOTENDS; h++) {
+      for (int8_t h = 0; h < HOTENDS; h++) {
         ECHO_SMV(CFG, "  M301 H", h);
         ECHO_MV(" P", PID_PARAM(Kp, h));
         ECHO_MV(" I", unscalePID_i(PID_PARAM(Ki, h)));

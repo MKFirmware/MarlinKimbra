@@ -43,6 +43,14 @@
 #ifndef TEMPERATURE_H
 #define TEMPERATURE_H
 
+#if HOTENDS == 1
+  #define HOTEND_INDEX  0
+  #define EXTRUDER_IDX  0
+#else
+  #define HOTEND_INDEX  h
+  #define EXTRUDER_IDX  active_extruder
+#endif
+
 // public functions
 void tp_init();  //initialize the heating
 void manage_temp_controller(); //it is critical that this is called periodically.
@@ -122,25 +130,36 @@ extern float current_temperature_cooler;
 //high level conversion routines, for use outside of temperature.cpp
 //inline so that there is no performance decrease.
 //deg=degreeCelsius
-#if HOTENDS <= 1
-  #define HOTEND_ARG 0
-#else
-  #define HOTEND_ARG hotend
-#endif
+FORCE_INLINE float degHotend(uint8_t h) {
+  #if HOTENDS == 1
+    UNUSED(h);
+  #endif
+  return current_temperature[HOTEND_INDEX];
+}
 
-FORCE_INLINE float degHotend(uint8_t hotend) { return current_temperature[HOTEND_ARG]; }
 FORCE_INLINE float degBed() { return current_temperature_bed; }
 FORCE_INLINE float degChamber() { return current_temperature_chamber; }
 FORCE_INLINE float degCooler() { return current_temperature_cooler; }
 
 #if ENABLED(SHOW_TEMP_ADC_VALUES)
-  FORCE_INLINE float rawHotendTemp(uint8_t hotend) { return current_temperature_raw[HOTEND_ARG]; }
+  FORCE_INLINE float rawHotendTemp(uint8_t h) {
+    #if HOTENDS == 1
+      UNUSED(h);
+    #endif
+    return current_temperature_raw[HOTEND_INDEX];
+  }
   FORCE_INLINE float rawBedTemp() { return current_temperature_bed_raw; }
   FORCE_INLINE float rawChamberTemp() { return current_temperature_chamber_raw; }
   FORCE_INLINE float rawCoolerTemp() { return current_temperature_cooler_raw; }
 #endif
 
-FORCE_INLINE float degTargetHotend(uint8_t hotend) { return target_temperature[HOTEND_ARG]; }
+FORCE_INLINE float degTargetHotend(uint8_t h) {
+  #if HOTENDS == 1
+    UNUSED(h);
+  #endif
+  return target_temperature[HOTEND_INDEX];
+}
+
 FORCE_INLINE float degTargetBed() { return target_temperature_bed; }
 FORCE_INLINE float degTargetChamber() { return target_temperature_chamber; }
 FORCE_INLINE float degTargetCooler() { return target_temperature_cooler; }
@@ -161,10 +180,13 @@ FORCE_INLINE float degTargetCooler() { return target_temperature_cooler; }
   void start_watching_cooler();
 #endif
 
-FORCE_INLINE void setTargetHotend(const float& celsius, uint8_t hotend) {
-  target_temperature[HOTEND_ARG] = celsius;
+FORCE_INLINE void setTargetHotend(const float& celsius, uint8_t h) {
+  #if HOTENDS == 1
+    UNUSED(h);
+  #endif
+  target_temperature[HOTEND_INDEX] = celsius;
   #if ENABLED(THERMAL_PROTECTION_HOTENDS)
-    start_watching_heater(HOTEND_ARG);
+    start_watching_heater(HOTEND_INDEX);
   #endif
 }
 
@@ -189,20 +211,39 @@ FORCE_INLINE void setTargetCooler(const float& celsius) {
   #endif
 }
 
-FORCE_INLINE bool isHeatingHotend(uint8_t hotend) { return target_temperature[HOTEND_ARG] > current_temperature[HOTEND_ARG]; }
+FORCE_INLINE bool isHeatingHotend(uint8_t h) {
+  #if HOTENDS == 1
+    UNUSED(h);
+  #endif
+  return target_temperature[HOTEND_INDEX] > current_temperature[HOTEND_INDEX];
+}
+
 FORCE_INLINE bool isHeatingBed() { return target_temperature_bed > current_temperature_bed; }
 FORCE_INLINE bool isHeatingChamber() { return target_temperature_chamber > current_temperature_chamber; }
 FORCE_INLINE bool isHeatingCooler() { return target_temperature_cooler > current_temperature_cooler; } 
 
-FORCE_INLINE bool isCoolingHotend(uint8_t hotend) { return target_temperature[HOTEND_ARG] < current_temperature[HOTEND_ARG]; }
+FORCE_INLINE bool isCoolingHotend(uint8_t h) {
+  #if HOTENDS == 1
+    UNUSED(h);
+  #endif
+  return target_temperature[HOTEND_INDEX] < current_temperature[HOTEND_INDEX];
+}
+
 FORCE_INLINE bool isCoolingBed() { return target_temperature_bed < current_temperature_bed; }
 FORCE_INLINE bool isCoolingChamber() { return target_temperature_chamber < current_temperature_chamber; }
 FORCE_INLINE bool isCoolingCooler() { return target_temperature_cooler < current_temperature_cooler; } 
 
 #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
-  FORCE_INLINE bool tooColdToExtrude(uint8_t hotend) { return degHotend(HOTEND_ARG) < extrude_min_temp; }
+  extern float extrude_min_temp;
+  extern bool allow_cold_extrude;
+  FORCE_INLINE bool tooColdToExtrude(uint8_t e) {
+    #if HOTENDS == 1
+      UNUSED(e);
+    #endif
+    return (allow_cold_extrude ? false : degHotend(HOTEND_INDEX) < extrude_min_temp); 
+  }
 #else
-  FORCE_INLINE bool tooColdToExtrude(uint8_t hotend) { UNUSED(hotend); return false; }
+  FORCE_INLINE bool tooColdToExtrude(uint8_t e) { UNUSED(e); return false; }
 #endif
 
 #define HOTEND_ROUTINES(NR) \
