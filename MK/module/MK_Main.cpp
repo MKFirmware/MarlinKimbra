@@ -406,7 +406,8 @@ void print_xyz(const char* suffix, const float xyz[]) {
     print_xyz(suffix, xyz.x, xyz.y, xyz.z);
   }
 #endif
-#define DEBUG_POS(PREFIX,VAR) do{ ECHO_SM(INFO, PREFIX); print_xyz(" > " STRINGIFY(VAR), VAR); }while(0)
+#define DEBUG_INFO_POS(PREFIX,VAR) do{ ECHO_SM(INFO, PREFIX); print_xyz(" > " STRINGIFY(VAR), VAR); }while(0)
+#define DEBUG_POS(PREFIX,VAR) do{ ECHO_M(PREFIX); print_xyz(" > " STRINGIFY(VAR), VAR); }while(0)
 
 #if ENABLED(M100_FREE_MEMORY_WATCHER)
   // top_of_stack() returns the location of a variable on its stack frame.  The value returned is above
@@ -1413,7 +1414,7 @@ static void set_axis_is_at_home(AxisEnum axis) {
   #endif
 
   if (DEBUGGING(INFO)) {
-    ECHO_LMV(INFO, "> home_offset[axis]==", home_offset[axis]);
+    ECHO_SMV(INFO, "home_offset[axis]==", home_offset[axis]);
     DEBUG_POS("", current_position);
     ECHO_SMV(INFO, "<<< set_axis_is_at_home(", axis);
     ECHO_EM(")");
@@ -1460,12 +1461,12 @@ inline void line_to_destination() {
  * Allows translation between steps and millimeters for cartesian & core robots
  */
 inline void sync_plan_position() {
-  if (DEBUGGING(INFO)) DEBUG_POS("sync_plan_position", current_position);
+  if (DEBUGGING(INFO)) DEBUG_INFO_POS("sync_plan_position", current_position);
   planner.set_position_mm(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 }
 #if MECH(DELTA) || MECH(SCARA)
   inline void sync_plan_position_delta() {
-    if (DEBUGGING(INFO)) DEBUG_POS("sync_plan_position_delta", current_position);
+    if (DEBUGGING(INFO)) DEBUG_INFO_POS("sync_plan_position_delta", current_position);
     calculate_delta(current_position);
     planner.set_position_mm(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], current_position[E_AXIS]);
   }
@@ -1488,7 +1489,7 @@ inline void set_destination_to_current() { memcpy(destination, current_position,
 //  - Enable the endstops (for endstop moves)
 //
 static void setup_for_endstop_or_probe_move() {
-  if (DEBUGGING(INFO)) DEBUG_POS("setup_for_endstop_or_probe_move", current_position);
+  if (DEBUGGING(INFO)) DEBUG_INFO_POS("setup_for_endstop_or_probe_move", current_position);
 
   saved_feedrate = feedrate;
   saved_feedrate_multiplier = feedrate_multiplier;
@@ -1497,7 +1498,7 @@ static void setup_for_endstop_or_probe_move() {
 }
 
 static void clean_up_after_endstop_or_probe_move() {
-  if (DEBUGGING(INFO)) DEBUG_POS("clean_up_after_endstop_or_probe_move", current_position);
+  if (DEBUGGING(INFO)) DEBUG_INFO_POS("clean_up_after_endstop_or_probe_move", current_position);
 
   feedrate = saved_feedrate;
   feedrate_multiplier = saved_feedrate_multiplier;
@@ -1548,8 +1549,7 @@ static bool axis_unhomed_error(const bool x, const bool y, const bool z) {
      * Calculate delta, start a line, and set current_position to destination
      */
     void prepare_move_to_destination_raw() {
-      if (DEBUGGING(INFO))
-        DEBUG_POS("prepare_move_to_destination_raw", destination);
+      if (DEBUGGING(INFO)) DEBUG_INFO_POS("prepare_move_to_destination_raw", destination);
 
       refresh_cmd_timeout();
       calculate_delta(destination);
@@ -1693,7 +1693,7 @@ static bool axis_unhomed_error(const bool x, const bool y, const bool z) {
   static bool set_probe_deployed(bool deploy) {
 
     if (DEBUGGING(INFO)) {
-      DEBUG_POS("set_probe_deployed", current_position);
+      DEBUG_INFO_POS("set_probe_deployed", current_position);
       ECHO_LMV(INFO, "deploy: ", deploy);
     }
 
@@ -1765,7 +1765,7 @@ static bool axis_unhomed_error(const bool x, const bool y, const bool z) {
       float start_z = current_position[Z_AXIS];
       long start_steps = st_get_position(Z_AXIS);
 
-      if (DEBUGGING(INFO)) DEBUG_POS("run_z_probe (DELTA) 1", current_position);
+      if (DEBUGGING(INFO)) DEBUG_INFO_POS("run_z_probe (DELTA) 1", current_position);
 
       // move down slowly until you find the bed
       feedrate = Z_PROBE_SPEED;
@@ -1782,7 +1782,7 @@ static bool axis_unhomed_error(const bool x, const bool y, const bool z) {
       float mm = start_z - float(start_steps - stop_steps) / planner.axis_steps_per_mm[Z_AXIS];
       current_position[Z_AXIS] = mm;
 
-      if (DEBUGGING(INFO)) DEBUG_POS("run_z_probe (DELTA) 2", current_position);
+      if (DEBUGGING(INFO)) DEBUG_INFO_POS("run_z_probe (DELTA) 2", current_position);
 
       sync_plan_position_delta();
       
@@ -1824,7 +1824,7 @@ static bool axis_unhomed_error(const bool x, const bool y, const bool z) {
       current_position[Z_AXIS] = st_get_axis_position_mm(Z_AXIS);
       sync_plan_position();
 
-      if (DEBUGGING(INFO)) DEBUG_POS("run_z_probe", current_position);
+      if (DEBUGGING(INFO)) DEBUG_INFO_POS("run_z_probe", current_position);
 
     #endif
 
@@ -1848,7 +1848,7 @@ static bool axis_unhomed_error(const bool x, const bool y, const bool z) {
         ECHO_SMV(INFO, ">>> probe_pt(", x);
         ECHO_MV(", ", y);
         ECHO_MT(", ", stow ? "stow" : "no stow");
-        ECHO_EM(")");
+        ECHO_M(")");
         DEBUG_POS("", current_position);
       }
 
@@ -1967,7 +1967,7 @@ static void homeaxis(AxisEnum axis) {
   line_to_destination();
   st_synchronize();
 
-  if (DEBUGGING(INFO)) DEBUG_POS("> TRIGGER ENDSTOP", current_position);
+  if (DEBUGGING(INFO)) DEBUG_INFO_POS("TRIGGER ENDSTOP", current_position);
 
   #if ENABLED(Z_DUAL_ENDSTOPS)
     if (axis == Z_AXIS) {
@@ -2000,14 +2000,12 @@ static void homeaxis(AxisEnum axis) {
       sync_plan_position();
       destination[axis] = endstop_adj[axis];
       if (DEBUGGING(INFO)) {
-        ECHO_LMV(INFO, " > endstop_adj = ", endstop_adj[axis]);
+        ECHO_SMV(INFO, "endstop_adj = ", endstop_adj[axis]);
         DEBUG_POS("", destination);
       }
       line_to_destination();
       st_synchronize();
     }
-
-    if (DEBUGGING(INFO)) ECHO_LMV(INFO, "> endstop_adj * axis_home_dir = ", endstop_adj[axis] * axis_home_dir);
   #endif
 
   // Set the axis position to its home position (plus home offsets)
@@ -2015,7 +2013,7 @@ static void homeaxis(AxisEnum axis) {
 
   SYNC_PLAN_POSITION_KINEMATIC();
 
-  if (DEBUGGING(INFO)) DEBUG_POS("> AFTER set_axis_is_at_home", current_position);
+  if (DEBUGGING(INFO)) DEBUG_INFO_POS("AFTER set_axis_is_at_home", current_position);
 
   destination[axis] = current_position[axis];
   endstops.hit_on_purpose(); // clear endstop hit flags
@@ -2069,8 +2067,8 @@ AvoidLaserFocus:
         if (DEBUGGING(INFO)) {
           planner.bed_level_matrix.set_to_identity();
           vector_3 uncorrected_position = planner.adjusted_position();
-          DEBUG_POS(">>> set_bed_level_equation_lsq", uncorrected_position);
-          DEBUG_POS(">>> set_bed_level_equation_lsq", current_position);
+          DEBUG_INFO_POS(">>> set_bed_level_equation_lsq", uncorrected_position);
+          DEBUG_INFO_POS(">>> set_bed_level_equation_lsq", current_position);
         }
 
         vector_3 planeNormal = vector_3(-plane_equation_coefficients[0], -plane_equation_coefficients[1], 1);
@@ -2081,7 +2079,7 @@ AvoidLaserFocus:
         current_position[Y_AXIS] = corrected_position.y;
         current_position[Z_AXIS] = corrected_position.z;
 
-        if (DEBUGGING(INFO)) DEBUG_POS("<<< set_bed_level_equation_lsq", current_position);
+        if (DEBUGGING(INFO)) DEBUG_INFO_POS("<<< set_bed_level_equation_lsq", current_position);
 
         sync_plan_position();
       }
@@ -2094,7 +2092,7 @@ AvoidLaserFocus:
 
         if (DEBUGGING(INFO)) {
           vector_3 uncorrected_position = planner.adjusted_position();
-          DEBUG_POS("set_bed_level_equation_3pts", uncorrected_position);
+          DEBUG_INFO_POS("set_bed_level_equation_3pts", uncorrected_position);
         }
 
         vector_3 pt1 = vector_3(ABL_PROBE_PT_1_X, ABL_PROBE_PT_1_Y, z_at_pt_1);
@@ -2115,7 +2113,7 @@ AvoidLaserFocus:
         current_position[Y_AXIS] = corrected_position.y;
         current_position[Z_AXIS] = corrected_position.z;
 
-        if (DEBUGGING(INFO)) DEBUG_POS("set_bed_level_equation_3pts", corrected_position);
+        if (DEBUGGING(INFO)) DEBUG_INFO_POS("set_bed_level_equation_3pts", corrected_position);
 
         sync_plan_position();
       }
@@ -2273,7 +2271,7 @@ AvoidLaserFocus:
       if (DEBUGGING(INFO)) {
         ECHO_SMV(INFO, ">>> probe_bed(", x);
         ECHO_MV(", ", y);
-        ECHO_EM(")");
+        ECHO_M(")");
         DEBUG_POS("", current_position);
       }
 
@@ -2290,7 +2288,7 @@ AvoidLaserFocus:
       NOMORE(Dy, Y_MAX_POS);
 
       if (DEBUGGING(INFO)) {
-        ECHO_SMV(INFO, "> do_blocking_move_to_xy(", Dx);
+        ECHO_SMV(INFO, "do_blocking_move_to_xy(", Dx);
         ECHO_MV(", ", Dy);
         ECHO_EM(")");
       }
@@ -3496,7 +3494,7 @@ inline void wait_heater(bool no_wait_for_cooling = true) {
     set_axis_is_at_home(Y_AXIS);
     sync_plan_position();
 
-    if (DEBUGGING(INFO)) DEBUG_POS("> QUICK_HOME 1", current_position);
+    if (DEBUGGING(INFO)) DEBUG_INFO_POS("QUICK_HOME 1", current_position);
 
     destination[X_AXIS] = current_position[X_AXIS];
     destination[Y_AXIS] = current_position[Y_AXIS];
@@ -3510,7 +3508,7 @@ inline void wait_heater(bool no_wait_for_cooling = true) {
       current_position[Z_AXIS] = destination[Z_AXIS];
     #endif
 
-    if (DEBUGGING(INFO)) DEBUG_POS("> QUICK_HOME 2", current_position);
+    if (DEBUGGING(INFO)) DEBUG_INFO_POS("QUICK_HOME 2", current_position);
   }
 #endif // QUICK_HOME
 
@@ -3899,7 +3897,7 @@ inline void gcode_G28() {
 
     home_delta_axis();
 
-    if (DEBUGGING(INFO)) DEBUG_POS("(DELTA)", current_position);
+    if (DEBUGGING(INFO)) DEBUG_INFO_POS("(DELTA)", current_position);
 
   #else // NOT DELTA
 
@@ -3909,7 +3907,7 @@ inline void gcode_G28() {
 
       if (home_all_axis || homeZ) {
         HOMEAXIS(Z);
-        if (DEBUGGING(INFO)) DEBUG_POS("> HOMEAXIS(Z)", current_position);
+        if (DEBUGGING(INFO)) DEBUG_INFO_POS("HOMEAXIS(Z)", current_position);
       }
 
     #else
@@ -3940,7 +3938,7 @@ inline void gcode_G28() {
       // Home Y
       if (home_all_axis || homeY) {
         HOMEAXIS(Y);
-        if (DEBUGGING(INFO)) DEBUG_POS("> homeY", current_position);
+        if (DEBUGGING(INFO)) DEBUG_INFO_POS("homeY", current_position);
       }
     #endif
 
@@ -3961,14 +3959,14 @@ inline void gcode_G28() {
       #else
         HOMEAXIS(X);
       #endif
-      if (DEBUGGING(INFO)) DEBUG_POS("> homeX", current_position);
+      if (DEBUGGING(INFO)) DEBUG_INFO_POS("homeX", current_position);
     }
 
     #if DISABLED(HOME_Y_BEFORE_X)
       // Home Y
       if (home_all_axis || homeY) {
         HOMEAXIS(Y);
-        if (DEBUGGING(INFO)) DEBUG_POS("> homeY", current_position);
+        if (DEBUGGING(INFO)) DEBUG_INFO_POS("homeY", current_position);
       }
     #endif
 
@@ -4002,8 +4000,8 @@ inline void gcode_G28() {
             feedrate = XY_PROBE_FEEDRATE;
 
             if (DEBUGGING(INFO)) {
-              DEBUG_POS("> Z_SAFE_HOMING > home_all_axis", current_position);
-              DEBUG_POS("> Z_SAFE_HOMING > home_all_axis", destination);
+              DEBUG_INFO_POS("Z_SAFE_HOMING > home_all_axis", current_position);
+              DEBUG_INFO_POS("Z_SAFE_HOMING > home_all_axis", destination);
             }
 
             // Move in the XY plane
@@ -4016,34 +4014,29 @@ inline void gcode_G28() {
              */  
             current_position[X_AXIS] = destination[X_AXIS];
             current_position[Y_AXIS] = destination[Y_AXIS];
+          }
+
+          // Let's see if X and Y are homed
+          if (axis_unhomed_error(true, true, false)) return;
+
+          /**
+           * Make sure the Z probe is within the physical limits
+           * NOTE: This doesn't necessarily ensure the Z probe is also
+           * within the bed!
+           */
+          float cpx = current_position[X_AXIS], cpy = current_position[Y_AXIS];
+          if (   cpx >= X_MIN_POS - (X_PROBE_OFFSET_FROM_NOZZLE)
+              && cpx <= X_MAX_POS - (X_PROBE_OFFSET_FROM_NOZZLE)
+              && cpy >= Y_MIN_POS - (Y_PROBE_OFFSET_FROM_NOZZLE)
+              && cpy <= Y_MAX_POS - (Y_PROBE_OFFSET_FROM_NOZZLE)) {
 
             // Home the Z axis
             HOMEAXIS(Z);
           }
-          else if (homeZ) { // Don't need to Home Z twice
-
-            // Let's see if X and Y are homed
-            if (axis_unhomed_error(true, true, false)) return;
-
-            /**
-             * Make sure the Z probe is within the physical limits
-             * NOTE: This doesn't necessarily ensure the Z probe is also
-             * within the bed!
-             */
-            float cpx = current_position[X_AXIS], cpy = current_position[Y_AXIS];
-            if (   cpx >= X_MIN_POS - (X_PROBE_OFFSET_FROM_NOZZLE)
-                && cpx <= X_MAX_POS - (X_PROBE_OFFSET_FROM_NOZZLE)
-                && cpy >= Y_MIN_POS - (Y_PROBE_OFFSET_FROM_NOZZLE)
-                && cpy <= Y_MAX_POS - (Y_PROBE_OFFSET_FROM_NOZZLE)) {
-
-              // Home the Z axis
-              HOMEAXIS(Z);
-            }
-            else {
-              LCD_MESSAGEPGM(MSG_ZPROBE_OUT);
-              ECHO_LM(DB, MSG_ZPROBE_OUT);
-            }
-          } // !home_all_axes && homeZ
+          else {
+            LCD_MESSAGEPGM(MSG_ZPROBE_OUT);
+            ECHO_LM(DB, MSG_ZPROBE_OUT);
+          }
 
           if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< Z_SAFE_HOMING");
 
@@ -4053,7 +4046,7 @@ inline void gcode_G28() {
 
         #endif // !Z_SAFE_HOMING
         
-        if (DEBUGGING(INFO)) DEBUG_POS("> (home_all_axis || homeZ) > final", current_position);
+        if (DEBUGGING(INFO)) DEBUG_INFO_POS("(home_all_axis || homeZ) > final", current_position);
 
       }
 
@@ -4061,9 +4054,11 @@ inline void gcode_G28() {
 
     sync_plan_position();
 
-  #endif // !DELTA
+  #endif // !DELTA (gcode_G28)
 
+  if (DEBUGGING(INFO)) ECHO_LM(INFO, "endstops.not_homing()");
   endstops.not_homing();
+  endstops.hit_on_purpose(); // clear endstop hit flags
 
   // Enable mesh leveling again
   #if ENABLED(MESH_BED_LEVELING)
@@ -4138,8 +4133,6 @@ inline void gcode_G28() {
   #endif
 
   clean_up_after_endstop_or_probe_move();
-
-  endstops.hit_on_purpose(); // clear endstop hit flags
 
   if (DEBUGGING(INFO)) ECHO_LM(INFO, "<<< gcode_G28");
 
@@ -4382,7 +4375,7 @@ inline void gcode_G28() {
    */
   inline void gcode_G29() {
     if (DEBUGGING(INFO)) {
-      ECHO_LM(INFO, ">>> gcode_G29");
+      ECHO_SM(INFO, ">>> gcode_G29");
       DEBUG_POS("", current_position);
     }
 
@@ -4456,8 +4449,8 @@ inline void gcode_G28() {
 
       if (DEBUGGING(INFO)) {
         vector_3 corrected_position = planner.adjusted_position();
-        DEBUG_POS("BEFORE matrix.set_to_identity", corrected_position);
-        DEBUG_POS("BEFORE matrix.set_to_identity", current_position);
+        DEBUG_INFO_POS("BEFORE matrix.set_to_identity", corrected_position);
+        DEBUG_INFO_POS("BEFORE matrix.set_to_identity", current_position);
       }
 
       // make sure the bed_level_rotation_matrix is identity or the planner will get it wrong
@@ -4471,7 +4464,7 @@ inline void gcode_G28() {
       current_position[Y_AXIS] = uncorrected_position.y;
       current_position[Z_AXIS] = uncorrected_position.z;
 
-      if (DEBUGGING(INFO)) DEBUG_POS("AFTER matrix.set_to_identity", uncorrected_position);
+      if (DEBUGGING(INFO)) DEBUG_INFO_POS("AFTER matrix.set_to_identity", uncorrected_position);
 
       sync_plan_position();
     }
@@ -4569,7 +4562,7 @@ inline void gcode_G28() {
     // Restore state after probing
     clean_up_after_endstop_or_probe_move();
 
-    if (DEBUGGING(INFO)) DEBUG_POS("> probing complete", current_position);
+    if (DEBUGGING(INFO)) DEBUG_INFO_POS("probing complete", current_position);
 
     // Calculate leveling, print reports, correct the position
     #if ENABLED(AUTO_BED_LEVELING_GRID)
@@ -4684,7 +4677,7 @@ inline void gcode_G28() {
       current_position[Z_AXIS] += z_tmp - stepper_z;
       sync_plan_position();
 
-      if (DEBUGGING(INFO)) DEBUG_POS("> corrected Z in G29", current_position);
+      if (DEBUGGING(INFO)) DEBUG_INFO_POS("corrected Z in G29", current_position);
     }
 
     #if ENABLED(Z_PROBE_END_SCRIPT)
@@ -9444,8 +9437,8 @@ static void report_current_position() {
       #endif
 
       if (DEBUGGING(DEBUG)) {
-        DEBUG_POS("prepare_delta_move_to", target);
-        DEBUG_POS("prepare_delta_move_to", delta);
+        DEBUG_INFO_POS("prepare_delta_move_to", target);
+        DEBUG_INFO_POS("prepare_delta_move_to", delta);
       }
 
       planner.buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], target[E_AXIS], _feedrate, active_extruder, active_driver);
