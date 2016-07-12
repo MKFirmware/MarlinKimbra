@@ -3551,7 +3551,7 @@ void gcode_get_destination() {
 
   #if ENABLED(NEXTION) && ENABLED(NEXTION_GFX)
     #if MECH(DELTA)
-      if((code_seen('X') || code_seen('Y') && code_seen('E'))
+      if((code_seen('X') || code_seen('Y')) && code_seen('E'))
         gfx_line_to(destination[X_AXIS] + (X_MAX_POS), destination[Y_AXIS] + (Y_MAX_POS), destination[Z_AXIS]);
       else
         gfx_cursor_to(destination[X_AXIS] + (X_MAX_POS), destination[Y_AXIS] + (Y_MAX_POS), destination[Z_AXIS]);
