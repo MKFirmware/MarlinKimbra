@@ -44,9 +44,11 @@
 #define TEMPERATURE_H
 
 #if HOTENDS == 1
+  #define HOTEND_LOOP() const uint8_t h = 0;
   #define HOTEND_INDEX  0
   #define EXTRUDER_IDX  0
 #else
+  #define HOTEND_LOOP() for (int8_t h = 0; h < HOTENDS; h++)
   #define HOTEND_INDEX  h
   #define EXTRUDER_IDX  active_extruder
 #endif
@@ -101,7 +103,7 @@ extern float current_temperature_cooler;
 
 #if ENABLED(PIDTEMP)
   extern float Kp[HOTENDS], Ki[HOTENDS], Kd[HOTENDS], Kc[HOTENDS];
-  #define PID_PARAM(param, e) param[e] // use macro to point to array value
+  #define PID_PARAM(param, h) param[h] // use macro to point to array value
 #endif
 
 #if ENABLED(PIDTEMPBED)
@@ -283,7 +285,6 @@ void updatePID();
   void PID_autotune(float temp, int temp_controller, int ncycles, bool set_result = false);
 #endif
 
-void setExtruderAutoFanState(int pin, bool state);
 void checkExtruderAutoFans();
 extern void autotempShutdown();
 

@@ -164,7 +164,7 @@ static volatile bool temp_meas_ready = false;
   static float dTerm[HOTENDS];
   #if ENABLED(PID_ADD_EXTRUSION_RATE)
     static float cTerm[HOTENDS];
-    static long last_position[EXTRUDERS];
+    static long last_e_position;
     static long lpq[LPQ_MAX_LEN];
     static int lpq_ptr = 0;
   #endif
@@ -601,12 +601,12 @@ void autotempShutdown() {
 
 void updatePID() {
   #if ENABLED(PIDTEMP)
-    for (int h = 0; h < HOTENDS; h++) {
+    #if ENABLED(PID_ADD_EXTRUSION_RATE)
+      last_e_position = 0;
+    #endif
+    HOTEND_LOOP() {
       temp_iState_max[h] = PID_INTEGRAL_DRIVE_MAX / PID_PARAM(Ki, h);
     }
-    #if ENABLED(PID_ADD_EXTRUSION_RATE)
-      for (int e = 0; e < EXTRUDERS; e++) last_position[e] = 0;
-    #endif
   #endif
   #if ENABLED(PIDTEMPBED)
     temp_iState_max_bed = PID_BED_INTEGRAL_DRIVE_MAX / bedKi;
@@ -640,75 +640,37 @@ int getCoolerPower() {
 }
 
 #if HAS(AUTO_FAN)
-  void setExtruderAutoFanState(int pin, bool state) {
-    unsigned char newFanSpeed = (state != 0) ? EXTRUDER_AUTO_FAN_SPEED : EXTRUDER_AUTO_FAN_MIN_SPEED;
-    // this idiom allows both digital and PWM fan outputs (see M42 handling).
-    #if ENABLED(FAN_SOFT_PWM)
-      fanSpeedSoftPwm_auto = newFanSpeed;
-    #else
-      digitalWrite(pin, newFanSpeed);
-      analogWrite(pin, newFanSpeed);
-    #endif
-  }
-
   void checkExtruderAutoFans() {
+    const int8_t fanPin[] = { EXTRUDER_0_AUTO_FAN_PIN, EXTRUDER_1_AUTO_FAN_PIN, EXTRUDER_2_AUTO_FAN_PIN, EXTRUDER_3_AUTO_FAN_PIN };
+    const int fanBit[] = { 0,
+      EXTRUDER_1_AUTO_FAN_PIN == EXTRUDER_0_AUTO_FAN_PIN ? 0 : 1,
+      EXTRUDER_2_AUTO_FAN_PIN == EXTRUDER_0_AUTO_FAN_PIN ? 0 :
+      EXTRUDER_2_AUTO_FAN_PIN == EXTRUDER_1_AUTO_FAN_PIN ? 1 : 2,
+      EXTRUDER_3_AUTO_FAN_PIN == EXTRUDER_0_AUTO_FAN_PIN ? 0 :
+      EXTRUDER_3_AUTO_FAN_PIN == EXTRUDER_1_AUTO_FAN_PIN ? 1 :
+      EXTRUDER_3_AUTO_FAN_PIN == EXTRUDER_2_AUTO_FAN_PIN ? 2 : 3
+    };
     uint8_t fanState = 0;
-
-    // which fan pins need to be turned on?
-    #if HAS(AUTO_FAN_0)
-      if (current_temperature[0] > EXTRUDER_AUTO_FAN_TEMPERATURE)
-        fanState |= 1;
-    #endif
-    #if HAS(AUTO_FAN_1)
-      if (current_temperature[1] > EXTRUDER_AUTO_FAN_TEMPERATURE) {
-        if (EXTRUDER_1_AUTO_FAN_PIN == EXTRUDER_0_AUTO_FAN_PIN)
-          fanState |= 1;
-        else
-          fanState |= 2;
+    HOTEND_LOOP() {
+      if (current_temperature[h] > EXTRUDER_AUTO_FAN_TEMPERATURE) {
+        SBI(fanState, fanBit[h]);
       }
-    #endif
-    #if HAS(AUTO_FAN_2)
-      if (current_temperature[2] > EXTRUDER_AUTO_FAN_TEMPERATURE) {
-        if (EXTRUDER_2_AUTO_FAN_PIN == EXTRUDER_0_AUTO_FAN_PIN)
-          fanState |= 1;
-        else if (EXTRUDER_2_AUTO_FAN_PIN == EXTRUDER_1_AUTO_FAN_PIN)
-          fanState |= 2;
-        else
-          fanState |= 4;
+    }
+    uint8_t fanDone = 0;
+    for (int8_t f = 0; f <= 3; f++) {
+      int8_t pin = fanPin[f];
+      if (pin >= 0 && !TEST(fanDone, fanBit[f])) {
+        unsigned char newFanSpeed = TEST(fanState, fanBit[f]) ? EXTRUDER_AUTO_FAN_SPEED : 0;
+        // this idiom allows both digital and PWM fan outputs (see M42 handling).
+        #if ENABLED(FAN_SOFT_PWM)
+          fanSpeedSoftPwm_auto = newFanSpeed;
+        #else
+          digitalWrite(pin, newFanSpeed);
+          analogWrite(pin, newFanSpeed);
+        #endif
+        SBI(fanDone, fanBit[f]);
       }
-    #endif
-    #if HAS(AUTO_FAN_3)
-      if (current_temperature[3] > EXTRUDER_AUTO_FAN_TEMPERATURE) {
-        if (EXTRUDER_3_AUTO_FAN_PIN == EXTRUDER_0_AUTO_FAN_PIN) 
-          fanState |= 1;
-        else if (EXTRUDER_3_AUTO_FAN_PIN == EXTRUDER_1_AUTO_FAN_PIN)
-          fanState |= 2;
-        else if (EXTRUDER_3_AUTO_FAN_PIN == EXTRUDER_2_AUTO_FAN_PIN)
-          fanState |= 4;
-        else
-          fanState |= 8;
-      }
-    #endif
-
-    // update extruder auto fan states
-    #if HAS(AUTO_FAN_0)
-      setExtruderAutoFanState(EXTRUDER_0_AUTO_FAN_PIN, (fanState & 1) != 0);
-    #endif
-    #if HAS(AUTO_FAN_1)
-      if (EXTRUDER_1_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN)
-        setExtruderAutoFanState(EXTRUDER_1_AUTO_FAN_PIN, (fanState & 2) != 0);
-    #endif
-    #if HAS(AUTO_FAN_2)
-      if (EXTRUDER_2_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN
-          && EXTRUDER_2_AUTO_FAN_PIN != EXTRUDER_1_AUTO_FAN_PIN)
-        setExtruderAutoFanState(EXTRUDER_2_AUTO_FAN_PIN, (fanState & 4) != 0);
-    #endif
-    #if HAS(AUTO_FAN_3)
-      if (EXTRUDER_3_AUTO_FAN_PIN != EXTRUDER_0_AUTO_FAN_PIN
-          && EXTRUDER_3_AUTO_FAN_PIN != EXTRUDER_1_AUTO_FAN_PIN
-          && EXTRUDER_3_AUTO_FAN_PIN != EXTRUDER_2_AUTO_FAN_PIN)
-        setExtruderAutoFanState(EXTRUDER_3_AUTO_FAN_PIN, (fanState & 8) != 0);
-    #endif
+    }
   }
 #endif // HAS(AUTO_FAN)
 
@@ -760,18 +722,14 @@ void min_temp_error(uint8_t h) {
 float get_pid_output(int e) {
   #if HOTENDS == 1
     UNUSED(e);
-    #define _HOTEND_TEST     true
-    #define _HOTEND_EXTRUDER active_extruder
+    #define _HOTEND_TEST  true
   #else
-    #define _HOTEND_TEST     e == active_extruder
-    #define _HOTEND_EXTRUDER e
+    #define _HOTEND_TEST  e == active_extruder
   #endif
 
   float pid_output;
   #if ENABLED(PIDTEMP)
-    #if ENABLED(PID_OPENLOOP)
-      pid_output = constrain(target_temperature[HOTEND_INDEX], 0, PID_MAX);
-    #else
+    #if DISABLED(PID_OPENLOOP)
       pid_error[HOTEND_INDEX] = target_temperature[HOTEND_INDEX] - current_temperature[HOTEND_INDEX];
       dTerm[HOTEND_INDEX] = K2 * PID_PARAM(Kd, HOTEND_INDEX) * (current_temperature[HOTEND_INDEX] - temp_dState[HOTEND_INDEX]) + K1 * dTerm[HOTEND_INDEX];
       temp_dState[HOTEND_INDEX] = current_temperature[HOTEND_INDEX];
@@ -799,16 +757,16 @@ float get_pid_output(int e) {
           cTerm[HOTEND_INDEX] = 0;
           if (_HOTEND_TEST) {
             long e_position = st_get_position(E_AXIS);
-            if (e_position > last_position[_HOTEND_EXTRUDER]) {
-              lpq[lpq_ptr++] = e_position - last_position[_HOTEND_EXTRUDER];
-              last_position[_HOTEND_EXTRUDER] = e_position;
+            if (e_position > last_e_position) {
+              lpq[lpq_ptr++] = e_position - last_e_position;
+              last_e_position = e_position;
             }
             else {
-              lpq[lpq_ptr++] = 0;
+              lpq[lpq_ptr] = 0;
             }
-            if (lpq_ptr >= lpq_len) lpq_ptr = 0;
-            cTerm[_HOTEND_EXTRUDER] = (lpq[lpq_ptr] / planner.axis_steps_per_mm[E_AXIS + active_extruder]) * PID_PARAM(Kc, 0);
-            pid_output += cTerm[_HOTEND_EXTRUDER];
+            if (++lpq_ptr >= lpq_len) lpq_ptr = 0;
+            cTerm[HOTEND_INDEX] = (lpq[lpq_ptr] / planner.axis_steps_per_mm[E_AXIS + active_extruder]) * PID_PARAM(Kc, HOTEND_INDEX);
+            pid_output += cTerm[HOTEND_INDEX];
           }
         #endif // PID_ADD_EXTRUSION_RATE
 
@@ -821,6 +779,8 @@ float get_pid_output(int e) {
           pid_output = 0;
         }
       }
+    #else
+      pid_output = constrain(target_temperature[HOTEND_INDEX], 0, PID_MAX);
     #endif // PID_OPENLOOP
 
     #if ENABLED(PID_DEBUG)
@@ -1456,12 +1416,12 @@ void tp_init() {
   #endif
 
   // Finish init of mult hotends arrays
-  for (uint8_t e = 0; e < HOTENDS; e++) {
+  HOTEND_LOOP() {
     // populate with the first value
-    maxttemp[e] = maxttemp[0];
+    maxttemp[h] = maxttemp[0];
     #if ENABLED(PIDTEMP)
-      temp_iState_min[e] = 0.0;
-      temp_iState_max[e] = PID_INTEGRAL_DRIVE_MAX / PID_PARAM(Ki, e);
+      temp_iState_min[h] = 0.0;
+      temp_iState_max[h] = PID_INTEGRAL_DRIVE_MAX / PID_PARAM(Ki, h);
     #endif //PIDTEMP
   }
 
@@ -1481,7 +1441,7 @@ void tp_init() {
   #endif
 
   #if ENABLED(PID_ADD_EXTRUSION_RATE)
-    for (int e = 0; e < EXTRUDERS; e++) last_position[e] = 0;
+    last_e_position = 0;
   #endif
 
   #if HAS(HEATER_0)
@@ -1853,7 +1813,7 @@ void tp_init() {
 #endif // THERMAL_PROTECTION_HOTENDS || THERMAL_PROTECTION_BED || THERMAL_PROTECTION_CHAMBER || THERMAL_PROTECTION_COOLER
 
 void disable_all_heaters() {
-  for (int i = 0; i < HOTENDS; i++) setTargetHotend(0, i);
+  HOTEND_LOOP() setTargetHotend(0, h);
   setTargetBed(0);
   setTargetChamber(0);
 
