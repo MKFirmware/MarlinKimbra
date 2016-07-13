@@ -122,18 +122,16 @@ uint8_t Planner::last_extruder;
  * Class and Instance Methods
  */
 
-Planner::Planner() {
-  #if ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
-    bed_level_matrix.set_to_identity();
-  #endif
-  init();
-}
+Planner::Planner() { init(); }
 
 void Planner::init() {
   block_buffer_head = block_buffer_tail = 0;
   memset(position, 0, sizeof(position)); // clear position
   for (int i = 0; i < NUM_AXIS; i++) previous_speed[i] = 0.0;
   previous_nominal_speed = 0.0;
+  #if ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
+    bed_level_matrix.set_to_identity();
+  #endif
 }
 
 /**

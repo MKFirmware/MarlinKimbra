@@ -384,30 +384,24 @@ void plan_arc(float target[NUM_AXIS], float* offset, uint8_t clockwise);
 static void report_current_position();
 
 // PRINT XYZ for DEBUG
-void print_xyz(const char* suffix, const float x, const float y, const float z) {
-  ECHO_PS(suffix);
+void print_xyz(const char* prefix, const char* suffix, const float x, const float y, const float z) {
+  ECHO_PS(prefix);
   ECHO_MV("(", x);
   ECHO_MV(", ", y);
   ECHO_MV(", ", z);
-  ECHO_EM(")");
+  ECHO_M(")");
+  ECHO_PS(suffix);
 }
-void print_xyz(const char* suffix, const float xyz[]) {
-  if (xyz == current_position) {
-    ECHO_PS(suffix);
-    ECHO_M(" > ");
-    report_current_position();
-  }
-  else {
-    print_xyz(suffix, xyz[X_AXIS], xyz[Y_AXIS], xyz[Z_AXIS]);
-  }
+void print_xyz(const char* prefix, const char* suffix, const float xyz[]) {
+  print_xyz(prefix, suffix, xyz[X_AXIS], xyz[Y_AXIS], xyz[Z_AXIS]);
 }
 #if ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
-  void print_xyz(const char* suffix, const vector_3 &xyz) {
-    print_xyz(suffix, xyz.x, xyz.y, xyz.z);
+  void print_xyz(const char* prefix, const char* suffix, const vector_3 &xyz) {
+    print_xyz(prefix, suffix, xyz.x, xyz.y, xyz.z);
   }
 #endif
-#define DEBUG_INFO_POS(PREFIX,VAR) do{ ECHO_SM(INFO, PREFIX); print_xyz(" > " STRINGIFY(VAR), VAR); }while(0)
-#define DEBUG_POS(PREFIX,VAR) do{ ECHO_M(PREFIX); print_xyz(" > " STRINGIFY(VAR), VAR); }while(0)
+#define DEBUG_INFO_POS(SUFFIX,VAR)  do{ ECHO_S(INFO); print_xyz(PSTR(STRINGIFY(VAR) "="), PSTR(" : " SUFFIX "\n"), VAR); } while(0)
+#define DEBUG_POS(SUFFIX,VAR)       do{ print_xyz(PSTR(STRINGIFY(VAR) "="), PSTR(" : " SUFFIX "\n"), VAR); } while(0)
 
 #if ENABLED(M100_FREE_MEMORY_WATCHER)
   // top_of_stack() returns the location of a variable on its stack frame.  The value returned is above
@@ -1408,14 +1402,13 @@ static void set_axis_is_at_home(AxisEnum axis) {
   #if HAS(BED_PROBE) && (Z_HOME_DIR < 0)
     if (axis == Z_AXIS) {
       current_position[Z_AXIS] -= zprobe_zoffset;
-      if (DEBUGGING(INFO))
-        ECHO_LMV(INFO, "> zprobe_zoffset==", zprobe_zoffset);
+      if (DEBUGGING(INFO)) ECHO_LMV(INFO, "zprobe_zoffset==", zprobe_zoffset);
     }
   #endif
 
   if (DEBUGGING(INFO)) {
-    ECHO_SMV(INFO, "home_offset[axis]==", home_offset[axis]);
-    DEBUG_POS("", current_position);
+    ECHO_LMV(INFO, "home_offset[axis]==", home_offset[axis]);
+    DEBUG_INFO_POS("", current_position);
     ECHO_SMV(INFO, "<<< set_axis_is_at_home(", axis);
     ECHO_EM(")");
   }
@@ -1567,7 +1560,8 @@ static bool axis_unhomed_error(const bool x, const bool y, const bool z) {
 
     if (DEBUGGING(INFO)) {
       ECHO_S(INFO);
-      print_xyz("do_blocking_move_to", x, y, z);
+      print_xyz(PSTR("do_blocking_move_to"), "", x, y, z);
+      ECHO_E;
     }
 
     #if MECH(DELTA)
@@ -1617,12 +1611,6 @@ static bool axis_unhomed_error(const bool x, const bool y, const bool z) {
 
   /**
    * Raise Z to a minimum height to make room for a servo to move
-   *
-   * zprobe_zoffset: Negative of the Z height where the probe engages
-   *        z_raise: The probing raise distance
-   *
-   * The zprobe_zoffset is negative for a switch below the nozzle, so
-   * multiply by Z HOME DIR (-1) to move enough away from the bed.
    */
   void do_probe_raise(float z_raise) {
     if (DEBUGGING(INFO)) {
@@ -2000,8 +1988,8 @@ static void homeaxis(AxisEnum axis) {
       sync_plan_position();
       destination[axis] = endstop_adj[axis];
       if (DEBUGGING(INFO)) {
-        ECHO_SMV(INFO, "endstop_adj = ", endstop_adj[axis]);
-        DEBUG_POS("", destination);
+        ECHO_LMV(INFO, "endstop_adj = ", endstop_adj[axis]);
+        DEBUG_INFO_POS("", destination);
       }
       line_to_destination();
       st_synchronize();
@@ -2271,8 +2259,8 @@ AvoidLaserFocus:
       if (DEBUGGING(INFO)) {
         ECHO_SMV(INFO, ">>> probe_bed(", x);
         ECHO_MV(", ", y);
-        ECHO_M(")");
-        DEBUG_POS("", current_position);
+        ECHO_EM(")");
+        DEBUG_INFO_POS("", current_position);
       }
 
       float old_feedrate = feedrate;
@@ -3620,11 +3608,11 @@ inline void gcode_G0_G1(bool lfire) {
 
     #if ENABLED(LASERBEAM) && ENABLED(LASER_FIRE_G1)
       if (lfire) {
-        if (code_seen('S') && IsRunning()) laser.intensity = (float) code_value();
-        if (code_seen('L') && IsRunning()) laser.duration = (unsigned long) labs(code_value());
-        if (code_seen('P') && IsRunning()) laser.ppm = (float) code_value();
-        if (code_seen('D') && IsRunning()) laser.diagnostics = (bool) code_value();
-        if (code_seen('B') && IsRunning()) laser_set_mode((int) code_value());
+        if (code_seen('S') && IsRunning()) laser.intensity = code_value_float();
+        if (code_seen('L') && IsRunning()) laser.duration = code_value_ulong();
+        if (code_seen('P') && IsRunning()) laser.ppm = code_value_float();
+        if (code_seen('D') && IsRunning()) laser.diagnostics = code_value_bool();
+        if (code_seen('B') && IsRunning()) laser_set_mode(code_value_int());
 
         laser.status = LASER_ON;
         laser.fired = LASER_FIRE_G1;
@@ -4375,8 +4363,8 @@ inline void gcode_G28() {
    */
   inline void gcode_G29() {
     if (DEBUGGING(INFO)) {
-      ECHO_SM(INFO, ">>> gcode_G29");
-      DEBUG_POS("", current_position);
+      ECHO_LM(INFO, ">>> gcode_G29");
+      DEBUG_INFO_POS("", current_position);
     }
 
     // Don't allow auto-levelling without homing first
@@ -4389,7 +4377,6 @@ inline void gcode_G28() {
     }
 
     bool dryrun = code_seen('D');
-
     bool stow_probe_after_each = code_seen('E');
 
     #if ENABLED(AUTO_BED_LEVELING_GRID)
@@ -4539,7 +4526,7 @@ inline void gcode_G28() {
 
     #else // !AUTO_BED_LEVELING_GRID
 
-      if (DEBUGGING(INFO)) ECHO_LM(INFO, "> 3-point Leveling");
+      if (DEBUGGING(INFO)) ECHO_LM(INFO, "3-point Leveling");
 
       // Probe at 3 arbitrary points
       float z_at_pt_1 = probe_pt( ABL_PROBE_PT_1_X + home_offset[X_AXIS],
@@ -4650,7 +4637,7 @@ inline void gcode_G28() {
     #endif // !AUTO_BED_LEVELING_GRID
 
     if (verbose_level > 0)
-      planner.bed_level_matrix.debug(" \n\nBed Level Correction Matrix:");
+      planner.bed_level_matrix.debug("\n\nBed Level Correction Matrix:");
 
     if (!dryrun) {
       /**
@@ -4664,14 +4651,14 @@ inline void gcode_G28() {
             stepper_z = st_get_axis_position_mm(Z_AXIS);  // get the real Z (since planner.adjusted_position is now correcting the plane)
 
       if (DEBUGGING(INFO)) {
-        ECHO_SMV(INFO, "> BEFORE apply_rotation_xyz > stepper_z  = ", stepper_z);
+        ECHO_SMV(INFO, "BEFORE apply_rotation_xyz > stepper_z  = ", stepper_z);
         ECHO_EMV(" ... z_tmp = ", z_tmp);
       }
 
       // Apply the correction sending the Z probe offset
       apply_rotation_xyz(planner.bed_level_matrix, x_tmp, y_tmp, z_tmp);
 
-      if (DEBUGGING(INFO)) ECHO_LMV(INFO, "> AFTER apply_rotation_xyz > z_tmp  = ", z_tmp);
+      if (DEBUGGING(INFO)) ECHO_LMV(INFO, "AFTER apply_rotation_xyz > z_tmp  = ", z_tmp);
 
       // Adjust the current Z and send it to the planner.
       current_position[Z_AXIS] += z_tmp - stepper_z;
@@ -7967,7 +7954,7 @@ inline void gcode_M503() {
     // Wait for the rest 
     // st_synchronize();
     if (code_seen('S') && IsRunning()) {
-      laser.intensity = (float) code_value();
+      laser.intensity = code_value_float();
       laser.rasterlaserpower =  laser.intensity;
     }
 

@@ -437,11 +437,8 @@ uint8_t lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW; // Set when the LCD needs to 
     if (currentScreen != screen) {
       currentScreen = screen;
       lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW;
-      encoderTopLine = 0;
-      #if ENABLED(NEWPANEL)
-        encoderPosition = encoder;
-        if (feedback) lcd_quick_feedback();
-      #endif
+      encoderPosition = encoder;
+      if (feedback) lcd_quick_feedback();
       if (screen == lcd_status_screen) {
         defer_return_to_status = false;
         screen_history_depth = 0;
@@ -458,9 +455,7 @@ uint8_t lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW; // Set when the LCD needs to 
   inline void lcd_save_previous_menu() {
     if (screen_history_depth < COUNT(screen_history)) {
       screen_history[screen_history_depth].menu_function = currentScreen;
-      #if ENABLED(ULTIPANEL)
-        screen_history[screen_history_depth].encoder_position = encoderPosition;
-      #endif
+      screen_history[screen_history_depth].encoder_position = encoderPosition;
       ++screen_history_depth;
     }
   }
@@ -468,10 +463,10 @@ uint8_t lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW; // Set when the LCD needs to 
   static void lcd_goto_previous_menu(bool feedback=false) {
     if (screen_history_depth > 0) {
       --screen_history_depth;
-      lcd_goto_screen(screen_history[screen_history_depth].menu_function, feedback
-        #if ENABLED(ULTIPANEL)
-          , screen_history[screen_history_depth].encoder_position
-        #endif
+      lcd_goto_screen(
+        screen_history[screen_history_depth].menu_function,
+        feedback,
+        screen_history[screen_history_depth].encoder_position
       );
     }
     else
@@ -1497,12 +1492,14 @@ void kill_screen(const char* lcd_msg) {
 
   #endif // DELTA
 
+  float move_menu_scale;
+
   /**
    * If the most recent manual move hasn't been fed to the planner yet,
    * and the planner can accept one, send immediately
    */
   inline void manage_manual_move() {
-    if (manual_move_axis != (int8_t)NO_AXIS && millis() >= manual_move_start_time && !planner.is_full()) {
+    if (manual_move_axis != (int8_t)NO_AXIS && ELAPSED(millis(), manual_move_start_time) && !planner.is_full()) {
       #if MECH(DELTA)
         calculate_delta(current_position);
         planner.buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], current_position[E_AXIS], manual_feedrate[manual_move_axis]/60, active_extruder, active_driver);
@@ -1517,8 +1514,15 @@ void kill_screen(const char* lcd_msg) {
    * Set a flag that lcd_update() should start a move
    * to "current_position" after a short delay.
    */
-  inline void manual_move_to_current(AxisEnum axis) {
-    manual_move_start_time = millis() + 500UL; // 1/2 second delay
+  inline void manual_move_to_current(AxisEnum axis
+    #if EXTRUDERS > 1
+      , int8_t eindex = -1
+    #endif
+  ) {
+    #if EXTRUDERS > 1
+      if (axis == E_AXIS) manual_move_e_index = eindex >= 0 ? eindex : active_extruder;
+    #endif
+    manual_move_start_time = millis() + (move_menu_scale < 0.99 ? 0UL : 250UL); // delay for bigger moves
     manual_move_axis = (int8_t)axis;
   }
 
@@ -1527,8 +1531,6 @@ void kill_screen(const char* lcd_msg) {
    * "Prepare" > "Move Axis" submenu
    *
    */
-
-  float move_menu_scale;
 
   static void _lcd_move_xyz(const char* name, AxisEnum axis, float min, float max) {
     if (LCD_CLICKED) { lcd_goto_previous_menu(true); return; }
@@ -3226,8 +3228,9 @@ void lcd_reset_alert_level() { lcd_status_message_level = 0; }
       #endif
     #else
       GET_BUTTON_STATES(buttons);
-    #endif //!NEWPANEL
+    #endif // !NEWPANEL
 
+    // Manage encoder rotation
     #if ENABLED(INVERT_ROTARY_SWITCH)
       #define ENCODER_DIFF_CW  (encoderDiff += encoderDirection)
       #define ENCODER_DIFF_CCW (encoderDiff -= encoderDirection)
@@ -3237,7 +3240,6 @@ void lcd_reset_alert_level() { lcd_status_message_level = 0; }
     #endif
     #define ENCODER_SPIN(_E1, _E2) switch (lastEncoderBits) { case _E1: ENCODER_DIFF_CW; break; case _E2: ENCODER_DIFF_CCW; }
 
-    //manage encoder rotation
     uint8_t enc = 0;
     if (buttons & EN_A) enc |= B01;
     if (buttons & EN_B) enc |= B10;

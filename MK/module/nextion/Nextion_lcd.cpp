@@ -815,17 +815,17 @@
 
   #if ENABLED(NEXTION_GFX)
     void gfx_clear(float x, float y, float z) {
-      if ((NextionPage == 1) && (Printing || IS_SD_PRINTING))
+      if ((NextionPage == 1) && (print_job_counter.isRunning() || IS_SD_PRINTING))
         gfx.clear(x, y, z);
     }
 
     void gfx_cursor_to(float x, float y, float z) {
-      if ((NextionPage == 1) && (Printing || IS_SD_PRINTING))
+      if ((NextionPage == 1) && (print_job_counter.isRunning() || IS_SD_PRINTING))
         gfx.cursor_to(x, y, z);
     }
 
     void gfx_line_to(float x, float y, float z){
-      if ((NextionPage == 1) && (Printing || IS_SD_PRINTING))
+      if ((NextionPage == 1) && (print_job_counter.isRunning() || IS_SD_PRINTING))
         gfx.line_to(VC_TOOL, x, y, z);
     }
   #endif
