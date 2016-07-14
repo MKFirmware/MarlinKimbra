@@ -31,8 +31,8 @@
   struct printStatistics {
     uint16_t numberPrints;          // Number of prints
     uint16_t completePrints;        // Number of complete prints
-    uint32_t printTime;             // Total printing time
-    uint32_t printer_usage_seconds; // Longest print job
+    millis_t printTime;             // Total printing time
+    millis_t printer_usage_seconds; // Longest print job
     double printer_usage_filament;  // Filament usage
   };
 
@@ -58,7 +58,7 @@
        * @details Stores the timestamp of the last deltaDuration(), this is
        * required due to the updateInterval cycle.
        */
-      uint16_t lastDuration;
+      millis_t lastDuration;
 
     protected:
       /**
@@ -67,7 +67,7 @@
        * used internally for print statistics accounting is not intended to be a
        * user callable function.
        */
-      uint16_t deltaDuration();
+      millis_t deltaDuration();
 
     public:
 
