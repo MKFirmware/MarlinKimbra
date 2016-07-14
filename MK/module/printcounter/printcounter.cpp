@@ -115,8 +115,8 @@ void PrintCounter::tick() {
   millis_t now = millis();
 
   // Trying to get the amount of calculations down to the bare min
-  const static uint16_t i = this->updateInterval * 1000;
-  const static millis_t j = this->saveInterval * 1000;
+  const static uint16_t i = this->updateInterval * 1000UL;
+  const static millis_t j = this->saveInterval * 1000UL;
 
   if (now - update_before >= i) {
     this->data.printer_usage_seconds += this->updateInterval;
