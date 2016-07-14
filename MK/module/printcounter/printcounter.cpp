@@ -27,12 +27,12 @@ PrintCounter::PrintCounter(): super() {
   this->initStats();
 }
 
-uint16_t PrintCounter::deltaDuration() {
+millis_t PrintCounter::deltaDuration() {
   #if ENABLED(DEBUG_PRINTCOUNTER)
     PrintCounter::debug(PSTR("deltaDuration"));
   #endif
 
-  uint16_t tmp = this->lastDuration;
+  millis_t tmp = this->lastDuration;
   this->lastDuration = this->duration();
   return this->lastDuration - tmp;
 }
@@ -73,7 +73,8 @@ void PrintCounter::saveStats() {
 
 void PrintCounter::showStats() {
   char temp[30];
-  uint16_t day, hours, minutes, t;
+  uint16_t day, hours, minutes;
+  millis_t t;
 
   ECHO_MV("Print statistics: Total: ", this->data.numberPrints);
   ECHO_MV(", Finished: ", this->data.completePrints);
@@ -108,14 +109,14 @@ void PrintCounter::showStats() {
 
 void PrintCounter::tick() {
 
-  static uint32_t update_before = millis(),
+  static millis_t update_before = millis(),
                   config_last_update = millis();
 
-  uint32_t now = millis();
+  millis_t now = millis();
 
   // Trying to get the amount of calculations down to the bare min
   const static uint16_t i = this->updateInterval * 1000;
-  const static uint32_t j = this->saveInterval * 1000;
+  const static millis_t j = this->saveInterval * 1000;
 
   if (now - update_before >= i) {
     this->data.printer_usage_seconds += this->updateInterval;
