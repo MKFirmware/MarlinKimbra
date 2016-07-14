@@ -2291,16 +2291,17 @@ void kill_screen(const char* lcd_msg) {
     static void lcd_info_stats_menu() {
       if (LCD_CLICKED) { lcd_goto_previous_menu(true); return; }
 
-      uint16_t day, hours, minutes, kmeter, meter, centimeter, t;
+      uint16_t day, hours, minutes, kmeter, meter, centimeter;
+      millis_t t;
       char lifeTime[20];
       char Filamentlung[20];
-      char printTime[20];
+      char timeString[20];
 
       t       = print_job_counter.data.printer_usage_seconds / 60;
       day     = t / 60 / 24;
       hours   = (t / 60) % 24;
       minutes = t % 60;
-      sprintf(lifeTime, "%ud %uh %um", day, hours, minutes);
+      sprintf(timeString, "%ud %uh %um", day, hours, minutes);
 
       t       = print_job_counter.data.printTime / 60;
       day     = t / 60 / 24;
