@@ -40,9 +40,9 @@
   class Stopwatch {
     private:
       StopwatchState state;
-      uint16_t accumulator;
-      uint32_t startTimestamp;
-      uint32_t stopTimestamp;
+      millis_t accumulator;
+      millis_t startTimestamp;
+      millis_t stopTimestamp;
 
     public:
       /**
@@ -99,7 +99,7 @@
        * @details Returns the total number of seconds the timer has been running.
        * @return the delta since starting the stopwatch
        */
-      uint16_t duration();
+      millis_t duration();
 
       #if ENABLED(DEBUG_STOPWATCH)
 

@@ -463,10 +463,10 @@ void CardReader::printingHasFinished() {
   file.close();
   sdprinting = false;
   if (SD_FINISHED_STEPPERRELEASE) {
-    //finishAndDisableSteppers();
     enqueue_and_echo_commands_P(PSTR(SD_FINISHED_RELEASECOMMAND));
+    print_job_counter.stop();
+    enqueue_and_echo_commands_P(PSTR("M31"));
   }
-  autotempShutdown();
 }
 
 void CardReader::setroot(bool temporary /*=false*/) {

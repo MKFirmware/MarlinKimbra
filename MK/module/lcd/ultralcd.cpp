@@ -241,13 +241,14 @@ uint8_t lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW; // Set when the LCD needs to 
    *   _thisItemNr is the index of each MENU_ITEM or STATIC_ITEM
    */
   #if ENABLED(BTN_BACK) && BTN_BACK > 0
-    #define _START_SCREEN(CODE) \
+    #define _START_SCREEN(CODE, SKIP) \
       ENCODER_DIRECTION_MENUS(); \
       encoderRateMultiplierEnabled = false; \
       if (encoderPosition > 0x8000) encoderPosition = 0; \
       int8_t encoderLine = encoderPosition / ENCODER_STEPS_PER_MENU_ITEM; \
       NOMORE(encoderTopLine, encoderLine); \
       int8_t _menuLineNr = encoderTopLine, _thisItemNr; \
+      bool _skipStatic = SKIP; \
       CODE; \
       bool wasBackClicked = LCD_BACK_CLICKED; \
       if (wasBackClicked) { \
@@ -257,26 +258,27 @@ uint8_t lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW; // Set when the LCD needs to 
       for (int8_t _lcdLineNr = 0; _lcdLineNr < LCD_HEIGHT; _lcdLineNr++, _menuLineNr++) { \
         _thisItemNr = 0;
   #else
-    #define _START_SCREEN(CODE) \
+    #define _START_SCREEN(CODE, SKIP) \
       ENCODER_DIRECTION_MENUS(); \
       encoderRateMultiplierEnabled = false; \
       if (encoderPosition > 0x8000) encoderPosition = 0; \
       int8_t encoderLine = encoderPosition / ENCODER_STEPS_PER_MENU_ITEM; \
       NOMORE(encoderTopLine, encoderLine); \
       int8_t _menuLineNr = encoderTopLine, _thisItemNr; \
+      bool _skipStatic = SKIP; \
       CODE; \
       for (int8_t _lcdLineNr = 0; _lcdLineNr < LCD_HEIGHT; _lcdLineNr++, _menuLineNr++) { \
       _thisItemNr = 0;
   #endif
 
-  #define START_SCREEN() _START_SCREEN(NOOP)
+  #define START_SCREEN() _START_SCREEN(NOOP, false)
 
   /**
    * START_MENU generates the init code for a menu function
    *
    *   wasClicked indicates the controller was clicked
    */
-  #define START_MENU() _START_SCREEN(bool wasClicked = LCD_CLICKED)
+  #define START_MENU() _START_SCREEN(bool wasClicked = LCD_CLICKED, true)
 
   /**
    * MENU_ITEM generates draw & handler code for a menu item, potentially calling:
@@ -314,6 +316,7 @@ uint8_t lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW; // Set when the LCD needs to 
     _thisItemNr++
 
   #define MENU_ITEM(TYPE, LABEL, ARGS...) do { \
+      _skipStatic = false; \
       _MENU_ITEM_PART_1(TYPE, LABEL, ## ARGS); \
       _MENU_ITEM_PART_2(TYPE, ## ARGS); \
     } while(0)
@@ -321,7 +324,7 @@ uint8_t lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW; // Set when the LCD needs to 
   // Used to print static text with no visible cursor.
   #define STATIC_ITEM(LABEL, ARGS...) \
     if (_menuLineNr == _thisItemNr) { \
-      if (encoderLine == _thisItemNr && _thisItemNr < LCD_HEIGHT - 1) { \
+      if (_skipStatic && encoderLine <= _thisItemNr) { \
         encoderPosition += ENCODER_STEPS_PER_MENU_ITEM; \
         lcdDrawUpdate = LCDVIEW_CALL_REDRAW_NEXT; \
       } \
@@ -2291,10 +2294,11 @@ void kill_screen(const char* lcd_msg) {
     static void lcd_info_stats_menu() {
       if (LCD_CLICKED) { lcd_goto_previous_menu(true); return; }
 
-      uint16_t day, hours, minutes, kmeter, meter, centimeter, t;
+      uint16_t day, hours, minutes, kmeter, meter, centimeter;
+      millis_t t;
       char lifeTime[20];
-      char Filamentlung[20];
       char printTime[20];
+      char Filamentlung[20];
 
       t       = print_job_counter.data.printer_usage_seconds / 60;
       day     = t / 60 / 24;
@@ -2308,9 +2312,9 @@ void kill_screen(const char* lcd_msg) {
       minutes = t % 60;
       sprintf(printTime, "%ud %uh %um", day, hours, minutes);
 
-      kmeter      = (long)print_job_counter.data.printer_usage_filament / 1000 / 1000;
-      meter       = ((long)print_job_counter.data.printer_usage_filament / 1000) % 1000;
-      centimeter  = ((long)print_job_counter.data.printer_usage_filament / 10) % 100;
+      kmeter      = (long)print_job_counter.data.filamentUsed / 1000 / 1000;
+      meter       = ((long)print_job_counter.data.filamentUsed / 1000) % 1000;
+      centimeter  = ((long)print_job_counter.data.filamentUsed / 10) % 100;
       sprintf(Filamentlung, "%uKm %um %ucm", kmeter, meter, centimeter);
 
       #if HAS(POWER_CONSUMPTION_SENSOR)

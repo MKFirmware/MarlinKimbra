@@ -27,12 +27,12 @@ PrintCounter::PrintCounter(): super() {
   this->initStats();
 }
 
-uint16_t PrintCounter::deltaDuration() {
+millis_t PrintCounter::deltaDuration() {
   #if ENABLED(DEBUG_PRINTCOUNTER)
     PrintCounter::debug(PSTR("deltaDuration"));
   #endif
 
-  uint16_t tmp = this->lastDuration;
+  millis_t tmp = this->lastDuration;
   this->lastDuration = this->duration();
   return this->lastDuration - tmp;
 }
@@ -73,7 +73,8 @@ void PrintCounter::saveStats() {
 
 void PrintCounter::showStats() {
   char temp[30];
-  uint16_t day, hours, minutes, t;
+  uint16_t day, hours, minutes;
+  millis_t t;
 
   ECHO_MV("Print statistics: Total: ", this->data.numberPrints);
   ECHO_MV(", Finished: ", this->data.completePrints);
@@ -97,10 +98,10 @@ void PrintCounter::showStats() {
   sprintf_P(temp, PSTR("  %u " MSG_END_DAY " %u " MSG_END_HOUR " %u " MSG_END_MINUTE), day, hours, minutes);
   ECHO_EMT("Power on time: ", temp);
 
-  uint16_t  kmeter = (long)this->data.printer_usage_filament / 1000 / 1000,
-            meter = ((long)this->data.printer_usage_filament / 1000) % 1000,
-            centimeter = ((long)this->data.printer_usage_filament / 10) % 100,
-            millimeter = ((long)this->data.printer_usage_filament) % 10;
+  uint16_t  kmeter = (long)this->data.filamentUsed / 1000 / 1000,
+            meter = ((long)this->data.filamentUsed / 1000) % 1000,
+            centimeter = ((long)this->data.filamentUsed / 10) % 100,
+            millimeter = ((long)this->data.filamentUsed) % 10;
   sprintf_P(temp, PSTR("  %uKm %um %ucm %umm"), kmeter, meter, centimeter, millimeter);
 
   ECHO_EMT("Filament printed: ", temp);
@@ -108,14 +109,14 @@ void PrintCounter::showStats() {
 
 void PrintCounter::tick() {
 
-  static uint32_t update_before = millis(),
+  static millis_t update_before = millis(),
                   config_last_update = millis();
 
-  uint32_t now = millis();
+  millis_t now = millis();
 
   // Trying to get the amount of calculations down to the bare min
-  const static uint16_t i = this->updateInterval * 1000;
-  const static uint32_t j = this->saveInterval * 1000;
+  const static uint16_t i = this->updateInterval * 1000UL;
+  const static millis_t j = this->saveInterval * 1000UL;
 
   if (now - update_before >= i) {
     this->data.printer_usage_seconds += this->updateInterval;
