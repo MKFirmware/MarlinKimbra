@@ -190,6 +190,7 @@
 #define MSG_END_DAY                         "days"
 #define MSG_END_HOUR                        "hours"
 #define MSG_END_MINUTE                      "minutes"
+#define MSG_PRINT_TIME                      "Print time "
 
 #define MSG_ENDSTOPS_HIT                    "endstops hit: "
 #define MSG_BABYSTEPPING                    "Babystepping"

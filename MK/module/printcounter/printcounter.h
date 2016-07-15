@@ -31,9 +31,9 @@
   struct printStatistics {
     uint16_t numberPrints;          // Number of prints
     uint16_t completePrints;        // Number of complete prints
-    millis_t printTime;             // Total printing time
-    millis_t printer_usage_seconds; // Longest print job
-    double printer_usage_filament;  // Filament usage
+    millis_t printTime;             // Accumulated printing time
+    millis_t printer_usage_seconds; // Longest successfull print job
+    double filamentUsed;            // Accumulated filament consumed in mm
   };
 
   class PrintCounter: public Stopwatch {

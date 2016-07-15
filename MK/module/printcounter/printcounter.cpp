@@ -98,10 +98,10 @@ void PrintCounter::showStats() {
   sprintf_P(temp, PSTR("  %u " MSG_END_DAY " %u " MSG_END_HOUR " %u " MSG_END_MINUTE), day, hours, minutes);
   ECHO_EMT("Power on time: ", temp);
 
-  uint16_t  kmeter = (long)this->data.printer_usage_filament / 1000 / 1000,
-            meter = ((long)this->data.printer_usage_filament / 1000) % 1000,
-            centimeter = ((long)this->data.printer_usage_filament / 10) % 100,
-            millimeter = ((long)this->data.printer_usage_filament) % 10;
+  uint16_t  kmeter = (long)this->data.filamentUsed / 1000 / 1000,
+            meter = ((long)this->data.filamentUsed / 1000) % 1000,
+            centimeter = ((long)this->data.filamentUsed / 10) % 100,
+            millimeter = ((long)this->data.filamentUsed) % 10;
   sprintf_P(temp, PSTR("  %uKm %um %ucm %umm"), kmeter, meter, centimeter, millimeter);
 
   ECHO_EMT("Filament printed: ", temp);

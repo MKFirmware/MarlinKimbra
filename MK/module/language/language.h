@@ -219,7 +219,6 @@
 #define SERIAL_ENDSTOP_PROBE                    " PROBE="
 
 // Debug
-#define SERIAL_DEBUG_PREFIX                     "DEBUG:"
 #define SERIAL_DEBUG_OFF                        "off"
 #define SERIAL_DEBUG_ECHO                       "ECHO"
 #define SERIAL_DEBUG_INFO                       "INFO"

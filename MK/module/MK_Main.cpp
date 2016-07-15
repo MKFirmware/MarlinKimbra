@@ -1019,13 +1019,6 @@ inline void get_serial_commands() {
       ) {
         if (card_eof) {
           ECHO_LNPGM(SERIAL_FILE_PRINTED);
-          print_job_counter.stop();
-          char time[30];
-          millis_t t = print_job_counter.duration();
-          int hours = t / 3600, minutes = (t / 60) % 60;
-          sprintf_P(time, PSTR("%i " MSG_END_HOUR " %i " MSG_END_MINUTE), hours, minutes);
-          ECHO_LT(DB, time);
-          lcd_setstatus(time, true);
           card.printingHasFinished();
           card.checkautostart(true);
         }
@@ -1313,6 +1306,15 @@ static void update_software_endstops(AxisEnum axis) {
       sw_endstop_max[axis] = base_max_pos(axis) + offs;
     #endif
   }
+
+  if (DEBUGGING(INFO)) {
+    ECHO_SMV(INFO, "For ", axis_codes[axis]);
+    ECHO_MV(" axis:\n home_offset = ", home_offset[axis]);
+    ECHO_MV("\n position_shift = ", position_shift[axis]);
+    ECHO_MV("\n sw_endstop_min = ", sw_endstop_min[axis]);
+    ECHO_MV("\n sw_endstop_max = ", sw_endstop_max[axis]);
+    ECHO_E;
+  }
 }
 
 /**
@@ -1402,12 +1404,13 @@ static void set_axis_is_at_home(AxisEnum axis) {
   #if HAS(BED_PROBE) && (Z_HOME_DIR < 0)
     if (axis == Z_AXIS) {
       current_position[Z_AXIS] -= zprobe_zoffset;
-      if (DEBUGGING(INFO)) ECHO_LMV(INFO, "zprobe_zoffset==", zprobe_zoffset);
+      if (DEBUGGING(INFO)) ECHO_LMV(INFO, "zprobe_zoffset = ", zprobe_zoffset);
     }
   #endif
 
   if (DEBUGGING(INFO)) {
-    ECHO_LMV(INFO, "home_offset[axis]==", home_offset[axis]);
+    ECHO_SMV(INFO, "home_offset[", axis_codes[axis]);
+    ECHO_EMV("] = ", home_offset[axis]);
     DEBUG_INFO_POS("", current_position);
     ECHO_SMV(INFO, "<<< set_axis_is_at_home(", axis);
     ECHO_EM(")");
@@ -1523,92 +1526,91 @@ static bool axis_unhomed_error(const bool x, const bool y, const bool z) {
   return false;
 }
 
-#if HAS(BED_PROBE)
-
-  // TRIGGERED_WHEN_STOWED_TEST can easily be extended to servo probes, ... if needed.
-  #if ENABLED(PROBE_IS_TRIGGERED_WHEN_STOWED_TEST)
-    #if HAS(Z_PROBE_PIN)
-      #define _TRIGGERED_WHEN_STOWED_TEST (READ(Z_PROBE_PIN) != Z_PROBE_ENDSTOP_INVERTING)
-    #else
-      #define _TRIGGERED_WHEN_STOWED_TEST (READ(Z_MIN_PIN) != Z_MIN_ENDSTOP_INVERTING)
-    #endif
-  #endif
-
-  #define DEPLOY_PROBE() set_probe_deployed( true )
-  #define STOW_PROBE() set_probe_deployed( false )
-
-  #if MECH(DELTA)
-    /**
-     * Calculate delta, start a line, and set current_position to destination
-     */
-    void prepare_move_to_destination_raw() {
-      if (DEBUGGING(INFO)) DEBUG_INFO_POS("prepare_move_to_destination_raw", destination);
-
-      refresh_cmd_timeout();
-      calculate_delta(destination);
-      planner.buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], destination[E_AXIS], feedrate * feedrate_multiplier / 60 / 100.0, active_extruder, active_driver);
-      set_current_to_destination();
-    }
-  #endif
-
+#if MECH(DELTA)
   /**
-   *  Plan a move to (X, Y, Z) and set the current_position
-   *  The final current_position may not be the one that was requested
+   * Calculate delta, start a line, and set current_position to destination
    */
-  static void do_blocking_move_to(float x, float y, float z, float feed_rate = 0.0) {
-    float old_feedrate = feedrate;
+  void prepare_move_to_destination_raw() {
+    if (DEBUGGING(INFO)) DEBUG_INFO_POS("prepare_move_to_destination_raw", destination);
 
-    if (DEBUGGING(INFO)) {
-      ECHO_S(INFO);
-      print_xyz(PSTR("do_blocking_move_to"), "", x, y, z);
-      ECHO_E;
-    }
+    refresh_cmd_timeout();
+    calculate_delta(destination);
+    planner.buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], destination[E_AXIS], feedrate * feedrate_multiplier / 60 / 100.0, active_extruder, active_driver);
+    set_current_to_destination();
+  }
+#endif
 
-    #if MECH(DELTA)
+/**
+ *  Plan a move to (X, Y, Z) and set the current_position
+ *  The final current_position may not be the one that was requested
+ */
+static void do_blocking_move_to(float x, float y, float z, float feed_rate = 0.0) {
+  float old_feedrate = feedrate;
 
-      feedrate = (feed_rate != 0.0) ? feed_rate : XY_PROBE_FEEDRATE;
-
-      destination[X_AXIS] = x;
-      destination[Y_AXIS] = y;
-      destination[Z_AXIS] = z;
-
-      if (x == current_position[X_AXIS] && y == current_position[Y_AXIS])
-        prepare_move_to_destination_raw(); // this will also set_current_to_destination
-      else
-        prepare_move_to_destination();     // this will also set_current_to_destination
-
-    #else
-
-      // If Z needs to raise, do it before moving XY
-      if (current_position[Z_AXIS] < z) {
-        feedrate = (feed_rate != 0.0) ? feed_rate : homing_feedrate[Z_AXIS];
-        current_position[Z_AXIS] = z;
-        line_to_current_position();
-      }
-
-      feedrate = (feed_rate != 0.0) ? feed_rate : XY_PROBE_FEEDRATE;
-      current_position[X_AXIS] = x;
-      current_position[Y_AXIS] = y;
-      line_to_current_position();
-
-      // If Z needs to lower, do it after moving XY
-      if (current_position[Z_AXIS] > z) {
-        feedrate = (feed_rate != 0.0) ? feed_rate : homing_feedrate[Z_AXIS];
-        current_position[Z_AXIS] = z;
-        line_to_current_position();
-      }
-
-    #endif
-
-    st_synchronize();
-
-    feedrate = old_feedrate;
+  if (DEBUGGING(INFO)) {
+    ECHO_S(INFO);
+    print_xyz(PSTR("do_blocking_move_to"), "", x, y, z);
+    ECHO_E;
   }
 
-  inline void do_blocking_move_to_xy(float x, float y, float feed_rate = 0.0) { do_blocking_move_to(x, y, current_position[Z_AXIS], feed_rate); }
-  inline void do_blocking_move_to_x(float x, float feed_rate = 0.0) { do_blocking_move_to(x, current_position[Y_AXIS], current_position[Z_AXIS], feed_rate); }
-  inline void do_blocking_move_to_z(float z, float feed_rate = 0.0) { do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], z, feed_rate); }
+  #if MECH(DELTA)
 
+    feedrate = (feed_rate != 0.0) ? feed_rate : XY_PROBE_FEEDRATE;
+
+    destination[X_AXIS] = x;
+    destination[Y_AXIS] = y;
+    destination[Z_AXIS] = z;
+
+    if (x == current_position[X_AXIS] && y == current_position[Y_AXIS])
+      prepare_move_to_destination_raw(); // this will also set_current_to_destination
+    else
+      prepare_move_to_destination();     // this will also set_current_to_destination
+
+  #else
+
+    // If Z needs to raise, do it before moving XY
+    if (current_position[Z_AXIS] < z) {
+      feedrate = (feed_rate != 0.0) ? feed_rate : homing_feedrate[Z_AXIS];
+      current_position[Z_AXIS] = z;
+      line_to_current_position();
+    }
+
+    feedrate = (feed_rate != 0.0) ? feed_rate : XY_PROBE_FEEDRATE;
+    current_position[X_AXIS] = x;
+    current_position[Y_AXIS] = y;
+    line_to_current_position();
+
+    // If Z needs to lower, do it after moving XY
+    if (current_position[Z_AXIS] > z) {
+      feedrate = (feed_rate != 0.0) ? feed_rate : homing_feedrate[Z_AXIS];
+      current_position[Z_AXIS] = z;
+      line_to_current_position();
+    }
+
+  #endif
+
+  st_synchronize();
+
+  feedrate = old_feedrate;
+}
+
+inline void do_blocking_move_to_x(float x, float feed_rate = 0.0) {
+  do_blocking_move_to(x, current_position[Y_AXIS], current_position[Z_AXIS], feed_rate);
+}
+
+inline void do_blocking_move_to_y(float y) {
+  do_blocking_move_to(current_position[X_AXIS], y, current_position[Z_AXIS]);
+}
+
+inline void do_blocking_move_to_z(float z, float feed_rate = 0.0) {
+  do_blocking_move_to(current_position[X_AXIS], current_position[Y_AXIS], z, feed_rate);
+}
+
+inline void do_blocking_move_to_xy(float x, float y, float feed_rate = 0.0) {
+  do_blocking_move_to(x, y, current_position[Z_AXIS], feed_rate);
+}
+
+#if HAS(BED_PROBE)
   /**
    * Raise Z to a minimum height to make room for a servo to move
    */
@@ -1676,6 +1678,18 @@ static bool axis_unhomed_error(const bool x, const bool y, const bool z) {
       do_blocking_move_to(z_probe_retract_start_location[X_AXIS], z_probe_retract_start_location[Y_AXIS], z_probe_retract_start_location[Z_AXIS], homing_feedrate[Z_AXIS]);
     }
   #endif
+
+  // TRIGGERED_WHEN_STOWED_TEST can easily be extended to servo probes, ... if needed.
+  #if ENABLED(PROBE_IS_TRIGGERED_WHEN_STOWED_TEST)
+    #if HAS(Z_PROBE_PIN)
+      #define _TRIGGERED_WHEN_STOWED_TEST (READ(Z_PROBE_PIN) != Z_PROBE_ENDSTOP_INVERTING)
+    #else
+      #define _TRIGGERED_WHEN_STOWED_TEST (READ(Z_MIN_PIN) != Z_MIN_ENDSTOP_INVERTING)
+    #endif
+  #endif
+
+  #define DEPLOY_PROBE() set_probe_deployed( true )
+  #define STOW_PROBE() set_probe_deployed( false )
 
   // returns false for ok and true for failure
   static bool set_probe_deployed(bool deploy) {
@@ -3531,7 +3545,7 @@ void gcode_get_destination() {
     destination[E_AXIS] = (code_value_axis_units(E_AXIS) * density_multiplier[previous_extruder] / 100) + current_position[E_AXIS];
 
   if(!DEBUGGING(DRYRUN))
-    print_job_counter.data.printer_usage_filament += (destination[E_AXIS] - current_position[E_AXIS]);
+    print_job_counter.data.filamentUsed += (destination[E_AXIS] - current_position[E_AXIS]);
 
   #if ENABLED(RFID_MODULE)
     RFID522.RfidData[active_extruder].data.lenght -= (destination[E_AXIS] - current_position[E_AXIS]);
@@ -5291,18 +5305,30 @@ inline void gcode_M17() {
     }
   }
 
-  /**
-   * M31: Get the time since the start of SD Print (or last M109)
-   */
-  inline void gcode_M31() {
-    millis_t t = print_job_counter.duration();
-    int min = t / 60, sec = t % 60;
-    char time[30];
-    sprintf_P(time, PSTR("%i min, %i sec"), min, sec);
-    ECHO_LT(DB, time);
-    lcd_setstatus(time);
-    autotempShutdown();
-  }
+#endif // SDSUPPORT
+
+/**
+ * M31: Get the time since the start of SD Print (or last M109)
+ */
+inline void gcode_M31() {
+  millis_t t = print_job_counter.duration();
+  int d = int(t / 60 / 60 / 24),
+      h = int(t / 60 / 60) % 60,
+      m = int(t / 60) % 60,
+      s = int(t % 60);
+  char time[18];                                          // 123456789012345678
+  if (d)
+    sprintf_P(time, PSTR("%id %ih %im %is"), d, h, m, s); // 99d 23h 59m 59s
+  else
+    sprintf_P(time, PSTR("%ih %im %is"), h, m, s);        // 23h 59m 59s
+
+  lcd_setstatus(time);
+
+  ECHO_LMT(DB, MSG_PRINT_TIME, time);
+  autotempShutdown();
+}
+
+#if ENABLED(SDSUPPORT)
 
   /**
    * M32: Make Directory
@@ -5362,7 +5388,8 @@ inline void gcode_M17() {
       UploadNewFirmware();
     }
   #endif
-#endif
+
+#endif // SDSUPPORT
 
 /**
  * M42: Change pin status via GCode
@@ -6127,7 +6154,7 @@ inline void gcode_M111() {
     str_debug_1, str_debug_2, str_debug_4, str_debug_8, str_debug_16, str_debug_32
   };
 
-  ECHO_SM(DB, SERIAL_DEBUG_PREFIX);
+  ECHO_S(DEB);
   if (mk_debug_flags) {
     uint8_t comma = 0;
     for (uint8_t i = 0; i < COUNT(debug_strings); i++) {
@@ -8758,8 +8785,12 @@ void process_next_command() {
           gcode_M29(); break;
         case 30: // M30 <filename> Delete File
           gcode_M30(); break;
-        case 31: // M31 take time since the start of the SD print or an M109 command
-          gcode_M31(); break;
+      #endif // SDSUPPORT
+
+      case 31: // M31 take time since the start of the SD print or an M109 command
+        gcode_M31(); break;
+
+      #if ENABLED(SDSUPPORT)
         case 32: // M32 - Make directory
           gcode_M32(); break;
         case 33: // M33 - Stop printing, close file and save restart.gcode
@@ -8770,7 +8801,7 @@ void process_next_command() {
           case 35: // M35 - Upload Firmware to Nextion from SD
             gcode_M35(); break;
         #endif
-      #endif //SDSUPPORT
+      #endif // SDSUPPORT
 
       case 42: // M42 -Change pin status via gcode
         gcode_M42(); break;

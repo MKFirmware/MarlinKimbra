@@ -1017,7 +1017,7 @@ void ConfigSD_StoreSettings() {
   char buff[CFG_SD_MAX_VALUE_LEN];
   ltoa(print_job_counter.data.completePrints, buff, 10);
   card.unparseKeyLine(cfgSD_KEY[SD_CFG_CPR], buff);
-  ltoa(print_job_counter.data.printer_usage_filament, buff, 10);
+  ltoa(print_job_counter.data.filamentUsed, buff, 10);
   card.unparseKeyLine(cfgSD_KEY[SD_CFG_FIL], buff);
   ltoa(print_job_counter.data.numberPrints, buff, 10);
   card.unparseKeyLine(cfgSD_KEY[SD_CFG_NPR], buff);
@@ -1062,8 +1062,8 @@ void ConfigSD_RetrieveSettings(bool addValue) {
       }
       break;
       case SD_CFG_FIL: {
-        if(addValue) print_job_counter.data.printer_usage_filament += (unsigned long)atol(value);
-        else print_job_counter.data.printer_usage_filament = (unsigned long)atol(value);
+        if(addValue) print_job_counter.data.filamentUsed += (unsigned long)atol(value);
+        else print_job_counter.data.filamentUsed = (unsigned long)atol(value);
       }
       break;
       case SD_CFG_NPR: {
