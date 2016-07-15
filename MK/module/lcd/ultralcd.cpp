@@ -120,8 +120,13 @@ uint8_t lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW; // Set when the LCD needs to 
 
   int8_t encoderDiff; // updated from interrupt context and added to encoderPosition every LCD update
 
-  int8_t manual_move_axis = (int8_t)NO_AXIS;
   millis_t manual_move_start_time = 0;
+  int8_t manual_move_axis = (int8_t)NO_AXIS;
+  #if EXTRUDERS > 1
+    int8_t manual_move_e_index = 0;
+  #else
+    #define manual_move_e_index 0
+  #endif
 
   bool encoderRateMultiplierEnabled;
   int32_t lastEncoderMovementMillis;
@@ -1505,9 +1510,9 @@ void kill_screen(const char* lcd_msg) {
     if (manual_move_axis != (int8_t)NO_AXIS && ELAPSED(millis(), manual_move_start_time) && !planner.is_full()) {
       #if MECH(DELTA)
         calculate_delta(current_position);
-        planner.buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], current_position[E_AXIS], manual_feedrate[manual_move_axis]/60, active_extruder, active_driver);
+        planner.buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], current_position[E_AXIS], manual_feedrate[manual_move_axis]/60, manual_move_e_index, active_driver);
       #else
-        planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], manual_feedrate[manual_move_axis]/60, active_extruder, active_driver);
+        planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], manual_feedrate[manual_move_axis]/60, manual_move_e_index, active_driver);
       #endif
       manual_move_axis = (int8_t)NO_AXIS;
     }
