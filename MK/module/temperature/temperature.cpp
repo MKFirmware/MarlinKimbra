@@ -719,12 +719,12 @@ void min_temp_error(uint8_t h) {
   _temp_error(h, PSTR(SERIAL_T_MINTEMP), PSTR(MSG_ERR_MINTEMP));
 }
 
-float get_pid_output(int e) {
+float get_pid_output(int h) {
   #if HOTENDS == 1
-    UNUSED(e);
+    UNUSED(h);
     #define _HOTEND_TEST  true
   #else
-    #define _HOTEND_TEST  e == active_extruder
+    #define _HOTEND_TEST  h == active_extruder
   #endif
 
   float pid_output;
