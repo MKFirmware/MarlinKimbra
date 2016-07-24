@@ -26,9 +26,6 @@
 #include <math.h>
 #include <stdint.h>
 
-typedef enum { LINEARUNIT_MM = 0, LINEARUNIT_INCH = 1 } LinearUnit;
-typedef enum { TEMPUNIT_C = 0, TEMPUNIT_K = 1, TEMPUNIT_F = 2 } TempUnit;
-
 void get_command();
 
 void idle(
@@ -48,7 +45,7 @@ void ok_to_send();
 
 #if MECH(DELTA)
   void set_delta_constants();
-  void calculate_delta(float cartesian[3]);
+  void inverse_kinematics(const float in_cartesian[3]);
   extern float delta[3];
   extern float endstop_adj[3];
   extern float diagrod_adj[3];
@@ -59,12 +56,13 @@ void ok_to_send();
 
 #if MECH(SCARA)
   extern float axis_scaling[3];  // Build size scaling
-  void calculate_delta(float cartesian[3]);
+  void inverse_kinematics(const float in_cartesian[3]);
   void calculate_SCARA_forward_Transform(float f_scara[3]);
 #endif
 
 void kill(const char *);
 void Stop();
+void quickstop_stepper();
 
 #if !MECH(DELTA) && !MECH(SCARA)
   void set_current_position_from_planner();
@@ -74,18 +72,6 @@ void Stop();
   void handle_filament_runout();
 #endif
 
-/**
- * Debug flags - with repetier
- */
-enum DebugFlags {
-  DEBUG_NONE          = 0,
-  DEBUG_ECHO          = _BV(0), ///< Echo commands in order as they are processed
-  DEBUG_INFO          = _BV(1), ///< Print messages for code that has debug output
-  DEBUG_ERRORS        = _BV(2), ///< Not implemented
-  DEBUG_DRYRUN        = _BV(3), ///< Ignore temperature setting
-  DEBUG_COMMUNICATION = _BV(4), ///< Not implemented
-  DEBUG_DEBUG         = _BV(5)  ///< Print Debug
-};
 extern uint8_t mk_debug_flags;
 
 void clamp_to_software_endstops(float target[3]);
@@ -111,8 +97,12 @@ extern void delay_ms(millis_t ms);
   void setPwmFrequency(uint8_t pin, uint8_t val);
 #endif
 
+/**
+ * Feedrate scaling and conversion
+ */
+extern int feedrate_percentage;
+
 extern bool axis_relative_modes[];
-extern int feedrate_multiplier;
 extern bool volumetric_enabled;
 extern int extruder_multiplier[EXTRUDERS];      // sets extrude multiply factor (in percent) for each extruder individually
 extern int density_multiplier[EXTRUDERS];       // sets density multiply factor (in percent) for each extruder individually
@@ -184,11 +174,6 @@ extern int fanSpeed;
 #endif
 
 #if ENABLED(FILAMENT_CHANGE_FEATURE)
-  enum FilamentChangeMenuResponse {
-    FILAMENT_CHANGE_RESPONSE_WAIT_FOR,
-    FILAMENT_CHANGE_RESPONSE_EXTRUDE_MORE,
-    FILAMENT_CHANGE_RESPONSE_RESUME_PRINT
-  };
   extern FilamentChangeMenuResponse filament_change_menu_response;
 #endif
 
@@ -264,6 +249,14 @@ extern uint8_t active_driver;
 #endif
 
 void calculate_volumetric_multipliers();
+
+/**
+ * Blocking movement and shorthand functions
+ */
+inline void do_blocking_move_to(float x, float y, float z, float fr_mm_m=0.0);
+inline void do_blocking_move_to_x(float x, float fr_mm_m=0.0);
+inline void do_blocking_move_to_z(float z, float fr_mm_m=0.0);
+inline void do_blocking_move_to_xy(float x, float y, float fr_mm_m=0.0);
 
 #if ENABLED(M100_FREE_MEMORY_WATCHER)
   extern void *__brkval;

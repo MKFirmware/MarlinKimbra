@@ -719,12 +719,12 @@ void min_temp_error(uint8_t h) {
   _temp_error(h, PSTR(SERIAL_T_MINTEMP), PSTR(MSG_ERR_MINTEMP));
 }
 
-float get_pid_output(int e) {
+float get_pid_output(int h) {
   #if HOTENDS == 1
-    UNUSED(e);
+    UNUSED(h);
     #define _HOTEND_TEST  true
   #else
-    #define _HOTEND_TEST  e == active_extruder
+    #define _HOTEND_TEST  h == active_extruder
   #endif
 
   float pid_output;
@@ -1939,31 +1939,6 @@ void disable_all_coolers() {
     return (int)max6675_temp;
   }
 #endif // HEATER_0_USES_MAX6675
-
-/**
- * Stages in the ISR loop
- */
-enum TempState {
-  PrepareTemp_0,
-  MeasureTemp_0,
-  PrepareTemp_BED,
-  MeasureTemp_BED,
-  PrepareTemp_CHAMBER,
-  MeasureTemp_CHAMBER,
-  PrepareTemp_COOLER,
-  MeasureTemp_COOLER,
-  PrepareTemp_1,
-  MeasureTemp_1,
-  PrepareTemp_2,
-  MeasureTemp_2,
-  PrepareTemp_3,
-  MeasureTemp_3,
-  Prepare_FILWIDTH,
-  Measure_FILWIDTH,
-  Prepare_POWCONSUMPTION,
-  Measure_POWCONSUMPTION,
-  StartupDelay // Startup, delay initial temp reading a tiny bit so the hardware can settle
-};
 
 static unsigned long raw_temp_value[4] = { 0 };
 static unsigned long raw_temp_bed_value = 0;

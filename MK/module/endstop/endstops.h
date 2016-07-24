@@ -27,8 +27,6 @@
 #ifndef ENDSTOPS_H
 #define ENDSTOPS_H
 
-enum EndstopEnum {X_MIN = 0, Y_MIN = 1, Z_MIN = 2, Z_PROBE = 3, X_MAX = 4, Y_MAX = 5, Z_MAX = 6, Z2_MIN = 7, Z2_MAX = 8, E_MIN = 9};
-
 class Endstops {
 
   public:
@@ -43,7 +41,7 @@ class Endstops {
     #endif
         current_endstop_bits, old_endstop_bits;
 
-    Endstops();
+    Endstops() {};
 
     /**
      * Initialize the endstop pins

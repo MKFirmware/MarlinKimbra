@@ -238,14 +238,14 @@ FORCE_INLINE bool isCoolingCooler() { return target_temperature_cooler < current
 #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
   extern float extrude_min_temp;
   extern bool allow_cold_extrude;
-  FORCE_INLINE bool tooColdToExtrude(uint8_t e) {
+  FORCE_INLINE bool tooColdToExtrude(uint8_t h) {
     #if HOTENDS == 1
-      UNUSED(e);
+      UNUSED(h);
     #endif
     return (allow_cold_extrude ? false : degHotend(HOTEND_INDEX) < extrude_min_temp); 
   }
 #else
-  FORCE_INLINE bool tooColdToExtrude(uint8_t e) { UNUSED(e); return false; }
+  FORCE_INLINE bool tooColdToExtrude(uint8_t h) { UNUSED(h); return false; }
 #endif
 
 #define HOTEND_ROUTINES(NR) \

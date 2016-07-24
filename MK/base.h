@@ -14,6 +14,7 @@
 #include "module/macros.h"
 #include "Boards.h"
 #include "module/mechanics.h"
+#include "module/enum.h"
 
 #include "Configuration_Version.h"
 #include "Configuration_Basic.h"

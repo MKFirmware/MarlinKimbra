@@ -996,18 +996,6 @@ static const char *cfgSD_KEY[] = { // Keep this in lexicographical order for bet
   "TPR"   // Total printing time
 };
 
-enum cfgSD_ENUM {   // This need to be in the same order as cfgSD_KEY
-  SD_CFG_CPR,
-  SD_CFG_FIL,
-  SD_CFG_NPR,
-#if HAS(POWER_CONSUMPTION_SENSOR)
-  SD_CFG_PWR,
-#endif
-  SD_CFG_TME,
-  SD_CFG_TPR,
-  SD_CFG_END // Leave this always as the last
-};
-
 void ConfigSD_StoreSettings() {
   if(!IS_SD_INSERTED || card.isFileOpen() || card.sdprinting) return;
 

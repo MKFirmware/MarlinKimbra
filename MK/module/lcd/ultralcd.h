@@ -69,16 +69,6 @@
     extern volatile uint8_t buttons;  // the last checked buttons in a bit array.
     void lcd_buttons_update();
     #if ENABLED(FILAMENT_CHANGE_FEATURE)
-      enum FilamentChangeMessage {
-        FILAMENT_CHANGE_MESSAGE_INIT,
-        FILAMENT_CHANGE_MESSAGE_UNLOAD,
-        FILAMENT_CHANGE_MESSAGE_INSERT,
-        FILAMENT_CHANGE_MESSAGE_LOAD,
-        FILAMENT_CHANGE_MESSAGE_EXTRUDE,
-        FILAMENT_CHANGE_MESSAGE_OPTION,
-        FILAMENT_CHANGE_MESSAGE_RESUME,
-        FILAMENT_CHANGE_MESSAGE_STATUS
-      };
       void lcd_filament_change_show_message(FilamentChangeMessage message);
     #endif
     void lcd_quick_feedback(); // Audible feedback for a button click - could also be visual

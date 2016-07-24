@@ -521,8 +521,11 @@ void Planner::check_axes_activity() {
 
   long  dx = target[X_AXIS] - position[X_AXIS],
         dy = target[Y_AXIS] - position[Y_AXIS],
-        dz = target[Z_AXIS] - position[Z_AXIS],
-        de = target[E_AXIS] - position[E_AXIS];
+        dz = target[Z_AXIS] - position[Z_AXIS];
+
+  // DRYRUN ignores all temperature constraints and assures that the extruder is instantly satisfied
+  if (DEBUGGING(DRYRUN)) position[E_AXIS] = target[E_AXIS];
+  long de = target[E_AXIS] - position[E_AXIS];
 
   #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
     if (de) {
@@ -530,7 +533,7 @@ void Planner::check_axes_activity() {
         if (extruder != 1)
       #endif
         {
-          if (degHotend(extruder) < extrude_min_temp && !(DEBUGGING(DRYRUN))) {
+          if (tooColdToExtrude(extruder)) {
             position[E_AXIS] = target[E_AXIS]; // Behave as if the move really took place, but ignore E part
             de = 0; // no difference
             ECHO_LM(ER, SERIAL_ERR_COLD_EXTRUDE_STOP);

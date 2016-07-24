@@ -573,7 +573,7 @@
     }
 
     void StopPopCallback(void *ptr) {
-      quickStop();
+      quickstop_stepper();
       card.stopPrint();
       autotempShutdown();
       lcd_setstatus(MSG_PRINT_ABORTED, true);
@@ -725,7 +725,7 @@
 
         uint32_t temp_feedrate = 0;
         VSpeed.getValue(&temp_feedrate);
-        feedrate_multiplier = (int)temp_feedrate;
+        feedrate_percentage = (int)temp_feedrate;
 
         #if HAS(TEMP_0)
           temptoLCD(0, degHotend(0), degTargetHotend(0));

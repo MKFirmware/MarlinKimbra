@@ -228,7 +228,6 @@
 #define SERIAL_DEBUG_DEBUG                      "DEBUG"
 
 //other
-#define SERIAL_ERR_HOMING_DIV                   "The Homing Bump Feedrate Divisor cannot be less than 1"
 #define SERIAL_BED_LEVELLING_BED                "Bed"
 #define SERIAL_BED_LEVELLING_X                  " X: "
 #define SERIAL_BED_LEVELLING_Y                  " Y: "
