@@ -84,14 +84,6 @@ static void lcd_status_screen();
 
 millis_t next_lcd_update_ms;
 
-enum LCDViewAction {
-  LCDVIEW_NONE,
-  LCDVIEW_REDRAW_NOW,
-  LCDVIEW_CALL_REDRAW_NEXT,
-  LCDVIEW_CLEAR_CALL_REDRAW,
-  LCDVIEW_CALL_NO_REDRAW
-};
-
 uint8_t lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW; // Set when the LCD needs to draw, decrements after every draw. Set to 2 in LCD routines so the LCD gets at least 1 full redraw (first redraw is partial)
 
 #if ENABLED(ULTIPANEL)
@@ -300,10 +292,10 @@ uint8_t lcdDrawUpdate = LCDVIEW_CLEAR_CALL_REDRAW; // Set when the LCD needs to 
    *     lcd_implementation_drawmenu_function(sel, row, PSTR(MSG_PAUSE_PRINT), lcd_sdcard_pause)
    *     menu_action_function(lcd_sdcard_pause)
    *
-   *   MENU_ITEM_EDIT(int3, MSG_SPEED, &feedrate_multiplier, 10, 999)
-   *   MENU_ITEM(setting_edit_int3, MSG_SPEED, PSTR(MSG_SPEED), &feedrate_multiplier, 10, 999)
-   *     lcd_implementation_drawmenu_setting_edit_int3(sel, row, PSTR(MSG_SPEED), PSTR(MSG_SPEED), &feedrate_multiplier, 10, 999)
-   *     menu_action_setting_edit_int3(PSTR(MSG_SPEED), &feedrate_multiplier, 10, 999)
+   *   MENU_ITEM_EDIT(int3, MSG_SPEED, &feedrate_percentage, 10, 999)
+   *   MENU_ITEM(setting_edit_int3, MSG_SPEED, PSTR(MSG_SPEED), &feedrate_percentage, 10, 999)
+   *     lcd_implementation_drawmenu_setting_edit_int3(sel, row, PSTR(MSG_SPEED), PSTR(MSG_SPEED), &feedrate_percentage, 10, 999)
+   *     menu_action_setting_edit_int3(PSTR(MSG_SPEED), &feedrate_percentage, 10, 999)
    *
    */
   #define _MENU_ITEM_PART_1(TYPE, LABEL, ARGS...) \
@@ -583,29 +575,29 @@ static void lcd_status_screen() {
     }
 
     #if ENABLED(ULTIPANEL_FEEDMULTIPLY)
-      int new_frm = feedrate_multiplier + (int32_t)encoderPosition;
+      int new_frm = feedrate_percentage + (int32_t)encoderPosition;
       // Dead zone at 100% feedrate
-      if ((feedrate_multiplier < 100 && new_frm > 100) || (feedrate_multiplier > 100 && new_frm < 100)) {
-        feedrate_multiplier = 100;
+      if ((feedrate_percentage < 100 && new_frm > 100) || (feedrate_percentage > 100 && new_frm < 100)) {
+        feedrate_percentage = 100;
         encoderPosition = 0;
       }
-      else if (feedrate_multiplier == 100) {
+      else if (feedrate_percentage == 100) {
         if ((int32_t)encoderPosition > ENCODER_FEEDRATE_DEADZONE) {
-          feedrate_multiplier += (int32_t)encoderPosition - (ENCODER_FEEDRATE_DEADZONE);
+          feedrate_percentage += (int32_t)encoderPosition - (ENCODER_FEEDRATE_DEADZONE);
           encoderPosition = 0;
         }
         else if ((int32_t)encoderPosition < -(ENCODER_FEEDRATE_DEADZONE)) {
-          feedrate_multiplier += (int32_t)encoderPosition + ENCODER_FEEDRATE_DEADZONE;
+          feedrate_percentage += (int32_t)encoderPosition + ENCODER_FEEDRATE_DEADZONE;
           encoderPosition = 0;
         }
       }
       else {
-        feedrate_multiplier = new_frm;
+        feedrate_percentage = new_frm;
         encoderPosition = 0;
       }
     #endif // ULTIPANEL_FEEDMULTIPLY
 
-    feedrate_multiplier = constrain(feedrate_multiplier, 10, 999);
+    feedrate_percentage = constrain(feedrate_percentage, 10, 999);
 
   #endif // ULTIPANEL
 }
@@ -652,7 +644,7 @@ void kill_screen(const char* lcd_msg) {
     }
 
     static void lcd_sdcard_stop() {
-      quickStop();
+      quickstop_stepper();
       #if NOMECH(DELTA) && NOMECH(SCARA)
         set_current_position_from_planner();
       #endif
@@ -667,7 +659,7 @@ void kill_screen(const char* lcd_msg) {
     static void lcd_sdcard_stop_save() {
       card.sdprinting = false;
       print_job_counter.stop();
-      quickStop();
+      quickstop_stepper();
       card.closeFile(true);
       autotempShutdown();
       wait_for_heatup = false;
@@ -889,7 +881,7 @@ void kill_screen(const char* lcd_msg) {
     //
     // Speed:
     //
-    MENU_ITEM_EDIT(int3, MSG_SPEED, &feedrate_multiplier, 10, 999);
+    MENU_ITEM_EDIT(int3, MSG_SPEED, &feedrate_percentage, 10, 999);
 
     // Manual bed leveling, Bed Z:
     #if ENABLED(MANUAL_BED_LEVELING)
@@ -2595,15 +2587,15 @@ void kill_screen(const char* lcd_msg) {
    *   static void menu_action_setting_edit_callback_int3(const char* pstr, int* ptr, int minValue, int maxValue, screenFunc_t callback); // edit int with callback
    *
    * You can then use one of the menu macros to present the edit interface:
-   *   MENU_ITEM_EDIT(int3, MSG_SPEED, &feedrate_multiplier, 10, 999)
+   *   MENU_ITEM_EDIT(int3, MSG_SPEED, &feedrate_percentage, 10, 999)
    *
    * This expands into a more primitive menu item:
-   *   MENU_ITEM(setting_edit_int3, MSG_SPEED, PSTR(MSG_SPEED), &feedrate_multiplier, 10, 999)
+   *   MENU_ITEM(setting_edit_int3, MSG_SPEED, PSTR(MSG_SPEED), &feedrate_percentage, 10, 999)
    *
    *
    * Also: MENU_MULTIPLIER_ITEM_EDIT, MENU_ITEM_EDIT_CALLBACK, and MENU_MULTIPLIER_ITEM_EDIT_CALLBACK
    *
-   *       menu_action_setting_edit_int3(PSTR(MSG_SPEED), &feedrate_multiplier, 10, 999)
+   *       menu_action_setting_edit_int3(PSTR(MSG_SPEED), &feedrate_percentage, 10, 999)
    */
   #define menu_edit_type(_type, _name, _strFunc, scale) \
     bool _menu_edit_ ## _name () { \

@@ -60,20 +60,6 @@ volatile char Endstops::endstop_hit_bits; // use X_MIN, Y_MIN, Z_MIN and Z_MIN_P
  * Class and Instance Methods
  */
 
-Endstops::Endstops() {
-  enable_globally(
-    #if ENABLED(ENDSTOPS_ONLY_FOR_HOMING)
-      false
-    #else
-      true
-    #endif
-  );
-  enable(true);
-  #if HAS(BED_PROBE)
-    enable_z_probe(false);
-  #endif
-} // Endstops::Endstops
-
 void Endstops::init() {
 
   #if HAS(X_MIN)
@@ -188,7 +174,7 @@ void Endstops::report_state() {
       if (abort_on_endstop_hit) {
         card.sdprinting = false;
         card.closeFile();
-        quickStop();
+        quickstop_stepper();
         #if NOMECH(DELTA) && NOMECH(SCARA)
           set_current_position_from_planner();
         #endif
