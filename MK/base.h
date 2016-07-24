@@ -14,7 +14,6 @@
 #include "module/macros.h"
 #include "Boards.h"
 #include "module/mechanics.h"
-#include "module/enum.h"
 
 #include "Configuration_Version.h"
 #include "Configuration_Basic.h"
@@ -52,6 +51,7 @@
 #include "module/sanitycheck.h"
 #include "module/HAL/HAL.h"
 #include "module/communication/communication.h"
+#include "module/enum.h"
 
 #if ENABLED(MESH_BED_LEVELING)
   #include "module/mbl/mesh_bed_leveling.h"
