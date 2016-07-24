@@ -127,7 +127,7 @@ Planner::Planner() { init(); }
 void Planner::init() {
   block_buffer_head = block_buffer_tail = 0;
   memset(position, 0, sizeof(position)); // clear position
-  for (int i = 0; i < NUM_AXIS; i++) previous_speed[i] = 0.0;
+  LOOP_XYZE(i) previous_speed[i] = 0.0;
   previous_nominal_speed = 0.0;
   #if ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
     bed_level_matrix.set_to_identity();
@@ -392,7 +392,7 @@ void Planner::check_axes_activity() {
 
     for (uint8_t b = block_buffer_tail; b != block_buffer_head; b = next_block_index(b)) {
       block = &block_buffer[b];
-      for (int i = 0; i < NUM_AXIS; i++) if (block->steps[i]) axis_active[i]++;
+      LOOP_XYZE(i) if (block->steps[i]) axis_active[i]++;
     }
   }
   if (DISABLE_X && !axis_active[X_AXIS]) disable_x();
@@ -968,7 +968,7 @@ void Planner::check_axes_activity() {
   // Calculate and limit speed in mm/sec for each axis
   float current_speed[NUM_AXIS];
   float speed_factor = 1.0; // factor <=1 do decrease speed
-  for (int i = 0; i < NUM_AXIS; i++) {
+  LOOP_XYZE(i) {
     current_speed[i] = delta_mm[i] * inverse_second;
     float cs = fabs(current_speed[i]), mf = max_feedrate[i];
     if (cs > mf) speed_factor = min(speed_factor, mf / cs);
@@ -1014,7 +1014,7 @@ void Planner::check_axes_activity() {
 
   // Correct the speed
   if (speed_factor < 1.0) {
-    for (unsigned char i = 0; i < NUM_AXIS; i++) current_speed[i] *= speed_factor;
+    LOOP_XYZE(i) current_speed[i] *= speed_factor;
     block->nominal_speed *= speed_factor;
     block->nominal_rate *= speed_factor;
   }

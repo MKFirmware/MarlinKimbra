@@ -3022,7 +3022,7 @@ void set_current_from_steppers_for_axis(AxisEnum axis) {
     vector_3 pos = planner.adjusted_position(); // values directly from steppers...
     current_position[axis] = LOGICAL_POSITION(axis == X_AXIS ? pos.x : axis == Y_AXIS ? pos.y : pos.z, axis);
   #else
-    current_position[axis] = LOGICAL_POSITION(stepper.get_axis_position_mm(axis), axis); // CORE handled transparently
+    current_position[axis] = LOGICAL_POSITION(st_get_axis_position_mm(axis), axis); // CORE handled transparently
   #endif
 }
 
@@ -9148,9 +9148,9 @@ void process_next_command() {
         gcode_M400(); break;
 
       #if HAS(BED_PROBE)
-        case 401:
+        case 401: // M401: Engage Z Servo endstop if available
           gcode_M401(); break;
-        case 402:
+        case 402: // M402: Retract Z Servo endstop if enabled
           gcode_M402(); break;
       #endif
 
