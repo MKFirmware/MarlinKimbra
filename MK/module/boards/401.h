@@ -72,10 +72,10 @@
 #define ORIG_HEATER_2_PIN       11
 
 #define ORIG_TEMP_BED_PIN        4  // ANALOG NUMBERING #57
-#define ORIG_TEMP_0_PIN          7  // ANALOG NUMBERING #54
-#define ORIG_TEMP_1_PIN          3  // ANALOG NUMBERING #58
-#define ORIG_TEMP_2_PIN          6  // ANALOG NUMBERING #55
-#define ORIG_TEMP_3_PIN          5  // ANALOG NUMBERING #56
+#define ORIG_TEMP_0_PIN          0  // ANALOG NUMBERING #54
+#define ORIG_TEMP_1_PIN          1  // ANALOG NUMBERING #58
+#define ORIG_TEMP_2_PIN          2  // ANALOG NUMBERING #55
+#define ORIG_TEMP_3_PIN          3  // ANALOG NUMBERING #56
 
 // #define THERMOCOUPLE_0_PIN  2   // Dua analog pin #59 = A5 -> AD 2
 
