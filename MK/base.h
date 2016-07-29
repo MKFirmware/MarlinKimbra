@@ -11,9 +11,9 @@
 #include <avr/pgmspace.h>
 #include <avr/interrupt.h>
 
-#include "module/macros.h"
+#include "src/macros.h"
 #include "Boards.h"
-#include "module/mechanics.h"
+#include "src/mechanics.h"
 
 #include "Configuration_Version.h"
 #include "Configuration_Basic.h"
@@ -42,44 +42,44 @@
 #if ENABLED(LASERBEAM)
   #include "Configuration_Laser.h"
   #if ENABLED(LASER_RASTER)
-    #include "module/laser/base64/base64.h"
+    #include "src/laser/base64/base64.h"
   #endif
-  #include "module/laser/laser.h"
+  #include "src/laser/laser.h"
 #endif
 
-#include "module/conditionals.h"
-#include "module/sanitycheck.h"
-#include "module/HAL/HAL.h"
-#include "module/communication/communication.h"
-#include "module/enum.h"
+#include "src/conditionals.h"
+#include "src/sanitycheck.h"
+#include "src/HAL/HAL.h"
+#include "src/communication/communication.h"
+#include "src/enum.h"
 
 #if ENABLED(MESH_BED_LEVELING)
-  #include "module/mbl/mesh_bed_leveling.h"
+  #include "src/mbl/mesh_bed_leveling.h"
 #endif
 
 #include "Configuration_Store.h"
 
-#include "module/language/language.h"
-#include "module/printcounter/printcounter.h"
-#include "module/MK_Main.h"
-#include "module/planner/planner.h"
-#include "module/endstop/endstops.h"
-#include "module/motion/stepper_indirection.h"
-#include "module/motion/stepper.h"
-#include "module/motion/cartesian_correction.h"
-#include "module/temperature/temperature.h"
-#include "module/sensor/flowmeter.h"
-#include "module/temperature/thermistortables.h"
-#include "module/lcd/ultralcd.h"
-#include "module/lcd/buzzer.h"
-#include "module/nextion/Nextion_lcd.h"
-#include "module/sd/cardreader.h"
-#include "module/servo/servo.h"
-#include "module/watchdog/watchdog.h"
-#include "module/blinkm/blinkm.h"
+#include "src/language/language.h"
+#include "src/printcounter/printcounter.h"
+#include "src/MK_Main.h"
+#include "src/planner/planner.h"
+#include "src/endstop/endstops.h"
+#include "src/motion/stepper_indirection.h"
+#include "src/motion/stepper.h"
+#include "src/motion/cartesian_correction.h"
+#include "src/temperature/temperature.h"
+#include "src/sensor/flowmeter.h"
+#include "src/temperature/thermistortables.h"
+#include "src/lcd/ultralcd.h"
+#include "src/lcd/buzzer.h"
+#include "src/nextion/Nextion_lcd.h"
+#include "src/sd/cardreader.h"
+#include "src/servo/servo.h"
+#include "src/watchdog/watchdog.h"
+#include "src/blinkm/blinkm.h"
 
 #if MB(ALLIGATOR)
-  #include "module/alligator/external_dac.h"
+  #include "src/alligator/external_dac.h"
 #endif
 
 #if HAS(DIGIPOTSS)
@@ -87,11 +87,11 @@
 #endif
 
 #if ENABLED(FIRMWARE_TEST)
-  #include "module/fwtest/firmware_test.h"
+  #include "src/fwtest/firmware_test.h"
 #endif
 
 #if ENABLED(RFID_MODULE)
-  #include "module/mfrc522/MFRC522_serial.h"
+  #include "src/mfrc522/MFRC522_serial.h"
 #endif
 
 #endif
