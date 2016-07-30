@@ -122,7 +122,7 @@ static bool relative_mode = false;
 
 static bool home_all_axis = true;
 
-bool wait_for_heatup = true;
+volatile bool wait_for_heatup = true;
 
 static int serial_count = 0;
 
