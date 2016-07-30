@@ -4308,12 +4308,12 @@ inline void gcode_G28() {
     ;
     line_to_current_position();
 
-    current_position[X_AXIS] = x + home_offset[X_AXIS];
-    current_position[Y_AXIS] = y + home_offset[Y_AXIS];
+    current_position[X_AXIS] = LOGICAL_X_POSITION(x);
+    current_position[Y_AXIS] = LOGICAL_Y_POSITION(y);
     line_to_current_position();
 
     #if Z_RAISE_BETWEEN_PROBINGS > 0 || MIN_Z_HEIGHT_FOR_HOMING > 0
-      current_position[Z_AXIS] = MESH_HOME_SEARCH_Z;
+      current_position[Z_AXIS] = LOGICAL_Z_POSITION(MESH_HOME_SEARCH_Z);
       line_to_current_position();
     #endif
 
@@ -9655,82 +9655,59 @@ static void report_current_position() {
 
 #if ENABLED(MESH_BED_LEVELING) && NOMECH(DELTA)
   // This function is used to split lines on mesh borders so each segment is only part of one mesh area
-  void mesh_buffer_line(float x, float y, float z, const float e, float feed_rate, const uint8_t& extruder, const uint8_t& driver, uint8_t x_splits = 0xff, uint8_t y_splits = 0xff) {
-    if (!mbl.active()) {
-      planner.buffer_line(x, y, z, e, feed_rate, extruder, driver);
-      set_current_to_destination();
-      return;
-    }
+  void mesh_line_to_destination(float fr_mm_m, uint8_t x_splits = 0xff, uint8_t y_splits = 0xff) {
+    int cx1 = mbl.cell_index_x(RAW_CURRENT_POSITION(X_AXIS)),
+        cy1 = mbl.cell_index_y(RAW_CURRENT_POSITION(Y_AXIS)),
+        cx2 = mbl.cell_index_x(RAW_X_POSITION(destination[X_AXIS])),
+        cy2 = mbl.cell_index_y(RAW_Y_POSITION(destination[Y_AXIS]));
+    NOMORE(cx1, MESH_NUM_X_POINTS - 2);
+    NOMORE(cy1, MESH_NUM_Y_POINTS - 2);
+    NOMORE(cx2, MESH_NUM_X_POINTS - 2);
+    NOMORE(cy2, MESH_NUM_Y_POINTS - 2);
 
-    int pcx = mbl.cell_index_x(RAW_CURRENT_POSITION(X_AXIS)),
-        pcy = mbl.cell_index_y(RAW_CURRENT_POSITION(Y_AXIS)),
-        cx = mbl.cell_index_x(RAW_POSITION(x, X_AXIS)),
-        cy = mbl.cell_index_y(RAW_POSITION(y, Y_AXIS));
-
-    NOMORE(pcx, MESH_NUM_X_POINTS - 2);
-    NOMORE(pcy, MESH_NUM_Y_POINTS - 2);
-    NOMORE(cx,  MESH_NUM_X_POINTS - 2);
-    NOMORE(cy,  MESH_NUM_Y_POINTS - 2);
-
-    if (pcx == cx && pcy == cy) {
+    if (cx1 == cx2 && cy1 == cy2) {
       // Start and end on same mesh square
-      planner.buffer_line(x, y, z, e, feed_rate, extruder, driver);
+      line_to_destination(fr_mm_m);
       set_current_to_destination();
       return;
     }
 
-    float nx, ny, nz, ne, normalized_dist;
+    #define MBL_SEGMENT_END(A) (current_position[A ##_AXIS] + (destination[A ##_AXIS] - current_position[A ##_AXIS]) * normalized_dist)
 
-    if (cx > pcx && TEST(x_splits, cx)) {
-      nx = mbl.get_probe_x(cx) + home_offset[X_AXIS];
-      normalized_dist = (nx - current_position[X_AXIS]) / (x - current_position[X_AXIS]);
-      ny = current_position[Y_AXIS] + (y - current_position[Y_AXIS]) * normalized_dist;
-      nz = current_position[Z_AXIS] + (z - current_position[Z_AXIS]) * normalized_dist;
-      ne = current_position[E_AXIS] + (e - current_position[E_AXIS]) * normalized_dist;
-      CBI(x_splits, cx);
+    float normalized_dist, end[NUM_AXIS];
+
+    // Split at the left/front border of the right/top square
+    int8_t gcx = max(cx1, cx2), gcy = max(cy1, cy2);
+    if (cx2 != cx1 && TEST(x_splits, gcx)) {
+      memcpy(end, destination, sizeof(end));
+      destination[X_AXIS] = LOGICAL_X_POSITION(mbl.get_probe_x(gcx));
+      normalized_dist = (destination[X_AXIS] - current_position[X_AXIS]) / (end[X_AXIS] - current_position[X_AXIS]);
+      destination[Y_AXIS] = MBL_SEGMENT_END(Y);
+      CBI(x_splits, gcx);
     }
-    else if (cx < pcx && TEST(x_splits, pcx)) {
-      nx = mbl.get_probe_x(pcx) + home_offset[X_AXIS];
-      normalized_dist = (nx - current_position[X_AXIS]) / (x - current_position[X_AXIS]);
-      ny = current_position[Y_AXIS] + (y - current_position[Y_AXIS]) * normalized_dist;
-      nz = current_position[Z_AXIS] + (z - current_position[Z_AXIS]) * normalized_dist;
-      ne = current_position[E_AXIS] + (e - current_position[E_AXIS]) * normalized_dist;
-      CBI(x_splits, pcx);
-    }
-    else if (cy > pcy && TEST(y_splits, cy)) {
-      ny = mbl.get_probe_y(cy) + home_offset[Y_AXIS];
-      normalized_dist = (ny - current_position[Y_AXIS]) / (y - current_position[Y_AXIS]);
-      nx = current_position[X_AXIS] + (x - current_position[X_AXIS]) * normalized_dist;
-      nz = current_position[Z_AXIS] + (z - current_position[Z_AXIS]) * normalized_dist;
-      ne = current_position[E_AXIS] + (e - current_position[E_AXIS]) * normalized_dist;
-      CBI(y_splits, cy);
-    }
-    else if (cy < pcy && TEST(y_splits, pcy)) {
-      ny = mbl.get_probe_y(pcy) + home_offset[Y_AXIS];
-      normalized_dist = (ny - current_position[Y_AXIS]) / (y - current_position[Y_AXIS]);
-      nx = current_position[X_AXIS] + (x - current_position[X_AXIS]) * normalized_dist;
-      nz = current_position[Z_AXIS] + (z - current_position[Z_AXIS]) * normalized_dist;
-      ne = current_position[E_AXIS] + (e - current_position[E_AXIS]) * normalized_dist;
-      CBI(y_splits, pcy);
+    else if (cy2 != cy1 && TEST(y_splits, gcy)) {
+      memcpy(end, destination, sizeof(end));
+      destination[Y_AXIS] = LOGICAL_Y_POSITION(mbl.get_probe_y(gcy));
+      normalized_dist = (destination[Y_AXIS] - current_position[Y_AXIS]) / (end[Y_AXIS] - current_position[Y_AXIS]);
+      destination[X_AXIS] = MBL_SEGMENT_END(X);
+      CBI(y_splits, gcy);
     }
     else {
       // Already split on a border
-      planner.buffer_line(x, y, z, e, feed_rate, extruder, driver);
+      line_to_destination(fr_mm_m);
       set_current_to_destination();
       return;
     }
 
+    destination[Z_AXIS] = MBL_SEGMENT_END(Z);
+    destination[E_AXIS] = MBL_SEGMENT_END(E);
+
     // Do the split and look for more borders
-    destination[X_AXIS] = nx;
-    destination[Y_AXIS] = ny;
-    destination[Z_AXIS] = nz;
-    destination[E_AXIS] = ne;
-    mesh_buffer_line(nx, ny, nz, ne, feed_rate, extruder, driver, x_splits, y_splits);
-    destination[X_AXIS] = x;
-    destination[Y_AXIS] = y;
-    destination[Z_AXIS] = z;
-    destination[E_AXIS] = e;
-    mesh_buffer_line(x, y, z, e, feed_rate, extruder, driver, x_splits, y_splits);
+    mesh_line_to_destination(fr_mm_m, x_splits, y_splits);
+
+    // Restore destination from stack
+    memcpy(destination, end, sizeof(end));
+    mesh_line_to_destination(fr_mm_m, x_splits, y_splits);  
   }
 #endif  // MESH_BED_LEVELING
 
@@ -9880,15 +9857,18 @@ static void report_current_position() {
     #endif
 
     // Do not use feedrate_percentage for E or Z only moves
-    if (current_position[X_AXIS] == destination[X_AXIS] && current_position[Y_AXIS] == destination[Y_AXIS])
+    if (current_position[X_AXIS] == destination[X_AXIS] && current_position[Y_AXIS] == destination[Y_AXIS]) {
       line_to_destination();
+    }
     else {
       #if ENABLED(MESH_BED_LEVELING)
-        mesh_buffer_line(destination[X_AXIS], destination[Y_AXIS], destination[Z_AXIS], destination[E_AXIS], (feedrate_mm_m / 60) * (feedrate_percentage / 100.0), active_extruder, active_driver);
-        return false;
-      #else
-        line_to_destination(feedrate_mm_m * feedrate_percentage / 100.0);
+        if (mbl.active()) {
+          mesh_line_to_destination(MMM_SCALED(feedrate_mm_m));
+          return false;
+        }
+        else
       #endif
+          line_to_destination(MMM_SCALED(feedrate_mm_m));
     }
     return true;
   }
