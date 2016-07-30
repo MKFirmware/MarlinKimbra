@@ -110,14 +110,17 @@ extern int extruder_multiplier[EXTRUDERS];      // sets extrude multiply factor 
 extern int density_multiplier[EXTRUDERS];       // sets density multiply factor (in percent) for each extruder individually
 extern float filament_size[EXTRUDERS];          // cross-sectional area of filament (in millimeters), typically around 1.75 or 2.85, 0 disables the volumetric calculations for the extruder.
 extern float volumetric_multiplier[EXTRUDERS];  // reciprocal of cross-sectional area of filament (in square millimeters), stored this way to reduce computational burden in planner
+extern bool axis_known_position[3];             // axis[n].is_known
+extern bool axis_homed[3];                      // axis[n].is_homed
+extern volatile bool wait_for_heatup;
+
 extern float current_position[NUM_AXIS];
 extern float destination[NUM_AXIS];
+extern float position_shift[3];
 extern float home_offset[3];
 extern float hotend_offset[3][HOTENDS];
 extern float sw_endstop_min[3];
 extern float sw_endstop_max[3];
-extern bool axis_known_position[3];
-extern bool axis_homed[3];
 
 #define LOGICAL_POSITION(POS, AXIS) (POS + home_offset[AXIS] + position_shift[AXIS])
 #define RAW_POSITION(POS, AXIS)     (POS - home_offset[AXIS] - position_shift[AXIS])
