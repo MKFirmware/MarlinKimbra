@@ -45,6 +45,7 @@
   #endif
   #define RADIANS(d) ((d)*M_PI/180.0)
   #define DEGREES(r) ((r)*180.0/M_PI)
+  #define HYPOT(x,y) sqrt(sq(x)+sq(y))
   #define SIN_60 0.8660254037844386
   #define COS_60 0.5
 

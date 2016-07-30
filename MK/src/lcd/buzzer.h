@@ -20,11 +20,11 @@
  *
  */
 
-#ifndef BUZZER_H
-  #define BUZZER_H
+#ifndef __BUZZER_H__
+  #define __BUZZER_H__
 
   #if HAS(BUZZER)
     void buzz(long duration, uint16_t freq);
   #endif
 
-#endif // BUZZER_H
+#endif // __BUZZER_H__

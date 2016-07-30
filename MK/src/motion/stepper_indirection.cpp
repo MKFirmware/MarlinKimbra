@@ -35,6 +35,7 @@
   #include <SPI.h>
   #include <TMC26XStepper.h>
 #endif
+
 // Stepper objects of TMC steppers used
 #if ENABLED(X_IS_TMC)
   TMC26XStepper stepperX(200,X_ENABLE_PIN,X_STEP_PIN,X_DIR_PIN,X_MAX_CURRENT,X_SENSE_RESISTOR);
@@ -68,8 +69,7 @@
 #endif
 
 #if ENABLED(HAVE_TMCDRIVER)
-void tmc_init()
-{
+void tmc_init() {
   #if ENABLED(X_IS_TMC)
     stepperX.setMicrosteps(X_MICROSTEPS);
     stepperX.start();
@@ -116,47 +116,46 @@ void tmc_init()
 // L6470 Driver objects and inits
 
 #if ENABLED(HAVE_L6470DRIVER)
-#include <SPI.h>
-#include <L6470.h>
+  #include <SPI.h>
+  #include <L6470.h>
 #endif
 
 // L6470 Stepper objects
-  #if ENABLED(X_IS_L6470)
-    L6470 stepperX(X_ENABLE_PIN);
-  #endif
-  #if ENABLED(X2_IS_L6470)
-    L6470 stepperX2(X2_ENABLE_PIN);
-  #endif
-  #if ENABLED(Y_IS_L6470)
-    L6470 stepperY(Y_ENABLE_PIN);
-  #endif
-  #if ENABLED(Y2_IS_L6470)
-    L6470 stepperY2(Y2_ENABLE_PIN);
-  #endif
-  #if ENABLED(Z_IS_L6470)
-    L6470 stepperZ(Z_ENABLE_PIN);
-  #endif
-  #if ENABLED(Z2_IS_L6470)
-    L6470 stepperZ2(Z2_ENABLE_PIN);
-  #endif
-  #if ENABLED(E0_IS_L6470)
-    L6470 stepperE0(E0_ENABLE_PIN);
-  #endif
-  #if ENABLED(E1_IS_L6470)
-    L6470 stepperE1(E1_ENABLE_PIN);
-  #endif
-  #if ENABLED(E2_IS_L6470)
-    L6470 stepperE2(E2_ENABLE_PIN);
-  #endif
-  #if ENABLED(E3_IS_L6470)
-    L6470 stepperE3(E3_ENABLE_PIN);
-  #endif
+#if ENABLED(X_IS_L6470)
+  L6470 stepperX(X_ENABLE_PIN);
+#endif
+#if ENABLED(X2_IS_L6470)
+  L6470 stepperX2(X2_ENABLE_PIN);
+#endif
+#if ENABLED(Y_IS_L6470)
+  L6470 stepperY(Y_ENABLE_PIN);
+#endif
+#if ENABLED(Y2_IS_L6470)
+  L6470 stepperY2(Y2_ENABLE_PIN);
+#endif
+#if ENABLED(Z_IS_L6470)
+  L6470 stepperZ(Z_ENABLE_PIN);
+#endif
+#if ENABLED(Z2_IS_L6470)
+  L6470 stepperZ2(Z2_ENABLE_PIN);
+#endif
+#if ENABLED(E0_IS_L6470)
+  L6470 stepperE0(E0_ENABLE_PIN);
+#endif
+#if ENABLED(E1_IS_L6470)
+  L6470 stepperE1(E1_ENABLE_PIN);
+#endif
+#if ENABLED(E2_IS_L6470)
+  L6470 stepperE2(E2_ENABLE_PIN);
+#endif
+#if ENABLED(E3_IS_L6470)
+  L6470 stepperE3(E3_ENABLE_PIN);
+#endif
 
 
 // init routine
 #if ENABLED(HAVE_L6470DRIVER)
-void L6470_init()
-{
+void L6470_init() {
   #if ENABLED(X_IS_L6470)
     stepperX.init(X_K_VAL);
     stepperX.softFree();

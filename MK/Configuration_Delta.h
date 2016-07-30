@@ -401,6 +401,9 @@
  *****************************************************************************************/
 //#define AUTO_BED_LEVELING_FEATURE
 
+// Enable Z Probe Repeatability test to see how accurate your probe is
+//#define Z_PROBE_REPEATABILITY_TEST
+
 // Precision for G30 delta autocalibration function
 #define AUTOCALIBRATION_PRECISION 0.1 // mm
 

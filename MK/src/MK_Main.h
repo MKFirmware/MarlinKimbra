@@ -52,12 +52,14 @@ void ok_to_send();
   extern float tower_adj[6];
   extern float delta_radius;
   extern float delta_diagonal_rod;
+  extern float delta_segments_per_second;
 #endif
 
 #if MECH(SCARA)
+  extern float delta[3];
   extern float axis_scaling[3];  // Build size scaling
   void inverse_kinematics(const float in_cartesian[3]);
-  void calculate_SCARA_forward_Transform(float f_scara[3]);
+  void forward_kinematics_SCARA(float f_scara[3]);
 #endif
 
 void kill(const char *);
@@ -91,7 +93,7 @@ void clamp_to_software_endstops(float target[3]);
 extern millis_t previous_cmd_ms;
 inline void refresh_cmd_timeout() { previous_cmd_ms = millis(); }
 
-extern void delay_ms(millis_t ms);
+extern void safe_delay(millis_t ms);
 
 #if ENABLED(FAST_PWM_FAN) || ENABLED(FAST_PWM_COOLER)
   void setPwmFrequency(uint8_t pin, uint8_t val);
@@ -116,6 +118,16 @@ extern float sw_endstop_min[3];
 extern float sw_endstop_max[3];
 extern bool axis_known_position[3];
 extern bool axis_homed[3];
+
+#define LOGICAL_POSITION(POS, AXIS) (POS + home_offset[AXIS] + position_shift[AXIS])
+#define RAW_POSITION(POS, AXIS)     (POS - home_offset[AXIS] - position_shift[AXIS])
+#define LOGICAL_X_POSITION(POS)     LOGICAL_POSITION(POS, X_AXIS)
+#define LOGICAL_Y_POSITION(POS)     LOGICAL_POSITION(POS, Y_AXIS)
+#define LOGICAL_Z_POSITION(POS)     LOGICAL_POSITION(POS, Z_AXIS)
+#define RAW_X_POSITION(POS)         RAW_POSITION(POS, X_AXIS)
+#define RAW_Y_POSITION(POS)         RAW_POSITION(POS, Y_AXIS)
+#define RAW_Z_POSITION(POS)         RAW_POSITION(POS, Z_AXIS)
+#define RAW_CURRENT_POSITION(AXIS)  RAW_POSITION(current_position[AXIS], AXIS)
 
 // GCode support for external objects
 bool code_seen(char);

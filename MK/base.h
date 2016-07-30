@@ -12,6 +12,7 @@
 #include <avr/interrupt.h>
 
 #include "src/macros.h"
+#include "src/types.h"
 #include "Boards.h"
 #include "src/mechanics.h"
 

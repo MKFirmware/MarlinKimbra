@@ -29,7 +29,6 @@
  * - Thermistor type
  * - Temperature limits
  * - Automatic temperature
- * - Wattage report
  * - Parallel heaters
  * - Redundant thermistor
  * - Temperature status LEDs
@@ -207,19 +206,6 @@
 #define AUTOTEMP
 #define AUTOTEMP_OLDWEIGHT 0.98
 /*****************************************************************************************/
-
-
-/***********************************************************************
- ************************* Wattage report ******************************
- ***********************************************************************
- *                                                                     *
- * If you want the M105 heater power reported in watts,                *
- * define the BED_WATTS, and (shared for all hotend) HOTEND_WATTS      *
- *                                                                     *
- ***********************************************************************/
-//#define HOTEND_WATTS (12.0*12.0/6.7)  //  P=I^2/R
-//#define BED_WATTS (12.0*12.0/1.1)     //  P=I^2/R
-/***********************************************************************/
 
 
 /***********************************************************************
