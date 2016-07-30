@@ -25,7 +25,6 @@
  */
 
 #include "../../base.h"
-//#include "endstops.h"
 
 // TEST_ENDSTOP: test the old and the current status of an endstop
 #define TEST_ENDSTOP(ENDSTOP) (TEST(current_endstop_bits & old_endstop_bits, ENDSTOP))
@@ -37,9 +36,9 @@ Endstops endstops;
 bool  Endstops::enabled = true,
       Endstops::enabled_globally =
         #if ENABLED(ENDSTOPS_ONLY_FOR_HOMING)
-          false
+          (false)
         #else
-          true
+          (true)
         #endif
       ;
 volatile char Endstops::endstop_hit_bits; // use X_MIN, Y_MIN, Z_MIN and Z_MIN_PROBE as BIT value
@@ -175,9 +174,6 @@ void Endstops::report_state() {
         card.sdprinting = false;
         card.closeFile();
         quickstop_stepper();
-        #if NOMECH(DELTA) && NOMECH(SCARA)
-          set_current_position_from_planner();
-        #endif
         disable_all_heaters(); // switch off all heaters.
         disable_all_coolers();
       }

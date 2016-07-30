@@ -49,11 +49,9 @@ uint8_t lcd_status_message_level;
 char lcd_status_message[3 * (LCD_WIDTH) + 1] = WELCOME_MSG; // worst case is kana with up to 3*LCD_WIDTH+1
 
 #if ENABLED(DOGLCD)
-  #include "dogm_lcd_implementation.h"
-  #define LCD_Printpos(x, y)  u8g.setPrintPos(x + 5, (y + 1) * (DOG_CHAR_HEIGHT + 2))
+  #include "ultralcd_impl_DOGM.h"
 #else
-  #include "ultralcd_implementation_hitachi_HD44780.h"
-  #define LCD_Printpos(x, y)  lcd.setCursor(x, y)
+  #include "ultralcd_impl_HD44780.h"
 #endif
 
 #if ENABLED(LASERBEAM)
@@ -1986,6 +1984,9 @@ void kill_screen(const char* lcd_msg) {
 
   #endif // !LASERBEAM
 
+  static void _reset_acceleration_rates() { planner.reset_acceleration_rates(); }
+  static void _planner_refresh_positioning() { planner.refresh_positioning(); }
+
   /**
    *
    * "Control" > "Motion" submenu
@@ -2008,42 +2009,46 @@ void kill_screen(const char* lcd_msg) {
     #else
       MENU_ITEM_EDIT(float52, MSG_VZ_JERK, &planner.max_z_jerk, 0.1, 990);
     #endif
-    MENU_ITEM_EDIT(float3, MSG_VMAX MSG_X, &planner.max_feedrate[X_AXIS], 1, 999);
-    MENU_ITEM_EDIT(float3, MSG_VMAX MSG_Y, &planner.max_feedrate[Y_AXIS], 1, 999);
-    MENU_ITEM_EDIT(float3, MSG_VMAX MSG_Z, &planner.max_feedrate[Z_AXIS], 1, 999);
-    MENU_ITEM_EDIT(float3, MSG_VMIN, &planner.min_feedrate, 0, 999);
-    MENU_ITEM_EDIT(float3, MSG_VTRAV_MIN, &planner.min_travel_feedrate, 0, 999);
-    MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_X, &planner.max_acceleration_mm_per_s2[X_AXIS], 100, 99000, planner.reset_acceleration_rates);
-    MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_Y, &planner.max_acceleration_mm_per_s2[Y_AXIS], 100, 99000, planner.reset_acceleration_rates);
-    MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_Z, &planner.max_acceleration_mm_per_s2[Z_AXIS], 10, 99000, planner.reset_acceleration_rates);
+    MENU_ITEM_EDIT(float3, MSG_VMAX MSG_X, &planner.max_feedrate_mm_s[X_AXIS], 1, 999);
+    MENU_ITEM_EDIT(float3, MSG_VMAX MSG_Y, &planner.max_feedrate_mm_s[Y_AXIS], 1, 999);
+    MENU_ITEM_EDIT(float3, MSG_VMAX MSG_Z, &planner.max_feedrate_mm_s[Z_AXIS], 1, 999);
+    MENU_ITEM_EDIT(float3, MSG_VMIN, &planner.min_feedrate_mm_s, 0, 999);
+    MENU_ITEM_EDIT(float3, MSG_VTRAV_MIN, &planner.min_travel_feedrate_mm_s, 0, 999);
+    MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_X, &planner.max_acceleration_mm_per_s2[X_AXIS], 100, 99000, _reset_acceleration_rates);
+    MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_Y, &planner.max_acceleration_mm_per_s2[Y_AXIS], 100, 99000, _reset_acceleration_rates);
+    MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_Z, &planner.max_acceleration_mm_per_s2[Z_AXIS], 10, 99000, _reset_acceleration_rates);
     MENU_ITEM_EDIT(float5, MSG_A_TRAVEL, &planner.travel_acceleration, 100, 99000);
-    MENU_ITEM_EDIT(float52, MSG_XSTEPS, &planner.axis_steps_per_mm[X_AXIS], 5, 9999);
-    MENU_ITEM_EDIT(float52, MSG_YSTEPS, &planner.axis_steps_per_mm[Y_AXIS], 5, 9999);
-    MENU_ITEM_EDIT(float51, MSG_ZSTEPS, &planner.axis_steps_per_mm[Z_AXIS], 5, 9999);
+    MENU_ITEM_EDIT_CALLBACK(float52, MSG_XSTEPS, &planner.axis_steps_per_mm[X_AXIS], 5, 9999, _planner_refresh_positioning);
+    MENU_ITEM_EDIT_CALLBACK(float52, MSG_YSTEPS, &planner.axis_steps_per_mm[Y_AXIS], 5, 9999, _planner_refresh_positioning);
+    #if MECH(DELTA)
+      MENU_ITEM_EDIT_CALLBACK(float52, MSG_ZSTEPS, &planner.axis_steps_per_mm[Z_AXIS], 5, 9999, _planner_refresh_positioning);
+    #else
+      MENU_ITEM_EDIT_CALLBACK(float51, MSG_ZSTEPS, &planner.axis_steps_per_mm[Z_AXIS], 5, 9999, _planner_refresh_positioning);
+    #endif
     #if EXTRUDERS > 0
       MENU_ITEM_EDIT(float3, MSG_VE_JERK MSG_E "0", &planner.max_e_jerk[0], 1, 990);
-      MENU_ITEM_EDIT(float3, MSG_VMAX MSG_E "0", &planner.max_feedrate[E_AXIS], 1, 999);
-      MENU_ITEM_EDIT(long5, MSG_AMAX MSG_E "0", &planner.max_acceleration_mm_per_s2[E_AXIS], 100, 99000);
+      MENU_ITEM_EDIT(float3, MSG_VMAX MSG_E "0", &planner.max_feedrate_mm_s[E_AXIS], 1, 999);
+      MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_E "0", &planner.max_acceleration_mm_per_s2[E_AXIS], 100, 99000, _reset_acceleration_rates);
       MENU_ITEM_EDIT(float5, MSG_A_RETRACT MSG_E "0", &planner.retract_acceleration[0], 100, 99000);
-      MENU_ITEM_EDIT(float51, MSG_E0STEPS, &planner.axis_steps_per_mm[E_AXIS], 5, 9999);
+      MENU_ITEM_EDIT_CALLBACK(float51, MSG_E0STEPS, &planner.axis_steps_per_mm[E_AXIS], 5, 9999, _planner_refresh_positioning);
       #if EXTRUDERS > 1
         MENU_ITEM_EDIT(float3, MSG_VE_JERK MSG_E "1", &planner.max_e_jerk[1], 1, 990);
-        MENU_ITEM_EDIT(float3, MSG_VMAX MSG_E "1", &planner.max_feedrate[E_AXIS + 1], 1, 999);
-        MENU_ITEM_EDIT(long5, MSG_AMAX MSG_E "1", &planner.max_acceleration_mm_per_s2[E_AXIS + 1], 100, 99000);
+        MENU_ITEM_EDIT(float3, MSG_VMAX MSG_E "1", &planner.max_feedrate_mm_s[E_AXIS + 1], 1, 999);
+        MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_E "1", &planner.max_acceleration_mm_per_s2[E_AXIS + 1], 100, 99000, _reset_acceleration_rates);
         MENU_ITEM_EDIT(float5, MSG_A_RETRACT MSG_E "1", &planner.retract_acceleration[1], 100, 99000);
-        MENU_ITEM_EDIT(float51, MSG_E1STEPS, &planner.axis_steps_per_mm[E_AXIS + 1], 5, 9999);
+        MENU_ITEM_EDIT_CALLBACK(float51, MSG_E1STEPS, &planner.axis_steps_per_mm[E_AXIS + 1], 5, 9999, _planner_refresh_positioning);
         #if EXTRUDERS > 2
           MENU_ITEM_EDIT(float3, MSG_VE_JERK MSG_E "2", &planner.max_e_jerk[2], 1, 990);
-          MENU_ITEM_EDIT(float3, MSG_VMAX MSG_E "2", &planner.max_feedrate[E_AXIS + 2], 1, 999);
-          MENU_ITEM_EDIT(long5, MSG_AMAX MSG_E "2", &planner.max_acceleration_mm_per_s2[E_AXIS + 2], 100, 99000);
+          MENU_ITEM_EDIT(float3, MSG_VMAX MSG_E "2", &planner.max_feedrate_mm_s[E_AXIS + 2], 1, 999);
+          MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_E "2", &planner.max_acceleration_mm_per_s2[E_AXIS + 2], 100, 99000, _reset_acceleration_rates);
           MENU_ITEM_EDIT(float5, MSG_A_RETRACT MSG_E "2", &planner.retract_acceleration[2], 100, 99000);
-          MENU_ITEM_EDIT(float51, MSG_E2STEPS, &planner.axis_steps_per_mm[E_AXIS + 2], 5, 9999);
+          MENU_ITEM_EDIT_CALLBACK(float51, MSG_E2STEPS, &planner.axis_steps_per_mm[E_AXIS + 2], 5, 9999, _planner_refresh_positioning);
           #if EXTRUDERS > 3
             MENU_ITEM_EDIT(float3, MSG_VE_JERK MSG_E  "3", &planner.max_e_jerk[3], 1, 990);
-            MENU_ITEM_EDIT(float3, MSG_VMAX MSG_E "3", &planner.max_feedrate[E_AXIS + 3], 1, 999);
-            MENU_ITEM_EDIT(long5, MSG_AMAX MSG_E "3", &planner.max_acceleration_mm_per_s2[E_AXIS + 3], 100, 99000);
+            MENU_ITEM_EDIT(float3, MSG_VMAX MSG_E "3", &planner.max_feedrate_mm_s[E_AXIS + 3], 1, 999);
+            MENU_ITEM_EDIT_CALLBACK(long5, MSG_AMAX MSG_E "3", &planner.max_acceleration_mm_per_s2[E_AXIS + 3], 100, 99000, _reset_acceleration_rates);
             MENU_ITEM_EDIT(float5, MSG_A_RETRACT MSG_E "3", &planner.retract_acceleration[3], 100, 99000);
-            MENU_ITEM_EDIT(float51, MSG_E3STEPS, &planner.axis_steps_per_mm[E_AXIS + 3], 5, 9999);
+            MENU_ITEM_EDIT_CALLBACK(float51, MSG_E3STEPS, &planner.axis_steps_per_mm[E_AXIS + 3], 5, 9999, _planner_refresh_positioning);
           #endif // EXTRUDERS > 3
         #endif // EXTRUDERS > 2
       #endif // EXTRUDERS > 1

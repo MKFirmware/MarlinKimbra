@@ -21,7 +21,7 @@
  */
 
 /**
- * dogm_lcd_implementation.h
+ * ultralcd_impl_DOGM.h
  *
  * Graphics LCD implementation for 128x64 pixel LCDs by STB for ErikZalm/Marlin
  * Demonstrator: http://www.reprap.org/wiki/STB_Electronics
@@ -35,8 +35,8 @@
 
 #include "../../base.h"
 
-#ifndef DOGM_LCD_IMPLEMENTATION_H
-#define DOGM_LCD_IMPLEMENTATION_H
+#ifndef ULTRALCD_IMPL_DOGM_H
+#define ULTRALCD_IMPL_DOGM_H
 
 /**
  * Implementation of the LCD display routines for a DOGM128 graphic display.
@@ -728,11 +728,11 @@ void lcd_implementation_drawedit(const char* pstr, const char* value=NULL) {
   #define lcd_implementation_drawmenu_sdfile(sel, row, pstr, longFilename) _drawmenu_sd(sel, row, pstr, longFilename, false)
   #define lcd_implementation_drawmenu_sddirectory(sel, row, pstr, longFilename) _drawmenu_sd(sel, row, pstr, longFilename, true)
 
-#endif //SDSUPPORT
+#endif // SDSUPPORT
 
 #define lcd_implementation_drawmenu_back(sel, row, pstr) lcd_implementation_drawmenu_generic(sel, row, pstr, LCD_STR_UPLEVEL[0], LCD_STR_UPLEVEL[0])
 #define lcd_implementation_drawmenu_submenu(sel, row, pstr, data) lcd_implementation_drawmenu_generic(sel, row, pstr, '>', LCD_STR_ARROW_RIGHT[0])
 #define lcd_implementation_drawmenu_gcode(sel, row, pstr, gcode) lcd_implementation_drawmenu_generic(sel, row, pstr, '>', ' ')
 #define lcd_implementation_drawmenu_function(sel, row, pstr, data) lcd_implementation_drawmenu_generic(sel, row, pstr, '>', ' ')
 
-#endif //__DOGM_LCD_IMPLEMENTATION_H
+#endif //__ULTRALCD_IMPL_DOGM_H

@@ -434,7 +434,7 @@ void CardReader::closeFile(bool store_location /*=false*/) {
     #if MECH(DELTA)
       enqueue_and_echo_commands_P(PSTR("G28"));
     #else
-      enqueue_and_echo_commands_P(PSTR("G28 X0 Y0"));
+      enqueue_and_echo_commands_P(PSTR("G28 X Y"));
     #endif
 
     disable_all_heaters();

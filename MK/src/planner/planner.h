@@ -126,20 +126,22 @@ class Planner {
     static volatile uint8_t block_buffer_head;           // Index of the next block to be pushed
     static volatile uint8_t block_buffer_tail;
 
-    static float max_feedrate[3 + EXTRUDERS]; // Max speeds in mm per second
-    static float axis_steps_per_mm[3 + EXTRUDERS];
-    static unsigned long max_acceleration_steps_per_s2[3 + EXTRUDERS];
-    static unsigned long max_acceleration_mm_per_s2[3 + EXTRUDERS]; // Use M201 to override by software
+    static float  max_feedrate_mm_s[3 + EXTRUDERS], // Max speeds in mm per second
+                  axis_steps_per_mm[3 + EXTRUDERS],
+                  steps_to_mm[3 + EXTRUDERS];
+
+    static unsigned long  max_acceleration_steps_per_s2[3 + EXTRUDERS],
+                          max_acceleration_mm_per_s2[3 + EXTRUDERS]; // Use M201 to override by software
 
     static millis_t min_segment_time;
-    static float min_feedrate;
-    static float acceleration;                    // Normal acceleration mm/s^2  DEFAULT ACCELERATION for all printing moves. M204 SXXXX
-    static float retract_acceleration[EXTRUDERS]; // Retract acceleration mm/s^2 filament pull-back and push-forward while standing still in the other axes M204 TXXXX
-    static float travel_acceleration;             // Travel acceleration mm/s^2  DEFAULT ACCELERATION for all NON printing moves. M204 MXXXX
-    static float max_xy_jerk;                     // The largest speed change requiring no acceleration
-    static float max_z_jerk;
-    static float max_e_jerk[EXTRUDERS];
-    static float min_travel_feedrate;
+    static float  min_feedrate_mm_s,
+                  min_travel_feedrate_mm_s,
+                  acceleration,                    // Normal acceleration mm/s^2  DEFAULT ACCELERATION for all printing moves. M204 SXXXX
+                  retract_acceleration[EXTRUDERS], // Retract acceleration mm/s^2 filament pull-back and push-forward while standing still in the other axes M204 TXXXX
+                  travel_acceleration,             // Travel acceleration mm/s^2  DEFAULT ACCELERATION for all NON printing moves. M204 MXXXX
+                  max_xy_jerk,                     // The largest speed change requiring no acceleration
+                  max_z_jerk,
+                  max_e_jerk[EXTRUDERS];
 
     #if ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
       static matrix_3x3 bed_level_matrix; // Transform to compensate for bed level
@@ -199,6 +201,7 @@ class Planner {
      */
 
     static void reset_acceleration_rates();
+    static void refresh_positioning();
 
     // Manage fans, paste pressure, etc.
     static void check_axes_activity();
@@ -223,10 +226,10 @@ class Planner {
        * Add a new linear movement to the buffer.
        *
        *  x,y,z,e   - target position in mm
-       *  feed_rate - (target) speed of the move
+       *  fr_mm_s   - (target) speed of the move
        *  extruder  - target extruder
        */
-      static void buffer_line(float x, float y, float z, const float& e, float feed_rate, const uint8_t extruder, const uint8_t driver);
+      static void buffer_line(float x, float y, float z, const float& e, float fr_mm_s, const uint8_t extruder, const uint8_t driver);
 
       /**
        * Set the planner.position and individual stepper positions.
@@ -241,7 +244,7 @@ class Planner {
 
     #else
 
-      static void buffer_line(const float& x, const float& y, const float& z, const float& e, float feed_rate, const uint8_t extruder, const uint8_t driver);
+      static void buffer_line(const float& x, const float& y, const float& z, const float& e, float fr_mm_s, const uint8_t extruder, const uint8_t driver);
       static void set_position_mm(const float& x, const float& y, const float& z, const float& e);
 
     #endif // AUTO_BED_LEVELING_FEATURE || MESH_BED_LEVELING

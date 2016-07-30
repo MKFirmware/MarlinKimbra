@@ -48,13 +48,13 @@
  *  EEPROM Checksum (uint16_t)
  *
  *  M92   XYZ E0 ...      planner.axis_steps_per_mm X,Y,Z,E0 ... (float x9)
- *  M203  XYZ E0 ...      planner.max_feedrate X,Y,Z,E0 ... (float x9)
+ *  M203  XYZ E0 ...      planner.max_feedrate_mm_s X,Y,Z,E0 ... (float x9)
  *  M201  XYZ E0 ...      planner.max_acceleration_mm_per_s2 X,Y,Z,E0 ... (uint32_t x9)
  *  M204  P               planner.acceleration (float)
  *  M204  R   E0 ...      planner.retract_acceleration (float x6)
  *  M204  T               planner.travel_acceleration (float)
- *  M205  S               planner.min_feedrate (float)
- *  M205  T               planner.min_travel_feedrate (float)
+ *  M205  S               planner.min_feedrate_mm_s (float)
+ *  M205  T               planner.min_travel_feedrate_mm_s (float)
  *  M205  B               planner.min_segment_time (ulong)
  *  M205  X               planner.max_xy_jerk (float)
  *  M205  Z               planner.max_z_jerk (float)
@@ -172,9 +172,15 @@ void Config_Postprocess() {
   // steps per s2 needs to be updated to agree with units per s2
   planner.reset_acceleration_rates();
 
+  // Make sure delta kinematics are updated before refreshing the
+  // planner position so the stepper counts will be set correctly.
   #if MECH(DELTA)
     set_delta_constants();
   #endif
+
+  // Refresh steps_to_mm with the reciprocal of axis_steps_per_mm
+  // and init stepper.count[], planner.position[] with current_position
+  planner.refresh_positioning();
 
   #if ENABLED(PIDTEMP)
     updatePID();
@@ -185,8 +191,10 @@ void Config_Postprocess() {
 
 #if ENABLED(EEPROM_SETTINGS)
 
-#define EEPROM_WRITE_VAR(pos, value) _EEPROM_writeData(pos, (uint8_t*)&value, sizeof(value))
-#define EEPROM_READ_VAR(pos, value) _EEPROM_readData(pos, (uint8_t*)&value, sizeof(value))
+#define EEPROM_START() int eeprom_index = EEPROM_OFFSET
+#define EEPROM_SKIP(VAR) eeprom_index += sizeof(VAR)
+#define EEPROM_WRITE(VAR) _EEPROM_writeData(eeprom_index, (uint8_t*)&VAR, sizeof(VAR))
+#define EEPROM_READ(VAR) _EEPROM_readData(eeprom_index, (uint8_t*)&VAR, sizeof(VAR))
 
 /**
  * M500 - Store Configuration
@@ -194,27 +202,28 @@ void Config_Postprocess() {
 void Config_StoreSettings() {
   float dummy = 0.0f;
   char ver[6] = "00000";
-  int i = EEPROM_OFFSET;
 
-  EEPROM_WRITE_VAR(i, ver);     // invalidate data first
-  i += sizeof(eeprom_checksum); // Skip the checksum slot
+  EEPROM_START();
+
+  EEPROM_WRITE(ver);     // invalidate data first
+  EEPROM_SKIP(eeprom_checksum); // Skip the checksum slot
 
   eeprom_checksum = 0; // clear before first "real data"
 
-  EEPROM_WRITE_VAR(i, planner.axis_steps_per_mm);
-  EEPROM_WRITE_VAR(i, planner.max_feedrate);
-  EEPROM_WRITE_VAR(i, planner.max_acceleration_mm_per_s2);
-  EEPROM_WRITE_VAR(i, planner.acceleration);
-  EEPROM_WRITE_VAR(i, planner.retract_acceleration);
-  EEPROM_WRITE_VAR(i, planner.travel_acceleration);
-  EEPROM_WRITE_VAR(i, planner.min_feedrate);
-  EEPROM_WRITE_VAR(i, planner.min_travel_feedrate);
-  EEPROM_WRITE_VAR(i, planner.min_segment_time);
-  EEPROM_WRITE_VAR(i, planner.max_xy_jerk);
-  EEPROM_WRITE_VAR(i, planner.max_z_jerk);
-  EEPROM_WRITE_VAR(i, planner.max_e_jerk);
-  EEPROM_WRITE_VAR(i, home_offset);
-  EEPROM_WRITE_VAR(i, hotend_offset);
+  EEPROM_WRITE(planner.axis_steps_per_mm);
+  EEPROM_WRITE(planner.max_feedrate_mm_s);
+  EEPROM_WRITE(planner.max_acceleration_mm_per_s2);
+  EEPROM_WRITE(planner.acceleration);
+  EEPROM_WRITE(planner.retract_acceleration);
+  EEPROM_WRITE(planner.travel_acceleration);
+  EEPROM_WRITE(planner.min_feedrate_mm_s);
+  EEPROM_WRITE(planner.min_travel_feedrate_mm_s);
+  EEPROM_WRITE(planner.min_segment_time);
+  EEPROM_WRITE(planner.max_xy_jerk);
+  EEPROM_WRITE(planner.max_z_jerk);
+  EEPROM_WRITE(planner.max_e_jerk);
+  EEPROM_WRITE(home_offset);
+  EEPROM_WRITE(hotend_offset);
 
   #if ENABLED(MESH_BED_LEVELING)
     // Compile time test that sizeof(mbl.z_values) is as expected
@@ -222,33 +231,33 @@ void Config_StoreSettings() {
     uint8_t mesh_num_x  = MESH_NUM_X_POINTS,
             mesh_num_y  = MESH_NUM_Y_POINTS,
             dummy_uint8 = mbl.status & _BV(MBL_STATUS_HAS_MESH_BIT);
-    EEPROM_WRITE_VAR(i, dummy_uint8);
-    EEPROM_WRITE_VAR(i, mbl.z_offset);
-    EEPROM_WRITE_VAR(i, mesh_num_x);
-    EEPROM_WRITE_VAR(i, mesh_num_y);
-    EEPROM_WRITE_VAR(i, mbl.z_values);
+    EEPROM_WRITE(dummy_uint8);
+    EEPROM_WRITE(mbl.z_offset);
+    EEPROM_WRITE(mesh_num_x);
+    EEPROM_WRITE(mesh_num_y);
+    EEPROM_WRITE(mbl.z_values);
   #endif
 
   #if HEATER_USES_AD595
-    EEPROM_WRITE_VAR(i, ad595_offset);
-    EEPROM_WRITE_VAR(i, ad595_gain);
+    EEPROM_WRITE(ad595_offset);
+    EEPROM_WRITE(ad595_gain);
   #endif
 
   #if MECH(DELTA)
-    EEPROM_WRITE_VAR(i, endstop_adj);
-    EEPROM_WRITE_VAR(i, delta_radius);
-    EEPROM_WRITE_VAR(i, delta_diagonal_rod);
-    EEPROM_WRITE_VAR(i, sw_endstop_max);
-    EEPROM_WRITE_VAR(i, tower_adj);
-    EEPROM_WRITE_VAR(i, diagrod_adj);
+    EEPROM_WRITE(endstop_adj);
+    EEPROM_WRITE(delta_radius);
+    EEPROM_WRITE(delta_diagonal_rod);
+    EEPROM_WRITE(sw_endstop_max);
+    EEPROM_WRITE(tower_adj);
+    EEPROM_WRITE(diagrod_adj);
   #elif ENABLED(Z_DUAL_ENDSTOPS)
-    EEPROM_WRITE_VAR(i, z_endstop_adj);
+    EEPROM_WRITE(z_endstop_adj);
   #endif
 
   #if HASNT(BED_PROBE)
     float zprobe_zoffset = 0;
   #endif
-  EEPROM_WRITE_VAR(i, zprobe_zoffset);
+  EEPROM_WRITE(zprobe_zoffset);
 
   #if DISABLED(ULTIPANEL)
     int plaPreheatHotendTemp = PLA_PREHEAT_HOTEND_TEMP, plaPreheatHPBTemp = PLA_PREHEAT_HPB_TEMP, plaPreheatFanSpeed = PLA_PREHEAT_FAN_SPEED,
@@ -256,100 +265,101 @@ void Config_StoreSettings() {
         gumPreheatHotendTemp = GUM_PREHEAT_HOTEND_TEMP, gumPreheatHPBTemp = GUM_PREHEAT_HPB_TEMP, gumPreheatFanSpeed = GUM_PREHEAT_FAN_SPEED;
   #endif
 
-  EEPROM_WRITE_VAR(i, plaPreheatHotendTemp);
-  EEPROM_WRITE_VAR(i, plaPreheatHPBTemp);
-  EEPROM_WRITE_VAR(i, plaPreheatFanSpeed);
-  EEPROM_WRITE_VAR(i, absPreheatHotendTemp);
-  EEPROM_WRITE_VAR(i, absPreheatHPBTemp);
-  EEPROM_WRITE_VAR(i, absPreheatFanSpeed);
-  EEPROM_WRITE_VAR(i, gumPreheatHotendTemp);
-  EEPROM_WRITE_VAR(i, gumPreheatHPBTemp);
-  EEPROM_WRITE_VAR(i, gumPreheatFanSpeed);
+  EEPROM_WRITE(plaPreheatHotendTemp);
+  EEPROM_WRITE(plaPreheatHPBTemp);
+  EEPROM_WRITE(plaPreheatFanSpeed);
+  EEPROM_WRITE(absPreheatHotendTemp);
+  EEPROM_WRITE(absPreheatHPBTemp);
+  EEPROM_WRITE(absPreheatFanSpeed);
+  EEPROM_WRITE(gumPreheatHotendTemp);
+  EEPROM_WRITE(gumPreheatHPBTemp);
+  EEPROM_WRITE(gumPreheatFanSpeed);
 
   #if ENABLED(PIDTEMP)
     for (int h = 0; h < HOTENDS; h++) {
-      EEPROM_WRITE_VAR(i, PID_PARAM(Kp, h));
-      EEPROM_WRITE_VAR(i, PID_PARAM(Ki, h));
-      EEPROM_WRITE_VAR(i, PID_PARAM(Kd, h));
-      EEPROM_WRITE_VAR(i, PID_PARAM(Kc, h));
+      EEPROM_WRITE(PID_PARAM(Kp, h));
+      EEPROM_WRITE(PID_PARAM(Ki, h));
+      EEPROM_WRITE(PID_PARAM(Kd, h));
+      EEPROM_WRITE(PID_PARAM(Kc, h));
     }
   #endif
 
   #if DISABLED(PID_ADD_EXTRUSION_RATE)
     int lpq_len = 20;
   #endif
-  EEPROM_WRITE_VAR(i, lpq_len);
+  EEPROM_WRITE(lpq_len);
   
   #if ENABLED(PIDTEMPBED)
-    EEPROM_WRITE_VAR(i, bedKp);
-    EEPROM_WRITE_VAR(i, bedKi);
-    EEPROM_WRITE_VAR(i, bedKd);
+    EEPROM_WRITE(bedKp);
+    EEPROM_WRITE(bedKi);
+    EEPROM_WRITE(bedKd);
   #endif
 
   #if ENABLED(PIDTEMPCHAMBER)
-    EEPROM_WRITE_VAR(i, chamberKp);
-    EEPROM_WRITE_VAR(i, chamberKi);
-    EEPROM_WRITE_VAR(i, chamberKd);
+    EEPROM_WRITE(chamberKp);
+    EEPROM_WRITE(chamberKi);
+    EEPROM_WRITE(chamberKd);
   #endif
 
   #if ENABLED(PIDTEMPCOOLER)
-    EEPROM_WRITE_VAR(i, coolerKp);
-    EEPROM_WRITE_VAR(i, coolerKi);
-    EEPROM_WRITE_VAR(i, coolerKd);
+    EEPROM_WRITE(coolerKp);
+    EEPROM_WRITE(coolerKi);
+    EEPROM_WRITE(coolerKd);
   #endif
 
   #if HASNT(LCD_CONTRAST)
     const int lcd_contrast = 32;
   #endif
-  EEPROM_WRITE_VAR(i, lcd_contrast);
+  EEPROM_WRITE(lcd_contrast);
 
   #if MECH(SCARA)
-    EEPROM_WRITE_VAR(i, axis_scaling); // 3 floats
+    EEPROM_WRITE(axis_scaling); // 3 floats
   #endif
 
   #if ENABLED(FWRETRACT)
-    EEPROM_WRITE_VAR(i, autoretract_enabled);
-    EEPROM_WRITE_VAR(i, retract_length);
+    EEPROM_WRITE(autoretract_enabled);
+    EEPROM_WRITE(retract_length);
     #if EXTRUDERS > 1
-      EEPROM_WRITE_VAR(i, retract_length_swap);
+      EEPROM_WRITE(retract_length_swap);
     #else
       dummy = 0.0f;
-      EEPROM_WRITE_VAR(i, dummy);
+      EEPROM_WRITE(dummy);
     #endif
-    EEPROM_WRITE_VAR(i, retract_feedrate);
-    EEPROM_WRITE_VAR(i, retract_zlift);
-    EEPROM_WRITE_VAR(i, retract_recover_length);
+    EEPROM_WRITE(retract_feedrate);
+    EEPROM_WRITE(retract_zlift);
+    EEPROM_WRITE(retract_recover_length);
     #if EXTRUDERS > 1
-      EEPROM_WRITE_VAR(i, retract_recover_length_swap);
+      EEPROM_WRITE(retract_recover_length_swap);
     #else
       dummy = 0.0f;
-      EEPROM_WRITE_VAR(i, dummy);
+      EEPROM_WRITE(dummy);
     #endif
-    EEPROM_WRITE_VAR(i, retract_recover_feedrate);
+    EEPROM_WRITE(retract_recover_feedrate);
   #endif // FWRETRACT
 
-  EEPROM_WRITE_VAR(i, volumetric_enabled);
+  EEPROM_WRITE(volumetric_enabled);
 
   // Save filament sizes
   for (int e = 0; e < EXTRUDERS; e++)
-    EEPROM_WRITE_VAR(i, filament_size[e]);
+    EEPROM_WRITE(filament_size[e]);
 
   #if ENABLED(IDLE_OOZING_PREVENT)
-    EEPROM_WRITE_VAR(i, IDLE_OOZING_enabled);
+    EEPROM_WRITE(IDLE_OOZING_enabled);
   #endif
 
   #if MB(ALLIGATOR)
-    EEPROM_WRITE_VAR(i, motor_current);
+    EEPROM_WRITE(motor_current);
   #endif
 
-  uint16_t final_checksum = eeprom_checksum;
+  uint16_t  final_checksum = eeprom_checksum,
+            eeprom_size = eeprom_index;
 
-  int j = EEPROM_OFFSET;
-  EEPROM_WRITE_VAR(j, version);
-  EEPROM_WRITE_VAR(j, final_checksum);
+  eeprom_index = EEPROM_OFFSET;
+  EEPROM_WRITE(version);
+  EEPROM_WRITE(final_checksum);
 
   // Report storage size
-  ECHO_SMV(DB, "Settings Stored (", i);
+  ECHO_SMV(DB, "Settings Stored (", eeprom_size);
   ECHO_EM(" bytes)");
 }
 
@@ -357,11 +367,12 @@ void Config_StoreSettings() {
  * M501 - Retrieve Configuration
  */
 void Config_RetrieveSettings() {
-  int i = EEPROM_OFFSET;
   char stored_ver[6];
   uint16_t stored_checksum;
-  EEPROM_READ_VAR(i, stored_ver);
-  EEPROM_READ_VAR(i, stored_checksum);
+
+  EEPROM_START();
+  EEPROM_READ(stored_ver);
+  EEPROM_READ(stored_checksum);
 
   if (DEBUGGING(INFO)) {
     ECHO_SMV(INFO, "Version: [", version);
@@ -378,51 +389,51 @@ void Config_RetrieveSettings() {
     eeprom_checksum = 0; // clear before reading first "real data"
 
     // version number match
-    EEPROM_READ_VAR(i, planner.axis_steps_per_mm);
-    EEPROM_READ_VAR(i, planner.max_feedrate);
-    EEPROM_READ_VAR(i, planner.max_acceleration_mm_per_s2);
+    EEPROM_READ(planner.axis_steps_per_mm);
+    EEPROM_READ(planner.max_feedrate_mm_s);
+    EEPROM_READ(planner.max_acceleration_mm_per_s2);
 
-    EEPROM_READ_VAR(i, planner.acceleration);
-    EEPROM_READ_VAR(i, planner.retract_acceleration);
-    EEPROM_READ_VAR(i, planner.travel_acceleration);
-    EEPROM_READ_VAR(i, planner.min_feedrate);
-    EEPROM_READ_VAR(i, planner.min_travel_feedrate);
-    EEPROM_READ_VAR(i, planner.min_segment_time);
-    EEPROM_READ_VAR(i, planner.max_xy_jerk);
-    EEPROM_READ_VAR(i, planner.max_z_jerk);
-    EEPROM_READ_VAR(i, planner.max_e_jerk);
-    EEPROM_READ_VAR(i, home_offset);
-    EEPROM_READ_VAR(i, hotend_offset);
+    EEPROM_READ(planner.acceleration);
+    EEPROM_READ(planner.retract_acceleration);
+    EEPROM_READ(planner.travel_acceleration);
+    EEPROM_READ(planner.min_feedrate_mm_s);
+    EEPROM_READ(planner.min_travel_feedrate_mm_s);
+    EEPROM_READ(planner.min_segment_time);
+    EEPROM_READ(planner.max_xy_jerk);
+    EEPROM_READ(planner.max_z_jerk);
+    EEPROM_READ(planner.max_e_jerk);
+    EEPROM_READ(home_offset);
+    EEPROM_READ(hotend_offset);
 
     #if ENABLED(MESH_BED_LEVELING)
       uint8_t mesh_num_x = 0, mesh_num_y = 0;
-      EEPROM_READ_VAR(i, mbl.status);
-      EEPROM_READ_VAR(i, mbl.z_offset);
-      EEPROM_READ_VAR(i, mesh_num_x);
-      EEPROM_READ_VAR(i, mesh_num_y);
-      EEPROM_READ_VAR(i, mbl.z_values);
+      EEPROM_READ(mbl.status);
+      EEPROM_READ(mbl.z_offset);
+      EEPROM_READ(mesh_num_x);
+      EEPROM_READ(mesh_num_y);
+      EEPROM_READ(mbl.z_values);
     #endif
 
     #if HEATER_USES_AD595
-      EEPROM_READ_VAR(i, ad595_offset);
-      EEPROM_READ_VAR(i, ad595_gain);
+      EEPROM_READ(ad595_offset);
+      EEPROM_READ(ad595_gain);
       for (int8_t h = 0; h < HOTENDS; h++)
         if (ad595_gain[h] == 0) ad595_gain[h] == TEMP_SENSOR_AD595_GAIN;
     #endif
 
     #if MECH(DELTA)
-      EEPROM_READ_VAR(i, endstop_adj);
-      EEPROM_READ_VAR(i, delta_radius);
-      EEPROM_READ_VAR(i, delta_diagonal_rod);
-      EEPROM_READ_VAR(i, sw_endstop_max);
-      EEPROM_READ_VAR(i, tower_adj);
-      EEPROM_READ_VAR(i, diagrod_adj);
+      EEPROM_READ(endstop_adj);
+      EEPROM_READ(delta_radius);
+      EEPROM_READ(delta_diagonal_rod);
+      EEPROM_READ(sw_endstop_max);
+      EEPROM_READ(tower_adj);
+      EEPROM_READ(diagrod_adj);
     #endif //DELTA
 
     #if HASNT(BED_PROBE)
       float zprobe_zoffset = 0;
     #endif
-    EEPROM_READ_VAR(i, zprobe_zoffset);
+    EEPROM_READ(zprobe_zoffset);
 
     #if DISABLED(ULTIPANEL)
       int plaPreheatHotendTemp, plaPreheatHPBTemp, plaPreheatFanSpeed,
@@ -430,93 +441,93 @@ void Config_RetrieveSettings() {
           gumPreheatHotendTemp, gumPreheatHPBTemp, gumPreheatFanSpeed;
     #endif
 
-    EEPROM_READ_VAR(i, plaPreheatHotendTemp);
-    EEPROM_READ_VAR(i, plaPreheatHPBTemp);
-    EEPROM_READ_VAR(i, plaPreheatFanSpeed);
-    EEPROM_READ_VAR(i, absPreheatHotendTemp);
-    EEPROM_READ_VAR(i, absPreheatHPBTemp);
-    EEPROM_READ_VAR(i, absPreheatFanSpeed);
-    EEPROM_READ_VAR(i, gumPreheatHotendTemp);
-    EEPROM_READ_VAR(i, gumPreheatHPBTemp);
-    EEPROM_READ_VAR(i, gumPreheatFanSpeed);
+    EEPROM_READ(plaPreheatHotendTemp);
+    EEPROM_READ(plaPreheatHPBTemp);
+    EEPROM_READ(plaPreheatFanSpeed);
+    EEPROM_READ(absPreheatHotendTemp);
+    EEPROM_READ(absPreheatHPBTemp);
+    EEPROM_READ(absPreheatFanSpeed);
+    EEPROM_READ(gumPreheatHotendTemp);
+    EEPROM_READ(gumPreheatHPBTemp);
+    EEPROM_READ(gumPreheatFanSpeed);
 
     #if ENABLED(PIDTEMP)
       for (int8_t h = 0; h < HOTENDS; h++) {
-        EEPROM_READ_VAR(i, PID_PARAM(Kp, h));
-        EEPROM_READ_VAR(i, PID_PARAM(Ki, h));
-        EEPROM_READ_VAR(i, PID_PARAM(Kd, h));
-        EEPROM_READ_VAR(i, PID_PARAM(Kc, h));
+        EEPROM_READ(PID_PARAM(Kp, h));
+        EEPROM_READ(PID_PARAM(Ki, h));
+        EEPROM_READ(PID_PARAM(Kd, h));
+        EEPROM_READ(PID_PARAM(Kc, h));
       }
     #endif // PIDTEMP
 
     #if DISABLED(PID_ADD_EXTRUSION_RATE)
       int lpq_len;
     #endif
-    EEPROM_READ_VAR(i, lpq_len);
+    EEPROM_READ(lpq_len);
 
     #if ENABLED(PIDTEMPBED)
-      EEPROM_READ_VAR(i, bedKp);
-      EEPROM_READ_VAR(i, bedKi);
-      EEPROM_READ_VAR(i, bedKd);
+      EEPROM_READ(bedKp);
+      EEPROM_READ(bedKi);
+      EEPROM_READ(bedKd);
     #endif
 
     #if ENABLED(PIDTEMPCHAMBER)
-      EEPROM_READ_VAR(i, chamberKp);
-      EEPROM_READ_VAR(i, chamberKi);
-      EEPROM_READ_VAR(i, chamberKd);
+      EEPROM_READ(chamberKp);
+      EEPROM_READ(chamberKi);
+      EEPROM_READ(chamberKd);
     #endif
 
     #if ENABLED(PIDTEMPCOOLER)
-      EEPROM_READ_VAR(i, coolerKp);
-      EEPROM_READ_VAR(i, coolerKi);
-      EEPROM_READ_VAR(i, coolerKd);
+      EEPROM_READ(coolerKp);
+      EEPROM_READ(coolerKi);
+      EEPROM_READ(coolerKd);
     #endif
 
     #if HASNT(LCD_CONTRAST)
       int lcd_contrast;
     #endif
-    EEPROM_READ_VAR(i, lcd_contrast);
+    EEPROM_READ(lcd_contrast);
 
     #if MECH(SCARA)
-      EEPROM_READ_VAR(i, axis_scaling);  // 3 floats
+      EEPROM_READ(axis_scaling);  // 3 floats
     #endif
 
     #if ENABLED(FWRETRACT)
-      EEPROM_READ_VAR(i, autoretract_enabled);
-      EEPROM_READ_VAR(i, retract_length);
+      EEPROM_READ(autoretract_enabled);
+      EEPROM_READ(retract_length);
       #if EXTRUDERS > 1
-        EEPROM_READ_VAR(i, retract_length_swap);
+        EEPROM_READ(retract_length_swap);
       #else
-        EEPROM_READ_VAR(i, dummy);
+        EEPROM_READ(dummy);
       #endif
-      EEPROM_READ_VAR(i, retract_feedrate);
-      EEPROM_READ_VAR(i, retract_zlift);
-      EEPROM_READ_VAR(i, retract_recover_length);
+      EEPROM_READ(retract_feedrate);
+      EEPROM_READ(retract_zlift);
+      EEPROM_READ(retract_recover_length);
       #if EXTRUDERS > 1
-        EEPROM_READ_VAR(i, retract_recover_length_swap);
+        EEPROM_READ(retract_recover_length_swap);
       #else
-        EEPROM_READ_VAR(i, dummy);
+        EEPROM_READ(dummy);
       #endif
-      EEPROM_READ_VAR(i, retract_recover_feedrate);
+      EEPROM_READ(retract_recover_feedrate);
     #endif // FWRETRACT
 
-    EEPROM_READ_VAR(i, volumetric_enabled);
+    EEPROM_READ(volumetric_enabled);
 
     for (int8_t e = 0; e < EXTRUDERS; e++)
-      EEPROM_READ_VAR(i, filament_size[e]);
+      EEPROM_READ(filament_size[e]);
 
     #if ENABLED(IDLE_OOZING_PREVENT)
-      EEPROM_READ_VAR(i, IDLE_OOZING_enabled);
+      EEPROM_READ(IDLE_OOZING_enabled);
     #endif
 
     #if MB(ALLIGATOR)
-      EEPROM_READ_VAR(i, motor_current);
+      EEPROM_READ(motor_current);
     #endif
 
     if (eeprom_checksum == stored_checksum) {
       Config_Postprocess();
       ECHO_SV(DB, version);
-      ECHO_MV(" stored settings retrieved (", i);
+      ECHO_MV(" stored settings retrieved (", eeprom_index);
       ECHO_EM(" bytes)");
     }
     else {
@@ -560,7 +571,7 @@ void Config_ResetDefault() {
 
   for (int8_t i = 0; i < 3 + EXTRUDERS; i++) {
     planner.axis_steps_per_mm[i] = tmp1[i];
-    planner.max_feedrate[i] = tmp2[i];
+    planner.max_feedrate_mm_s[i] = tmp2[i];
     planner.max_acceleration_mm_per_s2[i] = tmp3[i];
   }
 
@@ -582,20 +593,17 @@ void Config_ResetDefault() {
   }
 
   #if MECH(SCARA)
-    for (int8_t i = 0; i < NUM_AXIS; i++) {
+    LOOP_XYZE(i) {
       if (i < COUNT(axis_scaling))
         axis_scaling[i] = 1;
     }
   #endif
 
-  // steps per sq second need to be updated to agree with the units per sq second
-  planner.reset_acceleration_rates();
-
   planner.acceleration = DEFAULT_ACCELERATION;
   planner.travel_acceleration = DEFAULT_TRAVEL_ACCELERATION;
-  planner.min_feedrate = DEFAULT_MINIMUMFEEDRATE;
+  planner.min_feedrate_mm_s = DEFAULT_MINIMUMFEEDRATE;
   planner.min_segment_time = DEFAULT_MINSEGMENTTIME;
-  planner.min_travel_feedrate = DEFAULT_MINTRAVELFEEDRATE;
+  planner.min_travel_feedrate_mm_s = DEFAULT_MINTRAVELFEEDRATE;
   planner.max_xy_jerk = DEFAULT_XYJERK;
   planner.max_z_jerk = DEFAULT_ZJERK;
   home_offset[X_AXIS] = home_offset[Y_AXIS] = home_offset[Z_AXIS] = 0;
@@ -727,10 +735,10 @@ void Config_PrintSettings(bool forReplay) {
   #endif // SCARA
 
   CONFIG_ECHO_START("Maximum feedrates (mm/s):");
-  ECHO_SMV(CFG, "  M203 X", planner.max_feedrate[X_AXIS]);
-  ECHO_MV(" Y", planner.max_feedrate[Y_AXIS] );
-  ECHO_MV(" Z", planner.max_feedrate[Z_AXIS] );
-  ECHO_EMV(" E", planner.max_feedrate[E_AXIS]);
+  ECHO_SMV(CFG, "  M203 X", planner.max_feedrate_mm_s[X_AXIS]);
+  ECHO_MV(" Y", planner.max_feedrate_mm_s[Y_AXIS] );
+  ECHO_MV(" Z", planner.max_feedrate_mm_s[Z_AXIS] );
+  ECHO_EMV(" E", planner.max_feedrate_mm_s[E_AXIS]);
   #if EXTRUDERS > 1
     for (short i = 1; i < EXTRUDERS; i++) {
       ECHO_SMV(CFG, "  M203 T", i);
@@ -761,8 +769,8 @@ void Config_PrintSettings(bool forReplay) {
   #endif
 
   CONFIG_ECHO_START("Advanced variables: S=Min feedrate (mm/s), V=Min travel feedrate (mm/s), B=minimum segment time (ms), X=maximum XY jerk (mm/s),  Z=maximum Z jerk (mm/s),  E=maximum E jerk (mm/s)");
-  ECHO_SMV(CFG, "  M205 S", planner.min_feedrate );
-  ECHO_MV(" V", planner.min_travel_feedrate );
+  ECHO_SMV(CFG, "  M205 S", planner.min_feedrate_mm_s );
+  ECHO_MV(" V", planner.min_travel_feedrate_mm_s );
   ECHO_MV(" B", planner.min_segment_time );
   ECHO_MV(" X", planner.max_xy_jerk );
   ECHO_MV(" Z", planner.max_z_jerk);
