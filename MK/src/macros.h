@@ -80,6 +80,14 @@
   #define _ARRAY_N(N, args...) ARRAY_ ##N(args)
   #define ARRAY_N(N, args...) _ARRAY_N(N, args)
 
+  // ARRAY_BY_EXTRUDERS based on EXTRUDERS
+  #define ARRAY_BY_EXTRUDERS_N(args...) ARRAY_N(EXTRUDERS, args)
+  #define ARRAY_BY_EXTRUDERS(v1) ARRAY_BY_EXTRUDERS_N(v1, v1, v1, v1, v1, v1)
+
+  // ARRAY_BY_HOTENDS based on HOTENDS
+  #define ARRAY_BY_HOTENDS_N(args...) ARRAY_N(HOTENDS, args)
+  #define ARRAY_BY_HOTENDS(v1) ARRAY_BY_HOTENDS_N(v1, v1, v1, v1, v1, v1)
+
   // Macros for adding
   #define INC_0 1
   #define INC_1 2

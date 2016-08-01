@@ -1390,15 +1390,6 @@
     #if DISABLED(DEFAULT_DELTA_RADIUS)
       #error DEPENDENCY ERROR: Missing setting DEFAULT_DELTA_RADIUS
     #endif
-    #if DISABLED(XY_PROBE_SPEED)
-      #error DEPENDENCY ERROR: Missing setting XY_PROBE_SPEED
-    #endif
-    #if DISABLED(Z_PROBE_SPEED)
-      #error DEPENDENCY ERROR: Missing setting Z_PROBE_SPEED
-    #endif
-    #if DISABLED(AUTOCALIBRATION_PRECISION)
-      #error DEPENDENCY ERROR: Missing setting AUTOCALIBRATION_PRECISION
-    #endif
     #if DISABLED(TOWER_A_ENDSTOP_ADJ)
       #error DEPENDENCY ERROR: Missing setting TOWER_A_ENDSTOP_ADJ
     #endif
@@ -1435,32 +1426,43 @@
     #if DISABLED(TOWER_C_DIAGROD_ADJ)
       #error DEPENDENCY ERROR: Missing setting TOWER_C_DIAGROD_ADJ
     #endif
-    #if DISABLED(X_PROBE_OFFSET_FROM_NOZZLE)
-      #error DEPENDENCY ERROR: Missing setting X_PROBE_OFFSET_FROM_NOZZLE
-    #endif
-    #if DISABLED(Y_PROBE_OFFSET_FROM_NOZZLE)
-      #error DEPENDENCY ERROR: Missing setting Y_PROBE_OFFSET_FROM_NOZZLE
-    #endif
-    #if DISABLED(Z_PROBE_OFFSET_FROM_NOZZLE)
-      #error DEPENDENCY ERROR: Missing setting Z_PROBE_OFFSET_FROM_NOZZLE
-    #endif
-    #if DISABLED(Z_PROBE_DEPLOY_START_LOCATION)
-      #error DEPENDENCY ERROR: Missing setting Z_PROBE_DEPLOY_START_LOCATION
-    #endif
-    #if DISABLED(Z_PROBE_DEPLOY_END_LOCATION)
-      #error DEPENDENCY ERROR: Missing setting Z_PROBE_DEPLOY_END_LOCATION
-    #endif
-    #if DISABLED(Z_PROBE_RETRACT_START_LOCATION)
-      #error DEPENDENCY ERROR: Missing setting Z_PROBE_RETRACT_START_LOCATION
-    #endif
-    #if DISABLED(Z_PROBE_RETRACT_END_LOCATION)
-      #error DEPENDENCY ERROR: Missing setting Z_PROBE_RETRACT_END_LOCATION
-    #endif
-    #if DISABLED(Z_RAISE_BETWEEN_PROBINGS)
-      #error DEPENDENCY ERROR: Missing setting Z_RAISE_BETWEEN_PROBINGS
-    #endif
-    #if DISABLED(AUTO_BED_LEVELING_GRID_POINTS)
-      #error DEPENDENCY ERROR: Missing setting AUTO_BED_LEVELING_GRID_POINTS
+    #if ENABLED(AUTO_BED_LEVELING_FEATURE)
+      #if DISABLED(XY_PROBE_SPEED)
+        #error DEPENDENCY ERROR: Missing setting XY_PROBE_SPEED
+      #endif
+      #if DISABLED(Z_PROBE_SPEED)
+        #error DEPENDENCY ERROR: Missing setting Z_PROBE_SPEED
+      #endif
+      #if DISABLED(AUTOCALIBRATION_PRECISION)
+        #error DEPENDENCY ERROR: Missing setting AUTOCALIBRATION_PRECISION
+      #endif
+      #if DISABLED(X_PROBE_OFFSET_FROM_NOZZLE)
+        #error DEPENDENCY ERROR: Missing setting X_PROBE_OFFSET_FROM_NOZZLE
+      #endif
+      #if DISABLED(Y_PROBE_OFFSET_FROM_NOZZLE)
+        #error DEPENDENCY ERROR: Missing setting Y_PROBE_OFFSET_FROM_NOZZLE
+      #endif
+      #if DISABLED(Z_PROBE_OFFSET_FROM_NOZZLE)
+        #error DEPENDENCY ERROR: Missing setting Z_PROBE_OFFSET_FROM_NOZZLE
+      #endif
+      #if DISABLED(Z_PROBE_DEPLOY_START_LOCATION)
+        #error DEPENDENCY ERROR: Missing setting Z_PROBE_DEPLOY_START_LOCATION
+      #endif
+      #if DISABLED(Z_PROBE_DEPLOY_END_LOCATION)
+        #error DEPENDENCY ERROR: Missing setting Z_PROBE_DEPLOY_END_LOCATION
+      #endif
+      #if DISABLED(Z_PROBE_RETRACT_START_LOCATION)
+        #error DEPENDENCY ERROR: Missing setting Z_PROBE_RETRACT_START_LOCATION
+      #endif
+      #if DISABLED(Z_PROBE_RETRACT_END_LOCATION)
+        #error DEPENDENCY ERROR: Missing setting Z_PROBE_RETRACT_END_LOCATION
+      #endif
+      #if DISABLED(Z_RAISE_BETWEEN_PROBINGS)
+        #error DEPENDENCY ERROR: Missing setting Z_RAISE_BETWEEN_PROBINGS
+      #endif
+      #if DISABLED(AUTO_BED_LEVELING_GRID_POINTS)
+        #error DEPENDENCY ERROR: Missing setting AUTO_BED_LEVELING_GRID_POINTS
+      #endif
     #endif
   #endif
   

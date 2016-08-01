@@ -1250,6 +1250,7 @@ void Planner::set_e_position_mm(const float& e) {
   position[E_AXIS] = lround(e * axis_steps_per_mm[E_AXIS + active_extruder]);
   last_extruder = active_extruder;
   st_set_e_position(position[E_AXIS]);
+  previous_speed[E_AXIS] = 0.0;
 }
 
 // Recalculate the steps/s^2 acceleration rates, based on the mm/s^2
@@ -1261,7 +1262,7 @@ void Planner::reset_acceleration_rates() {
 // Recalculate position, steps_to_mm if axis_steps_per_mm changes!
 void Planner::refresh_positioning() {
   for (uint8_t i = 0; i < 3 + EXTRUDERS; i++)
-    planner.steps_to_mm[i] = 1.0 / planner.axis_steps_per_mm[i];
+    steps_to_mm[i] = 1.0 / axis_steps_per_mm[i];
   #if MECH(DELTA) || MECH(SCARA)
     inverse_kinematics(current_position);
     set_position_mm(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], current_position[E_AXIS]);

@@ -65,8 +65,8 @@
 
 #define ORIG_HEATER_BED_PIN    2
 #define ORIG_HEATER_0_PIN      3
-#define ORIG_HEATER_1_PIN      7
-#define ORIG_HEATER_2_PIN      8
+#define ORIG_HEATER_1_PIN      8
+#define ORIG_HEATER_2_PIN      7
 #define ORIG_HEATER_3_PIN      9
 
 #define ORIG_TEMP_BED_PIN      0  // ANALOG NUMBERING

@@ -43,7 +43,7 @@
   #define SERIAL_INIT(baud)           MKSERIAL.begin(baud), HAL::delayMilliseconds(1)
   #define SERIAL_CHAR(x)              MKSERIAL.write(x)
   #define SERIAL_PRINT(msg, args...)  MKSERIAL.print(msg, ##args)
-  #define SERIAL_EOL                  SERIAL_CHAR('\n')
+  #define SERIAL_EOL                  MKSERIAL.println()
 
   FORCE_INLINE void PS_PGM(const char *str) {
     char c;
@@ -53,9 +53,9 @@
     }
   }
 
-  #define ECHO_PS(x)                        PS_PGM(x)
-  #define ECHO_PGM(x)                       PS_PGM(PSTR(x))
-  #define ECHO_LNPGM(x)                     do{ PS_PGM(PSTR(x "\n")); }while(0)
+  #define ECHO_PS(message)                  PS_PGM(message)
+  #define ECHO_PGM(message)                 PS_PGM(PSTR(message))
+  #define ECHO_LNPGM(message)               do{ PS_PGM(PSTR(message)); SERIAL_EOL; }while(0)
 
   #define ECHO_S(srt)                       ECHO_PGM(srt)
   #define ECHO_M(msg)                       ECHO_PGM(msg)

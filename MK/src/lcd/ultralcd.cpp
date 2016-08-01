@@ -622,7 +622,7 @@ void kill_screen(const char* lcd_msg) {
 
   inline void line_to_current(AxisEnum axis) {
     #if MECH(DELTA)
-      calculate_delta(current_position);
+      inverse_kinematics(current_position);
       planner.buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS], manual_feedrate[axis]/60, active_extruder, active_driver);
     #else // !DELTA
       planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], manual_feedrate[axis]/60, active_extruder, active_driver);
@@ -642,12 +642,10 @@ void kill_screen(const char* lcd_msg) {
     }
 
     static void lcd_sdcard_stop() {
-      quickstop_stepper();
-      #if NOMECH(DELTA) && NOMECH(SCARA)
-        set_current_position_from_planner();
-      #endif
       card.sdprinting = false;
       card.closeFile();
+      clear_command_queue();
+      quickstop_stepper();
       print_job_counter.stop();
       autotempShutdown();
       wait_for_heatup = false;
@@ -989,7 +987,7 @@ void kill_screen(const char* lcd_msg) {
     static void lcd_extrude(float length, float feedrate) {
       current_position[E_AXIS] += length;
       #if MECH(DELTA)
-        calculate_delta(current_position);
+        inverse_kinematics(current_position);
         planner.buffer_line(delta[X_AXIS], delta[Y_AXIS], delta[Z_AXIS], current_position[E_AXIS], feedrate, active_extruder, active_driver);
       #else
         planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], feedrate, active_extruder, active_driver);
@@ -1499,7 +1497,7 @@ void kill_screen(const char* lcd_msg) {
   inline void manage_manual_move() {
     if (manual_move_axis != (int8_t)NO_AXIS && ELAPSED(millis(), manual_move_start_time) && !planner.is_full()) {
       #if MECH(DELTA)
-        calculate_delta(current_position);
+        inverse_kinematics(current_position);
         planner.buffer_line(delta[TOWER_1], delta[TOWER_2], delta[TOWER_3], current_position[E_AXIS], manual_feedrate[manual_move_axis]/60, manual_move_e_index, active_driver);
       #else
         planner.buffer_line(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], manual_feedrate[manual_move_axis]/60, manual_move_e_index, active_driver);

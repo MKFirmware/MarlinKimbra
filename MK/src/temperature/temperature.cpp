@@ -41,7 +41,6 @@
 */
 
 #include "../../base.h"
-#include "temperature.h"
 
 //===========================================================================
 //================================== macros =================================
@@ -52,7 +51,7 @@
 #endif
 
 #if ENABLED(PIDTEMPBED) || ENABLED(PIDTEMP) || ENABLED(PIDTEMPCHAMBER) || ENABLED(PIDTEMPCOOLER)
-  #define PID_dT ((OVERSAMPLENR * 14.0)/(F_CPU / 64.0 / 256.0))
+  #define PID_dT ((OVERSAMPLENR * 18.0)/(F_CPU / 64.0 / 256.0))
 #endif
 
 //===========================================================================
@@ -337,8 +336,8 @@ void autotempShutdown() {
   #if ENABLED(AUTOTEMP)
     if (planner.autotemp_enabled) {
       planner.autotemp_enabled = false;
-      if (degTargetHotend(EXTRUDER_IDX) > planner.autotemp_min)
-        setTargetHotend(0, EXTRUDER_IDX);
+      if (degTargetHotend(active_extruder) > planner.autotemp_min)
+        setTargetHotend(0, active_extruder);
     }
   #endif
 }
@@ -604,9 +603,8 @@ void updatePID() {
     #if ENABLED(PID_ADD_EXTRUSION_RATE)
       last_e_position = 0;
     #endif
-    HOTEND_LOOP() {
+    for (uint8_t h = 0; h < HOTENDS; h++)
       temp_iState_max[h] = PID_INTEGRAL_DRIVE_MAX / PID_PARAM(Ki, h);
-    }
   #endif
   #if ENABLED(PIDTEMPBED)
     temp_iState_max_bed = PID_BED_INTEGRAL_DRIVE_MAX / bedKi;
@@ -651,7 +649,7 @@ int getCoolerPower() {
       EXTRUDER_3_AUTO_FAN_PIN == EXTRUDER_2_AUTO_FAN_PIN ? 2 : 3
     };
     uint8_t fanState = 0;
-    HOTEND_LOOP() {
+    for (uint8_t h = 0; h < HOTENDS; h++) {
       if (current_temperature[h] > EXTRUDER_AUTO_FAN_TEMPERATURE) {
         SBI(fanState, fanBit[h]);
       }
@@ -720,7 +718,7 @@ void min_temp_error(uint8_t h) {
 }
 
 float get_pid_output(int h) {
-  #if HOTENDS == 1
+  #if HOTENDS <= 1
     UNUSED(h);
     #define _HOTEND_TEST  true
   #else
@@ -955,30 +953,30 @@ void manage_temp_controller() {
   #endif
 
   // Loop through all hotends
-  for (uint8_t e = 0; e < HOTENDS; e++) {
+  for (uint8_t h = 0; h < HOTENDS; h++) {
 
     #if ENABLED(THERMAL_PROTECTION_HOTENDS)
-      thermal_runaway_protection(&thermal_runaway_state_machine[e], &thermal_runaway_timer[e], current_temperature[e], target_temperature[e], e, THERMAL_PROTECTION_PERIOD, THERMAL_PROTECTION_HYSTERESIS);
+      thermal_runaway_protection(&thermal_runaway_state_machine[h], &thermal_runaway_timer[h], current_temperature[h], target_temperature[h], h, THERMAL_PROTECTION_PERIOD, THERMAL_PROTECTION_HYSTERESIS);
     #endif
 
-    float pid_output = get_pid_output(e);
+    float pid_output = get_pid_output(h);
 
     // Check if temperature is within the correct range
-    soft_pwm[e] = current_temperature[e] > minttemp[e] && current_temperature[e] < maxttemp[e] ? (int)pid_output >> 1 : 0;
+    soft_pwm[h] = current_temperature[h] > minttemp[h] && current_temperature[h] < maxttemp[h] ? (int)pid_output >> 1 : 0;
 
     // Check if the temperature is failing to increase
     #if ENABLED(THERMAL_PROTECTION_HOTENDS)
 
       // Is it time to check this extruder's heater?
-      if (watch_heater_next_ms[e] && ms > watch_heater_next_ms[e]) {
+      if (watch_heater_next_ms[h] && ms > watch_heater_next_ms[h]) {
         // Has it failed to increase enough?
-        if (degHotend(e) < watch_target_temp[e]) {
+        if (degHotend(h) < watch_target_temp[h]) {
           // Stop!
-          _temp_error(e, PSTR(SERIAL_T_HEATING_FAILED), PSTR(MSG_HEATING_FAILED_LCD));
+          _temp_error(h, PSTR(SERIAL_T_HEATING_FAILED), PSTR(MSG_HEATING_FAILED_LCD));
         }
         else {
           // Start again if the target is still far off
-          start_watching_heater(e);
+          start_watching_heater(h);
         }
       }
 
@@ -1153,28 +1151,28 @@ void manage_temp_controller() {
 #define PGM_RD_W(x)   (short)pgm_read_word(&x)
 // Derived from RepRap FiveD extruder::getTemperature()
 // For hot end temperature measurement.
-static float analog2temp(int raw, uint8_t e) {
+static float analog2temp(int raw, uint8_t h) {
   #if ENABLED(TEMP_SENSOR_1_AS_REDUNDANT)
-    if (e > HOTENDS)
+    if (h > HOTENDS)
   #else
-    if (e >= HOTENDS)
+    if (h >= HOTENDS)
   #endif
     {
-      ECHO_LVM(ER, (int)e, SERIAL_INVALID_EXTRUDER_NUM);
+      ECHO_LVM(ER, (int)h, SERIAL_INVALID_EXTRUDER_NUM);
       kill(PSTR(MSG_KILLED));
       return 0.0;
     }
 
   #if ENABLED(HEATER_0_USES_MAX6675)
-    if (e == 0) return 0.25 * raw;
+    if (h == 0) return 0.25 * raw;
   #endif
 
-  if (heater_ttbl_map[e] != NULL) {
+  if (heater_ttbl_map[h] != NULL) {
     float celsius = 0;
     uint8_t i;
-    short(*tt)[][2] = (short(*)[][2])(heater_ttbl_map[e]);
+    short(*tt)[][2] = (short(*)[][2])(heater_ttbl_map[h]);
 
-    for (i = 1; i < heater_ttbllen_map[e]; i++) {
+    for (i = 1; i < heater_ttbllen_map[h]; i++) {
       if (PGM_RD_W((*tt)[i][0]) > raw) {
         celsius = PGM_RD_W((*tt)[i - 1][1]) +
                   (raw - PGM_RD_W((*tt)[i - 1][0])) *
@@ -1185,16 +1183,16 @@ static float analog2temp(int raw, uint8_t e) {
     }
 
     // Overflow: Set to last value in the table
-    if (i == heater_ttbllen_map[e]) celsius = PGM_RD_W((*tt)[i - 1][1]);
+    if (i == heater_ttbllen_map[h]) celsius = PGM_RD_W((*tt)[i - 1][1]);
 
     return celsius;
   }
 
   #if HEATER_USES_AD595
     #ifdef __SAM3X8E__
-      return ((raw * ((3.3 * 100.0) / 1024.0) / OVERSAMPLENR) * ad595_gain[e]) + ad595_offset[e];
+      return ((raw * ((3.3 * 100.0) / 1024.0) / OVERSAMPLENR) * ad595_gain[h]) + ad595_offset[h];
     #else
-      return ((raw * ((5.0 * 100.0) / 1024.0) / OVERSAMPLENR) * ad595_gain[e]) + ad595_offset[e];
+      return ((raw * ((5.0 * 100.0) / 1024.0) / OVERSAMPLENR) * ad595_gain[h]) + ad595_offset[h];
     #endif
   #else
     return 0;
@@ -1309,8 +1307,8 @@ static void updateTemperaturesFromRawValues() {
     current_temperature_raw[0] = read_max6675();
   #endif
 
-  for (uint8_t e = 0; e < HOTENDS; e++)
-    current_temperature[e] = analog2temp(current_temperature_raw[e], e);
+  for (uint8_t h = 0; h < HOTENDS; h++)
+    current_temperature[h] = analog2temp(current_temperature_raw[h], h);
 
   current_temperature_bed = analog2tempBed(current_temperature_bed_raw);
 
@@ -1416,7 +1414,7 @@ void tp_init() {
   #endif
 
   // Finish init of mult hotends arrays
-  HOTEND_LOOP() {
+  for (uint8_t h = 0; h < HOTENDS; h++) {
     // populate with the first value
     maxttemp[h] = maxttemp[0];
     #if ENABLED(PIDTEMP)
@@ -1692,13 +1690,13 @@ void tp_init() {
    * their target temperature by a configurable margin.
    * This is called when the temperature is set. (M104, M109)
    */
-  void start_watching_heater(int e) {
-    if (degHotend(e) < degTargetHotend(e) - (WATCH_TEMP_INCREASE + TEMP_HYSTERESIS + 1)) {
-      watch_target_temp[e] = degHotend(e) + WATCH_TEMP_INCREASE;
-      watch_heater_next_ms[e] = millis() + WATCH_TEMP_PERIOD * 1000UL;
+  void start_watching_heater(int h) {
+    if (degHotend(h) < degTargetHotend(h) - (WATCH_TEMP_INCREASE + TEMP_HYSTERESIS + 1)) {
+      watch_target_temp[h] = degHotend(h) + WATCH_TEMP_INCREASE;
+      watch_heater_next_ms[h] = millis() + WATCH_TEMP_PERIOD * 1000UL;
     }
     else
-      watch_heater_next_ms[e] = 0;
+      watch_heater_next_ms[h] = 0;
   }
 #endif
 
@@ -1813,7 +1811,7 @@ void tp_init() {
 #endif // THERMAL_PROTECTION_HOTENDS || THERMAL_PROTECTION_BED || THERMAL_PROTECTION_CHAMBER || THERMAL_PROTECTION_COOLER
 
 void disable_all_heaters() {
-  HOTEND_LOOP() setTargetHotend(0, h);
+  for (uint8_t h = 0; h < HOTENDS; h++) setTargetHotend(0, h);
   setTargetBed(0);
   setTargetChamber(0);
 
