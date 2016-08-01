@@ -66,10 +66,6 @@ void kill(const char *);
 void Stop();
 void quickstop_stepper();
 
-#if !MECH(DELTA) && !MECH(SCARA)
-  void set_current_position_from_planner();
-#endif
-
 #if ENABLED(FILAMENT_RUNOUT_SENSOR)
   void handle_filament_runout();
 #endif
@@ -86,6 +82,7 @@ extern bool Printing;
 bool enqueue_and_echo_command(const char* cmd, bool say_ok = false); // put a single ASCII command at the end of the current buffer or return false when it is full
 void enqueue_and_echo_command_now(const char* cmd); // enqueue now, only return when the command has been enqueued
 void enqueue_and_echo_commands_P(const char* cmd);  // put one or many ASCII commands at the end of the current buffer, read from flash
+void clear_command_queue();
 
 void prepare_arc_move(char isclockwise);
 void clamp_to_software_endstops(float target[3]);

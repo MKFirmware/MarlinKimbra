@@ -670,18 +670,6 @@
   #define HAS_PID_COOLING (ENABLED(PIDTEMPCOOLER))
 
   /**
-   * ARRAY_BY_EXTRUDERS based on EXTRUDERS
-   */
-  #define ARRAY_BY_EXTRUDERS_N(args...) ARRAY_N(EXTRUDERS, args)
-  #define ARRAY_BY_EXTRUDERS(v1) ARRAY_BY_EXTRUDERS_N(v1, v1, v1, v1, v1, v1)
-
-  /**
-   * ARRAY_BY_HOTENDS based on HOTENDS
-   */
-  #define ARRAY_BY_HOTENDS_N(args...) ARRAY_N(HOTENDS, args)
-  #define ARRAY_BY_HOTENDS(v1) ARRAY_BY_HOTENDS_N(v1, v1, v1, v1, v1, v1)
-
-  /**
    * Shorthand for pin tests, used wherever needed
    */
   #define HAS_TEMP_0 (PIN_EXISTS(TEMP_0) && TEMP_SENSOR_0 != 0 && TEMP_SENSOR_0 != -2)

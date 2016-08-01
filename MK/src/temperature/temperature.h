@@ -43,14 +43,10 @@
 #ifndef TEMPERATURE_H
 #define TEMPERATURE_H
 
-#if HOTENDS == 1
-  #define HOTEND_LOOP() const uint8_t h = 0;
+#if HOTENDS <= 1
   #define HOTEND_INDEX  0
-  #define EXTRUDER_IDX  0
 #else
-  #define HOTEND_LOOP() for (int8_t h = 0; h < HOTENDS; h++)
   #define HOTEND_INDEX  h
-  #define EXTRUDER_IDX  active_extruder
 #endif
 
 // public functions
@@ -133,7 +129,7 @@ extern float current_temperature_cooler;
 //inline so that there is no performance decrease.
 //deg=degreeCelsius
 FORCE_INLINE float degHotend(uint8_t h) {
-  #if HOTENDS == 1
+  #if HOTENDS <= 1
     UNUSED(h);
   #endif
   return current_temperature[HOTEND_INDEX];
@@ -145,7 +141,7 @@ FORCE_INLINE float degCooler() { return current_temperature_cooler; }
 
 #if ENABLED(SHOW_TEMP_ADC_VALUES)
   FORCE_INLINE float rawHotendTemp(uint8_t h) {
-    #if HOTENDS == 1
+    #if HOTENDS <= 1
       UNUSED(h);
     #endif
     return current_temperature_raw[HOTEND_INDEX];
@@ -156,7 +152,7 @@ FORCE_INLINE float degCooler() { return current_temperature_cooler; }
 #endif
 
 FORCE_INLINE float degTargetHotend(uint8_t h) {
-  #if HOTENDS == 1
+  #if HOTENDS <= 1
     UNUSED(h);
   #endif
   return target_temperature[HOTEND_INDEX];
@@ -183,7 +179,7 @@ FORCE_INLINE float degTargetCooler() { return target_temperature_cooler; }
 #endif
 
 FORCE_INLINE void setTargetHotend(const float& celsius, uint8_t h) {
-  #if HOTENDS == 1
+  #if HOTENDS <= 1
     UNUSED(h);
   #endif
   target_temperature[HOTEND_INDEX] = celsius;
@@ -214,7 +210,7 @@ FORCE_INLINE void setTargetCooler(const float& celsius) {
 }
 
 FORCE_INLINE bool isHeatingHotend(uint8_t h) {
-  #if HOTENDS == 1
+  #if HOTENDS <= 1
     UNUSED(h);
   #endif
   return target_temperature[HOTEND_INDEX] > current_temperature[HOTEND_INDEX];
@@ -225,7 +221,7 @@ FORCE_INLINE bool isHeatingChamber() { return target_temperature_chamber > curre
 FORCE_INLINE bool isHeatingCooler() { return target_temperature_cooler > current_temperature_cooler; } 
 
 FORCE_INLINE bool isCoolingHotend(uint8_t h) {
-  #if HOTENDS == 1
+  #if HOTENDS <= 1
     UNUSED(h);
   #endif
   return target_temperature[HOTEND_INDEX] < current_temperature[HOTEND_INDEX];
@@ -239,7 +235,7 @@ FORCE_INLINE bool isCoolingCooler() { return target_temperature_cooler < current
   extern float extrude_min_temp;
   extern bool allow_cold_extrude;
   FORCE_INLINE bool tooColdToExtrude(uint8_t h) {
-    #if HOTENDS == 1
+    #if HOTENDS <= 1
       UNUSED(h);
     #endif
     return (allow_cold_extrude ? false : degHotend(HOTEND_INDEX) < extrude_min_temp); 
