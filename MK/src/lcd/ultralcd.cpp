@@ -1475,14 +1475,27 @@ void kill_screen(const char* lcd_msg) {
 
   #if MECH(DELTA)
 
+    static void _goto_tower_pos(const float &a) {
+      do_blocking_move_to(
+        a < 0 ? X_HOME_POS : sin(a) * -(DELTA_PRINTABLE_RADIUS),
+        a < 0 ? Y_HOME_POS : cos(a) *  (DELTA_PRINTABLE_RADIUS),
+        4
+      );
+    }
+
+    static void _goto_tower_x() { _goto_tower_pos(RADIANS(120)); }
+    static void _goto_tower_y() { _goto_tower_pos(RADIANS(240)); }
+    static void _goto_tower_z() { _goto_tower_pos(0); }
+    static void _goto_center()  { _goto_tower_pos(-1); }
+
     static void lcd_delta_calibrate_menu() {
       START_MENU();
       MENU_ITEM(back, MSG_MAIN);
       MENU_ITEM(gcode, MSG_AUTO_HOME, PSTR("G28"));
-      MENU_ITEM(gcode, MSG_DELTA_CALIBRATE_X, PSTR("G0 F8000 X-77.94 Y-45 Z0"));
-      MENU_ITEM(gcode, MSG_DELTA_CALIBRATE_Y, PSTR("G0 F8000 X77.94 Y-45 Z0"));
-      MENU_ITEM(gcode, MSG_DELTA_CALIBRATE_Z, PSTR("G0 F8000 X0 Y90 Z0"));
-      MENU_ITEM(gcode, MSG_DELTA_CALIBRATE_CENTER, PSTR("G0 F8000 X0 Y0 Z0"));
+      MENU_ITEM(function, MSG_DELTA_CALIBRATE_X, _goto_tower_x);
+      MENU_ITEM(function, MSG_DELTA_CALIBRATE_Y, _goto_tower_y);
+      MENU_ITEM(function, MSG_DELTA_CALIBRATE_Z, _goto_tower_z);
+      MENU_ITEM(function, MSG_DELTA_CALIBRATE_CENTER, _goto_center);
       END_MENU();
     }
 
@@ -1876,7 +1889,7 @@ void kill_screen(const char* lcd_msg) {
         #if ENABLED(PID_AUTOTUNE_MENU)
           #define PID_MENU_ITEMS(HLABEL, hindex) \
             _PID_MENU_ITEMS(HLABEL, hindex); \
-            MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, SERIAL_PID_AUTOTUNE HLABEL, &autotune_temp[hindex], 150, heater_maxtemp[hindex] - 15, lcd_autotune_callback_H ## hindex)
+            MENU_MULTIPLIER_ITEM_EDIT_CALLBACK(int3, MSG_PID_AUTOTUNE HLABEL, &autotune_temp[hindex], 150, heater_maxtemp[hindex] - 15, lcd_autotune_callback_H ## hindex)
         #else
           #define PID_MENU_ITEMS(HLABEL, hindex) _PID_MENU_ITEMS(HLABEL, hindex)
         #endif
@@ -2988,10 +3001,10 @@ void lcd_update() {
                 else if (encoderStepRate >= ENCODER_10X_STEPS_PER_SEC) encoderMultiplier = 10;
 
                 #if ENABLED(ENCODER_RATE_MULTIPLIER_DEBUG)
-                  ECHO_SMV(DB, "Enc Step Rate: ", encoderStepRate);
-                  ECHO_MV("  Multiplier: ", encoderMultiplier);
-                  ECHO_MV("  ENCODER_10X_STEPS_PER_SEC: ", ENCODER_10X_STEPS_PER_SEC);
-                  ECHO_EMV("  ENCODER_100X_STEPS_PER_SEC: ", ENCODER_100X_STEPS_PER_SEC);
+                  SERIAL_SMV(DEB, "Enc Step Rate: ", encoderStepRate);
+                  SERIAL_MV("  Multiplier: ", encoderMultiplier);
+                  SERIAL_MV("  ENCODER_10X_STEPS_PER_SEC: ", ENCODER_10X_STEPS_PER_SEC);
+                  SERIAL_EMV("  ENCODER_100X_STEPS_PER_SEC: ", ENCODER_100X_STEPS_PER_SEC);
                 #endif
               }
 
@@ -3033,6 +3046,12 @@ void lcd_update() {
           break;
       }
 
+      #if ENABLED(ULTIPANEL)
+        #define CURRENTSCREEN() (*currentScreen)()
+      #else
+        #define CURRENTSCREEN() lcd_status_screen()
+      #endif
+
       #if ENABLED(DOGLCD)  // Changes due to different driver architecture of the DOGM display
         static int8_t dot_color = 0;
         dot_color = 1 - dot_color;
@@ -3043,12 +3062,10 @@ void lcd_update() {
           u8g.setColorIndex(dot_color); // Set color for the alive dot
           u8g.drawPixel(127, 63); // draw alive dot
           u8g.setColorIndex(1); // black on white
-          (*currentScreen)();
+          CURRENTSCREEN();
         } while (u8g.nextPage());
-      #elif ENABLED(ULTIPANEL)
-        (*currentScreen)();
       #else
-        lcd_status_screen();
+        CURRENTSCREEN();
       #endif
     }
 
@@ -3077,7 +3094,22 @@ void lcd_update() {
   }
 }
 
+void set_utf_strlen(char* s, uint8_t n) {
+  uint8_t i = 0, j = 0;
+  while (s[i] && (j < n)) {
+    #if ENABLED(MAPPER_NON)
+      j++;
+    #else
+      if ((s[i] & 0xC0u) != 0x80u) j++;
+    #endif
+    i++;
+  }
+  while (j++ < n) s[i++] = ' ';
+  s[i] = '\0';
+}
+
 void lcd_finishstatus(bool persist = false) {
+  set_utf_strlen(lcd_status_message, LCD_WIDTH);
   #if !(ENABLED(LCD_PROGRESS_BAR) && (PROGRESS_MSG_EXPIRE > 0))
     UNUSED(persist);
   #endif
@@ -3098,16 +3130,6 @@ void lcd_finishstatus(bool persist = false) {
 #if ENABLED(LCD_PROGRESS_BAR) && PROGRESS_MSG_EXPIRE > 0
   void dontExpireStatus() { expire_status_ms = 0; }
 #endif
-
-void set_utf_strlen(char* s, uint8_t n) {
-  uint8_t i = 0, j = 0;
-  while (s[i] && (j < n)) {
-    if ((s[i] & 0xc0u) != 0x80u) j++;
-    i++;
-  }
-  while (j++ < n) s[i++] = ' ';
-  s[i] = '\0';
-}
 
 bool lcd_hasstatus() { return (lcd_status_message[0] != '\0'); }
 

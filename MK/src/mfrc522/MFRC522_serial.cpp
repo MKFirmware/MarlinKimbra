@@ -195,24 +195,24 @@
   }
   void MFRC522::printInfo(int8_t e) {
     char lung[30];
-    ECHO_LMV(INFO, MSG_RFID_SPOOL, e);
-    ECHO_LMT(INFO, MSG_RFID_BRAND, RfidData[e].data.brand);
-    ECHO_LMT(INFO, MSG_RFID_TYPE, RfidData[e].data.type);
-    ECHO_LMT(INFO, MSG_RFID_COLOR, RfidData[e].data.color);
-    ECHO_LMV(INFO, MSG_RFID_SIZE, RfidData[e].data.size);
-    ECHO_SMV(INFO, MSG_RFID_TEMP_HOTEND, RfidData[e].data.temphotendmin);
-    ECHO_EMV(" - ", RfidData[e].data.temphotendmax);
-    ECHO_SMV(INFO, MSG_RFID_TEMP_BED, RfidData[e].data.tempbedmin);
-    ECHO_EMV(" - ", RfidData[e].data.tempbedmax);
-    ECHO_LMV(INFO, MSG_RFID_TEMP_USER_HOTEND, RfidData[e].data.temphotend);
-    ECHO_LMV(INFO, MSG_RFID_TEMP_USER_BED, RfidData[e].data.tempbed);
-    ECHO_SMV(INFO, MSG_RFID_DENSITY, RfidData[e].data.density); ECHO_EM("%");
+    SERIAL_EMV(MSG_RFID_SPOOL, e);
+    SERIAL_EMT(MSG_RFID_BRAND, RfidData[e].data.brand);
+    SERIAL_EMT(MSG_RFID_TYPE, RfidData[e].data.type);
+    SERIAL_EMT(MSG_RFID_COLOR, RfidData[e].data.color);
+    SERIAL_EMV(MSG_RFID_SIZE, RfidData[e].data.size);
+    SERIAL_MV(MSG_RFID_TEMP_HOTEND, RfidData[e].data.temphotendmin);
+    SERIAL_EMV(" - ", RfidData[e].data.temphotendmax);
+    SERIAL_MV(MSG_RFID_TEMP_BED, RfidData[e].data.tempbedmin);
+    SERIAL_EMV(" - ", RfidData[e].data.tempbedmax);
+    SERIAL_EMV(MSG_RFID_TEMP_USER_HOTEND, RfidData[e].data.temphotend);
+    SERIAL_EMV(MSG_RFID_TEMP_USER_BED, RfidData[e].data.tempbed);
+    SERIAL_MV(MSG_RFID_DENSITY, RfidData[e].data.density); SERIAL_EM("%");
     unsigned int  kmeter = (long)RfidData[e].data.lenght / 1000 / 1000,
                   meter = ((long)RfidData[e].data.lenght / 1000) % 1000,
                   centimeter = ((long)RfidData[e].data.lenght / 10) % 100,
                   millimeter = ((long)RfidData[e].data.lenght) % 10;
     sprintf_P(lung, PSTR("%i Km %i m %i cm %i mm"), kmeter, meter, centimeter, millimeter);
-    ECHO_LMT(INFO, MSG_RFID_SPOOL_LENGHT, lung);
+    SERIAL_EMT(MSG_RFID_SPOOL_LENGHT, lung);
   }
 
   // Private

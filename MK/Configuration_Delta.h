@@ -468,10 +468,8 @@
 /*****************************************************************************************
  ************************************ Homing feedrate ************************************
  *****************************************************************************************/
-// delta homing speeds must be the same on xyz
-#define HOMING_FEEDRATE_XYZ (200*60)
-#define HOMING_FEEDRATE_E 0
-#define HOMING_FEEDRATE { HOMING_FEEDRATE_XYZ, HOMING_FEEDRATE_XYZ, HOMING_FEEDRATE_XYZ, HOMING_FEEDRATE_E }
+// delta homing speeds must be the same on xyz. Homing speeds (mm/m)
+#define HOMING_FEEDRATE_XYZ (100*60)
 // homing hits the endstop, then retracts by this distance, before it tries to slowly bump again:
 #define XYZ_HOME_BUMP_MM 5
 // Re-Bump Speed Divisor (Divides the Homing Feedrate)

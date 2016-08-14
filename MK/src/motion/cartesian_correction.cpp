@@ -86,19 +86,19 @@
   //===========================================================================
   void Hysteresis::calcSteps() {
     for (uint8_t i = 0; i < NUM_AXIS; i++)
-      m_hysteresis_steps[i] = (long)(m_hysteresis_mm[i] * planner.axis_steps_per_unit[i]);
+      m_hysteresis_steps[i] = (long)(m_hysteresis_mm[i] * planner.axis_steps_per_mm[i]);
   }
 
   //===========================================================================
   void Hysteresis::ReportToSerial() {
-    ECHO_SMV(DB, "Hysteresis X", m_hysteresis_mm[X_AXIS]);
-    ECHO_MV(" Y", m_hysteresis_mm[Y_AXIS]);
-    ECHO_MV(" Z", m_hysteresis_mm[Z_AXIS]);
-    ECHO_MV(" E", m_hysteresis_mm[E_AXIS]);
-    ECHO_MV(" SHIFTS: x=", axis_shift[X_AXIS]);
-    ECHO_MV(" y=", axis_shift[Y_AXIS]);
-    ECHO_MV(" z=", axis_shift[Z_AXIS]);
-    ECHO_EMV(" e=", axis_shift[E_AXIS]);
+    SERIAL_MV("Hysteresis X", m_hysteresis_mm[X_AXIS]);
+    SERIAL_MV(" Y", m_hysteresis_mm[Y_AXIS]);
+    SERIAL_MV(" Z", m_hysteresis_mm[Z_AXIS]);
+    SERIAL_MV(" E", m_hysteresis_mm[E_AXIS]);
+    SERIAL_MV(" SHIFTS: x=", axis_shift[X_AXIS]);
+    SERIAL_MV(" y=", axis_shift[Y_AXIS]);
+    SERIAL_MV(" z=", axis_shift[Z_AXIS]);
+    SERIAL_EMV(" e=", axis_shift[E_AXIS]);
   }
 
   //===========================================================================
@@ -137,9 +137,9 @@
   //===========================================================================
   // insert a planner.buffer_line if required to handle any hysteresis
   void Hysteresis::InsertCorrection(const float x, const float y, const float z, const float e) {
-    long destination[NUM_AXIS] = {x * planner.axis_steps_per_unit[X_AXIS], y * planner.axis_steps_per_unit[Y_AXIS], z * planner.axis_steps_per_unit[Z_AXIS], e * planner.axis_steps_per_unit[E_AXIS + active_extruder]};
-    uint8_t direction_bits = calc_direction_bits(position, destination);
-    uint8_t move_bits = calc_move_bits(position, destination);
+    long destination[NUM_AXIS] = {x * planner.axis_steps_per_mm[X_AXIS], y * planner.axis_steps_per_mm[Y_AXIS], z * planner.axis_steps_per_mm[Z_AXIS], e * planner.axis_steps_per_mm[E_AXIS + active_extruder]};
+    uint8_t direction_bits = calc_direction_bits(planner.position, destination);
+    uint8_t move_bits = calc_move_bits(planner.position, destination);
 
     // if the direction has changed in any of the axis that need hysteresis corrections...
     uint8_t direction_change_bits = (direction_bits ^ m_prev_direction_bits) & move_bits;
@@ -151,7 +151,7 @@
         if(direction_change_bits & (1 << axis)) {
           long fix = (((direction_bits & (1 << axis)) != 0) ? -m_hysteresis_steps[axis] : m_hysteresis_steps[axis]);
           //... add the hysteresis: move the current position in the opposite direction so that the next travel move is longer
-          position[axis] -= fix;
+          planner.position[axis] -= fix;
           axis_shift[axis] += fix;
         }
       }
@@ -265,12 +265,12 @@
   //===========================================================================
   void ZWobble::setSample(float zRod, float zActual) {
     if (DEBUGGING(DEBUG)) {
-      ECHO_SMV(DB, "New sample Rod: ", zRod);
-      ECHO_EMV(" Act: ", zActual);
+      SERIAL_SMV(DEB, "New sample Rod: ", zRod);
+      SERIAL_EMV(" Act: ", zActual);
     }
 
     if (m_puls <= 0) {
-      ECHO_LM(DB, "You must define a period first (M97 W...)");
+      SERIAL_EM("You must define a period first (M97 W...)");
       return;
     }
 
@@ -389,31 +389,31 @@
   //===========================================================================
   void ZWobble::ReportToSerial() {
     if (!m_sinusoidal)
-      ECHO_SM(DB, "Custom wobble function");
+      SERIAL_M("Custom wobble function");
     else {
-      ECHO_SMV(DB, "ZWobble Amp(A): ", m_amplitude);
+      SERIAL_MV("ZWobble Amp(A): ", m_amplitude);
     }
 
-    ECHO_MV(" phase(P): ", m_phase); 
-    ECHO_MV(" period(W): ", TWOPI / m_puls);
-    ECHO_MV(" puls: ", m_puls);
+    SERIAL_MV(" phase(P): ", m_phase); 
+    SERIAL_MV(" period(W): ", TWOPI / m_puls);
+    SERIAL_MV(" puls: ", m_puls);
 
     if (!areParametersConsistent())
-      ECHO_M(" Warning! Inconsistent parameters!");
+      SERIAL_SM(WARNING, " Inconsistent parameters!");
 
-    ECHO_E;
+    SERIAL_E;
 
     if (!m_sinusoidal) {
       // print out the LUT
       for (int i = 0; i < lutSize; i++) {
-        ECHO_SMV(DB, "Rod: ", ZROD(i));
-        ECHO_MV(" Act: ", ZACTUAL(i));
+        SERIAL_MV("Rod: ", ZROD(i));
+        SERIAL_MV(" Act: ", ZACTUAL(i));
 
         int delta = (ZACTUAL(i) - ZROD(i)) * 200 + 20;
         for (int j = 0; j < delta; j++) {
-          ECHO_M(" ");
+          SERIAL_M(" ");
         }
-        ECHO_EM("  +");
+        SERIAL_EM("  +");
       }
     }
   }
@@ -464,13 +464,13 @@
 
     if (!m_consistent) return; // don't go through consistency checks all the time; just check one bool
 
-    float originZ = (float)position[Z_AXIS] / planner.axis_steps_per_unit[Z_AXIS];
+    float originZ = (float)planner.position[Z_AXIS] / planner.axis_steps_per_mm[Z_AXIS];
 
     if (originZ < ZWOBBLE_MIN_Z || targetZ < ZWOBBLE_MIN_Z) return;
 
     if (DEBUGGING(DEBUG)) {
-      ECHO_SMV(DB, "Origin: ", originZ);
-      ECHO_MV(" Target: ", targetZ);
+      SERIAL_MV("Origin: ", originZ);
+      SERIAL_MV(" Target: ", targetZ);
     }
 
     if (EQUAL_WITHIN_TOLERANCE(originZ, targetZ)) return; // if there is no Z move, do nothing
@@ -484,24 +484,24 @@
       originZRod = findZRod(originZ);
     
     if (DEBUGGING(DEBUG))
-      ECHO_MV(" Origin rod: ", originZRod);
+      SERIAL_MV(" Origin rod: ", originZRod);
 
     float targetZRod = findZRod(targetZ);
 
     if (DEBUGGING(DEBUG))
-      ECHO_MV(" Target Rod: ", targetZRod);
+      SERIAL_MV(" Target Rod: ", targetZRod);
 
     // difference in steps between the correct movement (originZRod->targetZRod) and the planned movement
-    long stepDiff = lround((targetZRod - originZRod) * planner.axis_steps_per_unit[Z_AXIS]) - (lround(targetZ * planner.axis_steps_per_unit[Z_AXIS]) - position[Z_AXIS]);
+    long stepDiff = lround((targetZRod - originZRod) * planner.axis_steps_per_mm[Z_AXIS]) - (lround(targetZ * planner.axis_steps_per_mm[Z_AXIS]) - planner.position[Z_AXIS]);
 
     if (DEBUGGING(DEBUG))
-      ECHO_EMV(" stepDiff: ", stepDiff);
+      SERIAL_EMV(" stepDiff: ", stepDiff);
 
     lastZ = targetZ;
     lastZRod = targetZRod;
    
     // don't adjust if target posizion is less than 0
-    if (position[Z_AXIS] - stepDiff > 0)
-      position[Z_AXIS] -= stepDiff;
+    if (planner.position[Z_AXIS] - stepDiff > 0)
+      planner.position[Z_AXIS] -= stepDiff;
   }
 #endif

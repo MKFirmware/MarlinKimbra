@@ -268,7 +268,7 @@
     #endif
 
     if (laser.diagnostics)
-      ECHO_LM(INFO, "Laser fired");
+      SERIAL_EM("Laser_byte fired");
   }
 
   void laser_extinguish() {
@@ -285,7 +285,7 @@
       laser.time += millis() - (laser.last_firing / 1000);
 
       if (laser.diagnostics)
-        ECHO_LM(INFO, "Laser extinguished");
+        SERIAL_EM("Laser extinguished");
     }
   }
 
@@ -309,26 +309,26 @@
     void laser_peripherals_on() {
       digitalWrite(LASER_PERIPHERALS_PIN, LOW);
       if (laser.diagnostics)
-        ECHO_LM(INFO, "Laser Peripherals Enabled");
+        SERIAL_EM("Laser Peripherals Enabled");
     }
 
     void laser_peripherals_off() {
       if (!digitalRead(LASER_PERIPHERALS_STATUS_PIN)) {
         digitalWrite(LASER_PERIPHERALS_PIN, HIGH);
         if (laser.diagnostics)
-          ECHO_LM(INFO, "Laser Peripherals Disabled");
+          SERIAL_EM("Laser Peripherals Disabled");
       }
     }
 
     void laser_wait_for_peripherals() {
       unsigned long timeout = millis() + LASER_PERIPHERALS_TIMEOUT;
       if (laser.diagnostics)
-        ECHO_LM(INFO, "Waiting for peripheral control board signal...");
+        SERIAL_EM("Waiting for peripheral control board signal...");
 
       while(!laser_peripherals_ok()) {
         if (millis() > timeout) {
           if (laser.diagnostics)
-            ECHO_LM(ER, "Peripheral control board failed to respond");
+            SERIAL_LM(ER, "Peripheral control board failed to respond");
 
           Stop();
           break;

@@ -65,10 +65,10 @@
       detachInterrupt(digitalPinToInterrupt(FLOWMETER_PIN));
       flowrate  = (float)(((1000.0 / (float)((float)now - (float)lastflow)) * (float)flowrate_pulsecount) / (float)FLOWMETER_CALIBRATION);
       #if ENABLED(FLOWMETER_DEBUG)
-        ECHO_M(" FLOWMETER DEBUG ");
-        ECHO_MV(" flowrate:", flowrate);
-        ECHO_MV(" flowrate_pulsecount:", flowrate_pulsecount);
-        ECHO_EMV(" CALIBRATION:", FLOWMETER_CALIBRATION);
+        SERIAL_SM(DEB, "FLOWMETER DEBUG ");
+        SERIAL_MV(" flowrate:", flowrate);
+        SERIAL_MV(" flowrate_pulsecount:", flowrate_pulsecount);
+        SERIAL_EMV(" CALIBRATION:", FLOWMETER_CALIBRATION);
       #endif
       flowmeter_timer = now + 1000UL;
       lastflow = now;

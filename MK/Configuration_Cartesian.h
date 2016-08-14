@@ -478,7 +478,10 @@
 /*****************************************************************************************
  ************************************ Homing feedrate ************************************
  *****************************************************************************************/
-#define HOMING_FEEDRATE {100*60, 100*60, 2*60, 0} // set the homing speeds (mm/min)
+// Homing speeds (mm/m)
+#define HOMING_FEEDRATE_X (50*60)
+#define HOMING_FEEDRATE_Y (50*60)
+#define HOMING_FEEDRATE_Z (2*60)
 
 // homing hits the endstop, then retracts by this distance, before it tries to slowly bump again:
 #define X_HOME_BUMP_MM 5
@@ -529,8 +532,8 @@
  * as the input of the motor.                                                            *
  *                                                                                       *
  *****************************************************************************************/
-//define HYSTERESIS
-//define ZWOBBLE
+//#define HYSTERESIS
+//#define ZWOBBLE
 
 #define DEFAULT_HYSTERESIS_MM   0, 0, 0, 0  // X, Y, Z, E hysteresis in mm.
 #define DEFAULT_ZWOBBLE         0, 0, 0     // A, W, P

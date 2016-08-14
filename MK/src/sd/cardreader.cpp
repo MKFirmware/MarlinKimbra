@@ -123,11 +123,11 @@ void CardReader::initsd() {
       && !fat.begin(LCD_SDSS, SPI_SPEED)
     #endif
   ) {
-    ECHO_LM(ER, SERIAL_SD_INIT_FAIL);
+    SERIAL_LM(ER, MSG_SD_INIT_FAIL);
   }
   else {
     cardOK = true;
-    ECHO_LM(DB, SERIAL_SD_CARD_OK);
+    SERIAL_EM(MSG_SD_CARD_OK);
   }
   fat.chdir(true);
   root = *fat.vwd();
@@ -174,7 +174,7 @@ void CardReader::write_command(char* buf) {
   end[3] = '\0';
   file.write(begin);
   if (file.writeError) {
-    ECHO_LM(ER, SERIAL_SD_ERR_WRITE_TO_FILE);
+    SERIAL_LM(ER, MSG_SD_ERR_WRITE_TO_FILE);
   }
 }
 
@@ -196,8 +196,8 @@ bool CardReader::selectFile(const char* filename, bool silent/*=false*/) {
     else
       oldP = filename;
     if(!silent) {
-      ECHO_MT(SERIAL_SD_FILE_OPENED, oldP);
-      ECHO_EMV(SERIAL_SD_SIZE, file.fileSize());
+      SERIAL_MT(MSG_SD_FILE_OPENED, oldP);
+      SERIAL_EMT(MSG_SD_SIZE, file.fileSize());
     }
 
     for (int c = 0; c < sizeof(fullName); c++)
@@ -209,22 +209,22 @@ bool CardReader::selectFile(const char* filename, bool silent/*=false*/) {
     #endif
     sdpos = 0;
     fileSize = file.fileSize();
-    ECHO_EM(SERIAL_SD_FILE_SELECTED);
+    SERIAL_EM(MSG_SD_FILE_SELECTED);
     return true;
   }
   else {
-    if(!silent) ECHO_EMT(SERIAL_SD_OPEN_FILE_FAIL, oldP);
+    if(!silent) SERIAL_EMT(MSG_SD_OPEN_FILE_FAIL, oldP);
     return false;
   }
 }
 
 void CardReader::printStatus() {
   if (cardOK) {
-    ECHO_MV(SERIAL_SD_PRINTING_BYTE, sdpos);
-    ECHO_EMV(SERIAL_SD_SLASH, fileSize);
+    SERIAL_MV(MSG_SD_PRINTING_BYTE, sdpos);
+    SERIAL_EMV(MSG_SD_SLASH, fileSize);
   }
   else
-    ECHO_EM(SERIAL_SD_NOT_PRINTING);
+    SERIAL_EM(MSG_SD_NOT_PRINTING);
 }
 
 void CardReader::startWrite(char *filename, bool lcd_status/*=true*/) {
@@ -232,11 +232,11 @@ void CardReader::startWrite(char *filename, bool lcd_status/*=true*/) {
   file.close();
 
   if(!file.open(curDir, filename, O_CREAT | O_APPEND | O_WRITE | O_TRUNC)) {
-    ECHO_LMT(ER, SERIAL_SD_OPEN_FILE_FAIL, filename);
+    SERIAL_LMT(ER, MSG_SD_OPEN_FILE_FAIL, filename);
   }
   else {
     saving = true;
-    ECHO_EMT(SERIAL_SD_WRITE_TO_FILE, filename);
+    SERIAL_EMT(MSG_SD_WRITE_TO_FILE, filename);
     if (lcd_status) lcd_setstatus(filename);
   }
 }
@@ -246,13 +246,13 @@ void CardReader::deleteFile(char *filename) {
   sdprinting = false;
   file.close();
   if(fat.remove(filename)) {
-    ECHO_EMT(SERIAL_SD_FILE_DELETED, filename);
+    SERIAL_EMT(MSG_SD_FILE_DELETED, filename);
   }
   else {
     if(fat.rmdir(filename))
-      ECHO_EMT(SERIAL_SD_FILE_DELETED, filename);
+      SERIAL_EMT(MSG_SD_FILE_DELETED, filename);
     else
-      ECHO_EM(SERIAL_SD_FILE_DELETION_ERR);
+      SERIAL_EM(MSG_SD_FILE_DELETION_ERR);
   }
 }
 
@@ -261,7 +261,7 @@ void CardReader::finishWrite() {
     file.sync();
     file.close();
     saving = false;
-    ECHO_EM(SERIAL_SD_FILE_SAVED);
+    SERIAL_EM(MSG_SD_FILE_SAVED);
 }
 
 void CardReader::makeDirectory(char *filename) {
@@ -269,10 +269,10 @@ void CardReader::makeDirectory(char *filename) {
   sdprinting = false;
   file.close();
   if(fat.mkdir(filename)) {
-    ECHO_EM(SERIAL_SD_DIRECTORY_CREATED);
+    SERIAL_EM(MSG_SD_DIRECTORY_CREATED);
   }
   else {
-    ECHO_EM(SERIAL_SD_CREATION_FAILED);
+    SERIAL_EM(MSG_SD_CREATION_FAILED);
   }
 }
 
@@ -301,7 +301,7 @@ void CardReader::chdir(const char* relpath) {
   SdBaseFile* parent = &root;
   if (workDir.isOpen()) parent = &workDir;
   if (!newfile.open(parent, relpath, O_READ)) {
-    ECHO_LMT(DB, SERIAL_SD_CANT_ENTER_SUBDIR, relpath);
+    SERIAL_EMT(MSG_SD_CANT_ENTER_SUBDIR, relpath);
   }
   else {
     if (workDirDepth < SD_MAX_FOLDER_DEPTH) {
@@ -549,10 +549,10 @@ void CardReader::printEscapeChars(const char* s) {
       case '\r':
       case '\t':
       case '\\':
-      ECHO_T('\\');
+      SERIAL_C('\\');
       break;
     }
-    ECHO_T(s[i]);
+    SERIAL_C(s[i]);
   }
 }
 
@@ -794,28 +794,28 @@ void CardReader::unparseKeyLine(const char* key, char* value) {
   file.writeError = false;
   file.write(key);
   if (file.writeError) {
-    ECHO_LM(ER, SERIAL_SD_ERR_WRITE_TO_FILE);
+    SERIAL_LM(ER, MSG_SD_ERR_WRITE_TO_FILE);
     return;
   }
   
   file.writeError = false;
   file.write("=");
   if (file.writeError) {
-    ECHO_LM(ER, SERIAL_SD_ERR_WRITE_TO_FILE);
+    SERIAL_LM(ER, MSG_SD_ERR_WRITE_TO_FILE);
     return;
   }
   
   file.writeError = false;
   file.write(value);
   if (file.writeError) {
-    ECHO_LM(ER, SERIAL_SD_ERR_WRITE_TO_FILE);
+    SERIAL_LM(ER, MSG_SD_ERR_WRITE_TO_FILE);
     return;
   }
 
   file.writeError = false;
   file.write("\n");
   if (file.writeError) {
-    ECHO_LM(ER, SERIAL_SD_ERR_WRITE_TO_FILE);
+    SERIAL_LM(ER, MSG_SD_ERR_WRITE_TO_FILE);
     return;
   }
 }

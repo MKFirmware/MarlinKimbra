@@ -96,8 +96,8 @@ millis_t Stopwatch::duration() {
 #if ENABLED(DEBUG_STOPWATCH)
   void Stopwatch::debug(const char func[]) {
     if (DEBUGGING(INFO)) {
-      ECHO_MT("Stopwatch::", func);
-      ECHO_EM("()");
+      SERIAL_MV("Stopwatch:", func);
+      SERIAL_EM("()");
     }
   }
 #endif

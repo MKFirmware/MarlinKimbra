@@ -143,17 +143,17 @@ class Planner {
                   max_z_jerk,
                   max_e_jerk[EXTRUDERS];
 
-    #if ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
-      static matrix_3x3 bed_level_matrix; // Transform to compensate for bed level
-    #endif
-
-  private:
-
     /**
      * The current position of the tool in absolute steps
      * Reclculated if any axis_steps_per_mm are changed by gcode
      */
     static long position[NUM_AXIS];
+
+    #if ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
+      static matrix_3x3 bed_level_matrix; // Transform to compensate for bed level
+    #endif
+
+  private:
 
     /**
      * Speed of previous path line segment

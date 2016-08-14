@@ -147,7 +147,7 @@ void _EEPROM_writeData(int& pos, uint8_t* value, uint8_t size) {
     eeprom_write_byte((unsigned char*)pos, *value);
     c = eeprom_read_byte((unsigned char*)pos);
     if (c != *value) {
-      ECHO_LM(ER, SERIAL_ERR_EEPROM_WRITE);
+      SERIAL_LM(ER, "Error writing to EEPROM!");
     }
     eeprom_checksum += c;
     pos++;
@@ -359,8 +359,8 @@ void Config_StoreSettings() {
   EEPROM_WRITE(final_checksum);
 
   // Report storage size
-  ECHO_SMV(DB, "Settings Stored (", eeprom_size);
-  ECHO_EM(" bytes)");
+  SERIAL_MV("Settings Stored (", eeprom_size);
+  SERIAL_EM(" bytes)");
 }
 
 /**
@@ -375,9 +375,9 @@ void Config_RetrieveSettings() {
   EEPROM_READ(stored_checksum);
 
   if (DEBUGGING(INFO)) {
-    ECHO_SMV(INFO, "Version: [", version);
-    ECHO_MV("] Stored version: [", stored_ver);
-    ECHO_EM("]");
+    SERIAL_SMV(INFO, "Version: [", version);
+    SERIAL_MV("] Stored version: [", stored_ver);
+    SERIAL_EM("]");
   }
 
   if (strncmp(version, stored_ver, 5) != 0) {
@@ -526,12 +526,12 @@ void Config_RetrieveSettings() {
 
     if (eeprom_checksum == stored_checksum) {
       Config_Postprocess();
-      ECHO_SV(DB, version);
-      ECHO_MV(" stored settings retrieved (", eeprom_index);
-      ECHO_EM(" bytes)");
+      SERIAL_V(version);
+      SERIAL_MV(" stored settings retrieved (", eeprom_index);
+      SERIAL_EM(" bytes)");
     }
     else {
-      ECHO_LM(ER, "EEPROM checksum mismatch");
+      SERIAL_LM(ER, "EEPROM checksum mismatch");
       Config_ResetDefault();
     }
   }
@@ -702,12 +702,12 @@ void Config_ResetDefault() {
 
   Config_Postprocess();
 
-  ECHO_LM(DB, "Hardcoded Default Settings Loaded");
+  SERIAL_EM("Hardcoded Default Settings Loaded");
 }
 
 #if DISABLED(DISABLE_M503)
 
-#define CONFIG_ECHO_START(str) do{ if (!forReplay) ECHO_LM(CFG, str); }while(0)
+#define CONFIG_MSG_START(str) do{ if (!forReplay) SERIAL_S(CFG); SERIAL_EM(str); }while(0)
 
 /**
  * M503 - Print Configuration
@@ -715,247 +715,247 @@ void Config_ResetDefault() {
 void Config_PrintSettings(bool forReplay) {
   // Always have this function, even with EEPROM_SETTINGS disabled, the current values will be shown
 
-  CONFIG_ECHO_START("Steps per unit:");
-  ECHO_SMV(CFG, "  M92 X", planner.axis_steps_per_mm[X_AXIS]);
-  ECHO_MV(" Y", planner.axis_steps_per_mm[Y_AXIS]);
-  ECHO_MV(" Z", planner.axis_steps_per_mm[Z_AXIS]);
-  ECHO_EMV(" E", planner.axis_steps_per_mm[E_AXIS]);
+  CONFIG_MSG_START("Steps per unit:");
+  SERIAL_SMV(CFG, "  M92 X", planner.axis_steps_per_mm[X_AXIS]);
+  SERIAL_MV(" Y", planner.axis_steps_per_mm[Y_AXIS]);
+  SERIAL_MV(" Z", planner.axis_steps_per_mm[Z_AXIS]);
+  SERIAL_EMV(" E", planner.axis_steps_per_mm[E_AXIS]);
   #if EXTRUDERS > 1
     for (short i = 1; i < EXTRUDERS; i++) {
-      ECHO_SMV(CFG, "  M92 T", i);
-      ECHO_EMV(" E", planner.axis_steps_per_mm[E_AXIS + i]);
+      SERIAL_SMV(CFG, "  M92 T", i);
+      SERIAL_EMV(" E", planner.axis_steps_per_mm[E_AXIS + i]);
     }
   #endif //EXTRUDERS > 1
 
   #if MECH(SCARA)
-    CONFIG_ECHO_START("Scaling factors:");
-    ECHO_SMV(CFG, "  M365 X", axis_scaling[X_AXIS]);
-    ECHO_MV(" Y", axis_scaling[Y_AXIS]);
-    ECHO_EMV(" Z", axis_scaling[Z_AXIS]);
+    CONFIG_MSG_START("Scaling factors:");
+    SERIAL_SMV(CFG, "  M365 X", axis_scaling[X_AXIS]);
+    SERIAL_MV(" Y", axis_scaling[Y_AXIS]);
+    SERIAL_EMV(" Z", axis_scaling[Z_AXIS]);
   #endif // SCARA
 
-  CONFIG_ECHO_START("Maximum feedrates (mm/s):");
-  ECHO_SMV(CFG, "  M203 X", planner.max_feedrate_mm_s[X_AXIS]);
-  ECHO_MV(" Y", planner.max_feedrate_mm_s[Y_AXIS] );
-  ECHO_MV(" Z", planner.max_feedrate_mm_s[Z_AXIS] );
-  ECHO_EMV(" E", planner.max_feedrate_mm_s[E_AXIS]);
+  CONFIG_MSG_START("Maximum feedrates (mm/s):");
+  SERIAL_SMV(CFG, "  M203 X", planner.max_feedrate_mm_s[X_AXIS]);
+  SERIAL_MV(" Y", planner.max_feedrate_mm_s[Y_AXIS] );
+  SERIAL_MV(" Z", planner.max_feedrate_mm_s[Z_AXIS] );
+  SERIAL_EMV(" E", planner.max_feedrate_mm_s[E_AXIS]);
   #if EXTRUDERS > 1
     for (short i = 1; i < EXTRUDERS; i++) {
-      ECHO_SMV(CFG, "  M203 T", i);
-      ECHO_EMV(" E", planner.max_acceleration_mm_per_s2[E_AXIS + i]);
+      SERIAL_SMV(CFG, "  M203 T", i);
+      SERIAL_EMV(" E", planner.max_acceleration_mm_per_s2[E_AXIS + i]);
     }
   #endif //EXTRUDERS > 1
 
-  CONFIG_ECHO_START("Maximum Acceleration (mm/s2):");
-  ECHO_SMV(CFG, "  M201 X", planner.max_acceleration_mm_per_s2[X_AXIS] );
-  ECHO_MV(" Y", planner.max_acceleration_mm_per_s2[Y_AXIS] );
-  ECHO_MV(" Z", planner.max_acceleration_mm_per_s2[Z_AXIS] );
-  ECHO_EMV(" E", planner.max_acceleration_mm_per_s2[E_AXIS]);
+  CONFIG_MSG_START("Maximum Acceleration (mm/s2):");
+  SERIAL_SMV(CFG, "  M201 X", planner.max_acceleration_mm_per_s2[X_AXIS] );
+  SERIAL_MV(" Y", planner.max_acceleration_mm_per_s2[Y_AXIS] );
+  SERIAL_MV(" Z", planner.max_acceleration_mm_per_s2[Z_AXIS] );
+  SERIAL_EMV(" E", planner.max_acceleration_mm_per_s2[E_AXIS]);
   #if EXTRUDERS > 1
     for (int8_t i = 1; i < EXTRUDERS; i++) {
-      ECHO_SMV(CFG, "  M201 T", i);
-      ECHO_EMV(" E", planner.max_acceleration_mm_per_s2[E_AXIS + i]);
+      SERIAL_SMV(CFG, "  M201 T", i);
+      SERIAL_EMV(" E", planner.max_acceleration_mm_per_s2[E_AXIS + i]);
     }
   #endif //EXTRUDERS > 1
   
-  CONFIG_ECHO_START("Accelerations: P=printing, V=travel and T* R=retract");
-  ECHO_SMV(CFG,"  M204 P", planner.acceleration);
-  ECHO_EMV(" V", planner.travel_acceleration);
+  CONFIG_MSG_START("Accelerations: P=printing, V=travel and T* R=retract");
+  SERIAL_SMV(CFG,"  M204 P", planner.acceleration);
+  SERIAL_EMV(" V", planner.travel_acceleration);
   #if EXTRUDERS > 0
     for (int8_t i = 0; i < EXTRUDERS; i++) {
-      ECHO_SMV(CFG, "  M204 T", i);
-      ECHO_EMV(" R", planner.retract_acceleration[i]);
+      SERIAL_SMV(CFG, "  M204 T", i);
+      SERIAL_EMV(" R", planner.retract_acceleration[i]);
     }
   #endif
 
-  CONFIG_ECHO_START("Advanced variables: S=Min feedrate (mm/s), V=Min travel feedrate (mm/s), B=minimum segment time (ms), X=maximum XY jerk (mm/s),  Z=maximum Z jerk (mm/s),  E=maximum E jerk (mm/s)");
-  ECHO_SMV(CFG, "  M205 S", planner.min_feedrate_mm_s );
-  ECHO_MV(" V", planner.min_travel_feedrate_mm_s );
-  ECHO_MV(" B", planner.min_segment_time );
-  ECHO_MV(" X", planner.max_xy_jerk );
-  ECHO_MV(" Z", planner.max_z_jerk);
-  ECHO_EMV(" E", planner.max_e_jerk[0]);
+  CONFIG_MSG_START("Advanced variables: S=Min feedrate (mm/s), V=Min travel feedrate (mm/s), B=minimum segment time (ms), X=maximum XY jerk (mm/s),  Z=maximum Z jerk (mm/s),  E=maximum E jerk (mm/s)");
+  SERIAL_SMV(CFG, "  M205 S", planner.min_feedrate_mm_s );
+  SERIAL_MV(" V", planner.min_travel_feedrate_mm_s );
+  SERIAL_MV(" B", planner.min_segment_time );
+  SERIAL_MV(" X", planner.max_xy_jerk );
+  SERIAL_MV(" Z", planner.max_z_jerk);
+  SERIAL_EMV(" E", planner.max_e_jerk[0]);
   #if (EXTRUDERS > 1)
     for(int8_t i = 1; i < EXTRUDERS; i++) {
-      ECHO_SMV(CFG, "  M205 T", i);
-      ECHO_EMV(" E" , planner.max_e_jerk[i]);
+      SERIAL_SMV(CFG, "  M205 T", i);
+      SERIAL_EMV(" E" , planner.max_e_jerk[i]);
     }
   #endif
 
-  CONFIG_ECHO_START("Home offset (mm):");
-  ECHO_SMV(CFG, "  M206 X", home_offset[X_AXIS] );
-  ECHO_MV(" Y", home_offset[Y_AXIS] );
-  ECHO_EMV(" Z", home_offset[Z_AXIS] );
+  CONFIG_MSG_START("Home offset (mm):");
+  SERIAL_SMV(CFG, "  M206 X", home_offset[X_AXIS] );
+  SERIAL_MV(" Y", home_offset[Y_AXIS] );
+  SERIAL_EMV(" Z", home_offset[Z_AXIS] );
 
-  CONFIG_ECHO_START("Hotend offset (mm):");
+  CONFIG_MSG_START("Hotend offset (mm):");
   for (int8_t h = 0; h < HOTENDS; h++) {
-    ECHO_SMV(CFG, "  M218 T", h);
-    ECHO_MV(" X", hotend_offset[X_AXIS][h]);
-    ECHO_MV(" Y", hotend_offset[Y_AXIS][h]);
-    ECHO_EMV(" Z", hotend_offset[Z_AXIS][h]);
+    SERIAL_SMV(CFG, "  M218 T", h);
+    SERIAL_MV(" X", hotend_offset[X_AXIS][h]);
+    SERIAL_MV(" Y", hotend_offset[Y_AXIS][h]);
+    SERIAL_EMV(" Z", hotend_offset[Z_AXIS][h]);
   }
 
   #if HAS(LCD_CONTRAST)
-    CONFIG_ECHO_START("LCD Contrast:");
-    ECHO_LMV(CFG, "  M250 C", lcd_contrast);
+    CONFIG_MSG_START("LCD Contrast:");
+    SERIAL_LMV(CFG, "  M250 C", lcd_contrast);
   #endif
 
   #if ENABLED(MESH_BED_LEVELING)
-    CONFIG_ECHO_START("Mesh bed leveling:");
-    ECHO_SMV(CFG, "  M420 S", mbl.has_mesh() ? 1 : 0);
-    ECHO_MV(" X", MESH_NUM_X_POINTS);
-    ECHO_MV(" Y", MESH_NUM_Y_POINTS);
-    ECHO_E;
+    CONFIG_MSG_START("Mesh bed leveling:");
+    SERIAL_SMV(CFG, "  M420 S", mbl.has_mesh() ? 1 : 0);
+    SERIAL_MV(" X", MESH_NUM_X_POINTS);
+    SERIAL_MV(" Y", MESH_NUM_Y_POINTS);
+    SERIAL_E;
 
     for (uint8_t py = 1; py <= MESH_NUM_Y_POINTS; py++) {
       for (uint8_t px = 1; px <= MESH_NUM_X_POINTS; px++) {
-        ECHO_SMV(CFG, "  G29 S3 X", px);
-        ECHO_MV(" Y", py);
-        ECHO_EMV(" Z", mbl.z_values[py-1][px-1], 5);
+        SERIAL_SMV(CFG, "  G29 S3 X", px);
+        SERIAL_MV(" Y", py);
+        SERIAL_EMV(" Z", mbl.z_values[py-1][px-1], 5);
       }
     }
   #endif
 
   #if HEATER_USES_AD595
-    CONFIG_ECHO_START("AD595 Offset and Gain:");
+    CONFIG_MSG_START("AD595 Offset and Gain:");
     for (int8_t h = 0; h < HOTENDS; h++) {
-      ECHO_SMV(CFG, "  M595 T", h);
-      ECHO_MV(" O", ad595_offset[h]);
-      ECHO_EMV(", S", ad595_gain[h]);
+      SERIAL_SMV(CFG, "  M595 T", h);
+      SERIAL_MV(" O", ad595_offset[h]);
+      SERIAL_EMV(", S", ad595_gain[h]);
     }
   #endif // HEATER_USES_AD595
 
   #if MECH(DELTA)
-    CONFIG_ECHO_START("Delta Geometry adjustment:");
-    ECHO_SMV(CFG, "  M666 A", tower_adj[0], 3);
-    ECHO_MV(" B", tower_adj[1], 3);
-    ECHO_MV(" C", tower_adj[2], 3);
-    ECHO_MV(" I", tower_adj[3], 3);
-    ECHO_MV(" J", tower_adj[4], 3);
-    ECHO_MV(" K", tower_adj[5], 3);
-    ECHO_MV(" U", diagrod_adj[0], 3);
-    ECHO_MV(" V", diagrod_adj[1], 3);
-    ECHO_MV(" W", diagrod_adj[2], 3);
-    ECHO_MV(" R", delta_radius);
-    ECHO_MV(" D", delta_diagonal_rod);
-    ECHO_EMV(" H", sw_endstop_max[2]);
+    CONFIG_MSG_START("Delta Geometry adjustment:");
+    SERIAL_SMV(CFG, "  M666 A", tower_adj[0], 3);
+    SERIAL_MV(" B", tower_adj[1], 3);
+    SERIAL_MV(" C", tower_adj[2], 3);
+    SERIAL_MV(" I", tower_adj[3], 3);
+    SERIAL_MV(" J", tower_adj[4], 3);
+    SERIAL_MV(" K", tower_adj[5], 3);
+    SERIAL_MV(" U", diagrod_adj[0], 3);
+    SERIAL_MV(" V", diagrod_adj[1], 3);
+    SERIAL_MV(" W", diagrod_adj[2], 3);
+    SERIAL_MV(" R", delta_radius);
+    SERIAL_MV(" D", delta_diagonal_rod);
+    SERIAL_EMV(" H", sw_endstop_max[2]);
 
-    CONFIG_ECHO_START("Endstop Offsets:");
-    ECHO_SMV(CFG, "  M666 X", endstop_adj[X_AXIS]);
-    ECHO_MV(" Y", endstop_adj[Y_AXIS]);
-    ECHO_EMV(" Z", endstop_adj[Z_AXIS]);
+    CONFIG_MSG_START("Endstop Offsets:");
+    SERIAL_SMV(CFG, "  M666 X", endstop_adj[X_AXIS]);
+    SERIAL_MV(" Y", endstop_adj[Y_AXIS]);
+    SERIAL_EMV(" Z", endstop_adj[Z_AXIS]);
 
   #elif ENABLED(Z_DUAL_ENDSTOPS)
-    CONFIG_ECHO_START("Z2 Endstop adjustement (mm):");
-    ECHO_LMV(CFG, "  M666 Z", z_endstop_adj );
+    CONFIG_MSG_START("Z2 Endstop adjustement (mm):");
+    SERIAL_LMV(CFG, "  M666 Z", z_endstop_adj );
   #endif // DELTA
   
   /**
    * Auto Bed Leveling
    */
   #if HAS(BED_PROBE)
-    CONFIG_ECHO_START("Z Probe offset (mm):");
-    ECHO_LMV(CFG, "  M666 P", zprobe_zoffset);
+    CONFIG_MSG_START("Z Probe offset (mm):");
+    SERIAL_LMV(CFG, "  M666 P", zprobe_zoffset);
   #endif
 
   #if ENABLED(ULTIPANEL)
-    CONFIG_ECHO_START("Material heatup parameters:");
-    ECHO_SMV(CFG, "  M145 S0 H", plaPreheatHotendTemp);
-    ECHO_MV(" B", plaPreheatHPBTemp);
-    ECHO_MV(" F", plaPreheatFanSpeed);
-    ECHO_EM(" (Material PLA)");
-    ECHO_SMV(CFG, "  M145 S1 H", absPreheatHotendTemp);
-    ECHO_MV(" B", absPreheatHPBTemp);
-    ECHO_MV(" F", absPreheatFanSpeed);
-    ECHO_EM(" (Material ABS)");
-    ECHO_SMV(CFG, "  M145 S2 H", gumPreheatHotendTemp);
-    ECHO_MV(" B", gumPreheatHPBTemp);
-    ECHO_MV(" F", gumPreheatFanSpeed);
-    ECHO_EM(" (Material GUM)");
+    CONFIG_MSG_START("Material heatup parameters:");
+    SERIAL_SMV(CFG, "  M145 S0 H", plaPreheatHotendTemp);
+    SERIAL_MV(" B", plaPreheatHPBTemp);
+    SERIAL_MV(" F", plaPreheatFanSpeed);
+    SERIAL_EM(" (Material PLA)");
+    SERIAL_SMV(CFG, "  M145 S1 H", absPreheatHotendTemp);
+    SERIAL_MV(" B", absPreheatHPBTemp);
+    SERIAL_MV(" F", absPreheatFanSpeed);
+    SERIAL_EM(" (Material ABS)");
+    SERIAL_SMV(CFG, "  M145 S2 H", gumPreheatHotendTemp);
+    SERIAL_MV(" B", gumPreheatHPBTemp);
+    SERIAL_MV(" F", gumPreheatFanSpeed);
+    SERIAL_EM(" (Material GUM)");
   #endif // ULTIPANEL
 
   #if ENABLED(PIDTEMP) || ENABLED(PIDTEMPBED) || ENABLED(PIDTEMPCHAMBER) || ENABLED(PIDTEMPCOOLER)
-    CONFIG_ECHO_START("PID settings:");
+    CONFIG_MSG_START("PID settings:");
     #if ENABLED(PIDTEMP)
       for (int8_t h = 0; h < HOTENDS; h++) {
-        ECHO_SMV(CFG, "  M301 H", h);
-        ECHO_MV(" P", PID_PARAM(Kp, h));
-        ECHO_MV(" I", unscalePID_i(PID_PARAM(Ki, h)));
-        ECHO_MV(" D", unscalePID_d(PID_PARAM(Kd, h)));
+        SERIAL_SMV(CFG, "  M301 H", h);
+        SERIAL_MV(" P", PID_PARAM(Kp, h));
+        SERIAL_MV(" I", unscalePID_i(PID_PARAM(Ki, h)));
+        SERIAL_MV(" D", unscalePID_d(PID_PARAM(Kd, h)));
         #if ENABLED(PID_ADD_EXTRUSION_RATE)
-          ECHO_MV(" C", PID_PARAM(Kc, h));
+          SERIAL_MV(" C", PID_PARAM(Kc, h));
         #endif
-        ECHO_E;
+        SERIAL_E;
       }
       #if ENABLED(PID_ADD_EXTRUSION_RATE)
-        ECHO_SMV(CFG, "  M301 L", lpq_len);
+        SERIAL_SMV(CFG, "  M301 L", lpq_len);
       #endif
     #endif
     #if ENABLED(PIDTEMPBED)
-      ECHO_SMV(CFG, "  M304 P", bedKp);
-      ECHO_MV(" I", unscalePID_i(bedKi));
-      ECHO_EMV(" D", unscalePID_d(bedKd));
+      SERIAL_SMV(CFG, "  M304 P", bedKp);
+      SERIAL_MV(" I", unscalePID_i(bedKi));
+      SERIAL_EMV(" D", unscalePID_d(bedKd));
     #endif
     #if ENABLED(PIDTEMPCHAMBER)
-      ECHO_SMV(CFG, "  M305 P", chamberKp);
-      ECHO_MV(" I", unscalePID_i(chamberKi));
-      ECHO_EMV(" D", unscalePID_d(chamberKd));
+      SERIAL_SMV(CFG, "  M305 P", chamberKp);
+      SERIAL_MV(" I", unscalePID_i(chamberKi));
+      SERIAL_EMV(" D", unscalePID_d(chamberKd));
     #endif
     #if ENABLED(PIDTEMPCOOLER)
-      ECHO_SMV(CFG, "  M306 P", coolerKp);
-      ECHO_MV(" I", unscalePID_i(coolerKi));
-      ECHO_EMV(" D", unscalePID_d(coolerKd));
+      SERIAL_SMV(CFG, "  M306 P", coolerKp);
+      SERIAL_MV(" I", unscalePID_i(coolerKi));
+      SERIAL_EMV(" D", unscalePID_d(coolerKd));
     #endif
   #endif
 
   #if ENABLED(FWRETRACT)
-    CONFIG_ECHO_START("Retract: S=Length (mm) F:Speed (mm/m) Z: ZLift (mm)");
-    ECHO_SMV(CFG, "  M207 S", retract_length);
+    CONFIG_MSG_START("Retract: S=Length (mm) F:Speed (mm/m) Z: ZLift (mm)");
+    SERIAL_SMV(CFG, "  M207 S", retract_length);
     #if EXTRUDERS > 1
-      ECHO_MV(" W", retract_length_swap);
+      SERIAL_MV(" W", retract_length_swap);
     #endif
-    ECHO_MV(" F", retract_feedrate * 60);
-    ECHO_EMV(" Z", retract_zlift);
+    SERIAL_MV(" F", retract_feedrate * 60);
+    SERIAL_EMV(" Z", retract_zlift);
 
-    CONFIG_ECHO_START("Recover: S=Extra length (mm) F:Speed (mm/m)");
-    ECHO_SMV(CFG, "  M208 S", retract_recover_length);
+    CONFIG_MSG_START("Recover: S=Extra length (mm) F:Speed (mm/m)");
+    SERIAL_SMV(CFG, "  M208 S", retract_recover_length);
     #if EXTRUDERS > 1
-      ECHO_MV(" W", retract_recover_length_swap);
+      SERIAL_MV(" W", retract_recover_length_swap);
     #endif
-    ECHO_MV(" F", retract_recover_feedrate * 60);
+    SERIAL_MV(" F", retract_recover_feedrate * 60);
 
-    CONFIG_ECHO_START("Auto-Retract: S=0 to disable, 1 to interpret extrude-only moves as retracts or recoveries");
-    ECHO_LMV(CFG, "  M209 S", autoretract_enabled ? 1 : 0);
+    CONFIG_MSG_START("Auto-Retract: S=0 to disable, 1 to interpret extrude-only moves as retracts or recoveries");
+    SERIAL_LMV(CFG, "  M209 S", autoretract_enabled ? 1 : 0);
   #endif // FWRETRACT
 
   if (volumetric_enabled) {
-    CONFIG_ECHO_START("Filament settings:");
-    ECHO_LMV(CFG, "  M200 D", filament_size[0]);
+    CONFIG_MSG_START("Filament settings:");
+    SERIAL_LMV(CFG, "  M200 D", filament_size[0]);
 
     #if EXTRUDERS > 1
-      ECHO_LMV(CFG, "  M200 T1 D", filament_size[1]);
+      SERIAL_LMV(CFG, "  M200 T1 D", filament_size[1]);
       #if EXTRUDERS > 2
-        ECHO_LMV(CFG, "  M200 T2 D", filament_size[2]);
+        SERIAL_LMV(CFG, "  M200 T2 D", filament_size[2]);
         #if EXTRUDERS > 3
-          ECHO_LMV(CFG, "  M200 T3 D", filament_size[3]);
+          SERIAL_LMV(CFG, "  M200 T3 D", filament_size[3]);
         #endif
       #endif
     #endif
 
   }
   else
-    CONFIG_ECHO_START("  M200 D0");
+    CONFIG_MSG_START("  M200 D0");
 
   #if MB(ALLIGATOR)
-    CONFIG_ECHO_START("Motor current:");
-    ECHO_SMV(CFG, "  M906 X", motor_current[X_AXIS]);
-    ECHO_MV(" Y", motor_current[Y_AXIS]);
-    ECHO_MV(" Z", motor_current[Z_AXIS]);
-    ECHO_EMV(" E", motor_current[E_AXIS]);
+    CONFIG_MSG_START("Motor current:");
+    SERIAL_SMV(CFG, "  M906 X", motor_current[X_AXIS]);
+    SERIAL_MV(" Y", motor_current[Y_AXIS]);
+    SERIAL_MV(" Z", motor_current[Z_AXIS]);
+    SERIAL_EMV(" E", motor_current[E_AXIS]);
     #if DRIVER_EXTRUDERS > 1
       for (uint8_t i = 1; i < DRIVER_EXTRUDERS; i++) {
-        ECHO_SMV(CFG, "  M906 T", i);
-        ECHO_EMV(" E", motor_current[E_AXIS + i]);
+        SERIAL_SMV(CFG, "  M906 T", i);
+        SERIAL_EMV(" E", motor_current[E_AXIS + i]);
       }
     #endif // DRIVER_EXTRUDERS > 1
   #endif // ALLIGATOR
@@ -968,8 +968,8 @@ void ConfigSD_PrintSettings(bool forReplay) {
   // Always have this function, even with SD_SETTINGS disabled, the current values will be shown
 
   #if HAS(POWER_CONSUMPTION_SENSOR)
-    CONFIG_ECHO_START("Watt/h consumed:");
-    ECHO_LVM(INFO, power_consumption_hour," Wh");
+    CONFIG_MSG_START("Watt/h consumed:");
+    SERIAL_LMV(INFO, power_consumption_hour," Wh");
   #endif
 
   print_job_counter.showStats();
@@ -988,7 +988,7 @@ void ConfigSD_ResetDefault() {
     power_consumption_hour = 0;
   #endif
   print_job_counter.initStats();
-  ECHO_LM(OK, "Hardcoded SD Default Settings Loaded");
+  SERIAL_LM(OK, "Hardcoded SD Default Settings Loaded");
 }
 
 #if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
