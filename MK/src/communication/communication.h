@@ -21,73 +21,106 @@
  */
 
 #ifndef COMMUNICATION_H
-  #define COMMUNICATION_H
+#define COMMUNICATION_H
 
-  #define START       "start"               // start for host
-  #define OK          "ok"                  // ok answer for host
-  #define ER          "Error:"              // error for host
-  #define WT          "wait"                // wait for host
-  #define DB          "Echo:"               // message for user
-  #define DEB         "Debug:"              // message for debug
-  #define CFG         "Config:"             // config for host
-  #define INFO        "Info:"               // info for host
-  #define BUSY        "busy:"               // buys for host
-  #define RESEND      "Resend:"             // resend for host
-  #define WARNING     "Warning:"            // warning for host
-  #define TNAN        "NAN"                 // NAN for host
-  #define TINF        "INF"                 // INF for host
-  #define PAUSE       "//action:pause"      // command for host that support action
-  #define RESUME      "//action:resume"     // command for host that support action
-  #define DISCONNECT  "//action:disconnect" // command for host that support action
+class Com {
+  public:
+    FSTRINGVAR(tStart)                    // start for host
+    FSTRINGVAR(tOk)                       // ok answer for host
+    FSTRINGVAR(tOkSpace)                  // ok space answer for host
+    FSTRINGVAR(tError)                    // error for host
+    FSTRINGVAR(tWait)                     // wait for host
+    FSTRINGVAR(tEcho)                     // message for user
+    FSTRINGVAR(tDebug)                    // message for debug
+    FSTRINGVAR(tConfig)                   // config for host
+    FSTRINGVAR(tInfo)                     // info for host
+    FSTRINGVAR(tBusy)                     // buys for host
+    FSTRINGVAR(tResend)                   // resend for host
+    FSTRINGVAR(tWarning)                  // warning for host
+    FSTRINGVAR(tNAN)                      // NAN for host
+    FSTRINGVAR(tINF)                      // INF for host
+    FSTRINGVAR(tPauseCommunication)       // command for host that support action
+    FSTRINGVAR(tContinueCommunication)    // command for host that support action
+    FSTRINGVAR(tDisconnectCommunication)  // command for host that support action
+    FSTRINGVAR(tPowerUp)
+    FSTRINGVAR(tBrownOut)
+    FSTRINGVAR(tWatchdog)
+    FSTRINGVAR(tSoftwareReset)
+    FSTRINGVAR(tExternalReset)
 
-  #define SERIAL_INIT(baud)           MKSERIAL.begin(baud), HAL::delayMilliseconds(1)
-  #define SERIAL_CHAR(x)              MKSERIAL.write(x)
-  #define SERIAL_PRINT(msg, args...)  MKSERIAL.print(msg, ##args)
-  #define SERIAL_EOL                  MKSERIAL.println()
 
-  FORCE_INLINE void PS_PGM(const char *str) {
-    char c;
-    while (c = pgm_read_byte(str)) {
-      MKSERIAL.write(c);
-      str++;
-    }
-  }
+    static void printInfoLN(FSTRINGPARAM(text));
+    static void PS_PGM(FSTRINGPARAM(text));
+    static void printNumber(uint32_t n);
+    static void printFloat(float number, uint8_t digits);
+    static void print(const char* text);
+    static void print(long value);
+    static inline void print(char c) { HAL::serialWriteByte(c); }
+    static inline void print(uint32_t value) { printNumber(value); }
+    static inline void print(int value) { print((int32_t)value); }
+    static inline void print(uint16_t value) { print((int32_t)value); }
+    static inline void print(float number) { printFloat(number, 6); }
+    static inline void print(float number, uint8_t digits) { printFloat(number, digits); }
+    static inline void print(double number) { printFloat(number, 6); }
+    static inline void print(double number, uint8_t digits) { printFloat(number, digits); }
+    static inline void println() { HAL::serialWriteByte('\r'); HAL::serialWriteByte('\n'); }
 
-  #define ECHO_PS(message)                  PS_PGM(message)
-  #define ECHO_PGM(message)                 PS_PGM(PSTR(message))
-  #define ECHO_LNPGM(message)               do{ PS_PGM(PSTR(message)); SERIAL_EOL; }while(0)
+  protected:
+  private:
+};
 
-  #define ECHO_S(srt)                       ECHO_PGM(srt)
-  #define ECHO_M(msg)                       ECHO_PGM(msg)
-  #define ECHO_T                            SERIAL_PRINT
-  #define ECHO_V                            SERIAL_PRINT
-  #define ECHO_C                            SERIAL_CHAR
-  #define ECHO_E                            SERIAL_EOL
+#define START       Com::tStart
+#define OK          Com::tOk
+#define OKSPACE     Com::tOkSpace
+#define ER          Com::tError
+#define WT          Com::tWait
+#define ECHO        Com::tEcho
+#define DEB         Com::tDebug
+#define CFG         Com::tConfig
+#define INFO        Com::tInfo
+#define BUSY        Com::tBusy
+#define RESEND      Com::tResend
+#define WARNING     Com::tWarning
+#define TNAN        Com::tNAN
+#define TINF        Com::tINF
+#define PAUSE       Com::tPauseCommunication
+#define RESUME      Com::tContinueCommunication
+#define DISCONNECT  Com::tDisconnectCommunication
 
-  #define ECHO_MV(msg, val, args...)        ECHO_M(msg),ECHO_V(val, ##args)
-  #define ECHO_VM(val, msg, args...)        ECHO_V(val, ##args),ECHO_M(msg)
-  #define ECHO_MT(msg, txt)                 ECHO_M(msg),ECHO_T(txt)
-  #define ECHO_TM(txt, msg)                 ECHO_T(txt),ECHO_M(msg)
+#define SERIAL_INIT(baud)                   HAL::serialSetBaudrate(baud)
+#define SERIAL_PRINT(val, args...)          Com::print(val, ##args)
+#define SERIAL_EOL                          Com::println()
 
-  #define ECHO_SM(srt, msg)                 ECHO_S(srt),ECHO_M(msg)
-  #define ECHO_ST(srt, txt)                 ECHO_S(srt),ECHO_T(txt)
-  #define ECHO_SV(srt, val, args...)        ECHO_S(srt),ECHO_V(val, ##args)
-  #define ECHO_SMV(srt, msg, val, args...)  ECHO_S(srt),ECHO_MV(msg, val, ##args)
-  #define ECHO_SMT(srt, msg, txt)           ECHO_S(srt),ECHO_MT(msg, txt)
+#define SERIAL_PS(message)                  Com::PS_PGM(message)
+#define SERIAL_PGM(message)                 Com::PS_PGM(PSTR(message))
 
-  #define ECHO_EM(msg)                      ECHO_M(msg),ECHO_E
-  #define ECHO_ET(txt)                      ECHO_T(txt),ECHO_E
-  #define ECHO_EV(val, args...)             ECHO_V(val, ##args),ECHO_E
-  #define ECHO_EMV(msg, val, args...)       ECHO_MV(msg, val, ##args),ECHO_E
-  #define ECHO_EVM(val, msg, args...)       ECHO_VM(val, msg, ##args),ECHO_E
-  #define ECHO_EMT(msg, txt)                ECHO_MT(msg, txt),ECHO_E
+#define SERIAL_S(srt)                       Com::PS_PGM(srt)
+#define SERIAL_M(msg)                       Com::PS_PGM(PSTR(msg))
+#define SERIAL_T(txt)                       Com::print(txt)
+#define SERIAL_V(val, args...)              Com::print(val, ##args)
+#define SERIAL_C(c)                         Com::print(c)
+#define SERIAL_E                            Com::println()
 
-  #define ECHO_L(srt)                       ECHO_S(srt),ECHO_E
-  #define ECHO_LM(srt, msg)                 ECHO_S(srt),ECHO_M(msg),ECHO_E
-  #define ECHO_LT(srt, txt)                 ECHO_S(srt),ECHO_T(txt),ECHO_E
-  #define ECHO_LV(srt, val, args...)        ECHO_S(srt),ECHO_V(val, ##args),ECHO_E
-  #define ECHO_LMV(srt, msg, val, args...)  ECHO_S(srt),ECHO_MV(msg, val, ##args),ECHO_E
-  #define ECHO_LVM(srt, val, msg, args...)  ECHO_S(srt),ECHO_VM(val, msg, ##args),ECHO_E
-  #define ECHO_LMT(srt, msg, txt)           ECHO_S(srt),ECHO_MT(msg, txt),ECHO_E
+#define SERIAL_MV(msg, val, args...)        SERIAL_M(msg),SERIAL_V(val, ##args)
+#define SERIAL_MT(msg, txt)                 SERIAL_M(msg),SERIAL_T(txt)
+
+#define SERIAL_SM(srt, msg)                 SERIAL_S(srt),SERIAL_M(msg)
+#define SERIAL_SV(srt, val, args...)        SERIAL_S(srt),SERIAL_V(val, ##args)
+#define SERIAL_ST(srt, txt)                 SERIAL_S(srt),SERIAL_T(txt)
+#define SERIAL_SMT(srt, msg, txt)           SERIAL_S(srt),SERIAL_MT(msg, txt)
+#define SERIAL_SMV(srt, msg, val, args...)  SERIAL_S(srt),SERIAL_MV(msg, val, ##args)
+
+#define SERIAL_EM(msg)                      SERIAL_M(msg),SERIAL_E
+#define SERIAL_EV(val, args...)             SERIAL_V(val, ##args),SERIAL_E
+#define SERIAL_ET(txt)                      SERIAL_T(txt),SERIAL_E
+#define SERIAL_EMT(msg, txt)                SERIAL_MT(msg, txt),SERIAL_E
+#define SERIAL_EMV(msg, val, args...)       SERIAL_MV(msg, val, ##args),SERIAL_E
+
+#define SERIAL_L(srt)                       SERIAL_S(srt),SERIAL_E
+#define SERIAL_LM(srt, msg)                 SERIAL_S(srt),SERIAL_M(msg),SERIAL_E
+#define SERIAL_LT(srt, txt)                 SERIAL_S(srt),SERIAL_T(txt),SERIAL_E
+#define SERIAL_LMT(srt, msg, txt)           SERIAL_S(srt),SERIAL_MT(msg, txt),SERIAL_E
+#define SERIAL_LV(srt, val, args...)        SERIAL_S(srt),SERIAL_V(val, ##args)
+#define SERIAL_LMV(srt, msg, val, args...)  SERIAL_S(srt),SERIAL_MV(msg, val, ##args),SERIAL_E
 
 #endif

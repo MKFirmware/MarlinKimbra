@@ -1,3 +1,7 @@
+### Version 4.2.88
+* Fix and clear code
+* Rewrite communication
+
 ### Version 4.2.87
 * Fix and clear code
 

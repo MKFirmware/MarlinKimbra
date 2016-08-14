@@ -1314,9 +1314,6 @@
   #if DISABLED(DEFAULT_ZJERK)
     #error DEPENDENCY ERROR: Missing setting DEFAULT_ZJERK
   #endif
-  #if DISABLED(HOMING_FEEDRATE)
-    #error DEPENDENCY ERROR: Missing setting HOMING_FEEDRATE
-  #endif
   #if DISABLED(X_HOME_BUMP_MM)
     #error DEPENDENCY ERROR: Missing setting X_HOME_BUMP_MM
   #endif

@@ -76,11 +76,11 @@ void PrintCounter::showStats() {
   uint16_t day, hours, minutes;
   millis_t t;
 
-  ECHO_MV("Print statistics: Total: ", this->data.numberPrints);
-  ECHO_MV(", Finished: ", this->data.completePrints);
-  ECHO_M(", Failed: ");
-  ECHO_EV (this->data.numberPrints - this->data.completePrints -
-          ((this->isRunning() || this->isPaused()) ? 1 : 0)); // Removes 1 from failures with an active counter
+  SERIAL_MV("Print statistics: Total: ", this->data.numberPrints);
+  SERIAL_MV(", Finished: ", this->data.completePrints);
+  SERIAL_M(", Failed: ");
+  SERIAL_EV (this->data.numberPrints - this->data.completePrints -
+            ((this->isRunning() || this->isPaused()) ? 1 : 0)); // Removes 1 from failures with an active counter
 
   t       = this->data.printTime / 60;
   day     = t / 60 / 24;
@@ -88,7 +88,7 @@ void PrintCounter::showStats() {
   minutes = t % 60;
 
   sprintf_P(temp, PSTR("  %u " MSG_END_DAY " %u " MSG_END_HOUR " %u " MSG_END_MINUTE), day, hours, minutes);
-  ECHO_EMT("Total print time: ", temp);
+  SERIAL_EMT("Total print time: ", temp);
 
   t       = this->data.printer_usage_seconds / 60;
   day     = t / 60 / 24;
@@ -96,7 +96,7 @@ void PrintCounter::showStats() {
   minutes = t % 60;
 
   sprintf_P(temp, PSTR("  %u " MSG_END_DAY " %u " MSG_END_HOUR " %u " MSG_END_MINUTE), day, hours, minutes);
-  ECHO_EMT("Power on time: ", temp);
+  SERIAL_EMT("Power on time: ", temp);
 
   uint16_t  kmeter = (long)this->data.filamentUsed / 1000 / 1000,
             meter = ((long)this->data.filamentUsed / 1000) % 1000,
@@ -104,7 +104,7 @@ void PrintCounter::showStats() {
             millimeter = ((long)this->data.filamentUsed) % 10;
   sprintf_P(temp, PSTR("  %uKm %um %ucm %umm"), kmeter, meter, centimeter, millimeter);
 
-  ECHO_EMT("Filament printed: ", temp);
+  SERIAL_EMT("Filament printed: ", temp);
 }
 
 void PrintCounter::tick() {
@@ -186,9 +186,9 @@ void PrintCounter::reset() {
 #if ENABLED(DEBUG_PRINTCOUNTER)
 
   void PrintCounter::debug(const char func[]) {
-    ECHO_SM(DEB, "PrintCounter::");
-    PS_PGM(func);
-    ECHO_EM("()");
+    SERIAL_SM(DEB, "PrintCounter::");
+    SERIAL_M(func);
+    SERIAL_EM("()");
   }
 
 #endif

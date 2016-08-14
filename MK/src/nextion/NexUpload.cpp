@@ -13,9 +13,9 @@
  * the License, or (at your option) any later version.
  */
 
-#include "NexUpload.h"
+#include "../../base.h"
 
-#if ENABLED(SDSUPPORT)
+#if ENABLED(SDSUPPORT) && ENABLED(NEXTION)
 
   NexUpload::NexUpload(const char *file_name, uint32_t upload_baudrate) {
     _file_name = file_name;
@@ -28,23 +28,23 @@
 
   void NexUpload::startUpload(void) {
     if (!_checkFile()) {
-      ECHO_LM(ER, "The file is error");
+      SERIAL_LM(ER, "The file is error");
       return;
     }
     if (_getBaudrate() == 0) {
-      ECHO_LM(ER, "baudrate error");
+      SERIAL_LM(ER, "baudrate error");
       return;
     }
     if (!_setUploadBaudrate(_upload_baudrate)) {
-      ECHO_LM(ER, "modify baudrate error");
+      SERIAL_LM(ER, "modify baudrate error");
       return;
     }
     if (!_uploadTftFile()) {
-      ECHO_LM(ER, "upload file error");
+      SERIAL_LM(ER, "upload file error");
       return;
     }
     card.closeFile();
-    ECHO_LM(DB, "upload ok");
+    SERIAL_EM("upload ok");
   }
 
   uint16_t NexUpload::_getBaudrate(void) {
@@ -59,9 +59,9 @@
   }
 
   bool NexUpload::_checkFile(void) {
-    ECHO_LMT(DB, "Start checkFile ", _file_name);
+    SERIAL_EMT("Start checkFile ", _file_name);
     if (!card.selectFile(_file_name)) {
-      ECHO_LM(ER, "file is not exit");
+      SERIAL_LM(ER, "file is not exit");
       return 0;
     }
     _unuploadByte = card.fileSize;

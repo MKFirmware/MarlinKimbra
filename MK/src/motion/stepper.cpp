@@ -341,7 +341,7 @@ FORCE_INLINE unsigned short calc_timer(unsigned short step_rate) {
 
   if (timer < 100) { // (20kHz this should never happen)
     timer = 100;
-    ECHO_EMV(SERIAL_STEPPER_TOO_HIGH, step_rate);
+    //SERIAL_EMV(MSG_STEPPER_TOO_HIGH, step_rate);
   }
 
   return timer;
@@ -439,7 +439,7 @@ void isr() {
   #if ENABLED(LASERBEAM) && (!ENABLED(LASER_PULSE_METHOD))
     if (laser.dur != 0 && (laser.last_firing + laser.dur < micros())) {
       if (laser.diagnostics)
-        ECHO_LM(INFO, "Laser firing duration elapsed, in interrupt handler");
+        SERIAL_EM("Laser firing duration elapsed, in interrupt handler");
 
       laser_extinguish();
     }
@@ -507,7 +507,7 @@ void isr() {
 
       #if !ENABLED(LASER_PULSE_METHOD)
         if (current_block->laser_status == LASER_OFF) {
-          if (laser.diagnostics) ECHO_LM(INFO,"Laser status set to off, in interrupt handler");
+          if (laser.diagnostics) SERIAL_EM("Laser status set to off, in interrupt handler");
           laser_extinguish();
         }
       #endif
@@ -516,7 +516,7 @@ void isr() {
     // Take multiple steps per interrupt (For high speed moves)
     for (uint8_t i = 0; i < step_loops; i++) {
 
-        MKSERIAL.checkRx(); // Check for serial chars.
+        //MKSERIAL.checkRx(); // Check for serial chars.
 
       #if ENABLED(ADVANCE)
         counter_E += current_block->steps[E_AXIS];
@@ -619,9 +619,9 @@ void isr() {
               laser_fire(current_block->laser_intensity);
             #endif
             if (laser.diagnostics) {
-              ECHO_MV("X: ", counter_X);
-              ECHO_MV("Y: ", counter_Y);
-              ECHO_MV("L: ", counter_L);
+              SERIAL_MV("X: ", counter_X);
+              SERIAL_MV("Y: ", counter_Y);
+              SERIAL_MV("L: ", counter_L);
             }
           }
           #if ENABLED(LASER_RASTER)
@@ -637,7 +637,7 @@ void isr() {
                 // going from darkened paper to burning through paper.
                 laser_fire(current_block->laser_raster_data[counter_raster]); 
               #endif
-              if (laser.diagnostics) ECHO_EMV("Pixel: ", (float)current_block->laser_raster_data[counter_raster]);
+              if (laser.diagnostics) SERIAL_MV("Pixel: ", (float)current_block->laser_raster_data[counter_raster]);
               counter_raster++;
             }
           #endif // LASER_RASTER
@@ -646,15 +646,15 @@ void isr() {
         #if !ENABLED(LASER_PULSE_METHOD)
         if (current_block->laser_duration != 0 && (laser.last_firing + current_block->laser_duration < micros())) {
           if (laser.diagnostics) {
-            ECHO_MV("X: ", counter_X);
-            ECHO_MV(", Y: ", counter_Y);
-            ECHO_MV(", L: ", counter_L);
-            ECHO_MV(", Z: ", counter_L);
-            ECHO_MV(", E: ", counter_E);
-            ECHO_MV(", steps done: ",step_events_completed);
-            ECHO_MV(", event count: ", current_block->step_event_count);
-            ECHO_EM(", <--------------------");
-            ECHO_LM(INFO, "Laser firing duration elapsed, in interrupt fast loop ");
+            SERIAL_MV("X: ", counter_X);
+            SERIAL_MV(", Y: ", counter_Y);
+            SERIAL_MV(", L: ", counter_L);
+            SERIAL_MV(", Z: ", counter_L);
+            SERIAL_MV(", E: ", counter_E);
+            SERIAL_MV(", steps done: ",step_events_completed);
+            SERIAL_MV(", event count: ", current_block->step_event_count);
+            SERIAL_EM(", <--------------------");
+            SERIAL_EM("Laser firing duration elapsed, in interrupt fast loop");
 			 }
           laser_extinguish();
         }
@@ -1031,7 +1031,7 @@ void st_init() {
         current_adv_steps[i] = 0;
       }
     #endif
-      
+
     #if defined(TCCR0A) && defined(WGM01)
       CBI(TCCR0A, WGM01);
       CBI(TCCR0A, WGM00);
@@ -1190,33 +1190,33 @@ void report_positions() {
   CRITICAL_SECTION_END;
 
   #if MECH(COREXY) || MECH(COREYX) || MECH(COREXZ) || MECH(COREZX)
-    ECHO_M(SERIAL_COUNT_A);
+    SERIAL_M(MSG_COUNT_A);
   #elif MECH(DELTA)
-    ECHO_M(SERIAL_COUNT_ALPHA);
+    SERIAL_M(MSG_COUNT_ALPHA);
   #else
-    ECHO_M(SERIAL_COUNT_X);
+    SERIAL_M(MSG_COUNT_X);
   #endif
-  ECHO_V(xpos);
+  SERIAL_V(xpos);
 
   #if MECH(COREXY) || MECH(COREYX)
-    ECHO_M(" B:");
+    SERIAL_M(" B:");
   #elif MECH(DELTA)
-    ECHO_M(" Beta:");
+    SERIAL_M(" Beta:");
   #else
-    ECHO_M(" Y:");
+    SERIAL_M(" Y:");
   #endif
-  ECHO_V(ypos);
+  SERIAL_V(ypos);
 
   #if MECH(COREXZ) || MECH(COREZX)
-    ECHO_M(" C:");
+    SERIAL_M(" C:");
   #elif MECH(DELTA)
-    ECHO_M(" Teta:");
+    SERIAL_M(" Teta:");
   #else
-    ECHO_M(" Z:");
+    SERIAL_M(" Z:");
   #endif
-  ECHO_V(zpos);
+  SERIAL_V(zpos);
 
-  ECHO_E;
+  SERIAL_E;
 }
 
 void kill_current_block() {
@@ -1448,23 +1448,23 @@ void microstep_mode(uint8_t driver, uint8_t stepping_mode) {
 }
 
 void microstep_readings() {
-  ECHO_SM(DB, SERIAL_MICROSTEP_MS1_MS2);
-  ECHO_M(SERIAL_MICROSTEP_X);
-  ECHO_V(digitalRead(X_MS1_PIN));
-  ECHO_EV(digitalRead(X_MS2_PIN));
-  ECHO_SM(DB, SERIAL_MICROSTEP_Y);
-  ECHO_V(digitalRead(Y_MS1_PIN));
-  ECHO_EV(digitalRead(Y_MS2_PIN));
-  ECHO_SM(DB, SERIAL_MICROSTEP_Z);
-  ECHO_V(digitalRead(Z_MS1_PIN));
-  ECHO_EV(digitalRead(Z_MS2_PIN));
-  ECHO_SM(DB, SERIAL_MICROSTEP_E0);
-  ECHO_V(digitalRead(E0_MS1_PIN));
-  ECHO_EV(digitalRead(E0_MS2_PIN));
+  SERIAL_M(MSG_MICROSTEP_MS1_MS2);
+  SERIAL_M(MSG_MICROSTEP_X);
+  SERIAL_V(digitalRead(X_MS1_PIN));
+  SERIAL_EV(digitalRead(X_MS2_PIN));
+  SERIAL_M(MSG_MICROSTEP_Y);
+  SERIAL_V(digitalRead(Y_MS1_PIN));
+  SERIAL_EV(digitalRead(Y_MS2_PIN));
+  SERIAL_M(MSG_MICROSTEP_Z);
+  SERIAL_V(digitalRead(Z_MS1_PIN));
+  SERIAL_EV(digitalRead(Z_MS2_PIN));
+  SERIAL_M(MSG_MICROSTEP_E0);
+  SERIAL_V(digitalRead(E0_MS1_PIN));
+  SERIAL_EV(digitalRead(E0_MS2_PIN));
   #if HAS(MICROSTEPS_E1)
-    ECHO_SM(DB, SERIAL_MICROSTEP_E1);
-    ECHO_V(digitalRead(E1_MS1_PIN));
-    ECHO_EV(digitalRead(E1_MS2_PIN));
+    SERIAL_M(MSG_MICROSTEP_E1);
+    SERIAL_V(digitalRead(E1_MS1_PIN));
+    SERIAL_EV(digitalRead(E1_MS2_PIN));
   #endif
 }
 

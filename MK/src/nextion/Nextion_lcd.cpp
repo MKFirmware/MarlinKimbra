@@ -590,10 +590,10 @@
     }
 
     if (!NextionON) {
-      ECHO_LM(DB, "Nextion LCD not connected!");
+      SERIAL_EM("Nextion LCD not connected!");
     }
     else {
-      ECHO_LM(DB, "Nextion LCD connected!");
+      SERIAL_EM("Nextion LCD connected!");
 
       Pstart.attachPop(ExitPopCallback);
       Exit1.attachPop(ExitPopCallback);

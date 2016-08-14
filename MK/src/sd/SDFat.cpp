@@ -66,7 +66,7 @@ extern int8_t RFstrnicmp(const char* s1, const char* s2, size_t n) {
 
 //------------------------------------------------------------------------------
 static void pstrPrintln(PGM_P str) {
-  ECHO_ET(str);
+  SERIAL_ET(str);
 }
 //------------------------------------------------------------------------------
 /**
@@ -176,7 +176,7 @@ void SdFat::errorHalt_P(PGM_P msg) {
 /** %Print any SD error code. */
 void SdFat::errorPrint() {
   if (!card_.errorCode()) return;
-  ECHO_LMV(ER, SERIAL_SD_ERRORCODE, card_.errorCode());
+  SERIAL_LMV(ER, MSG_SD_ERRORCODE, card_.errorCode());
 }
 //------------------------------------------------------------------------------
 /** %Print msg, any SD error code.
@@ -184,7 +184,7 @@ void SdFat::errorPrint() {
  * \param[in] msg Message to print.
  */
 void SdFat::errorPrint(PGM_P msg) {
-  ECHO_LT(ER, msg);
+  SERIAL_LT(ER, msg);
   errorPrint();
 }
 //------------------------------------------------------------------------------
@@ -193,7 +193,7 @@ void SdFat::errorPrint(PGM_P msg) {
  * \param[in] msg Message in program space (flash memory) to print.
  */
 void SdFat::errorPrint_P(PGM_P msg) {
-  ECHO_LT(ER, msg);
+  SERIAL_LT(ER, msg);
   errorPrint();
 }
 //------------------------------------------------------------------------------
@@ -219,7 +219,7 @@ void SdFat::initErrorHalt() {
  * \param[in] msg Message to print.
  */
 void SdFat::initErrorHalt(PGM_P msg) {
-  ECHO_ET(msg);
+  SERIAL_LT(ER, msg);
   initErrorHalt();
 }
 //------------------------------------------------------------------------------
@@ -254,7 +254,7 @@ void SdFat::initErrorPrint() {
  * \param[in] msg Message to print.
  */
 void SdFat::initErrorPrint(PGM_P msg) {
-  ECHO_ET(msg);
+  SERIAL_LT(ER, msg);
   initErrorPrint();
 }
 //------------------------------------------------------------------------------
@@ -350,7 +350,7 @@ bool SdFat::truncate(const char* path, uint32_t length) {
 // SdBaseFile member functions
 //------------------------------------------------------------------------------
 // macro for debug
-#define DBG_FAIL_MACRO  //  ECHO_ET(__LINE__)
+#define DBG_FAIL_MACRO  //  SERIAL_EV(__LINE__)
 //------------------------------------------------------------------------------
 // pointer to cwd directory
 SdBaseFile* SdBaseFile::cwd_ = 0;
@@ -697,24 +697,24 @@ uint8_t SdBaseFile::lsRecursive(SdBaseFile* parent, uint8_t level, char* findFil
       if (level >= SD_MAX_FOLDER_DEPTH) continue; // can't go deeper
       if (level < SD_MAX_FOLDER_DEPTH && findFilename == NULL) {
         if (level && !isJson) {
-          ECHO_T(fullName);
-          ECHO_C('/');
+          SERIAL_T(fullName);
+          SERIAL_C('/');
         }
         #ifdef JSON_OUTPUT
           if (isJson) {
-            if (!firstFile) ECHO_C(',');
-            ECHO_C('"'); ECHO_C('*');
+            if (!firstFile) SERIAL_C(',');
+            SERIAL_C('"'); SERIAL_C('*');
             CardReader::printEscapeChars(tempLongFilename);
-            ECHO_C('"');
+            SERIAL_C('"');
             firstFile = false;
           }
           else {
-            ECHO_T(tempLongFilename);
-            ECHO_C('/'); ECHO_E; // End with / to mark it as directory entry, so we can see empty directories.
+            SERIAL_T(tempLongFilename);
+            SERIAL_C('/'); SERIAL_E; // End with / to mark it as directory entry, so we can see empty directories.
           }
         #else
-          ECHO_T(tempLongFilename);
-          ECHO_C('/'); ECHO_E;// End with / to mark it as directory entry, so we can see empty directories.
+          SERIAL_T(tempLongFilename);
+          SERIAL_C('/'); SERIAL_E;// End with / to mark it as directory entry, so we can see empty directories.
         #endif
       }
       SdBaseFile next;
@@ -751,25 +751,25 @@ uint8_t SdBaseFile::lsRecursive(SdBaseFile* parent, uint8_t level, char* findFil
       }
       else {
         if(level && !isJson) {
-          ECHO_T(fullName);
-          ECHO_C('/');
+          SERIAL_T(fullName);
+          SERIAL_C('/');
         }
         #ifdef JSON_OUTPUT
           if (isJson) {
-            if (!firstFile) ECHO_C(',');
-            ECHO_C('"');
+            if (!firstFile) SERIAL_C(',');
+            SERIAL_C('"');
             CardReader::printEscapeChars(tempLongFilename);
-            ECHO_C('"');
+            SERIAL_C('"');
             firstFile = false;
           }
           else
         #endif
         {
-          ECHO_T(tempLongFilename);
+          SERIAL_T(tempLongFilename);
           #ifdef SD_EXTENDED_DIR
-            ECHO_MV(" ", (long) p->fileSize);
+            SERIAL_MV(" ", (long) p->fileSize);
           #endif
-          ECHO_E;
+          SERIAL_E;
         }
       }
     }
@@ -827,23 +827,23 @@ int8_t SdBaseFile::lsPrintNext(uint8_t flags, uint8_t indent) {
       && DIR_IS_FILE_OR_SUBDIR(&dir)) break;
   }
   // indent for dir level
-  for (uint8_t i = 0; i < indent; i++) ECHO_C(' ');
+  for (uint8_t i = 0; i < indent; i++) SERIAL_C(' ');
 
   printDirName(dir, flags & (LS_DATE | LS_SIZE) ? 14 : 0, true);
 
   // print modify date/time if requested
   if (flags & LS_DATE) {
-    ECHO_C(' ');
+    SERIAL_C(' ');
     printFatDate(dir.lastWriteDate);
-    ECHO_C(' ');
+    SERIAL_C(' ');
     printFatTime(dir.lastWriteTime);
   }
   // print size if requested
   if (!DIR_IS_SUBDIR(&dir) && (flags & LS_SIZE)) {
-    ECHO_C(' ');
-    ECHO_V(dir.fileSize);
+    SERIAL_C(' ');
+    SERIAL_V(dir.fileSize);
   }
-  ECHO_E;
+  SERIAL_E;
   return DIR_IS_FILE(&dir) ? 1 : 2;
 }
 //------------------------------------------------------------------------------
@@ -1601,26 +1601,26 @@ void SdBaseFile::printDirName(const dir_t& dir, uint8_t width, bool printSlash) 
   for (uint8_t i = 0; i < 11; i++) {
     if (dir.name[i] == ' ')continue;
     if (i == 8) {
-      ECHO_C('.');
+      SERIAL_C('.');
       w++;
     }
-    ECHO_C(dir.name[i]);
+    SERIAL_C(dir.name[i]);
     w++;
   }
   if (DIR_IS_SUBDIR(&dir) && printSlash) {
-    ECHO_C('/');
+    SERIAL_C('/');
     w++;
   }
   while (w < width) {
-    ECHO_C(' ');
+    SERIAL_C(' ');
     w++;
   }
 }
 //------------------------------------------------------------------------------
 // print uint8_t with width 2
 static void print2u(uint8_t v) {
-  if (v < 10) ECHO_C('0');
-  ECHO_V(v);
+  if (v < 10) SERIAL_C('0');
+  SERIAL_V(v);
 }
 //------------------------------------------------------------------------------
 /** Print a file's creation date and time
@@ -1637,7 +1637,7 @@ bool SdBaseFile::printCreateDateTime() {
     goto fail;
   }
   printFatDate(dir.creationDate);
-  ECHO_C(' ');
+  SERIAL_C(' ');
   printFatTime(dir.creationTime);
   return true;
 
@@ -1654,10 +1654,10 @@ fail:
  * \param[in] fatDate The date field from a directory entry.
  */
 void SdBaseFile::printFatDate(uint16_t fatDate) {
-  ECHO_V((int)FAT_YEAR(fatDate));
-  ECHO_C('-');
+  SERIAL_V((int)FAT_YEAR(fatDate));
+  SERIAL_C('-');
   print2u(FAT_MONTH(fatDate));
-  ECHO_C('-');
+  SERIAL_C('-');
   print2u(FAT_DAY(fatDate));
 }
 
@@ -1671,9 +1671,9 @@ void SdBaseFile::printFatDate(uint16_t fatDate) {
  */
 void SdBaseFile::printFatTime(uint16_t fatTime) {
   print2u(FAT_HOUR(fatTime));
-  ECHO_C(':');
+  SERIAL_C(':');
   print2u(FAT_MINUTE(fatTime));
-  ECHO_C(':');
+  SERIAL_C(':');
   print2u(FAT_SECOND(fatTime));
 }
 //------------------------------------------------------------------------------
@@ -1691,7 +1691,7 @@ bool SdBaseFile::printModifyDateTime() {
     goto fail;
   }
   printFatDate(dir.lastWriteDate);
-  ECHO_C(' ');
+  SERIAL_C(' ');
   printFatTime(dir.lastWriteTime);
   return true;
 
@@ -1784,7 +1784,7 @@ bool SdBaseFile::printName() {
     DBG_FAIL_MACRO;
     goto fail;
   }
-  ECHO_T(name);
+  SERIAL_T(name);
   return true;
 fail:
   return false;
@@ -3844,9 +3844,7 @@ cache_t* SdVolume::cacheFetchFat(uint32_t blockNumber, uint8_t options) {
 bool SdVolume::cacheSync() {
   if (cacheStatus_ & CACHE_STATUS_DIRTY) {
 #ifdef GLENN_DEBUG
-    Com::print("Wr blk:");
-    Com::print(cacheBlockNumber_);
-    Com::println();
+    SERIAL_EMT("Wr blk:", cacheBlockNumber_);
 #endif
     if (!sdCard_->writeBlock(cacheBlockNumber_, cacheBuffer_.data)) {
       DBG_FAIL_MACRO;
@@ -4131,7 +4129,7 @@ bool SdVolume::init(Sd2Card* dev, uint8_t part) {
   if (part) {
     if (part > 4) {
 #if defined(DEBUG_SD_ERROR)
-	Com::printErrorFLN(PSTR("volume init: illegal part"));
+	SERIAL_LM(ER, "volume init: illegal part");
 #endif		
       DBG_FAIL_MACRO;
       goto fail;
@@ -4139,7 +4137,7 @@ bool SdVolume::init(Sd2Card* dev, uint8_t part) {
     pc = cacheFetch(volumeStartBlock, CACHE_FOR_READ);
     if (!pc) {
 #if defined(DEBUG_SD_ERROR)
-		Com::printErrorFLN(PSTR("volume init: cache fetch failed"));
+		SERIAL_LM(ER, "volume init: cache fetch failed");
 #endif
       DBG_FAIL_MACRO;
       goto fail;
@@ -4301,7 +4299,7 @@ void SdFile::writeln_P(PGM_P str) {
  * \param[in] str Pointer to string stored in flash memory.
  */
 void SdFatUtil::SerialPrint_P(PGM_P str) {
-  ECHO_T(str);
+  SERIAL_T(str);
 }
 //------------------------------------------------------------------------------
 /** %Print a string in flash memory to Serial followed by a CR/LF.
@@ -4309,7 +4307,7 @@ void SdFatUtil::SerialPrint_P(PGM_P str) {
  * \param[in] str Pointer to string stored in flash memory.
  */
 void SdFatUtil::SerialPrintln_P(PGM_P str) {
-  ECHO_ET(str);
+  SERIAL_ET(str);
 }
 
 // ==============

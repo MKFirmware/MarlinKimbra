@@ -503,7 +503,10 @@
 /*****************************************************************************************
  ************************************ Homing feedrate ************************************
  *****************************************************************************************/
-#define HOMING_FEEDRATE {40*60, 40*60, 10*60, 0} // set the homing speeds (mm/min)
+// Homing speeds (mm/m)
+#define HOMING_FEEDRATE_X (40*60)
+#define HOMING_FEEDRATE_Y (40*60)
+#define HOMING_FEEDRATE_Z (10*60)
 
 // homing hits the endstop, then retracts by this distance, before it tries to slowly bump again:
 #define X_HOME_BUMP_MM 5

@@ -537,7 +537,7 @@ void Planner::check_axes_activity() {
           if (tooColdToExtrude(extruder)) {
             position[E_AXIS] = target[E_AXIS]; // Behave as if the move really took place, but ignore E part
             de = 0; // no difference
-            ECHO_LM(ER, SERIAL_ERR_COLD_EXTRUDE_STOP);
+            SERIAL_LM(ER, MSG_ERR_COLD_EXTRUDE_STOP);
           }
         }
 
@@ -548,7 +548,7 @@ void Planner::check_axes_activity() {
           #endif
           position[E_AXIS] = target[E_AXIS]; // Behave as if the move really took place, but ignore E part
           de = 0; // no difference
-          ECHO_LM(ER, SERIAL_ERR_LONG_EXTRUDE_STOP);
+          SERIAL_LM(ER, MSG_ERR_LONG_EXTRUDE_STOP);
           #if ENABLED(EASY_LOAD)
             }
             allow_lengthy_extrude_once = false;
@@ -897,7 +897,7 @@ void Planner::check_axes_activity() {
     block->step_event_count = max(block->step_event_count, block->steps_l / 1000);
 
     if (laser.diagnostics && block->laser_status == LASER_ON)
-      ECHO_LM(INFO, "Laser firing enabled");
+      SERIAL_EM("Laser firing enabled");
 
   #endif // LASERBEAM
 
@@ -1159,8 +1159,8 @@ void Planner::check_axes_activity() {
       block->advance_rate = acc_dist ? advance / (float)acc_dist : 0;
     }
     /*
-    ECHO_SMV(OK, "advance :", block->advance/256);
-    ECHO_EMV("advance rate :", block->advance_rate/256);
+    SERIAL_SMV(OK, "advance :", block->advance/256);
+    SERIAL_EMV("advance rate :", block->advance_rate/256);
     */
   #elif ENABLED(ADVANCE_LPC) // ADVANCE_LPC
     // bse == allsteps: A problem occurs when there's a very tiny move before a retract.

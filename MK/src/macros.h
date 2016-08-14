@@ -30,6 +30,11 @@
   #define STRINGIFY_(M) #M
   #define STRINGIFY(M) STRINGIFY_(M)
 
+  // Macros for communication
+  #define FSTRINGVALUE(var,value) const char var[] PROGMEM = value;
+  #define FSTRINGVAR(var) static const char var[] PROGMEM;
+  #define FSTRINGPARAM(var) PGM_P var
+
   // Macros for bit masks
   #ifndef _BV
     #define _BV(b) (1<<(b))
@@ -43,9 +48,10 @@
   #ifndef M_PI 
     #define M_PI 3.1415926536
   #endif
-  #define RADIANS(d) ((d)*M_PI/180.0)
-  #define DEGREES(r) ((r)*180.0/M_PI)
-  #define HYPOT(x,y) sqrt(sq(x)+sq(y))
+  #define RADIANS(d)  ((d)*M_PI/180.0)
+  #define DEGREES(r)  ((r)*180.0/M_PI)
+  #define HYPOT(x,y)  sqrt(sq(x)+sq(y))
+  #define SQUARE(x)   ((x)*(x))
   #define SIN_60 0.8660254037844386
   #define COS_60 0.5
 
@@ -64,7 +70,8 @@
   #define COUNT(a) (sizeof(a)/sizeof(*a))
 
   // Function macro
-  #define  FORCE_INLINE __attribute__((always_inline)) inline
+  #define FORCE_INLINE __attribute__((always_inline)) inline
+  #define strncpy_P(dest, src, num) strncpy((dest), (src), (num))
 
   // Macro for debugging
   #define DEBUGGING(F) (mk_debug_flags & (DEBUG_## F))
@@ -80,11 +87,11 @@
   #define _ARRAY_N(N, args...) ARRAY_ ##N(args)
   #define ARRAY_N(N, args...) _ARRAY_N(N, args)
 
-  // ARRAY_BY_EXTRUDERS based on EXTRUDERS
+  //ARRAY_BY_EXTRUDERS based on EXTRUDERS
   #define ARRAY_BY_EXTRUDERS_N(args...) ARRAY_N(EXTRUDERS, args)
   #define ARRAY_BY_EXTRUDERS(v1) ARRAY_BY_EXTRUDERS_N(v1, v1, v1, v1, v1, v1)
 
-  // ARRAY_BY_HOTENDS based on HOTENDS
+  //ARRAY_BY_HOTENDS based on HOTENDS
   #define ARRAY_BY_HOTENDS_N(args...) ARRAY_N(HOTENDS, args)
   #define ARRAY_BY_HOTENDS(v1) ARRAY_BY_HOTENDS_N(v1, v1, v1, v1, v1, v1)
 
@@ -127,10 +134,8 @@
   #define LOOP_XYZE(VAR) for (uint8_t VAR=X_AXIS; VAR<=E_AXIS; VAR++)
 
   // Feedrate scaling and conversion
-  #define MMM_TO_MMS(MM_M) ((MM_M)/60.0)
-  #define MMS_TO_MMM(MM_S) ((MM_S)*60.0)
-  #define MMM_SCALED(MM_M) ((MM_M)*feedrate_percentage/100.0)
-  #define MMS_SCALED(MM_S) MMM_SCALED(MM_S)
-  #define MMM_TO_MMS_SCALED(MM_M) (MMS_SCALED(MMM_TO_MMS(MM_M)))
+  #define MMM_TO_MMS(MM_M) ((MM_M) / 60.0)
+  #define MMS_TO_MMM(MM_S) ((MM_S) * 60.0)
+  #define MMS_SCALED(MM_S) ((MM_S) * feedrate_percentage * 0.01)
 
 #endif //__MACROS_H
