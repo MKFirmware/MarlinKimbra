@@ -17,6 +17,8 @@
 
 #if ENABLED(SDSUPPORT) && ENABLED(NEXTION)
 
+  #include "NexUpload.h"
+
   NexUpload::NexUpload(const char *file_name, uint32_t upload_baudrate) {
     _file_name = file_name;
     _upload_baudrate = upload_baudrate;
