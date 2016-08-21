@@ -71,7 +71,6 @@
 
   // Function macro
   #define FORCE_INLINE __attribute__((always_inline)) inline
-  #define strncpy_P(dest, src, num) strncpy((dest), (src), (num))
 
   // Macro for debugging
   #define DEBUGGING(F) (mk_debug_flags & (DEBUG_## F))
