@@ -120,7 +120,7 @@ class Com {
 #define SERIAL_LM(srt, msg)                 SERIAL_S(srt),SERIAL_M(msg),SERIAL_E
 #define SERIAL_LT(srt, txt)                 SERIAL_S(srt),SERIAL_T(txt),SERIAL_E
 #define SERIAL_LMT(srt, msg, txt)           SERIAL_S(srt),SERIAL_MT(msg, txt),SERIAL_E
-#define SERIAL_LV(srt, val, args...)        SERIAL_S(srt),SERIAL_V(val, ##args)
+#define SERIAL_LV(srt, val, args...)        SERIAL_S(srt),SERIAL_V(val, ##args),SERIAL_E
 #define SERIAL_LMV(srt, msg, val, args...)  SERIAL_S(srt),SERIAL_MV(msg, val, ##args),SERIAL_E
 
 #endif
