@@ -1725,8 +1725,8 @@ void kill_screen(const char* lcd_msg) {
   #if ENABLED(PID_AUTOTUNE_MENU)
 
     #if ENABLED(PIDTEMP)
-      int autotune_temp[HOTENDS] = ARRAY_BY_HOTENDS1(150);
-      const int heater_maxtemp[HOTENDS] = ARRAY_BY_HOTENDS(HEATER_0_MAXTEMP, HEATER_1_MAXTEMP, HEATER_2_MAXTEMP, HEATER_3_MAXTEMP);
+      int autotune_temp[HOTENDS] = ARRAY_BY_HOTENDS(150);
+      const int heater_maxtemp[HOTENDS] = ARRAY_BY_HOTENDS_N(HEATER_0_MAXTEMP, HEATER_1_MAXTEMP, HEATER_2_MAXTEMP, HEATER_3_MAXTEMP);
     #endif
 
     #if ENABLED(PIDTEMPBED)
