@@ -128,10 +128,10 @@
 #if ENABLED(MKR4)
   #define E0E1_CHOICE_PIN -1
   #define E0E2_CHOICE_PIN -1
-  #define E0E3_CHOICE_PIN -1
-  #define E0E4_CHOICE_PIN -1
-  #define E0E5_CHOICE_PIN -1
   #define E1E3_CHOICE_PIN -1
+#elif ENABLED(MKR6)
+  #define EX1_CHOICE_PIN  -1
+  #define EX2_CHOICE_PIN  -1
 #endif
 
 #if ENABLED(LASERBEAM)
