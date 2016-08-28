@@ -225,6 +225,9 @@
 // its trigger-point if hardware endstops are active.
 //#define Z_PROBE_FIX_MOUNTED
 
+// The BLTouch probe emulates a servo probe.
+//#define BLTOUCH
+
 // Allen key retractable z-probe as seen on many Kossel delta printers - http://reprap.org/wiki/Kossel#Automatic_bed_leveling_probe
 // Deploys by touching z-axis belt. Retracts by pushing the probe down.
 //#define Z_PROBE_ALLEN_KEY

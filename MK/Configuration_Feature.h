@@ -28,7 +28,6 @@
  * EXTRUDER FEATURES:
  * - Fan configuration
  * - Default nominal filament diameter
- * - Dangerous extrution prevention
  * - Single nozzle
  * - BariCUDA paste extruder
  * - Color Mixing Extruder
@@ -161,22 +160,6 @@
  *                                                                     *
  ***********************************************************************/
 #define DEFAULT_NOMINAL_FILAMENT_DIA 1.75
-/***********************************************************************/
-
-
-/***********************************************************************
- ******************** Dangerous extrution prevention *******************
- ***********************************************************************
- *                                                                     *
- * This prevents dangerous Extruder moves.                             *
- *                                                                     *
- ***********************************************************************/
-#define PREVENT_DANGEROUS_EXTRUDE
-#define EXTRUDE_MINTEMP 170 // degC
-
-// if PREVENT DANGEROUS EXTRUDE is on, you can still disable (uncomment) very long bits of extrusion separately.
-//#define PREVENT_LENGTHY_EXTRUDE
-#define EXTRUDE_MAXLENGTH (X_MAX_LENGTH + Y_MAX_LENGTH) // prevent extrusion of very large distances.
 /***********************************************************************/
 
 
@@ -1448,13 +1431,16 @@
 // The values should not be less than 1
 #define NUM_POSITON_SLOTS 2
 
-#define DROP_SEGMENTS               5   // everything with less than this number of steps will be ignored as move and joined with the next movement
-#define DEFAULT_MINSEGMENTTIME  20000   // minimum time in microseconds that a movement needs to take if the buffer is emptied.
+// minimum time in microseconds that a movement needs to take if the buffer is emptied.
+#define DEFAULT_MINSEGMENTTIME  20000
 
 // Arc interpretation settings:
 #define ARC_SUPPORT  // Disabling this saves ~2738 bytes
 #define MM_PER_ARC_SEGMENT 1
 #define N_ARC_CORRECTION 25
+
+// Moves with fewer segments than this will be ignored and joined with the next movement
+#define MIN_SEGMENTS_FOR_MOVE 6
 
 //#define M100_FREE_MEMORY_WATCHER    // Uncomment to add the M100 Free Memory Watcher for debug purpose
 #define M100_FREE_MEMORY_DUMPER       // Comment out to remove Dump sub-command

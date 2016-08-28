@@ -945,15 +945,15 @@ void kill_screen(const char* lcd_msg) {
     // Flow 4:
     //
     #if EXTRUDERS == 1
-      MENU_ITEM_EDIT(int3, MSG_FLOW, &extruder_multiplier[0], 10, 999);
+      MENU_ITEM_EDIT(int3, MSG_FLOW, &flow_percentage[0], 10, 999);
     #else // EXTRUDERS > 1
-      MENU_ITEM_EDIT(int3, MSG_FLOW, &extruder_multiplier[active_extruder], 10, 999);
-      MENU_ITEM_EDIT(int3, MSG_FLOW " 0", &extruder_multiplier[0], 10, 999);
-      MENU_ITEM_EDIT(int3, MSG_FLOW " 1", &extruder_multiplier[1], 10, 999);
+      MENU_ITEM_EDIT(int3, MSG_FLOW, &flow_percentage[active_extruder], 10, 999);
+      MENU_ITEM_EDIT(int3, MSG_FLOW " 0", &flow_percentage[0], 10, 999);
+      MENU_ITEM_EDIT(int3, MSG_FLOW " 1", &flow_percentage[1], 10, 999);
       #if EXTRUDERS > 2
-        MENU_ITEM_EDIT(int3, MSG_FLOW " 2", &extruder_multiplier[2], 10, 999);
+        MENU_ITEM_EDIT(int3, MSG_FLOW " 2", &flow_percentage[2], 10, 999);
         #if EXTRUDERS > 3
-          MENU_ITEM_EDIT(int3, MSG_FLOW " 3", &extruder_multiplier[3], 10, 999);
+          MENU_ITEM_EDIT(int3, MSG_FLOW " 3", &flow_percentage[3], 10, 999);
         #endif // EXTRUDERS > 3
       #endif // EXTRUDERS > 2
     #endif // EXTRUDERS > 1
@@ -1196,7 +1196,7 @@ void kill_screen(const char* lcd_msg) {
         current_position[Z_AXIS] = MESH_HOME_SEARCH_Z;
         line_to_current(Z_AXIS);
       #endif
-      st_synchronize();
+      stepper.synchronize();
     }
 
     static void _lcd_level_goto_next_point();
@@ -1245,7 +1245,7 @@ void kill_screen(const char* lcd_msg) {
 
             current_position[Z_AXIS] = MESH_HOME_SEARCH_Z + MIN_Z_HEIGHT_FOR_HOMING;
             line_to_current(Z_AXIS);
-            st_synchronize();
+            stepper.synchronize();
 
             mbl.set_has_mesh(true);
             enqueue_and_echo_commands_P(PSTR("G28"));
@@ -1541,32 +1541,44 @@ void kill_screen(const char* lcd_msg) {
    *
    */
 
-  static void _lcd_move_xyz(const char* name, AxisEnum axis, float min, float max) {
+  static void _lcd_move_xyz(const char* name, AxisEnum axis) {
     if (LCD_CLICKED) { lcd_goto_previous_menu(true); return; }
     ENCODER_DIRECTION_NORMAL();
     if (encoderPosition) {
       refresh_cmd_timeout();
+
+      // Limit to software endstops, if enabled
+      float min = (soft_endstops_enabled && SOFTWARE_MIN_ENDSTOPS) ? soft_endstop_min[axis] : current_position[axis] - 1000,
+            max = (soft_endstops_enabled && SOFTWARE_MAX_ENDSTOPS) ? soft_endstop_max[axis] : current_position[axis] + 1000;
+
+      // Get the new position
       current_position[axis] += float((int32_t)encoderPosition) * move_menu_scale;
-      if (SOFTWARE_MIN_ENDSTOPS) NOLESS(current_position[axis], min);
-      if (SOFTWARE_MAX_ENDSTOPS) NOMORE(current_position[axis], max);
-      encoderPosition = 0;
+
+      // Delta limits XY based on the current offset from center
+      // This assumes the center is 0,0
+      #if MECH(DELTA)
+        if (axis != Z_AXIS) {
+          max = sqrt(sq(DELTA_PRINTABLE_RADIUS) - sq(current_position[Y_AXIS - axis]));
+          min = -max;
+        }
+      #endif
+
+      // Limit only when trying to move towards the limit
+      if ((int32_t)encoderPosition < 0) NOLESS(current_position[axis], min);
+      if ((int32_t)encoderPosition > 0) NOMORE(current_position[axis], max);
+
       manual_move_to_current(axis);
+
+      encoderPosition = 0;
       lcdDrawUpdate = LCDVIEW_REDRAW_NOW;
     }
     if (lcdDrawUpdate) lcd_implementation_drawedit(name, ftostr41sign(current_position[axis]));
   }
 
-  #if MECH(DELTA)
-    static float delta_clip_radius_2 = (DELTA_PRINTABLE_RADIUS) * (DELTA_PRINTABLE_RADIUS);
-    static int delta_clip( float a ) { return sqrt(delta_clip_radius_2 - a * a); }
-    static void lcd_move_x() { int clip = delta_clip(current_position[Y_AXIS]); _lcd_move_xyz(PSTR(MSG_MOVE_X), X_AXIS, max(sw_endstop_min[X_AXIS], -clip), min(sw_endstop_max[X_AXIS], clip)); }
-    static void lcd_move_y() { int clip = delta_clip(current_position[X_AXIS]); _lcd_move_xyz(PSTR(MSG_MOVE_Y), Y_AXIS, max(sw_endstop_min[Y_AXIS], -clip), min(sw_endstop_max[Y_AXIS], clip)); }
-  #else
-    static void lcd_move_x() { _lcd_move_xyz(PSTR(MSG_MOVE_X), X_AXIS, sw_endstop_min[X_AXIS], sw_endstop_max[X_AXIS]); }
-    static void lcd_move_y() { _lcd_move_xyz(PSTR(MSG_MOVE_Y), Y_AXIS, sw_endstop_min[Y_AXIS], sw_endstop_max[Y_AXIS]); }
-  #endif
-  static void lcd_move_z() { _lcd_move_xyz(PSTR(MSG_MOVE_Z), Z_AXIS, sw_endstop_min[Z_AXIS], sw_endstop_max[Z_AXIS]); }
-  static void lcd_move_e(
+  static void lcd_move_x() { _lcd_move_xyz(PSTR(MSG_MOVE_X), X_AXIS); }
+  static void lcd_move_y() { _lcd_move_xyz(PSTR(MSG_MOVE_Y), Y_AXIS); }
+  static void lcd_move_z() { _lcd_move_xyz(PSTR(MSG_MOVE_Z), Z_AXIS); }
+  static void _lcd_move_e(
     #if EXTRUDERS > 1
       int8_t eindex = -1
     #endif
@@ -1603,13 +1615,14 @@ void kill_screen(const char* lcd_msg) {
     }
   }
 
+  static void lcd_move_e() { _lcd_move_e(); }
   #if EXTRUDERS > 1
-    static void lcd_move_e0() { lcd_move_e(0); }
-    static void lcd_move_e1() { lcd_move_e(1); }
+    static void lcd_move_e0() { _lcd_move_e(0); }
+    static void lcd_move_e1() { _lcd_move_e(1); }
     #if EXTRUDERS > 2
-      static void lcd_move_e2() { lcd_move_e(2); }
+      static void lcd_move_e2() { _lcd_move_e(2); }
       #if EXTRUDERS > 3
-        static void lcd_move_e3() { lcd_move_e(3); }
+        static void lcd_move_e3() { _lcd_move_e(3); }
       #endif
     #endif
   #endif // EXTRUDERS > 1
@@ -1636,9 +1649,16 @@ void kill_screen(const char* lcd_msg) {
       MENU_ITEM(submenu, MSG_MOVE_Z, lcd_move_z);
     }
     if (move_menu_scale < 10.0) {
-      #if EXTRUDERS == 1
-        MENU_ITEM(submenu, MSG_MOVE_E, lcd_move_e);
-      #else
+
+      #if ENABLED(DONDOLO_SINGLE_MOTOR) || ENABLED(DONDOLO_DUAL_MOTOR)
+        if (active_extruder)
+          MENU_ITEM(gcode, MSG_SELECT " E0", PSTR("T0"));
+        else
+          MENU_ITEM(gcode, MSG_SELECT " E1", PSTR("T1"));
+      #endif
+
+      MENU_ITEM(submenu, MSG_MOVE_E, lcd_move_e);
+      #if EXTRUDERS > 1
         MENU_ITEM(submenu, MSG_MOVE_E "0", lcd_move_e0);
         MENU_ITEM(submenu, MSG_MOVE_E "1", lcd_move_e1);
         #if EXTRUDERS > 2

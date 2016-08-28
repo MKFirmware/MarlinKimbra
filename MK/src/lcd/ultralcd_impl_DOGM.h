@@ -222,10 +222,6 @@ char lcd_printPGM(const char* str) {
   return n;
 }
 
-#if ENABLED(SHOW_BOOTSCREEN)
-  static bool show_bootscreen = true;
-#endif
-
 /* Warning: This function is called from interrupt context */
 static void lcd_implementation_init() {
 
@@ -243,11 +239,6 @@ static void lcd_implementation_init() {
     u8g.setContrast(lcd_contrast);
   #endif
 
-  // FIXME: remove this workaround
-  // Uncomment this if you have the first generation (V1.10) of STBs board
-  // pinMode(17, OUTPUT); // Enable LCD backlight
-  // digitalWrite(17, HIGH);
-
   #if ENABLED(LCD_SCREEN_ROT_90)
     u8g.setRot90();   // Rotate screen by 90°
   #elif ENABLED(LCD_SCREEN_ROT_180)
@@ -257,7 +248,9 @@ static void lcd_implementation_init() {
   #endif
 
   #if ENABLED(SHOW_BOOTSCREEN)
+    static bool show_bootscreen = true;
     int offx = (u8g.getWidth() - (START_BMPWIDTH)) / 2;
+
     #if ENABLED(START_BMPHIGH)
       int offy = 0;
     #else
@@ -266,9 +259,9 @@ static void lcd_implementation_init() {
 
     int txt1X = (u8g.getWidth() - (sizeof(STRING_SPLASH_LINE1) - 1) * (DOG_CHAR_WIDTH)) / 2;
 
-    u8g.firstPage();
-    do {
-      if (show_bootscreen) {
+    if (show_bootscreen) {
+      u8g.firstPage();
+      do {
         u8g.drawBitmapP(offx, offy, START_BMPBYTEWIDTH, START_BMPHEIGHT, start_bmp);
         lcd_setFont(FONT_MENU);
         #ifndef STRING_SPLASH_LINE2
@@ -278,12 +271,12 @@ static void lcd_implementation_init() {
           u8g.drawStr(txt1X, u8g.getHeight() - (DOG_CHAR_HEIGHT) * 3 / 2, STRING_SPLASH_LINE1);
           u8g.drawStr(txt2X, u8g.getHeight() - (DOG_CHAR_HEIGHT) * 1 / 2, STRING_SPLASH_LINE2);
         #endif
-      }
-    } while (u8g.nextPage());
+      } while (u8g.nextPage());
+    }
 
     show_bootscreen = false;
 
-  #endif
+  #endif // SHOW_BOOTSCREEN
 }
 
 void lcd_kill_screen() {

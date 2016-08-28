@@ -71,7 +71,7 @@ enum DebugFlags {
   DEBUG_ERRORS        = _BV(2), ///< Not implemented
   DEBUG_DRYRUN        = _BV(3), ///< Ignore temperature setting and E movement commands
   DEBUG_COMMUNICATION = _BV(4), ///< Not implemented
-  DEBUG_DEBUG         = _BV(5)  ///< Print Debug
+  DEBUG_ALL           = 0xFF    ///< Print all Debug
 };
 
 enum EndstopEnum {
@@ -96,16 +96,16 @@ enum TempState {
   MeasureTemp_0,
   PrepareTemp_BED,
   MeasureTemp_BED,
-  PrepareTemp_CHAMBER,
-  MeasureTemp_CHAMBER,
-  PrepareTemp_COOLER,
-  MeasureTemp_COOLER,
   PrepareTemp_1,
   MeasureTemp_1,
   PrepareTemp_2,
   MeasureTemp_2,
   PrepareTemp_3,
   MeasureTemp_3,
+  PrepareTemp_CHAMBER,
+  MeasureTemp_CHAMBER,
+  PrepareTemp_COOLER,
+  MeasureTemp_COOLER,
   Prepare_FILWIDTH,
   Measure_FILWIDTH,
   Prepare_POWCONSUMPTION,

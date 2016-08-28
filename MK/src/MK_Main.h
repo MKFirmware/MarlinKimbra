@@ -45,10 +45,10 @@ void ok_to_send();
 
 #if MECH(DELTA)
   void set_delta_constants();
-  void inverse_kinematics(const float in_cartesian[3]);
-  extern float delta[3];
-  extern float endstop_adj[3];
-  extern float diagrod_adj[3];
+  void inverse_kinematics(const float in_cartesian[ABC]);
+  extern float delta[ABC];
+  extern float endstop_adj[ABC];
+  extern float diagrod_adj[ABC];
   extern float tower_adj[6];
   extern float delta_radius;
   extern float delta_diagonal_rod;
@@ -56,10 +56,10 @@ void ok_to_send();
 #endif
 
 #if MECH(SCARA)
-  extern float delta[3];
-  extern float axis_scaling[3];  // Build size scaling
-  void inverse_kinematics(const float in_cartesian[3]);
-  void forward_kinematics_SCARA(float f_scara[3]);
+  extern float delta[ABC];
+  extern float axis_scaling[ABC];  // Build size scaling
+  void inverse_kinematics(const float in_cartesian[ABC]);
+  void forward_kinematics_SCARA(float f_scara[ABC]);
 #endif
 
 void kill(const char *);
@@ -72,8 +72,6 @@ void quickstop_stepper();
 
 extern uint8_t mk_debug_flags;
 
-void clamp_to_software_endstops(float target[3]);
-
 extern bool Running;
 inline bool IsRunning() { return  Running; }
 inline bool IsStopped() { return !Running; }
@@ -85,7 +83,6 @@ void enqueue_and_echo_commands_P(const char* cmd);  // put one or many ASCII com
 void clear_command_queue();
 
 void prepare_arc_move(char isclockwise);
-void clamp_to_software_endstops(float target[3]);
 
 extern millis_t previous_cmd_ms;
 inline void refresh_cmd_timeout() { previous_cmd_ms = millis(); }
@@ -103,21 +100,31 @@ extern int feedrate_percentage;
 
 extern bool axis_relative_modes[];
 extern bool volumetric_enabled;
-extern int extruder_multiplier[EXTRUDERS];      // sets extrude multiply factor (in percent) for each extruder individually
-extern int density_multiplier[EXTRUDERS];       // sets density multiply factor (in percent) for each extruder individually
+extern int flow_percentage[EXTRUDERS];          // Extrusion factor for each extruder
+extern int density_percentage[EXTRUDERS];       // Extrusion density factor for each extruder
 extern float filament_size[EXTRUDERS];          // cross-sectional area of filament (in millimeters), typically around 1.75 or 2.85, 0 disables the volumetric calculations for the extruder.
 extern float volumetric_multiplier[EXTRUDERS];  // reciprocal of cross-sectional area of filament (in square millimeters), stored this way to reduce computational burden in planner
-extern bool axis_known_position[3];             // axis[n].is_known
-extern bool axis_homed[3];                      // axis[n].is_homed
+extern bool axis_known_position[XYZ];           // axis[n].is_known
+extern bool axis_homed[XYZ];                    // axis[n].is_homed
 extern volatile bool wait_for_heatup;
 
 extern float current_position[NUM_AXIS];
 extern float destination[NUM_AXIS];
-extern float position_shift[3];
-extern float home_offset[3];
-extern float hotend_offset[3][HOTENDS];
-extern float sw_endstop_min[3];
-extern float sw_endstop_max[3];
+extern float position_shift[XYZ];
+extern float home_offset[XYZ];
+extern float hotend_offset[XYZ][HOTENDS];
+
+// Software Endstops
+void update_software_endstops(AxisEnum axis);
+#if ENABLED(SOFTWARE_MIN_ENDSTOPS) || ENABLED(SOFTWARE_MAX_ENDSTOPS)
+  extern bool soft_endstops_enabled;
+  void clamp_to_software_endstops(float target[XYZ]);
+#else
+  #define soft_endstops_enabled false
+  #define clamp_to_software_endstops(x) NOOP
+#endif
+extern float soft_endstop_min[XYZ];
+extern float soft_endstop_max[XYZ];
 
 #define LOGICAL_POSITION(POS, AXIS) (POS + home_offset[AXIS] + position_shift[AXIS])
 #define RAW_POSITION(POS, AXIS)     (POS - home_offset[AXIS] - position_shift[AXIS])

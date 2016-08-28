@@ -459,7 +459,7 @@ void CardReader::checkautostart(bool force) {
 }
 
 void CardReader::printingHasFinished() {
-  st_synchronize();
+  stepper.synchronize();
   file.close();
   sdprinting = false;
   if (SD_FINISHED_STEPPERRELEASE) {

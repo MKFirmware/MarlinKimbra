@@ -264,7 +264,7 @@
 
   //===========================================================================
   void ZWobble::setSample(float zRod, float zActual) {
-    if (DEBUGGING(DEBUG)) {
+    if (DEBUGGING(ALL)) {
       SERIAL_SMV(DEB, "New sample Rod: ", zRod);
       SERIAL_EMV(" Act: ", zActual);
     }
@@ -468,7 +468,7 @@
 
     if (originZ < ZWOBBLE_MIN_Z || targetZ < ZWOBBLE_MIN_Z) return;
 
-    if (DEBUGGING(DEBUG)) {
+    if (DEBUGGING(ALL)) {
       SERIAL_MV("Origin: ", originZ);
       SERIAL_MV(" Target: ", targetZ);
     }
@@ -483,18 +483,18 @@
     else
       originZRod = findZRod(originZ);
     
-    if (DEBUGGING(DEBUG))
+    if (DEBUGGING(ALL))
       SERIAL_MV(" Origin rod: ", originZRod);
 
     float targetZRod = findZRod(targetZ);
 
-    if (DEBUGGING(DEBUG))
+    if (DEBUGGING(ALL))
       SERIAL_MV(" Target Rod: ", targetZRod);
 
     // difference in steps between the correct movement (originZRod->targetZRod) and the planned movement
     long stepDiff = lround((targetZRod - originZRod) * planner.axis_steps_per_mm[Z_AXIS]) - (lround(targetZ * planner.axis_steps_per_mm[Z_AXIS]) - planner.position[Z_AXIS]);
 
-    if (DEBUGGING(DEBUG))
+    if (DEBUGGING(ALL))
       SERIAL_EMV(" stepDiff: ", stepDiff);
 
     lastZ = targetZ;
