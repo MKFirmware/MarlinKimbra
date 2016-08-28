@@ -70,7 +70,6 @@
 #include "src/motion/cartesian_correction.h"
 #include "src/temperature/temperature.h"
 #include "src/sensor/flowmeter.h"
-#include "src/temperature/thermistortables.h"
 #include "src/lcd/ultralcd.h"
 #include "src/lcd/buzzer.h"
 #include "src/nextion/Nextion_lcd.h"

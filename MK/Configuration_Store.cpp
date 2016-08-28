@@ -76,7 +76,8 @@
  *  M666  XYZ             endstop_adj (float x3)
  *  M666  R               delta_radius (float)
  *  M666  D               delta_diagonal_rod (float)
- *  M666  H               Z sw_endstop_max (float)
+ *  M666  S               delta_segments_per_second (float)
+ *  M666  H               Z soft_endstop_max (float)
  *  M666  ABCIJK          tower_adj (float x6)
  *  M666  UVW             diagrod_adj (float x3)
  *
@@ -187,6 +188,9 @@ void Config_Postprocess() {
   #endif
 
   calculate_volumetric_multipliers();
+
+  // Software endstops depend on home_offset
+  LOOP_XYZ(i) update_software_endstops((AxisEnum)i);
 }
 
 #if ENABLED(EEPROM_SETTINGS)
@@ -247,7 +251,8 @@ void Config_StoreSettings() {
     EEPROM_WRITE(endstop_adj);
     EEPROM_WRITE(delta_radius);
     EEPROM_WRITE(delta_diagonal_rod);
-    EEPROM_WRITE(sw_endstop_max);
+    EEPROM_WRITE(delta_segments_per_second);
+    EEPROM_WRITE(soft_endstop_max);
     EEPROM_WRITE(tower_adj);
     EEPROM_WRITE(diagrod_adj);
   #elif ENABLED(Z_DUAL_ENDSTOPS)
@@ -425,7 +430,8 @@ void Config_RetrieveSettings() {
       EEPROM_READ(endstop_adj);
       EEPROM_READ(delta_radius);
       EEPROM_READ(delta_diagonal_rod);
-      EEPROM_READ(sw_endstop_max);
+      EEPROM_READ(delta_segments_per_second);
+      EEPROM_READ(soft_endstop_max);
       EEPROM_READ(tower_adj);
       EEPROM_READ(diagrod_adj);
     #endif //DELTA
@@ -619,6 +625,10 @@ void Config_ResetDefault() {
   #if MECH(DELTA)
     delta_radius = DEFAULT_DELTA_RADIUS;
     delta_diagonal_rod = DELTA_DIAGONAL_ROD;
+    delta_segments_per_second =  DELTA_SEGMENTS_PER_SECOND;
+    soft_endstop_max[0] = X_MAX_POS;
+    soft_endstop_max[1] = Y_MAX_POS;
+    soft_endstop_max[2] = Z_MAX_POS;
     endstop_adj[0] = TOWER_A_ENDSTOP_ADJ;
     endstop_adj[1] = TOWER_B_ENDSTOP_ADJ;
     endstop_adj[2] = TOWER_C_ENDSTOP_ADJ;
@@ -838,7 +848,7 @@ void Config_PrintSettings(bool forReplay) {
     SERIAL_MV(" W", diagrod_adj[2], 3);
     SERIAL_MV(" R", delta_radius);
     SERIAL_MV(" D", delta_diagonal_rod);
-    SERIAL_EMV(" H", sw_endstop_max[2]);
+    SERIAL_EMV(" H", soft_endstop_max[2]);
 
     CONFIG_MSG_START("Endstop Offsets:");
     SERIAL_SMV(CFG, "  M666 X", endstop_adj[X_AXIS]);

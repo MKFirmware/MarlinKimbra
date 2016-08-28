@@ -176,6 +176,9 @@
 // its trigger-point if hardware endstops are active.
 //#define Z_PROBE_FIX_MOUNTED
 
+// The BLTouch probe emulates a servo probe.
+//#define BLTOUCH
+
 // Enable if you have a Z probe mounted on a sled like those designed by Charles Bell.
 //#define Z_PROBE_SLED
 // The extra distance the X axis must travel to pick up the sled.
@@ -399,7 +402,8 @@
 // Note: this feature generates 10KB extra code size
 #define AUTO_BED_LEVELING_GRID
 
-// START yes AUTO BED LEVELING GRID
+
+/** START yes AUTO BED LEVELING GRID **/
 #define LEFT_PROBE_BED_POSITION 20
 #define RIGHT_PROBE_BED_POSITION 180
 #define FRONT_PROBE_BED_POSITION 20
@@ -410,11 +414,11 @@
 
 // Set the number of grid points per dimension
 // You probably don't need more than 3 (squared=9)
-#define AUTO_BED_LEVELING_GRID_POINTS 2
-// END yes AUTO BED LEVELING GRID
+#define AUTO_BED_LEVELING_GRID_POINTS 3
+/** END yes AUTO BED LEVELING GRID **/
 
 
-// START no AUTO BED LEVELING GRID
+/** START no AUTO BED LEVELING GRID **/
 // Arbitrary points to probe. A simple cross-product
 // is used to estimate the plane of the bed.
 #define ABL_PROBE_PT_1_X 15
@@ -423,7 +427,7 @@
 #define ABL_PROBE_PT_2_Y 15
 #define ABL_PROBE_PT_3_X 180
 #define ABL_PROBE_PT_3_Y 15
-// END no AUTO BED LEVELING GRID
+/** END no AUTO BED LEVELING GRID **/
 
 // These commands will be executed in the end of G29 routine.
 // Useful to retract a deployable Z probe.

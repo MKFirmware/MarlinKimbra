@@ -43,10 +43,20 @@
 #ifndef TEMPERATURE_H
 #define TEMPERATURE_H
 
+#include "thermistortables.h"
+
 #if HOTENDS <= 1
   #define HOTEND_INDEX  0
 #else
   #define HOTEND_INDEX  h
+#endif
+
+#if ENABLED(PIDTEMPBED) || ENABLED(PIDTEMP)  || ENABLED(PIDTEMPCHAMBER) || ENABLED(PIDTEMPCOOLER)
+  #ifdef __SAM3X8E__
+    #define PID_dT (((OVERSAMPLENR + 2) * 14.0)/ TEMP_FREQUENCY)
+  #else
+    #define PID_dT ((OVERSAMPLENR * 12.0)/(F_CPU / 64.0 / 256.0))
+  #endif
 #endif
 
 // public functions
@@ -231,7 +241,7 @@ FORCE_INLINE bool isCoolingBed() { return target_temperature_bed < current_tempe
 FORCE_INLINE bool isCoolingChamber() { return target_temperature_chamber < current_temperature_chamber; }
 FORCE_INLINE bool isCoolingCooler() { return target_temperature_cooler < current_temperature_cooler; } 
 
-#if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
+#if ENABLED(PREVENT_COLD_EXTRUSION)
   extern float extrude_min_temp;
   extern bool allow_cold_extrude;
   FORCE_INLINE bool tooColdToExtrude(uint8_t h) {

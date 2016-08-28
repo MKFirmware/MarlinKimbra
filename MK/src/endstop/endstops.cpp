@@ -143,7 +143,7 @@ void Endstops::report_state() {
     #endif
 
     #define _ENDSTOP_HIT_ECHO(A,C) do{ \
-      SERIAL_MV(" " STRINGIFY(A) ":", triggered_position_mm(A ##_AXIS)); \
+      SERIAL_MV(" " STRINGIFY(A) ":", stepper.triggered_position_mm(A ##_AXIS)); \
       _SET_STOP_CHAR(A,C); }while(0)
 
     #define _ENDSTOP_HIT_TEST(A,C) \
@@ -220,11 +220,11 @@ void Endstops::M119() {
   // Pass the result of the endstop test
   void Endstops::test_dual_z_endstops(EndstopEnum es1, EndstopEnum es2) {
     byte z_test = TEST_ENDSTOP(es1) | (TEST_ENDSTOP(es2) << 1); // bit 0 for Z, bit 1 for Z2
-    if (current_block->steps[Z_AXIS] > 0) {
-      endstop_triggered(Z_AXIS);
+    if (stepper.current_block->steps[Z_AXIS] > 0) {
+      stepper.endstop_triggered(Z_AXIS);
       SBI(endstop_hit_bits, Z_MIN);
       if (!performing_homing || (z_test == 0x3))  //if not performing home or if both endstops were trigged during homing...
-        kill_current_block();
+        stepper.kill_current_block();
     }
   }
 
@@ -245,24 +245,24 @@ void Endstops::update() {
 
   #define UPDATE_ENDSTOP(AXIS,MINMAX) do { \
       UPDATE_ENDSTOP_BIT(AXIS, MINMAX); \
-      if (TEST_ENDSTOP(_ENDSTOP(AXIS, MINMAX)) && current_block->steps[_AXIS(AXIS)] > 0) { \
+      if (TEST_ENDSTOP(_ENDSTOP(AXIS, MINMAX)) && stepper.current_block->steps[_AXIS(AXIS)] > 0) { \
         _ENDSTOP_HIT(AXIS); \
-        endstop_triggered(_AXIS(AXIS)); \
+        stepper.endstop_triggered(_AXIS(AXIS)); \
       } \
     } while(0)
 
   #if MECH(COREXY) || MECH(COREYX)|| MECH(COREXZ) || MECH(COREZX)
     // Head direction in -X axis for CoreXY and CoreXZ bots.
     // If DeltaA == -DeltaB, the movement is only in Y or Z axis
-    if ((current_block->steps[CORE_AXIS_1] != current_block->steps[CORE_AXIS_2]) || (motor_direction(CORE_AXIS_1) == motor_direction(CORE_AXIS_2))) {
-      if (motor_direction(X_HEAD))
+    if ((stepper.current_block->steps[CORE_AXIS_1] != stepper.current_block->steps[CORE_AXIS_2]) || (stepper.motor_direction(CORE_AXIS_1) == stepper.motor_direction(CORE_AXIS_2))) {
+      if (stepper.motor_direction(X_HEAD))
   #else
-    if (motor_direction(X_AXIS))   // stepping along -X axis (regular Cartesian bot)
+    if (stepper.motor_direction(X_AXIS))   // stepping along -X axis (regular Cartesian bot)
   #endif
       { // -direction
         #if ENABLED(DUAL_X_CARRIAGE)
           // with 2 x-carriages, endstops are only checked in the homing direction for the active extruder
-          if ((current_block->active_driver == 0 && X_HOME_DIR == -1) || (current_block->active_driver != 0 && X2_HOME_DIR == -1))
+          if ((stepper.current_block->active_driver == 0 && X_HOME_DIR == -1) || (stepper.current_block->active_driver != 0 && X2_HOME_DIR == -1))
         #endif
           {
             #if HAS(X_MIN)
@@ -273,7 +273,7 @@ void Endstops::update() {
       else { // +direction
         #if ENABLED(DUAL_X_CARRIAGE)
           // with 2 x-carriages, endstops are only checked in the homing direction for the active extruder
-          if ((current_block->active_driver == 0 && X_HOME_DIR == 1) || (current_block->active_driver != 0 && X2_HOME_DIR == 1))
+          if ((stepper.current_block->active_driver == 0 && X_HOME_DIR == 1) || (stepper.current_block->active_driver != 0 && X2_HOME_DIR == 1))
         #endif
           {
             #if HAS(X_MAX)
@@ -288,10 +288,10 @@ void Endstops::update() {
   #if MECH(COREXY) || MECH(COREYX)
     // Head direction in -Y axis for CoreXY bots.
     // If DeltaA == DeltaB, the movement is only in X axis
-    if ((current_block->steps[CORE_AXIS_1] != current_block->steps[CORE_AXIS_2]) || (motor_direction(CORE_AXIS_1) != motor_direction(CORE_AXIS_2))) {
-      if (motor_direction(Y_HEAD))
+    if ((stepper.current_block->steps[CORE_AXIS_1] != stepper.current_block->steps[CORE_AXIS_2]) || (stepper.motor_direction(CORE_AXIS_1) != stepper.motor_direction(CORE_AXIS_2))) {
+      if (stepper.motor_direction(Y_HEAD))
   #else
-      if (motor_direction(Y_AXIS))   // -direction
+      if (stepper.motor_direction(Y_AXIS))   // -direction
   #endif
       { // -direction
         #if HAS(Y_MIN)
@@ -310,10 +310,10 @@ void Endstops::update() {
   #if MECH(COREXZ) || MECH(COREZX)
     // Head direction in -Z axis for CoreXZ bots.
     // If DeltaA == DeltaB, the movement is only in X axis
-    if ((current_block->steps[CORE_AXIS_1] != current_block->steps[CORE_AXIS_2]) || (motor_direction(CORE_AXIS_1) !) != motor_direction(CORE_AXIS_2))) {
-      if (motor_direction(Z_HEAD))
+    if ((stepper.current_block->steps[CORE_AXIS_1] != stepper.current_block->steps[CORE_AXIS_2]) || (stepper.motor_direction(CORE_AXIS_1) !) != stepper.motor_direction(CORE_AXIS_2))) {
+      if (stepper.motor_direction(Z_HEAD))
   #else
-      if (motor_direction(Z_AXIS))
+      if (stepper.motor_direction(Z_AXIS))
   #endif
       { // z -direction
         #if HAS(Z_MIN)

@@ -334,7 +334,7 @@ void FirmwareTest() {
   #endif
 
   // Reset position to 0
-  st_synchronize();
+  stepper.synchronize();
   for (int8_t i = 0; i < NUM_AXIS; i++) current_position[i] = 0;
   planner.set_position_mm(current_position[X_AXIS], current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
 
@@ -350,7 +350,7 @@ void FirmwareTest() {
   SERIAL_EM("***** MOTOR X *****");
   destination[X_AXIS] = 10;
   prepare_move();
-  st_synchronize();
+  stepper.synchronize();
 
   SERIAL_EM(MSG_FWTEST_XAXIS);
   SERIAL_EM(MSG_FWTEST_YES_NO);
@@ -383,7 +383,7 @@ void FirmwareTest() {
   SERIAL_EM("***** MOTOR Y *****");
   destination[Y_AXIS] = 10;
   prepare_move();
-  st_synchronize();
+  stepper.synchronize();
   SERIAL_EM(MSG_FWTEST_YAXIS);
   SERIAL_EM(MSG_FWTEST_YES_NO);
   serial_answer = ' ';
@@ -415,7 +415,7 @@ void FirmwareTest() {
   SERIAL_EM("***** MOTOR Z *****");
   destination[Z_AXIS] = 10;
   prepare_move();
-  st_synchronize();
+  stepper.synchronize();
   SERIAL_EM(MSG_FWTEST_ZAXIS);
   SERIAL_EM(MSG_FWTEST_YES_NO);
   serial_answer = ' ';

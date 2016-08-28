@@ -154,14 +154,14 @@
   NexVar movecmd        = NexVar(6, 18, "vacmd");
   NexText LedCoord6     = NexText(6, 19, "mcoord");
 
-  // Page 7 Feed
+  // Page 7 Speed
   NexPicture SpeedOk    = NexPicture(7, 2,  "p0");
 
   // Page 8 Gcode
   NexText Tgcode        = NexText(8, 1, "tgcode");
   NexButton Benter      = NexButton(8, 41, "benter");
 
-  // Page 9 Gcode
+  // Page 9 Rfid
   NexPicture MSD9       = NexPicture(9, 2,  "p1");
   NexButton Rfid0       = NexButton(9,  5,  "b0");
   NexButton Rfid1       = NexButton(9,  6,  "b1");

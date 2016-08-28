@@ -390,7 +390,7 @@
   #endif
 
   // Extruder
-  #if ENABLED(PREVENT_DANGEROUS_EXTRUDE)
+  #if ENABLED(PREVENT_COLD_EXTRUSION)
     #if DISABLED(EXTRUDE_MINTEMP)
       #error DEPENDENCY ERROR: Missing setting EXTRUDE_MINTEMP
     #endif
@@ -1141,11 +1141,8 @@
   #if DISABLED(NUM_POSITON_SLOTS)
     #error DEPENDENCY ERROR: Missing setting NUM_POSITON_SLOTS
   #endif
-  #if DISABLED(DROP_SEGMENTS)
-    #error DEPENDENCY ERROR: Missing setting DROP_SEGMENTS
-  #endif
-  #if DISABLED(DROP_SEGMENTS)
-    #error DEPENDENCY ERROR: Missing setting DROP_SEGMENTS
+  #if DISABLED(MIN_SEGMENTS_FOR_MOVE)
+    #error DEPENDENCY ERROR: Missing setting MIN_SEGMENTS_FOR_MOVE
   #endif
   #if DISABLED(DEFAULT_MINSEGMENTTIME)
     #error DEPENDENCY ERROR: Missing setting DEFAULT_MINSEGMENTTIME
@@ -1523,8 +1520,8 @@
   /**
    * Extruder Runout Prevention
    */
-  #if DISABLED(PREVENT_DANGEROUS_EXTRUDE) && ENABLED(EXTRUDER_RUNOUT_PREVENT)
-    #error DEPENDENCY ERROR: EXTRUDER_RUNOUT_PREVENT needs PREVENT_DANGEROUS_EXTRUDE
+  #if DISABLED(PREVENT_COLD_EXTRUSION) && ENABLED(EXTRUDER_RUNOUT_PREVENT)
+    #error DEPENDENCY ERROR: EXTRUDER_RUNOUT_PREVENT needs PREVENT_COLD_EXTRUSION
   #endif
   #if ENABLED(EXTRUDER_RUNOUT_PREVENT) && EXTRUDER_RUNOUT_MINTEMP < EXTRUDE_MINTEMP
     #error CONFLICT ERROR: EXTRUDER_RUNOUT_MINTEMP have to be greater than EXTRUDE_MINTEMP
@@ -1540,8 +1537,8 @@
   /**
    * Idle oozing prevent
    */
-  #if DISABLED(PREVENT_DANGEROUS_EXTRUDE) && ENABLED(IDLE_OOZING_PREVENT)
-    #error DEPENDENCY ERROR: IDLE_OOZING_MINTEMP needs PREVENT_DANGEROUS_EXTRUDE
+  #if DISABLED(PREVENT_COLD_EXTRUSION) && ENABLED(IDLE_OOZING_PREVENT)
+    #error DEPENDENCY ERROR: IDLE_OOZING_MINTEMP needs PREVENT_COLD_EXTRUSION
   #endif
   #if ENABLED(IDLE_OOZING_PREVENT) && IDLE_OOZING_MINTEMP < EXTRUDE_MINTEMP
     #error CONFLICT ERROR: IDLE_OOZING_MINTEMP have to be greater than EXTRUDE_MINTEMP
@@ -1659,14 +1656,18 @@
    * Dual X Carriage requirements
    */
   #if ENABLED(DUAL_X_CARRIAGE)
-    #if EXTRUDERS == 1 || MECH(COREXY) \
-        || HASNT(X2_ENABLE) || HASNT(X2_STEP) || HASNT(X2_DIR) \
-        || DISABLED(X2_HOME_POS) || DISABLED(X2_MIN_POS) || DISABLED(X2_MAX_POS) \
-        || HASNT(X_MAX)
-      #error DEPENDENCY ERROR: Missing or invalid definitions for DUAL_X_CARRIAGE mode.
-    #endif
-    #if X_HOME_DIR != -1 || X2_HOME_DIR != 1
-      #error CONFLICT ERROR: Please use canonical x-carriage assignment.
+    #if EXTRUDERS == 1
+      #error "DUAL_X_CARRIAGE requires 2 (or more) extruders."
+    #elif MECH(COREXY) || MECH(COREXZ)
+      #error "DUAL_X_CARRIAGE cannot be used with COREXY or COREXZ."
+    #elif HASNT(X2_ENABLE) || HASNT(X2_STEP) || HASNT(X2_DIR)
+      #error "DUAL_X_CARRIAGE requires X2 stepper pins to be defined."
+    #elif HASNT(X_MAX)
+      #error "DUAL_X_CARRIAGE requires use a X Max Endstop."
+    #elif DISABLED(X2_HOME_POS) || DISABLED(X2_MIN_POS) || DISABLED(X2_MAX_POS)
+      #error "DUAL_X_CARRIAGE requires X2_HOME_POS, X2_MIN_POS, and X2_MAX_POS."
+    #elif X_HOME_DIR != -1 || X2_HOME_DIR != 1
+      #error "DUAL_X_CARRIAGE requires X_HOME_DIR -1 and X2_HOME_DIR 1."
     #endif
   #endif // DUAL_X_CARRIAGE
 
@@ -1830,6 +1831,8 @@
       #error DEPENDENCY ERROR: You must set E0E1_CHOICE_PIN to a valid pin if you enable MKR4 with 2 extruder and 1 driver
     #elif (EXTRUDERS > 2) && (DRIVER_EXTRUDERS == 1)
       #error DEPENDENCY ERROR: For 3 or more extruder you must set 2 DRIVER_EXTRUDERS for MKR4 system
+    #elif (EXTRUDERS > 2) && PIN_EXISTS(E0E1_CHOICE)
+      #error DEPENDENCY ERROR: For 3 or more extruder you must not E0E1_CHOICE_PIN for MKR4 system
     #elif (EXTRUDERS == 3) && (DRIVER_EXTRUDERS == 2) && !PIN_EXISTS(E0E2_CHOICE)
       #error DEPENDENCY ERROR: You must set E0E2_CHOICE_PIN to a valid pin if you enable MKR4 with 3 extruder and 1 driver
     #elif (EXTRUDERS == 4) && (DRIVER_EXTRUDERS == 2) && (!PIN_EXISTS(E0E2_CHOICE) || !PIN_EXISTS(E1E3_CHOICE))
