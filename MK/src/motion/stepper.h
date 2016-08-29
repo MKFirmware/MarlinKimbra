@@ -128,7 +128,7 @@ class Stepper {
     static volatile signed char count_direction[NUM_AXIS];
 
     #if ENABLED(COLOR_MIXING_EXTRUDER)
-      static long counter_m[DRIVER_EXTRUDERS];
+      static long counter_M[DRIVER_EXTRUDERS];
       #define MIXING_STEPPERS_LOOP(VAR) \
         for (uint8_t VAR = 0; VAR < DRIVER_EXTRUDERS; VAR++) \
           if (current_block->mix_event_count[VAR])
