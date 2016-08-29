@@ -1814,6 +1814,8 @@ void do_blocking_move_to_z(const float &z, const float &fr_mm_s/*=0.0*/) {
   // at the height where the probe triggered.
   static float run_z_probe() {
 
+    if (DEBUGGING(INFO)) DEBUG_INFO_POS(">>> run_z_probe", current_position);
+
     // Prevent stepper_inactive_time from running out and EXTRUDER_RUNOUT_PREVENT from extruding
     refresh_cmd_timeout();
 
@@ -1837,6 +1839,8 @@ void do_blocking_move_to_z(const float &z, const float &fr_mm_s/*=0.0*/) {
       do_probe_move(-10, (HOMING_FEEDRATE_Z) / 2);
 
     #endif
+
+    if (DEBUGGING(INFO)) DEBUG_INFO_POS("<<< run_z_probe", current_position);
 
     return current_position[Z_AXIS];
   }
@@ -1960,7 +1964,7 @@ static void homeaxis(AxisEnum axis) {
     do_homing_move(axis, 1.5 * max_length(axis) * axis_home_dir);
   #endif
 
-  if (DEBUGGING(INFO)) SERIAL_LMV(INFO, "> 1st Home", current_position[axis]);
+  if (DEBUGGING(INFO)) SERIAL_LMV(INFO, "> 1st Home ", current_position[axis]);
 
   // Move away from the endstop by the axis HOME_BUMP_MM
   do_homing_move(axis, -home_bump_mm(axis) * axis_home_dir);
@@ -1968,7 +1972,7 @@ static void homeaxis(AxisEnum axis) {
   // Move slowly towards the endstop until triggered
   do_homing_move(axis, 2 * home_bump_mm(axis) * axis_home_dir, get_homing_bump_feedrate(axis));
 
-  if (DEBUGGING(INFO)) SERIAL_LMV(INFO, "> 2nd Home", current_position[axis]);
+  if (DEBUGGING(INFO)) SERIAL_LMV(INFO, "> 2nd Home ", current_position[axis]);
 
   #if ENABLED(Z_DUAL_ENDSTOPS)
     if (axis == Z_AXIS) {
@@ -6249,14 +6253,14 @@ inline void gcode_M109() {
 inline void gcode_M111() {
   mk_debug_flags = code_seen('S') ? code_value_byte() : (uint8_t) DEBUG_NONE;
 
-  const static char str_debug_1[]   = MSG_DEBUG_ECHO;
-  const static char str_debug_2[]   = MSG_DEBUG_INFO;
-  const static char str_debug_4[]   = MSG_DEBUG_ERRORS;
-  const static char str_debug_8[]   = MSG_DEBUG_DRYRUN;
-  const static char str_debug_16[]  = MSG_DEBUG_COMMUNICATION;
-  const static char str_debug_32[]  = MSG_DEBUG_ALL;
+  const static char str_debug_1[]   PROGMEM = MSG_DEBUG_ECHO;
+  const static char str_debug_2[]   PROGMEM = MSG_DEBUG_INFO;
+  const static char str_debug_4[]   PROGMEM = MSG_DEBUG_ERRORS;
+  const static char str_debug_8[]   PROGMEM = MSG_DEBUG_DRYRUN;
+  const static char str_debug_16[]  PROGMEM = MSG_DEBUG_COMMUNICATION;
+  const static char str_debug_32[]  PROGMEM = MSG_DEBUG_ALL;
 
-  const static char* const debug_strings[] = {
+  const static char* const debug_strings[] PROGMEM = {
     str_debug_1, str_debug_2, str_debug_4, str_debug_8, str_debug_16, str_debug_32
   };
 
@@ -6265,8 +6269,8 @@ inline void gcode_M111() {
     uint8_t comma = 0;
     for (uint8_t i = 0; i < COUNT(debug_strings); i++) {
       if (TEST(mk_debug_flags, i)) {
-        if (comma++) Com::print(',');
-        SERIAL_PS(debug_strings[i]);
+        if (comma++) SERIAL_C(',');
+        SERIAL_PS((char*)pgm_read_word(&(debug_strings[i])));
       }
     }
   }
