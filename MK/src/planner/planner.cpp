@@ -1048,7 +1048,7 @@ void Planner::check_axes_activity() {
   #ifdef __SAM3X8E__
     block->acceleration_rate = (long)(acc_st * (4294967296.0 / (HAL_TIMER_RATE)));
   #else
-    block->acceleration_rate = (long)(acc_st * 16777216.0 / (F_CPU / 8.0));
+    block->acceleration_rate = (long)(acc_st * 16777216.0 / ((F_CPU) * 0.125));
   #endif
 
   #if 0  // Use old jerk for now
@@ -1140,7 +1140,7 @@ void Planner::check_axes_activity() {
   block->recalculate_flag = true; // Always calculate trapezoid for new block
 
   // Update previous path unit_vector and nominal speed
-  for (int i = 0; i < NUM_AXIS; i++) previous_speed[i] = current_speed[i];
+  LOOP_XYZE(i) previous_speed[i] = current_speed[i];
   previous_nominal_speed = block->nominal_speed;
 
   #if ENABLED(ADVANCE)

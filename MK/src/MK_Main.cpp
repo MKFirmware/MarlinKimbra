@@ -1219,13 +1219,12 @@ bool get_target_extruder_from_command(int code) {
  */
 bool get_target_hotend_from_command(int code) {
   if (code_seen('H')) {
-    uint8_t h = code_value_byte();
-    if (h >= HOTENDS) {
+    if (code_value_byte() >= HOTENDS) {
       SERIAL_SMV(ER, "M", code);
-      SERIAL_EMV(" " MSG_INVALID_HOTEND, h);
+      SERIAL_EMV(" " MSG_INVALID_HOTEND, code_value_byte());
       return true;
     }
-    target_extruder = h;
+    target_extruder = code_value_byte();
   }
   else
     target_extruder = active_extruder;
