@@ -186,9 +186,8 @@ void Planner::calculate_trapezoid_for_block(block_t* block, float entry_factor, 
 }
 
 // The kernel called by recalculate() when scanning the plan from last to first entry.
-void Planner::reverse_pass_kernel(block_t* previous, block_t* current, block_t* next) {
+void Planner::reverse_pass_kernel(block_t* current, block_t* next) {
   if (!current) return;
-  UNUSED(previous);
 
   if (next) {
     // If entry speed is already at the maximum entry speed, no need to recheck. Block is cruising.
@@ -233,15 +232,14 @@ void Planner::reverse_pass() {
       block[2] = block[1];
       block[1] = block[0];
       block[0] = &block_buffer[b];
-      reverse_pass_kernel(block[0], block[1], block[2]);
+      reverse_pass_kernel(block[1], block[2]);
     }
   }
 }
 
 // The kernel called by recalculate() when scanning the plan from first to last entry.
-void Planner::forward_pass_kernel(block_t* previous, block_t* current, block_t* next) {
+void Planner::forward_pass_kernel(block_t* previous, block_t* current) {
   if (!previous) return;
-  UNUSED(next);
 
   // If the previous block is an acceleration block, but it is not long enough to complete the
   // full speed change within the block, we need to adjust the entry speed accordingly. Entry
@@ -271,9 +269,9 @@ void Planner::forward_pass() {
     block[0] = block[1];
     block[1] = block[2];
     block[2] = &block_buffer[b];
-    forward_pass_kernel(block[0], block[1], block[2]);
+    forward_pass_kernel(block[0], block[1]);
   }
-  forward_pass_kernel(block[1], block[2], NULL);
+  forward_pass_kernel(block[1], block[2]);
 }
 
 /**
@@ -613,7 +611,7 @@ void Planner::check_axes_activity() {
 
   // For a mixing extruder, get steps for each
   #if ENABLED(COLOR_MIXING_EXTRUDER)
-    for (uint8_t i = 0; i < DRIVER_EXTRUDERS; i++)
+    for (uint8_t i = 0; i < E_STEPPERS; i++)
       block->mix_event_count[i] = block->steps[E_AXIS] * mixing_factor[i];
   #endif
 
@@ -639,6 +637,7 @@ void Planner::check_axes_activity() {
   if (de < 0) SBI(dirb, E_AXIS);
   block->direction_bits = dirb;
 
+  block->active_extruder = extruder;
   block->active_driver = driver;
 
   // Enable active axes
@@ -1159,7 +1158,7 @@ void Planner::check_axes_activity() {
     SERIAL_SMV(OK, "advance :", block->advance/256);
     SERIAL_EMV("advance rate :", block->advance_rate/256);
     */
-  #elif ENABLED(ADVANCE_LPC) // ADVANCE_LPC
+  #elif ENABLED(LIN_ADVANCE) // LIN_ADVANCE
     // bse == allsteps: A problem occurs when there's a very tiny move before a retract.
     // In this case, the retract and the move will be executed together.
     // This leads to an enormous number of advance steps due to a huge e_acceleration.

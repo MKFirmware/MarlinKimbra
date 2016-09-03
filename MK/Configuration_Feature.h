@@ -53,6 +53,7 @@
  * - Babystepping
  * - Firmware retract
  * - Dual X-carriage
+ * - X-axis dual driver
  * - Y-axis dual driver
  * - Z-axis dual driver
  * - XY Frequency limit
@@ -200,6 +201,8 @@
  ***********************************************************************/
 //#define COLOR_MIXING_EXTRUDER
 
+// Number of steppers in your mixing extruder
+#define MIXING_STEPPERS 2
 // Use the Virtual Tool method with M163 and M164
 #define MIXING_VIRTUAL_TOOLS 16
 /***********************************************************************/
@@ -382,8 +385,8 @@
  * K=0 means advance disabled. A good value for a gregs wade extruder will be around K=75*
  *                                                                                       *
  *****************************************************************************************/
-//#define ADVANCE_LPC
-#define ADVANCE_LPC_K 75
+//#define LIN_ADVANCE
+#define LIN_ADVANCE_K 75
 /*****************************************************************************************/
 
 
@@ -654,6 +657,29 @@
 
 // Default x offset in duplication mode (typically set to half print bed width)
 #define DEFAULT_DUPLICATION_X_OFFSET 100
+/*****************************************************************************************/
+
+
+/*****************************************************************************************
+ ********************************** X-axis dual driver ***********************************
+ *****************************************************************************************
+ *                                                                                       *
+ * A single X stepper driver is usually used to drive 2 stepper motors.                  *
+ * Uncomment this define to utilize a separate stepper driver for each X axis motor.     *
+ * Only a few motherboards support this, like RAMPS,                                     *
+ * which have dual extruder support (the 2nd, often unused, extruder driver is used      *
+ * to control the 2nd X axis stepper motor).                                             *
+ * The pins are currently only defined for a RAMPS motherboards.                         *
+ * On a RAMPS (or other 5 driver) motherboard, using this feature will limit you         *
+ * to using 1 extruder.                                                                  *
+ *                                                                                       *
+ * Uncomment X DUAL STEPPER DRIVERS to enable this feature                               *
+ *                                                                                       *
+ *****************************************************************************************/
+//#define X_DUAL_STEPPER_DRIVERS
+
+// Define if the two X drives need to rotate in opposite directions
+#define INVERT_X2_VS_X_DIR false
 /*****************************************************************************************/
 
 
@@ -968,13 +994,14 @@
 //#define DISPLAY_CHARSET_HD44780_CYRILLIC
  
 #define SHOW_BOOTSCREEN
+//#define SHOW_CUSTOM_BOOTSCREEN
 #define STRING_SPLASH_LINE1 "v" SHORT_BUILD_VERSION       // will be shown during bootup in line 1
 #define STRING_SPLASH_LINE2 STRING_DISTRIBUTION_DATE      // will be shown during bootup in line 2
 #define SPLASH_SCREEN_DURATION 5000                       // SPLASH SCREEN duration in millisecond
 
-//#define LCD_SCREEN_ROT_90    //Rotate screen orientation for graphics display by 90 degree clockwise
-//#define LCD_SCREEN_ROT_180   //Rotate screen orientation for graphics display by 180 degree clockwise
-//#define LCD_SCREEN_ROT_270   //Rotate screen orientation for graphics display by 270 degree clockwise
+//#define LCD_SCREEN_ROT_90    // Rotate screen orientation for graphics display by 90 degree clockwise
+//#define LCD_SCREEN_ROT_180   // Rotate screen orientation for graphics display by 180 degree clockwise
+//#define LCD_SCREEN_ROT_270   // Rotate screen orientation for graphics display by 270 degree clockwise
 
 //#define INVERT_CLICK_BUTTON           // Option for invert encoder button logic
 //#define INVERT_BACK_BUTTON            // Option for invert back button logic if avaible

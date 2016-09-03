@@ -178,7 +178,7 @@
   #define EXTRUDER_3_AUTO_FAN_PIN -1
 #endif
 
-#if ENABLED(X2_IS_TMC)
+#if ENABLED(DUAL_X_CARRIAGE)
   #define X2_ENABLE_PIN -1
   #define X2_STEP_PIN   -1
   #define X2_DIR_PIN    -1

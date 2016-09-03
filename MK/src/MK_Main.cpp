@@ -303,9 +303,9 @@ static uint8_t target_extruder;
 #endif
 
 #if ENABLED(COLOR_MIXING_EXTRUDER)
-  float mixing_factor[DRIVER_EXTRUDERS];
+  float mixing_factor[E_STEPPERS];
   #if MIXING_VIRTUAL_TOOLS  > 1
-    float mixing_virtual_tool_mix[MIXING_VIRTUAL_TOOLS][DRIVER_EXTRUDERS];
+    float mixing_virtual_tool_mix[MIXING_VIRTUAL_TOOLS][E_STEPPERS];
   #endif
 #endif
 
@@ -795,11 +795,11 @@ void setup() {
 
   #if ENABLED(COLOR_MIXING_EXTRUDER) && MIXING_VIRTUAL_TOOLS > 1
     // Initialize mixing to 100% color 1
-    for (uint8_t i = 0; i < DRIVER_EXTRUDERS; i++) {
+    for (uint8_t i = 0; i < E_STEPPERS; i++) {
       mixing_factor[i] = (i == 0) ? 1 : 0;
     }
     for (uint8_t t = 0; t < MIXING_VIRTUAL_TOOLS; t++) {
-      for (uint8_t i = 0; i < DRIVER_EXTRUDERS; i++) {
+      for (uint8_t i = 0; i < E_STEPPERS; i++) {
         mixing_virtual_tool_mix[t][i] = mixing_factor[i];
       }
     }
@@ -1493,15 +1493,15 @@ inline void sync_plan_position() {
 
 inline void sync_plan_position_e() { planner.set_e_position_mm(current_position[E_AXIS]); }
 
-//
-// Prepare to do endstop or probe moves
-// with custom feedrates.
-//
-//  - Save current feedrates
-//  - Reset the rate multiplier
-//  - Reset the command timeout
-//  - Enable the endstops (for endstop moves)
-//
+/**
+ * Prepare to do endstop or probe moves
+ * with custom feedrates.
+ *
+ *  - Save current feedrates
+ *  - Reset the rate multiplier
+ *  - Reset the command timeout
+ *  - Enable the endstops (for endstop moves)
+ */
 static void setup_for_endstop_or_probe_move() {
   if (DEBUGGING(INFO)) DEBUG_INFO_POS("setup_for_endstop_or_probe_move", current_position);
 
@@ -1728,8 +1728,8 @@ void do_blocking_move_to_z(const float &z, const float &fr_mm_s/*=0.0*/) {
     #endif
   #endif
 
-  #define DEPLOY_PROBE() set_probe_deployed( true )
-  #define STOW_PROBE() set_probe_deployed( false )
+  #define DEPLOY_PROBE() set_probe_deployed(true)
+  #define STOW_PROBE() set_probe_deployed(false)
 
   // returns false for ok and true for failure
   static bool set_probe_deployed(bool deploy) {
@@ -1750,8 +1750,8 @@ void do_blocking_move_to_z(const float &z, const float &fr_mm_s/*=0.0*/) {
       if (axis_unhomed_error(true, true,  true )) { stop(); return true; }
     #endif
 
-    float oldXpos = current_position[X_AXIS]; // save x position
-    float oldYpos = current_position[Y_AXIS]; // save y position
+    float oldXpos = current_position[X_AXIS],
+          oldYpos = current_position[Y_AXIS];
 
     #if ENABLED(_TRIGGERED_WHEN_STOWED_TEST)
       // If endstop is already false, the Z probe is deployed
@@ -1910,7 +1910,6 @@ void do_blocking_move_to_z(const float &z, const float &fr_mm_s/*=0.0*/) {
 /**
  * Home an individual axis
  */
-
 static void do_homing_move(AxisEnum axis, float where, float fr_mm_s = 0.0) {
   current_position[axis] = 0;
   sync_plan_position();
@@ -2036,6 +2035,7 @@ static void homeaxis(AxisEnum axis) {
     SERIAL_EM(")");
   }
 } // homeaxis()
+
 
 /**
  * Function for Cartesian, Core & Scara mechanism
@@ -2981,6 +2981,10 @@ static void homeaxis(AxisEnum axis) {
 
 #endif // DELTA
 
+
+/**
+ * Function for all
+ */
 void set_current_from_steppers_for_axis(AxisEnum axis) {
   #if MECH(DELTA)
     set_cartesian_from_steppers();
@@ -2996,7 +3000,7 @@ void set_current_from_steppers_for_axis(AxisEnum axis) {
 #if ENABLED(COLOR_MIXING_EXTRUDER)
   void normalize_mix() {
     float mix_total = 0.0;
-    for (uint8_t i = 0; i < DRIVER_EXTRUDERS; i++) {
+    for (uint8_t i = 0; i < E_STEPPERS; i++) {
       float v = mixing_factor[i];
       if (v < 0) v = mixing_factor[i] = 0;
       mix_total += v;
@@ -3006,7 +3010,7 @@ void set_current_from_steppers_for_axis(AxisEnum axis) {
     if (mix_total < 0.9999 || mix_total > 1.0001) {
       SERIAL_EM("Warning: Mix factors must add up to 1.0. Scaling.");
       float mix_scale = 1.0 / mix_total;
-      for (uint8_t i = 0; i < DRIVER_EXTRUDERS; i++) {
+      for (uint8_t i = 0; i < E_STEPPERS; i++) {
         mixing_factor[i] *= mix_scale;
       }
     }
@@ -3017,7 +3021,7 @@ void set_current_from_steppers_for_axis(AxisEnum axis) {
   // The total "must" be 1.0 (but it will be normalized)
   void gcode_get_mix() {
     const char* mixing_codes = "ABCDHI";
-    for (uint8_t i = 0; i < DRIVER_EXTRUDERS; i++) {
+    for (uint8_t i = 0; i < E_STEPPERS; i++) {
       mixing_factor[i] = code_seen(mixing_codes[i]) ? code_value_float() : 0;
     }
     normalize_mix();
@@ -3090,7 +3094,6 @@ void set_current_from_steppers_for_axis(AxisEnum axis) {
 
   }
 #endif // FWRETRACT
-
 
 #if HAS(TEMP_0) || HAS(TEMP_BED) || ENABLED(HEATER_0_USES_MAX6675)
   void print_heaterstates() {
@@ -3533,6 +3536,61 @@ inline void wait_heater(bool no_wait_for_cooling = true) {
 #endif // QUICK_HOME
 
 
+void log_machine_info() {
+  SERIAL_SM(INFO, "Machine Type: ");
+  #if MECH(DELTA)
+    SERIAL_EM("Delta");
+  #elif MECH(SCARA)
+    SERIAL_EM("SCARA");
+  #elif MECH(COREXY) || MECH(COREYX) || MECH(COREXZ) || MECH(COREZX)
+    SERIAL_EM("Core");
+  #else
+    SERIAL_EM("Cartesian");
+  #endif
+
+  SERIAL_SM(INFO, "Probe: ");
+  #if ENABLED(Z_PROBE_FIX_MOUNTED)
+    SERIAL_EM("Z_PROBE_FIX_MOUNTED");
+  #elif ENABLED(BLTOUCH)
+    SERIAL_EM("BLTOUCH");
+  #elif ENABLED(Z_PROBE_SLED)
+    SERIAL_EM("Z_PROBE_SLED");
+  #elif ENABLED(Z_PROBE_ALLEN_KEY)
+    SERIAL_EM("ALLEN KEY");
+  #elif HAS(Z_SERVO_ENDSTOP)
+    SERIAL_EM("SERVO PROBE");
+  #else
+    SERIAL_EM("NONE");
+  #endif
+
+  #if HAS(BED_PROBE)
+    SERIAL_SMV(INFO, "Probe Offset X:", X_PROBE_OFFSET_FROM_NOZZLE);
+    SERIAL_MV(" Y:", Y_PROBE_OFFSET_FROM_NOZZLE);
+    SERIAL_MV(" Z:", zprobe_zoffset);
+    #if (X_PROBE_OFFSET_FROM_NOZZLE > 0)
+      SERIAL_M(" (Right");
+    #elif (X_PROBE_OFFSET_FROM_NOZZLE < 0)
+      SERIAL_M(" (Left");
+    #else
+      SERIAL_M(" (");
+    #endif
+    #if (Y_PROBE_OFFSET_FROM_NOZZLE > 0)
+      SERIAL_M("-Back");
+    #elif (Y_PROBE_OFFSET_FROM_NOZZLE < 0)
+      SERIAL_M("-Front");
+    #else
+      SERIAL_M(" ");
+    #endif
+    if (zprobe_zoffset < 0)
+      SERIAL_M(" & Below");
+    else if (zprobe_zoffset > 0)
+      SERIAL_M(" & Above");
+    else
+      SERIAL_M(" & Same Z as");
+    SERIAL_EM(" Nozzle)");
+  #endif
+}
+
 /******************************************************************************
 ***************************** G-Code Functions ********************************
 *******************************************************************************/
@@ -3846,7 +3904,10 @@ inline void gcode_G4() {
  *
  */
 inline void gcode_G28() {
-  if (DEBUGGING(INFO)) SERIAL_LM(INFO, ">>> gcode_G28");
+  if (DEBUGGING(INFO)) {
+    SERIAL_LM(INFO, ">>> gcode_G28");
+    log_machine_info();
+  }
 
   // Wait for planner moves to finish!
   stepper.synchronize();
@@ -4390,38 +4451,7 @@ inline void gcode_G28() {
     if (DEBUGGING(INFO)) {
       SERIAL_LM(INFO, ">>> gcode_G29");
       DEBUG_INFO_POS("", current_position);
-      SERIAL_SM(INFO, "Probe: ");
-      #if ENABLED(Z_PROBE_FIX_MOUNTED)
-        SERIAL_EM("Z_PROBE_FIX_MOUNTED");
-      #elif ENABLED(BLTOUCH)
-        SERIAL_EM("BLTOUCH");
-      #elif ENABLED(Z_PROBE_SLED)
-        SERIAL_EM("Z_PROBE_SLED");
-      #elif HAS(Z_SERVO_ENDSTOP)
-        SERIAL_EM("SERVO PROBE");
-      #endif
-      SERIAL_SMV(INFO, "Probe Offset X:", X_PROBE_OFFSET_FROM_NOZZLE);
-      SERIAL_MV(" Y:", Y_PROBE_OFFSET_FROM_NOZZLE);
-      SERIAL_MV(" Z:", zprobe_zoffset);
-      #if (X_PROBE_OFFSET_FROM_NOZZLE > 0)
-        SERIAL_M(" (Right");
-      #elif (X_PROBE_OFFSET_FROM_NOZZLE < 0)
-        SERIAL_M(" (Left");
-      #else
-        SERIAL_M(" (");
-      #endif
-      #if (Y_PROBE_OFFSET_FROM_NOZZLE > 0)
-        SERIAL_M("-Back");
-      #elif (Y_PROBE_OFFSET_FROM_NOZZLE < 0)
-        SERIAL_M("-Front");
-      #endif
-      if (zprobe_zoffset < 0)
-        SERIAL_M(" & Below");
-      else if (zprobe_zoffset > 0)
-        SERIAL_M(" & Above");
-      else
-        SERIAL_M(" & Same Z as");
-      SERIAL_EM(" Nozzle)");
+      log_machine_info();
     }
 
     // Don't allow auto-levelling without homing first
@@ -4746,7 +4776,10 @@ inline void gcode_G28() {
    * G30: Do a single Z probe at the current XY
    */
   inline void gcode_G30() {
-    if (DEBUGGING(INFO)) SERIAL_LM(INFO, ">>> gcode_G30");
+    if (DEBUGGING(INFO)) {
+      SERIAL_LM(INFO, ">>> gcode_G30");
+      log_machine_info();
+    }
 
     setup_for_endstop_or_probe_move();
 
@@ -4792,38 +4825,7 @@ inline void gcode_G28() {
     if (DEBUGGING(INFO)) {
       SERIAL_LM(INFO, ">>> gcode_G29");
       DEBUG_INFO_POS("", current_position);
-      SERIAL_SM(INFO, "Probe: ");
-      #if ENABLED(Z_PROBE_FIX_MOUNTED)
-        SERIAL_EM("Z_PROBE_FIX_MOUNTED");
-      #elif ENABLED(BLTOUCH)
-        SERIAL_EM("BLTOUCH");
-      #elif ENABLED(Z_PROBE_ALLEN_KEY)
-        SERIAL_EM("ALLEN KEY");
-      #elif HAS(Z_SERVO_ENDSTOP)
-        SERIAL_EM("SERVO PROBE");
-      #endif
-      SERIAL_SMV(INFO, "Probe Offset X:", X_PROBE_OFFSET_FROM_NOZZLE);
-      SERIAL_MV(" Y:", Y_PROBE_OFFSET_FROM_NOZZLE);
-      SERIAL_MV(" Z:", zprobe_zoffset);
-      #if (X_PROBE_OFFSET_FROM_NOZZLE > 0)
-        SERIAL_M(" (Right");
-      #elif (X_PROBE_OFFSET_FROM_NOZZLE < 0)
-        SERIAL_M(" (Left");
-      #else
-        SERIAL_M(" (");
-      #endif
-      #if (Y_PROBE_OFFSET_FROM_NOZZLE > 0)
-        SERIAL_M("-Back");
-      #elif (Y_PROBE_OFFSET_FROM_NOZZLE < 0)
-        SERIAL_M("-Front");
-      #endif
-      if (zprobe_zoffset < 0)
-        SERIAL_M(" & Below");
-      else if (zprobe_zoffset > 0)
-        SERIAL_M(" & Above");
-      else
-        SERIAL_M(" & Same Z as");
-      SERIAL_EM(" Nozzle)");
+      log_machine_info();
     }
 
     if (code_seen('D')) {
@@ -4863,7 +4865,10 @@ inline void gcode_G28() {
    * T:             Adjust Tower Radius
    */
   inline void gcode_G30() {
-    if (DEBUGGING(INFO)) SERIAL_LM(INFO, ">>> gcode_G30");
+    if (DEBUGGING(INFO)) {
+      SERIAL_LM(INFO, ">>> gcode_G30");
+      log_machine_info();
+    }
 
     setup_for_endstop_or_probe_move();
 
@@ -6538,7 +6543,7 @@ inline void gcode_M122() {
   inline void gcode_M163() {
     int mix_index = code_seen('S') ? code_value_int() : 0;
     float mix_value = code_seen('P') ? code_value_float() : 0.0;
-    if (mix_index < DRIVER_EXTRUDERS) mixing_factor[mix_index] = mix_value;
+    if (mix_index < E_STEPPERS) mixing_factor[mix_index] = mix_value;
   }
 
   #if MIXING_VIRTUAL_TOOLS  > 1
@@ -6552,7 +6557,7 @@ inline void gcode_M122() {
       int tool_index = code_seen('S') ? code_value_int() : 0;
       if (tool_index < MIXING_VIRTUAL_TOOLS) {
         normalize_mix();
-        for (uint8_t i = 0; i < DRIVER_EXTRUDERS; i++) {
+        for (uint8_t i = 0; i < E_STEPPERS; i++) {
           mixing_virtual_tool_mix[tool_index][i] = mixing_factor[i];
         }
       }
@@ -8224,7 +8229,7 @@ inline void gcode_M503() {
   }
 #endif // MECH DELTA
 
-#if ENABLED(ADVANCE_LPC)
+#if ENABLED(LIN_ADVANCE)
   /**
    * M905: Set advance factor
    */
@@ -8382,7 +8387,7 @@ void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool n
       }
 
       // T0-Tnnn: Switch virtual tool by changing the mix
-      for (uint8_t j = 0; j < DRIVER_EXTRUDERS; j++) {
+      for (uint8_t j = 0; j < E_STEPPERS; j++) {
         mixing_factor[j] = mixing_virtual_tool_mix[tmp_extruder][j];
       }
 
@@ -9483,7 +9488,7 @@ void process_next_command() {
           gcode_M666(); break;
       #endif
 
-      #if ENABLED(ADVANCE_LPC)
+      #if ENABLED(LIN_ADVANCE)
         case 905: // M905 Set advance factor.
           gcode_M905(); break;
       #endif

@@ -405,8 +405,8 @@
     #if EXTRUDERS > 1
       #error COLOR_MIXING_EXTRUDER supports plus one extruder.
     #endif
-    #if DRIVER_EXTRUDERS < 2
-      #error You must set DRIVER_EXTRUDERS >= 2 for a mixing extruder.
+    #if E_STEPPERS < 2
+      #error You must set E_STEPPERS >= 2 for a mixing extruder.
     #endif
     #if ENABLED(FILAMENT_SENSOR)
       #error COLOR_MIXING_EXTRUDER is incompatible with FILAMENT_SENSOR. Comment out this line to use it anyway.
@@ -500,8 +500,8 @@
   /**
    * Advance Extrusion
    */
-  #if ENABLED(ADVANCE) && ENABLED(ADVANCE_LPC)
-    #error You can enable ADVANCE or ADVANCE_LPC, but not both.
+  #if ENABLED(ADVANCE) && ENABLED(LIN_ADVANCE)
+    #error You can enable ADVANCE or LIN_ADVANCE, but not both.
   #endif
   #if ENABLED(ADVANCE)
     #if DISABLED(EXTRUDER_ADVANCE_K)

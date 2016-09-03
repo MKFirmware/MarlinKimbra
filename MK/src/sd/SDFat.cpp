@@ -4256,23 +4256,46 @@ int SdFile::write(const void* buf, size_t nbyte) {
  * Use getWriteError to check for errors.
  * \return 1 for success and 0 for failure.
  */
-#if ARDUINO >= 100
-  size_t SdFile::write(uint8_t b) {
-    return SdBaseFile::write(&b, 1);
+#ifdef __SAM3X8E__
+  #ifdef COMPAT_PRE1
+    void SdFile::write(uint8_t b) {
+      dBaseFile::write(&b, 1);
+    }
+  #else
+    size_t SdFile::write(uint8_t b) {
+      return SdBaseFile::write(&b, 1) == 1 ? 1 : 0;
+    }
+  #endif
+
+  //------------------------------------------------------------------------------
+  /** Write a string to a file. Used by the Arduino Print class.
+   * \param[in] str Pointer to the string.
+   * Use getWriteError to check for errors.
+   * \return count of characters written for success or -1 for failure.
+   */
+  int SdFile::write(const char* str) {
+    return SdBaseFile::write(str, strlen(str));
   }
 #else
-  void SdFile::write(uint8_t b) {
-    SdBaseFile::write(&b, 1);
+  #if ARDUINO >= 100
+    size_t SdFile::write(uint8_t b) {
+      return SdBaseFile::write(&b, 1);
+    }
+  #else
+    void SdFile::write(uint8_t b) {
+      SdBaseFile::write(&b, 1);
+    }
+  #endif
+  //------------------------------------------------------------------------------
+  /** Write a string to a file. Used by the Arduino Print class.
+   * \param[in] str Pointer to the string.
+   * Use writeError to check for errors.
+   */
+  void SdFile::write(const char* str) {
+    SdBaseFile::write(str, strlen(str));
   }
 #endif
-//------------------------------------------------------------------------------
-/** Write a string to a file. Used by the Arduino Print class.
- * \param[in] str Pointer to the string.
- * Use writeError to check for errors.
- */
-void SdFile::write(const char* str) {
-  SdBaseFile::write(str, strlen(str));
-}
+
 //------------------------------------------------------------------------------
 /** Write a PROGMEM string to a file.
  * \param[in] str Pointer to the PROGMEM string.

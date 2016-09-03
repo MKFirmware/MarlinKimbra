@@ -65,7 +65,6 @@
 #include "src/MK_Main.h"
 #include "src/planner/planner.h"
 #include "src/endstop/endstops.h"
-#include "src/motion/stepper_indirection.h"
 #include "src/motion/stepper.h"
 #include "src/motion/cartesian_correction.h"
 #include "src/temperature/temperature.h"

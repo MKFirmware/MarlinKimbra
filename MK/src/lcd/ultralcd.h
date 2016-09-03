@@ -68,12 +68,14 @@
   #if ENABLED(ULTIPANEL)
     extern volatile uint8_t buttons;  // the last checked buttons in a bit array.
     void lcd_buttons_update();
+    void lcd_quick_feedback(); // Audible feedback for a button click - could also be visual
+    bool lcd_clicked();
+    void lcd_ignore_click(bool b = true);
+
     #if ENABLED(FILAMENT_CHANGE_FEATURE)
       void lcd_filament_change_show_message(FilamentChangeMessage message);
     #endif
-    void lcd_quick_feedback(); // Audible feedback for a button click - could also be visual
-    bool lcd_clicked();
-    void lcd_ignore_click(bool b=true);
+
   #else
     FORCE_INLINE void lcd_buttons_update() {}
   #endif
@@ -93,6 +95,22 @@
   #endif
 
   bool lcd_blink();
+
+  #if ENABLED(ULTIPANEL)
+    #define BLEN_B 1
+    #define BLEN_A 0
+    #if BUTTON_EXISTS(ENC)
+      // encoder click is directly connected
+      #define BLEN_C 2
+      #define EN_C (_BV(BLEN_C))
+    #endif
+    #if BUTTON_EXISTS(BACK)
+      #define BLEN_D 3
+      #define EN_D (_BV(BLEN_D))
+    #endif
+    #define EN_A (_BV(BLEN_A))
+    #define EN_B (_BV(BLEN_B))
+  #endif
 
   #if ENABLED(REPRAPWORLD_KEYPAD)
 
@@ -124,66 +142,21 @@
     #define REPRAPWORLD_KEYPAD_MOVE_Y_UP    (buttons_reprapworld_keypad & EN_REPRAPWORLD_KEYPAD_UP)
     #define REPRAPWORLD_KEYPAD_MOVE_X_LEFT  (buttons_reprapworld_keypad & EN_REPRAPWORLD_KEYPAD_LEFT)
 
-  #endif // REPRAPWORLD_KEYPAD
+    #define REPRAPWORLD_KEYPAD_PRESSED      (buttons_reprapworld_keypad & ( \
+                                              EN_REPRAPWORLD_KEYPAD_F3 | \
+                                              EN_REPRAPWORLD_KEYPAD_F2 | \
+                                              EN_REPRAPWORLD_KEYPAD_F1 | \
+                                              EN_REPRAPWORLD_KEYPAD_DOWN | \
+                                              EN_REPRAPWORLD_KEYPAD_RIGHT | \
+                                              EN_REPRAPWORLD_KEYPAD_MIDDLE | \
+                                              EN_REPRAPWORLD_KEYPAD_UP | \
+                                              EN_REPRAPWORLD_KEYPAD_LEFT) \
+                                            )
 
-  #if ENABLED(NEWPANEL)
-
-    #define EN_C (_BV(BLEN_C))
-    #define EN_B (_BV(BLEN_B))
-    #define EN_A (_BV(BLEN_A))
-
-    #if ENABLED(REPRAPWORLD_KEYPAD)
-      #define LCD_CLICKED ((buttons&EN_C) || (buttons_reprapworld_keypad&EN_REPRAPWORLD_KEYPAD_F1))
-    #else
-      #if ENABLED(INVERT_CLICK_BUTTON)
-        #define LCD_CLICKED !(buttons&EN_C)
-      #else
-        #define LCD_CLICKED (buttons&EN_C)
-      #endif
-    #endif
-
-    #if ENABLED(BTN_BACK) && BTN_BACK > 0
-      #define EN_D (_BV(BLEN_D))
-      #if ENABLED(INVERT_BACK_BUTTON)
-        #define LCD_BACK_CLICKED !(buttons&EN_D)
-      #else
-        #define LCD_BACK_CLICKED (buttons&EN_D)
-      #endif
-    #endif
-
-  #else // !NEWPANEL
-
-    // atomic, do not change
-    #define B_LE (_BV(BL_LE))
-    #define B_UP (_BV(BL_UP))
-    #define B_MI (_BV(BL_MI))
-    #define B_DW (_BV(BL_DW))
-    #define B_RI (_BV(BL_RI))
-    #define B_ST (_BV(BL_ST))
-    #define EN_B (_BV(BLEN_B))
-    #define EN_A (_BV(BLEN_A))
-
-    #define LCD_CLICKED ((buttons&B_MI)||(buttons&B_ST))
-
-  #endif // NEWPANEL
-
-  char* itostr2(const uint8_t& x);
-  char* itostr3sign(const int& x);
-  char* itostr3(const int& x);
-  char* itostr3left(const int& x);
-  char* itostr4sign(const int& x);
-
-  char* ftostr3(const float& x);
-  char* ftostr4sign(const float& x);
-  char* ftostr41sign(const float& x);
-  char* ftostr32(const float& x);
-  char* ftostr43sign(const float& x, char plus=' ');
-  char* ftostr12ns(const float& x);
-  char* ftostr5rj(const float& x);
-  char* ftostr51sign(const float& x);
-  char* ftostr52sign(const float& x);
-  char* ftostr52sp(const float& x); // remove zero-padding from ftostr32
-  char* ltostr7(const long& x);
+    #define LCD_CLICKED ((buttons & EN_C) || (buttons_reprapworld_keypad & EN_REPRAPWORLD_KEYPAD_F1))
+  #elif ENABLED(NEWPANEL)
+    #define LCD_CLICKED (buttons & EN_C)
+  #endif
 
 #elif DISABLED(NEXTION)
 
@@ -199,7 +172,7 @@
   #define LCD_MESSAGEPGM(x) NOOP
   #define LCD_ALERTMESSAGEPGM(x) NOOP
 
-#endif //ULTRA_LCD
+#endif // ULTRA_LCD
 
 #if ENABLED(SDSUPPORT) && ENABLED(SD_SETTINGS)
   extern void set_sd_dot();

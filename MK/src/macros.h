@@ -140,6 +140,8 @@
 
   #define NOOP do{}while(0)
 
+  #define CEILING(x,y) (((x) + (y) - 1) / (y))
+
   #define MAX3(a, b, c)     max(max(a, b), c)
   #define MAX4(a, b, c, d)  max(max(max(a, b), c), d)
   #define MIN3(a, b, c)     min(min(a, b), c)

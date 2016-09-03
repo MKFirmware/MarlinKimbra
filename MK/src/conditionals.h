@@ -304,47 +304,74 @@
       #undef M100_FREE_MEMORY_WATCHER
     #endif
   #endif
-      
-  /**
-   * DONDOLO
-   */
-  #if ENABLED(DONDOLO_SINGLE_MOTOR)
-    #undef SINGLENOZZLE
-    #undef ADVANCE
-    #undef DRIVER_EXTRUDERS
-    #define DRIVER_EXTRUDERS 1
-  #endif
-  #if ENABLED(DONDOLO_DUAL_MOTOR)
-    #undef SINGLENOZZLE
-    #undef ADVANCE
-  #endif
 
   /**
-   * SINGLENOZZLE
+   * Extruders have some combination of stepper motors and hotends
+   * so we separate these concepts into the defines:
+   *
+   *  EXTRUDERS         - Number of Selectable Tools
+   *  HOTENDS           - Number of hotends, whether connected or separate
+   *  E_STEPPERS        - Number of actual E stepper motors
+   *  DRIVER_EXTRUDERS  - Number of driver extruders
+   *  TOOL_E_INDEX      - Index to use when getting/setting the tool state
+   *
    */
-  #if ENABLED(SINGLENOZZLE)
+  #if ENABLED(DONDOLO_SINGLE_MOTOR)        // One E stepper, unified E axis, two hotends 
+    #undef SINGLENOZZLE
+    #undef ADVANCE
+    #undef EXTRUDERS
+    #undef E_STEPPERS
+    #undef DRIVER_EXTRUDERS
+    #define EXTRUDERS         2
+    #define E_STEPPERS        1
+    #define DRIVER_EXTRUDERS  1
+    #define TOOL_E_INDEX      0
+  #elif ENABLED(DONDOLO_DUAL_MOTOR)         // Two E stepper, two hotends
+    #undef SINGLENOZZLE
+    #undef ADVANCE
+    #undef EXTRUDERS
+    #undef E_STEPPERS
+    #undef DRIVER_EXTRUDERS
+    #define EXTRUDERS         2
+    #define E_STEPPERS        2
+    #define DRIVER_EXTRUDERS  2
+    #define TOOL_E_INDEX      current_block->active_extruder
+  #elif ENABLED(COLOR_MIXING_EXTRUDER)      // Multi-stepper, unified E axis, one hotend
+    #define SINGLENOZZLE
+    #undef EXTRUDERS
+    #undef E_STEPPERS
+    #undef DRIVER_EXTRUDERS
+    #define EXTRUDERS         MIXING_STEPPERS
+    #define E_STEPPERS        MIXING_STEPPERS
+    #define DRIVER_EXTRUDERS  MIXING_STEPPERS
+    #define TOOL_E_INDEX      0
+  #else
+    #undef E_STEPPERS
+    #define E_STEPPERS        EXTRUDERS
+    #define TOOL_E_INDEX      current_block->active_extruder
+  #endif
+
+  #define TOOL_DE_INDEX       current_block->active_driver
+
+  #if ENABLED(SINGLENOZZLE)                 // One hotend, multi-extruder
     #undef HOTENDS
-    #define HOTENDS 1
+    #define HOTENDS           1
     #undef TEMP_SENSOR_1_AS_REDUNDANT
     #undef HOTEND_OFFSET_X
     #undef HOTEND_OFFSET_Y
     #undef HOTEND_OFFSET_Z
-    #define HOTEND_OFFSET_X { 0 }
-    #define HOTEND_OFFSET_Y { 0 }
-    #define HOTEND_OFFSET_Z { 0 }
+    #define HOTEND_OFFSET_X   { 0 }
+    #define HOTEND_OFFSET_Y   { 0 }
+    #define HOTEND_OFFSET_Z   { 0 }
   #else
     #undef HOTENDS
-    #define HOTENDS EXTRUDERS
+    #define HOTENDS           EXTRUDERS
   #endif
+
 
   /**
-   * DRIVER_EXTRUDERS
+   * Hardware Serial
    */
-  #if DISABLED(MKR4) && DISABLED(MKR6) && DISABLED(NPR2) && DISABLED(DONDOLO_SINGLE_MOTOR) && DISABLED(COLOR_MIXING_EXTRUDER)
-    #undef DRIVER_EXTRUDERS
-    #define DRIVER_EXTRUDERS EXTRUDERS // This defines the number of Driver extruder
-  #endif
-
   #ifndef __SAM3X8E__
     #ifndef USBCON
       #define HardwareSerial_h // trick to disable the standard HWserial
@@ -653,7 +680,7 @@
     #define THERMISTORCOOLER TEMP_SENSOR_COOLER
     #define COOLER_USES_THERMISTOR
   #endif
-  
+
   #if HASNT(COOLER)
     #if ENABLED(PIDTEMPCOOLER)
       #undef PIDTEMPCOOLER

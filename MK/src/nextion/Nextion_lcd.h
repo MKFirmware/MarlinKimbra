@@ -42,6 +42,8 @@
 #ifndef NEXTIONLCD_H
   #define NEXTIONLCD_H
 
+  #include "../lcd/utility.h"
+
   #if ENABLED(NEXTION)
     #define LCD_UPDATE_INTERVAL 4000
     #define NEXTION_FIRMWARE_FILE "marlinkimbra.tft"
@@ -89,9 +91,6 @@
     #define LCD_MESSAGEPGM(x) lcd_setstatuspgm(PSTR(x))
     #define LCD_ALERTMESSAGEPGM(x) lcd_setalertstatuspgm(PSTR(x))
 
-    char* itostr4sign(const int& x);
-    char* ftostr4sign(const float& x);
-    char* ftostr32sp(const float& x); // remove zero-padding from ftostr32
-
   #endif
+
 #endif // NEXTIONLCD_H

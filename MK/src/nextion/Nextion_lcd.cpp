@@ -79,63 +79,63 @@
   NexTimer startimer    = NexTimer(0,  1, "tm0");
 
   // Page 1 Info
-  NexText Hotend0       = NexText(1,  2,  "t0");
-  NexText Hotend1       = NexText(1,  4,  "t1");
-  NexText Hotend21      = NexText(1,  5,  "h2");
-  NexText Hotend2       = NexText(1,  6,  "t2");
-  NexText LedStatus     = NexText(1,  7,  "status");
-  NexText LedCoord1     = NexText(1,  8,  "icoord");
-  NexPicture MSD1       = NexPicture(1, 10, "p1");
-  NexPicture Hend0      = NexPicture(1, 12, "p3");
-  NexHotspot hot0       = NexHotspot(1, 13, "hot0");
-  NexPicture Hend1      = NexPicture(1, 14, "p4");
-  NexHotspot hot1       = NexHotspot(1, 15, "hot1");
-  NexPicture Hend2      = NexPicture(1, 16, "p5");
-  NexHotspot hot2       = NexHotspot(1, 17, "hot2");
-  NexPicture Fanpic     = NexPicture(1, 18, "p6");
-  NexVar Hotend         = NexVar(1, 19, "he");
-  NexVar Bed            = NexVar(1, 20, "bed");
-  NexVar Fan            = NexVar(1, 21, "fn");
-  NexTimer fantimer     = NexTimer(1, 22, "tm0");
-  NexProgressBar sdbar  = NexProgressBar(1, 23, "j0");
-  NexPicture NPlay      = NexPicture(1, 24, "p7");
-  NexPicture NStop      = NexPicture(1, 25, "p8");
-  NexVar SD             = NexVar(1, 26, "sd");
-  NexVar RFID           = NexVar(1, 27, "rfid");
-  NexPicture Speedpic   = NexPicture(1, 28, "p9");
-  NexVar VSpeed         = NexVar(1, 29, "vspeed");
-  NexVar Extruder       = NexVar(1, 30, "extruder");
+  NexText Hotend0       = NexText(1,  22,  "t0");
+  NexText Hotend1       = NexText(1,  23,  "t1");
+  NexText Hotend21      = NexText(1,  50,  "h2");
+  NexText Hotend2       = NexText(1,  24,  "t2");
+  NexText LedStatus     = NexText(1,  1,  "status");
+  NexText LedCoord1     = NexText(1,  2,  "icoord");
+  NexPicture MSD1       = NexPicture(1, 4, "p1");
+  NexPicture Hend0      = NexPicture(1, 6, "p3");
+  NexPicture Hend1      = NexPicture(1, 7, "p4");
+  NexPicture Hend2      = NexPicture(1, 8, "p5");
+  NexPicture Fanpic     = NexPicture(1, 9, "p6");
+  NexPicture NPlay      = NexPicture(1, 15, "p7");
+  NexPicture NStop      = NexPicture(1, 16, "p8");
+  NexPicture Speedpic   = NexPicture(1, 19, "p9");
+  NexHotspot hot0       = NexHotspot(1, 27, "hot0");
+  NexHotspot hot1       = NexHotspot(1, 28, "hot1");
+  NexHotspot hot2       = NexHotspot(1, 29, "hot2");
+  NexVar Hotend         = NexVar(1, 10, "he");
+  NexVar Bed            = NexVar(1, 11, "bed");
+  NexVar Fan            = NexVar(1, 12, "fn");
+  NexVar SD             = NexVar(1, 17, "sd");
+  NexVar RFID           = NexVar(1, 18, "rfid");
+  NexVar VSpeed         = NexVar(1, 20, "vspeed");
+  NexVar Extruder       = NexVar(1, 21, "extruder");
+  NexTimer fantimer     = NexTimer(1, 13, "tm0");
+  NexProgressBar sdbar  = NexProgressBar(1, 14, "j0");
 
   // Page 2 Temp
-  NexText set0          = NexText(2,  2,  "set0");
-  NexHotspot m11        = NexHotspot(2, 14, "m11");
-  NexHotspot tup        = NexHotspot(2, 15, "tup");
-  NexHotspot tdown      = NexHotspot(2, 16, "tdown");
-  NexVar set1           = NexVar(2, 17, "set1");
-
+  NexText set0          = NexText(2, 2,  "set0");
+  NexVar set1           = NexVar(2, 3,   "set1");
+  NexHotspot m11        = NexHotspot(2, 8,  "p5");
+  NexHotspot tup        = NexHotspot(2, 11, "p8");
+  NexHotspot tdown      = NexHotspot(2, 12, "p9");
+  
   // Page 3 Menu
   NexPicture MSD3       = NexPicture(3,  2, "p1");
   NexPicture Exit1      = NexPicture(3,  4, "p3");
 
   // Page 4 SDCard
+  NexText sdrow0        = NexText(4,  2,  "t0");
+  NexText sdrow1        = NexText(4,  3,  "t1");
+  NexText sdrow2        = NexText(4,  4,  "t2");
+  NexText sdrow3        = NexText(4,  5,  "t3");
+  NexText sdrow4        = NexText(4,  6,  "t4");
+  NexText sdrow5        = NexText(4,  7,  "t5");
+  NexText sdfolder      = NexText(4,  16,  "sdfolder");
+  NexPicture Folder0    = NexPicture(4,  8, "p0");
+  NexPicture Folder1    = NexPicture(4, 9, "p1");
+  NexPicture Folder2    = NexPicture(4, 10, "p2");
+  NexPicture Folder3    = NexPicture(4, 11, "p3");
+  NexPicture Folder4    = NexPicture(4, 12, "p4");
+  NexPicture Folder5    = NexPicture(4, 13, "p5");
+  NexPicture Folderup   = NexPicture(4, 14, "p6");
+  NexPicture Exit2      = NexPicture(4, 15, "p7");
+  NexHotspot ScrollUp   = NexHotspot(4, 26, "m0");
+  NexHotspot ScrollDown = NexHotspot(4, 27, "m1");
   NexSlider sdlist      = NexSlider(4, 1, "h0");
-  NexText sdrow0        = NexText(4,  3,  "t0");
-  NexText sdrow1        = NexText(4,  4,  "t1");
-  NexText sdrow2        = NexText(4,  5,  "t2");
-  NexText sdrow3        = NexText(4,  6,  "t3");
-  NexText sdrow4        = NexText(4,  7,  "t4");
-  NexText sdrow5        = NexText(4,  8,  "t5");
-  NexPicture Folder0    = NexPicture(4,  9, "p0");
-  NexPicture Folder1    = NexPicture(4, 10, "p1");
-  NexPicture Folder2    = NexPicture(4, 11, "p2");
-  NexPicture Folder3    = NexPicture(4, 12, "p3");
-  NexPicture Folder4    = NexPicture(4, 13, "p4");
-  NexPicture Folder5    = NexPicture(4, 14, "p5");
-  NexPicture Folderup   = NexPicture(4, 15, "p6");
-  NexPicture Exit2      = NexPicture(4, 16, "p7");
-  NexText sdfolder      = NexText(4, 17,  "sdfolder");
-  NexHotspot ScrollUp   = NexHotspot(4, 21, "m0");
-  NexHotspot ScrollDown = NexHotspot(4, 22, "m1");
 
   // Page 5 Setup
   NexPicture MSD5       = NexPicture(5,  2, "p1");
@@ -162,6 +162,7 @@
   NexButton Benter      = NexButton(8, 41, "benter");
 
   // Page 9 Rfid
+  NexText RfidText      = NexText(9,    11, "t0");
   NexPicture MSD9       = NexPicture(9, 2,  "p1");
   NexButton Rfid0       = NexButton(9,  5,  "b0");
   NexButton Rfid1       = NexButton(9,  6,  "b1");
@@ -169,9 +170,8 @@
   NexButton Rfid3       = NexButton(9,  8,  "b3");
   NexButton Rfid4       = NexButton(9,  9,  "b4");
   NexButton Rfid5       = NexButton(9,  10, "b5");
-  NexDSButton RfidR     = NexDSButton(9,11, "bt0");
-  NexText RfidText      = NexText(9,    13, "t0");
-
+  NexDSButton RfidR     = NexDSButton(9,12, "bt0");
+  
   NexTouch *nex_listen_list[] =
   {
     &Pstart,
@@ -699,7 +699,7 @@
 
     strcat(buffer, (axis_known_position[Z_AXIS] ? " Z " : " ? "));
     if (axis_homed[Z_AXIS]) {
-      valuetemp = ftostr32sp(current_position[Z_AXIS] + 0.00001);
+      valuetemp = ftostr52sp(current_position[Z_AXIS] + 0.00001);
       strcat(buffer, valuetemp);
     }
 
@@ -829,84 +829,5 @@
         gfx.line_to(VC_TOOL, x, y, z);
     }
   #endif
-
-  /*********************************/
-  /** Number to string conversion **/
-  /*********************************/
-
-  char conv[8];
-
-  // Convert float to rj string with _123, -123, _-12, or __-1 format
-  char *ftostr4sign(const float& x) { return itostr4sign((int)x); }
-
-  // Convert float to space-padded string with -_23.4_ format
-  char *ftostr32sp(const float &x) {
-    long xx = abs(x * 100);
-    uint8_t dig;
-
-    if (x < 0) { // negative val = -_0
-      conv[0] = '-';
-      dig = (xx / 1000) % 10;
-      conv[1] = dig ? '0' + dig : ' ';
-    }
-    else { // positive val = __0
-      dig = (xx / 10000) % 10;
-      if (dig) {
-        conv[0] = '0' + dig;
-        conv[1] = '0' + (xx / 1000) % 10;
-      }
-      else {
-        conv[0] = ' ';
-        dig = (xx / 1000) % 10;
-        conv[1] = dig ? '0' + dig : ' ';
-      }
-    }
-
-    conv[2] = '0' + (xx / 100) % 10; // lsd always
-
-    dig = xx % 10;
-    if (dig) { // 2 decimal places
-      conv[5] = '0' + dig;
-      conv[4] = '0' + (xx / 10) % 10;
-      conv[3] = '.';
-    }
-    else { // 1 or 0 decimal place
-      dig = (xx / 10) % 10;
-      if (dig) {
-        conv[4] = '0' + dig;
-        conv[3] = '.';
-      }
-      else {
-        conv[3] = conv[4] = ' ';
-      }
-      conv[5] = ' ';
-    }
-    conv[6] = '\0';
-    return conv;
-  }
-
-  // Convert int to rj string with _123, -123, _-12, or __-1 format
-  char* itostr4sign(const int& x) {
-    int xx = abs(x);
-    int sign = 0;
-    if (xx >= 100) {
-      conv[1] = (xx / 100) % 10 + '0';
-      conv[2] = (xx / 10) % 10 + '0';
-    }
-    else if (xx >= 10) {
-      conv[0] = ' ';
-      sign = 1;
-      conv[2] = (xx / 10) % 10 + '0';
-    }
-    else {
-      conv[0] = ' ';
-      conv[1] = ' ';
-      sign = 2;
-    }
-    conv[sign] = x < 0 ? '-' : ' ';
-    conv[3] = xx % 10 + '0';
-    conv[4] = 0;
-    return conv;
-  }
 
 #endif

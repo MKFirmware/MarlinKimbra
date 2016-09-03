@@ -50,14 +50,15 @@ extern Planner planner;
  */
 typedef struct {
 
-  unsigned char active_driver;              // Selects the active driver
+  unsigned char active_extruder;            // The extruder to move (if E move)
+  unsigned char active_driver;              // Selects the active driver for E
 
   // Fields used by the bresenham algorithm for tracing the line
   long steps[NUM_AXIS];                     // Step count along each axis
   unsigned long step_event_count;           // The number of step events required to complete this block
 
   #if ENABLED(COLOR_MIXING_EXTRUDER)
-    unsigned long mix_event_count[DRIVER_EXTRUDERS];  // Step count for each stepper in a mixing extruder
+    unsigned long mix_event_count[E_STEPPERS];  // Step count for each stepper in a mixing extruder
   #endif
 
   long accelerate_until,                    // The index of the step event on which to stop acceleration
@@ -71,7 +72,7 @@ typedef struct {
     volatile long initial_advance,
                   final_advance;
     float advance;
-  #elif ENABLED(ADVANCE_LPC)
+  #elif ENABLED(LIN_ADVANCE)
     bool use_advance_lead;
     int e_speed_multiplier8;
   #endif
@@ -332,8 +333,8 @@ class Planner {
 
     static void calculate_trapezoid_for_block(block_t* block, float entry_factor, float exit_factor);
 
-    static void reverse_pass_kernel(block_t* previous, block_t* current, block_t* next);
-    static void forward_pass_kernel(block_t* previous, block_t* current, block_t* next);
+    static void reverse_pass_kernel(block_t* current, block_t* next);
+    static void forward_pass_kernel(block_t* previous, block_t* current);
 
     static void reverse_pass();
     static void forward_pass();

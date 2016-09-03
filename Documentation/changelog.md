@@ -1,3 +1,8 @@
+### Version 4.2.89
+* Fix and clear code
+* Add X dual motor
+* Add custom bootscreen
+
 ### Version 4.2.88
 * Fix and clear code
 * Rewrite communication

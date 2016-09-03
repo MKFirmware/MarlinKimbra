@@ -2021,14 +2021,34 @@ class SdFile : public SdBaseFile {
  public:
   SdFile() {}
   SdFile(const char* name, uint8_t oflag);
-  #if ARDUINO >= 100
-    size_t write(uint8_t b);
+
+  #ifdef __SAM3X8E__
+    #if DESTRUCTOR_CLOSES_FILE
+      ~SdFile() {}
+    #endif  // DESTRUCTOR_CLOSES_FILE
+    /** \return value of writeError */
+    bool getWriteError() {return SdBaseFile::getWriteError();}
+    /** Set writeError to zero */
+    void clearWriteError() {SdBaseFile::clearWriteError();}
+    #ifdef COMPAT_PRE1
+      void write(uint8_t b);
+    #else
+      size_t write(uint8_t b);
+    #endif
+
+    int write(const char* str);
+    int write(const void* buf, size_t nbyte);
   #else
-   void write(uint8_t b);
+    #if ARDUINO >= 100
+      size_t write(uint8_t b);
+    #else
+      void write(uint8_t b);
+    #endif
+
+    int16_t write(const void* buf, uint16_t nbyte);
+    void write(const char* str);
   #endif
 
-  int16_t write(const void* buf, uint16_t nbyte);
-  void write(const char* str);
   void write_P(PGM_P str);
   void writeln_P(PGM_P str);
 };

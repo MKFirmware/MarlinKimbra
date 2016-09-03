@@ -142,7 +142,7 @@ int code_value_int();
 float code_value_temp_abs();
 float code_value_temp_diff();
 
-#if ENABLED(ADVANCE_LPC)
+#if ENABLED(LIN_ADVANCE)
   extern int extruder_advance_k;
 #endif
 
@@ -264,7 +264,7 @@ extern uint8_t active_driver;
 #endif
 
 #if ENABLED(COLOR_MIXING_EXTRUDER)
-  extern float mixing_factor[DRIVER_EXTRUDERS];
+  extern float mixing_factor[E_STEPPERS];
 #endif
 
 void calculate_volumetric_multipliers();
