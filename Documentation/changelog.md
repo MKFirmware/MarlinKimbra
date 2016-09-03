@@ -1,5 +1,5 @@
 ### Version 4.2.9
-* Last version dual firmware
+* Last version for only 8 bit
 
 ### Version 4.2.89
 * Fix and clear code
