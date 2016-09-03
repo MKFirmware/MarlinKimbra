@@ -2,7 +2,7 @@
 # MarlinKimbra 3D Printer Firmware for Arduino
 ## Version 4.2.9
 
-
+Warning, this firmware was stopped. For the new version go to https://github.com/MagoKimbra/MarlinKimbra4due
 
 ### Special thanks
 * all Marlin8bit-developers.
