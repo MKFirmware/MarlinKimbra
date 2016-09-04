@@ -212,16 +212,16 @@
     #define SERIAL_TX_BUFFER_SIZE 128
     #define SERIAL_TX_BUFFER_MASK 127
   #else
-    #define SERIAL_TX_BUFFER_SIZE 64
-    #define SERIAL_TX_BUFFER_MASK 63
+    #define SERIAL_TX_BUFFER_SIZE 32
+    #define SERIAL_TX_BUFFER_MASK 31
   #endif
 
-  struct ring_buffer {
+  struct ring_buffer_r {
     uint8_t buffer[SERIAL_BUFFER_SIZE];
     volatile uint8_t head;
     volatile uint8_t tail;
   };
-  struct ring_buffer_tx {
+  struct ring_buffer_t {
     uint8_t buffer[SERIAL_TX_BUFFER_SIZE];
     volatile uint8_t head;
     volatile uint8_t tail;
@@ -229,8 +229,8 @@
 
   class MKHardwareSerial : public Print {
     public:
-      ring_buffer *_rx_buffer;
-      ring_buffer_tx *_tx_buffer;
+      ring_buffer_r *_rx_buffer;
+      ring_buffer_t *_tx_buffer;
       volatile uint8_t *_ubrrh;
       volatile uint8_t *_ubrrl;
       volatile uint8_t *_ucsra;
@@ -242,14 +242,14 @@
       uint8_t _udrie;
       uint8_t _u2x;
     public:
-      MKHardwareSerial(ring_buffer *rx_buffer, ring_buffer_tx *tx_buffer,
+      MKHardwareSerial(ring_buffer_r *rx_buffer, ring_buffer_t *tx_buffer,
                        volatile uint8_t *ubrrh, volatile uint8_t *ubrrl,
                        volatile uint8_t *ucsra, volatile uint8_t *ucsrb,
                        volatile uint8_t *udr,
                        uint8_t rxen, uint8_t txen, uint8_t rxcie, uint8_t udrie, uint8_t u2x);
       void begin(unsigned long);
       void end();
-      virtual int available(void);
+      virtual uint8_t available(void);
       virtual int peek(void);
       virtual int read(void);
       virtual void flush(void);
