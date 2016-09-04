@@ -9667,7 +9667,7 @@ static void report_current_position() {
     if (DEBUGGING(DRYRUN)) return;
     float de = dest_e - curr_e;
     if (de) {
-      if (degHotend(active_extruder) < extrude_min_temp) {
+      if (tooColdToExtrude(active_extruder)) {
         curr_e = dest_e; // Behave as if the move really took place, but ignore E part
         SERIAL_LM(ER, MSG_ERR_COLD_EXTRUDE_STOP);
       }

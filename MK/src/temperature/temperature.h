@@ -248,7 +248,7 @@ FORCE_INLINE bool isCoolingCooler() { return target_temperature_cooler < current
     #if HOTENDS <= 1
       UNUSED(h);
     #endif
-    return (allow_cold_extrude ? false : degHotend(HOTEND_INDEX) < extrude_min_temp); 
+    return allow_cold_extrude ? false : degHotend(HOTEND_INDEX) < extrude_min_temp;
   }
 #else
   FORCE_INLINE bool tooColdToExtrude(uint8_t h) { UNUSED(h); return false; }
