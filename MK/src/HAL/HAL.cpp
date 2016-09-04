@@ -114,20 +114,22 @@ void HAL::resetHardware() {}
    * Modified  3 March 2015 by MagoKimbra
    */
 
-  ring_buffer rx_buffer = { { 0 }, 0, 0};
-  ring_buffer_tx tx_buffer = { { 0 }, 0, 0};
+  ring_buffer_r rx_buffer = { { 0 }, 0, 0};
+  ring_buffer_t tx_buffer = { { 0 }, 0, 0};
 
-  inline void rf_store_char(unsigned char c, ring_buffer *buffer) {
-    uint8_t i = (buffer->head + 1) & SERIAL_BUFFER_MASK;
+  FORCE_INLINE void store_char(unsigned char c, ring_buffer_r *buffer) {
+    CRITICAL_SECTION_START;
+      uint8_t i = (uint8_t)(buffer->head + 1) & SERIAL_BUFFER_MASK;
 
-    // if we should be storing the received character into the location
-    // just before the tail (meaning that the head would advance to the
-    // current location of the tail), we're about to overflow the buffer
-    // and so we don't write the character or advance the head.
-    if (i != buffer->tail) {
-      buffer->buffer[buffer->head] = c;
-      buffer->head = i;
-    }
+      // if we should be storing the received character into the location
+      // just before the tail (meaning that the head would advance to the
+      // current location of the tail), we're about to overflow the buffer
+      // and so we don't write the character or advance the head.
+      if (i != buffer->tail) {
+        buffer->buffer[buffer->head] = c;
+        buffer->head = i;
+      }
+    CRITICAL_SECTION_END;
   }
 
   #if !defined(USART0_RX_vect) && defined(USART1_RX_vect)
@@ -160,7 +162,7 @@ void HAL::resetHardware() {}
       #else
         #error UDR not defined
       #endif
-        rf_store_char(c, &rx_buffer);
+        store_char(c, &rx_buffer);
     }
   #endif
 
@@ -204,14 +206,14 @@ void HAL::resetHardware() {}
     #endif
   #endif
 
-  #if defined(BLUETOOTH_SERIAL) && BLUETOOTH_SERIAL > 0
+  #if ENABLED(BLUETOOTH) && BLUETOOTH_PORT > 0
     #if !(defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_ATmega1284P__) || defined(__AVR_ATmega1284__) || defined(__AVR_ATmega2561__) || defined(__AVR_ATmega1281__) || defined (__AVR_ATmega644__) || defined (__AVR_ATmega644P__))
       #error BlueTooth option cannot be used with your mainboard
     #endif
-    #if BLUETOOTH_SERIAL > 1 && !(defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__))
+    #if BLUETOOTH_PORT > 1 && !(defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__))
       #error BlueTooth serial 2 or 3 can be used only with boards based on ATMega2560 or ATMega1280
     #endif
-    #if (BLUETOOTH_SERIAL == 1)
+    #if (BLUETOOTH_PORT == 1)
       #if defined(USART1_RX_vect)
         #define SIG_USARTx_RECV   USART1_RX_vect
         #define USARTx_UDRE_vect  USART1_UDRE_vect
@@ -228,7 +230,7 @@ void HAL::resetHardware() {}
       #define UARTxENABLE       ((1<<RXEN1)|(1<<TXEN1)|(1<<RXCIE1)|(1<<UDRIE1))
       #define UDRIEx            UDRIE1
       #define RXxPIN            19
-    #elif (BLUETOOTH_SERIAL == 2)
+    #elif (BLUETOOTH_PORT == 2)
       #if defined(USART2_RX_vect)
         #define SIG_USARTx_RECV   USART2_RX_vect
         #define USARTx_UDRE_vect  USART2_UDRE_vect
@@ -245,7 +247,7 @@ void HAL::resetHardware() {}
       #define UARTxENABLE       ((1<<RXEN2)|(1<<TXEN2)|(1<<RXCIE2)|(1<<UDRIE2))
       #define UDRIEx            UDRIE2
       #define RXxPIN            17
-    #elif (BLUETOOTH_SERIAL == 3)
+    #elif (BLUETOOTH_PORT == 3)
       #if defined(USART3_RX_vect)
         #define SIG_USARTx_RECV   USART3_RX_vect
         #define USARTx_UDRE_vect  USART3_UDRE_vect
@@ -268,7 +270,7 @@ void HAL::resetHardware() {}
 
     SIGNAL(SIG_USARTx_RECV) {
       uint8_t c  =  UDRx;
-      rf_store_char(c, &rx_buffer);
+      store_char(c, &rx_buffer);
     }
 
     volatile uint8_t txx_buffer_tail = 0;
@@ -289,7 +291,7 @@ void HAL::resetHardware() {}
   #endif
 
   // Constructors
-  MKHardwareSerial::MKHardwareSerial(ring_buffer *rx_buffer, ring_buffer_tx *tx_buffer,
+  MKHardwareSerial::MKHardwareSerial(ring_buffer_r *rx_buffer, ring_buffer_t *tx_buffer,
                                     volatile uint8_t *ubrrh, volatile uint8_t *ubrrl,
                                     volatile uint8_t *ucsra, volatile uint8_t *ucsrb,
                                     volatile uint8_t *udr,
@@ -314,7 +316,7 @@ void HAL::resetHardware() {}
     uint16_t baud_setting;
     bool use_u2x = true;
 
-    #if F_CPU == 16000000UL
+    #if F_CPU == 16000000UL && SERIAL_PORT == 0
       // hardcoded exception for compatibility with the bootloader shipped
       // with the Duemilanove and previous boards and the firmware on the 8U2
       // on the Uno and Mega 2560.
@@ -348,7 +350,7 @@ void HAL::resetHardware() {}
     SBI(*_ucsrb, _rxcie);
     CBI(*_ucsrb, _udrie);
 
-    #if defined(BLUETOOTH_SERIAL) && BLUETOOTH_SERIAL > 0
+    #if defined(BLUETOOTH) && BLUETOOTH_PORT > 0
       WRITE(RXxPIN,1);            // Pullup on RXDx
       UCSRxA  = (1<<U2Xx);
       UBRRxH = (uint8_t)(((F_CPU / 4 / BLUETOOTH_BAUD -1) / 2) >> 8);
@@ -366,42 +368,52 @@ void HAL::resetHardware() {}
     CBI(*_ucsrb, _rxcie);
     CBI(*_ucsrb, _udrie);
 
-    #if defined(BLUETOOTH_SERIAL) && BLUETOOTH_SERIAL > 0
+    #if defined(BLUETOOTH) && BLUETOOTH_PORT > 0
       UCSRxB = 0;
     #endif
     // clear a  ny received data
     _rx_buffer->head = _rx_buffer->tail;
   }
 
-  int MKHardwareSerial::available(void) {
-    return (unsigned int)(SERIAL_BUFFER_SIZE + _rx_buffer->head - _rx_buffer->tail) & SERIAL_BUFFER_MASK;
+  uint8_t MKHardwareSerial::available(void) {
+    CRITICAL_SECTION_START;
+      uint8_t h = _rx_buffer->head,
+              t = _rx_buffer->tail;
+    CRITICAL_SECTION_END;
+    return (uint8_t)(SERIAL_BUFFER_SIZE + h - t) & SERIAL_BUFFER_MASK;
   }
   int MKHardwareSerial::outputUnused(void) {
     return SERIAL_TX_BUFFER_SIZE - (unsigned int)((SERIAL_TX_BUFFER_SIZE + _tx_buffer->head - _tx_buffer->tail) & SERIAL_TX_BUFFER_MASK);
   }
 
   int MKHardwareSerial::peek(void) {
-    if (_rx_buffer->head == _rx_buffer->tail) {
-      return -1;
-    }
-    return _rx_buffer->buffer[_rx_buffer->tail];
+    CRITICAL_SECTION_START;
+      int v = _rx_buffer->head == _rx_buffer->tail ? -1 : _rx_buffer->buffer[_rx_buffer->tail];
+    CRITICAL_SECTION_END;
+    return v;
   }
 
   int MKHardwareSerial::read(void) {
-    // if the head isn't ahead of the tail, we don't have any characters
-    if (_rx_buffer->head == _rx_buffer->tail)
-    {
-        return -1;
-    }
-    unsigned char c = _rx_buffer->buffer[_rx_buffer->tail];
-    _rx_buffer->tail = (_rx_buffer->tail + 1) & SERIAL_BUFFER_MASK;
-    return c;
+    int v;
+    CRITICAL_SECTION_START;
+      uint8_t t = _rx_buffer->tail;
+      if (_rx_buffer->head == t) {
+        v = -1;
+      }
+      else {
+        v = _rx_buffer->buffer[t];
+        _rx_buffer->tail = (uint8_t)(t + 1) & SERIAL_BUFFER_MASK;
+      }
+    CRITICAL_SECTION_END;
+    return v;
   }
 
   void MKHardwareSerial::flush() {
-    while (_tx_buffer->head != _tx_buffer->tail);
+    CRITICAL_SECTION_START;
+      while (_tx_buffer->head != _tx_buffer->tail);
+    CRITICAL_SECTION_END;
 
-    #if defined(BLUETOOTH_SERIAL) && BLUETOOTH_SERIAL > 0
+    #if defined(BLUETOOTH) && BLUETOOTH_PORT > 0
       while (_tx_buffer->head != txx_buffer_tail);
     #endif
   }
@@ -411,40 +423,41 @@ void HAL::resetHardware() {}
   #else
     size_t
   #endif
-    MKHardwareSerial::write(uint8_t c) {
-      uint8_t i = (_tx_buffer->head + 1) & SERIAL_TX_BUFFER_MASK;
+  MKHardwareSerial::write(uint8_t c) {
+    uint8_t i = (_tx_buffer->head + 1) & SERIAL_TX_BUFFER_MASK;
 
-      // If the output buffer is full, there's nothing for it other than to
-      // wait for the interrupt handler to empty it a bit
-      while (i == _tx_buffer->tail) {}
-  
-      #if defined(BLUETOOTH_SERIAL) && BLUETOOTH_SERIAL > 0
-        while (i == txx_buffer_tail) {}
-      #endif
+    // If the output buffer is full, there's nothing for it other than to
+    // wait for the interrupt handler to empty it a bit
+    while (i == _tx_buffer->tail) {}
 
-      _tx_buffer->buffer[_tx_buffer->head] = c;
-      _tx_buffer->head = i;
-
-      SBI(*_ucsrb, _udrie);
-
-      #if defined(BLUETOOTH_SERIAL) && BLUETOOTH_SERIAL > 0
-        SBI(UCSRxB, UDRIEx);
-      #endif
-
-      #ifndef COMPAT_PRE1
-        return 1;
-      #endif
-    }
-
-    // Preinstantiate Objects
-    #if defined(UBRRH) && defined(UBRRL)
-      MKHardwareSerial MKSerial(&rx_buffer, &tx_buffer, &UBRRH, &UBRRL, &UCSRA, &UCSRB, &UDR, RXEN, TXEN, RXCIE, UDRIE, U2X);
-    #elif defined(UBRR0H) && defined(UBRR0L)
-      MKHardwareSerial MKSerial(&rx_buffer, &tx_buffer, &UBRR0H, &UBRR0L, &UCSR0A, &UCSR0B, &UDR0, RXEN0, TXEN0, RXCIE0, UDRIE0, U2X0);
-    #elif defined(USBCON)
-      // do nothing - Serial object and buffers are initialized in CDC code
-    #else
-      #error no serial port defined  (port 0)
+    #if defined(BLUETOOTH) && BLUETOOTH_PORT > 0
+      while (i == txx_buffer_tail) {}
     #endif
 
+    _tx_buffer->buffer[_tx_buffer->head] = c;
+    { CRITICAL_SECTION_START;
+        _tx_buffer->head = i;
+        SBI(*_ucsrb, _udrie);
+      CRITICAL_SECTION_END;
+    }
+
+    #if defined(BLUETOOTH) && BLUETOOTH_PORT > 0
+      SBI(UCSRxB, UDRIEx);
+    #endif
+
+    #ifndef COMPAT_PRE1
+      return 1;
+    #endif
+  }
+
+  // Preinstantiate Objects
+  #if defined(UBRRH) && defined(UBRRL)
+    MKHardwareSerial MKSerial(&rx_buffer, &tx_buffer, &UBRRH, &UBRRL, &UCSRA, &UCSRB, &UDR, RXEN, TXEN, RXCIE, UDRIE, U2X);
+  #elif defined(UBRR0H) && defined(UBRR0L)
+    MKHardwareSerial MKSerial(&rx_buffer, &tx_buffer, &UBRR0H, &UBRR0L, &UCSR0A, &UCSR0B, &UDR0, RXEN0, TXEN0, RXCIE0, UDRIE0, U2X0);
+  #elif defined(USBCON)
+    // do nothing - Serial object and buffers are initialized in CDC code
+  #else
+    #error no serial port defined  (port 0)
+  #endif
 #endif
