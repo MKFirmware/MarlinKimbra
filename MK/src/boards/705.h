@@ -83,3 +83,16 @@
     #define SERVO1_PIN        12
   #endif
 #endif
+
+#if ENABLED(REPRAPWORLD_GRAPHICAL_LCD)
+
+  #define LCD_PINS_RS         62  // CS chip select / SS chip slave select
+  #define LCD_PINS_ENABLE     75  // SID (MOSI)
+  #define LCD_PINS_D4         76  // SCK (CLK) clock
+  #define ORIG_BEEPER_PIN     -1
+
+  #define BTN_EN1             20
+  #define BTN_EN2             21
+  #define BTN_ENC             64
+
+#endif // REPRAPWORLD_GRAPHICAL_LCD
