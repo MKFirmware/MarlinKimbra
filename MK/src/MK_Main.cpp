@@ -466,8 +466,8 @@ void print_xyz(const char* prefix, const char* suffix, const float xyz[]) {
 #endif
 
 /**
- * Inject the next command from the command queue, when possible
- * Return false only if no command was pending
+ * Inject the next "immediate" command, when possible.
+ * Return true if any immediate commands remain to inject.
  */
 static bool drain_queued_commands_P() {
   if (queued_commands_P != NULL) {
@@ -531,7 +531,7 @@ void enqueue_and_echo_command_now(const char* cmd) {
  */
 bool enqueue_and_echo_command(const char* cmd, bool say_ok/*=false*/) {
   if (_enqueuecommand(cmd, say_ok)) {
-    SERIAL_MT(MSG_ENQUEUEING, cmd);
+    SERIAL_SMT(ECHO, MSG_ENQUEUEING, cmd);
     SERIAL_EM("\"");
     return true;
   }
@@ -3693,7 +3693,7 @@ inline void gcode_G0_G1(bool lfire) {
         // Is this move an attempt to retract or recover?
         if ((echange < -MIN_RETRACT && !retracted[active_extruder]) || (echange > MIN_RETRACT && retracted[active_extruder])) {
           current_position[E_AXIS] = destination[E_AXIS]; // hide the slicer-generated retract/recover from calculations
-          planner.set_e_position_mm(current_position[E_AXIS]);  // AND from the planner
+          sync_plan_position_e();  // AND from the planner
           retract(!retracted[active_extruder]);
           return;
         }
@@ -3818,27 +3818,6 @@ inline void gcode_G4() {
   }
 #endif
 
-#if ENABLED(FWRETRACT)
-
-  /**
-   * G10 - Retract filament according to settings of M207
-   * G11 - Recover filament according to settings of M208
-   */
-  inline void gcode_G10_G11(bool doRetract = false) {
-    #if EXTRUDERS > 1
-      if (doRetract) {
-        retracted_swap[active_extruder] = (code_seen('S') && code_value_bool()); // checks for swap retract argument
-      }
-    #endif
-    retract(doRetract
-     #if EXTRUDERS > 1
-      , retracted_swap[active_extruder]
-     #endif
-    );
-  }
-
-#endif //FWRETRACT
-
 #if ENABLED(LASERBEAM) && ENABLED(LASER_RASTER)
   inline void gcode_G7() {
 
@@ -3871,6 +3850,27 @@ inline void gcode_G4() {
     prepare_move_to_destination();
   }
 #endif
+
+#if ENABLED(FWRETRACT)
+
+  /**
+   * G10 - Retract filament according to settings of M207
+   * G11 - Recover filament according to settings of M208
+   */
+  inline void gcode_G10_G11(bool doRetract = false) {
+    #if EXTRUDERS > 1
+      if (doRetract) {
+        retracted_swap[active_extruder] = (code_seen('S') && code_value_bool()); // checks for swap retract argument
+      }
+    #endif
+    retract(doRetract
+     #if EXTRUDERS > 1
+      , retracted_swap[active_extruder]
+     #endif
+    );
+  }
+
+#endif //FWRETRACT
 
 #if ENABLED(INCH_MODE_SUPPORT)
   /**
@@ -8707,34 +8707,34 @@ void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool n
         // This function resets the max/min values - the current position may be overwritten below.
         set_axis_is_at_home(X_AXIS);
 
-        if (DEBUGGING(INFO)) DEBUG__INFO_POS("New Extruder", current_position);
+        if (DEBUGGING(INFO)) DEBUG_INFO_POS("New Extruder", current_position);
 
         switch (dual_x_carriage_mode) {
           case DXC_FULL_CONTROL_MODE:
-            current_position[X_AXIS] = LOGICAL_X_POSITION(inactive_extruder_x_pos);
-            inactive_extruder_x_pos = RAW_X_POSITION(destination[X_AXIS]);
+            current_position[X_AXIS] = LOGICAL_X_POSITION(inactive_hotend_x_pos);
+            inactive_hotend_x_pos = RAW_X_POSITION(destination[X_AXIS]);
             break;
           case DXC_DUPLICATION_MODE:
-            active_extruder_parked = (active_extruder == 0); // this triggers the second extruder to move into the duplication position
-            if (active_extruder_parked)
-              current_position[X_AXIS] = LOGICAL_X_POSITION(inactive_extruder_x_pos);
+            active_hotend_parked = (active_extruder == 0); // this triggers the second extruder to move into the duplication position
+            if (active_hotend_parked)
+              current_position[X_AXIS] = LOGICAL_X_POSITION(inactive_hotend_x_pos);
             else
-              current_position[X_AXIS] = destination[X_AXIS] + duplicate_extruder_x_offset;
-            inactive_extruder_x_pos = RAW_X_POSITION(destination[X_AXIS]);
-            extruder_duplication_enabled = false;
+              current_position[X_AXIS] = destination[X_AXIS] + duplicate_hotend_x_offset;
+            inactive_hotend_x_pos = RAW_X_POSITION(destination[X_AXIS]);
+            hotend_duplication_enabled = false;
             break;
           default:
             // record raised toolhead position for use by unpark
             memcpy(raised_parked_position, current_position, sizeof(raised_parked_position));
             raised_parked_position[Z_AXIS] += TOOLCHANGE_UNPARK_ZLIFT;
-            active_extruder_parked = true;
+            active_hotend_parked = true;
             delayed_move_time = 0;
             break;
         }
 
         if (DEBUGGING(INFO)) {
-          SERIAL_LMV(INFO, "Active extruder parked: ", active_extruder_parked ? "yes" : "no");
-          DEBUG_INFO_POS("New extruder (parked)", current_position);
+          SERIAL_LMV(INFO, "Active hotend parked: ", active_hotend_parked ? "yes" : "no");
+          DEBUG_INFO_POS("New hotend (parked)", current_position);
         }
 
         // No extra case for AUTO_BED_LEVELING_FEATURE in DUAL_X_CARRIAGE. Does that mean they don't work together?
@@ -8780,7 +8780,6 @@ void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool n
             );
             stepper.synchronize();
           }
-         
         #endif
         
         /**
@@ -8982,13 +8981,13 @@ void process_next_command() {
         #if ENABLED(G5_BEZIER)
           case 5: // G5: Bezier curve - from http://forums.reprap.org/read.php?147,93577
             gcode_G5(); break;
-        #endif
+        #endif // G5_BEZIER
 
         #if ENABLED(LASER_RASTER)
           case 7: // G7: Execute laser raster line
             gcode_G7(); break;
-        #endif
-      #endif
+        #endif // LASER_RASTER
+      #endif // LASERBEAM
 
       #if ENABLED(FWRETRACT)
         case 10: // G10: retract
@@ -9002,7 +9001,7 @@ void process_next_command() {
 
         case 21: //G21: MM Mode
           gcode_G21(); break;
-      #endif
+      #endif // INCH_MODE_SUPPORT
 
       case 28: //G28: Home all axes, one at a time
         gcode_G28(); break;
@@ -9766,7 +9765,7 @@ static void report_current_position() {
         // move duplicate extruder into correct duplication position.
         planner.set_position_mm(inactive_hotend_x_pos, current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS]);
         planner.buffer_line(current_position[X_AXIS] + duplicate_hotend_x_offset, current_position[Y_AXIS], current_position[Z_AXIS], current_position[E_AXIS], planner.max_feedrate_mm_s[X_AXIS], 1, active_driver);
-        sync_plan_position();
+        SYNC_PLAN_POSITION_KINEMATIC();
         stepper.synchronize();
         hotend_duplication_enabled = true;
         active_hotend_parked = false;
