@@ -36,11 +36,6 @@
   #define STRINGIFY_(M) #M
   #define STRINGIFY(M) STRINGIFY_(M)
 
-  // Macros for communication
-  #define FSTRINGVALUE(var,value) const char var[] PROGMEM = value;
-  #define FSTRINGVAR(var) static const char var[] PROGMEM;
-  #define FSTRINGPARAM(var) PGM_P var
-
   // Macros for bit masks
   #ifndef _BV
     #define _BV(b) (1<<(b))

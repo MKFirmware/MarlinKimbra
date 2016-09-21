@@ -877,7 +877,8 @@ void loop() {
 }
 
 void gcode_line_error(const char* err, bool doFlush = true) {
-  SERIAL_ST(ER, err);
+  SERIAL_S(ER);
+  SERIAL_PS(err);
   SERIAL_EV(gcode_LastN);
   //Serial.println(gcode_N);
   if (doFlush) FlushSerialRequestResend();
@@ -4403,7 +4404,8 @@ inline void gcode_G28() {
 #elif ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
 
   void out_of_range_error(const char* p_edge) {
-    SERIAL_SMV(ER, "?Probe ", p_edge);
+    SERIAL_MV("?Probe ");
+    SERIAL_PS(p_edge);
     SERIAL_EM(" position out of range.");
   }
 
@@ -6349,7 +6351,7 @@ inline void gcode_M122() {
   #if ENABLED(SOFTWARE_MIN_ENDSTOPS) || ENABLED(SOFTWARE_MAX_ENDSTOPS)
     if (code_seen('S')) soft_endstops_enabled = code_value_bool();
     SERIAL_SM(ECHO, MSG_SOFT_ENDSTOPS ":");
-    SERIAL_T(soft_endstops_enabled ? MSG_ON : MSG_OFF);
+    SERIAL_PS(soft_endstops_enabled ? PSTR(MSG_ON) : PSTR(MSG_OFF));
   #else
     SERIAL_M(MSG_SOFT_ENDSTOPS ":" MSG_OFF);
   #endif
@@ -8897,8 +8899,8 @@ void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool n
 
   #endif // HOTENDS > 1
 
-  SERIAL_EMV(MSG_ACTIVE_DRIVER, active_driver);
-  SERIAL_EMV(MSG_ACTIVE_EXTRUDER, active_extruder);
+  SERIAL_EMV(MSG_ACTIVE_DRIVER, (int)active_driver);
+  SERIAL_EMV(MSG_ACTIVE_EXTRUDER, (int)active_extruder);
 }
   
 /**

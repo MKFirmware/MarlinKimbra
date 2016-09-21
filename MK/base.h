@@ -51,7 +51,6 @@
 #include "src/conditionals.h"
 #include "src/sanitycheck.h"
 #include "src/HAL/HAL.h"
-#include "src/communication/communication.h"
 #include "src/enum.h"
 
 #if ENABLED(MESH_BED_LEVELING)
