@@ -4404,7 +4404,7 @@ inline void gcode_G28() {
 #elif ENABLED(AUTO_BED_LEVELING_FEATURE) && NOMECH(DELTA)
 
   void out_of_range_error(const char* p_edge) {
-    SERIAL_MV("?Probe ");
+    SERIAL_M("?Probe ");
     SERIAL_PS(p_edge);
     SERIAL_EM(" position out of range.");
   }
