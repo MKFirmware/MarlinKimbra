@@ -505,7 +505,7 @@
         tset1.setText("M104 T2 S");
       }
     #elif HAS_TEMP_BED
-      if (ptr == &Hotend3) {
+      if (ptr == &Hotend2) {
         if (degTargetBed() != 0) {
           itoa(degTargetBed(), buffer, 10);
         }
