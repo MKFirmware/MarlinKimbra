@@ -7928,7 +7928,7 @@ inline void gcode_M503() {
 
     if (code_seen('L')) destination[E_AXIS] += code_value_axis_units(E_AXIS);
     #if ENABLED(FILAMENT_CHANGE_UNLOAD_LENGTH)
-      else destination[E_AXIS] += FILAMENT_CHANGE_UNLOAD_LENGTH;
+      else destination[E_AXIS] -= FILAMENT_CHANGE_UNLOAD_LENGTH;
     #endif
 
     RUNPLAN(FILAMENT_CHANGE_UNLOAD_FEEDRATE);
@@ -7997,7 +7997,7 @@ inline void gcode_M503() {
     // Load filament
     if (code_seen('L')) destination[E_AXIS] -= code_value_axis_units(E_AXIS);
     #if ENABLED(FILAMENT_CHANGE_LOAD_LENGTH)
-      else destination[E_AXIS] -= FILAMENT_CHANGE_LOAD_LENGTH;
+      else destination[E_AXIS] += FILAMENT_CHANGE_LOAD_LENGTH;
     #endif
 
     RUNPLAN(FILAMENT_CHANGE_LOAD_FEEDRATE);
