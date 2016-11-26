@@ -154,9 +154,9 @@ void CardReader::pausePrint() {
 
 void CardReader::continuePrint(bool intern) {}
 
-void CardReader::stopPrint() {
+void CardReader::stopPrint(bool store_location /*=false*/) {
   sdprinting = false;
-  closeFile();
+  if (isFileOpen()) closeFile(store_location);
 }
 
 void CardReader::write_command(char* buf) {

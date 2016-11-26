@@ -573,11 +573,11 @@
     void PlayPausePopCallback(void *ptr) {
       if (card.cardOK && card.isFileOpen()) {
         if (IS_SD_PRINTING) {
-          card.pauseSDPrint();
+          card.pausePrint();
           print_job_counter.pause();
         }
         else {
-          card.startFileprint();
+          card.startPrint();
           print_job_counter.start();
         }
       }
@@ -585,7 +585,7 @@
 
     void StopPopCallback(void *ptr) {
       if (card.cardOK && card.isFileOpen() && IS_SD_PRINTING) {
-        card.stopSDPrint(ptr == &Logo);
+        card.stopPrint(ptr == &Logo);
         clear_command_queue();
         quickstop_stepper();
         print_job_counter.stop();

@@ -55,7 +55,7 @@ public:
   void startPrint();
   void pausePrint();
   void continuePrint(bool intern = false);
-  void stopPrint();
+  void stopPrint(bool store_location = false);
   void write_command(char* buf);
   bool selectFile(const char *filename, bool silent = false);
   void printStatus();
