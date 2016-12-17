@@ -2251,7 +2251,7 @@ void kill_screen(const char* lcd_msg) {
       float focus = LASER_FOCAL_HEIGHT - f_length;
       char cmd[20];
 
-      sprintf_P(cmd, PSTR("G0 Z%s F150"), ftostr52(focus));
+      sprintf_P(cmd, PSTR("G0 Z%s F150"), ftostr52sign(focus));
       enqueue_and_echo_commands_P(cmd);
     }
 
