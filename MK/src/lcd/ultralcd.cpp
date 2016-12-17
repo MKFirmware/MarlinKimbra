@@ -641,8 +641,7 @@ void kill_screen(const char* lcd_msg) {
     }
 
     static void lcd_sdcard_stop() {
-      card.sdprinting = false;
-      card.closeFile();
+      card.stopPrint();
       clear_command_queue();
       quickstop_stepper();
       print_job_counter.stop();
@@ -652,10 +651,10 @@ void kill_screen(const char* lcd_msg) {
     }
 
     static void lcd_sdcard_stop_save() {
-      card.sdprinting = false;
-      print_job_counter.stop();
+      card.stopPrint(true);
+      clear_command_queue();
       quickstop_stepper();
-      card.closeFile(true);
+      print_job_counter.stop();
       autotempShutdown();
       wait_for_heatup = false;
     }

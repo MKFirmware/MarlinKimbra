@@ -470,7 +470,7 @@
         temp += "W";
 
       temp.toCharArray(buffer, sizeof(buffer));
-      enqueue_and_echo_commands_P(buffer);
+      enqueue_and_echo_command(buffer);
     }
 
     void rfid_setText(const char* message, uint32_t color /* = 65535 */) {
@@ -539,14 +539,14 @@
     tset0.getText(temp, sizeof(temp));
     tset1.getText(buffer, sizeof(buffer));
     strcat(buffer, temp);
-    enqueue_and_echo_commands_P(buffer);
+    enqueue_and_echo_command(buffer);
     Pprinter.show();
   }
 
   void setgcodePopCallback(void *ptr) {
     memset(buffer, 0, sizeof(buffer));
     Tgcode.getText(buffer, sizeof(buffer));
-    enqueue_and_echo_commands_P(buffer);
+    enqueue_and_echo_command(buffer);
     Pmenu.show();
   }
 
@@ -565,7 +565,7 @@
     memset(buffer, 0, sizeof(buffer));
     movecmd.getText(buffer, sizeof(buffer));
     enqueue_and_echo_commands_P(PSTR("G91"));
-    enqueue_and_echo_commands_P(buffer);
+    enqueue_and_echo_command(buffer);
     enqueue_and_echo_commands_P(PSTR("G90"));
   }
 
