@@ -310,7 +310,7 @@ void Endstops::update() {
   #if MECH(COREXZ) || MECH(COREZX)
     // Head direction in -Z axis for CoreXZ bots.
     // If DeltaA == DeltaB, the movement is only in X axis
-    if ((stepper.current_block->steps[CORE_AXIS_1] != stepper.current_block->steps[CORE_AXIS_2]) || (stepper.motor_direction(CORE_AXIS_1) !) != stepper.motor_direction(CORE_AXIS_2))) {
+    if ((stepper.current_block->steps[CORE_AXIS_1] != stepper.current_block->steps[CORE_AXIS_2]) || (stepper.motor_direction(CORE_AXIS_1) != stepper.motor_direction(CORE_AXIS_2))) {
       if (stepper.motor_direction(Z_HEAD))
   #else
       if (stepper.motor_direction(Z_AXIS))
