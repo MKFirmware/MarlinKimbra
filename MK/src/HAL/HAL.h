@@ -207,22 +207,22 @@ class HAL {
 
     // SPI related functions
     static void spiBegin() {
-      #if SDSS >= 0
+      #if SS_PIN >= 0
         SET_INPUT(MISO_PIN);
         SET_OUTPUT(MOSI_PIN);
         SET_OUTPUT(SCK_PIN);
         // SS must be in output mode even it is not chip select
-        SET_OUTPUT(SDSS);
+        SET_OUTPUT(SS_PIN);
         // set SS high - may be chip select for another SPI device
-        WRITE(SDSS, HIGH);
+        WRITE(SS_PIN, HIGH);
       #endif
     }
     static inline void spiInit(uint8_t spiRate) {
       uint8_t r = 0;
       for (uint8_t b = 2; spiRate > b && r < 6; b <<= 1, r++);
 
-      SET_OUTPUT(SDSS);
-      WRITE(SDSS, HIGH);
+      SET_OUTPUT(SS_PIN);
+      WRITE(SS_PIN, HIGH);
       SET_OUTPUT(SCK_PIN);
       SET_OUTPUT(MOSI_PIN);
       SET_INPUT(MISO_PIN);
