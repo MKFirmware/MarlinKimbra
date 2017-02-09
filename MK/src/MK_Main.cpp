@@ -5252,7 +5252,10 @@ inline void gcode_G92() {
    * M5: Turn off laser beam
    */
 inline void gcode_M5() {
+  #if (ENABLED(LASERBEAM) && ENABLED(LASER_FIRE_SPINDLE)) && ENABLED(CNCROUTER)
   if (printer_mode == PRINTER_MODE_LASER) {
+  #endif
+  #if (ENABLED(LASERBEAM) && ENABLED(LASER_FIRE_SPINDLE))
   	if (laser.status != LASER_OFF) {
     	laser.status = LASER_OFF;
      	laser.mode = CONTINUOUS;
@@ -5264,14 +5267,20 @@ inline void gcode_M5() {
 
      	if (laser.diagnostics){
      		SERIAL_EM("Laser M5 called and laser OFF");
-    	} 
-		else {
-      	disable_cncrouter();
-         prepare_move_to_destination();
-
-		}
+    	}
     }
+  #endif
+  #if (ENABLED(LASERBEAM) && ENABLED(LASER_FIRE_SPINDLE)) && ENABLED(CNCROUTER)
   }
+  else if(printer_mode == PRINTER_MODE_CNC) {
+  #endif
+   #if ENABLED(CNCROUTER)
+  	disable_cncrouter();
+   prepare_move_to_destination();
+   #endif
+   #if (ENABLED(LASERBEAM) && ENABLED(LASER_FIRE_SPINDLE)) && ENABLED(CNCROUTER)
+  }
+  #endif
 }
 #endif // LASERBEAM
 
@@ -7779,7 +7788,7 @@ inline void gcode_M428() {
   }
 }
 
-#if (ENABLED(LASERBEAM) && ENABLED(LASER_FIRE_SPINDLE)) || ENABLED(CNCROUTER)
+#if (ENABLED(LASERBEAM) && ENABLED(LASER_FIRE_SPINDLE)) && ENABLED(CNCROUTER)
 /**
  * M450: Report printer mode
  */
