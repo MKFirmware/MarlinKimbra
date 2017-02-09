@@ -48,6 +48,10 @@
   #include "src/laser/laser.h"
 #endif
 
+#if ENABLED(CNCROUTER)
+  #include "src/cncrouter/cncrouter.h"
+#endif
+
 #include "src/conditionals.h"
 #include "src/sanitycheck.h"
 #include "src/HAL/HAL.h"
