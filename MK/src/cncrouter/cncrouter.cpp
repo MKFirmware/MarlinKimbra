@@ -22,7 +22,7 @@ void setPwmCNCRouter(unsigned char pwm); // XXX pwm level or cnc router speed?
 
 void setPwmCNCRouter(unsigned char pwm) {
   fast_pwm_cncrouter = pwm;
-  analogWRite(CNCROUTER_PIN, pwm);
+  analogWrite(CNCROUTER_PIN, pwm);
 }
 
 int getCNCSpeed() {
