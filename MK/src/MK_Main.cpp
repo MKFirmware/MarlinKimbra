@@ -747,6 +747,10 @@ void setup() {
 
   tp_init();      // Initialize temperature loop
 
+  #if ENABLED(CNCROUTER)
+    cnc_init();
+  #endif
+
   #if MECH(DELTA) || MECH(SCARA)
     // Vital to init kinematic equivalent for X0 Y0 Z0
     sync_plan_position_delta();
