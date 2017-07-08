@@ -1,0 +1,3 @@
+Documentation/* linguist-documentation
+MK/*.cpp linguist-language=Arduino
+MK/*.h linguist-language=Arduino
